@@ -1,0 +1,477 @@
+# Sortiva — signals.config.yaml
+#
+# main §7.10: "Every number in §7.3, §7.6, and §8.2 (demand floors per locale,
+# position bands, CTR ratio, decay ratios, impression shares, confidence points,
+# multiplier clamps, exploration reservation, refresh share) lives in a
+# versioned configuration file in the repo, one schema-validated document,
+# loaded at worker start and stamped onto every opportunity and gate decision as
+# `rules_version`."
+#
+# `rules_version` is sha256 of this file's bytes. Editing any value changes it,
+# which is the point: main §8.5's calibration posture is "start strict, loosen
+# only with evidence", and the weekly review reads PostHog broken down by
+# `rules_version` (main §14.7).
+#
+# Every value carries the section it comes from. Values marked UNSIGNED are
+# starting heuristics this spec set does not state a number for; they are
+# recorded in DECISIONS.md and need founder calibration sign-off.
+#
+# Layering (main §7.10): global defaults -> per-locale -> (later) per-store /
+# per-market / per-query-type / per-page-type. V1 ships global + per-locale.
+
+version: 1
+
+defaults:
+  # ── main §7.3 — V1 signal catalog ──────────────────────────────────────────
+  # All thresholds here are the spec's "starting heuristics" for detection.
+  signals:
+    striking_distance:
+      priority: P0
+      needs_gsc: true
+      # "Page x query-cluster mean position 4-15 over trailing 28d"
+      position_min: 4
+      position_max: 15
+      window_days: 28
+
+    low_ctr_at_strong_rank:
+      priority: P0
+      needs_gsc: true
+      # "Mean position <= 5 over 28d, impressions >= 2x store median, observed
+      #  CTR < 0.6x the CTR predicted by the store's own fitted curve"
+      position_max: 5
+      window_days: 28
+      impressions_store_median_multiple_min: 2
+      observed_vs_predicted_ctr_ratio_max: 0.6
+
+    content_decay:
+      priority: P0
+      needs_gsc: true
+      # "Trailing 28d vs the same-length window 12 weeks earlier: clicks <= 0.6x
+      #  and position worsened >= 3 ... must hold across >= 2 consecutive
+      #  weekly evaluations"
+      window_days: 28
+      comparison_window_offset_weeks: 12
+      clicks_ratio_max: 0.6
+      position_worsened_min: 3
+      consecutive_weekly_evaluations_min: 2
+
+    cannibalization:
+      priority: P0
+      needs_gsc: true
+      # ">= 2 store URLs each hold >= 20% of the cluster's impressions over 28d,
+      #  both within position <= 30"
+      window_days: 28
+      competing_urls_min: 2
+      impression_share_min: 0.20
+      position_max: 30
+
+    uncovered_commercial_query:
+      priority: P0
+      needs_gsc: false
+      # "volume >= locale demand floor (§8.2) ... maps to >= 1 product family
+      #  passing the substance floor, and the existing-target check finds no
+      #  suitable URL". The volume floor itself is gates.demand_floor.
+      mapped_families_min: 1
+
+    existing_page_intent_gap:
+      priority: P0
+      needs_gsc: false
+      # "Page ranks 4-20 for the cluster ... >= 2 subtopics present on >= 3 of
+      #  the top-5 SERP pages and absent on ours"
+      position_min: 4
+      position_max: 20
+      missing_subtopics_min: 2
+      subtopic_present_on_top_pages_min: 3
+      serp_top_n: 5
+
+    competitor_coverage_gap:
+      priority: P0
+      needs_gsc: false
+      # ">= 2 of the <=5 business competitors rank <= 10 for a keyword that maps
+      #  to a family we sell; we hold no position <= 20"
+      competitors_ranking_min: 2
+      competitor_position_max: 10
+      our_absent_position_max: 20
+      # "CREATE (no relevant URL) / OPTIMIZE (relevant URL at 11-30)"
+      optimize_position_min: 11
+      optimize_position_max: 30
+
+    product_family_coverage_gap:
+      priority: P0
+      needs_gsc: false
+      # "Family in the top-seller set (or >= 10% of 90d revenue) with zero
+      #  published/ranking content mapped to it, and >= 1 keyword candidate
+      #  clearing the demand floor"
+      revenue_share_min: 0.10
+      revenue_window_days: 90
+      keyword_candidates_min: 1
+
+    catalog_richness_gap:
+      priority: P0
+      needs_gsc: false
+      # Fires when a candidate clears demand + winnability but the mapped
+      # families fail gates.substance_floor. HOLD + merchant task.
+
+    missing_or_weak_metadata:
+      # P0 per the founder's §11 sign-off (Appendix B "Technical FIX scope").
+      priority: P0
+      needs_gsc: false
+
+    product_change_impact:
+      # "already built as the repair loop" — drift thresholds live in main §14.1
+      # and are owned by the drift/repair card, not this file (see DECISIONS
+      # 2026-08-27 T0.2).
+      priority: P0
+      needs_gsc: false
+
+    broken_product_reference:
+      priority: P0
+      needs_gsc: false
+
+    # P1 — the model accommodates these; V1 does not detect them.
+    internal_linking_gap:
+      priority: P1
+      needs_gsc: false
+    orphan_page:
+      priority: P1
+      needs_gsc: false
+    indexing_issue:
+      priority: P1
+      needs_gsc: true
+    wrong_canonical_or_duplicate:
+      priority: P1
+      needs_gsc: true
+    content_overlap:
+      priority: P1
+      needs_gsc: false
+    freshness_opportunity:
+      priority: P1
+      needs_gsc: true
+      # "Age > 12 months, position stagnant/declining over 12 weeks, and the
+      #  top-5 SERP set differs >= 40% from the snapshot stored at publish"
+      age_months_min: 12
+      stagnation_window_weeks: 12
+      serp_set_difference_min: 0.40
+
+  # ── main §7.6 — the opportunity object & scoring ───────────────────────────
+  scoring:
+    # "score = opportunity x pattern_multipliers x source_bonus" (§7.6, §9.6.4)
+    create:
+      # "competitor-gap source bonus x1.15"
+      competitor_gap_source_bonus: 1.15
+      # "business_weight multiplier = the family's share of 90d revenue
+      #  rescaled to [1.0, 1.5]"
+      business_weight_min: 1.0
+      business_weight_max: 1.5
+
+    existing_page:
+      # "expected_gain = impressions_28d x (CTR(target_position) -
+      #  CTR(current_position))"
+      window_days: 28
+      # "target_position = 3 for striking distance, current position for
+      #  Low-CTR ..., baseline position for decay"
+      striking_distance_target_position: 3
+
+    impact:
+      # "impact_score is the candidate's percentile rank within its own action
+      #  family across the store's current candidate set, and impact bands are
+      #  terciles of that"
+      score_min: 0
+      score_max: 100
+      band_tercile_low_max_percentile: 33.3
+      band_tercile_medium_max_percentile: 66.7
+
+    # "Confidence (0-100) — additive heuristics, deterministic"
+    confidence:
+      points:
+        gsc_evidence_present: 30
+        evidence_window_at_least_28_days: 20
+        evidence_window_at_least_84_days: 10
+        independent_sources_agree: 15
+        substance_floor_margin: 15
+        no_open_precondition: 10
+        validated_across_consecutive_scans: 10
+        limited_intelligence_penalty: -20
+      # "+15 >= 2 independent sources agree"
+      independent_sources_min: 2
+      # "+20 evidence window >= 28 days (+10 if >= 84)"
+      evidence_window_days_tier_1: 28
+      evidence_window_days_tier_2: 84
+      # "+10 signal validated across >= 2 consecutive weekly scans"
+      consecutive_scans_min: 2
+      # "Clamped; bands: high >= 70, medium 40-69, low < 40"
+      clamp_min: 0
+      clamp_max: 100
+      band_high_min: 70
+      band_medium_min: 40
+
+  # ── main §8.2 — Gate 1, topic admission ────────────────────────────────────
+  gates:
+    # "Demand floor: keyword volume >= threshold in the store's locale (tuned
+    #  per country — 50/mo in Danish != 50/mo in English)."
+    # UNSIGNED — the spec mandates per-locale floors and gives no table. This
+    # global default is the English-scale floor; the `locales` block below
+    # scales it down for smaller search markets. See DECISIONS 2026-08-27 T0.2.
+    demand_floor:
+      monthly_search_volume_min: 100
+      # "Zero-volume topics auto-reject unless the user manually pinned them."
+      allow_zero_volume_when_pinned: true
+
+    # "Winnability: difficulty vs the site's estimated authority."
+    winnability:
+      # main §9.6.4 / §7.11: "GSC not connected: winnability falls back to a
+      # conservative constant". UNSIGNED — the spec says "conservative", not
+      # which number. 0-1 scale.
+      limited_intelligence_constant: 0.25
+      minimum: 0.15
+
+    # "Substance inventory: the topic must map to families whose merged fact
+    #  sheets have enough populated fields across enough member products."
+    # UNSIGNED — main §6.3/§6.4 define richness but state no floor.
+    substance_floor:
+      distinct_facts_min: 8
+      populated_fields_per_product_min: 4
+      contributing_products_min: 3
+      # "passes the substance floor with margin" earns the §7.6 confidence
+      # point; margin is expressed as a multiple of the floor.
+      margin_multiple: 1.5
+
+    # "Existing-target / cannibalization check (§7.7 — literally the same
+    #  function)": step 2(a) "mean position <= 30 over 28d"; step 4 "match is
+    #  weak (position > 30)".
+    existing_target_check:
+      window_days: 28
+      match_position_max: 30
+
+    # ── main §8.4 — Gate 3, draft grading ──────────────────────────────────
+    # Included here beyond the T0.2 card's enumerated sections so invariant 11's
+    # floors are not literals in Lane D. See DECISIONS 2026-08-27 T0.2.
+    draft_grading:
+      # "Gate on the minimum, not the average." Hard floors.
+      criterion_score_min: 1
+      criterion_score_max: 5
+      information_gain_min: 4
+      factual_grounding_min: 4
+      other_criteria_min: 3
+      # "One repair loop, max."
+      repair_loops_max: 1
+
+  # ── main §9.6 — outcome measurement & learning loop ────────────────────────
+  learning:
+    # §9.6.1 "runs when the calendar's planned horizon drops below ~60 days"
+    replenishment_horizon_days: 60
+
+    # §9.6.2 performance signals & labels
+    labels:
+      # "Maturity gate: no judgment before 28 days post-publish."
+      maturity_days: 28
+      window_days: 28
+      # "winner: clicks >= 2x store median, or position improved >= 5 spots
+      #  with impressions above median"
+      winner_clicks_store_median_multiple_min: 2
+      winner_position_improvement_min: 5
+      # "underperformer: clicks < 0.25x median and position > 30 after 90 days"
+      underperformer_clicks_store_median_multiple_max: 0.25
+      underperformer_position_min: 30
+      underperformer_age_days_min: 90
+
+    # §9.6.3 pattern aggregation
+    patterns:
+      # "A pattern only becomes active with n >= 3 rated articles"
+      activation_min_rated: 3
+      # "Winner-dominant pattern (>= 2/3 winners): x1.25"
+      dominance_share_min: 0.6667
+      winner_dominant_multiplier: 1.25
+      underperformer_dominant_multiplier: 0.8
+      mixed_multiplier: 1.0
+      # "multipliers never leave [0.5, 2.0] even when stacked"
+      multiplier_clamp_min: 0.5
+      multiplier_clamp_max: 2.0
+      # "computed from the trailing 90 days of labels only"
+      recency_window_days: 90
+      # "the (<=3) active pattern multipliers the candidate matches" (§9.6.4)
+      max_stacked_multipliers: 3
+      # §9.6.3 dimensions, plus `action_type` added by §9.6.10.
+      dimensions:
+        - intent_class
+        - family_id
+        - keyword_cluster
+        - action_type
+
+    # §9.6.5 refresh candidates (the weekly scan)
+    refresh:
+      # "mean position in 5-15 over the trailing 28 days"
+      position_min: 5
+      position_max: 15
+      window_days: 28
+      # "not refreshed in the last 60 days"
+      cooldown_days: 60
+      # "refreshes fill at most 40% of any replenishment batch"
+      batch_share_max: 0.40
+
+    # §9.6.6 exploration guarantee
+    exploration:
+      # "at least 2 slots (or 15%, whichever is larger)"
+      reserved_slots_min: 2
+      reserved_share_min: 0.15
+
+    # §9.6.10 per-opportunity outcomes
+    outcomes:
+      # "measured by the weekly scan against the same 28-day maturity rule"
+      maturity_days: 28
+      window_days: 28
+      optimize:
+        # "improved (position >= 2 better or CTR >= +20% relative with
+        #  impressions not collapsed)"
+        improved_position_delta_min: 2
+        improved_ctr_relative_delta_min: 0.20
+        # UNSIGNED — "impressions not collapsed" is stated without a number.
+        impressions_not_collapsed_ratio_min: 0.5
+      refresh:
+        # "recovered if clicks return to >= 0.8x the pre-decay baseline"
+        recovered_clicks_baseline_ratio_min: 0.8
+      fix:
+        # "share concentration on the designated primary URL (>= 70% of cluster
+        #  impressions)"
+        primary_url_impression_share_min: 0.70
+
+  # ── main §10.2 and §14.5 — caps, kill switches, auto-trips ─────────────────
+  budgets:
+    optimize:
+      # §10.2 "Default cap of 2 generations per account per day"
+      generations_per_account_per_day: 2
+    intent_gap:
+      # §14.5 "Intent-gap analysis and OPTIMIZE recommendation generation each
+      # have a per-account daily cap (config)". UNSIGNED — no number stated.
+      analyses_per_account_per_day: 10
+
+  auto_trips:
+    # §14.5 "checked at job dequeue (effective within 60s)"
+    flag_check_max_staleness_seconds: 60
+
+    account_llm_spend:
+      # "Account daily LLM spend > 10x its trailing-30-day median or > hard
+      #  dollar cap -> pause that account's generation."
+      trailing_median_multiple_max: 10
+      trailing_median_window_days: 30
+      # UNSIGNED — "hard dollar cap" with no number. At $89/mo (~$2.90/day of
+      # revenue) this is a loud-failure ceiling, not a budget.
+      hard_cap_usd_per_day: 5.00
+
+    dataforseo_spend:
+      # "Global DataForSEO daily spend > configured cap -> global enrichment
+      #  pause." UNSIGNED.
+      global_cap_usd_per_day: 50.00
+
+    preview_spend:
+      # "Daily preview LLM spend > its own cap -> pause the preview endpoint
+      #  only." UNSIGNED. "This trip firing at all means Turnstile, rate limits,
+      #  or the cache are being defeated — investigate, don't just raise the
+      #  cap."
+      global_cap_usd_per_day: 10.00
+
+    judge_fail_rate:
+      # "Judge fail rate > 60% over the trailing 50 drafts (global) ->
+      #  global.pause_all"
+      rate_max: 0.60
+      trailing_drafts: 50
+
+    publish_error_rate:
+      # "Publish API error rate > 20% over 1h -> global.pause_publishing"
+      rate_max: 0.20
+      window_hours: 1
+
+# ── Per-locale overrides (main §7.10 layering) ───────────────────────────────
+#
+# UNSIGNED, all of it. main §8.2 requires per-country demand floors ("50/mo in
+# Danish != 50/mo in English") and states no table. These floors are set roughly
+# proportional to the search market's size, so the same commercial seriousness
+# clears the bar in a small language as in English. Keyed by language subtag;
+# the resolver falls back language -> global default.
+#
+# Everything not restated here inherits `defaults`.
+locales:
+  en:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 100
+  de:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 60
+  fr:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 60
+  es:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 60
+  it:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 50
+  pt:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 50
+  nl:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 40
+  pl:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 40
+  sv:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 20
+  da:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 20
+  nb:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 20
+  fi:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 20
+  cs:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 20
+  hu:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 20
+  ro:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 20
+  el:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 20
+  sk:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 15
+  sl:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 10
+  et:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 10
+  lv:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 10
+  lt:
+    gates:
+      demand_floor:
+        monthly_search_volume_min: 10

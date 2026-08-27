@@ -1,0 +1,5704 @@
+{
+  "version": 1,
+  "rules_version": "5a6195953c8e9d50e51f6dd480098c8d4ce4c1d4ff8518d7d2972e04a03b2eef",
+  "defaults": {
+    "signals": {
+      "striking_distance": {
+        "priority": "P0",
+        "needs_gsc": true,
+        "position_min": 4,
+        "position_max": 15,
+        "window_days": 28
+      },
+      "low_ctr_at_strong_rank": {
+        "priority": "P0",
+        "needs_gsc": true,
+        "position_max": 5,
+        "window_days": 28,
+        "impressions_store_median_multiple_min": 2,
+        "observed_vs_predicted_ctr_ratio_max": 0.6
+      },
+      "content_decay": {
+        "priority": "P0",
+        "needs_gsc": true,
+        "window_days": 28,
+        "comparison_window_offset_weeks": 12,
+        "clicks_ratio_max": 0.6,
+        "position_worsened_min": 3,
+        "consecutive_weekly_evaluations_min": 2
+      },
+      "cannibalization": {
+        "priority": "P0",
+        "needs_gsc": true,
+        "window_days": 28,
+        "competing_urls_min": 2,
+        "impression_share_min": 0.2,
+        "position_max": 30
+      },
+      "uncovered_commercial_query": {
+        "priority": "P0",
+        "needs_gsc": false,
+        "mapped_families_min": 1
+      },
+      "existing_page_intent_gap": {
+        "priority": "P0",
+        "needs_gsc": false,
+        "position_min": 4,
+        "position_max": 20,
+        "missing_subtopics_min": 2,
+        "subtopic_present_on_top_pages_min": 3,
+        "serp_top_n": 5
+      },
+      "competitor_coverage_gap": {
+        "priority": "P0",
+        "needs_gsc": false,
+        "competitors_ranking_min": 2,
+        "competitor_position_max": 10,
+        "our_absent_position_max": 20,
+        "optimize_position_min": 11,
+        "optimize_position_max": 30
+      },
+      "product_family_coverage_gap": {
+        "priority": "P0",
+        "needs_gsc": false,
+        "revenue_share_min": 0.1,
+        "revenue_window_days": 90,
+        "keyword_candidates_min": 1
+      },
+      "catalog_richness_gap": {
+        "priority": "P0",
+        "needs_gsc": false
+      },
+      "missing_or_weak_metadata": {
+        "priority": "P0",
+        "needs_gsc": false
+      },
+      "product_change_impact": {
+        "priority": "P0",
+        "needs_gsc": false
+      },
+      "broken_product_reference": {
+        "priority": "P0",
+        "needs_gsc": false
+      },
+      "internal_linking_gap": {
+        "priority": "P1",
+        "needs_gsc": false
+      },
+      "orphan_page": {
+        "priority": "P1",
+        "needs_gsc": false
+      },
+      "indexing_issue": {
+        "priority": "P1",
+        "needs_gsc": true
+      },
+      "wrong_canonical_or_duplicate": {
+        "priority": "P1",
+        "needs_gsc": true
+      },
+      "content_overlap": {
+        "priority": "P1",
+        "needs_gsc": false
+      },
+      "freshness_opportunity": {
+        "priority": "P1",
+        "needs_gsc": true,
+        "age_months_min": 12,
+        "stagnation_window_weeks": 12,
+        "serp_set_difference_min": 0.4
+      }
+    },
+    "scoring": {
+      "create": {
+        "competitor_gap_source_bonus": 1.15,
+        "business_weight_min": 1,
+        "business_weight_max": 1.5
+      },
+      "existing_page": {
+        "window_days": 28,
+        "striking_distance_target_position": 3
+      },
+      "impact": {
+        "score_min": 0,
+        "score_max": 100,
+        "band_tercile_low_max_percentile": 33.3,
+        "band_tercile_medium_max_percentile": 66.7
+      },
+      "confidence": {
+        "points": {
+          "gsc_evidence_present": 30,
+          "evidence_window_at_least_28_days": 20,
+          "evidence_window_at_least_84_days": 10,
+          "independent_sources_agree": 15,
+          "substance_floor_margin": 15,
+          "no_open_precondition": 10,
+          "validated_across_consecutive_scans": 10,
+          "limited_intelligence_penalty": -20
+        },
+        "independent_sources_min": 2,
+        "evidence_window_days_tier_1": 28,
+        "evidence_window_days_tier_2": 84,
+        "consecutive_scans_min": 2,
+        "clamp_min": 0,
+        "clamp_max": 100,
+        "band_high_min": 70,
+        "band_medium_min": 40
+      }
+    },
+    "gates": {
+      "demand_floor": {
+        "monthly_search_volume_min": 100,
+        "allow_zero_volume_when_pinned": true
+      },
+      "winnability": {
+        "limited_intelligence_constant": 0.25,
+        "minimum": 0.15
+      },
+      "substance_floor": {
+        "distinct_facts_min": 8,
+        "populated_fields_per_product_min": 4,
+        "contributing_products_min": 3,
+        "margin_multiple": 1.5
+      },
+      "existing_target_check": {
+        "window_days": 28,
+        "match_position_max": 30
+      },
+      "draft_grading": {
+        "criterion_score_min": 1,
+        "criterion_score_max": 5,
+        "information_gain_min": 4,
+        "factual_grounding_min": 4,
+        "other_criteria_min": 3,
+        "repair_loops_max": 1
+      }
+    },
+    "learning": {
+      "replenishment_horizon_days": 60,
+      "labels": {
+        "maturity_days": 28,
+        "window_days": 28,
+        "winner_clicks_store_median_multiple_min": 2,
+        "winner_position_improvement_min": 5,
+        "underperformer_clicks_store_median_multiple_max": 0.25,
+        "underperformer_position_min": 30,
+        "underperformer_age_days_min": 90
+      },
+      "patterns": {
+        "activation_min_rated": 3,
+        "dominance_share_min": 0.6667,
+        "winner_dominant_multiplier": 1.25,
+        "underperformer_dominant_multiplier": 0.8,
+        "mixed_multiplier": 1,
+        "multiplier_clamp_min": 0.5,
+        "multiplier_clamp_max": 2,
+        "recency_window_days": 90,
+        "max_stacked_multipliers": 3,
+        "dimensions": [
+          "intent_class",
+          "family_id",
+          "keyword_cluster",
+          "action_type"
+        ]
+      },
+      "refresh": {
+        "position_min": 5,
+        "position_max": 15,
+        "window_days": 28,
+        "cooldown_days": 60,
+        "batch_share_max": 0.4
+      },
+      "exploration": {
+        "reserved_slots_min": 2,
+        "reserved_share_min": 0.15
+      },
+      "outcomes": {
+        "maturity_days": 28,
+        "window_days": 28,
+        "optimize": {
+          "improved_position_delta_min": 2,
+          "improved_ctr_relative_delta_min": 0.2,
+          "impressions_not_collapsed_ratio_min": 0.5
+        },
+        "refresh": {
+          "recovered_clicks_baseline_ratio_min": 0.8
+        },
+        "fix": {
+          "primary_url_impression_share_min": 0.7
+        }
+      }
+    },
+    "budgets": {
+      "optimize": {
+        "generations_per_account_per_day": 2
+      },
+      "intent_gap": {
+        "analyses_per_account_per_day": 10
+      }
+    },
+    "auto_trips": {
+      "flag_check_max_staleness_seconds": 60,
+      "account_llm_spend": {
+        "trailing_median_multiple_max": 10,
+        "trailing_median_window_days": 30,
+        "hard_cap_usd_per_day": 5
+      },
+      "dataforseo_spend": {
+        "global_cap_usd_per_day": 50
+      },
+      "preview_spend": {
+        "global_cap_usd_per_day": 10
+      },
+      "judge_fail_rate": {
+        "rate_max": 0.6,
+        "trailing_drafts": 50
+      },
+      "publish_error_rate": {
+        "rate_max": 0.2,
+        "window_hours": 1
+      }
+    }
+  },
+  "locales": {
+    "en": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 100,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "de": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 60,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "fr": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 60,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "es": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 60,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "it": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 50,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "pt": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 50,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "nl": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 40,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "pl": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 40,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "sv": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 20,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "da": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 20,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "nb": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 20,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "fi": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 20,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "cs": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 20,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "hu": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 20,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "ro": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 20,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "el": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 20,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "sk": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 15,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "sl": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 10,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "et": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 10,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "lv": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 10,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    },
+    "lt": {
+      "signals": {
+        "striking_distance": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_min": 4,
+          "position_max": 15,
+          "window_days": 28
+        },
+        "low_ctr_at_strong_rank": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "position_max": 5,
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 2,
+          "observed_vs_predicted_ctr_ratio_max": 0.6
+        },
+        "content_decay": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "comparison_window_offset_weeks": 12,
+          "clicks_ratio_max": 0.6,
+          "position_worsened_min": 3,
+          "consecutive_weekly_evaluations_min": 2
+        },
+        "cannibalization": {
+          "priority": "P0",
+          "needs_gsc": true,
+          "window_days": 28,
+          "competing_urls_min": 2,
+          "impression_share_min": 0.2,
+          "position_max": 30
+        },
+        "uncovered_commercial_query": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "mapped_families_min": 1
+        },
+        "existing_page_intent_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "position_min": 4,
+          "position_max": 20,
+          "missing_subtopics_min": 2,
+          "subtopic_present_on_top_pages_min": 3,
+          "serp_top_n": 5
+        },
+        "competitor_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "competitors_ranking_min": 2,
+          "competitor_position_max": 10,
+          "our_absent_position_max": 20,
+          "optimize_position_min": 11,
+          "optimize_position_max": 30
+        },
+        "product_family_coverage_gap": {
+          "priority": "P0",
+          "needs_gsc": false,
+          "revenue_share_min": 0.1,
+          "revenue_window_days": 90,
+          "keyword_candidates_min": 1
+        },
+        "catalog_richness_gap": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "missing_or_weak_metadata": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "product_change_impact": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "broken_product_reference": {
+          "priority": "P0",
+          "needs_gsc": false
+        },
+        "internal_linking_gap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "orphan_page": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "indexing_issue": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "wrong_canonical_or_duplicate": {
+          "priority": "P1",
+          "needs_gsc": true
+        },
+        "content_overlap": {
+          "priority": "P1",
+          "needs_gsc": false
+        },
+        "freshness_opportunity": {
+          "priority": "P1",
+          "needs_gsc": true,
+          "age_months_min": 12,
+          "stagnation_window_weeks": 12,
+          "serp_set_difference_min": 0.4
+        }
+      },
+      "scoring": {
+        "create": {
+          "competitor_gap_source_bonus": 1.15,
+          "business_weight_min": 1,
+          "business_weight_max": 1.5
+        },
+        "existing_page": {
+          "window_days": 28,
+          "striking_distance_target_position": 3
+        },
+        "impact": {
+          "score_min": 0,
+          "score_max": 100,
+          "band_tercile_low_max_percentile": 33.3,
+          "band_tercile_medium_max_percentile": 66.7
+        },
+        "confidence": {
+          "points": {
+            "gsc_evidence_present": 30,
+            "evidence_window_at_least_28_days": 20,
+            "evidence_window_at_least_84_days": 10,
+            "independent_sources_agree": 15,
+            "substance_floor_margin": 15,
+            "no_open_precondition": 10,
+            "validated_across_consecutive_scans": 10,
+            "limited_intelligence_penalty": -20
+          },
+          "independent_sources_min": 2,
+          "evidence_window_days_tier_1": 28,
+          "evidence_window_days_tier_2": 84,
+          "consecutive_scans_min": 2,
+          "clamp_min": 0,
+          "clamp_max": 100,
+          "band_high_min": 70,
+          "band_medium_min": 40
+        }
+      },
+      "gates": {
+        "demand_floor": {
+          "monthly_search_volume_min": 10,
+          "allow_zero_volume_when_pinned": true
+        },
+        "winnability": {
+          "limited_intelligence_constant": 0.25,
+          "minimum": 0.15
+        },
+        "substance_floor": {
+          "distinct_facts_min": 8,
+          "populated_fields_per_product_min": 4,
+          "contributing_products_min": 3,
+          "margin_multiple": 1.5
+        },
+        "existing_target_check": {
+          "window_days": 28,
+          "match_position_max": 30
+        },
+        "draft_grading": {
+          "criterion_score_min": 1,
+          "criterion_score_max": 5,
+          "information_gain_min": 4,
+          "factual_grounding_min": 4,
+          "other_criteria_min": 3,
+          "repair_loops_max": 1
+        }
+      },
+      "learning": {
+        "replenishment_horizon_days": 60,
+        "labels": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "winner_clicks_store_median_multiple_min": 2,
+          "winner_position_improvement_min": 5,
+          "underperformer_clicks_store_median_multiple_max": 0.25,
+          "underperformer_position_min": 30,
+          "underperformer_age_days_min": 90
+        },
+        "patterns": {
+          "activation_min_rated": 3,
+          "dominance_share_min": 0.6667,
+          "winner_dominant_multiplier": 1.25,
+          "underperformer_dominant_multiplier": 0.8,
+          "mixed_multiplier": 1,
+          "multiplier_clamp_min": 0.5,
+          "multiplier_clamp_max": 2,
+          "recency_window_days": 90,
+          "max_stacked_multipliers": 3,
+          "dimensions": [
+            "intent_class",
+            "family_id",
+            "keyword_cluster",
+            "action_type"
+          ]
+        },
+        "refresh": {
+          "position_min": 5,
+          "position_max": 15,
+          "window_days": 28,
+          "cooldown_days": 60,
+          "batch_share_max": 0.4
+        },
+        "exploration": {
+          "reserved_slots_min": 2,
+          "reserved_share_min": 0.15
+        },
+        "outcomes": {
+          "maturity_days": 28,
+          "window_days": 28,
+          "optimize": {
+            "improved_position_delta_min": 2,
+            "improved_ctr_relative_delta_min": 0.2,
+            "impressions_not_collapsed_ratio_min": 0.5
+          },
+          "refresh": {
+            "recovered_clicks_baseline_ratio_min": 0.8
+          },
+          "fix": {
+            "primary_url_impression_share_min": 0.7
+          }
+        }
+      },
+      "budgets": {
+        "optimize": {
+          "generations_per_account_per_day": 2
+        },
+        "intent_gap": {
+          "analyses_per_account_per_day": 10
+        }
+      },
+      "auto_trips": {
+        "flag_check_max_staleness_seconds": 60,
+        "account_llm_spend": {
+          "trailing_median_multiple_max": 10,
+          "trailing_median_window_days": 30,
+          "hard_cap_usd_per_day": 5
+        },
+        "dataforseo_spend": {
+          "global_cap_usd_per_day": 50
+        },
+        "preview_spend": {
+          "global_cap_usd_per_day": 10
+        },
+        "judge_fail_rate": {
+          "rate_max": 0.6,
+          "trailing_drafts": 50
+        },
+        "publish_error_rate": {
+          "rate_max": 0.2,
+          "window_hours": 1
+        }
+      }
+    }
+  }
+}
