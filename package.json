@@ -15,7 +15,9 @@
     "dev": "pnpm --filter @sortiva/web run dev",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
-    "env:check": "node scripts/check-env-sync.mjs"
+    "env:check": "node scripts/check-env-sync.mjs",
+    "db:migrate": "pnpm --filter @sortiva/db run db:migrate",
+    "db:generate": "pnpm --filter @sortiva/db run db:generate"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

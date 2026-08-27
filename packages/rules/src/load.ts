@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import Ajv, { type ErrorObject } from 'ajv'
 import { parse as parseYaml } from 'yaml'
-import type { DeepPartial, RulesDocument, RulesLayer } from './types.js'
+import type { DeepPartial, RulesDocument, RulesLayer } from './types'
 
 const packageRoot = new URL('../', import.meta.url)
 

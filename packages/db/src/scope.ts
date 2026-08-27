@@ -1,0 +1,50 @@
+/**
+ * CLAUDE.md code-structure rules: "Every repository method requires an
+ * `accountId` scope parameter; there is no unscoped table access outside
+ * migrations and admin scripts."
+ *
+ * A plain `accountId: string` parameter satisfies that on paper and nothing in
+ * practice — any string type-checks, including one read from a request body,
+ * which tech §3 explicitly forbids ("Every authenticated route resolves
+ * `account_id` from session — never from the request body"). So scope is a
+ * branded type that only `accountScope()` can produce, and every repository
+ * method takes it as its first argument. Omitting it is a compile error; see
+ * `scope.test-d.ts`.
+ */
+
+declare const accountScopeBrand: unique symbol
+declare const systemScopeBrand: unique symbol
+
+export interface AccountScope {
+  readonly [accountScopeBrand]: true
+  readonly accountId: string
+}
+
+/**
+ * The five wave-1 tables that genuinely have no `account_id` — `stripe_events`,
+ * `webhook_events`, `request_cache`, `preview_cache`, `email_suppressions`.
+ * Each is written before an account is known (a webhook is HMAC-verified and
+ * stored before it is routed; a preview happens pre-signup; the request cache
+ * is keyed by canonical params, not by tenant).
+ *
+ * Rather than let those repositories take no scope at all — which would make
+ * "unscoped table access" a thing that exists and can spread — they take a
+ * `SystemScope` carrying a written reason. The rule stays "no repository
+ * method without a scope"; system access is explicit and greppable.
+ * See DECISIONS 2026-08-27 T0.3.
+ */
+export interface SystemScope {
+  readonly [systemScopeBrand]: true
+  readonly reason: string
+}
+
+export function accountScope(accountId: string): AccountScope {
+  if (!accountId) throw new Error('accountScope() requires an account id')
+  return { accountId } as AccountScope
+}
+
+/** @param reason why this access has no account — recorded so review can judge it. */
+export function systemScope(reason: string): SystemScope {
+  if (!reason) throw new Error('systemScope() requires a reason')
+  return { reason } as SystemScope
+}

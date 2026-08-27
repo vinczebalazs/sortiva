@@ -1,4 +1,4 @@
-import type { DeepPartial, RulesLayer } from './types.js'
+import type { DeepPartial, RulesLayer } from './types'
 
 /**
  * main §7.10: "Overrides are layered: global defaults -> per-locale -> (later)

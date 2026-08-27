@@ -6,14 +6,14 @@ export {
   rules,
   type LoadOptions,
   type RulesConfig,
-} from './load.js'
+} from './load'
 
 export {
   NullRulesOverrideReader,
   type RulesOverrideReader,
   type RulesOverrideRow,
   type RulesOverrideScope,
-} from './overrides.js'
+} from './overrides'
 
 export {
   SIGNAL_TYPES,
@@ -30,4 +30,4 @@ export {
   type SignalPriority,
   type SignalType,
   type SignalsConfig,
-} from './types.js'
+} from './types'

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { CONFIG_PATH, RulesConfigError, loadRulesConfig } from './load.js'
-import { SIGNAL_TYPES } from './types.js'
+import { CONFIG_PATH, RulesConfigError, loadRulesConfig } from './load'
+import { SIGNAL_TYPES } from './types'
 
 /**
  * T0.2 done-when: "a test enumerates the spec's named thresholds and asserts
