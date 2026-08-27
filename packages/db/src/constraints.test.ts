@@ -32,7 +32,7 @@ describe.skipIf(!available)('schema wave 1 constraints', () => {
   let pool: pg.Pool
 
   beforeAll(async () => {
-    ctx = await setupTestDb()
+    ctx = await setupTestDb('constraints')
     pool = ctx.pool
   })
 

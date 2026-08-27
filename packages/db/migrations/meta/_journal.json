@@ -8,6 +8,13 @@
       "when": 1787806878116,
       "tag": "0000_wave1",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787807254658,
+      "tag": "0001_wave1_addendum_job_dlq",
+      "breakpoints": true
     }
   ]
 }

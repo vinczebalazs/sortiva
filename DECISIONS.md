@@ -16,6 +16,51 @@ Class (filled by audit): a: fine as-is | b: promote to spec | c: contradicts spe
 
 (entries below, newest first)
 
+## 2026-08-27 — T0.4 — The per-account lock is session-scoped, not `pg_advisory_xact_lock`
+Decision: `withAccountLock` takes a **session-level** advisory lock (`pg_advisory_lock`) on a dedicated pooled connection for the duration of a step, rather than the transaction-scoped `pg_advisory_xact_lock` main §14.3.3 names first. Key is the two-int form: a fixed namespace (`0x5027`) plus `hashtext(account_id)`.
+Why: §14.3.3 says "`pg_advisory_xact_lock(account_id)` **or equivalent**", and the transaction-scoped form is not usable here. It would require holding one transaction open for a whole step, but §14.3.4 requires long steps to commit checkpoints as they go — a checkpoint only visible after the step commits is not a checkpoint, and `catalog_sync` is ~8 minutes for a 500-product store. Holding the lock on its own connection lets the step body checkpoint on pooled connections while still serialising all work for the account. The namespace exists because Graphile Worker takes advisory locks of its own in the same database.
+Nearest spec: main §14.3.3 — "or equivalent"; §14.3.4 — checkpoint requirement.
+
+## 2026-08-27 — T0.4 — `job_dlq` lands as a wave-1 addendum migration
+Decision: New table `job_dlq` (account, job, step, idempotency_key, error_class, last_error, attempts, input_refs, first_failed_at, replayed_at/by) in `0001_wave1_addendum_job_dlq.sql`.
+Why: main §14.3.5 requires DLQ entries carrying "step, idempotency key, input refs, last error, attempt timestamps" and a one-action replay; T0.4's done-when is "DLQ entry carries step + key + error". main §13 lists no such table. **This breaks the letter of CLAUDE.md's "migrations are added only by schema-wave cards"** — flagged rather than done quietly. It is a wave-1 addendum committed minutes after wave 1 in the same milestone by the same session; the integrator should either fold it into wave 1 or accept it as a mini-wave. `job_id`/`step_id` are nullable because publish, sweeps and email sends dead-letter through the same table without being ingestion steps.
+Nearest spec: main §14.3.5, §13; CLAUDE.md migration rule.
+
+## 2026-08-27 — T0.4 — The completed-key ledger is `job_steps` itself, with a known limit
+Decision: `lookupCompletedKey` reads `job_steps WHERE idempotency_key = $1 AND state = 'succeeded'`, and `output_ref` holds the stored output. No separate ledger table.
+Why: §13 puts `idempotency_key` on `job_steps` and §14.3.2 says "the *cache is the ledger*: 'have I done this work' and 'where is the result' are the same lookup" — this is the reading that requires no new table. **The limit it accepts**: deleting a job cascades its steps, which erases those ledger entries; work whose key lived only on a deleted run would execute again. That is acceptable because runs are not deleted in normal operation (accounts are, and then the work is moot), but it is the reason a dedicated ledger table would be the alternative if run pruning is ever added.
+Nearest spec: main §14.3.2, §13 `job_steps`.
+
+## 2026-08-27 — T0.4 — Step dependency graph
+Decision: `detect → oauth_wait → catalog_sync → distill → family_group → persona → keywords_competitors → {gsc_connect, awaiting_confirmation}`, with `awaiting_confirmation` depending on `keywords_competitors` only.
+Why: main §6's numbered steps give the order. The one judgement call is `gsc_connect`: §6.7 puts it "right after keyword/competitor discovery and before confirmation", while §14.3.1 says it "never blocks `awaiting_confirmation`". Both are satisfied by making it depend on `keywords_competitors` while confirmation does not depend on it — so skipping GSC (Limited Intelligence, §7.11) cannot stall onboarding. A `skipped` dependency counts as satisfied for the same reason. Tested.
+Nearest spec: main §6.1–6.8, §14.3.1 — the ordering is prose, never a graph.
+
+## 2026-08-27 — T0.4 — Cron stays off until every scheduled task has a handler
+Decision: `CRON_ENTRIES` registers all 13 recurring jobs tech §2 names, but `bootstrapWorker` enables cron only when every entry resolves to a registered task; `startWorker` throws if asked to enable cron with a gap. M0 ships an empty task registry, so the worker runs with no schedule.
+Why: A crontab entry naming a task nobody registered is a scheduled job that silently never runs — discovered a month later when the retention sweep turns out never to have swept. The registry plus the assertion turns that into a startup error. The log line names what is still missing, so it reads as a to-do rather than a fault.
+Nearest spec: tech §2 — lists the scheduled jobs; silent on what happens when one has no handler.
+
+## 2026-08-27 — T0.4 — Crontab is UTC; per-account clocks are resolved inside the task
+Decision: All 13 entries use UTC schedules. Work that main §9.4 / §9.6.1 defines in the persona country's timezone (the publish hour, the Monday signal scan) is filtered inside the task against `account_settings.timezone`.
+Why: A crontab cannot express "09:00 in each account's own zone", and pretending otherwise is how a German store gets published to at 09:00 UTC. Making this explicit now stops a later card from reading `0 9 * * *` as satisfying §9.4.
+Nearest spec: main §9.4, §9.6.1 — define the clock, not the mechanism.
+
+## 2026-08-27 — T0.4 — Typed failure classes, with token errors routed away from the DLQ
+Decision: `RetryableFailure` / `TerminalFailure` carry an `errorClass` slug; `TokenInvalidFailure` is a terminal subclass carrying the provider. An unrecognised exception is classified retryable.
+Why: main §14.3.5 makes the *class*, not the exception shape, decide what happens next, and says "token errors route to `awaiting_shopify_auth` (§6.2), everything else to the DLQ" — modelling that as a class lets the executor route it without string-matching a message. Retryable-by-default for unclassified errors is the safe side under an at-least-once queue: a spurious retry costs a run, a spurious dead-letter costs a stalled account.
+Nearest spec: main §14.3.5 — names the classes and the routing, not their representation.
+
+## 2026-08-27 — T0.4 — In-process worker starts from `apps/web/instrumentation.ts`
+Decision: Next's `register()` hook calls `bootstrapWorker()` on the Node runtime; `WORKER_ENABLED=false` skips it.
+Why: tech §2.1 requires the worker in the same Node process as the server, and `instrumentation.ts` is the only once-per-server-process startup hook the App Router offers. The env switch is what makes the later split to a dedicated Railway service "a config change (same image, different start command)" rather than a code change.
+Nearest spec: tech §2.1.
+
+## 2026-08-27 — T0.4 — Each integration test suite gets its own database
+Decision: `setupTestDb(label)` creates and migrates `sortiva_test_<label>`, dropped and recreated per run.
+Why: vitest runs test files in parallel; two suites truncating the same tables produce failures that look like constraint bugs and are not (observed while building this card). Per-suite databases cost about a second each and remove the whole class.
+Nearest spec: tech §5, §6 — CI runs integration tests; silent on isolation.
+
 ## 2026-08-27 — T0.3 — Drizzle ORM + drizzle-kit for schema and migrations
 Decision: `packages/db` defines the schema in TypeScript (`src/schema/*.ts`); `drizzle-kit generate` diffs it into forward-only SQL in `packages/db/migrations`; `drizzle-kit migrate` applies it. Repositories query through Drizzle.
 Why: **Founder decision, asked and answered in session** (alternatives offered: Kysely + hand-written SQL migrations; plain `pg` + node-pg-migrate). Consequence carried forward: the generated migration is the reviewed artefact — once merged it is never regenerated in place, and a schema-wave card commits the `.sql` alongside the schema change so the integrator reviews SQL, not a TypeScript diff.

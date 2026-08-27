@@ -20,6 +20,8 @@ export const TEST_DATABASE_URL =
 export interface TestDb {
   db: NodePgDatabase<typeof schema>
   pool: pg.Pool
+  /** The isolated database this suite owns. */
+  databaseName: string
   close: () => Promise<void>
 }
 
@@ -36,14 +38,35 @@ export async function databaseAvailable(): Promise<boolean> {
   }
 }
 
-/** Applies every committed migration, then hands back a connected database. */
-export async function setupTestDb(): Promise<TestDb> {
-  const pool = new pg.Pool({ connectionString: TEST_DATABASE_URL })
+/**
+ * Creates a database of this suite's own, applies every committed migration,
+ * and hands back a connection to it.
+ *
+ * Per-suite isolation rather than one shared database: vitest runs test files
+ * in parallel, and two suites truncating the same tables produce failures that
+ * look like constraint bugs and are not. `label` must be unique per test file.
+ */
+export async function setupTestDb(label: string): Promise<TestDb> {
+  const databaseName = `sortiva_test_${label.replace(/[^a-z0-9]+/gi, '_').toLowerCase()}`
+
+  const admin = new pg.Pool({ connectionString: TEST_DATABASE_URL })
+  try {
+    await admin.query(`DROP DATABASE IF EXISTS "${databaseName}" WITH (FORCE)`)
+    await admin.query(`CREATE DATABASE "${databaseName}"`)
+  } finally {
+    await admin.end()
+  }
+
+  const url = new URL(TEST_DATABASE_URL)
+  url.pathname = `/${databaseName}`
+  const pool = new pg.Pool({ connectionString: url.toString() })
   const db = drizzle(pool, { schema })
   await migrate(db, { migrationsFolder: MIGRATIONS_FOLDER })
+
   return {
     db,
     pool,
+    databaseName,
     close: async () => {
       await pool.end()
     },
