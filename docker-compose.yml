@@ -1,0 +1,21 @@
+# tech §5 — local dev is docker-compose Postgres. Postgres 16 per tech §2.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sortiva-postgres
+    environment:
+      POSTGRES_USER: sortiva
+      POSTGRES_PASSWORD: sortiva
+      POSTGRES_DB: sortiva
+    ports:
+      - '54329:5432'
+    volumes:
+      - sortiva-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U sortiva -d sortiva']
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  sortiva-pgdata:

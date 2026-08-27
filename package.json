@@ -1,0 +1,30 @@
+{
+  "name": "sortiva",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20.11"
+  },
+  "scripts": {
+    "typecheck": "pnpm -r --workspace-concurrency=4 run typecheck",
+    "lint": "eslint .",
+    "lint:prove": "node scripts/prove-lint.mjs",
+    "test": "vitest run",
+    "build": "pnpm --filter @sortiva/web run build",
+    "dev": "pnpm --filter @sortiva/web run dev",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "env:check": "node scripts/check-env-sync.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/node": "^22.10.2",
+    "eslint": "^9.17.0",
+    "eslint-plugin-sortiva": "workspace:*",
+    "globals": "^15.14.0",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.1",
+    "vitest": "^2.1.8"
+  }
+}

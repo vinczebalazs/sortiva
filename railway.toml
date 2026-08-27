@@ -1,0 +1,29 @@
+# tech §2.1 — v1 topology is two Railway services and no more: `app` (Next.js +
+# Graphile Worker in the same Node process) and `postgres`. The worker split is a
+# start-command change, deliberately not taken yet.
+#
+# The `postgres` service is provisioned from Railway's Postgres template rather
+# than declared here (Railway databases are template-provisioned, not built from
+# the repo); `app` reads it through DATABASE_URL.
+
+[build]
+builder = "NIXPACKS"
+buildCommand = "pnpm install --frozen-lockfile && pnpm --filter @sortiva/web run build"
+watchPatterns = ["apps/**", "packages/**", "package.json", "pnpm-lock.yaml"]
+
+[deploy]
+# --max-old-space-size pinned per tech §2.1 so a leak OOMs loudly instead of
+# silently billing a swollen resident set.
+startCommand = "node --max-old-space-size=384 apps/web/node_modules/next/dist/bin/next start -p $PORT"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
+
+# tech §2.1 — no scale-to-zero on `app`: the preview endpoint is the public
+# funnel and the in-process worker needs its cron ticks.
+numReplicas = 1
+sleepApplication = false
+
+[environments.production.deploy]
+startCommand = "node --max-old-space-size=384 apps/web/node_modules/next/dist/bin/next start -p $PORT"

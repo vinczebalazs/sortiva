@@ -1,0 +1,69 @@
+# tech §5 — CI gates on every merge: typecheck, unit + integration tests, lint.
+# Eval suites, the signal-detection fixture suite, the nightly chaos test and the
+# PostHog provisioning check are added by the cards that create them (T0.2, T0.5,
+# T0.6).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: sortiva
+          POSTGRES_PASSWORD: sortiva
+          POSTGRES_DB: sortiva_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sortiva -d sortiva_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgres://sortiva:sortiva@localhost:5432/sortiva_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: .env.example completeness
+        run: pnpm env:check
+
+      - name: Enforcement rules reject planted violations
+        run: pnpm lint:prove
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build

@@ -1,0 +1,13 @@
+{
+  "name": "eslint-plugin-sortiva",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "scripts": {
+    "typecheck": "echo \"no types in eslint-plugin-sortiva\""
+  }
+}
