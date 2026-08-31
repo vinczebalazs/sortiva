@@ -16,6 +16,67 @@ Class (filled by audit): a: fine as-is | b: promote to spec | c: contradicts spe
 
 (entries below, newest first)
 
+## 2026-08-31 — T2.0 — The competitor cap is a locking trigger, because a counting trigger is not a constraint
+Decision: `competitors` gets a `BEFORE INSERT OR UPDATE OF account_id` trigger (migration `0003_wave2_guards.sql`) that takes `SELECT … FOR UPDATE` on the account row, then counts, then raises `check_violation` at six. No slot column, no changed insert shape.
+Why: main §6.6 asks for a "count constraint" in the DB. A trigger that only counts is beatable: under Postgres' default READ COMMITTED two concurrent inserts each see five rows and both proceed, so an account ends with seven competitors — invariant 5 violated silently, and DataForSEO cost with it. Locking the account row first serialises inserts for that account, so the count is taken with nothing else in flight. Proven both ways: the suite's concurrency case leaves exactly five rows, and the same trigger body without the lock lets all six land. The alternative considered was a `slot smallint CHECK (1..5)` column with `UNIQUE (account_id, slot)` — equally airtight and purely declarative, but it puts a slot-allocation burden on every writer and adds a column §13 does not describe.
+Nearest spec: main §6.6 — states the cap and that it is enforced in the DB, not the mechanism.
+
+## 2026-08-31 — T2.0 — `spend_events`: append-only enforced by the database, and no foreign key to `accounts`
+Decision: an `UPDATE` on `spend_events` raises (trigger in `0003_wave2_guards.sql`); `DELETE` is left alone; `account_id` is a plain uuid column with no foreign key.
+Why: `docs/audits/remediation.md` D1 requires the ledger be append-only, and a rule enforced only by "no repository has an update method" lasts until someone writes one. `DELETE` stays open because tech §2.1 gives a retention sweep the job of keeping Postgres small and main §14.5's caps only ever read a trailing window. The missing foreign key is deliberate: `ON DELETE CASCADE` would let account deletion (main §14.6) erase money we actually spent, which is the opposite of append-only, and `ON DELETE SET NULL` would leave a row attributable to nobody and break the attribution check. What §14.6 requires hard-deleted is PII and order-derived aggregates; a vendor invoice line is neither.
+Nearest spec: main §14.7 (final paragraph), §14.5, §14.6; remediation D1.
+
+## 2026-08-31 — T2.0 — Every `spend_events` row is attributed to exactly one of an account or a preview target
+Decision: a check constraint requires `account_id` XOR `preview_target`. Neither-set is refused as well as both-set.
+Why: main §14.7's preview attribution rule — "the domain group is reserved for claimed domains… Preview events carry `target_domain` as a plain property instead" — is already a two-case union in the frozen contract `EventAttribution` (`packages/core/src/contracts/analytics.ts`), and the table mirrors it so the mapping at the seam is an identity. Refusing neither-set is the stronger half: unattributed spend is money nobody can be asked about, and §14.7 requires "how much is site X costing us" to be answerable. Known consequence: if card `R2` finds a paid call belonging to neither an account nor a preview, it cannot record it and must come back for a schema change. Every `call_type` §14.7 lists is one or the other, so I believe that set is closed.
+Nearest spec: main §14.7 — states the attribution rule, not a constraint.
+
+## 2026-08-31 — T2.0 — The ledger carries `outcome` and a three-value `vendor` enum
+Decision: `spend_events.outcome` is `succeeded | failed`, not null and not defaulted; `vendor` is `anthropic | dataforseo | resend`.
+Why: remediation D2 makes card `R2` record a cost on every failure path — "recording a cost is an obligation of making the call, not a side effect of the call succeeding" — and `R2` is not a schema wave, so a column it needs must exist now or it is blocked. No default, because a caller that has not thought about which path it is on should not get one silently. `resend` is in the enum for the same reason: main §14.5's caps only sum `anthropic` and `dataforseo`, but `EmailProvider` is one of the three instrumented wrappers of invariant 25 and does cost money, and an append-only ledger must not need a migration to admit it.
+Nearest spec: main §14.7 requirement (1), §14.5; remediation D1, D2; audit `docs/audits/T0.5.md` findings 2–5, 13.
+
+## 2026-08-31 — T2.0 — Columns added beyond main §13's wave-2 sketches
+Decision: `products.checksum`; `product_facts.prompt_version` / `.model_id`; `personas.product_categories` / `.prompt_version` / `.model_id` / `.generated_at`; `opportunities.limited_intelligence`; `gsc_conns.invalidated_at`; `products.synced_at`; `product_families`, `top_products` and `store_pages` timestamps.
+Why, in groups. **`products.checksum`** — build plan T2.3 keys the distillation cache on "`updated_at` + checksum" and T2.2's reconciliation sweep diffs on a checksum (main §14.3.8); neither is buildable without it. **`prompt_version` / `model_id` on the two LLM artefacts** — invariant 25 says every artefact is stamped with both, and §13's sketches list them on `optimize_recommendations` but not on `product_facts` or `personas`, which are equally LLM output. **`personas.product_categories`** — §6.5's own output schema contains it. **`opportunities.limited_intelligence`** — §7.11 makes it a property of the row, §14.7's `opportunity_detected` event carries it, and the frozen `Opportunity` contract declares it. **`gsc_conns.invalidated_at`** — main §14.4 requires a refresh failure to raise a reconnect prompt while the content pipeline continues; recording when the token was found dead is what makes that reminder idempotent, exactly as `shopify_conns.invalidated_at` does for Shopify (DECISIONS 2026-08-27 T0.3). The remaining timestamps are sync/compute bookkeeping the sweeps need.
+Nearest spec: main §13 (sketches only), §6.3, §6.5, §7.11, §14.3.8, §14.4; invariant 25.
+
+## 2026-08-31 — T2.0 — Wave-2 tables key on internal uuids; external ids are unique columns
+Decision: `products`, `store_pages`, `keywords`, `competitors`, `opportunities` and friends carry a `uuid` primary key. Shopify's product id, a store URL and a competitor domain are `NOT NULL` columns under a unique index scoped to the account, never the key itself.
+Why: main §13 sketches `products` as "account_id, product_id, …", which reads as a composite key on the vendor's identifier. Foreign keys from `product_facts`, `top_products` and `products.family_id` would then all carry the account id and the vendor id, and a vendor that renumbers (or a second platform after V1) would rewrite every child row. The uniqueness main §13 actually asks for is preserved as an index, which is what the constraint tests assert.
+Nearest spec: main §13 — sketches column lists, states no keys.
+
+## 2026-08-31 — T2.0 — GSC daily rows are keyed on all four dimensions, none nullable
+Decision: `gsc_query_daily`'s primary key is `(account_id, date, page, query, device, country)`, with `device` and `country` `NOT NULL`. `gsc_daily` is keyed `(account_id, date, page)`. `ctr_curve` is keyed `(account_id, fitted_at)` so weekly refits accumulate.
+Why: main §12.2 requests exactly those four dimensions from the Search Analytics API, so a row is one full bucket of them. §13 marks `device?` and `country?` optional, but a nullable column inside a key silently permits duplicates — Postgres treats nulls as distinct — which is the same failure mode that made `notifications.dedupe_key` `NOT NULL` in wave 1. `ctr_curve` keeps history because §13 lists `fitted_at` as a column and §7.3 refits weekly; the live curve is the newest row.
+Nearest spec: main §12.2, §13, §7.3 — none states a key.
+
+## 2026-08-31 — T2.0 — Three wave-2 tables have no account, extending the `SystemScope` exemption
+Decision: `serp_snapshots` (no `account_id`), `rules_overrides` (nullable) and `spend_events` (nullable) join the wave-1 account-less set documented on `SystemScope` in `packages/db/src/scope.ts`.
+Why: CLAUDE.md says "there is no unscoped table access outside migrations and admin scripts", and DECISIONS 2026-08-27 T0.3 already flagged that the rule has no case for genuinely account-less tables. Each of these three is one: a SERP snapshot is keyed on canonical request parameters so two stores asking the same question in the same locale don't pay DataForSEO twice (main §12.1); a rules override is global or per-locale in V1 (main §7.10); preview spend happens before an account exists (main §14.7). Recorded rather than resolved — the repositories are not written by this card, and the durable fix named in remediation D5 is still open.
+Nearest spec: CLAUDE.md code-structure rules vs main §12.1, §7.10, §14.7.
+
+## 2026-08-31 — T2.0 — `ttl` and `body_ref` are realised as `expires_at` and compressed bytes
+Decision: `serp_snapshots.ttl` becomes `expires_at timestamptz`; `store_pages.body_ref` becomes `body_compressed bytea`, and `products.raw_body_html` is `bytea` too. A `bytea` column builder is declared once in `packages/db/src/schema/columns.ts`.
+Why: the same reasoning wave 1 applied to `request_cache` — an instant is directly indexable and sweepable, where a duration has to be added to a timestamp on every read. tech §2.1 rules out any blob store ("Postgres is the cache") and says both bodies are compressed, so there is nothing for a "ref" to point at. drizzle-orm 0.38 has no `bytea` builder, hence the one custom type.
+Nearest spec: main §13; tech §2.1; DECISIONS 2026-08-27 T0.3 (`response_ref` → `response_json`).
+
+## 2026-08-31 — T2.0 — `signal_type` enum values are the keys of `signals.config.yaml`, verbatim
+Decision: the 18 values of the `signal_type` Postgres enum are copied from `defaults.signals` in `packages/rules/signals.config.yaml` — including `missing_or_weak_metadata` and `wrong_canonical_or_duplicate`, which main §7.3 writes as "Missing / Weak Metadata" and "Wrong Canonical / Duplicate".
+Why: main §7.6 requires "a closed enum matching §7.3", but §7.3 gives display names, not identifiers. Detection looks a signal's thresholds up by key, so a row whose `signal_type` names no config key has no thresholds to be judged by. Making the two lists the same list means a mismatch is a compile-or-insert failure rather than a silently unconfigured signal. Consequence: adding a signal is a migration plus a config edit, together.
+Nearest spec: main §7.3, §7.6, §7.10.
+
+## 2026-08-31 — T2.0 — `recommended_action` is stored lower-case, and confidence is stored as a number
+Decision: the `recommended_action` enum is `create | optimize | refresh | fix | hold`, as main §13 spells it. `opportunities.confidence` is an integer 0–100; there is no stored band column.
+Why: the frozen contract `Opportunity` (`packages/core/src/contracts/opportunities.ts`) uses upper-case `CREATE | OPTIMIZE | …` and carries both `confidenceScore` and a `confidence` band. DECISIONS 2026-08-31 T0.7 settled that where the table and the contract differ, the table is authoritative and the producing card maps — this is that case, and it is two `toLowerCase()`-shaped lines in Lane C's producer. The band is not stored because §7.6 puts its cut-points in config ("bands: high ≥ 70, medium 40–69, low < 40. The numbers are config"), and a stored band would be a threshold literal frozen into data — invariant 9 in spirit.
+Nearest spec: main §13, §7.6, §7.10; DECISIONS 2026-08-31 T0.7.
+
+## 2026-08-31 — T2.0 — The wave-2 constraint suite is its own file and its own test database
+Decision: `packages/db/src/constraints-wave2.test.ts`, using `setupTestDb('constraints_wave2')`, keeping the wave-1 file untouched. `truncateAll` now truncates both waves.
+Why: DECISIONS 2026-08-27 T0.4 gives each integration suite its own database because vitest runs files in parallel and two suites truncating shared tables produce failures that look like constraint bugs. The wave-1 suite's fail-loudly-when-no-database ending is repeated verbatim rather than shared, so neither file can be made to skip by a change to the other.
+Nearest spec: tech §5, §6; DECISIONS 2026-08-27 T0.3, T0.4.
+
+
 ## 2026-08-31 — T0.7 — The OpenAPI document is generated from the zod route table, not maintained beside it
 Decision: `packages/core/src/api/routes.ts` is the single source of truth — method, path, request and response schemas, conflict codes, spec citation. `packages/core/openapi.json` is generated from it with zod 4's built-in `z.toJSONSchema()` and committed; `pnpm contracts:check` regenerates and diffs, failing on any difference.
 Why: T0.7's done-when asks for "zero shape mismatches between zod and OpenAPI". Two hand-maintained descriptions of one API agree only while someone is watching, and the drift is invisible until a frontend built against the document meets a backend built against the schemas. Generating one from the other makes a mismatch structurally impossible and turns the check into something with teeth: it catches a hand-edited document and a schema change nobody regenerated. zod 4 ships the JSON Schema converter, so this adds no dependency beyond zod itself.

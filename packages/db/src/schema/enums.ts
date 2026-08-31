@@ -119,3 +119,148 @@ export const webhookStatusEnum = pgEnum('webhook_status', [
   'failed',
   'ignored',
 ])
+
+// ───────────────────────── schema wave 2 (T2.0) ─────────────────────────────
+
+/**
+ * main §7.3 — "Required; closed enum matching §7.3" (§7.6). The values are the
+ * keys of `defaults.signals` in `packages/rules/signals.config.yaml`, copied
+ * verbatim: detection reads a threshold by signal key, so a row whose
+ * `signal_type` does not name a config key has no thresholds to be judged by.
+ */
+export const signalTypeEnum = pgEnum('signal_type', [
+  'striking_distance',
+  'low_ctr_at_strong_rank',
+  'content_decay',
+  'cannibalization',
+  'uncovered_commercial_query',
+  'existing_page_intent_gap',
+  'competitor_coverage_gap',
+  'product_family_coverage_gap',
+  'catalog_richness_gap',
+  'missing_or_weak_metadata',
+  'product_change_impact',
+  'broken_product_reference',
+  'internal_linking_gap',
+  'orphan_page',
+  'indexing_issue',
+  'wrong_canonical_or_duplicate',
+  'content_overlap',
+  'freshness_opportunity',
+])
+
+/** main §13 `opportunities` — what `entity_ref` points at. */
+export const opportunityEntityTypeEnum = pgEnum('opportunity_entity_type', [
+  'query_cluster',
+  'url',
+  'family',
+  'article',
+  'product',
+])
+
+/** main §7.4 — CREATE / OPTIMIZE / REFRESH / FIX / HOLD, spelled as §13 spells them. */
+export const recommendedActionEnum = pgEnum('recommended_action', [
+  'create',
+  'optimize',
+  'refresh',
+  'fix',
+  'hold',
+])
+
+/** main §7.9 — `new → accepted → scheduled → executing → completed | dismissed | blocked | expired`. */
+export const opportunityStatusEnum = pgEnum('opportunity_status', [
+  'new',
+  'accepted',
+  'scheduled',
+  'executing',
+  'completed',
+  'dismissed',
+  'blocked',
+  'expired',
+])
+
+/** main §7.6 — `impact_score` (0–100) is stored; the band is what the merchant sees. */
+export const impactBandEnum = pgEnum('impact_band', ['low', 'medium', 'high'])
+
+/** main §6.4 — the embeddings fallback is "flagged `confidence = low`". */
+export const confidenceBandEnum = pgEnum('confidence_band', ['low', 'medium', 'high'])
+
+/** main §13 `opportunity_tasks`, §7.5 step 6, §10.4. */
+export const opportunityTaskKindEnum = pgEnum('opportunity_task_kind', [
+  'title_rewrite',
+  'meta_rewrite',
+  'add_section',
+  'add_faq',
+  'internal_links',
+  'product_data',
+  'consolidate',
+  'primary_url',
+  'canonical_recommendation',
+  'schedule_topic',
+  'repair_reference',
+])
+
+export const opportunityTaskStateEnum = pgEnum('opportunity_task_state', [
+  'open',
+  'applied',
+  'skipped',
+])
+
+/** main §10.3 step 4 — a recommendation failing grounding twice is `failed_validation`, never a half-recommendation. */
+export const optimizeRecommendationStateEnum = pgEnum('optimize_recommendation_state', [
+  'valid',
+  'failed_validation',
+  'superseded',
+])
+
+/** main §7.5 — the three cadences a detection run happens on. */
+export const signalRunKindEnum = pgEnum('signal_run_kind', ['onboarding', 'weekly', 'event'])
+
+/** main §12.3 / §13 `store_pages`. `article_ours` is how §10.5 tells our content from the merchant's. */
+export const storePageTypeEnum = pgEnum('store_page_type', [
+  'collection',
+  'product',
+  'page',
+  'blog_article',
+  'article_ours',
+  'other',
+])
+
+/** main §8.7 — the intent class picks the content/page type. */
+export const intentClassEnum = pgEnum('intent_class', [
+  'buying_guide',
+  'comparison',
+  'how_to',
+  'informational',
+])
+
+/** main §6.4 — "Every family records which signal produced it … so misgroupings are debuggable". */
+export const familyGroupingSourceEnum = pgEnum('family_grouping_source', [
+  'collection',
+  'split_variant',
+  'fact_cluster',
+  'embedding',
+])
+
+/** main §13 `keywords` / `competitors` — auto-detected during ingestion, or added by hand at §6.8. */
+export const discoverySourceEnum = pgEnum('discovery_source', ['auto', 'manual'])
+
+/** main §13 `top_products` — the 90-day order aggregation, or a merchant override. */
+export const topProductSourceEnum = pgEnum('top_product_source', ['orders_api', 'manual'])
+
+/**
+ * The paid vendors behind the three instrumented wrappers of invariant 25
+ * (`packages/llm`, `SeoDataProvider`, `EmailProvider`). main §14.5's caps are
+ * computed over `anthropic` and `dataforseo`; `resend` is here because the
+ * ledger is append-only and a wrapper that already exists must not need a
+ * migration it is not allowed to add. See DECISIONS 2026-08-31 T2.0.
+ */
+export const spendVendorEnum = pgEnum('spend_vendor', ['anthropic', 'dataforseo', 'resend'])
+
+/**
+ * Recording a cost is an obligation of *making* the call, not of the call
+ * succeeding: both vendors bill for work performed. `docs/audits/remediation.md`
+ * D2 makes every failure path emit a record; this column is what tells the two
+ * apart afterwards.
+ */
+export const spendOutcomeEnum = pgEnum('spend_outcome', ['succeeded', 'failed'])

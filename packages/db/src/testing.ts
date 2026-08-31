@@ -93,9 +93,37 @@ const WAVE_1_TABLES = [
   'accounts',
 ] as const
 
+/** Every wave-2 table (T2.0), child-first, on the same terms. */
+const WAVE_2_TABLES = [
+  'spend_events',
+  'landing_revenue_daily',
+  'rules_overrides',
+  'dismissed_opportunities',
+  'signal_runs',
+  'optimize_recommendations',
+  'opportunity_tasks',
+  'opportunities',
+  'serp_snapshots',
+  'ctr_curve',
+  'query_clusters',
+  'gsc_query_daily',
+  'gsc_daily',
+  'gsc_conns',
+  'store_pages',
+  'competitors',
+  'keywords',
+  'top_products',
+  'personas',
+  'product_facts',
+  'products',
+  'product_families',
+] as const
+
+const ALL_TABLES = [...WAVE_2_TABLES, ...WAVE_1_TABLES] as const
+
 export async function truncateAll(pool: pg.Pool): Promise<void> {
   await pool.query(
-    `TRUNCATE TABLE ${WAVE_1_TABLES.map((t) => `"${t}"`).join(', ')} RESTART IDENTITY CASCADE`,
+    `TRUNCATE TABLE ${ALL_TABLES.map((t) => `"${t}"`).join(', ')} RESTART IDENTITY CASCADE`,
   )
 }
 
@@ -110,6 +138,9 @@ export async function insertAccount(pool: pg.Pool, email: string): Promise<strin
 /** Postgres unique-violation. Asserting on the code beats asserting on a message. */
 export const UNIQUE_VIOLATION = '23505'
 export const CHECK_VIOLATION = '23514'
+export const NOT_NULL_VIOLATION = '23502'
+/** What `spend_events`' append-only trigger raises (migration 0003). */
+export const RESTRICT_VIOLATION = '23001'
 
 export function pgErrorCode(error: unknown): string | undefined {
   return typeof error === 'object' && error !== null && 'code' in error
