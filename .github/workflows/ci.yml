@@ -1,7 +1,12 @@
-# tech §5 — CI gates on every merge: typecheck, unit + integration tests, lint.
-# Eval suites, the signal-detection fixture suite, the nightly chaos test and the
-# PostHog provisioning check are added by the cards that create them (T0.2, T0.5,
-# T0.6).
+# tech §5 — CI gates on every merge: typecheck, unit + integration tests, lint,
+# and the PostHog provisioning script in check mode (drift between the repo
+# definitions and the live project fails the build).
+#
+# Two suites run on their own cadence rather than per-merge, because both cost
+# real money or real time: `pnpm eval` (main §14.2's frozen eval sets, gated on
+# prompt or model changes) and `pnpm chaos` (main §14.3.9, nightly). The
+# signal-detection fixtures (main §7.8) are plain unit tests and run with the
+# rest. Playwright (`pnpm e2e`, tech §6) runs against a deployed environment.
 name: CI
 
 on:
@@ -65,5 +70,50 @@ jobs:
       - name: Tests
         run: pnpm test
 
+      - name: PostHog dashboards-as-code check
+        run: pnpm posthog:check
+
       - name: Build
         run: pnpm build
+
+  # main §14.2 — "run in CI on any change to a prompt file or model ID — deploy
+  # blocks on failure". Gated on the paths that can change a model's behaviour.
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: changed
+        name: Did a prompt or a model id change?
+        run: |
+          base="origin/${{ github.base_ref }}"
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+          if git diff --name-only "$base"...HEAD | grep -Eq '^packages/llm/(prompts/|src/models\.ts)|\.eval/'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: pnpm/action-setup@v4
+        if: steps.changed.outputs.run == 'true'
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        if: steps.changed.outputs.run == 'true'
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+        if: steps.changed.outputs.run == 'true'
+
+      - name: Prompt eval suite
+        if: steps.changed.outputs.run == 'true'
+        run: pnpm eval
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

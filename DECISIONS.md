@@ -16,6 +16,46 @@ Class (filled by audit): a: fine as-is | b: promote to spec | c: contradicts spe
 
 (entries below, newest first)
 
+## 2026-08-31 — T0.6 — Eval, chaos and Playwright are separate vitest/Playwright gates, not part of `pnpm test`
+Decision: `pnpm eval` (`vitest.eval.config.ts`, `*.eval.spec.ts`), `pnpm chaos` (`vitest.chaos.config.ts`, `*.chaos.spec.ts`) and `pnpm e2e` (Playwright, `*.e2e.spec.ts`) each run on their own config; the per-merge `pnpm test` excludes all three.
+Why: tech §5 gives each a different cadence — evals "when prompts/models changed", the chaos test "nightly", Playwright against a deployed environment — and each has a different cost. Evals call the model and spend money; a chaos scenario restarts a full synthetic run several times. Folding them into the per-merge run would either make every merge slow and billable, or make them optional in practice. Separate configs reuse the runner we already have rather than adding tooling.
+Nearest spec: tech §5, §6; main §14.2, §14.3.9.
+
+## 2026-08-31 — T0.6 — The chaos harness kills at scenario-declared checkpoints, and tightens its kill point to fit the run
+Decision: a scenario's driver calls `ctx.checkpoint(label)` wherever a worker could realistically die; the harness draws one of those points with a seeded PRNG, throws `WorkerKilled` there, and re-runs the driver from the top until a pass survives. If a draw overshoots the run's length, the harness tightens its ceiling to the observed count and retries rather than counting an uninterrupted pass as a kill.
+Why: §14.3.9 says "kills workers at random points" without saying how. Killing at arbitrary instants would need process-level interruption and would produce failures that are not reproducible; a failing chaos run that cannot be replayed is not actionable. Declared checkpoints make the kill points meaningful (after a page write, between publish intent and execute) and the seed makes a failure reproducible. The tightening rule exists because the first version silently spent its kill budget on kills that never fired — the harness reported a clean run as a chaos run, which is exactly the "reports green while proving nothing" failure the test exists to prevent.
+Nearest spec: main §14.3.9.
+
+## 2026-08-31 — T0.6 — The §7.8 fixtures carry evidence, never the expected opportunity
+Decision: each of the eight scenarios in `packages/core/src/fixtures/scenarios.ts` supplies the store and the GSC rows the spec's table states, plus `expectedAction` recorded as documentation. Detection results are not asserted here; Lane C's card adds those assertions.
+Why: §7.8 calls these "acceptance fixtures — each becomes a unit test over a synthetic store". If the fixture also encoded the answer, the implementation could be written to satisfy the fixture rather than the spec, and the fixture would stop being independent evidence. One assertion is made now: scenario 7's store genuinely fails main §8.2's substance floor, read from `packages/rules`. Without it the generator could drift into producing substance and "HOLD" would quietly become the wrong expected answer.
+Nearest spec: main §7.8, §8.2.
+
+## 2026-08-31 — T0.6 — Fixture shapes are their own types, not the wave-2 schema
+Decision: `SyntheticProduct`, `SyntheticFamily` and `SyntheticGscRow` are declared in the fixtures module, independent of the `products` / `product_facts` / `gsc_query_daily` tables, which schema wave 2 (T2.0) has not created.
+Why: T0.6 is required to ship fixtures for scenarios 1–8 before the tables they will eventually populate exist. Waiting would block the card; inventing the tables would be a migration outside a schema wave (the rule T0.4 already bent once). The mapping from fixture to row is written by the cards that add the tables. The cost is one mapping layer; the alternative is either a blocked card or a second process violation.
+Nearest spec: main §13; CLAUDE.md migration rule; build plan T0.6, T2.0.
+
+## 2026-08-31 — T0.6 — An eval set with cases but no registered runner fails; an empty set passes
+Decision: `runEvalSet` returns pass for a set with zero cases, and fail for a set with cases whose `runner` key is absent from `EVAL_RUNNERS`. A case with an input file and no gold file is a load-time error.
+Why: §14.2 makes eval sets a deploy gate, so the failure modes that matter are the silent ones. An empty set claims nothing and should not fail the build — that is M0's honest state. A set with fifty cases and no runner is a suite that has stopped running, which must look like a failure, not a pass. A case missing its gold file is the same hazard in miniature.
+Nearest spec: main §14.2.
+
+## 2026-08-31 — T0.6 — F1 is scored on `field=value` pairs; hard fails are checked per case
+Decision: `fieldF1` compares `field=value` pairs rather than field names, and the runner checks fabrication (distillation) and false passes (judge) per case, outside the aggregate.
+Why: §14.2 requires "zero inferred-fact violations (any fabricated field value = hard fail)" and "no draft that humans failed is graded as passing". Comparing field names would score "said the material is leather when it is nylon" as a correctly-populated field. Folding either check into the aggregate would let a high average absorb exactly the violation the spec refuses to tolerate — the runner's own tests assert both: a fabrication fails a set whose F1 is above the bar, and a false pass fails a set whose MAE is zero.
+Nearest spec: main §14.2.
+
+## 2026-08-31 — T0.6 — The PostHog provisioner fails when definitions exist but credentials do not
+Decision: `--check` passes on an empty definitions directory, and fails when definitions are declared but `POSTHOG_PERSONAL_API_KEY` / `POSTHOG_PROJECT_ID` are unset. The `--apply` writer is not implemented; it lands with T8.4, the card that adds the first dashboards.
+Why: tech §5 makes drift a build failure. Passing when credentials are missing means the build stops noticing drift the moment someone forgets a secret — the check would still be green and would be proving nothing. An empty directory is different: nothing is declared, so nothing can have drifted, and saying so is honest.
+Nearest spec: main §14.7, tech §5.
+
+## 2026-08-31 — T0.6 — The Playwright scaffold starts its own dev server unless pointed at a deployment
+Decision: `apps/web/playwright.config.ts` runs `next dev` with `WORKER_ENABLED=false` against a seeded database, unless `E2E_BASE_URL` is set, in which case it tests that deployment and starts nothing. `pnpm db:seed` writes one deterministic development account. Browsers are not installed by `pnpm install`.
+Why: tech §6 puts Playwright "against staging", but tech §2.1 makes staging on-demand, so a local run needs its own server or the suite is unrunnable between staging spin-ups. The worker is disabled because the in-process worker would pick up jobs mid-test and change state the flows are asserting (tech §2.1). The seed is deterministic because a UI test that asserts "4 families" must get the same four families each run. Browsers are left out of install because they are a ~400 MB download that every `pnpm install` would otherwise pay for.
+Nearest spec: tech §6, §2.1, §5.
+
 ## 2026-08-31 — T0.5 — Provider interfaces live in `packages/core/contracts`, implementations in their own packages
 Decision: `LlmClient`, `SeoDataProvider`, `EmailProvider`, `PosthogCapture` and `RequestCache` are declared in `packages/core/src/contracts/`; `AnthropicLlmClient` lives in `packages/llm`, the DataForSEO / Resend / PostHog adapters in `packages/providers`, and `PostgresRequestCache` in `packages/db`.
 Why: the build plan §4 already names those four as contracts "in `packages/core/contracts/`", and T0.7 fills that directory with the rest of the seams. Putting the ports there now means `packages/llm` and `packages/providers` depend on the behaviour rather than on each other, and nothing has to be moved in T0.7. It also keeps the boundary test honest: `core` declares the interfaces and imports no SDK.

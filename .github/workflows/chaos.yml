@@ -1,0 +1,52 @@
+# main §14.3.9 — "a chaos test in CI kills workers at random points during a full
+# synthetic ingestion + publish run and asserts the end state … This test is the
+# specification's teeth; without it, the guarantees above rot silently."
+#
+# tech §5 runs it nightly rather than per-merge: each scenario restarts a full
+# synthetic run several times.
+name: Chaos
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  chaos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: sortiva
+          POSTGRES_PASSWORD: sortiva
+          POSTGRES_DB: sortiva_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sortiva -d sortiva_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgres://sortiva:sortiva@localhost:5432/sortiva_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Chaos scenarios converge
+        run: pnpm chaos
