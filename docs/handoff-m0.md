@@ -1,4 +1,4 @@
-# M0 handoff — partial milestone
+# M0 handoff — milestone complete
 
 Written for two readers: the founder, who decides but does not read the code or
 the specs, and the integrator agent, which does. Every spec section number here
@@ -8,31 +8,31 @@ is evidence you can check, never the explanation itself.
 
 ## Status
 
-**Cards T0.1 through T0.4 are complete and committed. T0.5, T0.6 and T0.7 were
-not started.** The session stopped at the founder's request after T0.4.
+**Cards T0.1 through T0.7 are complete and committed. M0 is done.** Eight
+commits on `main`, one per card plus this document. The repository has no git
+remote.
 
-A *card* is one unit of work from the build plan, with its own checkable
-"done when" criteria. T0.7 is M0's **exit gate** — the card whose job is to prove
-the milestone as a whole. It has not run, so **M0 is not complete**, and none of
-the parallel workstreams that depend on it should start yet.
+T0.7 was the milestone's **exit gate** — the card whose job is to prove M0 as a
+whole. It passed, which means the parallel workstreams can start: five lanes can
+now build against frozen interfaces instead of against each other.
 
-Five commits on `main`, one per card plus this document. The repository was
-created (`git init`) at the start of this session; there is no remote.
+**361 automated tests pass.** Code style, type checking, the production build,
+and five separate enforcement gates are all clean.
 
 ---
 
 ## What needs your decision
 
-Three things. None blocks anything today; all three get harder to change later.
+Four things. None blocks anything today; all four get harder to change later.
+The first three carried over from the previous handoff and are unchanged.
 
 ### 1. Nine numbers I invented because the specs mandate the knob and state no value
 
 The specs say "there is a configurable threshold here" and never say what it
-should be. The card required those settings to exist, so I picked starting
-values, marked each one `UNSIGNED` in the file, and recorded why in the decision
-journal. They currently sit in `packages/rules/signals.config.yaml` and **nothing
-reads them yet**, so each is a one-line edit until the features that consume them
-get built.
+should be. I picked starting values, marked each one `UNSIGNED` in the file, and
+recorded why in the decision journal. They sit in
+`packages/rules/signals.config.yaml` and **nothing reads them yet**, so each is
+a one-line edit until the features that consume them get built.
 
 The one that matters most:
 
@@ -56,11 +56,9 @@ The rest, briefly:
 - **Spend caps: $5/day per store on AI generation, $50/day total on DataForSEO**
   (the keyword-data vendor), **$10/day on the public preview.** These are
   loud-failure ceilings that pause work, not budgets — a $89/mo plan earns about
-  $2.90/day, so $5 means something has gone badly wrong. The preview cap is
-  deliberately tight because the spec says this tripping at all means the
-  anti-abuse measures are being defeated.
-- **Intent-gap analyses: 10 per store per day.** A cap on an AI analysis the spec
-  requires be capped without saying at what.
+  $2.90/day, so $5 means something has gone badly wrong.
+- **Intent-gap analyses: 10 per store per day.** A cap the spec requires without
+  saying at what.
 - **"Impressions not collapsed": 0.5.** When judging whether a page improvement
   worked, we don't credit a CTR gain if impressions halved.
 
@@ -84,8 +82,7 @@ It landed as `0001_wave1_addendum_job_dlq.sql`, minutes after wave 1, in the sam
 milestone, by the same session — so no other agent could have been affected.
 
 **What I need:** the integrator either folds it into wave 1 or accepts it as a
-small extra wave. Nothing about the code changes either way. Flagging it because
-bending a process rule quietly is how the rule stops meaning anything.
+small extra wave. Nothing about the code changes either way.
 
 ### 3. Four quality-bar numbers live somewhere my card didn't authorise
 
@@ -96,16 +93,30 @@ facts*. The others need 3. The writer gets exactly one revision attempt.
 
 Those four numbers **are** the quality bar. The house rule is that every threshold
 lives in one config file, never hardcoded, so the standards are reviewable in one
-place and every article records which version of the rules judged it.
-
-My card listed which spec sections' numbers to move into that file, and the
-draft-grading section wasn't on the list. But there is no other home for them. Had
-I left them out, the content-engine work would hardcode `if (informationGain < 4)`
-— and the automated check that catches stray thresholds only recognises SEO field
-names like *position* and *impressions*, not judge scores. It would sail through.
+place. My card listed which spec sections' numbers to move into that file, and
+the draft-grading section wasn't on the list. But there is no other home for them,
+and the automated check that catches stray thresholds only recognises SEO field
+names, not judge scores — so leaving them out would have let them be hardcoded
+invisibly.
 
 **What I need:** keep or revert. Reverting is deleting one block from the config
 and one from its schema; nothing reads them yet.
+
+### 4. What we assume DataForSEO charges (new)
+
+DataForSEO is the vendor we buy keyword and search-results data from. They bill
+per request, at different rates per endpoint. Two things depend on knowing those
+rates: the daily spend cap that pauses work when something runs away, and the
+"what is this store costing us" reporting.
+
+I put three prices in the code — 5¢ per keyword-volume lookup, 0.2¢ per
+search-results check, 1.1¢ plus 0.01¢ per row for a competitor's ranked keywords
+— marked them **UNSIGNED**, and made an unpriced endpoint fail loudly rather than
+report zero. They set the *scale* of the $50/day cap; if they're wrong by 10×,
+the cap is wrong by 10× and nobody would notice until the bill arrived.
+
+**What I need:** the real figures from your DataForSEO account, before the first
+production spend. Nothing needs them before then.
 
 ---
 
@@ -113,15 +124,14 @@ and one from its schema; nothing reads them yet.
 
 A working repository: eight packages laid out as the constitution requires, a
 Next.js app that builds, a Postgres 16 database with the first wave of tables
-applied, and a background-job runtime that survives being killed mid-work.
-
-**181 automated tests pass.** Code style, type checking and the production build
-are all clean.
+applied, a background-job runtime that survives being killed mid-work, one
+instrumented path to each outside vendor, four test harnesses, and every seam
+between the parallel workstreams frozen as a typed interface.
 
 The point of this milestone was *enforcement before features* — building the
 machinery that turns "did the agent remember the rules?" into a build failure, so
 it stops being a matter of vigilance for the rest of the project. That part is
-real now:
+real:
 
 - A hardcoded threshold number outside the one config file **fails the build**.
   Not by convention — the build plants a violation on every run and fails if it
@@ -129,23 +139,27 @@ real now:
 - The core domain package **cannot import** the web framework or any vendor SDK;
   a test proves it by reading every source file.
 - A database query that forgets to scope itself to one account **does not
-  compile**. Account scope is a special type that only one function can create,
-  so passing a bare id — which is exactly what a malicious request body would
-  supply — is a type error.
+  compile**. Account scope is a special type that only one function can create.
 - Two accounts cannot claim the same domain, a webhook cannot be processed twice,
   a Stripe event cannot be double-counted, and a notification cannot be sent
-  twice — each enforced by the database itself, not by application code that
-  someone could forget to call.
-- A background job killed halfway through resumes where it stopped rather than
-  starting over, and re-running work that already finished returns the stored
-  result instead of paying for it again.
+  twice — each enforced by the database itself.
+- A background job killed halfway through resumes where it stopped, and
+  re-running work that already finished returns the stored result instead of
+  paying for it again.
+- **An AI call or a paid data lookup cannot escape cost tracking** — the vendor
+  SDKs can only be imported inside their one wrapper, and importing them anywhere
+  else is a build failure.
+- **A vendor token cannot reach a log line.** Secrets are redacted by shape, by
+  field name, and by exact value — every secret the app reads at startup is
+  registered with the redactor.
+- **The API and its documentation cannot disagree**, because the documentation is
+  generated from the same definitions the code uses, and a stale copy fails CI.
 
 ---
 
 ## Evidence, card by card
 
-Each card carries "done when" criteria written before the work. Here is what
-actually happened against each.
+Each card carries "done when" criteria written before the work.
 
 ### T0.1 — Repo skeleton, package boundaries, lint, CI · `9fd5854`
 
@@ -157,29 +171,22 @@ actually happened against each.
 | Continuous integration passes on the empty app | **PASS, run locally** |
 | Railway config deploys the app and database to a throwaway environment | **PARKED** |
 
-The first two are proved by a script that writes the two forbidden patterns into
-throwaway files on every build and fails if the checker lets either through —
-so the protection can't quietly stop working months from now.
+The first two are proved by a script that writes the forbidden patterns into
+throwaway files on every build and fails if the checker lets either through — so
+the protection can't quietly stop working months from now.
 
 "Run locally" is a real caveat: there is no git remote, so GitHub's servers have
 never executed the pipeline. I ran each of its steps by hand instead.
 
-**Parked, and why:** the Railway deploy. Railway is your hosting provider, and
-your account is authenticated in this session, but deploying creates real
-infrastructure that bills you. I asked; you said leave it. The configuration file
-is written and committed — one application service with memory capped so a leak
-crashes loudly instead of quietly inflating the bill, a health check, and no
-scale-to-zero (the public preview page is the top of the funnel and a cold start
-would kill it). The database service is created from Railway's own template
-because Railway cannot declare databases in repository config.
-
-**Nothing downstream depends on this.** It needs you to authorise the spend.
+**Parked, and why:** the Railway deploy. Deploying creates real infrastructure
+that bills you. I asked; you said leave it. The configuration file is written and
+committed. **Nothing downstream depends on this.**
 
 ### T0.2 — Rules & config module · `1dbaf87`
 
-Every threshold number the product uses now lives in one file with its source
-noted beside it, and that file's fingerprint is stamped on every decision the
-system makes — so you can always ask "which version of the rules produced this?"
+Every threshold number the product uses lives in one file with its source noted
+beside it, and that file's fingerprint is stamped on every decision the system
+makes — so you can always ask "which version of the rules produced this?"
 
 | Criterion | Result |
 |---|---|
@@ -190,12 +197,12 @@ system makes — so you can always ask "which version of the rules produced this
 
 117 tests. The malformed-config cases include a typo'd key name, which matters
 more than it sounds: without that check, misspelling a setting would silently
-mean it was never applied and the default silently governed instead.
+mean it was never applied.
 
 ### T0.3 — Schema wave 1 + constraint tests · `4ac2d17` · **needs audit**
 
-All 16 first-wave database tables — accounts, billing, domains, the preview
-cache, Shopify connections, job tracking, kill switches, notifications and email.
+All 16 first-wave database tables. 21 tests against a real Postgres 16.15, not a
+simulation — a constraint asserted in TypeScript is not a constraint.
 
 | Criterion | Result |
 |---|---|
@@ -205,20 +212,9 @@ cache, Shopify connections, job tracking, kill switches, notifications and email
 | A repeated notification conflicts | **PASS** |
 | A query without an account scope fails to compile | **PASS** |
 
-21 tests against a real Postgres 16.15, not a simulation — a constraint asserted
-in TypeScript is not a constraint.
-
-The compile-failure proof works by writing deliberately-wrong code annotated as
-"this line must not compile". If any of them ever *does* compile, the type checker
-reports the annotation as unnecessary and the build fails. A clean type check is
-therefore the proof.
-
 ### T0.4 — Worker runtime & step state machine · `776d4b5` · **needs audit**
 
-The machinery that makes background work safe to interrupt. Store ingestion is a
-sequence of steps — detect the platform, sync the catalog, distill products,
-group them into families, build the store's profile, find keywords — and any of
-them can fail or be killed by a deploy.
+The machinery that makes background work safe to interrupt. 39 tests.
 
 | Criterion | Result |
 |---|---|
@@ -230,16 +226,119 @@ them can fail or be killed by a deploy.
 | Failed-for-good jobs land in a queue carrying enough to re-run them | **PASS** |
 | A shutdown signal lets in-flight work finish | **PASS** |
 
-39 tests. Two worth calling out:
+The resume test syncs a five-page catalog, crashes at page three, and proves
+pages one to three are **not** fetched again. The shutdown test starts a real job
+queue, signals the process mid-job, and confirms the job finished (401 ms) and
+left the queue empty before exit.
 
-The resume test syncs a five-page catalog, crashes at page three, and then proves
-pages one to three are **not** fetched again — which is what stops a retry from
-re-paying for AI work already done.
+### T0.5 — Provider wrappers · `c6cb4d3` · **needs audit**
 
-The shutdown test starts a real job queue, gives it a slow job, signals the
-process mid-job, and confirms the job finished (401 ms) and left the queue empty
-before exit. The ±20% spread on retries exists so that when a vendor comes back
-from an outage, every waiting job doesn't stampede it simultaneously.
+One instrumented path to each outside vendor — the AI model, the keyword-data
+vendor, email, analytics — so no piece of code can call them without being
+counted. Plus encryption for the access tokens we hold on merchants' behalf, and
+a redactor that keeps secrets out of logs. 64 tests.
+
+| Criterion | Result |
+|---|---|
+| A crash after the vendor answered replays without paying twice | **PASS** — proved separately for the AI model and the data vendor |
+| A retried AI call replays the identical answer rather than re-rolling it | **PASS** |
+| A replayed call is recorded as costing zero | **PASS** |
+| A token never reaches log output | **PASS** — message, field, nested field, and stack trace |
+| The fake vendors used in tests account for what real ones would have cost | **PASS** |
+
+Two things here are worth your attention.
+
+**Cached AI answers are recorded at zero cost, deliberately.** If a job crashes
+after the model answered, the retry replays the stored answer. Charging that
+replay to the store again would make the cost dashboards — the thing the spend
+caps are set from — wrong in the direction of panic. It also means a resumed job
+cannot get a *different* answer than the run it is resuming, which matters when
+the answer is the store's business profile.
+
+**The tokens we hold are encrypted with a per-row key.** Each merchant's Shopify
+token gets its own encryption key, and that key is itself encrypted by a master
+key held in the deploy secrets. Rotating the master key then means re-encrypting
+one short key per row rather than every token — and the code can tell you which
+rows are still on the old key.
+
+**Analytics is PostHog only. Sentry is not wired**, per your instruction.
+
+### T0.6 — Test harnesses · `10f2490`
+
+The four suites the specs require, each running on its own schedule, all green
+before there is anything for them to test — so the cards that add real cases only
+have to add cases. 31 tests.
+
+| Criterion | Result |
+|---|---|
+| The crash-injection harness runs an empty scenario green | **PASS** |
+| The AI evaluation runner runs with no sets declared | **PASS** |
+| The eight worked scenarios generate identical data every run | **PASS** |
+| The analytics provisioning check passes on an empty definitions folder | **PASS** |
+
+**The crash-injection harness** is the one the spec calls "the specification's
+teeth". It runs a piece of work, kills it at a randomly chosen moment, restarts
+it from the top, and repeats — then checks that the end state is identical to a
+run that was never interrupted, and that nothing was paid for twice.
+
+Worth telling you plainly: **my first version of it was broken in a way that
+would have reported green while proving nothing.** It picked a moment to kill the
+work before knowing how long the work was, so when it picked a moment past the
+end, nothing was killed and the run was reported as a successfully-survived chaos
+run. A test caught it, the harness now narrows its aim to fit the run, and a
+regression test holds that.
+
+**The eight scenarios** are the spec's own worked examples — a page ranking at
+position 7.3 with 9,402 impressions, a page that slid from 3.8 to 7.1 over three
+months, a store whose product descriptions are all marketing copy. Each generates
+a complete fake store, identically every time. They carry the *evidence* but not
+the *expected answer*: the answer is what the Opportunity Engine has to work out,
+and a fixture that also contained it would let the engine be written to match the
+fixture rather than the spec.
+
+**The exception is scenario 7**, where one assertion is made: that store must
+genuinely fail the substance floor. If the generator ever drifts into producing
+well-specified products there, "hold this topic back" would silently become the
+wrong expected answer, and the scenario would stop testing anything.
+
+### T0.7 — Contracts & API schemas · `fb2e02a` · **M0 exit gate**
+
+The point where the project stops being serial. Every place where one
+workstream's output becomes another's input is now a written interface with a
+stand-in implementation, and every API endpoint has a defined request and
+response. 85 tests.
+
+| Criterion | Result |
+|---|---|
+| Every contract has a stand-in and sample data | **PASS** — 6 seams |
+| The API definitions and the API documentation agree | **PASS** — 55 routes |
+| A mock server answers every route with a valid response | **PASS** |
+| The stand-in report lists all of them | **PASS** — 6, as expected |
+
+**The check found a real inconsistency on its first run.** I had classified
+"your subscription isn't active" as the same kind of error as "someone else
+changed this while you were looking at it". They are not: one is a state
+conflict, the other is a payment state. The check noticed that one error code was
+declared but unreachable, which is exactly the symptom. Fixed.
+
+**The stand-in report is the thing to keep an eye on.** Six pieces of the system
+are currently fake. The most dangerous is the one that checks, before writing a
+new article, whether the store already has a page that could rank for that
+search — the rule the spec calls "the single most important in the merge". While
+it is fake it always answers "no such page", so every article looks unopposed.
+Nothing about the product would appear broken. Each stand-in records which card
+replaces it and the milestone by which it must be gone, and the report can fail
+the build per milestone.
+
+**Two product rules are now impossible to break by accident**, because the API
+has no field to break them with:
+
+- No count anywhere can carry a denominator or a target. The daily article cap is
+  a ceiling, not a promise, so there is no "3 of 30" to render — there is no
+  field to put the 30 in.
+- Every user-facing explanation ("why is this being suggested?") is a template
+  name plus numbers, never a sentence. An AI cannot write one, because there is
+  nowhere to put a sentence.
 
 ---
 
@@ -249,10 +348,10 @@ The build plan flags certain cards for a cold read by a *different* session
 before anything is built on top of them — the reasoning being that the session
 that wrote the code will rationalise the spec as whatever it built.
 
-**T0.3 and T0.4 are both flagged and neither has been audited.** T0.5 is also
-flagged and wasn't started.
+**T0.3, T0.4 and T0.5 are all flagged and none has been audited.** All three now
+have work built on top of them, so the audits are overdue rather than pending.
 
-The five things most worth attacking, in order:
+The seven things most worth attacking, in order:
 
 1. **Where "have I already done this work?" is recorded.** Each unit of work gets
    a fingerprint derived from its inputs, and finished work is recognised by that
@@ -266,21 +365,28 @@ The five things most worth attacking, in order:
    mechanism; I used a different one, because the named one cannot coexist with
    saving progress mid-job. Check the release paths in particular — a lock that
    leaks stalls a store silently and forever.
-3. **The system-scope escape hatch.** Five tables genuinely have no account
+3. **Whether the cost accounting is actually complete.** Every AI call and paid
+   lookup is supposed to be counted. The lint rule proves the *SDKs* can't be
+   imported elsewhere; it does not prove every code path through the wrapper
+   emits a cost event. Check the paths where a call fails partway.
+4. **The system-scope escape hatch.** Five tables genuinely have no account
    attached when they're written. Verify that's actually true of all five rather
    than a convenient story.
-4. **The step ordering graph.** Where the Search Console step sits is a judgement
+5. **The step ordering graph.** Where the Search Console step sits is a judgement
    call: it must run after keyword discovery but must never block onboarding when
    a merchant skips it.
-5. **Whether any threshold escaped into code anyway.** The automated check matches
+6. **Whether any threshold escaped into code anyway.** The automated check matches
    field *names*; a number reaching a comparison through a differently-named
    intermediate variable is not caught.
+7. **Whether the 55 API routes are the right 55.** They were derived from the UI
+   spec's screens, which describe surfaces and states rather than endpoints. A
+   missing route is a lane discovering mid-build that its seam was never frozen.
 
 ---
 
 ## Contradictions I surfaced rather than resolved quietly
 
-Four places where the instructions, the specs and reality didn't line up.
+Six places where the instructions, the specs and reality didn't line up.
 
 **"Make `.env` identical with empty values" vs. not breaking a fresh clone.**
 Blanking the local database address and the "use the fake vendor, don't spend
@@ -292,8 +398,7 @@ files' key lists ever drift apart.
 account.** A webhook is verified and stored before we know whose it is; a preview
 happens before signup; the shared cache is keyed by request, not by customer.
 Rather than carve a hole in the rule, those five take a different scope type that
-carries a written reason — so system-level access is explicit and greppable
-instead of merely absent.
+carries a written reason.
 
 **Two spec requirements that cannot both hold.** The concurrency section names a
 lock that lasts for one database transaction; the resumability section requires
@@ -303,45 +408,58 @@ commits is not progress. I took the concurrency section's own escape clause
 
 **The dead-letter table and the schema-change process** — item 2 above.
 
+**The spec asks for PostHog's automatic AI-call tracking, and for three things it
+cannot do.** The automatic version hooks into the AI client and records each call
+as it happens. But the spec also requires that a *replayed* answer — served from
+cache after a crash, with no call made — be recorded, at zero cost. There is
+nothing for an automatic hook to catch. I record every call by hand instead, so
+live calls and replays go through one path. Same data, same property names, one
+code path.
+
+**Two harnesses had to be written before the things they test exist.** The eight
+worked scenarios need product and search-data tables that schema wave 2 will add;
+the frozen contracts describe opportunity records that the same wave will add.
+Waiting would have blocked both cards; inventing the tables would have broken the
+schema-wave rule a second time. Both define their own shapes, and the cards that
+add the tables map to them. The cost is one mapping layer each.
+
 ---
 
 ## The decision journal
 
-26 entries in `DECISIONS.md`, all dated 2026-08-27, none yet classified by an
-audit. Every choice the specs didn't dictate is recorded there with its reasoning
-and the nearest spec section, so an auditor can reconcile them later.
+61 entries in `DECISIONS.md`, none yet classified by an audit. Every choice the
+specs didn't dictate is recorded there with its reasoning and the nearest spec
+section.
 
-By card: **T0.1 (9)** covering build tooling, the custom rule-checking plugin, and
-environment files. **T0.2 (8)** covering the invented numbers and how the config
-layers by language. **T0.3 (9)** covering the database toolkit (**your decision,
-asked and answered in session — Drizzle**), the account-scope type, and five
-columns the data-model chapter doesn't list but the behaviour requires.
-**T0.4 (9)** covering the locking choice, the dead-letter table, the step
-ordering, and why scheduled jobs stay switched off until their handlers exist.
-
-That last one is worth a line: all 13 recurring jobs the architecture calls for
-are registered, but the scheduler refuses to run until every one has real code
-behind it. A schedule pointing at a job nobody wrote is a task that silently never
-runs — discovered a month later when it turns out nothing was ever cleaned up.
+By card: **T0.1 (9)** build tooling and environment files. **T0.2 (8)** the
+invented numbers and how the config layers by language. **T0.3 (9)** the database
+toolkit (**your decision, asked and answered in session — Drizzle**), the
+account-scope type. **T0.4 (9)** the locking choice, the dead-letter table, the
+step ordering. **T0.5 (10)** where the vendor interfaces live, the hand-rolled
+cost tracking, the model version pinning, the encryption format, the redactor.
+**T0.6 (8)** the four separate test gates, the crash-injection design, why the
+scenarios carry evidence but not answers. **T0.7 (7)** generating the API
+documentation from the code, the error-code split the check caught, enforcing two
+product rules in the data shape.
 
 ---
 
-## What's left in M0
+## What comes next
 
-**T0.5 — Provider wrappers** (audit-flagged). The single instrumented path to each
-outside vendor — AI, keyword data, email, analytics — so no call site can escape
-cost tracking or caching. Plus token encryption and a scrubber that keeps secrets
-out of logs. `.env.example` already documents the variables it will need, all
-currently blank. Note: **analytics is PostHog only; Sentry is not to be wired.**
+M0 is complete, so **wave 1 can start: three lanes in parallel.**
 
-**T0.6 — Test harnesses.** The crash-injection harness, the AI evaluation runner,
-a synthetic store generator for the eight worked scenarios, browser-test
-scaffolding, and the analytics provisioning script.
+- **M1 — Platform & funnel** (Lane A): auth, Stripe billing, the public preview
+  endpoint, domain claim. Depends only on M0.
+- **M2 — Store Intelligence** (Lane B): Shopify connection, catalog sync, product
+  distillation, families, the store's business profile, keywords. Needs M1's
+  domain claim (card T1.4) merged first.
+- **M9.1–9.2 — App shell and public pages** (Lane F): builds against the mock
+  server T0.7 just froze; needs no backend.
 
-**T0.7 — Contracts & API schemas.** M0's exit gate. Every seam between parallel
-workstreams as a typed interface with a stand-in implementation and sample data,
-request/response schemas for every API route, mock handlers so frontend work can
-start, and a report listing which stand-ins are still wired in.
+Before any of that: **the three overdue audits**, by a fresh session, since all
+three cards now have work standing on them.
+
+The build plan caps concurrency at four implementers. Wave 1 uses three.
 
 ---
 
@@ -351,7 +469,18 @@ start, and a report listing which stand-ins are still wired in.
 pnpm install
 pnpm db:up            # Postgres 16 in Docker, on port 54329
 pnpm db:migrate       # applies both migrations
+pnpm db:seed          # a deterministic development account
+
+# the per-merge gates
 pnpm lint && pnpm lint:prove && pnpm typecheck && pnpm test && pnpm build
+pnpm contracts:check  # the API definitions and their documentation agree
+pnpm stubs:report     # which parts of the system are still stand-ins
+pnpm posthog:check    # analytics dashboards match the repo
+
+# the gates that run on their own schedule
+pnpm chaos            # nightly: kill work at random, prove it converges
+pnpm eval             # when a prompt or model changes: AI output quality
+pnpm e2e              # browser flows (needs: pnpm exec playwright install chromium)
 ```
 
 Tests that need a database create their own and **fail loudly** rather than
