@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * T0.1 done-when: "`pnpm lint` fails on a deliberately planted raw SDK import
- * and on a planted `if (position < 15)` outside rules."
+ * and on a planted `if (position < 15)` outside rules." R1 adds the same proof
+ * for the account-scoping rule (remediation D5).
  *
  * Rather than proving that by hand once, this plants each violation in a
  * throwaway file, runs the real lint command, asserts it failed with the
@@ -40,6 +41,25 @@ const CASES = [
       '',
     ].join('\n'),
     expectRule: 'sortiva/no-threshold-literals',
+  },
+  {
+    name: 'raw table import from @sortiva/db outside packages/db (account scoping, D5)',
+    file: 'packages/core/src/__lintproof__/raw-table-import.ts',
+    source: [
+      "import { db, notifications } from '@sortiva/db'",
+      '',
+      'export function unscoped() {',
+      '  return db().select().from(notifications)',
+      '}',
+      '',
+    ].join('\n'),
+    expectRule: 'sortiva/no-raw-db-access',
+  },
+  {
+    name: 'raw schema-module import outside packages/db (account scoping, D5)',
+    file: 'packages/core/src/__lintproof__/raw-schema-module.ts',
+    source: ["import * as tables from '@sortiva/db/schema'", '', 'export default tables', ''].join('\n'),
+    expectRule: 'sortiva/no-raw-db-access',
   },
 ]
 
