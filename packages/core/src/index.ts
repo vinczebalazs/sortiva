@@ -1,5 +1,6 @@
 export * from './account'
 export * from './api'
+export * from './billing'
 export * from './contracts'
 export * from './fixtures'
 export * from './observability'

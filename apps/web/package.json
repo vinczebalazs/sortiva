@@ -16,6 +16,7 @@
     "@sortiva/providers": "workspace:*",
     "@sortiva/rules": "workspace:*",
     "@sortiva/ui": "workspace:*",
+    "drizzle-orm": "^0.38.2",
     "next": "^15.1.3",
     "next-auth": "5.0.0-beta.32",
     "react": "^19.0.0",

@@ -14,9 +14,10 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@sortiva/core": "workspace:*",
     "posthog-node": "^5.51.4",
     "resend": "^6.25.0",
-    "@sortiva/core": "workspace:*"
+    "stripe": "^22.6.0"
   },
   "devDependencies": {
     "typescript": "^5.7.2",
