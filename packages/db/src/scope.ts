@@ -42,6 +42,13 @@ export interface AccountScope {
  * repositories are not written yet — the cards that need them will take
  * `SystemScope` where the row has no account, and `AccountScope` otherwise.
  * See DECISIONS 2026-08-31 T2.0.
+ *
+ * Mini-wave 2b (T2.0b) adds two more. `verification_tokens` holds outstanding
+ * email sign-in links, which exist before the account does (main §4.1).
+ * `idempotency_ledger` is keyed on a hash and deliberately carries no account
+ * column at all — an account cascade must not be able to erase the record that
+ * paid work was already done (main §14.3.2, `docs/audits/T0.4.md`). Both take
+ * `SystemScope`. See DECISIONS 2026-08-31 T2.0b.
  */
 export interface SystemScope {
   readonly [systemScopeBrand]: true

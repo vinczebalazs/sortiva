@@ -119,7 +119,10 @@ const WAVE_2_TABLES = [
   'product_families',
 ] as const
 
-const ALL_TABLES = [...WAVE_2_TABLES, ...WAVE_1_TABLES] as const
+/** Schema mini-wave 2b (T2.0b). Neither table references anything. */
+const WAVE_2B_TABLES = ['idempotency_ledger', 'verification_tokens'] as const
+
+const ALL_TABLES = [...WAVE_2B_TABLES, ...WAVE_2_TABLES, ...WAVE_1_TABLES] as const
 
 export async function truncateAll(pool: pg.Pool): Promise<void> {
   await pool.query(

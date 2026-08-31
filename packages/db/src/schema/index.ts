@@ -14,3 +14,7 @@ export * from './search'
 export * from './opportunities'
 export * from './revenue'
 export * from './spend'
+
+// ─────────────────────── schema mini-wave 2b (T2.0b) ────────────────────────
+export * from './auth'
+export * from './idempotency'
