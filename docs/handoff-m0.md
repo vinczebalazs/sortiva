@@ -446,6 +446,19 @@ product rules in the data shape.
 
 ## What comes next
 
+The lane-by-lane instructions are in
+[`docs/handoff-wave1.md`](handoff-wave1.md); the founder decisions and
+provisioning that launch depends on are in
+[`docs/founder-decisions.md`](founder-decisions.md).
+
+**One standing caveat, recorded here so it is not lost between handoffs:**
+M0 being complete means the foundation is correct, not that the product is near
+ready. Sortiva is not finished while any item marked ▲ in the decisions document
+is unresolved — a price nobody has set, vendor rates nobody has confirmed, a
+privacy policy nobody has written, a Shopify listing nobody has submitted. None
+of those is an engineering problem, and none will be solved by shipping more
+cards.
+
 M0 is complete, so **wave 1 can start: three lanes in parallel.**
 
 - **M1 — Platform & funnel** (Lane A): auth, Stripe billing, the public preview

@@ -303,8 +303,17 @@ while proving nothing.
 
 ---
 
-## Still open
+## Still open — and a standing caveat
 
-Four founder decisions and a credentials list, in
-[`docs/founder-decisions.md`](founder-decisions.md). **None of them blocks wave 1**
-— the lanes have what they need. They block going live.
+Founder decisions, credentials and provisioning are collected in
+[`docs/founder-decisions.md`](founder-decisions.md). **None of it blocks wave 1** —
+the lanes have what they need to work for weeks.
+
+**It does block launch, and that document is the gate.** Sortiva is not finished
+while any item marked ▲ there is unresolved, however complete the code is: a
+price nobody has set, vendor rates nobody has confirmed, a privacy policy nobody
+has written, and a Shopify listing nobody has submitted are not engineering
+problems and will not be solved by shipping more cards.
+
+Any session, agent or human, that is about to report the product as done should
+read that document's **Definition of done** first, and report against it.

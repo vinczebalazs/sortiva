@@ -1,5 +1,22 @@
 # Decisions needed before Sortiva goes live
 
+> ## This document is a launch gate
+>
+> **Sortiva is not finished — and must not be presented as finished, launched,
+> or shown to a paying merchant — while any item marked ▲ below is unresolved.**
+>
+> "All the code is written and every test passes" is not the same as "ready".
+> Every ▲ item is something no amount of engineering can settle: a price nobody
+> has set, a vendor rate nobody has confirmed, an account nobody has created, a
+> policy nobody has written. A build that is complete in every other respect
+> still cannot take a real merchant's money or read a real merchant's store
+> until these are answered.
+>
+> The unmarked items are real but softer — they shape the product rather than
+> gate it.
+>
+> See **Definition of done** at the end for the checklist.
+
 Everything on this list is **currently unblocking**. Development continues at
 full speed without any of it. Each item names the point at which it stops being
 optional.
@@ -25,7 +42,7 @@ Items are ordered by when they start to hurt, soonest first.
 
 # A. Needed within the next few weeks
 
-## A1. Credentials and accounts
+## A1. ▲ Credentials and accounts
 
 Nothing here is a judgement call — it's provisioning only you can do. But three
 lanes are about to need them, so this is the most time-sensitive item on the
@@ -49,7 +66,7 @@ work against test modes and fake vendors.
 **Recommendation:** provision the first three this week, the next two next week.
 The rest can follow the lanes.
 
-## A2. The domain Sortiva itself runs on
+## A2. ▲ The domain Sortiva itself runs on
 
 Not a merchant's domain — ours. Three things need it and two of them are slow to
 change once set.
@@ -70,7 +87,7 @@ change once set.
 **Recommendation:** decide the domain now even if the marketing site isn't ready.
 Everything else can be a redirect later; these three cannot.
 
-## A3. What DataForSEO actually charges us
+## A3. ▲ What DataForSEO actually charges us
 
 DataForSEO is the vendor we buy keyword volumes and search-results data from.
 They bill per request at different rates per endpoint.
@@ -89,7 +106,7 @@ wrong by 10× and nobody notices until the bill arrives.**
 
 **What I need:** the real per-endpoint rates from your account.
 
-## A4. Authorising the hosting spend
+## A4. ▲ Authorising the hosting spend
 
 Railway is the hosting provider. Your account is authenticated but I have never
 deployed, because deploying creates real infrastructure that bills you and you
@@ -121,7 +138,7 @@ and marked every one `UNSIGNED` in the config file.
 feature that consumes it is built. They live in one file so the product's
 standards are reviewable in one place rather than scattered through the code.
 
-## B1. Demand floor — the one worth actually thinking about
+## B1. ▲ Demand floor — the one worth actually thinking about
 
 **What it does:** the minimum monthly Google search volume a keyword needs before
 Sortiva will write an article about it. Below the floor, the topic is held back.
@@ -156,9 +173,9 @@ markets Sortiva sells into first, that view should set these.
 |---|---|---|
 | **Winnability fallback** | How likely we assume a store is to rank when Search Console isn't connected and we have no evidence. Scale 0 (hopeless) to 1 (certain). The spec says "a conservative constant". | 0.25 |
 | **Substance floor** | How much concrete product information a topic needs behind it before we'll write about it — the guard against thin, padded articles. | 8 distinct facts, from ≥3 products, each with ≥4 populated fields |
-| **AI spend cap, per store per day** | Pauses that store's generation. A loud-failure ceiling, not a budget — a $89/mo plan earns about $2.90/day, so $5 means something has gone badly wrong. | $5 |
-| **Keyword-data spend cap, all stores per day** | Pauses enrichment globally. | $50 |
-| **Preview spend cap per day** | Pauses the public preview only. Deliberately tight: the spec says this tripping at all means the anti-abuse measures are being defeated, so investigate rather than raise it. | $10 |
+| ▲ **AI spend cap, per store per day** | Pauses that store's generation. A loud-failure ceiling, not a budget — a $89/mo plan earns about $2.90/day, so $5 means something has gone badly wrong. | $5 |
+| ▲ **Keyword-data spend cap, all stores per day** | Pauses enrichment globally. | $50 |
+| ▲ **Preview spend cap per day** | Pauses the public preview only. Deliberately tight: the spec says this tripping at all means the anti-abuse measures are being defeated, so investigate rather than raise it. | $10 |
 | **Intent-gap analyses per store per day** | Caps an AI analysis the spec requires be capped without saying at what. | 10 |
 | **"Impressions not collapsed"** | When judging whether a page improvement worked, don't credit a click-rate gain if impressions halved. | 0.5 |
 
@@ -189,7 +206,7 @@ harmlessly: M0 built infrastructure and touched none of them.
 | C6 | **Competitor model** | One list the merchant sees, capped at 5. Competitors found in search results are *suggested*, never added automatically. | The cap is the main cost lever on the most expensive thing the product runs. |
 | C7 | **Page-improvement generation cap** | 2 per store per day. | Bounds AI spend on a user-initiated action without feeling rationed. |
 | C8 | **Navigation** | Six screens: Dashboard, Opportunities, Content, Products, Performance, Settings. | The alternative was eight. Fewer screens, saner mobile. Affects Lane F, now. |
-| C9 | **Launch price** | $89/month, 20% off annual. | The spec itself says this isn't final — it argues the product belongs in a $149–$399 band once AI visibility, revenue intelligence and technical execution ship. Price IDs are configuration, so repricing is a Stripe change, not a code change. |
+| C9 ▲ | **Launch price** | $89/month, 20% off annual. | The spec itself says this isn't final — it argues the product belongs in a $149–$399 band once AI visibility, revenue intelligence and technical execution ship. Price IDs are configuration, so repricing is a Stripe change, not a code change. |
 
 **Blocking at:** C8 is live now (Lane F is building navigation this week). C1,
 C4, C5, C6 land in wave 2. C9 blocks the first real charge.
@@ -267,7 +284,7 @@ rounds the pattern is mechanical enough to hand over.
 Not decisions so much as work nobody has scheduled yet. Flagging them now because
 each has a lead time.
 
-## E1. Shopify app listing
+## E1. ▲ Shopify app listing
 
 Connecting to a real merchant's store means a listed Shopify app, which means
 meeting Shopify's requirements: the privacy webhooks (already specified and
@@ -280,7 +297,7 @@ and review. **Shopify review takes weeks, not days.**
 works against the dev store — roughly two to three weeks out. Don't wait until
 the product is finished.
 
-## E2. Privacy policy and terms
+## E2. ▲ Privacy policy and terms
 
 The product holds a Shopify access token and a Google token on the merchant's
 behalf, and reads their store's order data. It deliberately holds **no customer
@@ -326,3 +343,56 @@ Everything above is unblocking today. In practical order:
 
 The two genuinely reversible-but-annoying ones are the domain (A2) and the
 canonical copy (E3). Everything else can move later without much cost.
+
+---
+
+# Definition of done
+
+The build plan's final milestone (M10) has four exit gates — the nightly
+crash-injection test, the invariant sweep, the decision-journal audit, and the
+Shopify dev-store smoke suite. Those prove the *software* is correct.
+
+**They do not prove the product can launch.** This section is the fifth gate.
+
+Tick every line before Sortiva is described as finished, shown to a paying
+merchant, or listed on the Shopify app store. An unticked line is not a
+nice-to-have deferred — it is a product that cannot legally, financially or
+technically operate.
+
+**Money**
+- [ ] Launch price set and Stripe price IDs created for monthly and annual (C9)
+- [ ] Stripe live keys in the production secret store, webhook endpoint registered
+- [ ] DataForSEO real per-endpoint rates in the price map, replacing my guesses (A3)
+- [ ] The three daily spend caps set against those real rates (B2)
+
+**Identity and access**
+- [ ] The domain Sortiva runs on, decided and live (A2)
+- [ ] Sending subdomain verified with SPF, DKIM and DMARC — before the first
+      production email, not after (A2)
+- [ ] Real support address and waitlist address behind the two screens that
+      promise them (A2)
+- [ ] Production accounts provisioned: Shopify app, Google OAuth client,
+      DataForSEO, Resend, PostHog, Anthropic (A1)
+- [ ] Encryption master key generated and stored in the deploy secrets — the
+      merchant tokens are unreadable without it, and unprotected without it
+
+**Infrastructure**
+- [ ] Railway spend authorised and production deployed (A4)
+- [ ] Railway spend alert set at 2× the expected bill
+
+**Legal and platform**
+- [ ] Privacy policy and terms published (E2)
+- [ ] Shopify app listing submitted **and approved** — weeks of lead time, not
+      days (E1)
+- [ ] Shopify privacy webhooks verified against the real listing
+
+**Product judgement**
+- [ ] Per-language demand floors signed off, or replaced (B1)
+- [ ] The nine assumed defaults in Appendix B confirmed or changed (C)
+- [ ] The canonical copy strings read once and approved (E3)
+
+**Note for whoever plays integrator:** this checklist belongs alongside M10's
+other exit gates. It is currently a document rather than a card in
+`docs/agent-work-plan.md`, which means nothing mechanical enforces it — adding it
+as `T10.5` would give it the same standing as the other four. That is a change to
+the build plan, so it is the integrator's call, not mine.
