@@ -16,6 +16,43 @@ Class (filled by audit): a: fine as-is | b: promote to spec | c: contradicts spe
 
 (entries below, newest first)
 
+## 2026-08-31 — T1.1 — Sign-in with Google asks for identity scopes only
+Decision: the Google provider requests `openid email profile` and nothing else. Search Console keeps its own OAuth client and its own consent screen (`GSC_OAUTH_CLIENT_ID` in `.env.example`, wired by T3.1).
+Why: invariant 21 — read and write are separate consents, and the general principle behind it is that a user should never be asked for a capability at a moment that has nothing to do with it. Folding `webmasters.readonly` into the sign-in button would make the first screen a new user sees ask for their search data, which is a different decision they have not been offered yet. A test asserts the scope string, so it cannot drift into the login screen later.
+Nearest spec: main §4.1, §12.2; invariant 21.
+
+
+## 2026-08-31 — T1.1 — Auth.js v5 (`next-auth@5.0.0-beta.32`), JWT sessions, Google only; email sign-in is blocked
+Decision: sign-in runs on Auth.js v5 with the **JWT session strategy** and no database adapter. Google is the only provider wired. The email (magic-link) half of the card is **not built** — see the separate blocker entry below.
+Why: tech §3 proposes Auth.js and the app is Next 15 App Router, which only Auth.js v5 supports natively; v5 is still published as a beta, so the beta pin is forced rather than chosen. The session strategy is forced too: Auth.js's database-session strategy needs an adapter with `createUser`/`getUser`/`getSessionAndUser`/… and wave 1 created none of those tables, and this session may not add a migration. Consequence to accept knowingly: a JWT session cannot be revoked server-side before it expires (default 30 days), so "sign out everywhere" and instant lockout are not available until session storage exists. Sessions are short-lived (24h) to bound that.
+Nearest spec: main §4.1 ("standard email + OAuth (Google) signup. Nothing exotic."); tech §3.
+
+## 2026-08-31 — T1.1 — BLOCKER: email (magic-link) sign-in needs a `verification_tokens` table that no schema wave created
+Decision: not built. Recorded rather than worked around.
+Why: main §4.1 asks for "email + OAuth (Google) signup". Auth.js refuses to start an email provider without an adapter exposing `createVerificationToken`, `useVerificationToken`, `getUserByEmail` (`@auth/core/lib/utils/assert.js:135`). The first two need a row per outstanding magic link — `(identifier, token, expires)`, single-use. main §13 lists no such table and migration `0000_wave1.sql` creates none; `getUserByEmail` alone is already servable from `accounts`. The alternatives are both worse without a founder decision: a stateless signed-token link (no single-use guarantee — a link in a forwarded email or a mail scanner's prefetch stays valid until expiry), or reusing `request_cache`, whose documented purpose is billable-read replay (main §14.3.6). Needs a one-table mini-wave: `verification_tokens(identifier text, token text, expires timestamptz, primary key (identifier, token))`.
+Nearest spec: main §4.1; main §13 — silent on verification tokens.
+
+## 2026-08-31 — T1.1 — The session→account seam is a handler wrapper under `apps/web/app/api/auth/_lib`, not Next middleware
+Decision: authenticated routes are written as `withAccount(async (request, { scope }) => …)`. The wrapper reads the Auth.js session, turns the account id into the branded `AccountScope` that every repository method demands, and answers 401 `unauthenticated` when there is none. It lives in `apps/web/app/api/auth/_lib/session.ts` — a Next.js private folder (leading underscore), so it is a module, not a route.
+Why: tech §3 says "every authenticated route resolves `account_id` from session — never from the request body", and the build plan calls this "session→accountId middleware". Real Next.js `middleware.ts` runs before the route on a runtime with no database access, so it can gate but cannot produce a scope — the scope would still have to be rebuilt per handler, and the place it is rebuilt is the place a mistake happens. A wrapper is the single place the conversion exists. Location: lane A owns `apps/web/app/api/auth` (build plan §3) and every other lane's routes will import this, so it is deliberately inside lane A rather than in a new shared directory nobody owns; the existing route-handler lint allowlist already permits a relative import containing `_lib`. **The integrator should confirm this is where cross-lane request plumbing belongs before four other lanes import it.**
+Nearest spec: tech §3; build plan §3.
+
+## 2026-08-31 — T1.1 — `accounts` repository added to `packages/db`, which no lane owns
+Decision: `packages/db/src/repositories/accounts.ts` — create-or-find by email, scoped account read, and an `ops_flags` reader that lists the flags active for one account. No schema change of any kind.
+Why: the card requires "account row on signup" and "repository scoping enforced in all routes", and CLAUDE.md forbids raw table access from anywhere but migrations and admin scripts, so the queries have to be repository methods. Build plan §3 assigns `packages/db` to no lane (only migrations are restricted, and to schema-wave cards). Flagged so the integrator can decide whether repository files should be lane-owned; every later lane will hit the same question.
+Nearest spec: CLAUDE.md code-structure rules; build plan §3 — silent on repository ownership.
+
+## 2026-08-31 — T1.1 — Signup provisioning is create-or-find on the unique email index, and `signup_completed` fires only on a real create
+Decision: first successful sign-in inserts `accounts(email)` with `ON CONFLICT DO NOTHING` and re-reads on conflict; the PostHog `signup_completed` event is captured only when the insert actually produced a row.
+Why: main §5 establishes insert-with-conflict as the house pattern for exactly this race (two callbacks for one identity arriving together), and it is the only pattern that cannot double-create. Firing the event on every sign-in would make main §14.7's funnel — and the "cost per acquired signup" number it feeds — count returning users as signups. The event carries the account id and no domain group, because §14.7 reserves the domain group for claimed domains and a fresh account has `domain = null` (main §4.1).
+Nearest spec: main §14.7 (funnel events); main §4.1, §5.
+
+## 2026-08-31 — T1.1 — `GET /api/account` ships now, and every field is answerable from wave-1 data
+Decision: the frozen `accountResponseSchema` route is implemented in full. `limitedIntelligence` is `true` and `connections.searchConsole` is `none` for every account, `connections.lastScanAt` is `null`, and `servicePaused` is true when `global.pause_all` or this account's `account.pause_generation` flag is set.
+Why: main §4.3 — a cited section of this card — describes exactly this: a logged-in user with `domain = null` sees "Connect your domain" and everything else renders locked. Something has to tell the dashboard that. The three values that look like placeholders are not: Limited Intelligence *is* "no Search Console connected" (main §7.11), and no code path can connect Search Console until T3.1, so `true` is the correct answer today rather than a stub — it stops being constant when T3.1 lands. `servicePaused` picks those two flags out of main §14.5's four because they are the ones that stop this account's work; `pause_publishing` stops a later stage and has its own surface. Contract unchanged: no field added, removed or retyped.
+Nearest spec: main §4.3, §7.11, §14.5; tech §3.
+
+
 ## 2026-08-31 — T0.7 — The OpenAPI document is generated from the zod route table, not maintained beside it
 Decision: `packages/core/src/api/routes.ts` is the single source of truth — method, path, request and response schemas, conflict codes, spec citation. `packages/core/openapi.json` is generated from it with zod 4's built-in `z.toJSONSchema()` and committed; `pnpm contracts:check` regenerates and diffs, failing on any difference.
 Why: T0.7's done-when asks for "zero shape mismatches between zod and OpenAPI". Two hand-maintained descriptions of one API agree only while someone is watching, and the drift is invisible until a frontend built against the document meets a backend built against the schemas. Generating one from the other makes a mismatch structurally impossible and turns the check into something with teeth: it catches a hand-edited document and a schema change nobody regenerated. zod 4 ships the JSON Schema converter, so this adds no dependency beyond zod itself.
