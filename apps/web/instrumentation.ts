@@ -9,6 +9,13 @@
  */
 export async function register() {
   if (process.env.NEXT_RUNTIME !== 'nodejs') return
+
+  // tech §4 — every secret-shaped environment variable is registered with the
+  // log scrubber before anything can log, so a token that reaches an exception
+  // message is redacted wherever it appears. Must run first.
+  const { registerEnvSecrets } = await import('@sortiva/providers')
+  registerEnvSecrets()
+
   const { bootstrapWorker } = await import('@sortiva/jobs')
   await bootstrapWorker()
 }

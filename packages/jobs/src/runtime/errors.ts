@@ -50,12 +50,30 @@ export class TokenInvalidFailure extends TerminalFailure {
   }
 }
 
+/**
+ * Provider wrappers raise their own already-classified failures
+ * (`LlmValidationFailure`, `LlmRequestFailure`, `SeoRequestFailure`,
+ * `EmailSendFailure`) and cannot extend `StepFailure` — `packages/core` and the
+ * provider packages must not depend on the job runtime. They carry the same two
+ * fields instead, and are recognised structurally, so a schema-validation
+ * failure reaches the DLQ as `failed_validation` rather than `unclassified`.
+ */
+function isClassifiedFailure(
+  error: unknown,
+): error is { retryable: boolean; errorClass: string; message: string } {
+  return (
+    error instanceof Error &&
+    typeof (error as { retryable?: unknown }).retryable === 'boolean' &&
+    typeof (error as { errorClass?: unknown }).errorClass === 'string'
+  )
+}
+
 export function classify(error: unknown): {
   retryable: boolean
   errorClass: string
   message: string
 } {
-  if (error instanceof StepFailure) {
+  if (error instanceof StepFailure || isClassifiedFailure(error)) {
     return { retryable: error.retryable, errorClass: error.errorClass, message: error.message }
   }
   const message = error instanceof Error ? error.message : String(error)

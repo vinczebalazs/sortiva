@@ -12,6 +12,8 @@
     "@sortiva/core": "workspace:*",
     "@sortiva/db": "workspace:*",
     "@sortiva/jobs": "workspace:*",
+    "@sortiva/llm": "workspace:*",
+    "@sortiva/providers": "workspace:*",
     "@sortiva/rules": "workspace:*",
     "@sortiva/ui": "workspace:*",
     "next": "^15.1.3",

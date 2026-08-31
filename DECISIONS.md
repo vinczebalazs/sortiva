@@ -16,6 +16,61 @@ Class (filled by audit): a: fine as-is | b: promote to spec | c: contradicts spe
 
 (entries below, newest first)
 
+## 2026-08-31 — T0.5 — Provider interfaces live in `packages/core/contracts`, implementations in their own packages
+Decision: `LlmClient`, `SeoDataProvider`, `EmailProvider`, `PosthogCapture` and `RequestCache` are declared in `packages/core/src/contracts/`; `AnthropicLlmClient` lives in `packages/llm`, the DataForSEO / Resend / PostHog adapters in `packages/providers`, and `PostgresRequestCache` in `packages/db`.
+Why: the build plan §4 already names those four as contracts "in `packages/core/contracts/`", and T0.7 fills that directory with the rest of the seams. Putting the ports there now means `packages/llm` and `packages/providers` depend on the behaviour rather than on each other, and nothing has to be moved in T0.7. It also keeps the boundary test honest: `core` declares the interfaces and imports no SDK.
+Nearest spec: build plan §4; CLAUDE.md code-structure rules.
+
+## 2026-08-31 — T0.5 — `$ai_generation` is captured by hand, not via PostHog's Anthropic auto-instrumentation
+Decision: the wrapper emits `$ai_generation` itself through `posthog-node`, with PostHog's documented AI property names (`$ai_model`, `$ai_input_tokens`, `$ai_output_tokens`, `$ai_latency`, `$ai_total_cost_usd`) plus §14.7's required `call_type`, `prompt_version` and `cache_hit`. We do not wrap the Anthropic client in PostHog's LLM-observability integration.
+Why: §14.7 asks for the integration *and* for three things it cannot do. A replay served from `request_cache` makes no model call at all, so an auto-instrumented client has nothing to capture — yet §14.7 requires exactly those replays to be captured with `cache_hit: true` and zero cost, or cached work inflates the spend numbers. One capture path for live and cached calls is the only way both hold. Costs are computed from an explicit model→price table, so a cached call is priced at zero deliberately rather than by omission.
+Nearest spec: main §14.7 — "we wrap the Anthropic client with the PostHog SDK's LLM observability integration"; same paragraph's requirements (1)–(3).
+
+## 2026-08-31 — T0.5 — Model ids: `claude-sonnet-5` and `claude-haiku-4-5`, pinned, alias-rejecting
+Decision: the registry pins Sonnet to `claude-sonnet-5` and Haiku to `claude-haiku-4-5`, with prices ($2/$10 and $1/$5 per million input/output tokens) used to cost every call. `ANTHROPIC_MODEL_SONNET` / `ANTHROPIC_MODEL_HAIKU` can pin a different id per environment, but a value ending in `-latest` or `-preview` throws at resolve time.
+Why: main §14.2 requires explicit ids, "never 'latest' aliases", and §15 fixes which tier does what (Haiku for distillation and the preview card, Sonnet for persona, seeds, drafting and the judge). Allowing an env override without also rejecting aliases would let "latest" back in through configuration, which is the same failure the spec is guarding against. The registry also records that the current Sonnet generation rejects `temperature`, so §3.3's "temperature low" is forwarded only on the preview's Haiku call rather than producing a 400.
+Nearest spec: main §14.2, §15, §3.3 — name the tiers, never the ids.
+
+## 2026-08-31 — T0.5 — The LLM request cache is keyed per model call, so a validation retry is its own entry
+Decision: `llmCacheKey = llm:<prompt_version>:<model_id>:sha256(system + messages)`. The §14.2 repair turn appends the validation errors to the message list, so it hashes differently and gets its own cache row.
+Why: §14.3.6 keys on `(prompt_version, model_id, sha256(rendered_prompt))`, and the repair turn *is* a different rendered prompt. The consequence is the useful one: a step that retries after a `failed_validation` replays both stored completions, fails deterministically and for free, instead of paying to re-sample twice and possibly getting a different answer. §14.3.6's own reason for the LLM cache — "a retry can't get a *different* persona than the run it's resuming" — argues for exactly this.
+Nearest spec: main §14.3.6, §14.2.
+
+## 2026-08-31 — T0.5 — DataForSEO request-cache TTL is 24h; §12.1's 30-day and 7-day TTLs are a separate layer
+Decision: every DataForSEO response is cached for 24 hours under `request_cache`. The 30-day keyword-metrics and 7-day SERP TTLs are not implemented here.
+Why: §14.3.6 states the request-level TTL as 24h and says it "sits *under* the semantic TTLs of §12.1". Reading those as the same cache would mean a crash-safety mechanism doubling as the product's memory of what a keyword is worth. They are different jobs: this layer makes a step retry free; the semantic layer belongs to the cards that persist `keywords` and `serp_snapshots` (T2.6, T3.x).
+Nearest spec: main §14.3.6, §12.1.
+
+## 2026-08-31 — T0.5 — The DataForSEO price map lives in `packages/providers`, not `packages/rules`
+Decision: `ENDPOINT_PRICES` (endpoint → per-task and per-row USD) sits beside the SEO adapter. Values are **UNSIGNED** — starting figures, not confirmed against a current vendor price list. An endpoint with no entry throws rather than costing zero.
+Why: invariant 9 puts *product thresholds* in `packages/rules` — search volume, position, CTR — the numbers that decide what Sortiva does. A vendor's list price is an external fact we record so §14.7 can report spend and §14.5 can cap it. §14.7 also describes it as its own config table. Recorded here because an auditor sweeping for stray numbers will find these and should know they were considered.
+Nearest spec: main §14.7 — "the price map is config"; §7.10 / invariant 9 — scope of the rules module.
+
+## 2026-08-31 — T0.5 — Country → DataForSEO location code is derived, not tabulated
+Decision: `locationCodeFor(country)` returns `2000 + the ISO-3166-1 numeric code` from a table of ~45 alpha-2 → numeric entries. An unmapped country throws.
+Why: DataForSEO's country location codes are Google Ads geo-target IDs, which for countries follow that rule (US 840 → 2840, DE 276 → 2276), so only the ISO table is needed and extending it is mechanical. Defaulting an unknown country would return plausible search volumes for the wrong market, and nothing downstream could tell — a wrong demand floor decision with no symptom.
+Nearest spec: main §12.1 — "pass the persona's main_language + country as the DataForSEO location/language parameters", without saying in what form.
+
+## 2026-08-31 — T0.5 — Envelope encryption format, and rotation by key fingerprint
+Decision: `v1.<masterKeyId>.<wrappedDataKey>.<wrapIv>.<wrapTag>.<iv>.<tag>.<ciphertext>`, all AES-256-GCM. A random 32-byte data key per row encrypts the token; the master key wraps the data key. `masterKeyId` is the first 8 hex characters of sha256(master key). `ENCRYPTION_MASTER_KEY_PREVIOUS` holds retired keys, decrypt-only, and `needsRewrap()` reports rows still on one.
+Why: tech §4 requires envelope encryption but not a format. Naming the key in the stored value means a rotation decrypts with the right key directly instead of trying each, and makes "which rows still need re-wrapping" a query rather than an exception count. One string keeps it in a text column, so no schema change is needed when rotation lands.
+Nearest spec: tech §4.
+
+## 2026-08-31 — T0.5 — The log scrubber has a registry as well as pattern matching, and a logger to sit on
+Decision: `scrub()` redacts by object key name and by vendor token shape, **and** redacts any literal registered via `registerSecret()`. Every secret-shaped environment variable is registered at process start (`registerEnvSecrets`, called from `apps/web/instrumentation.ts`), and `TokenCipher` registers each token it decrypts. `createLogger()` in `packages/core` applies the scrubber to every record.
+Why: tech §4 says tokens never appear in logs or error reports, and pattern matching alone cannot deliver that — a Shopify token has a recognisable prefix, but a DataForSEO password or a decrypted custom-app token has no shape at all, and an exception message has no key name to match on. The registry closes that gap. The logger exists because a scrubber nothing calls is not a guarantee; making it the log path is what lets the test assert on the exact bytes written.
+Nearest spec: tech §4 — "scrubber on the exception path", mechanism unspecified.
+
+## 2026-08-31 — T0.5 — `classify()` also recognises structurally-classified provider failures
+Decision: `packages/jobs`'s `classify()` now accepts any `Error` carrying a boolean `retryable` and a string `errorClass`, alongside its own `StepFailure` subclasses. `LlmValidationFailure`, `LlmRequestFailure`, `SeoRequestFailure` and `EmailSendFailure` carry those two fields.
+Why: main §14.3.5 lists LLM `failed_validation` as a `failed_retryable` class, and §14.7's `dlq_entry_created` carries `error_class` — so a validation failure must reach the DLQ named, not as `unclassified`. The provider packages cannot extend `StepFailure` without depending on the job runtime, which would invert the dependency (`core` and `providers` are consumed by `jobs`, not the reverse). Structural recognition is the only option that keeps both the class names and the package boundaries.
+Nearest spec: main §14.3.5, §14.7.
+
+## 2026-08-31 — T0.5 — Test doubles enforce contracts rather than returning fixtures
+Decision: `MockLlmClient` validates scripted responses against the call's schema and accounts cost per call; `MockSeoDataProvider` deduplicates on the same canonical cache key as the live adapter and bills from the same price map; `MockEmailProvider` returns the first result for a repeated idempotency key; `MockPosthogCapture` runs the same attribution and scrubbing code as the live wrapper.
+Why: §14.3.9's chaos test asserts "DataForSEO billable-call count equals the number of *distinct* canonical requests" — a double that merely counts calls cannot prove that. Making the doubles enforce the same contracts means a green test against a double is evidence about production, and a fixture that would fail schema validation in production fails in the test too.
+Nearest spec: main §14.3.9, §12.1; build plan §4 (contracts have doubles).
+
 ## 2026-08-27 — T0.4 — The per-account lock is session-scoped, not `pg_advisory_xact_lock`
 Decision: `withAccountLock` takes a **session-level** advisory lock (`pg_advisory_lock`) on a dedicated pooled connection for the duration of a step, rather than the transaction-scoped `pg_advisory_xact_lock` main §14.3.3 names first. Key is the two-int form: a fixed namespace (`0x5027`) plus `hashtext(account_id)`.
 Why: §14.3.3 says "`pg_advisory_xact_lock(account_id)` **or equivalent**", and the transaction-scoped form is not usable here. It would require holding one transaction open for a whole step, but §14.3.4 requires long steps to commit checkpoints as they go — a checkpoint only visible after the step commits is not a checkpoint, and `catalog_sync` is ~8 minutes for a 500-product store. Holding the lock on its own connection lets the step body checkpoint on pooled connections while still serialising all work for the account. The namespace exists because Graphile Worker takes advisory locks of its own in the same database.
