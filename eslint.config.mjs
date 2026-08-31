@@ -39,6 +39,12 @@ export default tseslint.config(
 
       // Invariant 9 — every threshold number lives in packages/rules.
       'sortiva/no-threshold-literals': 'error',
+
+      // CLAUDE.md code-structure rules / tech §3 — no code outside packages/db
+      // may import a raw table or the raw database handle, so no query can
+      // reach a table without naming the account whose data it touches.
+      // Audit T0.3 [major]; remediation D5 (stopgap half).
+      'sortiva/no-raw-db-access': 'error',
     },
   },
 
@@ -54,6 +60,33 @@ export default tseslint.config(
   {
     files: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', '**/fixtures/**', '**/__fixtures__/**'],
     rules: { 'sortiva/no-threshold-literals': 'off' },
+  },
+
+  // The bounded D5 exemption. `job_steps`, `ingestion_jobs` and `job_dlq` have
+  // no scoped repositories to call: `job_steps` has no account_id column of its
+  // own (main §13 hangs it off ingestion_jobs), and supplying the join-scoped
+  // helpers means editing packages/db, which card R1 does not own. These two
+  // files are the whole exemption; it is named function-by-function in
+  // DECISIONS 2026-08-31 R1 and ends when the durable D5 card lands.
+  {
+    files: ['packages/jobs/src/runtime/steps.ts', 'packages/jobs/src/runtime/dlq.ts'],
+    rules: { 'sortiva/no-raw-db-access': 'off' },
+  },
+
+  // Integration tests set up and inspect rows directly; the rule exists to stop
+  // *production* code reaching a table without an account, not to stop a test
+  // asserting on what the repositories wrote.
+  {
+    files: [
+      '**/*.test.{ts,tsx}',
+      '**/*.spec.{ts,tsx}',
+      '**/testing.ts',
+      '**/fixtures/**',
+      // The chaos scenarios (main §14.3.9) are test code that has to set up and
+      // inspect rows a repository does not expose.
+      'packages/jobs/src/chaos/**',
+    ],
+    rules: { 'sortiva/no-raw-db-access': 'off' },
   },
 
   // CLAUDE.md: route handlers parse -> call core -> serialise.

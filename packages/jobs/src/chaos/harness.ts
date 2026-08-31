@@ -1,5 +1,13 @@
+import { spawn } from 'node:child_process'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import type pg from 'pg'
+import { drizzle } from 'drizzle-orm/node-postgres'
+import { schema } from '@sortiva/db'
 import { seededRandom } from '@sortiva/core'
+import { deriveIdempotencyKey } from '../runtime/idempotency'
+import { createRun, dispatchableSteps, findStep, getStep } from '../runtime/steps'
+import { runStep } from '../runtime/runStep'
 
 /**
  * main §14.3.9 — "a chaos test in CI kills workers at random points during a
@@ -185,6 +193,174 @@ export function assertNoDoubleBilling(provider: {
 }
 
 /**
+ * A worker that is *killed* mid-step, not one that throws.
+ *
+ * The distinction is the whole point. An exception unwinds: the executor's
+ * `catch` runs, the step lands in `failed_retryable`, and the dispatcher offers
+ * it again — which has always worked, and is what the old crash test proved. A
+ * killed process leaves the row in `running` with nobody working on it, and
+ * before this card nothing ever offered such a row to anyone again: the store's
+ * onboarding simply stopped, with no error, no dead-letter entry and no
+ * user-visible signal. An ordinary deploy landing during an eight-minute
+ * catalogue sync does exactly this (audit T0.4 [blocker]; main §14.3.1, tech §2.1).
+ *
+ * So this scenario spawns a real child process, lets it commit two page cursors,
+ * has it SIGKILL itself, and then asserts the step both *looks* abandoned
+ * (`running`, cursor at page 2) and is picked up and finished by the next
+ * dispatch — resuming at page 3 rather than re-fetching pages 1 and 2.
+ */
+const VICTIM = join(dirname(fileURLToPath(import.meta.url)), 'kill-victim.ts')
+
+const TOTAL_PAGES = 5
+const KILL_AFTER_PAGE = 2
+
+interface VictimRun {
+  pages: number[]
+  signal: NodeJS.Signals | null
+  code: number | null
+}
+
+function runVictimUntilKilled(env: Record<string, string>): Promise<VictimRun> {
+  return new Promise((resolve, reject) => {
+    // Node directly, with tsx only as a TypeScript loader — the `tsx` CLI would
+    // spawn its own child, and we would see that child's exit code rather than
+    // the signal that killed it. The victim must be *our* child for the kill to
+    // be observable as a kill.
+    const child = spawn(process.execPath, ['--import', 'tsx', VICTIM], {
+      env: { ...process.env, ...env },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    let out = ''
+    let err = ''
+    child.stdout.on('data', (chunk: Buffer) => (out += chunk.toString()))
+    child.stderr.on('data', (chunk: Buffer) => (err += chunk.toString()))
+    child.on('error', reject)
+    child.on('exit', (code, signal) => {
+      const pages = [...out.matchAll(/^page (\d+)$/gm)].map((m) => Number(m[1]))
+      if (code !== 0 && signal === null) {
+        reject(new Error(`victim exited ${code} without being killed:\n${err}`))
+        return
+      }
+      resolve({ pages, signal, code })
+    })
+  })
+}
+
+/** Connection string for the database this chaos run is using. */
+function connectionStringFor(pool: pg.Pool): string {
+  const options = (pool as unknown as { options: { connectionString?: string } }).options
+  if (!options.connectionString) throw new Error('the chaos pool has no connection string')
+  return options.connectionString
+}
+
+interface ProcessDeathState {
+  jobId: string
+  stepId: string
+  key: string
+  killedPages: number[]
+  resumedPages: number[]
+}
+
+const processDeathState: ProcessDeathState = {
+  jobId: '',
+  stepId: '',
+  key: '',
+  killedPages: [],
+  resumedPages: [],
+}
+
+const processDeathMidStep: ChaosScenario = {
+  name: 'process_death_mid_step',
+
+  async setup(pool, accountId) {
+    const db = drizzle(pool, { schema })
+    // One step, so the universal "every step settled" assertion is about this
+    // scenario rather than about the eight steps it never runs.
+    const { jobId } = await createRun(db, accountId, `chaos-kill-${Date.now()}`, ['detect'])
+    const step = await findStep(db, jobId, 'detect')
+    processDeathState.jobId = jobId
+    processDeathState.stepId = step!.id
+    processDeathState.key = deriveIdempotencyKey(accountId, 'detect', 'chaos-v1')
+    processDeathState.killedPages = []
+    processDeathState.resumedPages = []
+  },
+
+  async drive(ctx) {
+    const db = drizzle(ctx.pool, { schema })
+    const { jobId, stepId, key } = processDeathState
+
+    const victim = await runVictimUntilKilled({
+      VICTIM_DATABASE_URL: connectionStringFor(ctx.pool),
+      VICTIM_ACCOUNT_ID: ctx.accountId,
+      VICTIM_JOB_ID: jobId,
+      VICTIM_STEP_ID: stepId,
+      VICTIM_IDEMPOTENCY_KEY: key,
+      VICTIM_KILL_AFTER_PAGE: String(KILL_AFTER_PAGE),
+      VICTIM_TOTAL_PAGES: String(TOTAL_PAGES),
+    })
+    if (victim.signal !== 'SIGKILL') {
+      throw new Error(`the victim was meant to be killed; it exited with code ${victim.code}`)
+    }
+    processDeathState.killedPages = victim.pages
+
+    // The state the old exception-based test could never produce: owned by a
+    // process that no longer exists.
+    const stranded = await getStep(db, stepId)
+    if (stranded?.state !== 'running') {
+      throw new Error(`expected a stranded "running" row, found "${stranded?.state}"`)
+    }
+
+    // A lease of 0 ms is "every running row is abandoned" — the test's way of
+    // fast-forwarding past the real 15-minute wait in lease.ts.
+    const offered = await dispatchableSteps(db, jobId, { leaseMs: 0 })
+    if (!offered.some((row) => row.id === stepId)) {
+      throw new Error('the dispatcher did not offer the abandoned step: it is stranded forever')
+    }
+
+    const resumed = await runStep<{ page: number }>({
+      db,
+      pool: ctx.pool,
+      accountId: ctx.accountId,
+      jobId,
+      stepId,
+      idempotencyKey: key,
+      leaseMs: 0,
+      handler: async (c) => {
+        let page = c.checkpoint?.page ?? 0
+        while (page < TOTAL_PAGES) {
+          page += 1
+          await c.save({ page })
+          processDeathState.resumedPages.push(page)
+        }
+        return { pages: page }
+      },
+    })
+    if (resumed.status !== 'succeeded') {
+      throw new Error(`the reclaimed step did not succeed: ${resumed.status}`)
+    }
+  },
+
+  async assert(ctx) {
+    const db = drizzle(ctx.pool, { schema })
+    const { killedPages, resumedPages } = processDeathState
+
+    if (killedPages.join(',') !== '1,2') {
+      throw new Error(`the victim should have committed pages 1,2 before dying; got ${killedPages}`)
+    }
+    // §14.3.4 — "a crash resumes from the last cursor, not page one." Re-fetching
+    // page 1 would be a re-billed provider call on every deploy.
+    if (resumedPages.join(',') !== '3,4,5') {
+      throw new Error(`the reclaimed step should resume at page 3; it re-fetched ${resumedPages}`)
+    }
+
+    const step = await getStep(db, processDeathState.stepId)
+    if (step?.state !== 'succeeded') {
+      throw new Error(`the step did not converge: ${step?.state}`)
+    }
+  },
+}
+
+/**
  * Scenarios land with the features that need them (main §14.3.9). Registering
  * them here rather than letting each card add a bespoke test keeps the
  * convergence assertions in one place.
@@ -197,4 +373,5 @@ export const CHAOS_SCENARIOS: readonly ChaosScenario[] = [
     async drive() {},
     async assert() {},
   },
+  processDeathMidStep,
 ]

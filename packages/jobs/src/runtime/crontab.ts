@@ -85,7 +85,17 @@ export const CRON_ENTRIES: readonly CronEntry[] = [
   {
     task: 'retention_sweep_daily',
     schedule: '0 1 * * *',
-    spec: 'tech §1.7, §2.1 — notifications at 90d, email_sends at 12mo, webhook_events at 30d, request_cache on TTL, gsc rollups at 16mo.',
+    spec:
+      'tech §1.7, §2.1 — notifications at 90d, email_sends at 12mo, webhook_events at 30d, ' +
+      'request_cache on TTL, gsc rollups at 16mo. ' +
+      // NEVER PRUNABLE: `job_steps` and `ingestion_jobs`. Those rows are not a
+      // log of past runs — they *are* the record of which paid work has already
+      // been done (main §14.3.2, "the cache is the ledger"). Deleting one lets a
+      // replay re-run its work for real: a re-billed Shopify crawl for
+      // `catalog_sync`, a re-billed set of LLM calls for `distill`. Whoever
+      // implements this sweep must leave both tables alone; the test in
+      // `ledger.test.ts` fails if any code path starts deleting them.
+      'NEVER PRUNABLE: job_steps and ingestion_jobs — they are the idempotency ledger (§14.3.2), not history.',
   },
 ]
 
