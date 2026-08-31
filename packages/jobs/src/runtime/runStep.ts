@@ -4,6 +4,7 @@ import type { Logger } from '@sortiva/core'
 import { deadLetter } from './dlq'
 import { classify, StepOwnershipLost, TokenInvalidFailure } from './errors'
 import { leaseExpiryFor } from './lease'
+import { lookupCompletedWork, recordCompletedWork } from './ledger'
 import { withAccountLock } from './lock'
 import { nextAttemptAt, retriesExhausted } from './retry'
 import { runtimeLogger, stepLogger } from './logging'
@@ -13,7 +14,6 @@ import {
   guardedTransition,
   claimStep,
   isReclaimable,
-  lookupCompletedKey,
   readCheckpoint,
   saveCheckpoint,
   type JobStepName,
@@ -28,11 +28,14 @@ import {
  * re-implement them. In order (constitution invariant 18):
  *
  *   1. serialise on the account's advisory lock (§14.3.3)
- *   2. consult the completed-key ledger; a hit returns the stored output and
- *      does not execute (§14.3.2)
+ *   2. consult the completed-work ledger; a hit returns the stored output and
+ *      does not execute (§14.3.2). The ledger is `idempotency_ledger`, a table
+ *      with no foreign key to jobs or accounts, so the evidence outlives the
+ *      run it came from (`ledger.ts`)
  *   3. claim the step with a guarded transition; a zero-row guard stops (§14.3.1)
  *   4. run the handler with a checkpoint API (§14.3.4)
- *   5. succeed, or classify the failure and either schedule a retry on the
+ *   5. record the completion in the ledger *before* marking the step succeeded,
+ *      then succeed; or classify the failure and either schedule a retry on the
  *      §14.3.5 schedule or dead-letter it
  */
 
@@ -113,8 +116,10 @@ export async function runStep<C = unknown>(options: RunStepOptions<C>): Promise<
 
     // §14.3.2 — the cache is the ledger. A completed key returns its stored
     // output without executing, which is what makes a retry of finished work
-    // free rather than merely safe.
-    const completed = await lookupCompletedKey(db, idempotencyKey)
+    // free rather than merely safe. The lookup is against `idempotency_ledger`,
+    // which no cascade, retention sweep or re-run of onboarding can empty, so
+    // this holds even when the job rows of the run that did the work are gone.
+    const completed = await lookupCompletedWork(db, idempotencyKey)
     if (completed) {
       await guardedTransition(db, stepId, ['pending', 'running', 'failed_retryable'], 'succeeded', {
         idempotencyKey,
@@ -211,8 +216,27 @@ export async function runStep<C = unknown>(options: RunStepOptions<C>): Promise<
 
     try {
       const output = await handler(ctx)
+
+      // The ledger is written *before* the step row, and the order is the point.
+      // A process that dies between the two leaves the completion recorded and
+      // the step still `running`: the next dispatch reclaims the step, hits the
+      // ledger, and marks it succeeded from the stored output — no second
+      // execution. The other order would leave a step marked succeeded with no
+      // ledger record, and the next redelivery would re-run billed work. For the
+      // same reason this is not one transaction with the step update: an atomic
+      // pair that rolls back loses the record of work that really happened.
+      const recorded = await recordCompletedWork(db, idempotencyKey, output)
+      if (!recorded.firstWriter) {
+        // Someone recorded this key first. §14.3.6 — a replay must not get a
+        // different answer than the run it is resuming, so the stored answer
+        // wins and this run's own output is discarded.
+        log.warn('step.ledger_conflict', {
+          reason: 'this key was already recorded; the stored output is authoritative',
+        })
+      }
+
       const settled = await guardedTransition(db, stepId, 'running', 'succeeded', {
-        outputRef: (output ?? null) as never,
+        outputRef: recorded.outputRef as never,
         lastError: null,
       })
       // Losing this guard means the step was reassigned mid-flight. The work is
@@ -223,7 +247,7 @@ export async function runStep<C = unknown>(options: RunStepOptions<C>): Promise<
         // row — worth seeing, because it means a lease expired too early.
         owned_at_finish: settled !== undefined,
       })
-      return { status: 'succeeded', output, executed: settled !== undefined }
+      return { status: 'succeeded', output: recorded.outputRef, executed: settled !== undefined }
     } catch (error) {
       // §14.3.1 — "a worker whose guard matches zero rows stops immediately".
       // The step now belongs to someone else; touching the row further would be

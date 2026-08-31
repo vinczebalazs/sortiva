@@ -62,14 +62,20 @@ export default tseslint.config(
     rules: { 'sortiva/no-threshold-literals': 'off' },
   },
 
-  // The bounded D5 exemption. `job_steps`, `ingestion_jobs` and `job_dlq` have
-  // no scoped repositories to call: `job_steps` has no account_id column of its
-  // own (main §13 hangs it off ingestion_jobs), and supplying the join-scoped
-  // helpers means editing packages/db, which card R1 does not own. These two
-  // files are the whole exemption; it is named function-by-function in
-  // DECISIONS 2026-08-31 R1 and ends when the durable D5 card lands.
+  // The bounded D5 exemption. `job_steps`, `ingestion_jobs`, `job_dlq` and
+  // `idempotency_ledger` have no scoped repositories to call: `job_steps` has no
+  // account_id column of its own (main §13 hangs it off ingestion_jobs), the
+  // ledger deliberately has none at all (main §14.3.2 — an account cascade must
+  // not reach it), and supplying the helpers means editing packages/db, which
+  // neither R1 nor R3 owns. These three files are the whole exemption; it is
+  // named function-by-function in DECISIONS 2026-08-31 R1 and 2026-08-31 R3, and
+  // ends when the durable D5 card lands.
   {
-    files: ['packages/jobs/src/runtime/steps.ts', 'packages/jobs/src/runtime/dlq.ts'],
+    files: [
+      'packages/jobs/src/runtime/steps.ts',
+      'packages/jobs/src/runtime/dlq.ts',
+      'packages/jobs/src/runtime/ledger.ts',
+    ],
     rules: { 'sortiva/no-raw-db-access': 'off' },
   },
 

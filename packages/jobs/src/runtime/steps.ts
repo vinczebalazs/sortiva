@@ -175,22 +175,16 @@ export async function claimStep(
 }
 
 /**
- * main §14.3.2 — "Completed keys are stored with their output reference; a
- * worker seeing a completed key returns the stored output without executing.
- * This makes the *cache the ledger*: 'have I done this work' and 'where is the
- * result' are the same lookup."
+ * §14.3.2's "have I already done this work" lookup used to live here, reading
+ * `job_steps WHERE idempotency_key = $1 AND state = 'succeeded'`. It reads
+ * `idempotency_ledger` now (`ledger.ts`): a job row cascades from its run and
+ * from the account, so losing it let a redelivered message re-run — and re-bill
+ * — work that was already done (audit T0.4 [major]).
+ *
+ * `job_steps.idempotency_key` stays. main §13 puts it there, the dead-letter
+ * entry carries it (§14.3.5), and it is how an operator ties a stranded step to
+ * its ledger record. It is no longer the *evidence* that the work happened.
  */
-export async function lookupCompletedKey(
-  db: Db,
-  idempotencyKey: string,
-): Promise<{ outputRef: unknown } | undefined> {
-  const [row] = await db
-    .select({ outputRef: jobSteps.outputRef })
-    .from(jobSteps)
-    .where(and(eq(jobSteps.idempotencyKey, idempotencyKey), eq(jobSteps.state, 'succeeded')))
-    .limit(1)
-  return row ? { outputRef: row.outputRef } : undefined
-}
 
 /**
  * main §14.3.4 — "any step that can exceed 60 seconds must checkpoint". The

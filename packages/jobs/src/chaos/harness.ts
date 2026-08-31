@@ -357,6 +357,20 @@ const processDeathMidStep: ChaosScenario = {
     if (step?.state !== 'succeeded') {
       throw new Error(`the step did not converge: ${step?.state}`)
     }
+
+    // §14.3.2 — exactly one completion record for this key, whatever the kills.
+    // A killed process must leave none (its work never finished) and the run
+    // that finished must leave one; a second row is impossible by primary key,
+    // so the number that matters is zero-vs-one. This is the assertion that ties
+    // convergence to *not paying twice*: the record is what the next redelivery
+    // consults, and it now outlives the job rows entirely.
+    const { rows } = await ctx.pool.query<{ n: number }>(
+      'SELECT count(*)::int AS n FROM idempotency_ledger WHERE idempotency_key = $1',
+      [processDeathState.key],
+    )
+    if (rows[0]?.n !== 1) {
+      throw new Error(`expected exactly one ledger record for the finished work; found ${rows[0]?.n}`)
+    }
   },
 }
 

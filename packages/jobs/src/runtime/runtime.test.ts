@@ -22,6 +22,7 @@ import {
   STEP_DEPENDENCIES,
 } from './steps'
 import { deriveIdempotencyKey, inputVersion } from './idempotency'
+import { lookupCompletedWork, recordCompletedWork } from './ledger'
 import {
   AccountLockReentry,
   AccountLockTimeout,
@@ -390,6 +391,121 @@ describe.skipIf(!available)('step state machine against Postgres', () => {
         handler,
       })
       expect(executions).toBe(2)
+    })
+
+    // ── The durability half: the record outlives the run that produced it ────
+    //
+    // The failure this guards against, in full: the queue is at-least-once, so
+    // the same job can arrive twice. Between the two deliveries the run's rows
+    // are gone — an account cascade, a retention sweep, a "restart onboarding"
+    // feature. Before card R3 the "have I done this" record *was* those rows, so
+    // the second delivery found nothing and did the work again for real: a
+    // second billed Shopify crawl, a second billed batch of LLM calls (audit
+    // T0.4 [major]). These cases fail against the old `job_steps` lookup.
+
+    it('does not re-execute after the job rows that recorded the work are deleted', async () => {
+      const stepId = await stepIdFor('detect')
+      const key = deriveIdempotencyKey(accountId, 'detect', 'v1')
+
+      let executions = 0
+      const handler = async () => {
+        executions += 1
+        return { platform: 'shopify' }
+      }
+
+      const first = await runStep({ db: ctx.db, pool, accountId, jobId, stepId, idempotencyKey: key, handler })
+      expect(first).toMatchObject({ status: 'succeeded', executed: true })
+
+      // The run is discarded, steps and all — the cascade the ledger used to
+      // hang off (`job_steps` → `ingestion_jobs` → `accounts`).
+      await pool.query('DELETE FROM ingestion_jobs WHERE id = $1', [jobId])
+      const survivors = await pool.query<{ n: number }>(
+        'SELECT count(*)::int AS n FROM job_steps WHERE id = $1',
+        [stepId],
+      )
+      expect(survivors.rows[0]!.n, 'the job rows really are gone').toBe(0)
+
+      // Same account, same inputs, so §14.3.2 derives the same key: this is the
+      // redelivered message.
+      const { jobId: secondJobId } = await createRun(ctx.db, accountId, 'run-after-deletion')
+      const second = await runStep({
+        db: ctx.db, pool, accountId, jobId: secondJobId,
+        stepId: (await findStep(ctx.db, secondJobId, 'detect'))!.id,
+        idempotencyKey: key, handler,
+      })
+
+      expect(second).toMatchObject({ status: 'succeeded', executed: false })
+      expect(second).toHaveProperty('output', { platform: 'shopify' })
+      expect(executions, 'the redelivered job must not re-run billed work').toBe(1)
+    })
+
+    it('keeps the completion record when the whole account is deleted', async () => {
+      const stepId = await stepIdFor('detect')
+      const key = deriveIdempotencyKey(accountId, 'detect', 'v1')
+      await runStep({
+        db: ctx.db, pool, accountId, jobId, stepId, idempotencyKey: key,
+        handler: async () => ({ platform: 'shopify' }),
+      })
+
+      const recorded = await pool.query<{ output_ref: unknown }>(
+        'SELECT output_ref FROM idempotency_ledger WHERE idempotency_key = $1',
+        [key],
+      )
+      expect(recorded.rows).toHaveLength(1)
+      expect(recorded.rows[0]!.output_ref).toEqual({ platform: 'shopify' })
+
+      // main §14.6 deletes an account's data outright. The ledger has no foreign
+      // key to accounts, so the evidence of what was already paid for survives —
+      // which is the difference between this table and the job rows.
+      await pool.query('DELETE FROM accounts WHERE id = $1', [accountId])
+      const after = await pool.query<{ n: number }>(
+        'SELECT count(*)::int AS n FROM idempotency_ledger WHERE idempotency_key = $1',
+        [key],
+      )
+      expect(after.rows[0]!.n).toBe(1)
+    })
+
+    it('finishes a step whose completion was recorded before the process died', async () => {
+      // The window the write order creates on purpose: the ledger row is
+      // committed, then the process dies before the step row is marked. The step
+      // is left `running` with the work genuinely done.
+      const stepId = await stepIdFor('detect')
+      const key = deriveIdempotencyKey(accountId, 'detect', 'v1')
+      await recordCompletedWork(ctx.db, key, { platform: 'shopify' })
+      await guardedTransition(ctx.db, stepId, 'pending', 'running', { idempotencyKey: key })
+
+      let executions = 0
+      const outcome = await runStep({
+        db: ctx.db, pool, accountId, jobId, stepId, idempotencyKey: key,
+        leaseMs: 0,
+        handler: async () => {
+          executions += 1
+          return { platform: 'never-reached' }
+        },
+      })
+
+      expect(outcome).toMatchObject({ status: 'succeeded', executed: false })
+      expect(executions, 'the work was already done; doing it again would re-bill').toBe(0)
+      const settled = await getStep(ctx.db, stepId)
+      expect(settled?.state).toBe('succeeded')
+      expect(settled?.outputRef).toEqual({ platform: 'shopify' })
+    })
+
+    it('refuses to revise a completed key: the first answer wins', async () => {
+      // §14.3.6 — "a retry can't get a *different* persona than the run it's
+      // resuming". The database refuses UPDATE outright (migration 0005), so
+      // recording is insert-or-nothing and a second recorder reads back the
+      // first one's answer rather than replacing it.
+      const key = deriveIdempotencyKey(accountId, 'persona', 'v1')
+      expect(await recordCompletedWork(ctx.db, key, { persona: 'first' })).toEqual({
+        outputRef: { persona: 'first' },
+        firstWriter: true,
+      })
+      expect(await recordCompletedWork(ctx.db, key, { persona: 'second' })).toEqual({
+        outputRef: { persona: 'first' },
+        firstWriter: false,
+      })
+      expect(await lookupCompletedWork(ctx.db, key)).toEqual({ outputRef: { persona: 'first' } })
     })
   })
 

@@ -10,24 +10,26 @@ import { CRON_ENTRIES } from './crontab'
  * This makes the *cache the ledger*: 'have I done this work' and 'where is the
  * result' are the same lookup."
  *
- * That ledger is the `job_steps` rows themselves (DECISIONS 2026-08-27 T0.4).
- * So those rows are not a log of what happened — they are the *evidence* that
- * paid work was already done. Delete one and a replay does the work again for
- * real: a re-billed Shopify crawl for `catalog_sync`, a re-billed set of LLM
+ * That record is not a log of what happened — it is the *evidence* that paid
+ * work was already done. Delete it and a redelivered message does the work again
+ * for real: a re-billed Shopify crawl for `catalog_sync`, a re-billed set of LLM
  * calls for `distill`.
  *
- * Nothing deletes them today. Three things could make someone start: the
- * retention sweep is a registered cron entry with no handler yet, so whoever
- * writes it will be shopping for tables to prune; `job_dlq.step_id` is
- * `ON DELETE set null`, which reads as "deleting steps is expected"; and a
- * "restart onboarding" feature would naturally delete the old run.
+ * **What changed under card R3.** The evidence used to be the `job_steps` rows
+ * themselves, and this file used to forbid deleting them (DECISIONS 2026-08-31
+ * R1 — the cheap half of the fix, taken while the durable half was undecided).
+ * It now lives in `idempotency_ledger`, a table with no foreign key to anything,
+ * so no cascade can reach it. The tripwire keeps its job and changes its target:
+ * job rows are ordinary state again and may be deleted — a "restart onboarding"
+ * feature is now free to — while the ledger is the thing nothing may delete.
  *
- * This file is the tripwire. It is the cheap half of the fix — the durable half
- * is a ledger table with no foreign key to jobs at all, which needs a migration
- * and a founder decision (audit T0.4 [major]; remediation "Still open").
+ * Not asserted here because it is asserted better elsewhere: that the ledger has
+ * no foreign key and refuses `UPDATE`. `packages/db/src/constraints-wave2b.test.ts`
+ * proves both against a real Postgres, which beats scanning migration text.
  */
 
-const LEDGER_TABLES = ['job_steps', 'ingestion_jobs']
+const LEDGER_TABLE = 'idempotency_ledger'
+const LEDGER_DRIZZLE_NAME = 'idempotencyLedger'
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..')
 
@@ -68,13 +70,12 @@ function sourceFiles(): string[] {
 }
 
 /** Every way this codebase could spell "remove rows from that table". */
-function deletionPaths(source: string, table: string): string[] {
-  const drizzleName = table === 'job_steps' ? 'jobSteps' : 'ingestionJobs'
+function deletionPaths(source: string): string[] {
   const patterns: RegExp[] = [
-    new RegExp(`\\.delete\\(\\s*${drizzleName}\\s*\\)`, 'g'),
-    new RegExp(`delete\\s+from\\s+"?${table}"?`, 'gi'),
-    new RegExp(`truncate\\s+(table\\s+)?[^;\\n]*\\b${table}\\b`, 'gi'),
-    new RegExp(`drop\\s+table\\s+[^;\\n]*\\b${table}\\b`, 'gi'),
+    new RegExp(`\\.delete\\(\\s*${LEDGER_DRIZZLE_NAME}\\s*\\)`, 'g'),
+    new RegExp(`delete\\s+from\\s+"?${LEDGER_TABLE}"?`, 'gi'),
+    new RegExp(`truncate\\s+(table\\s+)?[^;\\n]*\\b${LEDGER_TABLE}\\b`, 'gi'),
+    new RegExp(`drop\\s+table\\s+[^;\\n]*\\b${LEDGER_TABLE}\\b`, 'gi'),
   ]
   return patterns.flatMap((pattern) => source.match(pattern) ?? [])
 }
@@ -86,55 +87,48 @@ describe('the idempotency ledger is never deleted (main §14.3.2)', () => {
     expect(files.length).toBeGreaterThan(20)
   })
 
-  for (const table of LEDGER_TABLES) {
-    it(`no production code path deletes rows from ${table}`, () => {
-      const offenders = files
-        .map((file) => ({ file, hits: deletionPaths(readFileSync(join(REPO_ROOT, file), 'utf8'), table) }))
-        .filter((r) => r.hits.length > 0)
-        .map((r) => `${r.file}: ${r.hits.join(', ')}`)
+  it(`no production code path deletes rows from ${LEDGER_TABLE}`, () => {
+    const offenders = files
+      .map((file) => ({ file, hits: deletionPaths(readFileSync(join(REPO_ROOT, file), 'utf8')) }))
+      .filter((r) => r.hits.length > 0)
+      .map((r) => `${r.file}: ${r.hits.join(', ')}`)
 
-      expect(
-        offenders,
-        `${table} rows are the record of which paid work has already been done (main §14.3.2). ` +
-          `Deleting one lets a replay re-run that work and re-bill for it. If a run really must be ` +
-          `discarded, the ledger has to move to its own table first — that is a schema-wave change ` +
-          `and a founder decision, not something to unblock by deleting here.`,
-      ).toEqual([])
-    })
-  }
+    expect(
+      offenders,
+      `${LEDGER_TABLE} rows are the record of which paid work has already been done (main §14.3.2). ` +
+        `Deleting one lets a redelivered job re-run that work and re-bill for it. The retention sweep ` +
+        `tech §2.1 anticipates may prune this table by AGE, well past the point where the queue could ` +
+        `still redeliver — never by job, never by account, and never as part of deleting a store. If ` +
+        `that sweep is what you are writing, change this test deliberately and record it in DECISIONS.`,
+    ).toEqual([])
+  })
 
   it('the scan would actually catch a deletion', () => {
     // The detector under test, rather than trusting a green result from it.
-    expect(deletionPaths('await db.delete(jobSteps).where(x)', 'job_steps')).not.toEqual([])
-    expect(deletionPaths("pool.query('DELETE FROM job_steps')", 'job_steps')).not.toEqual([])
-    expect(deletionPaths('await db.delete(ingestionJobs)', 'ingestion_jobs')).not.toEqual([])
-    expect(deletionPaths('await db.update(jobSteps).set({})', 'job_steps')).toEqual([])
+    expect(deletionPaths('await db.delete(idempotencyLedger).where(x)')).not.toEqual([])
+    expect(deletionPaths("pool.query('DELETE FROM idempotency_ledger')")).not.toEqual([])
+    expect(deletionPaths('TRUNCATE TABLE "idempotency_ledger" CASCADE')).not.toEqual([])
+    expect(deletionPaths('await db.insert(idempotencyLedger).values(x)')).toEqual([])
   })
 
-  it('the retention sweep is told in writing that these tables are never prunable', () => {
+  it('the retention sweep is told in writing how this table may be pruned', () => {
     const sweep = CRON_ENTRIES.find((entry) => entry.task === 'retention_sweep_daily')
     expect(sweep, 'the retention sweep is no longer registered').toBeDefined()
-    for (const table of LEDGER_TABLES) {
-      expect(sweep!.spec).toContain(table)
-    }
-    expect(sweep!.spec).toContain('NEVER PRUNABLE')
+    expect(sweep!.spec).toContain(LEDGER_TABLE)
+    expect(sweep!.spec).toContain('PRUNE BY AGE ONLY')
   })
 
-  it('nothing but the account cascade can reach these rows through a foreign key', () => {
-    const dir = join(REPO_ROOT, 'packages/db/migrations')
-    const sql = readdirSync(dir)
-      .filter((f) => f.endsWith('.sql'))
-      .map((f) => readFileSync(join(dir, f), 'utf8'))
-      .join('\n')
+  it('the runtime reads the ledger table, not the job rows it used to read', () => {
+    // The regression this card exists to prevent: a completed-work lookup that
+    // reads `job_steps` is only as durable as the run it belongs to.
+    const runStep = readFileSync(join(REPO_ROOT, 'packages/jobs/src/runtime/runStep.ts'), 'utf8')
+    expect(runStep).toContain('lookupCompletedWork')
+    expect(runStep).not.toContain('lookupCompletedKey(')
 
-    // Constraints declared *on* the ledger tables: a cascade here means deleting
-    // the parent deletes ledger rows. Two are expected and correct — a step
-    // belongs to its run, a run belongs to its account, and §14.6 deletes an
-    // account's data outright. A third would be a new way to lose the ledger.
-    const cascades = [...sql.matchAll(/ALTER TABLE "([a-z_]+)"[^;]*?REFERENCES "public"\."([a-z_]+)"[^;]*?ON DELETE cascade/g)]
-      .map(([, child, parent]) => `${child} -> ${parent}`)
-      .filter((edge) => LEDGER_TABLES.some((t) => edge.startsWith(`${t} `)))
-
-    expect(cascades.sort()).toEqual(['ingestion_jobs -> accounts', 'job_steps -> ingestion_jobs'])
+    const steps = readFileSync(join(REPO_ROOT, 'packages/jobs/src/runtime/steps.ts'), 'utf8')
+    expect(
+      /select\([^)]*jobSteps\.outputRef/.test(steps),
+      'steps.ts is reading a completed step’s output again; that is the deletable ledger this card removed',
+    ).toBe(false)
   })
 })
