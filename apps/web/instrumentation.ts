@@ -16,6 +16,12 @@ export async function register() {
   const { registerEnvSecrets } = await import('@sortiva/providers')
   registerEnvSecrets()
 
+  // main §4.2, tech §3 — the nightly subscription reconciliation is already in
+  // the worker's crontab; this is where its handler joins the registry. Lanes
+  // register their tasks here, before the worker reads the list.
+  const { registerBillingTasks } = await import('./app/api/webhooks/stripe/_lib/tasks')
+  registerBillingTasks()
+
   const { bootstrapWorker } = await import('@sortiva/jobs')
   await bootstrapWorker()
 }
