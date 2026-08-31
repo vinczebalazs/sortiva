@@ -22,7 +22,9 @@
     "db:generate": "pnpm --filter @sortiva/db run db:generate",
     "db:seed": "tsx scripts/seed-dev-db.mjs",
     "env:check": "node scripts/check-env-sync.mjs",
-    "posthog:check": "node scripts/posthog-provision.mjs --check"
+    "posthog:check": "node scripts/posthog-provision.mjs --check",
+    "contracts:check": "tsx scripts/contracts-check.mjs",
+    "stubs:report": "tsx scripts/stub-report.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

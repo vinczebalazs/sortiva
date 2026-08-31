@@ -70,6 +70,12 @@ jobs:
       - name: Tests
         run: pnpm test
 
+      - name: Contracts — zod and OpenAPI agree
+        run: pnpm contracts:check
+
+      - name: Wired-stub report
+        run: pnpm stubs:report
+
       - name: PostHog dashboards-as-code check
         run: pnpm posthog:check
 

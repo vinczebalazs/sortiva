@@ -14,8 +14,12 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
+    "@sortiva/rules": "workspace:*",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8",
-    "@sortiva/rules": "workspace:*"
+    "@sortiva/providers": "workspace:*"
+  },
+  "dependencies": {
+    "zod": "^4.5.4"
   }
 }

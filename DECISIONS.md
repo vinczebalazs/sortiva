@@ -16,6 +16,41 @@ Class (filled by audit): a: fine as-is | b: promote to spec | c: contradicts spe
 
 (entries below, newest first)
 
+## 2026-08-31 — T0.7 — The OpenAPI document is generated from the zod route table, not maintained beside it
+Decision: `packages/core/src/api/routes.ts` is the single source of truth — method, path, request and response schemas, conflict codes, spec citation. `packages/core/openapi.json` is generated from it with zod 4's built-in `z.toJSONSchema()` and committed; `pnpm contracts:check` regenerates and diffs, failing on any difference.
+Why: T0.7's done-when asks for "zero shape mismatches between zod and OpenAPI". Two hand-maintained descriptions of one API agree only while someone is watching, and the drift is invisible until a frontend built against the document meets a backend built against the schemas. Generating one from the other makes a mismatch structurally impossible and turns the check into something with teeth: it catches a hand-edited document and a schema change nobody regenerated. zod 4 ships the JSON Schema converter, so this adds no dependency beyond zod itself.
+Nearest spec: tech §3; build plan §4, T0.7.
+
+## 2026-08-31 — T0.7 — 55 routes derived from ui §1–§10 and tech §3; `/api/auth/*` excluded
+Decision: the route table enumerates every `/api/*` endpoint the UI spec's screens and the tech spec's conventions imply, with a spec citation on each. Auth.js's own routes are absent.
+Why: the UI spec describes screens and states, not endpoints, so the route list is derived rather than copied — which makes it a judgement call worth recording. Auth.js owns `/api/auth/*` and defines those shapes itself (main §4.1); documenting them would be describing someone else's contract. The route table is where a reviewer should look to check the derivation, and every entry names the section it came from.
+Nearest spec: ui §1–§10; tech §3; main §4.1.
+
+## 2026-08-31 — T0.7 — Entitlement failure is 402 with its own code, not a 409 conflict
+Decision: `CONFLICT_CODES` holds only codes a guarded transition returns (409). Entitlement failure is a 402 carrying `entitlement_inactive`; the preview's rate limit is a 429 carrying `rate_limited`. Routes declare `requiresEntitlement` and `rateLimited` flags, and the generator documents the corresponding response.
+Why: `pnpm contracts:check` flagged `entitlement_inactive` as a code no route returned — the check working as intended on its first run. tech §3 defines the 409 code as "the guard failed"; nothing about a resource's state conflicts when an account simply is not entitled to start new work. Keeping the enum to exactly the 409 codes is what lets the check assert that every code in it is reachable, which is what stops the UI building a toast that never fires. Invariant 16's other half is enforced by a test: no GET route may carry `requiresEntitlement`, because read access is never revoked.
+Nearest spec: tech §3; main §4.2, §3.2; invariant 16.
+
+## 2026-08-31 — T0.7 — Two product invariants are enforced in the schema shape, not per screen
+Decision: no response schema has a field that could carry a denominator or a target (invariant 23), and every user-facing "why" is a `{templateKey, params}` pair with no field for rendered prose (invariant 8). Both are asserted by a test over the generated document.
+Why: invariant 23 says the cap is a ceiling, not a promise, and invariant 8 says every why renders from a template over the scoring record and never from an LLM. Left as screen-level rules, both depend on every frontend card remembering them. Left out of the schema, a well-meaning API card adds `remaining: 27` and the rule is broken before any screen exists. A field that does not exist cannot be rendered.
+Nearest spec: main §8.6, §7.1, §9.6.8; ui §4; invariants 8 and 23.
+
+## 2026-08-31 — T0.7 — Stubs register themselves and emit `stub_used`; the report can fail per milestone
+Decision: every seam double extends `StubImplementation`, which registers `{contract, filledBy, behaviour, mustBeGoneBy}` and emits `stub_used` on every call it serves. `pnpm stubs:report` lists them; `--milestone=M3` fails if any stub was due to be gone by then, and `--fail-if-any` is the absolute form.
+Why: build plan §4 requires "a CI check fails if any stub is still wired at M3 exit", but different stubs are due at different milestones — `CatalogEvents` at M2, `existingTargetCheck` at M3, `JudgeLite` at M6. A single all-or-nothing gate would either fire too early or never. The `behaviour` line is the point of the registry: `existingTargetCheck` returning `no_match` forever means every CREATE bypasses the check main §7.7 makes mandatory — invariant 6 — and nothing about the product would look broken.
+Nearest spec: build plan §4; main §7.7; invariant 6.
+
+## 2026-08-31 — T0.7 — MSW handlers are generated from the route table, and every fixture is schema-validated
+Decision: `apiHandlers()` builds one handler per route from `ROUTES`, serving a fixture keyed by `METHOD /path`. A test fetches every route through a real `setupServer` and validates each response against that route's own zod schema. Handlers accept options to force a 409 or a 401 per route.
+Why: T0.7's done-when says "MSW mock server boots the UI shell", but the shell is Lane F's M9.1 card and does not exist — so the criterion cannot be met literally today. What is provable is the stronger half of the claim: a mock server built from the contract answers every route, and every answer validates against the schema the real API is bound to. A frontend built against these mocks therefore cannot be built against a shape the API will not produce. The forced-conflict option exists because tech §3's state-conflict toasts otherwise cannot be built until a real race happens in production.
+Nearest spec: build plan §4, T0.7; tech §3; ui §5.4.
+
+## 2026-08-31 — T0.7 — Seam contract types are declared in core, separate from the wave-2 tables
+Decision: `Opportunity`, `QueryCluster`, `ScheduledTopic`, `JudgeVerdict`, `CatalogEvent` and the notification type enum live in `packages/core/src/contracts/opportunities.ts`, independent of the `opportunities` / `opportunity_tasks` tables that schema wave 2 (T2.0) will add.
+Why: the same reasoning as T0.6's fixture shapes — the contracts must be frozen before the tables exist, and inventing the tables here would be a migration outside a schema wave. Where the two differ once wave 2 lands, the table is authoritative and its card maps to the contract shape at the seam. The cost is one mapping layer per producer; the alternative is a frozen contract that cannot be written until the schema it was supposed to precede has shipped.
+Nearest spec: main §13, §7.6; CLAUDE.md migration rule; build plan §4.
+
 ## 2026-08-31 — T0.6 — Eval, chaos and Playwright are separate vitest/Playwright gates, not part of `pnpm test`
 Decision: `pnpm eval` (`vitest.eval.config.ts`, `*.eval.spec.ts`), `pnpm chaos` (`vitest.chaos.config.ts`, `*.chaos.spec.ts`) and `pnpm e2e` (Playwright, `*.e2e.spec.ts`) each run on their own config; the per-merge `pnpm test` excludes all three.
 Why: tech §5 gives each a different cadence — evals "when prompts/models changed", the chaos test "nightly", Playwright against a deployed environment — and each has a different cost. Evals call the model and spend money; a chaos scenario restarts a full synthetic run several times. Folding them into the per-merge run would either make every merge slow and billable, or make them optional in practice. Separate configs reuse the runner we already have rather than adding tooling.
