@@ -91,6 +91,32 @@ export default tseslint.config(
     rules: { 'sortiva/no-raw-db-access': 'off' },
   },
 
+  // Lane A's database code, which is a repository layer living in the wrong
+  // directory. Every one of these files does name the account it acts for —
+  // they take an AccountScope, filter on accountId, or are legitimately
+  // system-scoped (the preview cache precedes any account, and the domain claim
+  // must look across accounts, since asking "does anyone hold this?" is the
+  // whole point of a claim). They sit in apps/web only because packages/db was
+  // held by another session throughout wave 1, which each card journalled at the
+  // time rather than working around silently.
+  //
+  // This is a location problem, not a scoping hole, and it is the durable half
+  // of remediation D5. The exemption ends when that card moves these into
+  // packages/db as scoped repositories. Do not add to this list: a new file that
+  // needs it belongs in packages/db in the first place.
+  {
+    files: [
+      'apps/web/app/api/account/_lib/load.ts',
+      'apps/web/app/api/auth/_lib/provisioning.ts',
+      'apps/web/app/api/billing/_lib/handlers.ts',
+      'apps/web/app/api/billing/_lib/store.ts',
+      'apps/web/app/api/domain/_lib/store.ts',
+      'apps/web/app/api/preview/_lib/config.ts',
+      'apps/web/app/api/preview/_lib/store.ts',
+    ],
+    rules: { 'sortiva/no-raw-db-access': 'off' },
+  },
+
   // Integration tests set up and inspect rows directly; the rule exists to stop
   // *production* code reaching a table without an account, not to stop a test
   // asserting on what the repositories wrote.

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { OutboundScrapeCap, PreviewRateLimiter, type PreviewPrompt } from '@sortiva/core'
-import { db, PostgresRequestCache } from '@sortiva/db'
+import { db, PostgresCostLedger, PostgresRequestCache } from '@sortiva/db'
 // Deep import, not the `@sortiva/llm` barrel: the barrel re-exports the prompt
 // loader, whose `new URL('../prompts/', import.meta.url)` names a *directory*,
 // which webpack cannot resolve — `next build` fails on it. See the note on
@@ -54,6 +54,10 @@ export function previewLlm(): AnthropicLlmClient {
   llm ??= new AnthropicLlmClient({
     cache: new PostgresRequestCache(db()),
     capture: previewCapture(),
+    // The ledger is a required argument so a paid call cannot be added without
+    // recording what it cost. Preview spend has no account behind it, so it is
+    // attributed to the target domain and lands under the ledger's system scope.
+    ledger: new PostgresCostLedger(db()),
   })
   return llm
 }
