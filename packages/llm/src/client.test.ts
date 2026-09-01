@@ -1,19 +1,27 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   InMemoryRequestCache,
+  LlmRequestFailure,
   LlmValidationFailure,
   accountAttribution,
   previewAttribution,
   type LlmRequest,
 } from '@sortiva/core'
-import { MockPosthogCapture } from '@sortiva/providers'
-import { AnthropicLlmClient, llmCacheKey } from './client'
+import { MockPosthogCapture, UnrecordedCapture } from '@sortiva/providers'
+import { InMemoryCostLedger, UnrecordedSpend } from '@sortiva/providers/spend/index'
+import { AnthropicLlmClient } from './client'
+import { llmCacheKey } from './key'
 import { MODELS } from './models'
 
 /**
  * T0.5 done-when: "cache tests (crash-after-response replays without
  * re-billing; retried LLM call replays identical completion); a cached call
  * captures `usd_cost: 0` / `cache_hit: true`".
+ *
+ * Card R2 adds the audit's path table (`docs/audits/T0.5.md`): every exit from
+ * this wrapper that reached Anthropic must leave a cost record in *both* the
+ * analytics capture (§14.7) and the spend ledger the §14.5 caps read
+ * (invariant 17), including the ones where the call failed.
  */
 
 const SCHEMA = {
@@ -44,6 +52,38 @@ function fakeAnthropic(responses: string[]) {
   }
 }
 
+/** A client whose every call rejects, so the failure paths can be walked. */
+function failingAnthropic(error: unknown) {
+  return {
+    messages: {
+      create: vi.fn(async () => {
+        throw error
+      }),
+    },
+  }
+}
+
+/**
+ * A streaming call the SDK started and that then died partway. `currentMessage`
+ * is the SDK's running snapshot of the message so far, including the usage the
+ * vendor has already billed for.
+ */
+function abortedStream(partialUsage: { input_tokens: number; output_tokens: number } | undefined) {
+  return {
+    messages: {
+      stream: vi.fn(() => ({
+        currentMessage: partialUsage ? { usage: partialUsage } : undefined,
+        finalMessage: async () => {
+          throw new Error('stream ended without producing a Message')
+        },
+      })),
+      create: vi.fn(async () => {
+        throw new Error('the streaming branch should have been taken')
+      }),
+    },
+  }
+}
+
 function request(overrides: Partial<LlmRequest> = {}): LlmRequest {
   return {
     callType: 'distill',
@@ -58,20 +98,27 @@ function request(overrides: Partial<LlmRequest> = {}): LlmRequest {
 
 describe('AnthropicLlmClient', () => {
   let capture: MockPosthogCapture
+  let ledger: InMemoryCostLedger
 
   beforeEach(() => {
     capture = new MockPosthogCapture()
+    ledger = new InMemoryCostLedger()
   })
+
+  function client(options: Record<string, unknown> = {}) {
+    return new AnthropicLlmClient({
+      capture,
+      ledger,
+      cache: new InMemoryRequestCache(),
+      ...options,
+    } as never)
+  }
 
   it('validates against the schema and returns the parsed output', async () => {
     const anthropic = fakeAnthropic(['{"summary":"a leather boot"}'])
-    const client = new AnthropicLlmClient({
-      anthropic: anthropic.client as never,
-      cache: new InMemoryRequestCache(),
-      capture,
-    })
-
-    const result = await client.complete<{ summary: string }>(request())
+    const result = await client({ anthropic: anthropic.client }).complete<{ summary: string }>(
+      request(),
+    )
 
     expect(result.output.summary).toBe('a leather boot')
     expect(result.attempts).toBe(1)
@@ -81,31 +128,25 @@ describe('AnthropicLlmClient', () => {
 
   it('retries once with the validation error, then succeeds (main §14.2)', async () => {
     const anthropic = fakeAnthropic(['{"wrong":true}', '{"summary":"corrected"}'])
-    const client = new AnthropicLlmClient({
-      anthropic: anthropic.client as never,
-      cache: new InMemoryRequestCache(),
-      capture,
-    })
-
-    const result = await client.complete<{ summary: string }>(request())
+    const result = await client({ anthropic: anthropic.client }).complete<{ summary: string }>(
+      request(),
+    )
 
     expect(result.output.summary).toBe('corrected')
     expect(result.attempts).toBe(2)
     expect(anthropic.client.messages.create).toHaveBeenCalledTimes(2)
-    // The repair turn carries the validation error back to the model.
     const second = anthropic.calls[1] as { messages: { content: string }[] }
     expect(second.messages.at(-1)!.content).toContain('failed schema validation')
+
+    // A repair loop is two calls' worth of spend, and shows as two rows.
+    expect(ledger.rows).toHaveLength(2)
   })
 
   it('raises the typed failed_validation after the second failure, never partial output', async () => {
     const anthropic = fakeAnthropic(['{"wrong":true}', '{"still":"wrong"}'])
-    const client = new AnthropicLlmClient({
-      anthropic: anthropic.client as never,
-      cache: new InMemoryRequestCache(),
-      capture,
-    })
-
-    await expect(client.complete(request())).rejects.toBeInstanceOf(LlmValidationFailure)
+    await expect(client({ anthropic: anthropic.client }).complete(request())).rejects.toBeInstanceOf(
+      LlmValidationFailure,
+    )
     expect(anthropic.client.messages.create).toHaveBeenCalledTimes(2)
   })
 
@@ -114,13 +155,9 @@ describe('AnthropicLlmClient', () => {
     // A completion that fails validation proves the ordering: the write must
     // already have happened by the time processing rejects it.
     const anthropic = fakeAnthropic(['not json at all', 'still not json'])
-    const client = new AnthropicLlmClient({
-      anthropic: anthropic.client as never,
-      cache,
-      capture,
-    })
-
-    await expect(client.complete(request())).rejects.toBeInstanceOf(LlmValidationFailure)
+    await expect(
+      client({ anthropic: anthropic.client, cache }).complete(request()),
+    ).rejects.toBeInstanceOf(LlmValidationFailure)
     expect(cache.writes).toHaveLength(2)
   })
 
@@ -130,18 +167,20 @@ describe('AnthropicLlmClient', () => {
 
     // Run one: the model answers, the response is cached, then the process dies
     // before the caller stored anything downstream.
-    const first = new AnthropicLlmClient({ anthropic: anthropic.client as never, cache, capture })
-    const before = await first.complete<{ summary: string }>(request())
+    const before = await client({ anthropic: anthropic.client, cache }).complete<{
+      summary: string
+    }>(request())
     expect(before.cacheHit).toBe(false)
 
-    // Run two: a fresh client, a fresh capture — the step retried.
+    // Run two: a fresh client, a fresh capture and ledger — the step retried.
     const replayCapture = new MockPosthogCapture()
-    const second = new AnthropicLlmClient({
+    const replayLedger = new InMemoryCostLedger()
+    const after = await new AnthropicLlmClient({
       anthropic: anthropic.client as never,
       cache,
       capture: replayCapture,
-    })
-    const after = await second.complete<{ summary: string }>(request())
+      ledger: replayLedger,
+    }).complete<{ summary: string }>(request())
 
     expect(after.output).toEqual(before.output)
     expect(after.cacheHit).toBe(true)
@@ -152,34 +191,33 @@ describe('AnthropicLlmClient', () => {
     const [replayed] = replayCapture.of('$ai_generation')
     expect(replayed!.properties.cache_hit).toBe(true)
     expect(replayed!.properties.$ai_total_cost_usd).toBe(0)
+    // §14.7 requirement (3) — the replay is recorded at zero, not omitted.
+    expect(replayLedger.rows).toHaveLength(1)
+    expect(replayLedger.rows[0]).toMatchObject({ usdCost: 0, cacheHit: true, outcome: 'succeeded' })
   })
 
   it('captures call_type, prompt_version and the domain group on every generation', async () => {
     const anthropic = fakeAnthropic(['{"summary":"x"}'])
-    const client = new AnthropicLlmClient({
-      anthropic: anthropic.client as never,
-      cache: new InMemoryRequestCache(),
-      capture,
-    })
-
-    await client.complete(request())
+    await client({ anthropic: anthropic.client }).complete(request())
 
     const [event] = capture.of('$ai_generation')
     expect(event!.properties.call_type).toBe('distill')
     expect(event!.properties.prompt_version).toBe('distill.v1')
     expect(event!.properties.cache_hit).toBe(false)
     expect(event!.groups).toEqual({ domain: 'example.com' })
+
+    expect(ledger.rows[0]).toMatchObject({
+      vendor: 'anthropic',
+      callType: 'distill',
+      cacheHit: false,
+      outcome: 'succeeded',
+    })
+    expect(ledger.rows[0]!.usdCost).toBeGreaterThan(0)
   })
 
   it('gives preview calls a target_domain property and no domain group (main §14.7)', async () => {
     const anthropic = fakeAnthropic(['a plain sentence'])
-    const client = new AnthropicLlmClient({
-      anthropic: anthropic.client as never,
-      cache: new InMemoryRequestCache(),
-      capture,
-    })
-
-    await client.complete(
+    await client({ anthropic: anthropic.client }).complete(
       request({
         callType: 'preview',
         promptVersion: 'preview.v1',
@@ -191,6 +229,9 @@ describe('AnthropicLlmClient', () => {
     const [event] = capture.of('$ai_generation')
     expect(event!.groups).toEqual({})
     expect(event!.properties.target_domain).toBe('nike.com')
+    // The ledger carries the same union, so `spend_events` files this under
+    // `preview_target` and never under an account.
+    expect(ledger.rows[0]!.attribution).toEqual({ kind: 'preview', targetDomain: 'nike.com' })
   })
 
   it('keys the cache on prompt version, model and prompt hash (main §14.3.6)', () => {
@@ -202,5 +243,144 @@ describe('AnthropicLlmClient', () => {
 
     expect(new Set([a, b, c, d]).size).toBe(4)
     expect(a).toBe(llmCacheKey('distill.v1', 'claude-haiku-4-5', undefined, [...messages]))
+  })
+
+  describe('every path that reached the vendor records a cost (remediation D2)', () => {
+    it('records a vendor error as failed spend, priced on the tokens it was sent', async () => {
+      const anthropic = failingAnthropic(new Error('500 internal server error'))
+      await expect(client({ anthropic }).complete(request())).rejects.toBeInstanceOf(
+        LlmRequestFailure,
+      )
+
+      expect(ledger.rows).toHaveLength(1)
+      expect(ledger.rows[0]).toMatchObject({
+        vendor: 'anthropic',
+        callType: 'distill',
+        cacheHit: false,
+        outcome: 'failed',
+      })
+      expect(ledger.rows[0]!.usdCost).toBeGreaterThan(0)
+
+      const [event] = capture.of('$ai_generation')
+      expect(event!.properties).toMatchObject({ outcome: 'failed', cost_estimated: true })
+    })
+
+    it('records a dropped connection or timeout as failed spend', async () => {
+      const anthropic = failingAnthropic(new Error('ETIMEDOUT'))
+      await expect(client({ anthropic }).complete(request())).rejects.toMatchObject({
+        errorClass: 'llm_unclassified',
+        retryable: true,
+      })
+      expect(ledger.withOutcome('failed')).toHaveLength(1)
+    })
+
+    it('records the tokens a stream generated before it was cut off (finding 3)', async () => {
+      const anthropic = abortedStream({ input_tokens: 900, output_tokens: 4_000 })
+      // Above the streaming threshold, so the streaming branch is taken.
+      await expect(
+        client({ anthropic }).complete(request({ maxTokens: 16_000 })),
+      ).rejects.toBeInstanceOf(LlmRequestFailure)
+
+      expect(anthropic.messages.stream).toHaveBeenCalledTimes(1)
+      expect(ledger.rows).toHaveLength(1)
+      expect(ledger.rows[0]!.outcome).toBe('failed')
+      // 900 input + 4000 output tokens at Haiku's $1 / $5 per million.
+      expect(ledger.rows[0]!.usdCost).toBeCloseTo(900 / 1e6 + (4_000 * 5) / 1e6, 9)
+      // Real vendor figures, not an estimate.
+      expect(capture.of('$ai_generation')[0]!.properties.cost_estimated).toBe(false)
+    })
+
+    it('falls back to an estimate when a stream died before any usage arrived', async () => {
+      const anthropic = abortedStream(undefined)
+      await expect(
+        client({ anthropic }).complete(request({ maxTokens: 16_000 })),
+      ).rejects.toBeInstanceOf(LlmRequestFailure)
+
+      expect(ledger.rows[0]!.usdCost).toBeGreaterThan(0)
+      expect(capture.of('$ai_generation')[0]!.properties.cost_estimated).toBe(true)
+    })
+
+    it('records the cost when our own cache write fails after a good answer (finding 5)', async () => {
+      const cache = new InMemoryRequestCache()
+      cache.writeBeforeProcessing = async () => {
+        throw new Error('database unavailable')
+      }
+      const anthropic = fakeAnthropic(['{"summary":"paid for and lost"}'])
+
+      await expect(
+        client({ anthropic: anthropic.client, cache }).complete(request()),
+      ).rejects.toThrow(/database unavailable/)
+
+      expect(ledger.rows).toHaveLength(1)
+      expect(ledger.rows[0]!.outcome).toBe('succeeded')
+      expect(ledger.rows[0]!.usdCost).toBeGreaterThan(0)
+    })
+
+    it('records nothing when the call never reached the vendor', async () => {
+      // An unknown model id is rejected before any request is built.
+      const anthropic = fakeAnthropic(['{"summary":"never sent"}'])
+      await expect(
+        client({ anthropic: anthropic.client }).complete(request({ model: 'claude-imaginary-9' })),
+      ).rejects.toThrow(/not in the model registry/)
+
+      expect(anthropic.client.messages.create).not.toHaveBeenCalled()
+      expect(ledger.rows).toHaveLength(0)
+      expect(capture.events).toHaveLength(0)
+    })
+
+    it('does not let a ledger outage mask the vendor error or lose the answer', async () => {
+      ledger.failWith = new Error('spend_events unreachable')
+
+      const ok = fakeAnthropic(['{"summary":"still delivered"}'])
+      const result = await client({ anthropic: ok.client }).complete<{ summary: string }>(request())
+      expect(result.output.summary).toBe('still delivered')
+
+      await expect(
+        client({ anthropic: failingAnthropic(new Error('boom')) }).complete(request()),
+      ).rejects.toBeInstanceOf(LlmRequestFailure)
+    })
+  })
+
+  describe('the per-call model override (finding 8)', () => {
+    it('prices the overriding model, not the tier it replaced', async () => {
+      const anthropic = fakeAnthropic(['{"summary":"x"}'])
+      // distill is a Haiku call type; Sonnet costs twice as much per token.
+      const result = await client({ anthropic: anthropic.client }).complete(
+        request({ model: MODELS.sonnet.id }),
+      )
+
+      expect(result.modelId).toBe(MODELS.sonnet.id)
+      expect(result.usdCost).toBeCloseTo((100 * 2) / 1e6 + (50 * 10) / 1e6, 9)
+      expect(ledger.rows[0]!.usdCost).toBeCloseTo(result.usdCost, 9)
+    })
+
+    it('rejects a moving alias, as the environment override already did (§14.2)', async () => {
+      const anthropic = fakeAnthropic(['{"summary":"x"}'])
+      await expect(
+        client({ anthropic: anthropic.client }).complete(request({ model: 'claude-sonnet-latest' })),
+      ).rejects.toThrow(/moving alias/)
+    })
+
+    it('refuses to override the judge at all (invariant 11)', async () => {
+      const anthropic = fakeAnthropic(['{"summary":"x"}'])
+      await expect(
+        client({ anthropic: anthropic.client }).complete(
+          request({ callType: 'judge', promptVersion: 'judge.v1', model: MODELS.haiku.id }),
+        ),
+      ).rejects.toThrow(/judge's model cannot be overridden/)
+    })
+  })
+
+  it('lets a caller opt out of recording only by naming it (finding 6)', async () => {
+    const anthropic = fakeAnthropic(['{"summary":"unmetered on purpose"}'])
+    const silent = new AnthropicLlmClient({
+      anthropic: anthropic.client as never,
+      capture: new UnrecordedCapture(),
+      ledger: new UnrecordedSpend(),
+    })
+
+    await expect(silent.complete(request())).resolves.toBeTruthy()
+    expect(ledger.rows).toHaveLength(0)
+    expect(capture.events).toHaveLength(0)
   })
 })

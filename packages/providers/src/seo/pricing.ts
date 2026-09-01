@@ -49,18 +49,56 @@ export const ENDPOINT_PRICES: Record<string, EndpointPrice> = {
   },
 }
 
+/** What one call costs, and whether we actually know that. */
+export interface EndpointCharge {
+  readonly usdCost: number
+  /**
+   * False when the endpoint has no price entry. The call still happened and was
+   * still billed, so it is recorded at zero with this flag rather than thrown
+   * away — see `chargeFor`.
+   */
+  readonly priceKnown: boolean
+}
+
 /**
- * An endpoint with no price entry costs *something*, and reporting it as zero
- * would quietly under-count spend — which is exactly what the §14.5 cap exists
- * to catch. Fail loudly instead.
+ * Audit `docs/audits/T0.5.md` finding 10. The previous version threw here, at
+ * request time — which is *after* DataForSEO has been called and billed and
+ * *before* the cost record is emitted, so the guard against under-counting
+ * caused an under-count and turned a successful paid call into a job failure.
+ *
+ * The hard failure now happens at module load (`assertEndpointsPriced` below),
+ * where a missing price is what it actually is: a deployment mistake, caught
+ * before a penny is spent. At request time an unpriced endpoint is recorded at
+ * zero and flagged, so it shows up in the ledger as a suspicious free non-replay
+ * (`usd_cost = 0` with `cache_hit = false`) instead of vanishing.
  */
-export function priceFor(endpoint: string, rows: number): number {
+export function chargeFor(endpoint: string, rows: number): EndpointCharge {
   const price = ENDPOINT_PRICES[endpoint]
-  if (!price) {
+  if (!price) return { usdCost: 0, priceKnown: false }
+  const total = price.perTaskUsd + price.perRowUsd * Math.max(0, rows)
+  return { usdCost: Math.round(total * 1_000_000) / 1_000_000, priceKnown: true }
+}
+
+/** The charge as a plain number. Zero for an unpriced endpoint — use `chargeFor` to tell the two apart. */
+export function priceFor(endpoint: string, rows: number): number {
+  return chargeFor(endpoint, rows).usdCost
+}
+
+/**
+ * Every endpoint we can call must have a price, or the §14.5 spend cap is
+ * reading a number that is wrong by an unknown amount. Runs when this module
+ * loads, so the process refuses to start rather than discovering it mid-job.
+ */
+export function assertEndpointsPriced(
+  endpoints: readonly string[] = Object.values(DATAFORSEO_ENDPOINTS),
+  prices: Record<string, EndpointPrice> = ENDPOINT_PRICES,
+): void {
+  const unpriced = endpoints.filter((endpoint) => !prices[endpoint])
+  if (unpriced.length > 0) {
     throw new Error(
-      `No price configured for DataForSEO endpoint "${endpoint}". Add it to ENDPOINT_PRICES — an unpriced endpoint would report zero cost and defeat the §14.5 spend cap.`,
+      `No price configured for DataForSEO endpoint(s) ${unpriced.map((e) => `"${e}"`).join(', ')}. Add them to ENDPOINT_PRICES — an unpriced endpoint reports zero cost and defeats the §14.5 spend cap.`,
     )
   }
-  const total = price.perTaskUsd + price.perRowUsd * Math.max(0, rows)
-  return Math.round(total * 1_000_000) / 1_000_000
 }
+
+assertEndpointsPriced()

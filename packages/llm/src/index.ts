@@ -1,8 +1,11 @@
-export { AnthropicLlmClient, classifyAnthropicError, llmCacheKey, type AnthropicLlmClientOptions } from './client'
-export { MockLlmClient, type RecordedLlmCall } from './mock'
+export { AnthropicLlmClient, classifyAnthropicError, type AnthropicLlmClientOptions } from './client'
+export { llmCacheKey } from './key'
+export { MockLlmClient, type MockLlmClientOptions, type RecordedLlmCall } from './mock'
 export {
   CALL_TYPE_TIER,
   MODELS,
+  estimateTokens,
+  overrideModel,
   resolveModel,
   specForModelId,
   usdCost,

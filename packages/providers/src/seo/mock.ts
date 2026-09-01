@@ -11,6 +11,7 @@ import type {
   SerpRequest,
   SerpResult,
 } from '@sortiva/core'
+import { recordSpend, type CostLedger } from '../spend'
 import { seoCacheKey } from './key'
 import { languageCodeFor, locationCodeFor } from './locations'
 import { DATAFORSEO_ENDPOINTS, priceFor } from './pricing'
@@ -43,6 +44,12 @@ export class MockSeoDataProvider implements SeoDataProvider {
   constructor(
     private readonly fixture: SeoFixture = {},
     private readonly capture?: Pick<PosthogCapture, 'captureSeoRequest'>,
+    /**
+     * Optional here, unlike the live provider: this is a test double, and a
+     * test that asserts something other than spend should not have to supply a
+     * ledger. Supply one to assert what a pipeline would have metered.
+     */
+    private readonly ledger?: CostLedger,
   ) {}
 
   reset(): void {
@@ -104,13 +111,13 @@ export class MockSeoDataProvider implements SeoDataProvider {
     )
   }
 
-  private serve<T>(
+  private async serve<T>(
     endpoint: string,
     cacheKey: string,
     data: T,
     rows: number,
     attribution: EventAttribution,
-  ): SeoResult<T> {
+  ): Promise<SeoResult<T>> {
     const cacheHit = this.served.has(cacheKey)
     if (!cacheHit) this.served.set(cacheKey, data)
 
@@ -125,7 +132,17 @@ export class MockSeoDataProvider implements SeoDataProvider {
       this.totalUsdCost = Math.round((this.totalUsdCost + meta.usdCost) * 1_000_000) / 1_000_000
     }
     this.calls.push(meta)
-    this.capture?.captureSeoRequest({ attribution, ...meta })
+    this.capture?.captureSeoRequest({ attribution, ...meta, properties: { outcome: 'succeeded' } })
+    if (this.ledger) {
+      await recordSpend(this.ledger, {
+        attribution,
+        vendor: 'dataforseo',
+        callType: endpoint,
+        usdCost: meta.usdCost,
+        cacheHit: meta.cacheHit,
+        outcome: 'succeeded',
+      })
+    }
     return { data: cacheHit ? (this.served.get(cacheKey) as T) : data, meta }
   }
 }

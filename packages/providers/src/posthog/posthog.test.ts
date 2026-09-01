@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { accountAttribution, previewAttribution } from '@sortiva/core'
-import { MockPosthogCapture, PosthogServerCapture } from './index'
+import { accountAttribution, createLogger, previewAttribution } from '@sortiva/core'
+import { MockPosthogCapture, PosthogServerCapture, UnrecordedCapture } from './index'
 
 /**
  * main §14.7's two attribution rules, asserted on the live wrapper rather than
@@ -64,11 +64,37 @@ describe('PosthogServerCapture', () => {
     expect(call[0].properties.scopes).toBe(4)
   })
 
-  it('captures nothing at all when no project key is configured', () => {
-    const capture = new PosthogServerCapture({ apiKey: undefined, enabled: false })
+  it('captures nothing at all when no project key is configured — but says so', () => {
+    // Audit `docs/audits/T0.5.md` finding 6: this used to degrade to silence
+    // with no error, no warning and no log line, so a deploy missing the key
+    // spent real money invisibly. It still degrades (local dev has no project),
+    // and it now announces itself once at construction.
+    const lines: string[] = []
+    const capture = new PosthogServerCapture({
+      apiKey: undefined,
+      enabled: false,
+      logger: createLogger({ sink: (line) => lines.push(line), minLevel: 'debug' }),
+    })
+
     expect(() =>
       capture.capture({ event: 'preview_requested', attribution: previewAttribution('x.com') }),
     ).not.toThrow()
+    expect(lines).toHaveLength(1)
+    expect(JSON.parse(lines[0]!)).toMatchObject({
+      level: 'warn',
+      msg: 'posthog_capture_disabled',
+    })
+  })
+})
+
+describe('UnrecordedCapture', () => {
+  it('is the way a caller says "no telemetry here" out loud', async () => {
+    const capture = new UnrecordedCapture()
+    expect(() =>
+      capture.capture({ event: 'preview_requested', attribution: previewAttribution('x.com') }),
+    ).not.toThrow()
+    await expect(capture.flush()).resolves.toBeUndefined()
+    await expect(capture.shutdown()).resolves.toBeUndefined()
   })
 })
 

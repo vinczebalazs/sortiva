@@ -3,6 +3,7 @@ import {
   type EventAttribution,
   type KeywordMetric,
   type KeywordMetricsRequest,
+  type Logger,
   type PosthogCapture,
   type RankedKeyword,
   type RankedKeywordsRequest,
@@ -13,20 +14,28 @@ import {
   type SerpRequest,
   type SerpResult,
 } from '@sortiva/core'
+import { recordSpend, type CostLedger, type SpendOutcome } from '../spend'
 import { seoCacheKey } from './key'
 import { languageCodeFor, locationCodeFor } from './locations'
-import { DATAFORSEO_ENDPOINTS, ENDPOINT_PRICES, priceFor } from './pricing'
+import { DATAFORSEO_ENDPOINTS, ENDPOINT_PRICES, chargeFor } from './pricing'
 
 /**
  * main §12.1 / §14.3.6 / §14.7 — the one path to DataForSEO. Invariant 25 makes
  * this the only place allowed to talk to the vendor, which is what guarantees:
  *
- * - **Every request is cached before it is processed** (invariant 20). A crash
- *   after DataForSEO answered but before we stored the derived data replays from
- *   `request_cache` on retry and is never re-billed.
- * - **Every call captures `dataforseo_request`** with `endpoint`, `billable`,
- *   `cache_hit` and `usd_cost` from the endpoint→price map (§14.7). Cache hits
- *   capture zero cost.
+ * - **Every request is cached before it is processed** (invariant 20). The
+ *   vendor's raw envelope is stored the moment it is parsed as JSON, before
+ *   anything inspects it — DataForSEO reports per-request failures *inside* an
+ *   otherwise-successful HTTP response, and inspecting first left a call the
+ *   vendor had already executed and billed with no cache row, so a retry paid
+ *   twice (audit `docs/audits/T0.5.md` finding 4).
+ * - **Every call that reaches the vendor is recorded twice**: as §14.7's
+ *   `dataforseo_request` analytics event, and as a row in the spend ledger the
+ *   §14.5 caps read (invariant 17). That includes the failures — a connection
+ *   drop, a rate limit, a 5xx and a task-level error all leave a row marked
+ *   `outcome: 'failed'`, because DataForSEO bills for work performed, not for
+ *   bytes we received. A call that never reached the vendor (no credentials)
+ *   records nothing, correctly.
  * - **Params are canonicalised** before hashing — sorted keys, normalised locale
  *   codes (§14.3.6) — so the same question asked twice is one billable read.
  */
@@ -55,13 +64,25 @@ export class SeoRequestFailure extends Error {
 }
 
 export interface DataForSeoProviderOptions {
+  /**
+   * §14.7's analytics capture. **Required** — an optional recorder meant a
+   * wrapper built without one spent real money and produced no record, with no
+   * error and no log line. Pass `new UnrecordedCapture()` to opt out by name
+   * (audit `docs/audits/T0.5.md` finding 6).
+   */
+  capture: Pick<PosthogCapture, 'captureSeoRequest'>
+  /**
+   * The §14.5 spend meter (invariant 17). Required for the same reason. Pass
+   * `new UnrecordedSpend()` to opt out by name.
+   */
+  ledger: CostLedger
   login?: string
   password?: string
   baseUrl?: string
   cache?: RequestCache
-  capture?: Pick<PosthogCapture, 'captureSeoRequest'>
   fetchImpl?: typeof fetch
   now?: () => number
+  logger?: Logger
 }
 
 interface TaskEnvelope {
@@ -79,18 +100,22 @@ export class DataForSeoProvider implements SeoDataProvider {
   private readonly password: string
   private readonly baseUrl: string
   private readonly cache: RequestCache
-  private readonly capture: Pick<PosthogCapture, 'captureSeoRequest'> | undefined
+  private readonly capture: Pick<PosthogCapture, 'captureSeoRequest'>
+  private readonly ledger: CostLedger
   private readonly fetchImpl: typeof fetch
   private readonly now: () => number
+  private readonly logger: Logger | undefined
 
-  constructor(options: DataForSeoProviderOptions = {}) {
+  constructor(options: DataForSeoProviderOptions) {
     this.login = options.login ?? process.env.DATAFORSEO_LOGIN ?? ''
     this.password = options.password ?? process.env.DATAFORSEO_PASSWORD ?? ''
     this.baseUrl = options.baseUrl ?? DEFAULT_BASE_URL
     this.cache = options.cache ?? new NullRequestCache()
     this.capture = options.capture
+    this.ledger = options.ledger
     this.fetchImpl = options.fetchImpl ?? fetch
     this.now = options.now ?? (() => Date.now())
+    this.logger = options.logger
   }
 
   async keywordMetrics(
@@ -134,9 +159,12 @@ export class DataForSeoProvider implements SeoDataProvider {
   }
 
   /**
-   * One billable read: a cache lookup, or an HTTP call whose raw result is
+   * One billable read: a cache lookup, or an HTTP call whose raw envelope is
    * stored before anything reads it. Returns the vendor's `result` array
    * untouched — shaping happens after the cache write, on purpose.
+   *
+   * Every exit from this method below the `post` call writes a cost record,
+   * because every one of them is a call DataForSEO has already performed.
    */
   private async call(
     endpoint: string,
@@ -147,40 +175,112 @@ export class DataForSeoProvider implements SeoDataProvider {
 
     const cached = await this.cache.read(cacheKey)
     if (cached) {
-      const rows = (cached.responseJson as { result?: unknown[] }).result ?? []
       const meta: SeoCallMeta = { endpoint, cacheHit: true, billable: false, usdCost: 0 }
-      this.capture?.captureSeoRequest({ attribution, ...meta })
+      // Processing the stored envelope happens *after* the read, so a replay
+      // walks the same path a fresh response does — including a stored
+      // task-level error, which fails identically instead of re-billing.
+      const rows = extractResult(endpoint, cached.responseJson as TaskEnvelope)
+      await this.record(attribution, meta, 'succeeded', true)
       return { rows, meta }
     }
 
-    const body = await this.post(endpoint, task)
-    const rows = extractResult(endpoint, body)
+    const sent = await this.post(endpoint, task)
+    if (!sent.reached) {
+      // Nothing was spent: no credentials means no request left the process.
+      throw sent.error
+    }
 
-    // Invariant 20 — the write happens before the response is processed.
-    await this.cache.writeBeforeProcessing({
-      cacheKey,
-      kind: 'dataforseo',
-      responseJson: { result: rows },
-      expiresAt: new Date(this.now() + REQUEST_CACHE_TTL_MS),
-    })
-
-    const meta: SeoCallMeta = {
+    // Below this line DataForSEO has done the work and billed for it, whatever
+    // happens next — so the record is written in a `finally` that no exception
+    // and no early return can skip.
+    const floor = chargeFor(endpoint, 0)
+    let meta: SeoCallMeta = {
       endpoint,
       cacheHit: false,
       billable: true,
-      usdCost: priceFor(endpoint, countRows(endpoint, rows)),
+      usdCost: floor.usdCost,
     }
-    this.capture?.captureSeoRequest({ attribution, ...meta })
-    return { rows, meta }
+    let priceKnown = floor.priceKnown
+    let outcome: SpendOutcome = 'failed'
+    try {
+      if (!sent.ok) throw sent.error
+
+      // Invariant 20 / §14.3.6 — the raw envelope is stored before it is
+      // inspected. `extractResult` below is processing: it is where a
+      // task-level failure inside a 200 body is found.
+      await this.cache.writeBeforeProcessing({
+        cacheKey,
+        kind: 'dataforseo',
+        responseJson: sent.body,
+        expiresAt: new Date(this.now() + REQUEST_CACHE_TTL_MS),
+      })
+
+      const rows = extractResult(endpoint, sent.body)
+      const charge = chargeFor(endpoint, countRows(endpoint, rows))
+      meta = { endpoint, cacheHit: false, billable: true, usdCost: charge.usdCost }
+      priceKnown = charge.priceKnown
+      outcome = 'succeeded'
+      return { rows, meta }
+    } finally {
+      await this.record(attribution, meta, outcome, priceKnown)
+    }
   }
 
-  private async post(endpoint: string, task: Record<string, unknown>): Promise<TaskEnvelope> {
+  /**
+   * §14.7 requires the analytics event; invariant 17 requires the database
+   * counter the §14.5 caps read. Both, from one place, so neither can be
+   * forgotten on a path the other covers.
+   */
+  private async record(
+    attribution: EventAttribution,
+    meta: SeoCallMeta,
+    outcome: SpendOutcome,
+    priceKnown: boolean,
+  ): Promise<void> {
+    if (!priceKnown) {
+      this.logger?.error('dataforseo_endpoint_unpriced', { endpoint: meta.endpoint })
+    }
+    this.capture.captureSeoRequest({
+      attribution,
+      ...meta,
+      properties: { outcome, ...(priceKnown ? {} : { price_unknown: true }) },
+    })
+    await recordSpend(
+      this.ledger,
+      {
+        attribution,
+        vendor: 'dataforseo',
+        callType: meta.endpoint,
+        usdCost: meta.usdCost,
+        cacheHit: meta.cacheHit,
+        outcome,
+      },
+      this.logger,
+    )
+  }
+
+  /**
+   * Returns rather than throws, because the caller has to distinguish two cases
+   * a thrown error cannot: a request that never left the process (nothing
+   * spent) from one the vendor answered badly (spent).
+   */
+  private async post(
+    endpoint: string,
+    task: Record<string, unknown>,
+  ): Promise<
+    | { reached: false; error: SeoRequestFailure }
+    | { reached: true; ok: true; body: TaskEnvelope }
+    | { reached: true; ok: false; error: SeoRequestFailure }
+  > {
     if (!this.login || !this.password) {
-      throw new SeoRequestFailure(
-        false,
-        'dataforseo_unconfigured',
-        'DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD are not set. Use MockSeoDataProvider outside production (tech §5).',
-      )
+      return {
+        reached: false,
+        error: new SeoRequestFailure(
+          false,
+          'dataforseo_unconfigured',
+          'DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD are not set. Use MockSeoDataProvider outside production (tech §5).',
+        ),
+      }
     }
 
     const auth = Buffer.from(`${this.login}:${this.password}`).toString('base64')
@@ -192,21 +292,49 @@ export class DataForSeoProvider implements SeoDataProvider {
         body: JSON.stringify([task]),
       })
     } catch (error) {
-      throw new SeoRequestFailure(true, 'dataforseo_connection', `${endpoint}: ${String(error)}`, {
-        cause: error,
-      })
+      // A dropped connection or a timeout: the request was sent, so the vendor
+      // may well have run it. Treated as reached, and recorded.
+      return {
+        reached: true,
+        ok: false,
+        error: new SeoRequestFailure(
+          true,
+          'dataforseo_connection',
+          `${endpoint}: ${String(error)}`,
+          { cause: error },
+        ),
+      }
     }
 
     if (!response.ok) {
       const retryable = response.status === 429 || response.status >= 500
-      throw new SeoRequestFailure(
-        retryable,
-        retryable ? 'dataforseo_upstream' : 'dataforseo_bad_request',
-        `${endpoint}: DataForSEO returned ${response.status}`,
-      )
+      return {
+        reached: true,
+        ok: false,
+        error: new SeoRequestFailure(
+          retryable,
+          retryable ? 'dataforseo_upstream' : 'dataforseo_bad_request',
+          `${endpoint}: DataForSEO returned ${response.status}`,
+        ),
+      }
     }
 
-    return (await response.json()) as TaskEnvelope
+    try {
+      return { reached: true, ok: true, body: (await response.json()) as TaskEnvelope }
+    } catch (error) {
+      // A 200 whose body is truncated or not JSON. The vendor answered; we
+      // cannot use it, and cannot cache what we could not parse.
+      return {
+        reached: true,
+        ok: false,
+        error: new SeoRequestFailure(
+          true,
+          'dataforseo_unreadable',
+          `${endpoint}: DataForSEO returned an unreadable body`,
+          { cause: error },
+        ),
+      }
+    }
   }
 }
 
