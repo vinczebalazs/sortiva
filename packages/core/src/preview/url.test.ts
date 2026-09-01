@@ -54,3 +54,37 @@ describe('normalisePreviewUrl', () => {
     )
   })
 })
+
+describe('preview spend joins to the account that later signs up (main §14.7)', () => {
+  // The preview fetches the exact address someone pasted, but a merchant claims
+  // the registrable domain. Attributing spend to the exact host would leave a
+  // subdomain preview permanently unjoinable to the account it belongs to.
+  it.each([
+    ['shop.example.co.uk', 'example.co.uk'],
+    ['blog.example.com', 'example.com'],
+    ['www.example.com', 'example.com'],
+    ['example.com', 'example.com'],
+  ])('%s is billed to %s', (input, billable) => {
+    expect(normalisePreviewUrl(input).billableDomain).toBe(billable)
+  })
+
+  it('keeps the exact host for the event property, so abuse is still visible', () => {
+    const target = normalisePreviewUrl('shop.example.co.uk')
+    expect(target.domain).toBe('shop.example.co.uk')
+    expect(target.billableDomain).toBe('example.co.uk')
+  })
+
+  it('bills a Shopify-hosted store as one tenant, matching the claim', () => {
+    // Two shops on myshopify.com are two businesses, so the claim stops a level
+    // lower there — and the billing key has to agree, or the join breaks again.
+    expect(normalisePreviewUrl('acme.myshopify.com').billableDomain).toBe('acme.myshopify.com')
+  })
+
+  it('falls back to the exact host when no registrable domain resolves', () => {
+    // The preview accepts addresses the claim would reject. An unjoinable spend
+    // row is better than an unrecorded one.
+    const target = normalisePreviewUrl('example.invalidtld')
+    expect(target.billableDomain).toBe(target.domain)
+  })
+})
+

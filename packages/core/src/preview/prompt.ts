@@ -24,6 +24,8 @@ import type { PreviewPrompt } from './ports'
 export function buildPreviewLlmRequest(input: {
   prompt: PreviewPrompt
   domain: string
+  /** The registrable domain this spend is billed to, so it joins to a later signup. */
+  billableDomain: string
   pageText: string
 }): LlmRequest {
   return {
@@ -38,6 +40,6 @@ export function buildPreviewLlmRequest(input: {
     ],
     maxTokens: PREVIEW_MAX_OUTPUT_TOKENS,
     temperature: PREVIEW_TEMPERATURE,
-    attribution: previewAttribution(input.domain),
+    attribution: previewAttribution(input.domain, input.billableDomain),
   }
 }

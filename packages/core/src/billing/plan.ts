@@ -1,3 +1,4 @@
+import type { RemotePrice } from './provider'
 import { CANCELLATION_FACTS, PLAN_CANCEL_ANYTIME, PLAN_CAP_LINE } from './copy'
 import type { StripeBillingProvider } from './provider'
 
@@ -151,11 +152,17 @@ async function planPrices(deps: PlanPricingDeps): Promise<readonly PlanPrice[]> 
   const cached = priceCache.get(key)
   if (cached && cached.expiresAt > now) return cached.prices
 
-  if (!deps.stripe.fetchPrices) {
-    throw new PlanPricesUnavailable('the Stripe provider cannot read prices yet')
+  // Whatever stops us reading Stripe — unreachable, a bad key, a rejected
+  // request — reaches the screen as one thing: no price, so pause. The screen
+  // has nothing useful to do with the difference.
+  let remote: readonly RemotePrice[]
+  try {
+    remote = await deps.stripe.fetchPrices([monthly, annual])
+  } catch (error) {
+    throw new PlanPricesUnavailable(
+      `Stripe prices could not be read: ${error instanceof Error ? error.message : String(error)}`,
+    )
   }
-
-  const remote = await deps.stripe.fetchPrices([monthly, annual])
   const byId = new Map(remote.map((price) => [price.priceId, price]))
 
   const prices = BILLING_INTERVALS.map((interval) => {

@@ -68,3 +68,32 @@ describe('Checkout sessions are idempotent on a derived key (main §14.3.2)', ()
     expect(stripe.checkoutSessions).toHaveLength(2)
   })
 })
+
+describe('reading the plan prices', () => {
+  it('answers with the prices it has', async () => {
+    const stripe = new MockStripeProvider()
+    stripe.setPrice({ priceId: 'price_monthly', unitAmountMinor: 8900, currency: 'gbp' })
+    stripe.setPrice({ priceId: 'price_annual', unitAmountMinor: 85440, currency: 'gbp' })
+    const prices = await stripe.fetchPrices(['price_monthly', 'price_annual'])
+    expect(prices).toEqual([
+      { priceId: 'price_monthly', unitAmountMinor: 8900, currency: 'gbp' },
+      { priceId: 'price_annual', unitAmountMinor: 85440, currency: 'gbp' },
+    ])
+  })
+
+  it('omits an id Stripe does not have, rather than failing', async () => {
+    // Matches the real client. A configured id that does not exist is a
+    // configuration mistake, and the caller turns a missing price into a
+    // paused plan screen rather than showing half a plan.
+    const stripe = new MockStripeProvider()
+    stripe.setPrice({ priceId: 'price_monthly', unitAmountMinor: 8900, currency: 'gbp' })
+    expect(await stripe.fetchPrices(['price_monthly', 'price_gone'])).toHaveLength(1)
+  })
+
+  it('surfaces a Stripe outage rather than reporting no prices', async () => {
+    const stripe = new MockStripeProvider()
+    stripe.setPrice({ priceId: 'price_monthly', unitAmountMinor: 8900, currency: 'gbp' })
+    stripe.failNext(new Error('stripe unreachable'))
+    await expect(stripe.fetchPrices(['price_monthly'])).rejects.toThrow('stripe unreachable')
+  })
+})

@@ -232,7 +232,11 @@ describe('AnthropicLlmClient', () => {
     expect(event!.properties.target_domain).toBe('nike.com')
     // The ledger carries the same union, so `spend_events` files this under
     // `preview_target` and never under an account.
-    expect(ledger.rows[0]!.attribution).toEqual({ kind: 'preview', targetDomain: 'nike.com' })
+    expect(ledger.rows[0]!.attribution).toEqual({
+      kind: 'preview',
+      targetDomain: 'nike.com',
+      billableDomain: 'nike.com',
+    })
   })
 
   it('keys the cache on prompt version, model and prompt hash (main §14.3.6)', () => {

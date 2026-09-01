@@ -1,3 +1,4 @@
+import { normaliseClaimDomain } from '../domain/normalise'
 /**
  * main §3.2 — "cache key = normalized domain".
  *
@@ -22,6 +23,17 @@ export class InvalidPreviewUrl extends Error {
 export interface NormalisedPreviewTarget {
   /** The `preview_cache` key and the `target_domain` event property (main §14.7). */
   readonly domain: string
+  /**
+   * The registrable domain behind `domain` — what this business would claim at
+   * signup, resolved with the same normaliser the claim itself uses, so the two
+   * agree by construction rather than by coincidence. Spend is recorded against
+   * this so preview costs join to the account that later signs up.
+   *
+   * Falls back to `domain` when the claim normaliser cannot resolve one: the
+   * preview accepts addresses the claim would reject, and an unjoinable spend
+   * row is better than an unrecorded one.
+   */
+  readonly billableDomain: string
   /** main §3.3 step 1 — "fetch homepage HTML", whatever path was pasted. */
   readonly homepageUrl: string
 }
@@ -65,10 +77,24 @@ export function normalisePreviewUrl(input: string): NormalisedPreviewTarget {
 
   // A non-standard port is not part of a site's identity and main §3.2 permits
   // only 80/443 anyway; dropping it here keeps one cache key per site.
-  return { domain: host, homepageUrl: `https://${host}/` }
+  return { domain: host, billableDomain: billableFor(host), homepageUrl: `https://${host}/` }
 }
 
 /** main §3.3 step 4 — a second fetch, on the same host, at one of the known about paths. */
 export function aboutUrl(domain: string, path: string): string {
   return `https://${domain}${path}`
+}
+
+/**
+ * The registrable domain a preview's spend should be attributed to. Uses the
+ * claim's own normaliser so preview spend and the later claim land on the same
+ * key; falls back to the exact host when it cannot resolve one, since recording
+ * spend matters more than being able to join it.
+ */
+function billableFor(host: string): string {
+  try {
+    return normaliseClaimDomain(host).normalized
+  } catch {
+    return host
+  }
 }

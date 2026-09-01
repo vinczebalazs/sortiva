@@ -81,13 +81,12 @@ export interface StripeBillingProvider {
    * main §4.2 — "amounts live in Stripe only — the app never hardcodes a dollar
    * amount", so the only way to show a price is to ask Stripe what it is.
    *
-   * **Optional, and currently unimplemented by both the real client and the
-   * mock**: those live in `packages/providers/src/stripe/`, which card T1.2a was
-   * not permitted to edit. `/api/billing/plan` answers 503 while it is absent,
-   * which is main §14.4's "degrade to pause" rather than inventing an amount.
-   * See DECISIONS 2026-09-01 T1.2a.
+   * A price id Stripe does not have is simply absent from the answer rather than
+   * an error, so a misconfigured id pauses the plan screen instead of showing
+   * half a plan — main §14.4's "degrade to pause" rather than inventing an
+   * amount.
    */
-  fetchPrices?(priceIds: readonly string[]): Promise<readonly RemotePrice[]>
+  fetchPrices(priceIds: readonly string[]): Promise<readonly RemotePrice[]>
 }
 
 export class WebhookSignatureError extends Error {

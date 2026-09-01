@@ -149,10 +149,19 @@ describe('plan prices come from Stripe and are cached (main §4.2, ui §2.3)', (
 
   it('pauses rather than inventing an amount when Stripe cannot be read', async () => {
     // main §14.4 — degrade to pause, never to something half-right. A wrong
-    // price on a purchase screen is worse than no price.
-    await expect(planWithPrices({ stripe: {}, prices })).rejects.toBeInstanceOf(
-      PlanPricesUnavailable,
-    )
+    // price on a purchase screen is worse than no price. Every reason Stripe
+    // might be unreadable arrives as the same thing, because the screen has
+    // nothing useful to do with the difference.
+    await expect(
+      planWithPrices({
+        stripe: {
+          fetchPrices: async () => {
+            throw new Error('stripe unreachable')
+          },
+        },
+        prices,
+      }),
+    ).rejects.toBeInstanceOf(PlanPricesUnavailable)
   })
 
   it('pauses when Stripe answers without one of the configured prices', async () => {

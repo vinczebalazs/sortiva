@@ -5,6 +5,7 @@ import {
   type CheckoutSessionRequest,
   type PortalSession,
   type PortalSessionRequest,
+  type RemotePrice,
   type RemoteSubscription,
   type StripeBillingProvider,
   type StripeEventEnvelope,
@@ -33,6 +34,7 @@ export class MockStripeProvider implements StripeBillingProvider {
 
   private readonly byIdempotencyKey = new Map<string, CheckoutSession>()
   private readonly subscriptions = new Map<string, RemoteSubscription>()
+  private readonly prices = new Map<string, RemotePrice>()
   private nextFailure: Error | undefined
 
   constructor(readonly webhookSecret = 'whsec_mock') {}
@@ -40,6 +42,15 @@ export class MockStripeProvider implements StripeBillingProvider {
   /** Seeds what `fetchSubscription` will return — the reconciliation's input. */
   setSubscription(subscription: RemoteSubscription): void {
     this.subscriptions.set(subscription.subscriptionId, subscription)
+  }
+
+  /** Seeds what `fetchPrices` will return — the plan screen's input. */
+  setPrice(price: RemotePrice): void {
+    this.prices.set(price.priceId, price)
+  }
+
+  removePrice(priceId: string): void {
+    this.prices.delete(priceId)
   }
 
   removeSubscription(subscriptionId: string): void {
@@ -56,6 +67,7 @@ export class MockStripeProvider implements StripeBillingProvider {
     this.portalSessions.length = 0
     this.byIdempotencyKey.clear()
     this.subscriptions.clear()
+    this.prices.clear()
     this.nextFailure = undefined
   }
 
@@ -128,5 +140,16 @@ export class MockStripeProvider implements StripeBillingProvider {
   async fetchSubscription(subscriptionId: string): Promise<RemoteSubscription | null> {
     this.throwIfPrimed()
     return this.subscriptions.get(subscriptionId) ?? null
+  }
+
+  /**
+   * Mirrors the real client: an id Stripe does not have is simply absent from
+   * the answer, so a test of a misconfigured price id sees what production does.
+   */
+  async fetchPrices(priceIds: readonly string[]): Promise<readonly RemotePrice[]> {
+    this.throwIfPrimed()
+    return priceIds
+      .map((priceId) => this.prices.get(priceId))
+      .filter((price): price is RemotePrice => price !== undefined)
   }
 }

@@ -11,7 +11,7 @@ import {
   type TestDb,
 } from './testing'
 import { accountScope, systemScope } from './scope'
-import { claimDomain } from './repositories/domains'
+import { insertDomainRow } from './repositories/domains'
 import { emitNotification, queueEmail } from './repositories/notifications'
 import { recordStripeEvent, recordWebhookEvent, tripAccountFlag } from './repositories/system'
 
@@ -49,13 +49,13 @@ describe.skipIf(!available)('schema wave 1 constraints', () => {
       const a = await insertAccount(pool, 'a@example.com')
       const b = await insertAccount(pool, 'b@example.com')
 
-      const first = await claimDomain(ctx.db, accountScope(a), 'shop.example.co.uk')
+      const first = await insertDomainRow(ctx.db, accountScope(a), 'shop.example.co.uk')
       expect(first?.domainNormalized).toBe('shop.example.co.uk')
 
       // The repository claims with ON CONFLICT DO NOTHING, so the loser gets
       // undefined rather than an exception — main §5's "claim is an
       // insert-with-conflict, never check-then-insert".
-      const second = await claimDomain(ctx.db, accountScope(b), 'shop.example.co.uk')
+      const second = await insertDomainRow(ctx.db, accountScope(b), 'shop.example.co.uk')
       expect(second).toBeUndefined()
 
       const { rows } = await pool.query('SELECT account_id FROM domains')
@@ -81,7 +81,7 @@ describe.skipIf(!available)('schema wave 1 constraints', () => {
 
     it('rejects a second domain on the same account (one domain per account)', async () => {
       const a = await insertAccount(pool, 'a@example.com')
-      await claimDomain(ctx.db, accountScope(a), 'first.example.com')
+      await insertDomainRow(ctx.db, accountScope(a), 'first.example.com')
       const error = await pool
         .query('INSERT INTO domains (account_id, domain_normalized) VALUES ($1, $2)', [
           a,
@@ -94,16 +94,16 @@ describe.skipIf(!available)('schema wave 1 constraints', () => {
     it('lets two accounts claim two different domains', async () => {
       const a = await insertAccount(pool, 'a@example.com')
       const b = await insertAccount(pool, 'b@example.com')
-      expect(await claimDomain(ctx.db, accountScope(a), 'a.example.com')).toBeDefined()
-      expect(await claimDomain(ctx.db, accountScope(b), 'b.example.com')).toBeDefined()
+      expect(await insertDomainRow(ctx.db, accountScope(a), 'a.example.com')).toBeDefined()
+      expect(await insertDomainRow(ctx.db, accountScope(b), 'b.example.com')).toBeDefined()
     })
 
     it('exactly one of two concurrent claims succeeds', async () => {
       const a = await insertAccount(pool, 'a@example.com')
       const b = await insertAccount(pool, 'b@example.com')
       const results = await Promise.all([
-        claimDomain(ctx.db, accountScope(a), 'race.example.com'),
-        claimDomain(ctx.db, accountScope(b), 'race.example.com'),
+        insertDomainRow(ctx.db, accountScope(a), 'race.example.com'),
+        insertDomainRow(ctx.db, accountScope(b), 'race.example.com'),
       ])
       expect(results.filter(Boolean)).toHaveLength(1)
     })
@@ -310,7 +310,7 @@ describe.skipIf(!available)('schema wave 1 constraints', () => {
 
     it('cascades wave-1 rows when an account is deleted (main §14.6, tech §1.5)', async () => {
       const a = await insertAccount(pool, 'a@example.com')
-      await claimDomain(ctx.db, accountScope(a), 'gone.example.com')
+      await insertDomainRow(ctx.db, accountScope(a), 'gone.example.com')
       await emitNotification(ctx.db, accountScope(a), {
         type: 'article_published',
         dedupeKey: 'x',

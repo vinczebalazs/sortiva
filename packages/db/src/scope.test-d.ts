@@ -9,7 +9,7 @@
  * Nothing here runs; the file exports a function that is never called.
  */
 import type { Db } from './client'
-import { claimDomain, findDomainForAccount, transitionDomainState } from './repositories/domains'
+import { insertDomainRow, findDomainForAccount, transitionDomainState } from './repositories/domains'
 import { emitNotification, queueEmail } from './repositories/notifications'
 import { isAccountFlagActive, recordWebhookEvent } from './repositories/system'
 import { accountScope, systemScope } from './scope'
@@ -19,7 +19,7 @@ export async function proofs(db: Db): Promise<void> {
   const system = systemScope('webhook receipt, before the account is resolved')
 
   // ── The supported calls type-check. ────────────────────────────────────────
-  await claimDomain(db, scope, 'example.com')
+  await insertDomainRow(db, scope, 'example.com')
   await findDomainForAccount(db, scope)
   await transitionDomainState(db, scope, 'ingesting', 'needs_confirmation')
   await emitNotification(db, scope, { type: 'article_published', dedupeKey: 'a1' })
@@ -38,7 +38,7 @@ export async function proofs(db: Db): Promise<void> {
 
   // ── Omitting the scope entirely. ───────────────────────────────────────────
   // @ts-expect-error scope is required
-  await claimDomain(db, 'example.com')
+  await insertDomainRow(db, 'example.com')
   // @ts-expect-error scope is required
   await findDomainForAccount(db)
   // @ts-expect-error scope is required
@@ -48,7 +48,7 @@ export async function proofs(db: Db): Promise<void> {
   // ── matters: a raw string is exactly what a request body would supply, ─────
   // ── and tech §3 forbids account_id coming from there. ──────────────────────
   // @ts-expect-error a raw account id is not an AccountScope
-  await claimDomain(db, '11111111-1111-1111-1111-111111111111', 'example.com')
+  await insertDomainRow(db, '11111111-1111-1111-1111-111111111111', 'example.com')
   // @ts-expect-error a structurally-similar object is not an AccountScope
   await findDomainForAccount(db, { accountId: '11111111-1111-1111-1111-111111111111' })
 

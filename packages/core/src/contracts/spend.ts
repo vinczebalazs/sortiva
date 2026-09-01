@@ -80,7 +80,7 @@ export function spendAttribution(attribution: EventAttribution): {
   previewTarget: string | null
 } {
   return attribution.kind === 'preview'
-    ? { accountId: null, previewTarget: attribution.targetDomain }
+    ? { accountId: null, previewTarget: attribution.billableDomain }
     : { accountId: attribution.accountId, previewTarget: null }
 }
 

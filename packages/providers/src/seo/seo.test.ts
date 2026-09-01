@@ -245,7 +245,11 @@ describe('DataForSeoProvider', () => {
       attribution: previewAttribution('nike.com'),
     })
 
-    expect(ledger.rows[0]!.attribution).toEqual({ kind: 'preview', targetDomain: 'nike.com' })
+    expect(ledger.rows[0]!.attribution).toEqual({
+      kind: 'preview',
+      targetDomain: 'nike.com',
+      billableDomain: 'nike.com',
+    })
     expect(capture.of('dataforseo_request')[0]!.groups).toEqual({})
   })
 

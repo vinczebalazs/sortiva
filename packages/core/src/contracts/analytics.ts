@@ -26,14 +26,25 @@ export type EventAttribution =
       readonly kind: 'preview'
       /** The domain the visitor asked about. Property only, never a group (main §14.7). */
       readonly targetDomain: string
+      /**
+       * The registrable domain behind `targetDomain` — what a merchant claims at
+       * signup. Spend is recorded against this so a visitor who previews
+       * `shop.example.com` and later claims `example.com` has that spend join to
+       * their account, which main §14.7 requires. The exact host stays on the
+       * event property, where it is what you want for spotting abuse.
+       */
+      readonly billableDomain: string
     }
 
 export function accountAttribution(accountId: string, domain?: string): EventAttribution {
   return domain === undefined ? { kind: 'account', accountId } : { kind: 'account', accountId, domain }
 }
 
-export function previewAttribution(targetDomain: string): EventAttribution {
-  return { kind: 'preview', targetDomain }
+export function previewAttribution(
+  targetDomain: string,
+  billableDomain: string = targetDomain,
+): EventAttribution {
+  return { kind: 'preview', targetDomain, billableDomain }
 }
 
 /** PostHog group type name. main §14.7: "group key = domain_normalized". */

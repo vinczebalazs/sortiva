@@ -15,7 +15,20 @@ export type DomainRow = typeof domains.$inferSelect
  * `domainNormalized` must already be PSL-normalised (main §2). Normalisation
  * itself is `packages/core`'s job (T1.4); this layer stores what it is given.
  */
-export async function claimDomain(
+/**
+ * Inserts one domain row, relying on the unique index to reject a second claim.
+ *
+ * This is NOT how a merchant claims a domain. The sanctioned path is
+ * `claimDomain` in `packages/core/src/domain/claim.ts`, which runs inside one
+ * transaction, reads the conflicting row back so it can say *which* of the four
+ * outcomes happened, and creates the ingestion run alongside the claim. This
+ * function does none of that: it returns undefined for every kind of conflict.
+ *
+ * It survives because the constraint tests need a minimal writer to prove the
+ * unique index itself fires, and because the compile-time scope proof uses it as
+ * its example. Do not call it from product code.
+ */
+export async function insertDomainRow(
   db: Db,
   scope: AccountScope,
   domainNormalized: string,

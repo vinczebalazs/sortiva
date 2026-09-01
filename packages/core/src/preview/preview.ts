@@ -8,7 +8,7 @@ import {
 } from './limits'
 import type { PreviewDependencies } from './ports'
 import { buildPreviewLlmRequest } from './prompt'
-import { aboutUrl, InvalidPreviewUrl, normalisePreviewUrl } from './url'
+import { aboutUrl, InvalidPreviewUrl, normalisePreviewUrl, type NormalisedPreviewTarget } from './url'
 
 /**
  * main §3 — the unauthenticated preview, "the lure". A stranger pastes a URL and
@@ -86,7 +86,7 @@ export async function runPreview(
   const now = deps.now ?? (() => new Date())
   const startedAt = Date.now()
 
-  let target: { domain: string; homepageUrl: string }
+  let target: NormalisedPreviewTarget
   try {
     target = normalisePreviewUrl(input.url)
   } catch (error) {
@@ -94,7 +94,7 @@ export async function runPreview(
     throw error
   }
   const { domain } = target
-  const attribution = previewAttribution(domain)
+  const attribution = previewAttribution(domain, target.billableDomain)
 
   const limit = deps.rateLimiter.check(input.clientIp)
   if (!limit.allowed) {
@@ -167,7 +167,7 @@ export async function runPreview(
 
     if (extraction.text.trim() === '') return serve(null, false, 'thin_content')
 
-    const summary = await summariseQuietly(deps, domain, extraction.text)
+    const summary = await summariseQuietly(deps, domain, target.billableDomain, extraction.text)
     if (summary === undefined) return serve(null, false, 'summary_failed')
 
     const fetchedAt = now()
@@ -204,11 +204,17 @@ async function fetchQuietly(
 async function summariseQuietly(
   deps: PreviewDependencies,
   domain: string,
+  billableDomain: string,
   pageText: string,
 ): Promise<string | undefined> {
   try {
     const result = await deps.llm.complete<string>(
-      buildPreviewLlmRequest({ prompt: deps.prompt, domain, pageText }),
+      buildPreviewLlmRequest({
+        prompt: deps.prompt,
+        domain,
+        billableDomain,
+        pageText,
+      }),
     )
     const summary = result.text.trim()
     // An empty or degenerate completion is a failed summary, not a card that

@@ -113,8 +113,20 @@ describe('invariant 2 — preview output is disposable', () => {
         if (!PREVIEW_MAY_IMPORT.some((pattern) => pattern.test(specifier))) {
           violations.push(`${relative(repoRoot, file)} -> ${specifier}`)
         }
-        // A relative import may not climb out of preview/ except into contracts.
-        if (specifier.startsWith('../') && !specifier.startsWith('../contracts')) {
+        // A relative import may not climb out of preview/ except into contracts,
+        // and into the claim's domain normaliser — one pure function, allowed by
+        // name rather than by directory.
+        //
+        // The reason it is allowed at all is the reason the rest of this rule
+        // exists. Preview spend has to be attributed to the domain a merchant
+        // would later claim, or it never joins to their account (main §14.7).
+        // That means the preview and the claim must agree on what the
+        // registrable domain is — and two copies of that rule would drift, which
+        // is a worse outcome than this one import. Nothing flows the other way:
+        // no preview output, no cache, no summary. The three checks above still
+        // prove that, and they are invariant 2 itself.
+        const PERMITTED_CLIMB = ['../contracts', '../domain/normalise']
+        if (specifier.startsWith('../') && !PERMITTED_CLIMB.some((a) => specifier.startsWith(a))) {
           violations.push(`${relative(repoRoot, file)} -> ${specifier}`)
         }
       }

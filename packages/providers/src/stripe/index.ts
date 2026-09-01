@@ -7,6 +7,7 @@ import {
   type CheckoutSessionRequest,
   type PortalSession,
   type PortalSessionRequest,
+  type RemotePrice,
   type RemoteSubscription,
   type StripeBillingProvider,
   type StripeEventEnvelope,
@@ -111,6 +112,31 @@ export class StripeProvider implements StripeBillingProvider {
       throw new StripeCallFailed('subscription retrieve', error)
     }
     return toRemoteSubscription(subscription)
+  }
+
+  async fetchPrices(priceIds: readonly string[]): Promise<readonly RemotePrice[]> {
+    const found = await Promise.all(
+      priceIds.map(async (priceId) => {
+        try {
+          return await this.client.prices.retrieve(priceId)
+        } catch (error) {
+          // A configured price id Stripe does not have is a configuration
+          // mistake, not a reason to show half a plan. Returning nothing for it
+          // lets the caller pause the screen rather than invent an amount.
+          if (isNotFound(error)) return null
+          throw new StripeCallFailed('price retrieve', error)
+        }
+      }),
+    )
+    return found.filter((price) => price !== null).map(toRemotePrice)
+  }
+}
+
+function toRemotePrice(price: Stripe.Price): RemotePrice {
+  return {
+    priceId: price.id,
+    unitAmountMinor: price.unit_amount,
+    currency: price.currency,
   }
 }
 
