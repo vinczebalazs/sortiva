@@ -58,7 +58,17 @@ to do first.
 
 ---
 
-## Start here: `T2.1`
+## The order
+
+1. **The spec-citation sweep**, alone, on the quiet tree — see below for why.
+2. **`T2.1` and `T9.1` in parallel.** Different lanes, different directories.
+3. **The operations card**, third.
+
+Two or three concurrent sessions, never more; see the mechanics at the end.
+
+---
+
+## Then: `T2.1`
 
 Shopify detection, the parked state for unsupported platforms, and read-only
 Shopify OAuth. It is the first card with a step to run, which makes it the card
@@ -78,7 +88,7 @@ that has to build the missing piece above.
    the entries that have handlers" is a one-line policy question that belongs to
    whoever writes the first handler.
 
-## In parallel: `T9.1`
+## Alongside it: `T9.1`
 
 The app shell, the navigation, and `packages/ui/strings`. It needs no backend and
 does not touch any directory `T2.1` owns.
@@ -104,10 +114,22 @@ contract rather than a surprise.
 
 ## Two smaller jobs, carded and unstarted
 
-**They must not run at the same time.** Neither needs to talk to the other, but
-the sweep touches nearly every file in the repository, so whichever lands second
-gets a conflict in every file both touched. Run the operations card first — it is
-small and focused — then the sweep, which will also clean whatever it created.
+**Run the sweep first, before anything else, on its own.**
+
+It touches 203 files — nearly the whole repository — so it needs a tree with
+nothing in flight, and that is true only right now. The moment `T2.1` and `T9.1`
+start they own directories the sweep must touch, and it either waits behind them
+or collides with them.
+
+There is a second reason, and it is the better one. A session writing `T2.1`
+reads the code around it and copies the style it finds. That code is currently
+full of the citations the founder has ruled against, so the rule lives only in
+`CLAUDE.md`, contradicted by every file the session opens. Sweeping first makes
+the code itself demonstrate the rule.
+
+The operations card then follows in the normal run of work. It writes its new
+files under the new convention anyway, because `CLAUDE.md` already forbids
+citations — so nothing is lost by putting the sweep ahead of it.
 
 ### The operations card
 
