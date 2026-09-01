@@ -83,6 +83,21 @@ export const ROUTES: readonly RouteDefinition[] = [
     response: s.accountResponseSchema,
   },
   {
+    method: 'GET',
+    path: '/api/billing/plan',
+    summary: 'The Pro plan card: live Stripe amounts, cap line, inclusions.',
+    // ui §2.3 requires the price and a monthly/annual toggle on this screen, and
+    // main §4.2 forbids hardcoding any amount — so the screen has to ask.
+    // Added by card T1.2a under the founder's licence to re-freeze the frozen
+    // route table; it is the one route that table gained.
+    spec: 'main §4.2; ui §2.3',
+    // Public: the plan screen is reachable before signup, and it exposes only
+    // list prices Stripe Checkout would show anyway. No account row is read, so
+    // there is nothing here to scope.
+    auth: 'public',
+    response: s.planResponseSchema,
+  },
+  {
     method: 'POST',
     path: '/api/billing/checkout',
     summary: 'Create a Stripe Checkout session. We render no card form, ever.',

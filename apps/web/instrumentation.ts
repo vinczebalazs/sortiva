@@ -33,6 +33,12 @@ export async function register() {
   // NEXT_MANUAL_SIG_HANDLE=1: without it Next installs its own SIGTERM handler
   // and exits before either the job drain or the analytics flush can finish
   // (measured; DECISIONS 2026-09-01 R5). The deploy config does not set it yet.
+  // main §4.2, tech §3 — the nightly subscription reconciliation is already in
+  // the worker's crontab; this is where its handler joins the registry. Lanes
+  // register their tasks here, before the worker reads the list.
+  const { registerBillingTasks } = await import('./app/api/webhooks/stripe/_lib/tasks')
+  registerBillingTasks()
+
   const { bootstrapWorker, flushAnalytics } = await import('@sortiva/jobs')
   const worker = await bootstrapWorker({ analytics })
 

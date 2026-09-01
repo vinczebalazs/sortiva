@@ -1,9 +1,13 @@
 import {
+  CANCELLATION_FACTS,
   FIXTURE_ACCOUNT_ID,
   FIXTURE_DOMAIN,
   FIXTURE_RULES_VERSION,
   fixtureOpportunities,
   fixtureScheduledTopic,
+  PLAN_CANCEL_ANYTIME,
+  PLAN_CAP_LINE,
+  PLAN_INCLUSIONS,
   type RouteDefinition,
 } from '@sortiva/core'
 
@@ -100,6 +104,22 @@ export const RESPONSE_FIXTURES: Record<string, unknown> = {
     limitedIntelligence: false,
     connections: { shopify: 'read', searchConsole: 'connected', lastScanAt: NOW },
     servicePaused: false,
+  },
+  // Amounts here are fixture data, not the plan's price: the real response
+  // reads them from Stripe on every request (main §4.2 — the app never
+  // hardcodes a dollar amount). The annual figure is the monthly one less 20%
+  // over twelve months, so the toggle in ui §2.3 has something to show.
+  'GET /api/billing/plan': {
+    planKey: 'pro',
+    name: 'Pro',
+    capLine: PLAN_CAP_LINE,
+    inclusions: [...PLAN_INCLUSIONS],
+    cancelAnytime: PLAN_CANCEL_ANYTIME,
+    cancellationFacts: [...CANCELLATION_FACTS],
+    prices: [
+      { interval: 'monthly', priceId: 'price_fixture_monthly', unitAmountMinor: 8900, currency: 'usd' },
+      { interval: 'annual', priceId: 'price_fixture_annual', unitAmountMinor: 85440, currency: 'usd' },
+    ],
   },
   'POST /api/billing/checkout': { url: 'https://checkout.stripe.com/c/pay/cs_test_fixture' },
   'POST /api/billing/portal': { url: 'https://billing.stripe.com/p/session/fixture' },

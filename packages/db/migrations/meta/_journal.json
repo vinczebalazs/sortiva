@@ -43,6 +43,13 @@
       "when": 1788202294045,
       "tag": "0005_wave2b_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788246573681,
+      "tag": "0006_billing_remediation",
+      "breakpoints": true
     }
   ]
 }
