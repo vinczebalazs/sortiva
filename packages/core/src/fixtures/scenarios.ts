@@ -7,31 +7,31 @@ import {
 } from './syntheticStore'
 
 /**
- * main §7.8's eight worked examples, as data.
+ * The eight worked examples the spec gives, as data.
  *
- * The spec calls them "acceptance fixtures — each becomes a unit test over a
- * synthetic store". This module is that synthetic store, one per example, with
- * the evidence the table states (positions, impressions, clicks, whether a
+ * Each becomes a unit test over a synthetic store, and this module is that
+ * store — one per example, carrying the evidence each states (positions,
+ * impressions, clicks, whether a
  * suitable URL exists, whether the catalog has substance) reproduced exactly.
  *
  * Deliberately **no expected opportunity or action is asserted here.** The
- * mapping from evidence to action is main §7.6's job and Lane C's card; a
- * fixture that also encoded the answer would let the implementation be written
- * to match the fixture rather than the spec. What each scenario carries is
- * `expectedAction` as *documentation of the spec's row*, for the test that will
- * later assert it — never as an input to detection.
+ * mapping from evidence to action is the scoring code's job and Lane C's card;
+ * a fixture that also encoded the answer would let the implementation be written
+ * to match the fixture rather than to the requirement. What each scenario
+ * carries is `expectedAction` as a record of what the answer should be, for the
+ * test that will later assert it — never as an input to detection.
  */
 
 export type ExpectedAction = 'CREATE' | 'OPTIMIZE' | 'REFRESH' | 'FIX' | 'HOLD'
 
 export interface SignalScenario {
-  /** 1–8, matching the §7.8 table row. */
+  /** 1–8, matching the worked example it comes from. */
   readonly id: number
   readonly key: string
   readonly title: string
   /** The spec's own one-line evidence summary. */
   readonly evidence: string
-  /** What §7.8 says the action should be. Assertion target, never a detection input. */
+  /** What the action should come out as. An assertion target, never a detection input. */
   readonly expectedAction: ExpectedAction | readonly ExpectedAction[]
   readonly store: SyntheticStore
   /** The page × query rows that carry this scenario's evidence, beyond the store's baseline. */
@@ -56,7 +56,7 @@ function window28(
       page,
       query,
       // Split evenly and give the remainder to the first day, so the 28-day
-      // totals are exactly the numbers §7.8 states.
+      // totals come to exactly the numbers the worked example states.
       impressions: Math.floor(totals.impressions / 28) + (day === 0 ? totals.impressions % 28 : 0),
       clicks: Math.floor(totals.clicks / 28) + (day === 0 ? totals.clicks % 28 : 0),
       position: totals.position,
@@ -122,7 +122,7 @@ export function signalScenarios(): readonly SignalScenario[] {
       }),
       hasSuitableUrl: true,
       notes:
-        'The comparison is against the store’s own CTR curve, not an absolute rate (main §7.3).',
+        'The comparison is against the store’s own CTR curve, not an absolute rate.',
     },
     {
       id: 3,
@@ -135,7 +135,7 @@ export function signalScenarios(): readonly SignalScenario[] {
       gsc: [],
       hasSuitableUrl: false,
       notes:
-        'The existing-target check (main §7.7) must find nothing here; if it finds a page, this becomes OPTIMIZE.',
+        'The existing-target check must find nothing here; if it finds a page, this becomes OPTIMIZE.',
     },
     {
       id: 4,
@@ -220,7 +220,7 @@ export function signalScenarios(): readonly SignalScenario[] {
       }),
       hasSuitableUrl: true,
       notes:
-        'Everything except substance is present. The store must fail main §8.2’s substance floor, or the fixture proves nothing.',
+        'Everything except substance is present. The store must fail the substance floor, or the fixture proves nothing.',
     },
     {
       id: 8,
@@ -244,7 +244,7 @@ export function signalScenarios(): readonly SignalScenario[] {
 
 export function scenario(id: number): SignalScenario {
   const found = signalScenarios().find((s) => s.id === id)
-  if (!found) throw new Error(`No §7.8 scenario ${id}; the spec defines 1–8.`)
+  if (!found) throw new Error(`No worked-example scenario ${id}; they are numbered 1–8.`)
   return found
 }
 

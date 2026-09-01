@@ -23,13 +23,13 @@ import type {
 import { StubImplementation, type StubRegistration } from './stubs'
 
 /**
- * The test doubles for build plan §4's seams. Each behaves exactly as the plan's
- * "stub behaviour until filled" column specifies, registers itself in the stub
- * registry, and emits `stub_used` on every call it serves.
+ * The test doubles for the cross-lane seams. Each behaves exactly as the build
+ * plan's "stub behaviour until filled" column specifies, registers itself in the
+ * stub registry, and emits `stub_used` on every call it serves — so nothing can
+ * quietly ship on top of one.
  *
- * A consumer card's done-when may pass against these; the milestone exit gate
- * that follows the producer card re-runs the consumer's tests against the real
- * implementation (build plan §4, closing rule).
+ * A consumer card's tests may pass against these; the milestone exit gate that
+ * follows the producer card re-runs them against the real implementation.
  */
 
 function registration(
@@ -42,13 +42,13 @@ function registration(
 }
 
 /**
- * Build plan §4: "returns `no_match` and logs `stub_used`".
+ * Returns `no_match` and logs `stub_used`.
  *
- * The single most dangerous stub in the repo. main §7.7 makes this check
- * mandatory before any CREATE and invariant 6 forbids a CREATE without it —
- * so while this is wired, every CREATE candidate looks uncontested and the
- * cannibalisation rule is silently off. That is why it registers loudly and
- * why the M3 exit gate fails if it is still here.
+ * The single most dangerous stub in the repo. The real check is mandatory
+ * before any CREATE, so while this one is wired every CREATE candidate looks
+ * uncontested and we would happily publish a second page competing with a page
+ * we already have. That is why it registers loudly and why the M3 exit gate
+ * fails if it is still here.
  */
 export class StubExistingTargetCheck extends StubImplementation implements ExistingTargetCheck {
   constructor(capture?: Pick<PosthogCapture, 'capture'>) {
@@ -56,7 +56,7 @@ export class StubExistingTargetCheck extends StubImplementation implements Exist
       registration(
         'existingTargetCheck',
         'C — T3.5',
-        'always returns no_match, so no CREATE is ever converted to OPTIMIZE/REFRESH (main §7.7, invariant 6)',
+        'always returns no_match, so no CREATE is ever converted to OPTIMIZE/REFRESH',
         'M3',
       ),
       capture,
@@ -69,7 +69,7 @@ export class StubExistingTargetCheck extends StubImplementation implements Exist
   }
 }
 
-/** Build plan §4: "fixture pool from `signals.fixtures`". */
+/** Serves a fixed pool of opportunities from `signals.fixtures`. */
 export class StubOpportunitySource extends StubImplementation implements OpportunitySource {
   constructor(
     private readonly pool: readonly Opportunity[] = fixtureOpportunities,
@@ -88,14 +88,14 @@ export class StubOpportunitySource extends StubImplementation implements Opportu
 
   async acceptedContentOpportunities(accountId: string): Promise<readonly Opportunity[]> {
     this.record('acceptedContentOpportunities', { kind: 'account', accountId })
-    // main §7.9 — only CREATE and REFRESH are auto-accepted content work.
+    // Only CREATE and REFRESH are auto-accepted content work.
     return this.pool.filter(
       (o) => o.recommendedAction === 'CREATE' || o.recommendedAction === 'REFRESH',
     )
   }
 }
 
-/** Build plan §4: "records intent, no calendar". */
+/** Records what it was asked to schedule; there is no calendar behind it. */
 export class StubTopicScheduler extends StubImplementation implements TopicScheduler {
   readonly scheduled: ScheduledTopic[] = []
 
@@ -126,10 +126,10 @@ export class StubTopicScheduler extends StubImplementation implements TopicSched
 }
 
 /**
- * Build plan §4: "passes with fixed scores, logs `stub_used`".
+ * Passes everything with fixed scores and logs `stub_used`.
  *
- * A judge that always passes is a quality bar that is switched off (main §8.4,
- * invariant 11). Wired only until T4.4.
+ * A judge that always passes is a quality bar that is switched off. Wired only
+ * until T4.4.
  */
 export class StubJudgeLite extends StubImplementation implements JudgeLite {
   constructor(
@@ -140,7 +140,7 @@ export class StubJudgeLite extends StubImplementation implements JudgeLite {
       registration(
         'JudgeLite',
         'D — T4.4',
-        'passes everything with fixed scores; the quality bar is not actually applied (main §8.4, invariant 11)',
+        'passes everything with fixed scores; the quality bar is not actually applied',
         'M6',
       ),
       capture,
@@ -153,7 +153,7 @@ export class StubJudgeLite extends StubImplementation implements JudgeLite {
   }
 }
 
-/** Build plan §4: "fixture events". */
+/** Serves a fixed list of catalog events. */
 export class StubCatalogEvents extends StubImplementation implements CatalogEvents {
   constructor(
     private readonly events: readonly CatalogEvent[] = fixtureCatalogEvents,
@@ -177,12 +177,12 @@ export class StubCatalogEvents extends StubImplementation implements CatalogEven
 }
 
 /**
- * Build plan §4: "writes to a test table". In-memory here, because wave 1's
- * `notifications` table already exists and the real emitter (T8.1) writes to it
- * inside the caller's transaction — a second table would be a migration outside
- * a schema wave.
+ * Collects emitted notifications in memory. The `notifications` table already
+ * exists and the real emitter (T8.1) writes to it inside the caller's
+ * transaction, so a second table for the stub would mean a migration outside a
+ * schema wave.
  *
- * It does enforce the constraint that matters: tech §1.2's unique
+ * It does enforce the constraint that matters: the unique
  * `(account_id, type, dedupe_key)`, so a consumer testing a retried worker sees
  * the second emit no-op exactly as production will.
  */

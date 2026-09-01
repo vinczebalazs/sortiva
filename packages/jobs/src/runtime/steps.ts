@@ -8,17 +8,16 @@ export type JobStepName = JobStepRow['step']
 export type JobStepState = JobStepRow['state']
 
 /**
- * main §14.3.1 — "Steps declare their dependencies (e.g. `distill` requires
- * `catalog_sync = succeeded`); the scheduler only dispatches steps whose
- * dependencies are met, which is what makes resume-from-anywhere free:
- * restarting a job just means re-dispatching non-succeeded steps."
+ * Which steps have to have finished before another may start — `distill`
+ * cannot run until `catalog_sync` has succeeded, and so on. Declaring it this
+ * way is what makes resume-from-anywhere free: restarting a run just means
+ * offering the non-succeeded steps again.
  *
- * The order below is main §6's numbered ingestion steps. The one non-obvious
- * edge: `gsc_connect` "runs right after keyword/competitor discovery and before
- * confirmation" (§6.7) but §14.3.1 says it "never blocks
- * `awaiting_confirmation`" — so it *depends on* `keywords_competitors` while
- * `awaiting_confirmation` does **not** depend on it. Skipping GSC leaves the
- * account in Limited Intelligence mode (§7.11) and onboarding continues.
+ * The one non-obvious edge: `gsc_connect` runs right after keyword and
+ * competitor discovery, so it *depends on* `keywords_competitors` — but
+ * `awaiting_confirmation` deliberately does **not** depend on it. A merchant who
+ * skips Search Console must still be able to finish onboarding; they simply
+ * continue in Limited Intelligence mode.
  */
 export const STEP_DEPENDENCIES: Readonly<Record<JobStepName, readonly JobStepName[]>> = {
   detect: [],
@@ -59,8 +58,9 @@ export async function createRun(
     steps.map((step) => ({
       jobId: job.id,
       step,
-      // Replaced by the derived key when the step is first executed (§14.3.2);
-      // a placeholder keeps the column NOT NULL without inventing a random key.
+      // Replaced by the derived key when the step is first executed. A
+      // placeholder keeps the column NOT NULL without inventing a random key,
+      // which would defeat the point of deriving it from the inputs.
       idempotencyKey: `unassigned:${job.id}:${step}`,
     })),
   )
@@ -68,16 +68,15 @@ export async function createRun(
 }
 
 /**
- * main §14.3.1 — steps whose dependencies are met and which are not already
- * finished or owned by a live worker. Re-dispatching a job is just calling this
- * again.
+ * Steps whose dependencies are met and which are not already finished or owned
+ * by a live worker. Re-dispatching a run is just calling this again.
  *
  * A `running` row past its lease counts as dispatchable. Without that rule a
- * step whose process died mid-flight is never offered to anyone again: it is not
- * `succeeded`, so §14.3.1's "re-dispatch the non-succeeded steps" ought to cover
- * it, but nothing could tell it apart from a step a live worker is working on.
- * Reclaiming is safe because §14.3.3's per-account lock already means one worker
- * at a time per account. See `lease.ts`.
+ * step whose process died mid-flight is never offered to anyone again: it is
+ * not `succeeded`, so it ought to be re-dispatched, but nothing could tell it
+ * apart from a step a live worker is genuinely working on. Reclaiming is safe
+ * because the per-account lock already means one worker at a time per account.
+ * See `lease.ts`.
  */
 export async function dispatchableSteps(
   db: Db,
@@ -91,7 +90,7 @@ export async function dispatchableSteps(
 
   return rows.filter((row) => {
     if (!CLAIMABLE.includes(row.state) && !isReclaimable(row, at, lease.leaseMs)) return false
-    // §14.3.5 — a retryable failure is not dispatchable until its backoff elapses.
+    // A retryable failure is not dispatchable until its backoff has elapsed.
     if (row.nextAttemptAt && row.nextAttemptAt.getTime() > now) return false
     return STEP_DEPENDENCIES[row.step].every((dep) => {
       const depRow = byName.get(dep)
@@ -116,11 +115,12 @@ export function isReclaimable(
 }
 
 /**
- * main §14.3.1 — "Transitions are guarded DB updates (`UPDATE ... WHERE state =
- * 'expected'`); a worker whose guard matches zero rows stops immediately —
- * someone else owns the step." (constitution invariants 15 and 18)
+ * Every state change is an `UPDATE ... WHERE state = 'expected'`, so two
+ * workers handed the same step cannot both proceed — whichever loses the race
+ * matches zero rows.
  *
- * Returns `undefined` on a zero-row guard. Callers must stop, not retry.
+ * Returns `undefined` on a zero-row guard. Callers must stop, not retry: the
+ * step now belongs to someone else.
  */
 export async function guardedTransition(
   db: Db,
@@ -175,22 +175,22 @@ export async function claimStep(
 }
 
 /**
- * §14.3.2's "have I already done this work" lookup used to live here, reading
+ * The "have I already done this work" lookup used to live here, reading
  * `job_steps WHERE idempotency_key = $1 AND state = 'succeeded'`. It reads
  * `idempotency_ledger` now (`ledger.ts`): a job row cascades from its run and
  * from the account, so losing it let a redelivered message re-run — and re-bill
  * — work that was already done (audit T0.4 [major]).
  *
- * `job_steps.idempotency_key` stays. main §13 puts it there, the dead-letter
- * entry carries it (§14.3.5), and it is how an operator ties a stranded step to
- * its ledger record. It is no longer the *evidence* that the work happened.
+ * `job_steps.idempotency_key` stays: the dead-letter entry carries it, and it
+ * is how an operator ties a stranded step to its ledger record. It is no longer
+ * the *evidence* that the work happened.
  */
 
 /**
- * main §14.3.4 — "any step that can exceed 60 seconds must checkpoint". The
- * cursor is committed on its own so a crash resumes from it, not from the start.
+ * Any step that can run past a minute saves its position here. The cursor is
+ * committed on its own so a crash resumes from it rather than from the start.
  *
- * Guarded on `running` like every other write in this file (§14.3.1): a worker
+ * Guarded on `running` like every other write in this file: a worker
  * that has lost the step — because its lease expired and someone reclaimed it —
  * must not overwrite the live owner's cursor with its own stale one, which would
  * rewind the new owner's progress.

@@ -28,29 +28,29 @@ import { validateCompletion } from './validate'
 export { llmCacheKey }
 
 /**
- * Invariant 25 / main §14.7 — the single instrumented Anthropic client. Every
- * LLM call in the product goes through `complete()`; a lint rule makes importing
- * the SDK anywhere else a build failure, so no call site can escape cost
- * tracking, caching, or schema validation.
+ * The single instrumented Anthropic client. Every LLM call in the product goes
+ * through `complete()`; a lint rule makes importing the SDK anywhere else a
+ * build failure, so no call site can escape cost tracking, caching, or schema
+ * validation.
  *
  * What one `complete()` does, in order:
  *
- *  1. Resolves the model from the call type (main §15 fixes the tier) and the
- *     explicit id registry (§14.2 — never a "latest" alias).
+ *  1. Resolves the model from the call type and an explicit id registry —
+ *     never a moving "latest" alias, so an artefact stays reproducible.
  *  2. Consults the request cache, keyed `(prompt_version, model_id,
- *     sha256(rendered prompt))` (§14.3.6). A hit replays the stored completion
+ *     sha256(rendered prompt))`. A hit replays the stored completion
  *     rather than re-sampling — so a retried step cannot get a *different*
  *     persona than the run it is resuming.
  *  3. On a miss, calls the model and writes the raw response to the cache
- *     **before processing it** (invariant 20), so a crash between the model
+ *     **before processing it**, so a crash between the model
  *     answering and us finishing costs nothing on retry.
  *  4. Validates against the call's JSON Schema; on failure retries **once** with
  *     the validation error appended; on the second failure raises the typed
- *     `failed_validation` (§14.2).
- *  5. Records every model call twice: as §14.7's `$ai_generation` analytics
- *     event, and as a row in the spend ledger the §14.5 caps read (invariant
- *     17 — "PostHog displays cost, our code enforces caps"). Replays are
- *     recorded at zero cost so cached work does not inflate spend numbers.
+ *     `failed_validation` rather than handing back something half-parsed.
+ *  5. Records every model call twice: as an `$ai_generation` analytics event,
+ *     and as a row in the spend ledger the daily caps are computed from —
+ *     analytics displays cost, our own code enforces the caps. Replays are
+ *     recorded at zero so cached work does not inflate the numbers.
  *
  * The rule that shapes all of it: **recording a cost is an obligation of making
  * the call, not a side effect of the call succeeding** (`docs/audits/
@@ -60,7 +60,7 @@ export { llmCacheKey }
  * record. Only a call that never reached the vendor records nothing.
  */
 
-/** §14.3.6 gives billable reads a 24h TTL; LLM replays exist to make a step retry free, so they follow it. */
+/** A day, the same as every other paid-call cache here: these replays exist to make a step retry free, not to be the product's memory. */
 const DEFAULT_CACHE_TTL_MS = 24 * 60 * 60 * 1000
 
 /** Above this the SDK wants a stream, or a long completion trips the HTTP timeout. */
@@ -68,14 +68,14 @@ const STREAMING_MAX_TOKENS_THRESHOLD = 8_192
 
 export interface AnthropicLlmClientOptions {
   /**
-   * §14.7's analytics capture. **Required** — an optional recorder meant a
+   * The analytics capture. **Required** — an optional recorder meant a
    * client built without one spent real money and produced no record, with no
    * error and no log line. Pass `new UnrecordedCapture()` to opt out by name
    * (audit `docs/audits/T0.5.md` finding 6).
    */
   capture: Pick<PosthogCapture, 'captureAiGeneration'>
   /**
-   * The §14.5 spend meter (invariant 17). Required for the same reason. Pass
+   * The spend meter the daily caps read. Required for the same reason. Pass
    * `new UnrecordedSpend()` to opt out by name.
    */
   ledger: CostLedger
@@ -128,7 +128,8 @@ export class AnthropicLlmClient implements LlmClient {
       return this.finish<T>(request, spec, [first], first, validated.value, 1)
     }
 
-    // main §14.2 — retry **once** with the validation error appended.
+    // Retry **once**, with the validation error appended. More attempts mean
+    // paying repeatedly to talk a model into a shape it keeps missing.
     const repairMessages: LlmRequest['messages'] = [
       ...request.messages,
       { role: 'assistant', content: first.text },
@@ -159,12 +160,13 @@ export class AnthropicLlmClient implements LlmClient {
     const tier = CALL_TYPE_TIER[request.callType]
     const spec = resolveModel(tier, this.env)
     if (request.model === undefined || request.model === spec.id) return spec
-    // Invariant 11 / main §8.4: "the judge is never run on a smaller model".
+    // The judge is never run on a smaller model than the writer — a grader that
+    // thinks less hard than the thing it is grading is not a check on anything.
     // A per-call override is exactly the mechanism that would permit it, so the
     // judge's model is settled by the tier map and the environment, full stop.
     if (request.callType === 'judge') {
       throw new Error(
-        `The Gate 3 judge's model cannot be overridden per call (invariant 11, main §8.4): it is fixed at "${spec.id}", and "${request.model}" was requested.`,
+        `The draft judge's model cannot be overridden per call: it is fixed at "${spec.id}", and "${request.model}" was requested.`,
       )
     }
     return overrideModel(request.model)
@@ -209,8 +211,8 @@ export class AnthropicLlmClient implements LlmClient {
         usage: stored.usage,
         cacheHit: true,
         latencyMs: this.now() - started,
-        // main §14.7 — "replays served from request_cache are captured with
-        // cache_hit: true and **zero cost**".
+        // A replay is recorded at zero: it cost nothing, and charging for it
+        // would inflate the number the caps are computed from.
         usdCost: 0,
       }
       await this.record(request, spec, call, 'succeeded')
@@ -333,8 +335,8 @@ export class AnthropicLlmClient implements LlmClient {
   }
 
   /**
-   * §14.7 requires the analytics event; invariant 17 requires the database
-   * counter the §14.5 caps read. Both, from one place, so neither can be
+   * The analytics event and the database counter the caps are computed from,
+   * written from one place, so neither can be
    * forgotten on a path the other covers.
    *
    * Invariant 26: ids, counts, costs and flags only — no prompt or completion
@@ -403,7 +405,7 @@ function textOf(message: Anthropic.Message): string {
     .join('')
 }
 
-/** main §14.3.5 — 429s, 5xx and connection errors retry; a 4xx that retrying cannot fix does not. */
+/** 429s, 5xx and connection errors are worth retrying; a 4xx that retrying cannot fix is not. */
 export function classifyAnthropicError(error: unknown, callType: string): LlmRequestFailure {
   if (error instanceof Anthropic.RateLimitError) {
     return new LlmRequestFailure(true, 'llm_rate_limited', `${callType}: rate limited`, {

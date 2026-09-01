@@ -1,54 +1,55 @@
 /**
- * main §3.2 / §3.3 — the preview's cost controls, in one file so the numbers
- * that decide what a stranger can make us spend are readable together.
+ * The preview's cost controls, in one file so the numbers that decide what a
+ * stranger can make us spend are readable together.
  *
- * The preview is the only unauthenticated surface in the product (tech §3), and
- * main §14.5 is explicit that its spend trip firing at all "means Turnstile,
- * rate limits, or the cache are being defeated". These are the three.
+ * The preview is the only unauthenticated surface in the product, and its spend
+ * cap tripping at all means one of these three — the bot challenge, the rate
+ * limits, or the cache — is being defeated.
  *
- * Not in `packages/rules`: `signals.config.yaml` is the Opportunity Engine's
- * threshold layer (main §7.10) and this card may not edit that package. See
- * DECISIONS 2026-09-01 T1.3.
+ * These deliberately do not live in `packages/rules`: that file is the
+ * Opportunity Engine's threshold layer, and this card may not edit that package.
+ * See DECISIONS 2026-09-01 T1.3.
  */
 
-/** main §3.2 — "hard timeout (~8s), max download size (~1.5 MB), follow at most 2 redirects". */
+/** What one outbound scrape may cost us: how long it may take, how much it may download, and how far it may be redirected. */
 export const PREVIEW_FETCH_BUDGET = {
   timeoutMs: 8_000,
   maxBytes: 1_500_000,
   maxRedirects: 2,
 } as const
 
-/** main §3.2 — "per-IP (e.g. 5/min, 20/day) and a global concurrency cap on outbound scrapes". */
+/** How often one caller may ask, and how many scrapes we will have in flight at once across everyone. */
 export const PREVIEW_RATE_LIMITS = {
   perIpPerMinute: 5,
   perIpPerDay: 20,
   globalConcurrentFetches: 4,
 } as const
 
-/** main §3.2 — "cache key = normalized domain. TTL ~7 days." */
+/** How long a preview for a domain is reused. Keyed on the normalised domain, so casing and `www.` do not buy a second scrape. */
 export const PREVIEW_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000
 
 /**
- * main §3.3 — "only if the above yields < ~200 chars of signal, try one more
- * fetch of a likely about page", and those are the three paths it names.
+ * If the homepage yields less than this much usable text, we try one more fetch
+ * of a likely about page — one, not a crawl.
  */
 export const PREVIEW_MIN_SIGNAL_CHARS = 200
 export const PREVIEW_ABOUT_PATHS = ['/about', '/about-us', '/pages/about-us'] as const
 
 /**
- * main §3.3 — "truncate to a small token budget (~2k tokens input)" and
- * "max ~150 output tokens". Characters, at the usual ~4 chars per token.
+ * The model call's budget: roughly 2k tokens in and 150 out. Expressed in
+ * characters, at the usual four-per-token. This is the single largest cost per
+ * preview, so it is capped rather than left to the length of the page.
  */
 export const PREVIEW_MAX_INPUT_CHARS = 8_000
 export const PREVIEW_MAX_OUTPUT_TOKENS = 150
 
-/** main §3.3 — "temperature low". Haiku accepts it; see the model registry. */
+/** Low, because this is a summary of what a page says and not a place for invention. */
 export const PREVIEW_TEMPERATURE = 0.2
 
 /**
- * main §14.5 — "Daily preview LLM spend > its own cap → pause the preview
- * endpoint only ... serve cache hits as normal, and answer cache misses with
- * the graceful generic card". This is the `ops_flags` name that trip raises;
- * invariant 17 puts enforcement in our code against our DB, never in PostHog.
+ * The flag raised when daily preview spend passes its cap. It pauses the preview
+ * endpoint and nothing else: cache hits still serve as normal, and a miss gets
+ * the generic card. Enforced by our own code against our own database, so it
+ * works when the analytics vendor does not.
  */
 export const PREVIEW_PAUSED_FLAG = 'global.pause_preview'

@@ -1,14 +1,14 @@
 import type { DeepPartial, RulesLayer } from './types'
 
 /**
- * main §7.10: "Overrides are layered: global defaults -> per-locale -> (later)
- * per-store / per-market / per-query-type / per-page-type. V1 ships global +
- * per-locale; the override tables exist in the schema (§13) even if empty."
+ * Thresholds are layered: global defaults, then per-locale, and eventually
+ * per-store / per-market / per-query-type / per-page-type. V1 ships only the
+ * first two.
  *
- * This is the reader for that table (`rules_overrides`, main §13). V1 wires the
+ * This is the reader for the later layers' table, `rules_overrides`, wired to a
  * null implementation: the table exists, nothing writes to it, and the reader
- * returns nothing — so the layering code path is real and exercised rather than
- * being retrofitted later.
+ * returns nothing. The point is that the layering code path is real and
+ * exercised now rather than retrofitted under a live system later.
  */
 
 export interface RulesOverrideScope {
@@ -17,7 +17,7 @@ export interface RulesOverrideScope {
   pageType?: string
 }
 
-/** One row of `rules_overrides` (main §13), already parsed into a partial layer. */
+/** One row of `rules_overrides`, already parsed into a partial layer. */
 export interface RulesOverrideRow {
   scope: RulesOverrideScope
   patch: DeepPartial<RulesLayer>

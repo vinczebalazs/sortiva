@@ -1,7 +1,6 @@
 /**
- * main §14.7 — everything observable is a PostHog event captured server-side.
- * Two rules from that section are structural here rather than conventions a
- * call site can forget:
+ * Everything observable is an analytics event captured server-side. Two rules
+ * are structural here rather than conventions a call site can forget:
  *
  * 1. **Everything is groupable by domain.** Every event carries the `domain`
  *    group, keyed on `domain_normalized` — because "how much is site X costing
@@ -19,18 +18,18 @@ export type EventAttribution =
   | {
       readonly kind: 'account'
       readonly accountId: string
-      /** `domain_normalized`. Absent before the account claims a domain (main §5). */
+      /** The normalised domain. Absent until the account has claimed one. */
       readonly domain?: string
     }
   | {
       readonly kind: 'preview'
-      /** The domain the visitor asked about. Property only, never a group (main §14.7). */
+      /** The domain the visitor asked about. A property only, never a group: ten strangers previewing `nike.com` is not Nike costing us money. */
       readonly targetDomain: string
       /**
        * The registrable domain behind `targetDomain` — what a merchant claims at
        * signup. Spend is recorded against this so a visitor who previews
        * `shop.example.com` and later claims `example.com` has that spend join to
-       * their account, which main §14.7 requires. The exact host stays on the
+       * their account. The exact host stays on the
        * event property, where it is what you want for spotting abuse.
        */
       readonly billableDomain: string
@@ -47,7 +46,7 @@ export function previewAttribution(
   return { kind: 'preview', targetDomain, billableDomain }
 }
 
-/** PostHog group type name. main §14.7: "group key = domain_normalized". */
+/** The analytics group type. Keyed on the normalised domain, so "what is site X costing us" is answerable. */
 export const DOMAIN_GROUP = 'domain'
 
 export interface ResolvedAttribution {
@@ -78,14 +77,14 @@ export function resolveAttribution(attribution: EventAttribution): ResolvedAttri
 }
 
 export interface AnalyticsEvent {
-  /** snake_case, one event per lifecycle moment (main §14.7 taxonomy). */
+  /** snake_case, one event per lifecycle moment. */
   readonly event: string
   readonly attribution: EventAttribution
-  /** Ids and aggregates only — never product content, article text, or prompts (main §14.7 privacy note). */
+  /** Ids and aggregates only — never product content, article text, or prompts. */
   readonly properties?: Record<string, unknown>
 }
 
-/** main §14.7 — the `$ai_generation` capture the LLM wrapper emits on every call. */
+/** The `$ai_generation` capture the LLM wrapper emits on every call. */
 export interface AiGenerationEvent {
   readonly attribution: EventAttribution
   readonly callType: string
@@ -101,7 +100,7 @@ export interface AiGenerationEvent {
   readonly properties?: Record<string, unknown>
 }
 
-/** main §14.7 — DataForSEO is a plain HTTP API, so its cost is our own event. */
+/** The SEO data vendor is a plain HTTP API with no analytics integration of its own, so its cost is an event we emit. */
 export interface SeoRequestEvent {
   readonly attribution: EventAttribution
   readonly endpoint: string
@@ -115,7 +114,7 @@ export interface PosthogCapture {
   capture(event: AnalyticsEvent): void
   captureAiGeneration(event: AiGenerationEvent): void
   captureSeoRequest(event: SeoRequestEvent): void
-  /** Captures an exception with the same attribution. Scrubbed before it leaves (tech §4). */
+  /** Captures an exception with the same attribution. Scrubbed of secrets before it leaves the process. */
   captureException(error: unknown, attribution: EventAttribution, properties?: Record<string, unknown>): void
   flush(): Promise<void>
   shutdown(): Promise<void>

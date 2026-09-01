@@ -31,7 +31,6 @@ const problems = []
 for (const route of ROUTES) {
   if (!route.response) problems.push(`${routeKey(route)}: no response schema`)
   if (!route.summary) problems.push(`${routeKey(route)}: no summary`)
-  if (!route.spec) problems.push(`${routeKey(route)}: no spec citation`)
 }
 
 // Operation ids must be unique, or generated clients collide silently.

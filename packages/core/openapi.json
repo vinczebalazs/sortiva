@@ -29,7 +29,6 @@
       "get": {
         "operationId": "get-account",
         "summary": "Session account: domain state, entitlement, connections, service status.",
-        "description": "Spec: main §4.1, §4.2; ui §1",
         "tags": [
           "account"
         ],
@@ -193,7 +192,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -251,7 +250,6 @@
       "post": {
         "operationId": "post-account-delete",
         "summary": "Delete the account: tokens revoked now, data within 30 days, domain released after 7.",
-        "description": "Spec: main §14.6; ui §9.4",
         "tags": [
           "account"
         ],
@@ -304,7 +302,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -414,7 +412,6 @@
       "get": {
         "operationId": "get-articles",
         "summary": "The articles library.",
-        "description": "Spec: ui §6.2",
         "tags": [
           "articles"
         ],
@@ -614,7 +611,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -724,7 +721,6 @@
       "get": {
         "operationId": "get-articles-by-article",
         "summary": "Read-only article detail with its quality report. There is no editor.",
-        "description": "Spec: main §9.3; ui §6.3",
         "tags": [
           "articles"
         ],
@@ -1013,7 +1009,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1071,7 +1067,6 @@
       "post": {
         "operationId": "post-articles-by-article-approve",
         "summary": "Approve an in-review draft and publish it.",
-        "description": "Spec: main §9.3; ui §6.3",
         "tags": [
           "articles"
         ],
@@ -1113,7 +1108,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1165,7 +1160,7 @@
             }
           },
           "402": {
-            "description": "Billing state gates generation and publishing only; read access is never revoked (main §4.2, invariant 16). Code: entitlement_inactive.",
+            "description": "Billing state gates generation and publishing only; read access is never revoked. Code: entitlement_inactive.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1217,7 +1212,7 @@
             }
           },
           "409": {
-            "description": "Guarded transition failed (tech §3). Codes: article_not_in_review, article_already_published, service_paused.",
+            "description": "The state changed underneath this request. Codes: article_not_in_review, article_already_published, service_paused.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1282,7 +1277,6 @@
       "post": {
         "operationId": "post-articles-by-article-discard",
         "summary": "Discard an in-review draft.",
-        "description": "Spec: main §9.3; ui §6.3",
         "tags": [
           "articles"
         ],
@@ -1324,7 +1318,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1376,7 +1370,7 @@
             }
           },
           "409": {
-            "description": "Guarded transition failed (tech §3). Codes: article_not_in_review.",
+            "description": "The state changed underneath this request. Codes: article_not_in_review.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1439,7 +1433,6 @@
       "post": {
         "operationId": "post-articles-by-article-publish-anyway",
         "summary": "Publish a gate-rejected draft. Carries published_via_override thereafter.",
-        "description": "Spec: main §8.6, invariant 12; ui §6.3",
         "tags": [
           "articles"
         ],
@@ -1505,7 +1498,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1557,7 +1550,7 @@
             }
           },
           "402": {
-            "description": "Billing state gates generation and publishing only; read access is never revoked (main §4.2, invariant 16). Code: entitlement_inactive.",
+            "description": "Billing state gates generation and publishing only; read access is never revoked. Code: entitlement_inactive.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1609,7 +1602,7 @@
             }
           },
           "409": {
-            "description": "Guarded transition failed (tech §3). Codes: article_not_rejected, article_already_published.",
+            "description": "The state changed underneath this request. Codes: article_not_rejected, article_already_published.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1725,7 +1718,6 @@
       "post": {
         "operationId": "post-articles-by-article-published-url",
         "summary": "Confirm the URL an exported article was published at, for attribution.",
-        "description": "Spec: main §9.4, §12.2; ui §6.2",
         "tags": [
           "articles"
         ],
@@ -1788,7 +1780,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1898,7 +1890,6 @@
       "post": {
         "operationId": "post-articles-by-article-refresh",
         "summary": "Request a refresh; subject to the refresh cooldown.",
-        "description": "Spec: main §9.6.5; ui §6.3",
         "tags": [
           "articles"
         ],
@@ -1940,7 +1931,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1992,7 +1983,7 @@
             }
           },
           "402": {
-            "description": "Billing state gates generation and publishing only; read access is never revoked (main §4.2, invariant 16). Code: entitlement_inactive.",
+            "description": "Billing state gates generation and publishing only; read access is never revoked. Code: entitlement_inactive.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2044,7 +2035,7 @@
             }
           },
           "409": {
-            "description": "Guarded transition failed (tech §3). Codes: refresh_within_cooldown.",
+            "description": "The state changed underneath this request. Codes: refresh_within_cooldown.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2107,7 +2098,6 @@
       "get": {
         "operationId": "get-attention",
         "summary": "The dashboard attention list — a live query, never stored rows.",
-        "description": "Spec: tech §1.1; ui §4",
         "tags": [
           "attention"
         ],
@@ -2173,7 +2163,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2231,7 +2221,6 @@
       "post": {
         "operationId": "post-billing-checkout",
         "summary": "Create a Stripe Checkout session. We render no card form, ever.",
-        "description": "Spec: main §4.2; ui §2.3",
         "tags": [
           "billing"
         ],
@@ -2287,7 +2276,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2397,7 +2386,6 @@
       "get": {
         "operationId": "get-billing-plan",
         "summary": "The Pro plan card: live Stripe amounts, cap line, inclusions.",
-        "description": "Spec: main §4.2; ui §2.3",
         "tags": [
           "billing"
         ],
@@ -2498,7 +2486,6 @@
       "post": {
         "operationId": "post-billing-portal",
         "summary": "Create a Stripe Customer Portal link.",
-        "description": "Spec: main §4.2; ui §9.4",
         "tags": [
           "billing"
         ],
@@ -2530,7 +2517,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2588,7 +2575,6 @@
       "get": {
         "operationId": "get-calendar",
         "summary": "Planned and past topics across a date range, plus the paused ribbon state.",
-        "description": "Spec: main §8.7; ui §6.1",
         "tags": [
           "calendar"
         ],
@@ -2868,7 +2854,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2978,7 +2964,6 @@
       "post": {
         "operationId": "post-calendar-topics",
         "summary": "Add a topic by hand. Still passes Gate 1, and may convert to an OPTIMIZE.",
-        "description": "Spec: main §8.7, §7.7, invariant 6; ui §6.1",
         "tags": [
           "calendar"
         ],
@@ -3328,7 +3313,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3380,7 +3365,7 @@
             }
           },
           "402": {
-            "description": "Billing state gates generation and publishing only; read access is never revoked (main §4.2, invariant 16). Code: entitlement_inactive.",
+            "description": "Billing state gates generation and publishing only; read access is never revoked. Code: entitlement_inactive.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3432,7 +3417,7 @@
             }
           },
           "409": {
-            "description": "Guarded transition failed (tech §3). Codes: calendar_day_occupied, calendar_date_in_past.",
+            "description": "The state changed underneath this request. Codes: calendar_day_occupied, calendar_date_in_past.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3548,7 +3533,6 @@
       "post": {
         "operationId": "post-calendar-topics-by-topic-move",
         "summary": "Move a planned topic to another future date.",
-        "description": "Spec: main §8.7; ui §6.1",
         "tags": [
           "calendar"
         ],
@@ -3795,7 +3779,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3847,7 +3831,7 @@
             }
           },
           "409": {
-            "description": "Guarded transition failed (tech §3). Codes: topic_already_generating, topic_already_published, topic_pinned, calendar_date_in_past.",
+            "description": "The state changed underneath this request. Codes: topic_already_generating, topic_already_published, topic_pinned, calendar_date_in_past.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3965,7 +3949,6 @@
       "post": {
         "operationId": "post-calendar-topics-by-topic-pin",
         "summary": "Pin or unpin a topic. Replenishment never moves a pinned topic.",
-        "description": "Spec: main §8.7; ui §6.1",
         "tags": [
           "calendar"
         ],
@@ -4211,7 +4194,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4263,7 +4246,7 @@
             }
           },
           "409": {
-            "description": "Guarded transition failed (tech §3). Codes: topic_already_published.",
+            "description": "The state changed underneath this request. Codes: topic_already_published.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4378,7 +4361,6 @@
       "post": {
         "operationId": "post-calendar-topics-by-topic-veto",
         "summary": "Veto a topic. After dequeue this cancels publication, not the cost.",
-        "description": "Spec: main §8.7, invariant 15; ui §6.1",
         "tags": [
           "calendar"
         ],
@@ -4420,7 +4402,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4472,7 +4454,7 @@
             }
           },
           "409": {
-            "description": "Guarded transition failed (tech §3). Codes: topic_already_published.",
+            "description": "The state changed underneath this request. Codes: topic_already_published.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4535,7 +4517,6 @@
       "post": {
         "operationId": "post-domain-claim",
         "summary": "Claim a domain at eTLD+1 and enqueue the ingestion run.",
-        "description": "Spec: main §2, §5, invariant 1; ui §3.1",
         "tags": [
           "domain"
         ],
@@ -4604,7 +4585,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4656,7 +4637,7 @@
             }
           },
           "409": {
-            "description": "Guarded transition failed (tech §3). Codes: domain_already_claimed.",
+            "description": "The state changed underneath this request. Codes: domain_already_claimed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4771,7 +4752,6 @@
       "post": {
         "operationId": "post-gsc-oauth-start",
         "summary": "Begin Google OAuth for Search Console (webmasters.readonly).",
-        "description": "Spec: main §6.7, §12.2; ui §3.6",
         "tags": [
           "gsc"
         ],
@@ -4803,7 +4783,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4861,7 +4841,6 @@
       "get": {
         "operationId": "get-gsc-properties",
         "summary": "Properties the connected Google account can read, flagged for host match.",
-        "description": "Spec: main §12.2; ui §3.6",
         "tags": [
           "gsc"
         ],
@@ -4912,7 +4891,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4970,7 +4949,6 @@
       "post": {
         "operationId": "post-gsc-property",
         "summary": "Select the Search Console property and enqueue the 16-month backfill.",
-        "description": "Spec: main §6.7, §12.2; ui §3.6",
         "tags": [
           "gsc"
         ],
@@ -5023,7 +5001,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5133,7 +5111,6 @@
       "post": {
         "operationId": "post-gsc-skip",
         "summary": "Skip Search Console. The run continues in Limited Intelligence mode.",
-        "description": "Spec: main §6.7, §7.11; ui §3.6",
         "tags": [
           "gsc"
         ],
@@ -5165,7 +5142,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5223,7 +5200,6 @@
       "get": {
         "operationId": "get-health",
         "summary": "Liveness probe for the Railway health check.",
-        "description": "Spec: tech §2.1",
         "tags": [
           "health"
         ],
@@ -5257,7 +5233,6 @@
       "get": {
         "operationId": "get-ingestion-status",
         "summary": "Current ingestion run and its steps. The 5s fallback for the SSE stream.",
-        "description": "Spec: main §14.3.1; ui §3.2; tech §1.6",
         "tags": [
           "ingestion"
         ],
@@ -5370,7 +5345,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5428,7 +5403,6 @@
       "get": {
         "operationId": "get-ingestion-stream",
         "summary": "Server-sent stream of job_steps transitions for the active run.",
-        "description": "Spec: tech §1.6; ui §3.2",
         "tags": [
           "ingestion"
         ],
@@ -5541,7 +5515,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5599,7 +5573,6 @@
       "get": {
         "operationId": "get-notifications",
         "summary": "Bell list and unseen count. Polled every 30s.",
-        "description": "Spec: tech §1.2, §1.6; ui §10",
         "tags": [
           "notifications"
         ],
@@ -5725,7 +5698,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5835,7 +5808,6 @@
       "post": {
         "operationId": "post-notifications-by-notification-read",
         "summary": "Mark one notification read.",
-        "description": "Spec: tech §1.2",
         "tags": [
           "notifications"
         ],
@@ -5877,7 +5849,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5935,7 +5907,6 @@
       "post": {
         "operationId": "post-notifications-seen",
         "summary": "Clear the badge. Opening the bell marks everything seen.",
-        "description": "Spec: tech §1.2",
         "tags": [
           "notifications"
         ],
@@ -5967,7 +5938,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6025,7 +5996,6 @@
       "get": {
         "operationId": "get-opportunities",
         "summary": "The Opportunities list with its filters, counts and scan times.",
-        "description": "Spec: main §7; ui §5.1",
         "tags": [
           "opportunities"
         ],
@@ -6515,7 +6485,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6625,7 +6595,6 @@
       "get": {
         "operationId": "get-opportunities-by-opportunity",
         "summary": "The detail drawer: evidence, tasks, recommendation, history, outcome.",
-        "description": "Spec: main §7.6, §10.3; ui §5.3",
         "tags": [
           "opportunities"
         ],
@@ -7260,7 +7229,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -7318,7 +7287,6 @@
       "post": {
         "operationId": "post-opportunities-by-opportunity-dismiss",
         "summary": "Dismiss an opportunity; it is never re-proposed for the same entity.",
-        "description": "Spec: main §7.9; ui §5.4",
         "tags": [
           "opportunities"
         ],
@@ -7360,7 +7328,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -7412,7 +7380,7 @@
             }
           },
           "409": {
-            "description": "Guarded transition failed (tech §3). Codes: opportunity_already_updated, opportunity_not_open.",
+            "description": "The state changed underneath this request. Codes: opportunity_already_updated, opportunity_not_open.",
             "content": {
               "application/json": {
                 "schema": {
@@ -7476,7 +7444,6 @@
       "post": {
         "operationId": "post-opportunities-by-opportunity-recommendations",
         "summary": "Generate an OPTIMIZE recommendation. User-initiated, capped per day.",
-        "description": "Spec: main §10.2, §10.3; ui §5.4",
         "tags": [
           "opportunities"
         ],
@@ -7518,7 +7485,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -7570,7 +7537,7 @@
             }
           },
           "402": {
-            "description": "Billing state gates generation and publishing only; read access is never revoked (main §4.2, invariant 16). Code: entitlement_inactive.",
+            "description": "Billing state gates generation and publishing only; read access is never revoked. Code: entitlement_inactive.",
             "content": {
               "application/json": {
                 "schema": {
@@ -7622,7 +7589,7 @@
             }
           },
           "409": {
-            "description": "Guarded transition failed (tech §3). Codes: optimize_daily_cap_reached, opportunity_not_open, service_paused.",
+            "description": "The state changed underneath this request. Codes: optimize_daily_cap_reached, opportunity_not_open, service_paused.",
             "content": {
               "application/json": {
                 "schema": {
@@ -7687,7 +7654,6 @@
       "post": {
         "operationId": "post-opportunities-by-opportunity-restore",
         "summary": "Undo a dismissal.",
-        "description": "Spec: main §7.9; ui §5.4",
         "tags": [
           "opportunities"
         ],
@@ -7729,7 +7695,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -7781,7 +7747,7 @@
             }
           },
           "409": {
-            "description": "Guarded transition failed (tech §3). Codes: opportunity_already_updated.",
+            "description": "The state changed underneath this request. Codes: opportunity_already_updated.",
             "content": {
               "application/json": {
                 "schema": {
@@ -7844,7 +7810,6 @@
       "post": {
         "operationId": "post-opportunities-by-opportunity-schedule",
         "summary": "Put a CREATE or REFRESH opportunity on the calendar.",
-        "description": "Spec: main §7.9, §8.7; ui §5.4",
         "tags": [
           "opportunities"
         ],
@@ -7910,7 +7875,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -7962,7 +7927,7 @@
             }
           },
           "402": {
-            "description": "Billing state gates generation and publishing only; read access is never revoked (main §4.2, invariant 16). Code: entitlement_inactive.",
+            "description": "Billing state gates generation and publishing only; read access is never revoked. Code: entitlement_inactive.",
             "content": {
               "application/json": {
                 "schema": {
@@ -8014,7 +7979,7 @@
             }
           },
           "409": {
-            "description": "Guarded transition failed (tech §3). Codes: opportunity_already_updated, opportunity_not_open, calendar_day_occupied, calendar_date_in_past, topic_pinned.",
+            "description": "The state changed underneath this request. Codes: opportunity_already_updated, opportunity_not_open, calendar_day_occupied, calendar_date_in_past, topic_pinned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -8133,7 +8098,6 @@
       "post": {
         "operationId": "post-opportunities-by-opportunity-tasks-by-task",
         "summary": "Mark an opportunity task applied or skipped.",
-        "description": "Spec: main §10.4; ui §5.3",
         "tags": [
           "opportunities"
         ],
@@ -8207,7 +8171,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -8259,7 +8223,7 @@
             }
           },
           "409": {
-            "description": "Guarded transition failed (tech §3). Codes: opportunity_already_updated.",
+            "description": "The state changed underneath this request. Codes: opportunity_already_updated.",
             "content": {
               "application/json": {
                 "schema": {
@@ -8374,7 +8338,6 @@
       "get": {
         "operationId": "get-performance-overview",
         "summary": "The headline chart, its markers, and the results table.",
-        "description": "Spec: main §9.6; ui §8.1",
         "tags": [
           "performance"
         ],
@@ -8539,7 +8502,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -8597,7 +8560,6 @@
       "get": {
         "operationId": "get-performance-search-console",
         "summary": "Query and page tables with signal badges linking into Opportunities.",
-        "description": "Spec: main §12.2; ui §8.2",
         "tags": [
           "performance"
         ],
@@ -8752,7 +8714,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -8862,7 +8824,6 @@
       "post": {
         "operationId": "post-preview",
         "summary": "Analyse a domain and return the business summary card.",
-        "description": "Spec: main §3.2",
         "tags": [
           "preview"
         ],
@@ -8982,7 +8943,7 @@
             }
           },
           "429": {
-            "description": "Per-IP and global rate limits (main §3.2). Code: rate_limited.",
+            "description": "Per-IP and global rate limits. Code: rate_limited.",
             "content": {
               "application/json": {
                 "schema": {
@@ -9040,7 +9001,6 @@
       "get": {
         "operationId": "get-products",
         "summary": "Richness, merchant tasks from open HOLDs, and the product table.",
-        "description": "Spec: main §6.3, §7.4; ui §7",
         "tags": [
           "products"
         ],
@@ -9249,7 +9209,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -9307,7 +9267,6 @@
       "get": {
         "operationId": "get-products-families",
         "summary": "The read-only family list with its differentiation axes.",
-        "description": "Spec: main §6.4; ui §7",
         "tags": [
           "products"
         ],
@@ -9380,7 +9339,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -9438,7 +9397,6 @@
       "post": {
         "operationId": "post-products-families-report",
         "summary": "Report a wrong grouping. Feedback only — families are not user-editable.",
-        "description": "Spec: main §6.4; ui §3.7, §7",
         "tags": [
           "products"
         ],
@@ -9495,7 +9453,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -9605,7 +9563,6 @@
       "get": {
         "operationId": "get-profile",
         "summary": "The confirmation screen, and Settings → Store profile after it.",
-        "description": "Spec: main §6.8; ui §3.7, §9.2",
         "tags": [
           "profile"
         ],
@@ -9904,7 +9861,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -9962,7 +9919,6 @@
       "post": {
         "operationId": "post-profile-competitors",
         "summary": "Add a competitor. Capped at five in the API and the database.",
-        "description": "Spec: main §6.6, §7.2.1, invariant 5; ui §3.7",
         "tags": [
           "profile"
         ],
@@ -10031,7 +9987,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10083,7 +10039,7 @@
             }
           },
           "409": {
-            "description": "Guarded transition failed (tech §3). Codes: competitor_limit_reached, competitor_is_own_domain.",
+            "description": "The state changed underneath this request. Codes: competitor_limit_reached, competitor_is_own_domain.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10199,7 +10155,6 @@
       "delete": {
         "operationId": "delete-profile-competitors-by-competitor",
         "summary": "Remove a competitor.",
-        "description": "Spec: main §6.6; ui §3.7",
         "tags": [
           "profile"
         ],
@@ -10241,7 +10196,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10299,7 +10254,6 @@
       "post": {
         "operationId": "post-profile-confirm",
         "summary": "Confirm the profile and start the first opportunity run.",
-        "description": "Spec: main §6.8, §6.9; ui §3.7",
         "tags": [
           "profile"
         ],
@@ -10378,7 +10332,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10430,7 +10384,7 @@
             }
           },
           "409": {
-            "description": "Guarded transition failed (tech §3). Codes: profile_already_confirmed.",
+            "description": "The state changed underneath this request. Codes: profile_already_confirmed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10545,7 +10499,6 @@
       "post": {
         "operationId": "post-profile-keywords",
         "summary": "Add a keyword; enrichment runs job-side on the high-priority lane.",
-        "description": "Spec: main §6.6, §12.1; ui §3.7",
         "tags": [
           "profile"
         ],
@@ -10640,7 +10593,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10750,7 +10703,6 @@
       "delete": {
         "operationId": "delete-profile-keywords-by-keyword",
         "summary": "Remove a keyword.",
-        "description": "Spec: main §6.6; ui §3.7",
         "tags": [
           "profile"
         ],
@@ -10792,7 +10744,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10850,7 +10802,6 @@
       "get": {
         "operationId": "get-settings",
         "summary": "Every account setting the Settings screens expose.",
-        "description": "Spec: ui §9",
         "tags": [
           "settings"
         ],
@@ -10935,7 +10886,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10991,7 +10942,6 @@
       "patch": {
         "operationId": "patch-settings",
         "summary": "Update account settings.",
-        "description": "Spec: ui §9",
         "tags": [
           "settings"
         ],
@@ -11138,7 +11088,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -11190,7 +11140,7 @@
             }
           },
           "409": {
-            "description": "Guarded transition failed (tech §3). Codes: write_scope_required, target_blog_unresolved.",
+            "description": "The state changed underneath this request. Codes: write_scope_required, target_blog_unresolved.",
             "content": {
               "application/json": {
                 "schema": {
@@ -11306,7 +11256,6 @@
       "post": {
         "operationId": "post-settings-blog",
         "summary": "Choose or create the target blog. Auto-publish cannot enable without one.",
-        "description": "Spec: main §9.5, invariant 21; ui §9.1",
         "tags": [
           "settings"
         ],
@@ -11358,7 +11307,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -11410,7 +11359,7 @@
             }
           },
           "409": {
-            "description": "Guarded transition failed (tech §3). Codes: write_scope_required.",
+            "description": "The state changed underneath this request. Codes: write_scope_required.",
             "content": {
               "application/json": {
                 "schema": {
@@ -11525,7 +11474,6 @@
       "get": {
         "operationId": "get-settings-blogs",
         "summary": "Shopify blogs available as an auto-publish target.",
-        "description": "Spec: main §9.5; ui §9.1",
         "tags": [
           "settings"
         ],
@@ -11576,7 +11524,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -11634,7 +11582,6 @@
       "post": {
         "operationId": "post-shopify-oauth-start",
         "summary": "Begin Shopify OAuth. Read scopes only at install (invariant 21).",
-        "description": "Spec: main §6.2; tech §4; ui §3.3",
         "tags": [
           "shopify"
         ],
@@ -11666,7 +11613,7 @@
             }
           },
           "401": {
-            "description": "No session. Every authenticated route resolves account_id from the session (tech §3).",
+            "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -11724,7 +11671,6 @@
       "post": {
         "operationId": "post-webhooks-resend",
         "summary": "Bounce and complaint events into email_suppressions; delivered into email_sends.",
-        "description": "Spec: tech §1.4, §1.5",
         "tags": [
           "webhooks"
         ],
@@ -11758,7 +11704,6 @@
       "post": {
         "operationId": "post-webhooks-shopify-by-topic",
         "summary": "Verify HMAC before touching the body, dedupe by webhook id, return 200 under 5s.",
-        "description": "Spec: main §14.1, §14.3.8; tech §3",
         "tags": [
           "webhooks"
         ],
@@ -11802,7 +11747,6 @@
       "post": {
         "operationId": "post-webhooks-stripe",
         "summary": "Verify the signature, insert-or-ignore by event id, return 200, process async.",
-        "description": "Spec: main §4.2, §14.3.8; tech §3",
         "tags": [
           "webhooks"
         ],

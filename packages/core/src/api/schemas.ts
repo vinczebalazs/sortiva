@@ -9,7 +9,7 @@ import {
 } from '../contracts/opportunities'
 
 /**
- * The request and response shapes for every `/api/*` route (ui §1–§10, tech §3).
+ * The request and response shapes for every `/api/*` route.
  * These are the single source of truth: the OpenAPI document is generated from
  * them, the MSW handlers validate against them, and route handlers parse with
  * them (CLAUDE.md: "parse → call core → serialise").
@@ -17,10 +17,10 @@ import {
  * Two product rules are enforced in the schema itself rather than left to each
  * screen:
  *
- * - **No denominators** (invariant 23, main §8.6, ui §4): count fields are bare
+ * - **No denominators**: count fields are bare
  *   numbers. There is no `of` or `target` field anywhere for a UI to render
  *   "3 of 30" from, because the cap is a ceiling and not a promise.
- * - **Every why-line is a template key plus params** (invariant 8, main §7.1):
+ * - **Every why-line is a template key plus params**:
  *   no response carries rendered prose for a reason. The renderer lives in
  *   `packages/ui`, and an LLM never touches it.
  */
@@ -38,7 +38,7 @@ export const paginationSchema = z.object({
 
 export const okSchema = z.object({ ok: z.literal(true) })
 
-/** main §7.1, invariant 8 — the why-line renders from these, never from an LLM. */
+/** A reason the merchant reads, carried as a key and its parameters so the wording is ours and an LLM never writes it. */
 export const whyLineSchema = z.object({
   templateKey: z.string(),
   params: z.record(z.string(), z.union([z.string(), z.number()])),
@@ -47,7 +47,7 @@ export const whyLineSchema = z.object({
 export const evidenceFactSchema = z.object({
   key: z.string(),
   value: z.union([z.string(), z.number()]),
-  /** main §7.6 — source and window per fact; the card renders them. */
+  /** Where the fact came from and over what period, so the card can show the merchant why we believe it. */
   source: z.string(),
   window: z.string().optional(),
   fetchedAt: isoDateTimeSchema,
@@ -63,11 +63,11 @@ export const entityRefSchema = z.object({
 
 export const healthResponseSchema = z.object({ ok: z.literal(true) })
 
-// ── Preview (main §3) ────────────────────────────────────────────────────────
+// ── Preview ──────────────────────────────────────────────────────────────────
 
 export const previewRequestSchema = z.object({
   url: z.string().min(1),
-  /** main §3.2 — verified server-side before any fetch happens. */
+  /** Verified server-side before any fetch happens; a client-side check would be no check at all. */
   turnstileToken: z.string().min(1),
 })
 
@@ -75,16 +75,17 @@ export const previewResponseSchema = z.object({
   domain: z.string(),
   /** The Haiku 2–3 sentence summary, or null on the graceful generic card. */
   summary: z.string().nullable(),
-  /** main §3.2 — a cache hit skips the scrape and the LLM entirely. */
+  /** A cache hit skips the scrape and the LLM entirely, so it costs nothing. */
   cacheHit: z.boolean(),
   /**
-   * True when the scrape failed or the preview cost trip is active (main §14.5):
-   * the UI renders the generic card, never an error state.
+   * True when the scrape failed or the preview spend cap has tripped: the UI
+   * renders the generic card, never an error state, because a stranger who
+   * typed their domain in should not meet our plumbing.
    */
   generic: z.boolean(),
 })
 
-// ── Account, billing, settings (main §4, ui §9) ──────────────────────────────
+// ── Account, billing, settings ───────────────────────────────────────────────
 
 export const domainStateSchema = z.enum([
   'ingesting',
@@ -100,7 +101,7 @@ export const accountResponseSchema = z.object({
   domain: z
     .object({ normalized: z.string(), state: domainStateSchema, platform: z.string().nullable() })
     .nullable(),
-  /** main §4.2, invariant 16 — read from the local row only; never a Stripe call. */
+  /** Read from our own row, never by calling Stripe: no request path may depend on their availability. */
   subscription: z.object({
     // `incomplete` — the first payment is still being authorised — is a fifth
     // status added by card T1.2a; see `packages/db/src/schema/enums.ts`. Like
@@ -109,14 +110,14 @@ export const accountResponseSchema = z.object({
     cancelAtPeriodEnd: z.boolean(),
     currentPeriodEnd: isoDateTimeSchema.nullable(),
   }),
-  /** main §7.11 — no Search Console connected. */
+  /** No Search Console connected, so everything here is inferred rather than measured. */
   limitedIntelligence: z.boolean(),
   connections: z.object({
     shopify: z.enum(['none', 'read', 'read_write', 'broken']),
     searchConsole: z.enum(['none', 'connected', 'broken']),
     lastScanAt: isoDateTimeSchema.nullable(),
   }),
-  /** main §14.5 — a kill switch is active; the UI renders the outage copy. */
+  /** A kill switch is active; the UI renders the outage copy rather than pretending work is queued. */
   servicePaused: z.boolean(),
 })
 
@@ -124,23 +125,23 @@ export const checkoutRequestSchema = z.object({ interval: z.enum(['monthly', 'an
 export const redirectResponseSchema = z.object({ url: z.string().url() })
 
 /**
- * ui §2.3's plan card: the price, the monthly/annual toggle, the verbatim cap
- * line and the inclusions.
+ * The plan card: the price, the monthly/annual toggle, the verbatim cap line
+ * and the inclusions.
  *
- * Amounts come from Stripe on every response (main §4.2 — "amounts live in
- * Stripe only — the app never hardcodes a dollar amount"), in minor units with
- * their currency, so the client formats and the API bakes in no locale. The
+ * Amounts come from Stripe on every response — the app never hardcodes a dollar
+ * amount anywhere — in minor units with their currency, so the client formats
+ * and the API bakes in no locale. The
  * −20% annual saving is not a field: it is whatever the two amounts say it is,
  * which is the point of reading them from Stripe.
  */
 export const planResponseSchema = z.object({
   planKey: z.literal('pro'),
   name: z.string(),
-  /** main Appendix A, verbatim. Invariant 23 — never rendered with a denominator. */
+  /** Fixed copy, used word for word, and never rendered with a denominator behind it. */
   capLine: z.string(),
   inclusions: z.array(z.string()),
   cancelAnytime: z.string(),
-  /** main §14.6 — the three cancellation facts, stated wherever cancellation is offered. */
+  /** The three cancellation facts, stated wherever cancellation is offered rather than only in the terms. */
   cancellationFacts: z.array(z.string()),
   prices: z.array(
     z.object({
@@ -155,7 +156,7 @@ export const planResponseSchema = z.object({
 })
 
 export const settingsSchema = z.object({
-  /** main §9.5 — export is the default; auto-publish is a second consent. */
+  /** Export is the default; publishing on the merchant's behalf is a separate, later consent. */
   delivery: z.enum(['export', 'auto']),
   shopifyPublishAs: z.enum(['live', 'draft']),
   publishHour: z.number().int().min(0).max(23),
@@ -164,7 +165,7 @@ export const settingsSchema = z.object({
   autoRepair: z.boolean(),
   vacationMode: z.boolean(),
   uiLanguage: z.string().nullable(),
-  /** ui §9.4, tech §1.3 — only the opt-in rows are toggleable. */
+  /** Only the opt-in notifications are toggleable; the transactional ones are not. */
   emailArticlePublished: z.boolean(),
   emailDigestFrequency: z.enum(['off', 'daily', 'weekly']),
 })
@@ -177,27 +178,27 @@ export const blogsResponseSchema = z.object({
 
 export const selectBlogRequestSchema = z.object({
   blogId: z.string().optional(),
-  /** ui §9.1 — "or 'create a blog named ___' one-click". */
+  /** Offered when the store has no blog yet, so choosing a target is one click rather than a trip to Shopify. */
   createNamed: z.string().optional(),
 })
 
 export const deleteAccountRequestSchema = z.object({
-  /** ui §9.4 — type-to-confirm. */
+  /** The user must type this back; the action is not reversible. */
   confirmation: z.literal('DELETE'),
 })
 
-// ── Domain claim (main §5, ui §3.1) ──────────────────────────────────────────
+// ── Domain claim ─────────────────────────────────────────────────────────────
 
 export const claimDomainRequestSchema = z.object({ domain: z.string().min(1) })
 
 export const claimDomainResponseSchema = z.object({
   normalized: z.string(),
   state: domainStateSchema,
-  /** main §5 — the claim enqueues the ingestion run. */
+  /** The claim enqueues the ingestion run, so the client has a job to follow straight away. */
   ingestionJobId: uuidSchema,
 })
 
-// ── Ingestion progress (main §14.3.1, ui §3.2) ───────────────────────────────
+// ── Ingestion progress ───────────────────────────────────────────────────────
 
 export const jobStepSchema = z.object({
   step: z.enum([
@@ -221,18 +222,18 @@ export const ingestionStatusResponseSchema = z.object({
   jobId: uuidSchema,
   status: z.enum(['running', 'succeeded', 'failed', 'abandoned']),
   steps: z.array(jobStepSchema),
-  /** ui §3.2 — "show elapsed time on the active step after 60s". */
+  /** Drives the elapsed-time readout the UI shows once a step has been running a while. */
   startedAt: isoDateTimeSchema,
 })
 
-// ── Search Console (main §6.7, §12.2, ui §3.6) ───────────────────────────────
+// ── Search Console ───────────────────────────────────────────────────────────
 
 export const gscPropertiesResponseSchema = z.object({
   properties: z.array(
     z.object({
       siteUrl: z.string(),
       permissionLevel: z.string(),
-      /** ui §3.6 — inline validation for host mismatch with the claimed domain. */
+      /** Set when the property does not match the claimed domain, so the UI can say so inline rather than after submit. */
       matchesClaimedDomain: z.boolean(),
     }),
   ),
@@ -240,12 +241,12 @@ export const gscPropertiesResponseSchema = z.object({
 
 export const selectGscPropertyRequestSchema = z.object({ siteUrl: z.string().min(1) })
 
-// ── Store profile / confirmation (main §6.8, ui §3.7) ────────────────────────
+// ── Store profile / confirmation ─────────────────────────────────────────────
 
 export const keywordSchema = z.object({
   id: uuidSchema,
   term: z.string(),
-  /** Null while enrichment is pending — ui §3.7 renders a skeleton chip. */
+  /** Null while enrichment is still running, which the UI renders as a skeleton rather than as zero. */
   monthlySearchVolume: z.number().int().nullable(),
   difficulty: z.number().nullable(),
   source: z.enum(['auto', 'manual']),
@@ -258,7 +259,7 @@ export const competitorSchema = z.object({
   source: z.enum(['auto', 'manual']),
 })
 
-/** main §7.2.1, invariant 5 — SERP domains are suggested, never auto-added. */
+/** A domain we saw ranking. It may be suggested to the merchant, never added to their competitor list on its own. */
 export const competitorSuggestionSchema = z.object({
   domain: z.string(),
   appearsInQueries: z.number().int(),
@@ -277,7 +278,7 @@ export const familySchema = z.object({
   id: z.string(),
   label: z.string(),
   memberCount: z.number().int(),
-  /** main §6.4 — the differentiation axes, rendered as tags. */
+  /** What makes this family's products differ from each other, rendered as tags. */
   axes: z.array(z.string()),
   groupingSource: z.enum(['taxonomy', 'fact_clustering', 'embedding']),
   lowConfidence: z.boolean(),
@@ -317,7 +318,7 @@ export const addKeywordRequestSchema = z.object({ term: z.string().min(1) })
 
 export const addCompetitorRequestSchema = z.object({
   domain: z.string().min(1),
-  /** ui §3.7 — the blocklist warning's "add anyway". */
+  /** Lets the merchant proceed past the blocklist warning deliberately. */
   overrideBlocklist: z.boolean().optional(),
 })
 
@@ -326,7 +327,7 @@ export const reportGroupingRequestSchema = z.object({
   reason: z.string().min(1),
 })
 
-// ── Opportunities (main §7, ui §5) ───────────────────────────────────────────
+// ── Opportunities ────────────────────────────────────────────────────────────
 
 export const opportunitySchema = z.object({
   id: uuidSchema,
@@ -338,7 +339,7 @@ export const opportunitySchema = z.object({
   impactScore: z.number(),
   confidence: z.enum(CONFIDENCE_BANDS),
   confidenceScore: z.number(),
-  /** ui §5.2 — the confidence tooltip lists what raised or lowered it. */
+  /** The individual reasons the confidence score moved up or down, so the tooltip can show its working. */
   confidenceFactors: z.array(z.object({ label: z.string(), direction: z.enum(['up', 'down']) })),
   evidence: z.array(evidenceFactSchema),
   why: whyLineSchema,
@@ -362,7 +363,7 @@ export const listOpportunitiesQuerySchema = z.object({
 
 export const listOpportunitiesResponseSchema = z.object({
   opportunities: z.array(opportunitySchema),
-  /** ui §5.1 — the headline count and the per-action chips. No denominators. */
+  /** The headline count and the per-action chips. Bare numbers: no denominators anywhere. */
   counts: z.object({
     open: z.number().int(),
     byAction: z.record(z.enum(OPPORTUNITY_ACTIONS), z.number().int()),
@@ -379,7 +380,7 @@ export const opportunityTaskSchema = z.object({
   state: z.enum(['open', 'applied', 'skipped']),
 })
 
-/** main §10.3, ui §5.3.4 — current vs suggested, per field, with grounding evidence. */
+/** Current versus suggested, field by field, each with the evidence behind the suggestion. */
 export const recommendationFieldSchema = z.object({
   field: z.string(),
   current: z.string().nullable(),
@@ -390,7 +391,7 @@ export const recommendationFieldSchema = z.object({
 export const opportunityDetailResponseSchema = z.object({
   opportunity: opportunitySchema,
   tasks: z.array(opportunityTaskSchema),
-  /** ui §5.3.2 — for query evidence, the SERP snapshot's top results. */
+  /** For query evidence, the top results from the SERP snapshot we scored against. */
   serpSnapshot: z
     .array(z.object({ position: z.number().int(), domain: z.string(), url: z.string() }))
     .nullable(),
@@ -401,7 +402,7 @@ export const opportunityDetailResponseSchema = z.object({
       internalLinksIn: z.array(z.object({ fromUrl: z.string(), anchor: z.string() })),
       internalLinksOut: z.array(z.object({ toUrl: z.string(), anchor: z.string() })),
       intentNote: z.string().nullable(),
-      /** ui §5.3.4 — "no partial output" on failure; the reason renders instead. */
+      /** On failure there is no partial output at all; this reason renders in its place. */
       failureReason: whyLineSchema.nullable(),
     })
     .nullable(),
@@ -414,7 +415,7 @@ export const opportunityDetailResponseSchema = z.object({
       reason: whyLineSchema.nullable(),
     }),
   ),
-  /** main §9.6.10 — null until the 28-day maturity window closes (invariant 13). */
+  /** Null until 28 days have passed; before that there is nothing honest to say about whether it worked. */
   outcome: z
     .object({ label: z.string(), measuredAt: isoDateTimeSchema, before: z.number(), after: z.number() })
     .nullable(),
@@ -429,7 +430,7 @@ export const scheduleOpportunityResponseSchema = z.object({
 
 export const markTaskAppliedRequestSchema = z.object({ state: z.enum(['applied', 'skipped']) })
 
-// ── Calendar (main §8.7, ui §6.1) ────────────────────────────────────────────
+// ── Calendar ─────────────────────────────────────────────────────────────────
 
 export const topicSchema = z.object({
   id: uuidSchema,
@@ -453,7 +454,7 @@ export const topicSchema = z.object({
   why: whyLineSchema,
   opportunityId: uuidSchema.nullable(),
   signalType: z.string().nullable(),
-  /** ui §6.1 — a published day links to the article; a held day carries its reason. */
+  /** A published day links to the article; a held day carries the reason it was held. */
   articleId: uuidSchema.nullable(),
   rejection: z
     .object({ gate: z.enum(['gate_1', 'gate_2', 'gate_3']), reason: whyLineSchema })
@@ -467,7 +468,7 @@ export const calendarQuerySchema = z.object({
 
 export const calendarResponseSchema = z.object({
   topics: z.array(topicSchema),
-  /** ui §6.1 — vacation mode / disconnected / kill switch render a paused ribbon. */
+  /** Why nothing is being produced — vacation mode, a broken connection, a kill switch — behind the paused ribbon. */
   paused: z.object({ active: z.boolean(), reason: z.string().nullable() }),
   nextReplenishmentAt: isoDateSchema.nullable(),
 })
@@ -479,9 +480,10 @@ export const addTopicRequestSchema = z.object({
 })
 
 /**
- * main §8.7 — a manual topic still passes Gate 1, which answers one of four
- * ways: proceed, proceed-with-warning, converted to an OPTIMIZE opportunity
- * (main §7.7 — invariant 6), or rejected with the standard reason.
+ * A topic the merchant added by hand still goes through the same admission
+ * gate as one we picked, which answers one of four ways: proceed, proceed with
+ * a warning, converted into an OPTIMIZE because we already have a page ranking
+ * for it, or rejected with the standard reason.
  */
 export const addTopicResponseSchema = z.object({
   outcome: z.enum(['planned', 'planned_with_warning', 'converted', 'rejected']),
@@ -495,7 +497,7 @@ export const addTopicResponseSchema = z.object({
 export const moveTopicRequestSchema = z.object({ date: isoDateSchema })
 export const pinTopicRequestSchema = z.object({ pinned: z.boolean() })
 
-// ── Articles (main §9, ui §6.2–6.3) ──────────────────────────────────────────
+// ── Articles ─────────────────────────────────────────────────────────────────
 
 export const articleSummarySchema = z.object({
   id: uuidSchema,
@@ -504,11 +506,11 @@ export const articleSummarySchema = z.object({
   delivery: z.enum(['export', 'auto']),
   publishedAt: isoDateTimeSchema.nullable(),
   publishedUrl: z.string().nullable(),
-  /** main §8.6, invariant 12 — shown, and segmented, never hidden. */
+  /** Published past a failed quality gate on the merchant's instruction. Always shown, always segmented away from the rest, never quietly hidden. */
   publishedViaOverride: z.boolean(),
   repaired: z.boolean(),
   refreshedCount: z.number().int(),
-  /** main §9.6 — null until the 28-day window closes (invariant 13). */
+  /** Null until 28 days have passed, because anything earlier is noise. */
   performance: z
     .object({
       clicks28d: z.number().int(),
@@ -533,7 +535,7 @@ export const listArticlesResponseSchema = z.object({
 
 export const articleDetailResponseSchema = z.object({
   article: articleSummarySchema,
-  /** ui §6.3 — rendered exactly as it will publish. No editor anywhere. */
+  /** Rendered exactly as it will publish. There is no editor anywhere in the product. */
   html: z.string(),
   metadata: z.object({
     targetKeyword: z.string(),
@@ -543,7 +545,7 @@ export const articleDetailResponseSchema = z.object({
     opportunityId: uuidSchema.nullable(),
   }),
   evidencePack: z.array(z.object({ productId: z.string(), title: z.string() })),
-  /** ui §6.3 — the collapsed "Quality report": per-criterion scores and justifications. */
+  /** The quality report behind the draft: a score and a justification per criterion. */
   qualityReport: z
     .object({
       scores: z.record(z.string(), z.number()),
@@ -557,16 +559,16 @@ export const articleDetailResponseSchema = z.object({
 })
 
 export const confirmPublishedUrlRequestSchema = z.object({
-  /** main §9.4 — validated as being on the claimed domain before it feeds attribution. */
+  /** Validated as being on the claimed domain before it feeds attribution, so a wrong URL cannot borrow another store's numbers. */
   url: z.string().url(),
 })
 
 export const overridePublishRequestSchema = z.object({
-  /** ui §6.3 — the destructive confirm restates the failing criteria first. */
+  /** The confirm dialog restates the criteria the draft failed before it lets the merchant publish anyway. */
   acknowledgedCriteria: z.array(z.string()).min(1),
 })
 
-// ── Products (ui §7) ─────────────────────────────────────────────────────────
+// ── Products ─────────────────────────────────────────────────────────────────
 
 export const merchantTaskSchema = z.object({
   opportunityId: uuidSchema,
@@ -603,11 +605,11 @@ export const productsResponseSchema = z.object({
 
 export const familiesResponseSchema = z.object({ families: z.array(familySchema) })
 
-// ── Performance (main §9.6, §12.2, ui §8) ────────────────────────────────────
+// ── Performance ──────────────────────────────────────────────────────────────
 
 export const performanceOverviewResponseSchema = z.object({
   connected: z.boolean(),
-  /** main §14.4 — gaps render as gaps, never interpolated. */
+  /** Days we have no data for stay null: a gap renders as a gap, never as an interpolated line. */
   series: z.array(
     z.object({ date: isoDateSchema, clicks: z.number().int().nullable(), impressions: z.number().int().nullable() }),
   ),
@@ -650,19 +652,19 @@ export const searchConsoleResponseSchema = z.object({
       deltaClicks: z.number().int(),
       deltaPosition: z.number(),
       pageType: z.enum(['collection', 'product', 'page', 'blog', 'our_article']).nullable(),
-      /** ui §8.2 — the table is an entry point into Opportunities, not a reporting island. */
+      /** Links each row back into Opportunities, so the table is a way in to doing something rather than a report to admire. */
       signals: z.array(z.object({ signalType: z.string(), opportunityId: uuidSchema })),
     }),
   ),
   cursor: z.string().nullable(),
 })
 
-// ── Notifications (tech §1, ui §10) ──────────────────────────────────────────
+// ── Notifications ────────────────────────────────────────────────────────────
 
 export const notificationSchema = z.object({
   id: uuidSchema,
   type: z.enum(NOTIFICATION_TYPES),
-  /** tech §1.2 — references only; display text is produced at render time. */
+  /** References only. The display text is produced at render time, so stored notifications never go stale against changed copy. */
   refs: z.record(z.string(), z.string()),
   createdAt: isoDateTimeSchema,
   seenAt: isoDateTimeSchema.nullable(),
@@ -676,7 +678,7 @@ export const notificationsResponseSchema = z.object({
   unseenCount: z.number().int(),
 })
 
-/** tech §1.1 — attention items are a live query, never stored notifications. */
+/** Attention items are computed live from current state; they are never stored rows, so they cannot linger after the thing they were about is resolved. */
 export const attentionResponseSchema = z.object({
   items: z.array(
     z.object({
@@ -693,11 +695,11 @@ export const attentionResponseSchema = z.object({
   ),
 })
 
-// ── Webhooks (tech §3) ───────────────────────────────────────────────────────
+// ── Webhooks ─────────────────────────────────────────────────────────────────
 
 /**
  * Webhook receivers verify a signature before touching the body and return 200
- * regardless of processing outcome (main §14.3.8, tech §3). The body is opaque
+ * regardless of processing outcome. The body is opaque
  * to us at the boundary — it is stored and processed from the table — so the
  * schema is deliberately unconstrained.
  */

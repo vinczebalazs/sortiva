@@ -12,32 +12,31 @@ import {
 import { spendOutcomeEnum, spendVendorEnum } from './enums'
 
 /**
- * The meter behind main §14.5's spend caps. Added to this wave by
+ * The meter the daily spend caps are computed from. Added to this wave by
  * `docs/audits/remediation.md` D1 (founder-accepted 2026-08-31); the reasoning
  * is `docs/audits/T0.5.md` finding 1.
  *
- * main §14.7 draws the boundary this table exists to hold: "The §14.5 budget
- * auto-trips read spend from our own DB counters — PostHog displays cost, our
- * code enforces caps", and "PostHog is telemetry and alerting, **not** the
- * control plane… a kill switch must work when PostHog is down or events are
- * sampled/delayed". Constitution invariant 17 restates it. Before this table,
- * the cap *numbers* existed in `packages/rules/signals.config.yaml` and the
- * meter did not, so the kill switches had nothing to read.
+ * This is the boundary the table exists to hold: analytics displays cost, our
+ * own code enforces the caps. A kill switch has to work when the analytics
+ * vendor is down or its events are delayed, so it cannot be the thing the
+ * switch reads. Before this table the cap *numbers* existed in
+ * `packages/rules/signals.config.yaml` and the meter did not, so the kill
+ * switches had nothing to read.
  *
  * Two properties are structural, not conventions:
  *
  * 1. **Append-only.** A cost that has been incurred is never revised. The
  *    database refuses `UPDATE` outright — see
  *    `migrations/0003_wave2_guards.sql`. `DELETE` stays open for the retention
- *    sweep of tech §2.1.
- * 2. **A cache hit is recorded at zero, never omitted.** §14.7 requirement (3):
- *    "replays served from `request_cache` are captured with `cache_hit: true`
- *    and zero cost, so cached work doesn't inflate spend numbers." Omitting the
- *    row instead would make re-used work vanish from the spend picture rather
- *    than show as free, so `cache_hit` with a non-zero cost is rejected.
+ *    sweep.
+ * 2. **A cache hit is recorded at zero, never omitted.** A replay served from
+ *    `request_cache` is written with `cache_hit: true` and zero cost. Omitting
+ *    the row instead would make re-used work vanish from the spend picture
+ *    rather than show up as free, so `cache_hit` with a non-zero cost is
+ *    rejected outright.
  *
- * Nothing writes here yet: card `R2` wires the three instrumented wrappers of
- * invariant 25 to it, on success *and* on every failure path (remediation D2 —
+ * Nothing writes here yet: card `R2` wires the three instrumented vendor
+ * wrappers to it, on success *and* on every failure path (remediation D2 —
  * both paid vendors bill for work performed, not for bytes we received).
  */
 export const spendEvents = pgTable(
@@ -45,10 +44,10 @@ export const spendEvents = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     /**
-     * §14.7's preview attribution rule, as a column pair: "the domain group is
-     * reserved for claimed domains; ten strangers previewing `nike.com` is not
-     * Nike-the-account costing us money. Preview events carry `target_domain`
-     * as a plain property instead."
+     * Who the money was spent on behalf of, as a column pair. Ten strangers
+     * previewing `nike.com` is not Nike-the-account costing us money, so a
+     * logged-out preview records the domain it was for rather than borrowing an
+     * account it has nothing to do with.
      *
      * Exactly one of these is set, mirroring `EventAttribution` in
      * `packages/core/src/contracts/analytics.ts`, which is a union of the same
@@ -56,19 +55,19 @@ export const spendEvents = pgTable(
      * attributable to either an account or a preview target and never both.
      *
      * Deliberately **not** a foreign key. A cascade would let account deletion
-     * (§14.6) erase money we actually spent, which is the opposite of
-     * append-only; `SET NULL` would leave a row attributable to nobody and
-     * break the check below. What §14.6 requires deleted is PII and
-     * order-derived aggregates — a vendor invoice line is neither.
+     * erase money we actually spent, which is the opposite of append-only;
+     * `SET NULL` would leave a row attributable to nobody and break the check
+     * below. What account deletion has to remove is personal data and
+     * order-derived aggregates — a line on a vendor invoice is neither.
      */
     accountId: uuid('account_id'),
     previewTarget: text('preview_target'),
     vendor: spendVendorEnum('vendor').notNull(),
     /**
-     * §14.7 — the LLM `call_type` (`distill | persona | seeds | judge | preview
-     * | intent_gap | optimize_reco`) or the DataForSEO endpoint. Free text
-     * rather than an enum because the endpoint side is the vendor's vocabulary,
-     * not ours, and a new endpoint must not need a migration.
+     * What the money bought: one of our LLM call types (`distill`, `persona`,
+     * `seeds`, `judge`, `preview`, `intent_gap`, `optimize_reco`) or a vendor
+     * endpoint name. Free text rather than an enum, because the endpoint side is
+     * the vendor's vocabulary and a new endpoint must not need a migration.
      */
     callType: text('call_type').notNull(),
     usdCost: numeric('usd_cost', { precision: 14, scale: 8 }).notNull(),
@@ -83,15 +82,15 @@ export const spendEvents = pgTable(
     ),
     check('spend_events_cost_nonnegative_ck', sql`${t.usdCost} >= 0`),
     // A replay is free work, recorded as such. Charging for one would inflate
-    // the very number the caps are computed from (§14.7 requirement 3).
+    // the very number the caps are computed from.
     check('spend_events_cache_hit_is_free_ck', sql`${t.cacheHit} = false OR ${t.usdCost} = 0`),
-    // §14.5 — "Account daily LLM spend > 10x its trailing-30-day median or >
-    // hard dollar cap": a per-account window scan.
+    // Supports the per-account daily trip: today's spend against this account's
+    // own trailing median, and against the hard ceiling.
     index('spend_events_account_occurred_idx').on(t.accountId, t.occurredAt),
-    // §14.5 — "Global DataForSEO daily spend > configured cap".
+    // Supports the global per-vendor daily cap.
     index('spend_events_vendor_occurred_idx').on(t.vendor, t.occurredAt),
-    // §14.5 — "Daily preview LLM spend > its own cap". Preview rows have no
-    // account, so they are their own partial index.
+    // Supports the preview's own daily cap. Preview rows have no account, so
+    // they need their own partial index.
     index('spend_events_preview_occurred_idx')
       .on(t.occurredAt)
       .where(sql`${t.accountId} IS NULL`),

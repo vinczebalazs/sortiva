@@ -1,12 +1,15 @@
 /**
- * main §14.2 — "model IDs are explicit config values (never 'latest' aliases)";
- * §14.7 — every capture carries the model id. §15 fixes which tier does what:
- * Haiku for product distillation and the preview card, Sonnet for the persona,
- * seed keywords, drafting and the Gate 3 judge — and the judge is **never**
- * downgraded (main §8.4, §14.4, invariant 11).
+ * Which model each kind of call runs on, by explicit id — never a moving
+ * "latest" alias, because an artefact stamped with an alias cannot be
+ * reproduced once the alias moves.
+ *
+ * The cheaper tier does product distillation and the preview card; the stronger
+ * one does the persona, seed keywords, drafting and the draft judge. The judge
+ * is **never** downgraded: a grader that thinks less hard than the writer is
+ * not a check on anything.
  *
  * Prices are per million tokens, used to cost cache replays at zero and to let
- * the test doubles account spend without a network call (main §14.7).
+ * the test doubles account for spend without a network call.
  */
 
 export interface ModelSpec {
@@ -15,8 +18,8 @@ export interface ModelSpec {
   readonly outputUsdPerMTok: number
   /**
    * The current Sonnet generation rejects `temperature`/`top_p` with a 400, so
-   * the wrapper must not forward one. main §3.3 asks for "temperature low" on
-   * the preview call, which runs on Haiku, where it is accepted.
+   * the wrapper must not forward one. The preview call wants a low temperature
+   * and runs on Haiku, where it is accepted.
    */
   readonly supportsTemperature: boolean
 }
@@ -38,7 +41,7 @@ export const MODELS = {
 
 export type ModelTier = keyof typeof MODELS
 
-/** main §15 — which tier each call type runs on. */
+/** Which tier each call type runs on. */
 export const CALL_TYPE_TIER = {
   distill: 'haiku',
   preview: 'haiku',
@@ -65,7 +68,7 @@ export function resolveModel(
   if (!override) return spec
   if (ALIAS_PATTERN.test(override)) {
     throw new Error(
-      `ANTHROPIC_MODEL_${tier.toUpperCase()}="${override}" looks like an alias. main §14.2 requires explicit model ids so every artefact is reproducible.`,
+      `ANTHROPIC_MODEL_${tier.toUpperCase()}="${override}" looks like an alias. Model ids must be explicit, or an artefact stamped with one cannot be reproduced later.`,
     )
   }
   return { ...spec, id: override }
@@ -101,13 +104,13 @@ export function specForModelId(modelId: string): ModelSpec | undefined {
 export function overrideModel(modelId: string): ModelSpec {
   if (ALIAS_PATTERN.test(modelId)) {
     throw new Error(
-      `LlmRequest.model="${modelId}" looks like a moving alias. main §14.2 requires explicit model ids so every artefact is reproducible.`,
+      `LlmRequest.model="${modelId}" looks like a moving alias. Model ids must be explicit, or an artefact stamped with one cannot be reproduced later.`,
     )
   }
   const spec = specForModelId(modelId)
   if (!spec) {
     throw new Error(
-      `LlmRequest.model="${modelId}" is not in the model registry, so the call would be priced at another model's rates and misreport spend (main §14.7). Add it to MODELS with its prices, or drop the override.`,
+      `LlmRequest.model="${modelId}" is not in the model registry, so the call would be priced at another model's rates and misreport spend. Add it to MODELS with its prices, or drop the override.`,
     )
   }
   return spec

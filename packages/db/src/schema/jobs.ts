@@ -21,7 +21,7 @@ import {
   webhookStatusEnum,
 } from './enums'
 
-/** main §13 `ingestion_jobs`, §14.3.1 — one row per (account, run). */
+/** One row per ingestion run for one store. */
 export const ingestionJobs = pgTable(
   'ingestion_jobs',
   {
@@ -41,13 +41,13 @@ export const ingestionJobs = pgTable(
 )
 
 /**
- * main §13 `job_steps`, §14.3.1–14.3.4.
+ * One step of one ingestion run.
  *
- * Transitions are guarded updates (`UPDATE ... WHERE state = 'expected'`);
- * a worker whose guard matches zero rows stops immediately (invariant 18).
- * `idempotency_key` is derived from inputs, never random (§14.3.2), and
- * `output_ref` is the "stored output" half of the completed-key ledger — see
- * DECISIONS 2026-08-27 T0.3, main §13 does not list that column.
+ * Transitions are guarded updates (`UPDATE ... WHERE state = 'expected'`), so
+ * two workers handed the same step cannot both proceed: whichever loses matches
+ * zero rows and stops. `idempotency_key` is derived from the step's inputs and
+ * never random, so a redelivery arrives at the same key, and `output_ref` holds
+ * the answer that key already produced — see DECISIONS 2026-08-27 T0.3.
  */
 export const jobSteps = pgTable(
   'job_steps',
@@ -60,11 +60,13 @@ export const jobSteps = pgTable(
     state: jobStepStateEnum('state').notNull().default('pending'),
     idempotencyKey: text('idempotency_key').notNull(),
     outputRef: jsonb('output_ref'),
-    // main §14.3.4 — any step that can exceed 60 seconds must checkpoint.
+    // Where a long step got to. Anything that can run past a minute saves its
+    // position here, so a deploy or a crash resumes rather than restarts.
     checkpoint: jsonb('checkpoint'),
     attempts: integer('attempts').notNull().default(0),
     lastError: text('last_error'),
-    // main §14.3.5 — 1m / 5m / 25m with ±20% jitter.
+    // When to try again after a retryable failure: 1m, then 5m, then 25m, each
+    // with jitter so a whole cohort of failures does not retry in lockstep.
     nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
     startedAt: timestamp('started_at', { withTimezone: true }),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -72,8 +74,8 @@ export const jobSteps = pgTable(
   (t) => [
     // One row per step per run; re-dispatching a run reuses these rows.
     uniqueIndex('job_steps_job_step_key').on(t.jobId, t.step),
-    // §14.3.2 "the cache is the ledger": has this work been done, and where is
-    // the result, are one lookup. Not unique — a later run legitimately creates
+    // "Has this work been done, and where is the result" is one lookup rather
+    // than two. Not unique — a later run legitimately creates
     // another row for the same key; the worker consults the ledger first.
     index('job_steps_idempotency_key_idx').on(t.idempotencyKey),
     index('job_steps_dispatch_idx').on(t.state, t.nextAttemptAt),
@@ -81,20 +83,21 @@ export const jobSteps = pgTable(
 )
 
 /**
- * main §13 `request_cache`, §14.3.6.
+ * Answers we have already paid for: SEO-vendor reads and LLM calls, keyed on
+ * the canonical request rather than on anything random.
  *
- * Billable reads (DataForSEO) and LLM calls, keyed on canonical params /
- * `(prompt_version, model_id, sha256(prompt))`, **written before processing**
- * (invariant 20). §13 names the payload column `response_ref`; there is no blob
- * store in V1 (tech §2.1: no Redis, Postgres is the cache), so it is realised
- * as an inline JSONB payload — DECISIONS 2026-08-27 T0.3.
+ * The row is written **before** the answer is processed, so a crash between
+ * "the vendor answered" and "we finished with it" does not make us buy the same
+ * answer twice. Postgres is the cache — there is no Redis and no blob store in
+ * V1 — so the payload is inline JSONB rather than a reference; see DECISIONS
+ * 2026-08-27 T0.3.
  */
 export const requestCache = pgTable(
   'request_cache',
   {
     cacheKey: text('cache_key').primaryKey(),
     // `llm` | `dataforseo` | ... — lets the retention sweep and the cost
-    // dashboards separate the two classes §14.3.6 distinguishes.
+    // dashboards tell the two kinds of paid call apart.
     kind: text('kind').notNull(),
     responseJson: jsonb('response_json').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -104,10 +107,11 @@ export const requestCache = pgTable(
 )
 
 /**
- * main §13 `ops_flags`, §14.5.
+ * The kill switches and spend trips, as rows.
  *
- * Invariant 17: spend caps are enforced from `ops_flags` / DB counters in our
- * code. PostHog observes trips; it never causes or gates them (main §14.7).
+ * These are enforced from this table and our own counters, in our own code.
+ * Analytics observes a trip; it never causes or gates one, because a control
+ * plane that lives at a vendor stops working exactly when we most need it.
  * A flag is active while `reset_at IS NULL`.
  */
 export const opsFlags = pgTable(
@@ -133,7 +137,8 @@ export const opsFlags = pgTable(
     uniqueIndex('ops_flags_active_account_key')
       .on(t.accountId, t.flag)
       .where(sql`${t.resetAt} IS NULL AND ${t.scope} = 'account'`),
-    // main §14.5 — checked at job dequeue, effective within 60s.
+    // Read at every job dequeue, so flipping a switch has to take effect in
+    // seconds; this index is what keeps that read cheap.
     index('ops_flags_active_idx')
       .on(t.scope, t.flag)
       .where(sql`${t.resetAt} IS NULL`),
@@ -146,10 +151,12 @@ export const opsFlags = pgTable(
 )
 
 /**
- * main §13 `webhook_events`, §14.3.8.
+ * Every webhook we have received, before anything is done about it.
  *
- * `webhook_id` is unique; insert-or-ignore, then process from the table, never
- * from the request body directly. `source` is not in §13 — see DECISIONS
+ * `webhook_id` is the primary key and receipt is insert-or-ignore, so a
+ * redelivery is free. Processing then reads from this table and never from the
+ * request body, which is what lets the receiver answer 200 immediately and do
+ * the work afterwards. `source` is ours rather than the spec's — see DECISIONS
  * 2026-08-27 T0.3.
  */
 export const webhookEvents = pgTable(
@@ -168,7 +175,7 @@ export const webhookEvents = pgTable(
     index('webhook_events_unprocessed_idx')
       .on(t.receivedAt)
       .where(sql`${t.processedAt} IS NULL`),
-    // tech §2.1 — payloads pruned at 30 days.
+    // The retention sweep prunes payloads at 30 days by arrival time.
     index('webhook_events_received_at_idx').on(t.receivedAt),
   ],
 )

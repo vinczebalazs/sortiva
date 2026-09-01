@@ -7,11 +7,11 @@ import {
 import { InvalidClaimDomain, normaliseClaimDomain } from './normalise'
 import type { DomainClaimStore, DomainState } from './ports'
 
-/** main §14.7 funnel: `subscription_activated → domain_claimed → shopify_oauth_granted → …`. */
+/** One step of the activation funnel: `subscription_activated → domain_claimed → shopify_oauth_granted → …`. */
 export const DOMAIN_CLAIMED_EVENT = 'domain_claimed'
 
 /**
- * main §14.3.2 — an idempotency key derived from its inputs, never random. One
+ * Derived from its inputs, never random. One
  * account claiming one domain is one ingestion run for the life of that claim,
  * so a retried request cannot start a second onboarding.
  */
@@ -21,7 +21,7 @@ export function ingestionRunId(normalized: string): string {
 
 export interface ClaimDomainDeps {
   readonly store: DomainClaimStore
-  /** main §14.7 — funnel capture. Optional so the domain logic runs without telemetry. */
+  /** Funnel capture. Optional so the domain logic runs without telemetry. */
   readonly capture?: Pick<PosthogCapture, 'capture'>
 }
 
@@ -42,18 +42,18 @@ export type ClaimDomainResult =
   | { readonly kind: 'invalid_domain'; readonly message: string }
 
 /**
- * main §5 — connecting a domain, end to end: normalise (§2), claim against the
- * global unique index, enqueue the deep ingestion job, and hand the dashboard
- * the run to render its progress stepper against (ui §3.2).
+ * Connecting a domain, end to end: normalise it, claim it against the global
+ * unique index, enqueue the deep ingestion job, and hand the dashboard the run
+ * to render its progress stepper against.
  *
- * The three outcomes §5 asks for are three outcomes here, distinguished by the
- * store inside its transaction rather than by a follow-up read that could see a
- * different world than the insert did.
+ * The outcomes are distinguished by the store inside its own transaction rather
+ * than by a follow-up read, which could see a different world than the insert
+ * did and hand two simultaneous signups the same domain.
  *
  * `domain_claimed` fires only on a real claim: a returning merchant re-pasting
- * their own domain is not a funnel step, and counting it would inflate main
- * §14.7's activation numbers the same way counting every sign-in as a signup
- * would (T1.1 made the identical choice for `signup_completed`).
+ * their own domain is not a funnel step, and counting it would inflate the
+ * activation numbers the same way counting every sign-in as a signup would
+ * (T1.1 made the identical choice for `signup_completed`).
  */
 export async function claimDomain(
   deps: ClaimDomainDeps,
@@ -79,7 +79,7 @@ export async function claimDomain(
     case 'claimed':
       deps.capture?.capture({
         event: DOMAIN_CLAIMED_EVENT,
-        // §14.7 — the domain group exists from this moment: everything this
+        // The domain group exists from this moment: everything this
         // account spends from here is groupable by the site it spent it on.
         attribution: accountAttribution(input.accountId, normalized),
       })

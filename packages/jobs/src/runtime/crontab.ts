@@ -68,6 +68,15 @@ export const CRON_ENTRIES: readonly CronEntry[] = [
     why: 'Finds publish attempts that never confirmed, checks the remote for our marker, and adopts or retries them — so a crash mid-publish cannot leave a post half-made or make two.',
   },
   {
+    task: 'spend_cap_sweep',
+    schedule: '*/5 * * * *',
+    why:
+      'Sums the day\'s vendor spending out of our own ledger and pauses whatever crossed a ceiling — ' +
+      'one account, enrichment everywhere, or the logged-out preview. ' +
+      'The interval is what bounds the overspend: nothing else looks at the meter, so between two ' +
+      'runs a runaway is unbounded. Cheap to run — three sums over an indexed window.',
+  },
+  {
     task: 'oauth_reminder_sweep',
     schedule: '0 * * * *',
     why: 'Sends the 24-hour reminder to finish connecting Shopify. Safe to run repeatedly: the notification dedupe key stops a second send.',

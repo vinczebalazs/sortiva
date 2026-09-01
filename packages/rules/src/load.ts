@@ -10,7 +10,7 @@ const packageRoot = new URL('../', import.meta.url)
 export const CONFIG_PATH = fileURLToPath(new URL('signals.config.yaml', packageRoot))
 const SCHEMA_PATH = fileURLToPath(new URL('schema/signals.config.schema.json', packageRoot))
 
-/** Thrown at load. main §7.10 / tech §2: the config is validated at worker start, so this fails startup. */
+/** Thrown at load. The config is validated at worker start, so an invalid document fails startup rather than surfacing as a wrong threshold hours later. */
 export class RulesConfigError extends Error {
   constructor(
     message: string,
@@ -22,7 +22,7 @@ export class RulesConfigError extends Error {
 }
 
 export interface RulesConfig {
-  /** sha256 of the config file's bytes. Stamped on every opportunity and gate decision (main §7.10). */
+  /** sha256 of the config file's bytes. Stamped on every opportunity and gate decision, so any result can be traced back to the exact numbers that produced it. */
   readonly rulesVersion: string
   readonly version: number
   /** Global defaults, no locale layer applied. */
@@ -31,7 +31,7 @@ export interface RulesConfig {
   readonly localeKeys: readonly string[]
   /**
    * Thresholds for a store's locale. Resolution: exact tag ("da-DK"), then the
-   * language subtag ("da"), then global defaults (main §7.10 layering).
+   * language subtag ("da"), then global defaults.
    */
   forLocale(locale?: string | null): RulesLayer
 }
@@ -136,8 +136,8 @@ export function loadRulesConfig(options: LoadOptions = {}): RulesConfig {
 let cached: RulesConfig | undefined
 
 /**
- * Process-wide config. tech §2: "Loaded once per process; no DB lookup in the
- * hot path."
+ * Process-wide config: loaded once per process, so reading a threshold never
+ * costs a database lookup.
  */
 export function rules(): RulesConfig {
   cached ??= loadRulesConfig()

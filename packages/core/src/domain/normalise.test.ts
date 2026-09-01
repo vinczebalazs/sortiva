@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest'
 import { InvalidClaimDomain, MULTI_TENANT_SUFFIXES, normaliseClaimDomain } from './normalise'
 
 /**
- * main §2's normalisation rule, as a table. Invariant 1 is only as strong as
- * this function: the unique index is taken over whatever comes out of here, so
- * two spellings of one business that disagree here are two accounts.
+ * The normalisation rule, as a table. One-domain-per-account is only as strong
+ * as this function: the unique index is taken over whatever comes out of here,
+ * so two spellings of one business that disagree here become two accounts.
  */
 
 const CASES: ReadonlyArray<{ input: string; expected: string; why: string }> = [
-  // The literal worked example in main §2.
+  // The worked example the rule is stated with.
   { input: 'https://www.Shop.example.co.uk/about', expected: 'example.co.uk', why: 'main §2' },
 
   // Lowercase, scheme, www, path, query, fragment, port, trailing dot.
@@ -22,20 +22,20 @@ const CASES: ReadonlyArray<{ input: string; expected: string; why: string }> = [
   { input: 'example.com.', expected: 'example.com', why: 'root dot stripped' },
   { input: '  example.com  ', expected: 'example.com', why: 'trimmed' },
 
-  // eTLD+1: the whole point of claiming at the registrable domain (main §2) —
-  // one business cannot become two accounts by using two subdomains.
+  // The whole point of claiming at the registrable domain: one business cannot
+  // become two accounts by using two subdomains.
   { input: 'blog.example.com', expected: 'example.com', why: 'eTLD+1' },
   { input: 'shop.example.com', expected: 'example.com', why: 'eTLD+1' },
   { input: 'a.b.c.example.com', expected: 'example.com', why: 'eTLD+1, many labels' },
 
   // Multi-part public suffixes: the case a hand-rolled "last two labels" rule
-  // gets wrong, which is why main §2 names the Public Suffix List.
+  // gets wrong, which is why this uses the Public Suffix List.
   { input: 'shop.example.co.uk', expected: 'example.co.uk', why: 'co.uk is a public suffix' },
   { input: 'example.co.uk', expected: 'example.co.uk', why: 'co.uk is a public suffix' },
   { input: 'https://www.example.com.au/x', expected: 'example.com.au', why: 'com.au' },
   { input: 'shop.example.co.jp', expected: 'example.co.jp', why: 'co.jp' },
 
-  // main §2's allowlisted multi-tenant suffix: tenants of *.myshopify.com are
+  // An allowlisted multi-tenant suffix: tenants of *.myshopify.com are
   // genuinely separate businesses, so the claim stops one label lower.
   { input: 'acme.myshopify.com', expected: 'acme.myshopify.com', why: 'main §2 allowlist' },
   { input: 'https://ACME.myshopify.com/admin', expected: 'acme.myshopify.com', why: 'allowlist' },
@@ -107,7 +107,7 @@ describe('normaliseClaimDomain (main §2, invariant 1)', () => {
   it('does not treat the PSL private section as multi-tenant', () => {
     // `github.io` and `blogspot.com` are in the Public Suffix List's private
     // section. Honouring that section wholesale would silently split thousands
-    // of hosts into per-tenant claims; main §2 asks for an allowlist instead.
+    // of hosts into per-tenant claims, so we keep an explicit allowlist.
     expect(normaliseClaimDomain('someone.github.io').normalized).toBe('github.io')
     expect(normaliseClaimDomain('someone.blogspot.com').normalized).toBe('blogspot.com')
   })

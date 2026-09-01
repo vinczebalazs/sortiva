@@ -1,34 +1,41 @@
 # Sortiva — signals.config.yaml
 #
-# main §7.10: "Every number in §7.3, §7.6, and §8.2 (demand floors per locale,
-# position bands, CTR ratio, decay ratios, impression shares, confidence points,
-# multiplier clamps, exploration reservation, refresh share) lives in a
-# versioned configuration file in the repo, one schema-validated document,
-# loaded at worker start and stamped onto every opportunity and gate decision as
-# `rules_version`."
+# Every number that decides whether an opportunity is detected, admitted, scored
+# or published lives in this one file. Nothing else in the codebase may compare a
+# volume, position, impression count or CTR against a literal — a lint rule
+# enforces that — so this is the only place any of it can be changed.
 #
-# `rules_version` is sha256 of this file's bytes. Editing any value changes it,
-# which is the point: main §8.5's calibration posture is "start strict, loosen
-# only with evidence", and the weekly review reads PostHog broken down by
-# `rules_version` (main §14.7).
+# `rules_version` is the sha256 of this file's bytes, stamped onto every
+# opportunity and gate decision. Editing anything here, comments included,
+# changes it, and that is deliberate: it makes "which rules produced this
+# result" answerable after the fact, and the weekly review breaks its numbers
+# down by that version. Loosen values only against evidence from a version that
+# has already run.
 #
-# Every value carries the section it comes from. Values marked UNSIGNED are
-# starting heuristics this spec set does not state a number for; they are
-# recorded in DECISIONS.md and need founder calibration sign-off.
+# Values marked UNSIGNED are starting heuristics nobody has calibrated. They are
+# recorded in DECISIONS.md and need the founder's sign-off before they can be
+# treated as settled.
 #
-# Layering (main §7.10): global defaults -> per-locale -> (later) per-store /
-# per-market / per-query-type / per-page-type. V1 ships global + per-locale.
+# Layering: global defaults -> per-locale -> (later) per-store / per-market /
+# per-query-type / per-page-type. V1 ships global + per-locale.
 
 version: 1
 
 defaults:
-  # ── main §7.3 — V1 signal catalog ──────────────────────────────────────────
-  # All thresholds here are the spec's "starting heuristics" for detection.
+  # ── Signal detection ───────────────────────────────────────────────────────
+  # Each signal is one reason to believe there is work worth doing on a page or
+  # a keyword cluster. `priority` P0 means V1 detects it; P1 means the data
+  # model accommodates it but no detector runs yet. `needs_gsc` marks the ones
+  # that cannot fire at all without Search Console, and so go quiet for an
+  # account in Limited Intelligence.
   signals:
     striking_distance:
       priority: P0
       needs_gsc: true
-      # "Page x query-cluster mean position 4-15 over trailing 28d"
+      # A page already ranking just off page one, where a push is cheap. Widen
+      # the band and you pick up pages too far back to move with an edit;
+      # narrow it and you miss easy wins. The window is how much history has to
+      # agree before we believe the position.
       position_min: 4
       position_max: 15
       window_days: 28
@@ -36,8 +43,12 @@ defaults:
     low_ctr_at_strong_rank:
       priority: P0
       needs_gsc: true
-      # "Mean position <= 5 over 28d, impressions >= 2x store median, observed
-      #  CTR < 0.6x the CTR predicted by the store's own fitted curve"
+      # Ranks well, nobody clicks — so the title or description is the problem,
+      # not the ranking. The CTR ratio is measured against the store's own
+      # fitted click curve, never an absolute rate, so a niche with naturally
+      # low CTR is not flagged wholesale. The impressions multiple keeps
+      # low-traffic queries out, where a handful of clicks is noise: raise it
+      # and only high-traffic pages qualify.
       position_max: 5
       window_days: 28
       impressions_store_median_multiple_min: 2
@@ -46,9 +57,11 @@ defaults:
     content_decay:
       priority: P0
       needs_gsc: true
-      # "Trailing 28d vs the same-length window 12 weeks earlier: clicks <= 0.6x
-      #  and position worsened >= 3 ... must hold across >= 2 consecutive
-      #  weekly evaluations"
+      # A page that used to work and no longer does, judged against itself 12
+      # weeks earlier rather than against any absolute number. Requiring the
+      # decline to hold across consecutive weekly runs is what stops one bad
+      # week — a holiday, an outage, a SERP experiment — being read as decay.
+      # Drop that to 1 and the signal gets noisy fast.
       window_days: 28
       comparison_window_offset_weeks: 12
       clicks_ratio_max: 0.6
@@ -58,8 +71,10 @@ defaults:
     cannibalization:
       priority: P0
       needs_gsc: true
-      # ">= 2 store URLs each hold >= 20% of the cluster's impressions over 28d,
-      #  both within position <= 30"
+      # Two of the store's own pages splitting the same query between them.
+      # The impression share is what separates real competition from a page
+      # that merely brushes the cluster; lower it and ordinary long-tail
+      # overlap starts looking like a problem.
       window_days: 28
       competing_urls_min: 2
       impression_share_min: 0.20
@@ -68,16 +83,20 @@ defaults:
     uncovered_commercial_query:
       priority: P0
       needs_gsc: false
-      # "volume >= locale demand floor (§8.2) ... maps to >= 1 product family
-      #  passing the substance floor, and the existing-target check finds no
-      #  suitable URL". The volume floor itself is gates.demand_floor.
+      # Demand exists, the store sells into it, and nothing covers it. The
+      # volume floor is gates.demand_floor; this number is how many product
+      # families the query has to map to before we will write about it. At 1,
+      # a query needs one family that clears the substance floor.
       mapped_families_min: 1
 
     existing_page_intent_gap:
       priority: P0
       needs_gsc: false
-      # "Page ranks 4-20 for the cluster ... >= 2 subtopics present on >= 3 of
-      #  the top-5 SERP pages and absent on ours"
+      # A page that ranks but answers less than the pages above it. Subtopics
+      # count only if they show up on enough of the top results — one
+      # competitor doing something unusual is not a gap. Raising
+      # `subtopic_present_on_top_pages_min` demands stronger consensus before
+      # we call something missing.
       position_min: 4
       position_max: 20
       missing_subtopics_min: 2
@@ -87,21 +106,22 @@ defaults:
     competitor_coverage_gap:
       priority: P0
       needs_gsc: false
-      # ">= 2 of the <=5 business competitors rank <= 10 for a keyword that maps
-      #  to a family we sell; we hold no position <= 20"
+      # Competitors rank for something we sell and we do not. Requiring two of
+      # them keeps one competitor's quirk from setting our roadmap.
       competitors_ranking_min: 2
       competitor_position_max: 10
       our_absent_position_max: 20
-      # "CREATE (no relevant URL) / OPTIMIZE (relevant URL at 11-30)"
+      # Where our own relevant page already sits in this band, the answer is to
+      # improve it rather than write a second one competing with it.
       optimize_position_min: 11
       optimize_position_max: 30
 
     product_family_coverage_gap:
       priority: P0
       needs_gsc: false
-      # "Family in the top-seller set (or >= 10% of 90d revenue) with zero
-      #  published/ranking content mapped to it, and >= 1 keyword candidate
-      #  clearing the demand floor"
+      # A family that earns real money with nothing written about it. The
+      # revenue share is the "matters to this business" test: raise it and only
+      # the store's biggest lines qualify.
       revenue_share_min: 0.10
       revenue_window_days: 90
       keyword_candidates_min: 1
@@ -109,18 +129,17 @@ defaults:
     catalog_richness_gap:
       priority: P0
       needs_gsc: false
-      # Fires when a candidate clears demand + winnability but the mapped
-      # families fail gates.substance_floor. HOLD + merchant task.
+      # Fires when a candidate clears demand and winnability but the families
+      # behind it fail gates.substance_floor — there is an audience and nothing
+      # honest to say yet. Produces a task for the merchant, not an article.
 
     missing_or_weak_metadata:
-      # P0 per the founder's §11 sign-off (Appendix B "Technical FIX scope").
       priority: P0
       needs_gsc: false
 
     product_change_impact:
-      # "already built as the repair loop" — drift thresholds live in main §14.1
-      # and are owned by the drift/repair card, not this file (see DECISIONS
-      # 2026-08-27 T0.2).
+      # Detected by the drift/repair loop rather than here; its thresholds are
+      # owned by that card (DECISIONS 2026-08-27 T0.2).
       priority: P0
       needs_gsc: false
 
@@ -147,42 +166,52 @@ defaults:
     freshness_opportunity:
       priority: P1
       needs_gsc: true
-      # "Age > 12 months, position stagnant/declining over 12 weeks, and the
-      #  top-5 SERP set differs >= 40% from the snapshot stored at publish"
+      # Old, flat, and the results around it have moved on. The SERP difference
+      # is the one that carries the argument: if the top five are still the
+      # same pages, age alone is not a reason to rewrite.
       age_months_min: 12
       stagnation_window_weeks: 12
       serp_set_difference_min: 0.40
 
-  # ── main §7.6 — the opportunity object & scoring ───────────────────────────
+  # ── Scoring: turning detected signals into a ranked queue ──────────────────
   scoring:
-    # "score = opportunity x pattern_multipliers x source_bonus" (§7.6, §9.6.4)
     create:
-      # "competitor-gap source bonus x1.15"
+      # Applied when the reason to write is a competitor already ranking —
+      # evidence someone else has proved the demand. Raise it and competitor
+      # gaps crowd out everything else in the queue.
       competitor_gap_source_bonus: 1.15
-      # "business_weight multiplier = the family's share of 90d revenue
-      #  rescaled to [1.0, 1.5]"
+      # A family's share of trailing-90-day revenue, rescaled into this range,
+      # so work on what the store actually sells outranks work on what it
+      # merely stocks. Widening the range makes revenue dominate the ordering;
+      # collapsing it to 1.0–1.0 turns business weight off entirely.
       business_weight_min: 1.0
       business_weight_max: 1.5
 
     existing_page:
-      # "expected_gain = impressions_28d x (CTR(target_position) -
-      #  CTR(current_position))"
+      # Expected gain for a page that already ranks is modelled as its
+      # impressions over this window times the CTR it would gain by moving.
       window_days: 28
-      # "target_position = 3 for striking distance, current position for
-      #  Low-CTR ..., baseline position for decay"
+      # Where we assume a striking-distance page lands if the work succeeds.
+      # Set it to 1 and every such opportunity looks enormous; the number is a
+      # deliberately modest claim.
       striking_distance_target_position: 3
 
     impact:
-      # "impact_score is the candidate's percentile rank within its own action
-      #  family across the store's current candidate set, and impact bands are
-      #  terciles of that"
+      # Impact is a percentile rank within the candidate's own action family
+      # across this store's current candidate set — never a cross-store or
+      # absolute number — and the bands are terciles of it. Move the tercile
+      # cut-points and the same candidate changes badge without any change in
+      # the underlying work.
       score_min: 0
       score_max: 100
       band_tercile_low_max_percentile: 33.3
       band_tercile_medium_max_percentile: 66.7
 
-    # "Confidence (0-100) — additive heuristics, deterministic"
     confidence:
+      # Confidence is additive and deterministic: how much we trust the
+      # evidence, kept separate from how much the work is worth. These points
+      # are the whole of it, so changing one re-ranks every candidate that
+      # earns it.
       points:
         gsc_evidence_present: 30
         evidence_window_at_least_28_days: 20
@@ -191,203 +220,257 @@ defaults:
         substance_floor_margin: 15
         no_open_precondition: 10
         validated_across_consecutive_scans: 10
+        # The penalty an account without Search Console carries. It is what
+        # keeps a guess from presenting itself with the same confidence as a
+        # measurement; shrinking it hides that difference from the merchant.
         limited_intelligence_penalty: -20
-      # "+15 >= 2 independent sources agree"
+      # How many separate sources have to say the same thing to count as
+      # agreement.
       independent_sources_min: 2
-      # "+20 evidence window >= 28 days (+10 if >= 84)"
+      # Two tiers of "how much history is behind this": the second is additive
+      # on top of the first.
       evidence_window_days_tier_1: 28
       evidence_window_days_tier_2: 84
-      # "+10 signal validated across >= 2 consecutive weekly scans"
+      # How many consecutive weekly scans must have seen the signal before it
+      # counts as validated rather than as one week's reading.
       consecutive_scans_min: 2
-      # "Clamped; bands: high >= 70, medium 40-69, low < 40"
       clamp_min: 0
       clamp_max: 100
+      # Where the score turns into the word the merchant reads. These bands are
+      # presentation, not gating: lowering `band_high_min` makes weaker
+      # evidence read as "high confidence" without changing what we do with it.
       band_high_min: 70
       band_medium_min: 40
 
-  # ── main §8.2 — Gate 1, topic admission ────────────────────────────────────
+  # ── Gate 1: which topics are allowed in at all ─────────────────────────────
   gates:
-    # "Demand floor: keyword volume >= threshold in the store's locale (tuned
-    #  per country — 50/mo in Danish != 50/mo in English)."
-    # UNSIGNED — the spec mandates per-locale floors and gives no table. This
-    # global default is the English-scale floor; the `locales` block below
-    # scales it down for smaller search markets. See DECISIONS 2026-08-27 T0.2.
     demand_floor:
+      # The minimum monthly search volume a keyword needs before we will spend
+      # an article on it. Deliberately per-locale, because 50 searches a month
+      # in Danish is not 50 in English; the `locales` block below scales this
+      # down for smaller markets.
+      # UNSIGNED — per-locale floors are required, no table was supplied. This
+      # global default is the English-scale floor. See DECISIONS 2026-08-27 T0.2.
       monthly_search_volume_min: 100
-      # "Zero-volume topics auto-reject unless the user manually pinned them."
+      # A merchant who pins a topic has overridden our judgment on purpose, so
+      # a zero-volume reading does not veto them. Set false and pinning stops
+      # working for anything we have no volume data on.
       allow_zero_volume_when_pinned: true
 
-    # "Winnability: difficulty vs the site's estimated authority."
     winnability:
-      # main §9.6.4 / §7.11: "GSC not connected: winnability falls back to a
-      # conservative constant". UNSIGNED — the spec says "conservative", not
-      # which number. 0-1 scale.
+      # Can this site realistically rank for this, given its authority?
+      # Without Search Console we cannot measure authority, so we substitute
+      # one pessimistic constant rather than guess per keyword — the effect is
+      # that a Limited Intelligence account only gets the easy wins. Raising it
+      # would let us make confident claims on evidence we do not have.
+      # UNSIGNED — "conservative" was specified, not a number. 0–1 scale.
       limited_intelligence_constant: 0.25
       minimum: 0.15
 
-    # "Substance inventory: the topic must map to families whose merged fact
-    #  sheets have enough populated fields across enough member products."
-    # UNSIGNED — main §6.3/§6.4 define richness but state no floor.
     substance_floor:
+      # Do we know enough about the products to write something worth reading?
+      # These count distilled facts, not words: how many distinct facts across
+      # the mapped families, how well populated each contributing product is,
+      # and how many products have to contribute. Lower them and the pipeline
+      # starts producing articles padded out of thin catalog data — which is
+      # the failure this gate exists to prevent.
+      # UNSIGNED — richness is defined, no floor was stated.
       distinct_facts_min: 8
       populated_fields_per_product_min: 4
       contributing_products_min: 3
-      # "passes the substance floor with margin" earns the §7.6 confidence
-      # point; margin is expressed as a multiple of the floor.
+      # Clearing the floor by this multiple earns a confidence point: "we have
+      # plenty to say", not merely "just enough".
       margin_multiple: 1.5
 
-    # "Existing-target / cannibalization check (§7.7 — literally the same
-    #  function)": step 2(a) "mean position <= 30 over 28d"; step 4 "match is
-    #  weak (position > 30)".
     existing_target_check:
+      # Before creating anything, we look for a page we already have that
+      # ranks for the cluster; a match converts the work to OPTIMIZE or REFRESH
+      # instead of publishing a second page to compete with the first. This
+      # position is the line between "we already rank here" and "we do not":
+      # raise it and weak, barely-ranking pages start blocking new articles;
+      # lower it and we publish competitors to our own pages.
       window_days: 28
       match_position_max: 30
 
-    # ── main §8.4 — Gate 3, draft grading ──────────────────────────────────
-    # Included here beyond the T0.2 card's enumerated sections so invariant 11's
-    # floors are not literals in Lane D. See DECISIONS 2026-08-27 T0.2.
+    # ── Gate 3: draft grading ─────────────────────────────────────────────
     draft_grading:
-      # "Gate on the minimum, not the average." Hard floors.
+      # The judge scores each draft on several criteria on this scale, and we
+      # gate on the *minimum* score, never the average — so one badly failed
+      # criterion cannot be carried by strong ones elsewhere.
       criterion_score_min: 1
       criterion_score_max: 5
+      # Information gain and factual grounding are held one point higher than
+      # everything else: an article that says nothing new, or says it without
+      # support, is the failure mode that costs the merchant trust. Dropping
+      # these to 3 is what "loosening the quality bar" would actually mean.
       information_gain_min: 4
       factual_grounding_min: 4
       other_criteria_min: 3
-      # "One repair loop, max."
+      # One attempt to repair a failed draft, then we stop. More loops mean
+      # paying repeatedly to talk a bad draft into passing its own grader.
       repair_loops_max: 1
 
-  # ── main §9.6 — outcome measurement & learning loop ────────────────────────
+  # ── Learning: measuring what happened after publish ────────────────────────
   learning:
-    # §9.6.1 "runs when the calendar's planned horizon drops below ~60 days"
+    # When the calendar's planned horizon falls below this many days, top it
+    # up. Shorten it and replenishment runs closer to the edge; lengthen it and
+    # we commit to topics further ahead of the evidence.
     replenishment_horizon_days: 60
 
-    # §9.6.2 performance signals & labels
     labels:
-      # "Maturity gate: no judgment before 28 days post-publish."
+      # Nothing is judged before this many days post-publish — rankings have
+      # not settled and an early verdict would teach the pattern learner the
+      # wrong lesson.
       maturity_days: 28
       window_days: 28
-      # "winner: clicks >= 2x store median, or position improved >= 5 spots
-      #  with impressions above median"
+      # What counts as a winner, always relative to this store's own median
+      # rather than an absolute click count, so a small store can have winners.
       winner_clicks_store_median_multiple_min: 2
       winner_position_improvement_min: 5
-      # "underperformer: clicks < 0.25x median and position > 30 after 90 days"
+      # What counts as an underperformer. The age requirement is longer than
+      # the maturity gate on purpose: calling something a failure is a heavier
+      # claim than calling it a success, and it feeds the multipliers below.
       underperformer_clicks_store_median_multiple_max: 0.25
       underperformer_position_min: 30
       underperformer_age_days_min: 90
 
-    # §9.6.3 pattern aggregation
     patterns:
-      # "A pattern only becomes active with n >= 3 rated articles"
+      # A pattern is "this kind of article works for this store". It only
+      # starts influencing anything once this many rated articles support it —
+      # the guard against learning a rule from a single lucky post.
       activation_min_rated: 3
-      # "Winner-dominant pattern (>= 2/3 winners): x1.25"
+      # And only once that share of them point the same way.
       dominance_share_min: 0.6667
       winner_dominant_multiplier: 1.25
       underperformer_dominant_multiplier: 0.8
       mixed_multiplier: 1.0
-      # "multipliers never leave [0.5, 2.0] even when stacked"
+      # A hard ceiling and floor on the combined effect, so stacked patterns
+      # can never swamp the underlying opportunity score. Widen this and
+      # learning starts overriding evidence rather than tilting it.
       multiplier_clamp_min: 0.5
       multiplier_clamp_max: 2.0
-      # "computed from the trailing 90 days of labels only"
+      # Only labels from this recent a window feed the patterns, so a store
+      # that has changed keeps learning from what it is now.
       recency_window_days: 90
-      # "the (<=3) active pattern multipliers the candidate matches" (§9.6.4)
+      # How many pattern multipliers one candidate may accumulate.
       max_stacked_multipliers: 3
-      # §9.6.3 dimensions, plus `action_type` added by §9.6.10.
+      # The axes a pattern can be about.
       dimensions:
         - intent_class
         - family_id
         - keyword_cluster
         - action_type
 
-    # §9.6.5 refresh candidates (the weekly scan)
     refresh:
-      # "mean position in 5-15 over the trailing 28 days"
+      # Which published pages come back round as refresh candidates: ranking
+      # well enough to be worth saving, not so well that there is nothing to
+      # gain.
       position_min: 5
       position_max: 15
       window_days: 28
-      # "not refreshed in the last 60 days"
+      # A page cannot be refreshed again inside this window, so we do not churn
+      # the same article instead of covering new ground.
       cooldown_days: 60
-      # "refreshes fill at most 40% of any replenishment batch"
+      # And refreshes may not fill more than this share of any replenishment
+      # batch — the guard against a calendar that only ever revisits old work.
       batch_share_max: 0.40
 
-    # §9.6.6 exploration guarantee
     exploration:
-      # "at least 2 slots (or 15%, whichever is larger)"
+      # Every batch reserves slots for topics the scoring did not pick, so the
+      # learning loop keeps seeing things outside what it already believes.
+      # Whichever of these two is larger wins. Set both to zero and the system
+      # can only ever confirm itself.
       reserved_slots_min: 2
       reserved_share_min: 0.15
 
-    # §9.6.10 per-opportunity outcomes
     outcomes:
-      # "measured by the weekly scan against the same 28-day maturity rule"
+      # Whether a specific action worked, measured on the same maturity rule as
+      # the labels above.
       maturity_days: 28
       window_days: 28
       optimize:
-        # "improved (position >= 2 better or CTR >= +20% relative with
-        #  impressions not collapsed)"
+        # An OPTIMIZE counts as improved on either position or CTR.
         improved_position_delta_min: 2
         improved_ctr_relative_delta_min: 0.20
-        # UNSIGNED — "impressions not collapsed" is stated without a number.
+        # ...but not if impressions collapsed underneath it, which is how a
+        # page can post a better CTR while doing worse.
+        # UNSIGNED — "impressions not collapsed" was stated without a number.
         impressions_not_collapsed_ratio_min: 0.5
       refresh:
-        # "recovered if clicks return to >= 0.8x the pre-decay baseline"
+        # A REFRESH counts as recovered when clicks come back to this share of
+        # the pre-decay baseline. It is deliberately below 1.0: full recovery
+        # is rare and demanding it would record every refresh as a failure.
         recovered_clicks_baseline_ratio_min: 0.8
       fix:
-        # "share concentration on the designated primary URL (>= 70% of cluster
-        #  impressions)"
+        # A FIX counts as working when the cluster's impressions concentrate on
+        # the URL we designated primary.
         primary_url_impression_share_min: 0.70
 
-  # ── main §10.2 and §14.5 — caps, kill switches, auto-trips ─────────────────
+  # ── Caps, kill switches and auto-trips ─────────────────────────────────────
+  # These are the money and blast-radius limits. Every one of them is enforced
+  # from our own database counters at job dequeue; analytics never gates
+  # anything.
   budgets:
     optimize:
-      # §10.2 "Default cap of 2 generations per account per day"
+      # How many OPTIMIZE generations one account may trigger in a day.
       generations_per_account_per_day: 2
     intent_gap:
-      # §14.5 "Intent-gap analysis and OPTIMIZE recommendation generation each
-      # have a per-account daily cap (config)". UNSIGNED — no number stated.
+      # How many intent-gap analyses one account may trigger in a day. Each is
+      # a paid SERP read plus an LLM call, so this is a per-account spend
+      # ceiling wearing a feature's name. UNSIGNED — no number was stated.
       analyses_per_account_per_day: 10
 
   auto_trips:
-    # §14.5 "checked at job dequeue (effective within 60s)"
+    # How stale a kill-switch reading may be when a job checks it. This is the
+    # worst case between flipping a switch and work actually stopping.
     flag_check_max_staleness_seconds: 60
 
     account_llm_spend:
-      # "Account daily LLM spend > 10x its trailing-30-day median or > hard
-      #  dollar cap -> pause that account's generation."
+      # One account spending far more than it normally does is either a bug or
+      # abuse; either way we pause that account's generation rather than find
+      # out from the bill. The multiple catches the anomaly, the hard cap
+      # catches the case where the median was already high.
       trailing_median_multiple_max: 10
       trailing_median_window_days: 30
-      # UNSIGNED — "hard dollar cap" with no number. At $89/mo (~$2.90/day of
-      # revenue) this is a loud-failure ceiling, not a budget.
+      # UNSIGNED — a hard dollar cap was required with no number. At $89/mo
+      # (about $2.90/day of revenue) this is a loud-failure ceiling, not a
+      # budget: it should never be reached in normal operation.
       hard_cap_usd_per_day: 5.00
 
     dataforseo_spend:
-      # "Global DataForSEO daily spend > configured cap -> global enrichment
-      #  pause." UNSIGNED.
+      # Total daily SEO-data spend across all accounts; tripping it pauses
+      # enrichment everywhere rather than for one account, because the vendor
+      # bill is global. UNSIGNED.
       global_cap_usd_per_day: 50.00
 
     preview_spend:
-      # "Daily preview LLM spend > its own cap -> pause the preview endpoint
-      #  only." UNSIGNED. "This trip firing at all means Turnstile, rate limits,
-      #  or the cache are being defeated — investigate, don't just raise the
-      #  cap."
+      # The logged-out preview is the only paid path a stranger can trigger, so
+      # it gets its own cap and pausing it does not touch paying customers.
+      # If this ever trips, Turnstile, the rate limits or the cache are being
+      # defeated — investigate rather than raise the cap. UNSIGNED.
       global_cap_usd_per_day: 10.00
 
     judge_fail_rate:
-      # "Judge fail rate > 60% over the trailing 50 drafts (global) ->
-      #  global.pause_all"
+      # Most drafts failing the judge means something upstream is broken — a
+      # bad prompt version, a degraded model — not that the writing got worse.
+      # Tripping pauses all generation globally.
       rate_max: 0.60
       trailing_drafts: 50
 
     publish_error_rate:
-      # "Publish API error rate > 20% over 1h -> global.pause_publishing"
+      # Publishing failing at this rate means the platform, not us. Tripping
+      # pauses publishing globally while leaving generation running.
       rate_max: 0.20
       window_hours: 1
 
-# ── Per-locale overrides (main §7.10 layering) ───────────────────────────────
+# ── Per-locale demand floors ─────────────────────────────────────────────────
 #
-# UNSIGNED, all of it. main §8.2 requires per-country demand floors ("50/mo in
-# Danish != 50/mo in English") and states no table. These floors are set roughly
-# proportional to the search market's size, so the same commercial seriousness
-# clears the bar in a small language as in English. Keyed by language subtag;
-# the resolver falls back language -> global default.
+# UNSIGNED, all of it. Per-country floors are required and no table was
+# supplied. These are set roughly proportional to each search market's size, so
+# that the same degree of commercial seriousness clears the bar in a small
+# language as in English — a flat global floor would silently lock small-market
+# stores out of the product. Keyed by language subtag; the resolver falls back
+# from language to the global default.
 #
 # Everything not restated here inherits `defaults`.
 locales:

@@ -1,12 +1,12 @@
 import type { EventAttribution } from './analytics'
 
 /**
- * main §14.2, §14.7 / invariant 25 — the shape every LLM call takes. The one
- * instrumented implementation lives in `@sortiva/llm`; importing the Anthropic
- * SDK anywhere else is a lint error.
+ * The shape every LLM call takes. The one instrumented implementation lives in
+ * `@sortiva/llm`; importing the Anthropic SDK anywhere else is a lint error, so
+ * no call can escape cost tracking, caching or validation.
  */
 
-/** main §14.7 — `call_type` is captured on every `$ai_generation`. */
+/** Captured on every model call, and the unit spend is broken down by. */
 export const LLM_CALL_TYPES = [
   'distill',
   'persona',
@@ -28,16 +28,17 @@ export interface LlmRequest {
   readonly callType: LlmCallType
   /**
    * The prompt file's version, e.g. `distill.v1`. Stamped on every artefact
-   * alongside `model_id` so any output is reproducible (main §14.2).
+   * alongside `model_id`, so any output can be reproduced later.
    */
   readonly promptVersion: string
   readonly system?: string
   readonly messages: readonly LlmMessage[]
   readonly maxTokens: number
   /**
-   * JSON Schema the completion must satisfy. main §14.2: validate on every
-   * call; on failure retry **once** with the validation error appended; on the
-   * second failure the step enters `failed_validation` — never "parse what we can".
+   * JSON Schema the completion must satisfy. Validated on every call; on
+   * failure we retry **once** with the validation error appended, and on the
+   * second failure the step enters `failed_validation`. We never salvage what
+   * parsed and carry on with a half-built object.
    */
   readonly schema?: object
   readonly attribution: EventAttribution
@@ -67,14 +68,14 @@ export interface LlmResult<T = unknown> {
   readonly usage: LlmUsage
   readonly usdCost: number
   readonly latencyMs: number
-  /** How many model calls this took: 1, or 2 when the §14.2 validation retry fired. */
+  /** How many model calls this took: 1, or 2 when the validation retry fired. */
   readonly attempts: number
 }
 
 /**
- * main §14.2 — the typed `failed_validation` state, reached only after the
- * single in-call retry. §14.3.5 classes it `failed_retryable`, so it carries the
- * shape the job runtime's `classify()` reads.
+ * The typed `failed_validation` state, reached only after the single in-call
+ * retry. It is retryable at the job level, so it carries the shape the runtime's
+ * `classify()` reads.
  */
 export class LlmValidationFailure extends Error {
   readonly retryable = true
@@ -95,8 +96,8 @@ export class LlmValidationFailure extends Error {
 }
 
 /**
- * A transport-level failure from the model API, already classified for main
- * §14.3.5 — 429s, 5xx and connection errors are retryable; a 4xx that retrying
+ * A transport-level failure from the model API, already classified for the job
+ * runtime: 429s, 5xx and connection errors are retryable; a 4xx that retrying
  * cannot fix is terminal.
  */
 export class LlmRequestFailure extends Error {

@@ -1,11 +1,13 @@
 import { parse } from 'tldts'
 
 /**
- * main §2 "Domain normalization (used everywhere a domain is stored or
- * compared): lowercase, strip scheme, strip `www.`, strip path/query/fragment,
- * resolve to the registrable domain (eTLD+1) using the Public Suffix List …
- * we claim at **eTLD+1** level so a user can't claim `blog.example.com` while
- * another claims `shop.example.com` — same business, one account."
+ * Domain normalisation, used everywhere a domain is stored or compared:
+ * lowercase, strip the scheme, strip `www.`, strip path, query and fragment,
+ * then resolve to the registrable domain using the Public Suffix List.
+ *
+ * We claim at the registrable domain so one person cannot claim
+ * `blog.example.com` while another claims `shop.example.com` — same business,
+ * one account.
  *
  * This is invariant 1's first half: the value the unique index is taken over.
  * Two spellings of one business must produce one string here, or the database
@@ -27,9 +29,9 @@ export class InvalidClaimDomain extends Error {
 }
 
 /**
- * main §2 — "Subdomain edge cases (genuinely separate businesses on subdomains,
- * e.g. `*.myshopify.com` — see §6.1) are handled by allowlisting known
- * multi-tenant suffixes into the PSL logic."
+ * Some subdomains really are separate businesses — every store on
+ * `*.myshopify.com` is a different merchant — so those suffixes are allowlisted
+ * and claimed one level deeper.
  *
  * An explicit list, not the Public Suffix List's own PRIVATE section. That
  * section carries thousands of entries — `github.io`, `blogspot.com`,
@@ -47,12 +49,12 @@ export interface NormalisedClaim {
 }
 
 /**
- * Accepts what a merchant types into ui §3.1's box: a bare domain, a full URL,
+ * Accepts whatever a merchant types into the box: a bare domain, a full URL,
  * mixed case, a `www.` prefix, a path.
  *
- * Throws `InvalidClaimDomain` for ui §3.1's "invalid/unresolvable domain" error
- * state. This does no DNS lookup: unreachability is discovered by the `detect`
- * step (main §6.1), not by the claim.
+ * Throws `InvalidClaimDomain` for the inline "that is not a website address"
+ * error. This does no DNS lookup — whether the site is actually reachable is
+ * discovered later by the detect step, not by the claim.
  */
 export function normaliseClaimDomain(input: string): NormalisedClaim {
   const trimmed = input.trim()
@@ -83,8 +85,8 @@ export function normaliseClaimDomain(input: string): NormalisedClaim {
   }
   while (host.endsWith('.')) host = host.slice(0, -1)
   // Redundant against the eTLD+1 resolution below, which drops every subdomain
-  // including `www`. Kept because main §2 names it as a step, and because it is
-  // what makes a bare `www.myshopify.com` fall into the check under it.
+  // including `www`. Kept because it is what makes a bare `www.myshopify.com`
+  // fall into the multi-tenant check under it.
   if (host.startsWith('www.')) host = host.slice(4)
 
   if (host === '') throw new InvalidClaimDomain(input, 'it has no domain name')
@@ -110,7 +112,7 @@ export function normaliseClaimDomain(input: string): NormalisedClaim {
 
   // `isIcann` is false for a suffix the Public Suffix List does not contain —
   // `example.con`, a typo'd TLD. Claiming it would park an account on a domain
-  // that can never resolve, so it is ui §3.1's "invalid domain" instead.
+  // that can never resolve, so it is refused as an invalid domain instead.
   if (!parsed.domain || !parsed.isIcann) {
     throw new InvalidClaimDomain(input, 'that is not a domain name we recognise')
   }

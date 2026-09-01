@@ -1,23 +1,24 @@
 import { pgEnum } from 'drizzle-orm/pg-core'
 
 /**
- * Closed enums are Postgres enums, not text-with-a-check: adding a value is a
- * migration, which is exactly the friction tech §1.2 asks for ("Adding a type
- * is a code change (enum + template + matrix row), never dynamic").
+ * Closed enums are Postgres enums, not text-with-a-check: adding a value costs
+ * a migration. That friction is the point — a new type of anything here also
+ * needs a template and a matrix row, so it must never be addable at runtime.
  */
 
-/** main §4.2 — single tier. */
+/** One tier. There is no plan ladder to reason about anywhere in the product. */
 export const planEnum = pgEnum('plan', ['pro'])
 
 /**
- * main §4.2, §13 `subscriptions`. Entitled = `active`.
+ * The local mirror of Stripe's subscription status; `active` is the only one
+ * that entitles anything.
  *
- * `incomplete` is a fifth value the spec text does not list — main §4.2 and §13
- * both enumerate four. It exists because Stripe distinguishes a merchant whose
+ * `incomplete` is a fifth value beyond the four the specs enumerate. It exists
+ * because Stripe distinguishes a merchant whose
  * first payment is still being authorised (`incomplete`) from one whose
  * authorisation window ran out (`incomplete_expired`); folding the first into
  * the second records someone mid-purchase as someone who gave up, and then
- * counts them as churn on the §14.7 funnel. Neither status is entitled, so no
+ * counts them as churn on the signup funnel. Neither status is entitled, so no
  * gating behaviour changes. Founder-directed under card T1.2a; both spec
  * enumerations need the matching edit. See DECISIONS 2026-09-01 T1.2a.
  */
@@ -29,7 +30,7 @@ export const subscriptionStatusEnum = pgEnum('subscription_status', [
   'incomplete_expired',
 ])
 
-/** main §13 `domains`. */
+/** Where a domain sits in onboarding, from first claim to fully ingested. */
 export const domainPlatformEnum = pgEnum('domain_platform', ['shopify', 'custom_unsupported'])
 export const domainStateEnum = pgEnum('domain_state', [
   'ingesting',
@@ -39,7 +40,7 @@ export const domainStateEnum = pgEnum('domain_state', [
   'unsupported',
 ])
 
-/** main §14.3.1 — the ingestion pipeline's steps, `gsc_connect` included. */
+/** The ingestion pipeline's steps, `gsc_connect` included. */
 export const jobStepEnum = pgEnum('job_step', [
   'detect',
   'oauth_wait',
@@ -52,7 +53,7 @@ export const jobStepEnum = pgEnum('job_step', [
   'awaiting_confirmation',
 ])
 
-/** main §14.3.1 — `pending → running → succeeded | failed_retryable | failed_terminal | skipped`. */
+/** One step's lifecycle: `pending → running → succeeded | failed_retryable | failed_terminal | skipped`. */
 export const jobStepStateEnum = pgEnum('job_step_state', [
   'pending',
   'running',
@@ -69,17 +70,17 @@ export const ingestionJobStatusEnum = pgEnum('ingestion_job_status', [
   'abandoned',
 ])
 
-/** main §14.5 — kill switches. */
+/** The kill switches, by what each one stops. */
 export const opsFlagScopeEnum = pgEnum('ops_flag_scope', ['global', 'account'])
 export const opsFlagTrippedByEnum = pgEnum('ops_flag_tripped_by', ['manual', 'auto'])
 
-/** main §9.5 — export is the default; auto-publish is the opt-in second consent. */
+/** Export is the default; publishing on the merchant's behalf needs a separate, later consent. */
 export const deliveryModeEnum = pgEnum('delivery_mode', ['export', 'auto'])
 
-/** main §9.4 — per-account draft-vs-live default, live by default. */
+/** Whether new articles land as drafts or live, set per account. */
 export const shopifyPublishAsEnum = pgEnum('shopify_publish_as', ['live', 'draft'])
 
-/** tech §1.2 — closed enum matching the UI spec §10 matrix rows. */
+/** One value per row of the notification matrix; each has a template and a place in the UI. */
 export const notificationTypeEnum = pgEnum('notification_type', [
   'ingestion_review_ready',
   'opportunities_ready',
@@ -98,7 +99,7 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'oauth_reminder',
 ])
 
-/** tech §1.4 — `email_sends.state`. */
+/** Where one email got to: queued, sent, or stopped. */
 export const emailSendStateEnum = pgEnum('email_send_state', [
   'queued',
   'sent',
@@ -106,24 +107,24 @@ export const emailSendStateEnum = pgEnum('email_send_state', [
   'suppressed',
 ])
 
-/** tech §1.5 — suppression reasons come from Resend's bounce/complaint webhooks. */
+/** Why we stopped emailing an address. These arrive from the mail provider's bounce and complaint webhooks. */
 export const emailSuppressionReasonEnum = pgEnum('email_suppression_reason', [
   'bounced',
   'complained',
   'unsubscribed',
 ])
 
-/** tech §1.3 — `off | daily | weekly`, default off. */
+/** How often a merchant wants digests, if at all. Off unless they ask. */
 export const emailDigestFrequencyEnum = pgEnum('email_digest_frequency', [
   'off',
   'daily',
   'weekly',
 ])
 
-/** main §14.3.8 / tech §3 — which provider a `webhook_events` row came from. */
+/** Which provider a `webhook_events` row came from. */
 export const webhookSourceEnum = pgEnum('webhook_source', ['shopify', 'resend'])
 
-/** main §14.3.8 — insert-or-ignore, then process from the table. */
+/** Where a received webhook got to. We insert-or-ignore first and process from the table, so a redelivery is free. */
 export const webhookStatusEnum = pgEnum('webhook_status', [
   'received',
   'processing',
@@ -135,8 +136,8 @@ export const webhookStatusEnum = pgEnum('webhook_status', [
 // ───────────────────────── schema wave 2 (T2.0) ─────────────────────────────
 
 /**
- * main §7.3 — "Required; closed enum matching §7.3" (§7.6). The values are the
- * keys of `defaults.signals` in `packages/rules/signals.config.yaml`, copied
+ * The values are the keys of `defaults.signals` in
+ * `packages/rules/signals.config.yaml`, copied
  * verbatim: detection reads a threshold by signal key, so a row whose
  * `signal_type` does not name a config key has no thresholds to be judged by.
  */
@@ -161,7 +162,7 @@ export const signalTypeEnum = pgEnum('signal_type', [
   'freshness_opportunity',
 ])
 
-/** main §13 `opportunities` — what `entity_ref` points at. */
+/** What an opportunity's `entity_ref` points at. */
 export const opportunityEntityTypeEnum = pgEnum('opportunity_entity_type', [
   'query_cluster',
   'url',
@@ -170,7 +171,7 @@ export const opportunityEntityTypeEnum = pgEnum('opportunity_entity_type', [
   'product',
 ])
 
-/** main §7.4 — CREATE / OPTIMIZE / REFRESH / FIX / HOLD, spelled as §13 spells them. */
+/** What we propose doing: create, optimize, refresh, fix, or hold. */
 export const recommendedActionEnum = pgEnum('recommended_action', [
   'create',
   'optimize',
@@ -179,7 +180,7 @@ export const recommendedActionEnum = pgEnum('recommended_action', [
   'hold',
 ])
 
-/** main §7.9 — `new → accepted → scheduled → executing → completed | dismissed | blocked | expired`. */
+/** An opportunity's lifecycle: `new → accepted → scheduled → executing → completed | dismissed | blocked | expired`. */
 export const opportunityStatusEnum = pgEnum('opportunity_status', [
   'new',
   'accepted',
@@ -191,13 +192,13 @@ export const opportunityStatusEnum = pgEnum('opportunity_status', [
   'expired',
 ])
 
-/** main §7.6 — `impact_score` (0–100) is stored; the band is what the merchant sees. */
+/** The band the merchant sees. The 0–100 score behind it is what is stored and compared. */
 export const impactBandEnum = pgEnum('impact_band', ['low', 'medium', 'high'])
 
-/** main §6.4 — the embeddings fallback is "flagged `confidence = low`". */
+/** How sure we are of a grouping. Families produced by the embeddings fallback rather than a clean attribute match are always `low`. */
 export const confidenceBandEnum = pgEnum('confidence_band', ['low', 'medium', 'high'])
 
-/** main §13 `opportunity_tasks`, §7.5 step 6, §10.4. */
+/** Where a merchant-facing task stands: still open, done, or deliberately skipped. */
 export const opportunityTaskKindEnum = pgEnum('opportunity_task_kind', [
   'title_rewrite',
   'meta_rewrite',
@@ -218,17 +219,17 @@ export const opportunityTaskStateEnum = pgEnum('opportunity_task_state', [
   'skipped',
 ])
 
-/** main §10.3 step 4 — a recommendation failing grounding twice is `failed_validation`, never a half-recommendation. */
+/** A recommendation that fails its grounding check twice ends as `failed_validation`. We never hand over half of one. */
 export const optimizeRecommendationStateEnum = pgEnum('optimize_recommendation_state', [
   'valid',
   'failed_validation',
   'superseded',
 ])
 
-/** main §7.5 — the three cadences a detection run happens on. */
+/** The three cadences a detection run happens on. */
 export const signalRunKindEnum = pgEnum('signal_run_kind', ['onboarding', 'weekly', 'event'])
 
-/** main §12.3 / §13 `store_pages`. `article_ours` is how §10.5 tells our content from the merchant's. */
+/** What kind of page this is on the merchant's store. `article_ours` is how we tell content we wrote from content they wrote. */
 export const storePageTypeEnum = pgEnum('store_page_type', [
   'collection',
   'product',
@@ -238,7 +239,7 @@ export const storePageTypeEnum = pgEnum('store_page_type', [
   'other',
 ])
 
-/** main §8.7 — the intent class picks the content/page type. */
+/** What the searcher is trying to do, which is what picks the page type we write. */
 export const intentClassEnum = pgEnum('intent_class', [
   'buying_guide',
   'comparison',
@@ -246,7 +247,7 @@ export const intentClassEnum = pgEnum('intent_class', [
   'informational',
 ])
 
-/** main §6.4 — "Every family records which signal produced it … so misgroupings are debuggable". */
+/** Which signal produced a family. Recorded on every one, so a bad grouping can be traced to the thing that made it. */
 export const familyGroupingSourceEnum = pgEnum('family_grouping_source', [
   'collection',
   'split_variant',
@@ -254,16 +255,17 @@ export const familyGroupingSourceEnum = pgEnum('family_grouping_source', [
   'embedding',
 ])
 
-/** main §13 `keywords` / `competitors` — auto-detected during ingestion, or added by hand at §6.8. */
+/** Whether we found this during ingestion or the merchant added it themselves. */
 export const discoverySourceEnum = pgEnum('discovery_source', ['auto', 'manual'])
 
-/** main §13 `top_products` — the 90-day order aggregation, or a merchant override. */
+/** Whether this came out of the 90-day order aggregation or the merchant named it. */
 export const topProductSourceEnum = pgEnum('top_product_source', ['orders_api', 'manual'])
 
 /**
- * The paid vendors behind the three instrumented wrappers of invariant 25
- * (`packages/llm`, `SeoDataProvider`, `EmailProvider`). main §14.5's caps are
- * computed over `anthropic` and `dataforseo`; `resend` is here because the
+ * The paid vendors behind the three instrumented wrappers — `packages/llm`,
+ * `SeoDataProvider`, `EmailProvider` — which are the only code allowed to reach
+ * them. The daily spend caps are computed over `anthropic` and `dataforseo`;
+ * `resend` is here because the
  * ledger is append-only and a wrapper that already exists must not need a
  * migration it is not allowed to add. See DECISIONS 2026-08-31 T2.0.
  */

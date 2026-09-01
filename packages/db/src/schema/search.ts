@@ -16,7 +16,7 @@ import { accounts } from './accounts'
 import { intentClassEnum } from './enums'
 
 /**
- * main §13 `gsc_conns`, §12.2.
+ * One store's Search Console connection.
  *
  * Search Console is an Opportunity Engine *input*, consulted before topic
  * discovery so the system never creates a new URL for an intent an existing
@@ -29,20 +29,20 @@ export const gscConns = pgTable('gsc_conns', {
     .references(() => accounts.id, { onDelete: 'cascade' }),
   /** The GSC property the merchant picked; its host is validated against the claimed eTLD+1. */
   property: text('property').notNull(),
-  /** Envelope-encrypted at the application layer (tech §4) — ciphertext, never a token. */
+  /** Ciphertext, never a token: encrypted in our application layer, so a database dump alone yields nothing usable. */
   tokens: text('tokens').notNull(),
   connectedAt: timestamp('connected_at', { withTimezone: true }).notNull().defaultNow(),
   /**
-   * main §14.4 — a refresh failure stops reporting while the content pipeline
-   * continues, and raises a reconnect prompt. Recording *when* is what makes
+   * A dead token stops reporting while the content pipeline carries on, and
+   * raises a prompt to reconnect. Recording *when* is what makes
    * that reminder idempotent, exactly as `shopify_conns.invalidated_at` does.
    */
   invalidatedAt: timestamp('invalidated_at', { withTimezone: true }),
 })
 
 /**
- * main §13 `gsc_daily`, §12.2. Page-level totals; the page × query rows live in
- * `gsc_query_daily`. tech §2.1 keeps 16 months, then rolls up to monthly.
+ * Page-level Search Console totals per day; the page × query rows live in
+ * `gsc_query_daily`. Kept for 16 months, then rolled up to monthly.
  */
 export const gscDaily = pgTable(
   'gsc_daily',
@@ -63,11 +63,12 @@ export const gscDaily = pgTable(
 )
 
 /**
- * main §13 `gsc_query_daily`, §12.2 — "the input to §7.3 detection". The weekly
- * scan reads this table; detection never makes a live Search Console call.
+ * The table signal detection actually reads. The weekly scan works from here;
+ * detection never makes a live Search Console call, so a slow or failing API
+ * cannot stall the engine.
  *
- * The row is one full bucket of the four dimensions §12.2 requests
- * (`page, query, device, country`), so all four are part of its identity and
+ * A row is one full bucket of all four dimensions (`page, query, device,
+ * country`), so all four are part of its identity and
  * none may be null — a nullable dimension in a key silently permits duplicates,
  * since Postgres treats nulls as distinct.
  */
@@ -97,10 +98,9 @@ export const gscQueryDaily = pgTable(
 )
 
 /**
- * main §13 `query_clusters`, §9.6.3.
- *
- * The lineage object: a head query plus its related-keyword expansion. §7.7
- * resolves a candidate to one of these before looking for an existing target,
+ * A head query plus the related keywords it expands to — the unit almost
+ * everything downstream reasons about, rather than individual keywords. A
+ * candidate is resolved to one of these before we look for an existing target,
  * and `topics.keyword_cluster` (schema wave 3) points back at it.
  */
 export const queryClusters = pgTable(
@@ -120,11 +120,10 @@ export const queryClusters = pgTable(
 )
 
 /**
- * main §13 `ctr_curve`, §7.3 (Low CTR at Strong Rank).
- *
- * The store's *own* fitted position→CTR curve. §7.3 is emphatic that the
- * comparison is never a fixed industry benchmark, because device, brand mix and
- * SERP features distort it. Refit weekly, so the table keeps the history and
+ * The store's *own* fitted position-to-CTR curve, which is what the low-CTR
+ * signal compares against. Never a fixed industry benchmark: device mix, brand
+ * mix and SERP features distort those enough to make the comparison
+ * meaningless. Refit weekly, so the table keeps the history and
  * the newest `fitted_at` is the live one.
  */
 export const ctrCurve = pgTable(
@@ -136,23 +135,24 @@ export const ctrCurve = pgTable(
     fittedAt: timestamp('fitted_at', { withTimezone: true }).notNull().defaultNow(),
     curveJson: jsonb('curve_json').notNull(),
     sampleN: integer('sample_n').notNull().default(0),
-    /** §7.3 — branded queries are excluded where the brand token is detectable. */
+    /** Whether branded queries were excluded from the fit. They rank and convert unlike anything else, so leaving them in flatters the curve. */
     brandedExcluded: boolean('branded_excluded').notNull().default(false),
   },
   (t) => [primaryKey({ name: 'ctr_curve_pk', columns: [t.accountId, t.fittedAt] })],
 )
 
 /**
- * main §13 `serp_snapshots`, §12.1, §12.6.
+ * Who actually ranks for a query: the URLs, their domains, and for the top five
+ * a reference to fetched content used by draft grading and intent-gap analysis.
  *
- * Where query-level SERP competitors live: the ranking URLs, their domains, and
- * for the top five a reference to fetched content used by the Gate 3 judge and
- * intent-gap analysis. Invariant 5: these are **never** copied into
- * `competitors` and are never user-editable.
+ * These are **never** copied into `competitors` and are never user-editable. A
+ * domain that outranks the store is not necessarily a business it competes
+ * with, and quietly promoting one into the merchant's competitor list would put
+ * words in their mouth. They may be *suggested*; they are never added.
  *
  * Keyed by canonical request parameters rather than by account, like
- * `request_cache` (main §14.3.6) — two accounts asking the same question in the
- * same locale must not pay DataForSEO twice. So this table has no `account_id`
+ * `request_cache` — two accounts asking the same question in the same locale
+ * must not make us pay the vendor twice. So this table has no `account_id`
  * and is reached under `SystemScope`; see `scope.ts`.
  */
 export const serpSnapshots = pgTable(
@@ -163,7 +163,7 @@ export const serpSnapshots = pgTable(
     locale: text('locale').notNull(),
     resultsJson: jsonb('results_json').notNull(),
     fetchedAt: timestamp('fetched_at', { withTimezone: true }).notNull().defaultNow(),
-    /** §12.1 — SERP snapshots cache for 7 days. Stored as an instant, like every other cache in this schema. */
+    /** When this snapshot stops being reusable. Stored as an instant, like every other cache in this schema. */
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   },
   (t) => [index('serp_snapshots_expires_at_idx').on(t.expiresAt)],

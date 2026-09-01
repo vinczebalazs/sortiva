@@ -69,7 +69,7 @@ function operationOf(route: RouteDefinition): Record<string, unknown> {
 
   if (route.auth === 'session') {
     responses['401'] = {
-      description: 'No session. Every authenticated route resolves account_id from the session (tech §3).',
+      description: 'No session. Every authenticated route resolves account_id from the session, never from the request.',
       content: { 'application/json': { schema: jsonSchemaOf(errorResponseSchema) } },
     }
   }
@@ -83,21 +83,21 @@ function operationOf(route: RouteDefinition): Record<string, unknown> {
 
   if (route.requiresEntitlement) {
     responses['402'] = {
-      description: `Billing state gates generation and publishing only; read access is never revoked (main §4.2, invariant 16). Code: ${ENTITLEMENT_INACTIVE_CODE}.`,
+      description: `Billing state gates generation and publishing only; read access is never revoked. Code: ${ENTITLEMENT_INACTIVE_CODE}.`,
       content: { 'application/json': { schema: jsonSchemaOf(errorResponseSchema) } },
     }
   }
 
   if (route.rateLimited) {
     responses['429'] = {
-      description: `Per-IP and global rate limits (main §3.2). Code: ${RATE_LIMITED_CODE}.`,
+      description: `Per-IP and global rate limits. Code: ${RATE_LIMITED_CODE}.`,
       content: { 'application/json': { schema: jsonSchemaOf(errorResponseSchema) } },
     }
   }
 
   if (route.conflicts && route.conflicts.length > 0) {
     responses['409'] = {
-      description: `Guarded transition failed (tech §3). Codes: ${route.conflicts.join(', ')}.`,
+      description: `The state changed underneath this request. Codes: ${route.conflicts.join(', ')}.`,
       content: {
         'application/json': {
           schema: {
@@ -117,7 +117,6 @@ function operationOf(route: RouteDefinition): Record<string, unknown> {
   return {
     operationId: operationIdOf(route),
     summary: route.summary,
-    description: `Spec: ${route.spec}`,
     tags: [tagOf(route.path)],
     ...(parameters.length > 0 ? { parameters } : {}),
     ...(route.auth === 'session' ? { security: [{ sessionCookie: [] }] } : { security: [] }),

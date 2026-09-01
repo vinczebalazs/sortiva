@@ -41,6 +41,14 @@ export async function register() {
   const { registerBillingTasks } = await import('./app/api/webhooks/stripe/_lib/tasks')
   registerBillingTasks()
 
+  // The automatic brakes on money: a sweep that sums the day's vendor spending
+  // out of our own ledger and pauses whatever crossed a ceiling. Handed the
+  // database factory rather than a handle, so registering it here opens no
+  // connection — the pool appears the first time the sweep actually runs.
+  const { registerOpsTasks } = await import('@sortiva/jobs')
+  const { db } = await import('@sortiva/db')
+  registerOpsTasks(db)
+
   const { bootstrapWorker, flushAnalytics } = await import('@sortiva/jobs')
   const worker = await bootstrapWorker({ analytics })
 

@@ -16,7 +16,7 @@ import { SIGNAL_TYPES } from './types'
  */
 
 const NAMED_THRESHOLDS: ReadonlyArray<readonly [path: string, spec: string]> = [
-  // ── main §7.3 — V1 signal catalog ──────────────────────────────────────────
+  // ── Signal detection ───────────────────────────────────────────────────────
   ['signals.striking_distance.position_min', 'main §7.3 — position band 4–15'],
   ['signals.striking_distance.position_max', 'main §7.3 — position band 4–15'],
   ['signals.striking_distance.window_days', 'main §7.3 — trailing 28d'],
@@ -48,7 +48,7 @@ const NAMED_THRESHOLDS: ReadonlyArray<readonly [path: string, spec: string]> = [
   ['signals.freshness_opportunity.stagnation_window_weeks', 'main §7.3 — stagnant over 12 weeks'],
   ['signals.freshness_opportunity.serp_set_difference_min', 'main §7.3 — top-5 differs ≥ 40%'],
 
-  // ── main §7.6 — opportunity object & scoring ───────────────────────────────
+  // ── Opportunity object & scoring ───────────────────────────────────────────
   ['scoring.create.competitor_gap_source_bonus', 'main §7.6/§9.6.4 — competitor-gap bonus ×1.15'],
   ['scoring.create.business_weight_min', 'main §7.6 — business_weight rescaled to [1.0, 1.5]'],
   ['scoring.create.business_weight_max', 'main §7.6 — business_weight rescaled to [1.0, 1.5]'],
@@ -69,7 +69,7 @@ const NAMED_THRESHOLDS: ReadonlyArray<readonly [path: string, spec: string]> = [
   ['scoring.confidence.band_high_min', 'main §7.6 — high ≥ 70'],
   ['scoring.confidence.band_medium_min', 'main §7.6 — medium 40–69'],
 
-  // ── main §8.2 / §7.7 / §8.4 — gates ────────────────────────────────────────
+  // ── Gates: topic admission, existing-target check, draft grading ───────────
   ['gates.demand_floor.monthly_search_volume_min', 'main §8.2 — demand floor per locale'],
   ['gates.demand_floor.allow_zero_volume_when_pinned', 'main §8.2 — zero-volume auto-reject unless pinned'],
   ['gates.winnability.limited_intelligence_constant', 'main §9.6.4/§7.11 — conservative winnability constant'],
@@ -83,7 +83,7 @@ const NAMED_THRESHOLDS: ReadonlyArray<readonly [path: string, spec: string]> = [
   ['gates.draft_grading.other_criteria_min', 'main §8.4 — the rest ≥ 3'],
   ['gates.draft_grading.repair_loops_max', 'main §8.4 — one repair loop, max'],
 
-  // ── main §9.6 — learning loop ──────────────────────────────────────────────
+  // ── Learning loop ──────────────────────────────────────────────────────────
   ['learning.replenishment_horizon_days', 'main §9.6.1 — planned horizon below ~60 days'],
   ['learning.labels.maturity_days', 'main §9.6.2 — no judgment before 28 days'],
   ['learning.labels.winner_clicks_store_median_multiple_min', 'main §9.6.2 — clicks ≥ 2× store median'],
@@ -113,7 +113,7 @@ const NAMED_THRESHOLDS: ReadonlyArray<readonly [path: string, spec: string]> = [
   ['learning.outcomes.refresh.recovered_clicks_baseline_ratio_min', 'main §9.6.10 — clicks ≥ 0.8× pre-decay baseline'],
   ['learning.outcomes.fix.primary_url_impression_share_min', 'main §9.6.10 — ≥ 70% of cluster impressions'],
 
-  // ── main §10.2 / §14.5 — caps & auto-trips ─────────────────────────────────
+  // ── Caps & auto-trips ──────────────────────────────────────────────────────
   ['budgets.optimize.generations_per_account_per_day', 'main §10.2 — 2 generations per account per day'],
   ['budgets.intent_gap.analyses_per_account_per_day', 'main §14.5 — per-account daily cap on intent-gap analysis'],
   ['auto_trips.flag_check_max_staleness_seconds', 'main §14.5 — flags effective within 60s'],
@@ -173,7 +173,7 @@ describe('signals.config.yaml', () => {
         'competitor_coverage_gap',
         'product_family_coverage_gap',
         'catalog_richness_gap',
-        // Appendix B / main §11 founder sign-off: the metadata signal is P0.
+        // The founder signed the metadata signal off as P0 rather than P1.
         'missing_or_weak_metadata',
         'product_change_impact',
         'broken_product_reference',

@@ -4,12 +4,13 @@ import { accounts } from './accounts'
 import { domainPlatformEnum, domainStateEnum } from './enums'
 
 /**
- * main §13 `domains`, §2 core invariants 1 and 2, §5.
+ * One domain per account, one account per domain, claimed at the registrable
+ * domain so `blog.example.com` and `shop.example.com` cannot end up on two
+ * accounts.
  *
- * Invariant 1 of the constitution: one domain per account, one account per
- * domain, claimed at eTLD+1. Both halves are unique indexes here, "enforced at
- * the database level, not just in application code" (main §2) — which is what
- * makes the claim an insert-with-conflict rather than a check-then-insert.
+ * Both halves are unique indexes here rather than checks in application code,
+ * which is what lets the claim be an insert-with-conflict: two signups racing
+ * for the same domain cannot both pass.
  */
 export const domains = pgTable(
   'domains',
@@ -24,7 +25,7 @@ export const domains = pgTable(
     claimedAt: timestamp('claimed_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     /**
-     * main §14.6 — on account deletion the claim is released after a 7-day
+     * On account deletion the claim is released after a 7-day
      * grace window, so a squatter cannot take the domain the same hour. Set
      * while the row still holds the unique index; the release sweep (T8.3)
      * deletes the row once the window passes.
@@ -41,12 +42,12 @@ export const domains = pgTable(
 )
 
 /**
- * main §13 `preview_cache`, §2 invariant 3, §3.2.
+ * The logged-out preview's cache.
  *
- * Constitution invariant 2: preview output is disposable — nothing here is ever
- * read by ingestion, persona, topics, or evidence. It is keyed by domain rather
- * than by account precisely because previews are pre-auth: there is no account.
- * 7-day TTL per main §3.2.
+ * Preview output is disposable: nothing here is ever read by ingestion, persona,
+ * topics or evidence. It comes from a scrape of a stranger's homepage with no
+ * catalog behind it, so it is not good enough to build on. Keyed by domain
+ * rather than by account, because at preview time there is no account.
  */
 export const previewCache = pgTable(
   'preview_cache',
@@ -60,9 +61,11 @@ export const previewCache = pgTable(
 )
 
 /**
- * main §13 `shopify_conns`, §6.2. Read scopes at install; `write_content` is a
- * separate later grant (invariant 21). The token is envelope-encrypted at the
- * application layer (tech §4) — this column holds ciphertext, never a token.
+ * One store's Shopify connection. Reading the store is granted at install;
+ * permission to publish into it is a separate, later grant, so a merchant never
+ * discovers we can post to their blog by seeing a post appear. The token column
+ * holds ciphertext, never a token: it is encrypted in our application layer, so
+ * a database dump alone yields nothing usable.
  */
 export const shopifyConns = pgTable(
   'shopify_conns',
@@ -73,11 +76,12 @@ export const shopifyConns = pgTable(
     shopHandle: text('shop_handle').notNull(),
     accessToken: text('access_token').notNull(),
     grantedScopes: text('granted_scopes').array().notNull().default(sql`'{}'::text[]`),
-    // main §9.5 — set only when auto-publish is enabled; null for export-only.
+    // Set only when auto-publish is enabled; null for export-only accounts.
     targetBlogId: text('target_blog_id'),
     targetBlogHandle: text('target_blog_handle'),
     connectedAt: timestamp('connected_at', { withTimezone: true }).notNull().defaultNow(),
-    // main §14.4 — a 401 from Shopify moves the account to awaiting_shopify_auth.
+    // When Shopify rejected our token. The account moves to
+    // awaiting_shopify_auth and the merchant is asked to reconnect.
     invalidatedAt: timestamp('invalidated_at', { withTimezone: true }),
   },
   (t) => [uniqueIndex('shopify_conns_shop_handle_key').on(t.shopHandle)],

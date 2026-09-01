@@ -41,11 +41,10 @@ describe('route table', () => {
     expect(new Set(ROUTES.map(operationIdOf)).size).toBe(ROUTES.length)
   })
 
-  it('gives every route a response schema, a summary and a spec citation', () => {
+  it('gives every route a response schema and a summary', () => {
     for (const route of ROUTES) {
       expect(route.response, routeKey(route)).toBeDefined()
       expect(route.summary.length, routeKey(route)).toBeGreaterThan(0)
-      expect(route.spec, routeKey(route)).toMatch(/§/)
     }
   })
 

@@ -134,7 +134,16 @@ export default tseslint.config(
   // the process's actual composition root, and passes the pool down. That is a
   // refactor, not a fix, and it belongs with the D5 card.
   {
-    files: ['apps/web/app/api/webhooks/stripe/_lib/receiver.ts'],
+    files: [
+      'apps/web/app/api/webhooks/stripe/_lib/receiver.ts',
+      // The process's actual composition root, which the note above names as
+      // where this construction eventually belongs. It reads no table: it hands
+      // the database factory to the spend-cap sweep's task registration, the
+      // way it already hands the analytics client to the worker. A background
+      // job cannot be given its database by a request, so somebody at the top
+      // has to name it.
+      'apps/web/instrumentation.ts',
+    ],
     rules: { 'sortiva/no-raw-db-access': 'off' },
   },
 

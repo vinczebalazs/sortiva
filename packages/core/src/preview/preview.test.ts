@@ -7,8 +7,8 @@ import { runPreview } from './preview'
 import { OutboundScrapeCap, PreviewRateLimiter } from './ratelimit'
 
 /**
- * main §3 — the preview funnel end to end, against the T0.5 test doubles. Each
- * `it` here maps to a line of T1.3's done-when or to main §3.3's "the funnel
+ * The preview funnel end to end, against the T0.5 test doubles. Each `it` here
+ * maps to a line of T1.3's done-when or to the rule that the funnel
  * must never dead-end".
  */
 
@@ -159,7 +159,7 @@ describe('runPreview — the happy path', () => {
     expect(seen?.promptVersion).toBe('preview.v1')
     expect(seen?.temperature).toBeLessThanOrEqual(0.3)
     expect(seen?.maxTokens).toBeLessThanOrEqual(150)
-    // No explicit model override: main §15 / the model registry bind call_type
+    // No explicit model override: the model registry binds call_type
     // `preview` to Haiku, and the wrapper resolves it. Overriding here would
     // route the preview onto whatever the caller felt like paying for.
     expect(h.llm.requests[0]?.model).toBeUndefined()
@@ -190,7 +190,7 @@ describe('the cache is the primary cost control (main §3.2)', () => {
     expect(second).toMatchObject({ kind: 'served', reason: 'cache' })
     expect(second).toHaveProperty('card.cacheHit', true)
     expect(second).toHaveProperty('card.summary', SUMMARY)
-    // The two numbers that make the §3.2 cost model work.
+    // The two numbers that make the preview's cost model work.
     expect(h.fetcher.callCount).toBe(1)
     expect(h.llm.callCount).toBe(1)
   })
@@ -348,7 +348,7 @@ describe('the about-page fallback (main §3.3 step 4)', () => {
     )
     const h = harness({ fetcher })
     await runPreview(REQUEST, h.deps)
-    expect(fetcher.callCount).toBe(4) // homepage + the three §3.3 about paths
+    expect(fetcher.callCount).toBe(4) // homepage + the three about paths
   })
 })
 

@@ -2,8 +2,8 @@ import { ENTITLEMENT_INACTIVE_CODE } from '../api/errors'
 import { PAYMENT_FAILED_BANNER } from './copy'
 
 /**
- * main §13 `subscriptions`.status. `none` is not a Stripe status — it is the
- * absence of a row, which is every account between signup and Checkout.
+ * `none` is not a Stripe status — it is the absence of a row, which is every
+ * account between signup and Checkout.
  */
 export type SubscriptionStatus =
   | 'active'
@@ -27,7 +27,7 @@ export interface LocalSubscription {
 }
 
 /**
- * main §4.2 — "**Entitled = `active`**."
+ * Entitled means exactly `active`, and nothing else.
  *
  * Deliberately not a date comparison. A subscription cancelled at period end
  * stays `active` in Stripe until the period actually ends, and Stripe then
@@ -45,7 +45,7 @@ export function entitlementStatus(
   return subscription?.status ?? 'none'
 }
 
-/** main §4.2, ui §10 — the banner the shell renders above everything else. */
+/** The banner the shell renders above everything else. */
 export type BillingBanner =
   | { readonly kind: 'none' }
   | {
@@ -60,17 +60,17 @@ export type BillingBanner =
 /**
  * Invariant 16 in one object: billing state gates generation and publishing
  * **only**, and read access is never revoked. Every consumer — the daily
- * scheduler (main §9.1), the auto-publish and export actions (main §9.5), the
+ * scheduler, the auto-publish and export actions, the
  * dashboard shell — asks this function rather than comparing statuses itself,
  * so there is one place where "what does past_due mean" is decided.
  */
 export interface BillingGate {
   readonly status: EntitlementStatus
-  /** main §4.2 — the scheduler checks this exactly like a kill switch. */
+  /** The scheduler checks this exactly like a kill switch. */
   readonly generationAllowed: boolean
-  /** main §4.2 — auto-publish and export check it API-side. */
+  /** Auto-publish and export check it API-side, not only in the UI. */
   readonly publishingAllowed: boolean
-  /** main §4.2 — "Read access … is **never** revoked by billing state". */
+  /** Always true. Billing state never takes away access to what we already made for someone. */
   readonly readAllowed: true
   readonly banner: BillingBanner
 }
@@ -96,12 +96,12 @@ function bannerFor(
   }
   // `incomplete` is deliberately absent: the merchant's first payment is still
   // being authorised, so telling them the plan is cancelled would be wrong.
-  // That window is what ui §2.3's "setting up your account…" interstitial
-  // covers, and it resolves to `active` or `incomplete_expired` on its own.
+  // That window is what the "setting up your account…" interstitial covers,
+  // and it resolves to `active` or `incomplete_expired` on its own.
   if (status === 'canceled' || status === 'incomplete_expired') return { kind: 'canceled' }
   if (status === 'active' && subscription?.cancelAtPeriodEnd) {
-    // main §14.6 — entitlement runs to period end; the three cancellation facts
-    // render alongside this.
+    // Entitlement runs to the end of the period they paid for; the three
+    // cancellation facts render alongside this.
     return { kind: 'ending', endsAt: subscription.currentPeriodEnd ?? null }
   }
   return { kind: 'none' }

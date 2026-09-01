@@ -11,36 +11,35 @@ import { buildPreviewLlmRequest } from './prompt'
 import { aboutUrl, InvalidPreviewUrl, normalisePreviewUrl, type NormalisedPreviewTarget } from './url'
 
 /**
- * main §3 — the unauthenticated preview, "the lure". A stranger pastes a URL and
- * gets back a short "here's what we understood about your business" card.
+ * The unauthenticated preview. A stranger pastes a URL and gets back a short
+ * "here's what we understood about your business" card.
  *
  * Two properties of this function matter more than what it returns.
  *
- * **It never dead-ends.** main §3.3: "Failure modes return a graceful generic
- * card ... rather than an error; the funnel must never dead-end." Every way the
- * work can fail below — the site is down, the page is unreadable, the model
+ * **It never dead-ends.** Every way the work can fail below — the site is
+ * down, the page is unreadable, the model
  * call fails, the spend trip is on, we are at our outbound concurrency cap —
  * produces the same `generic` card and a 200. Only three things are answered
  * with an error, and none of them is a failure of ours: an unusable URL, a
  * failed anti-bot check, and a rate-limited caller.
  *
- * **Its output is disposable.** Constitution invariant 2, main §3.1: the
- * preview "has no production value and its output must never leak into the real
- * ingestion pipeline". Nothing here writes anywhere but `preview_cache`, and
- * `disposable.test.ts` proves no module outside this directory can reach it.
+ * **Its output is disposable.** This runs on a scrape of a stranger's homepage
+ * with no catalog behind it, so nothing it produces is good enough to build on.
+ * Nothing here writes anywhere but `preview_cache`, and `disposable.test.ts`
+ * proves no module outside this directory can even reach it.
  *
  * Order of operations, and why:
  *
  *   1. Normalise the URL — free, and everything else needs the domain.
  *   2. Rate limit — local and free, so an abusive caller is refused before we
- *      spend a Cloudflare round trip on them (main §3.2).
- *   3. Turnstile — main §3.2 requires it "verified server-side **before any
- *      fetch happens**", and it gates the cache read too, so the cache cannot
- *      be scraped by a bot that skips the challenge.
- *   4. Cache — main §3.2's primary cost control. "A cache hit skips the scrape
- *      *and* the LLM call entirely."
- *   5. Spend trip — main §14.5. Note it is checked *after* the cache: a tripped
- *      preview still serves cache hits as normal.
+ *      spend a Cloudflare round trip on them.
+ *   3. Bot challenge — verified server-side **before any fetch happens**, and it
+ *      gates the cache read too, so the cache cannot be scraped by a bot that
+ *      skipped the challenge.
+ *   4. Cache — the primary cost control. A hit skips the scrape *and* the model
+ *      call entirely.
+ *   5. Spend trip — checked *after* the cache on purpose, so a tripped preview
+ *      still serves cache hits as normal.
  *   6. Fetch, extract, summarise, store.
  */
 
@@ -53,7 +52,7 @@ export interface PreviewInput {
 
 export interface PreviewCard {
   readonly domain: string
-  /** Null on the generic card; the UI renders main §3.3's copy for that case. */
+  /** Null on the generic card, which the UI has its own copy for. */
   readonly summary: string | null
   readonly cacheHit: boolean
   readonly generic: boolean
@@ -121,8 +120,8 @@ export async function runPreview(
     deps.capture.capture({
       event: 'preview_served',
       attribution,
-      // Invariant 26 / main §14.7 privacy note: ids and aggregates only. The
-      // summary text and the page content never leave the process.
+      // Ids and aggregates only. The summary text and the page content never
+      // leave the process.
       properties: {
         cache_hit: cacheHit,
         generic: card.generic,
@@ -136,8 +135,8 @@ export async function runPreview(
   const cached = await deps.cache.read(domain)
   if (cached !== undefined) return serve(cached.summary, true, 'cache')
 
-  // main §14.5 — the trip pauses the endpoint, not the system: cache hits above
-  // are already served, and a miss gets the generic card at zero marginal cost.
+  // The trip pauses this endpoint, not the system: cache hits above are already
+  // served, and a miss gets the generic card at zero marginal cost.
   if (await deps.flags.isPreviewPaused()) return serve(null, false, 'preview_paused')
 
   const release = deps.scrapeCap.acquire()
@@ -149,7 +148,7 @@ export async function runPreview(
 
     let extraction = extractPreviewSignals(page.body)
 
-    // main §3.3 step 4 — one more fetch, and only if the homepage was thin.
+    // One more fetch, and only if the homepage was thin. Not a crawl.
     if (extraction.signalChars < PREVIEW_MIN_SIGNAL_CHARS) {
       for (const path of PREVIEW_ABOUT_PATHS) {
         const about = await fetchQuietly(deps, aboutUrl(domain, path))
@@ -218,7 +217,7 @@ async function summariseQuietly(
     )
     const summary = result.text.trim()
     // An empty or degenerate completion is a failed summary, not a card that
-    // says nothing. §14.2's "never parse what we can" applied to prose.
+    // says nothing at all.
     return summary.length < 20 ? undefined : summary
   } catch {
     return undefined

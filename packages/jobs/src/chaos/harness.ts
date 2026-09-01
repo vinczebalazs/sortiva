@@ -10,11 +10,12 @@ import { createRun, dispatchableSteps, findStep, getStep } from '../runtime/step
 import { runStep } from '../runtime/runStep'
 
 /**
- * main §14.3.9 — "a chaos test in CI kills workers at random points during a
- * full synthetic ingestion + publish run and asserts the end state: every step
- * eventually `succeeded`, exactly one remote article per `article_external_id`,
- * DataForSEO billable-call count equals the number of *distinct* canonical
- * requests. This test is the specification's teeth; without it, the guarantees
+ * Kills workers at random points during a full synthetic ingestion and publish
+ * run, then asserts the end state: every step eventually `succeeded`, exactly
+ * one remote article per external id, and a billable-call count equal to the
+ * number of *distinct* canonical requests.
+ *
+ * This is what gives the effectively-once guarantees teeth; without it they
  * above rot silently."
  *
  * The harness owns the killing and the convergence assertions; the scenarios own
@@ -27,7 +28,7 @@ import { runStep } from '../runtime/runStep'
  * intent and execute. The harness picks one of those points with a seeded PRNG
  * and throws `WorkerKilled` there, then re-runs the driver from the top, which
  * is what a restarted worker does. That repeats until a pass completes without
- * being killed. Because the run is resumable and effectively-once (§14.3), the
+ * being killed. Because the run is resumable and effectively-once, the
  * end state must be identical to a run that was never interrupted — and that is
  * the whole assertion.
  */
@@ -144,7 +145,7 @@ export async function runChaosScenario(
 
   if (attempt >= maxAttempts) {
     throw new Error(
-      `${scenario.name}: never completed within ${maxAttempts} attempts. A run that cannot converge is the failure §14.3.9 exists to catch.`,
+      `${scenario.name}: never completed within ${maxAttempts} attempts. A run that cannot converge is exactly the failure this test exists to catch.`,
     )
   }
 
@@ -156,7 +157,7 @@ export async function runChaosScenario(
 
 /**
  * The universal assertion: "every step eventually `succeeded`". `skipped` counts
- * — main §14.3.1 makes it a terminal success for `gsc_connect` — but anything
+ * — it is a terminal success for `gsc_connect`, which a merchant may skip — but anything
  * still `pending`, `running` or failed means the run did not converge.
  */
 export async function assertEveryStepSettled(pool: pg.Pool, accountId: string): Promise<void> {
@@ -177,7 +178,8 @@ export async function assertEveryStepSettled(pool: pg.Pool, accountId: string): 
 }
 
 /**
- * §14.3.9's cost assertion. Takes the provider double, which counts billable
+ * The cost assertion: kills must not make us pay twice. Takes the provider
+ * double, which counts billable
  * calls and distinct canonical requests by the same key the live adapter uses.
  */
 export function assertNoDoubleBilling(provider: {
@@ -202,7 +204,7 @@ export function assertNoDoubleBilling(provider: {
  * before this card nothing ever offered such a row to anyone again: the store's
  * onboarding simply stopped, with no error, no dead-letter entry and no
  * user-visible signal. An ordinary deploy landing during an eight-minute
- * catalogue sync does exactly this (audit T0.4 [blocker]; main §14.3.1, tech §2.1).
+ * catalogue sync does exactly this (audit T0.4 [blocker]).
  *
  * So this scenario spawns a real child process, lets it commit two page cursors,
  * has it SIGKILL itself, and then asserts the step both *looks* abandoned
@@ -347,8 +349,8 @@ const processDeathMidStep: ChaosScenario = {
     if (killedPages.join(',') !== '1,2') {
       throw new Error(`the victim should have committed pages 1,2 before dying; got ${killedPages}`)
     }
-    // §14.3.4 — "a crash resumes from the last cursor, not page one." Re-fetching
-    // page 1 would be a re-billed provider call on every deploy.
+    // A crash resumes from the last committed cursor, not from page one.
+    // Re-fetching page 1 would be a re-billed provider call on every deploy.
     if (resumedPages.join(',') !== '3,4,5') {
       throw new Error(`the reclaimed step should resume at page 3; it re-fetched ${resumedPages}`)
     }
@@ -358,7 +360,7 @@ const processDeathMidStep: ChaosScenario = {
       throw new Error(`the step did not converge: ${step?.state}`)
     }
 
-    // §14.3.2 — exactly one completion record for this key, whatever the kills.
+    // Exactly one completion record for this key, whatever the kills.
     // A killed process must leave none (its work never finished) and the run
     // that finished must leave one; a second row is impossible by primary key,
     // so the number that matters is zero-vs-one. This is the assertion that ties
@@ -375,7 +377,7 @@ const processDeathMidStep: ChaosScenario = {
 }
 
 /**
- * Scenarios land with the features that need them (main §14.3.9). Registering
+ * Scenarios land with the features that need them. Registering
  * them here rather than letting each card add a bespoke test keeps the
  * convergence assertions in one place.
  */

@@ -154,7 +154,7 @@ export class MockLlmClient implements LlmClient {
     if (request.model === undefined || request.model === spec.id) return spec
     if (request.callType === 'judge') {
       throw new Error(
-        `The Gate 3 judge's model cannot be overridden per call (invariant 11, main §8.4): it is fixed at "${spec.id}", and "${request.model}" was requested.`,
+        `The draft judge's model cannot be overridden per call: it is fixed at "${spec.id}", and "${request.model}" was requested.`,
       )
     }
     return overrideModel(request.model)

@@ -20,7 +20,7 @@ import { recordStripeEvent, recordWebhookEvent, tripAccountFlag } from './reposi
  * id, duplicate stripe event, duplicate notification triple all conflict)".
  *
  * These run against a real Postgres 16 (docker-compose locally, a service
- * container in CI) because main §2 requires the invariants be "enforced at the
+ * container in CI) because these invariants must be enforced at the
  * database level, not just in application code" — which only a real database
  * can demonstrate.
  */
@@ -53,7 +53,7 @@ describe.skipIf(!available)('schema wave 1 constraints', () => {
       expect(first?.domainNormalized).toBe('shop.example.co.uk')
 
       // The repository claims with ON CONFLICT DO NOTHING, so the loser gets
-      // undefined rather than an exception — main §5's "claim is an
+      // undefined rather than an exception — the claim is an
       // insert-with-conflict, never check-then-insert".
       const second = await insertDomainRow(ctx.db, accountScope(b), 'shop.example.co.uk')
       expect(second).toBeUndefined()

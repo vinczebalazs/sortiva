@@ -6,24 +6,23 @@
  */
 
 /**
- * main §5, verbatim: "Already claimed by another account → error: 'This domain
- * is already connected to another account. If you believe this is a mistake,
- * contact support.'" ui §3.1 renders it inline under the URL input, with a
- * support link. Support-mediated transfer; no self-serve domain stealing.
+ * Fixed copy, used word for word. Rendered inline under the URL input with a
+ * support link: transfers are support-mediated, so there is no self-serve way to
+ * take a domain off another account.
  */
 export const DOMAIN_ALREADY_CLAIMED_MESSAGE =
   'This domain is already connected to another account. If you believe this is a mistake, contact support.'
 
 /**
- * Invariant 1's other half — one domain per account — has no string in the
- * spec, because main §4.3 only ever shows the connect box to an account with
- * `domain = null`. This answers the paths that reach the route anyway: a stale
- * tab, a second browser, a direct API call. Copy invented by T1.4 and awaiting
- * founder sign-off; the transfer posture is main §5's (support-mediated).
+ * The other half of one-domain-per-account. The UI only ever shows the connect
+ * box to an account with no domain, so this exists for the paths that reach the
+ * route anyway: a stale tab, a second browser, a direct API call. Copy invented
+ * by T1.4 and awaiting founder sign-off; the transfer posture is the same
+ * support-mediated one as above.
  */
 export function accountHasOtherDomainMessage(current: string): string {
   return `This account is already connected to ${current}. An account connects one domain — contact support if you need to change it.`
 }
 
-/** ui §3.1 — the second inline error state, "invalid/unresolvable domain". */
+/** The other inline error under the URL input: what they typed is not a domain. */
 export const INVALID_DOMAIN_MESSAGE = 'That does not look like a website address.'

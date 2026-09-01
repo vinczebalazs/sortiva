@@ -2,14 +2,13 @@ import type { Logger } from '../observability/logger'
 import type { EventAttribution } from './analytics'
 
 /**
- * main §14.7 — "The §14.5 budget auto-trips read spend from our own DB counters
- * — PostHog displays cost, our code enforces caps", and "PostHog is telemetry
- * and alerting, **not** the control plane… a kill switch must work when PostHog
- * is down or events are sampled/delayed." Constitution invariant 17 restates it.
+ * The port the vendor wrappers write our own spend counter through.
  *
- * This is the port the wrappers write that counter through. It sits *alongside*
- * the PostHog capture, never instead of it: §14.7 also specs the cost-per-domain
- * and preview-economics dashboards, which are PostHog insights.
+ * The daily caps are computed from that counter and never from analytics: a
+ * kill switch has to work when the analytics vendor is down or its events are
+ * delayed, which is exactly when spend is most likely to be running away. This
+ * sits *alongside* the analytics capture, never instead of it — the
+ * cost-per-domain and preview-economics dashboards are still built there.
  *
  * The one rule that is not obvious from the shape: **recording a cost is an
  * obligation of making the call, not a side effect of the call succeeding**
@@ -19,8 +18,8 @@ import type { EventAttribution } from './analytics'
  * — with `outcome: 'failed'`, so a reader can tell them apart afterwards
  * instead of them being silently omitted or falsely counted as successes.
  *
- * Privacy (invariant 26 / §14.7): a row carries identifiers, counts, costs and
- * flags. There is no field for a prompt, an article, product content or a token
+ * A row carries identifiers, counts, costs and flags. There is no field for a
+ * prompt, an article, product content or a token
  * value, so none can be written by accident.
  */
 
@@ -36,16 +35,16 @@ export type SpendOutcome = 'succeeded' | 'failed'
 
 export interface SpendEvent {
   /**
-   * §14.7's preview attribution rule as a union: a claimed account, or the
-   * domain a logged-out visitor asked about. `spend_events` mirrors it as a
-   * nullable column pair with a check constraint, so exactly one is set.
+   * Who the spend belongs to: a claimed account, or the domain a logged-out
+   * visitor asked about. `spend_events` mirrors it as a nullable column pair
+   * with a check constraint, so exactly one is always set.
    */
   readonly attribution: EventAttribution
   readonly vendor: SpendVendor
-  /** The LLM `call_type` (§14.7's list), or the vendor endpoint for DataForSEO. */
+  /** One of our LLM call types, or the vendor endpoint for a SEO-data read. */
   readonly callType: string
   readonly usdCost: number
-  /** §14.7 requirement (3) — a replay is recorded at zero, never omitted. */
+  /** A replay is recorded at zero rather than omitted, so re-used work shows up as free instead of vanishing. */
   readonly cacheHit: boolean
   readonly outcome: SpendOutcome
   readonly occurredAt?: Date
@@ -64,13 +63,13 @@ export interface CostLedger {
 export function spendEventViolation(event: SpendEvent): string | undefined {
   if (event.usdCost < 0) return 'usd_cost must be >= 0'
   if (event.cacheHit && event.usdCost !== 0) {
-    return 'a cache hit is free work: cache_hit = true requires usd_cost = 0 (main §14.7 requirement 3)'
+    return 'a cache hit is free work: cache_hit = true requires usd_cost = 0'
   }
   return undefined
 }
 
 /**
- * The seam between §14.7's attribution union and the table's column pair. The
+ * The seam between the attribution union and the table's column pair. The
  * mapping is an identity by construction — `spend_events` was shaped from
  * `EventAttribution` — and lives here so the adapter that eventually writes to
  * Postgres does not re-derive it.
@@ -91,7 +90,7 @@ export function spendAttribution(attribution: EventAttribution): {
  * `docs/audits/T0.5.md` finding 6).
  *
  * Legitimate uses: a unit test that asserts something other than cost, and a
- * local development process with no database. Never production — the §14.5 caps
+ * local development process with no database. Never production — the daily caps
  * read this counter, and a wrapper wired to this one spends real money and
  * produces no meter reading.
  */
@@ -135,7 +134,7 @@ export class InMemoryCostLedger implements CostLedger {
     return this.rows.filter((r) => r.outcome === outcome)
   }
 
-  /** What the §14.5 caps would read. */
+  /** What the daily caps would read. */
   get totalUsdCost(): number {
     return this.rows.reduce((total, r) => total + r.usdCost, 0)
   }
@@ -148,10 +147,10 @@ export class InMemoryCostLedger implements CostLedger {
  * A ledger write that throws does **not** fail the call. The vendor has already
  * been paid and, on the success path, its answer is already cached; turning a
  * database hiccup into a job failure would throw away work we bought, and on
- * the failure path it would replace the vendor's error — which the retry
- * classification of §14.3.5 depends on — with a database error. So the write is
+ * the failure path it would replace the vendor's error — which is what the
+ * retry classification reads — with a database error. So the write is
  * best-effort and *loud*: an unrecorded cost is logged at error level, because
- * it means the §14.5 caps are reading low.
+ * it means the caps are reading low and nobody would otherwise know.
  */
 export async function recordSpend(
   ledger: CostLedger,

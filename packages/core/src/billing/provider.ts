@@ -1,16 +1,17 @@
 import type { SubscriptionStatus } from './entitlement'
 
 /**
- * main §4.2, tech §3 — Checkout, Customer Portal, webhook signature
- * verification and the nightly re-fetch are the *only* things we ask Stripe.
- * Everything else reads the local `subscriptions` row (invariant 16).
+ * Checkout, the Customer Portal, webhook signature verification and the nightly
+ * re-fetch are the *only* things we ever ask Stripe. Everything else reads our
+ * own `subscriptions` row, so no page a merchant loads can be slowed or broken
+ * by Stripe being unreachable.
  *
  * The port is described in our own types, never Stripe's, so `packages/core`
  * stays free of the vendor SDK (a boundary test proves it) and the mock in
  * `packages/providers` is a peer of the real client rather than a subclass.
  */
 
-/** The subscription state as Stripe holds it, flattened to what §13 stores. */
+/** The subscription state as Stripe holds it, flattened to what we store. */
 export interface RemoteSubscription {
   readonly subscriptionId: string
   readonly customerId: string
@@ -39,7 +40,7 @@ export interface CheckoutSessionRequest {
   readonly successUrl: string
   readonly cancelUrl: string
   /**
-   * main §14.3.2 — derived from the inputs, never random, so a double-clicked
+   * Derived from the inputs, never random, so a double-clicked
    * Subscribe button cannot open two Checkout sessions.
    */
   readonly idempotencyKey: string
@@ -73,18 +74,17 @@ export interface StripeBillingProvider {
   createPortalSession(request: PortalSessionRequest): Promise<PortalSession>
   /** Throws `WebhookSignatureError` when the signature does not verify. */
   constructEvent(rawBody: string, signature: string | null): StripeEventEnvelope
-  /** tech §3 — the nightly reconciliation's one call. Null when Stripe has no such subscription. */
+  /** The nightly reconciliation's one call. Null when Stripe has no such subscription. */
   fetchSubscription(subscriptionId: string): Promise<RemoteSubscription | null>
   /**
    * The amounts behind the two configured price ids, for the plan screen.
    *
-   * main §4.2 — "amounts live in Stripe only — the app never hardcodes a dollar
-   * amount", so the only way to show a price is to ask Stripe what it is.
+   * Amounts live in Stripe only and the app never hardcodes one, so the only
+   * way to show a price is to ask what it is.
    *
    * A price id Stripe does not have is simply absent from the answer rather than
    * an error, so a misconfigured id pauses the plan screen instead of showing
-   * half a plan — main §14.4's "degrade to pause" rather than inventing an
-   * amount.
+   * half a plan. Pausing beats inventing an amount on a purchase screen.
    */
   fetchPrices(priceIds: readonly string[]): Promise<readonly RemotePrice[]>
 }
@@ -110,14 +110,14 @@ export class StripeCallFailed extends Error {
 /**
  * Stripe has nine subscription statuses; we store five. The mapping is lossy on
  * purpose, and the loss is safe because only two distinctions drive behaviour:
- * `active` is the one entitled state (main §4.2), and `past_due` is the one
+ * `active` is the one entitled state, and `past_due` is the one
  * that raises the dunning banner and email. Everything else means "not
  * entitled, no dunning".
  *
  * `incomplete` — "the first payment has not completed yet", which can still
  * succeed — now keeps its own value instead of landing under
  * `incomplete_expired`. Collapsing the two recorded a merchant mid-purchase as
- * one who gave up, and then counted them as churn on main §14.7's
+ * one who gave up, and then counted them as churn on the
  * `subscription_canceled` funnel event from the moment their row was created.
  * See DECISIONS 2026-09-01 T1.2a.
  */

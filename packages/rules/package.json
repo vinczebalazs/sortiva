@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "signals.config.yaml, typed loader, rules_version (main §7.10).",
+  "description": "signals.config.yaml, the typed loader, and rules_version — the only place a threshold may live.",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {

@@ -149,3 +149,25 @@ export async function tripAccountFlag(
     .returning()
   return row
 }
+
+/**
+ * The same trip, for the switches whose blast radius is everyone: the vendor
+ * bill a global cap protects is one bill, not one per store.
+ *
+ * Returns undefined when the flag is already active — the partial unique index
+ * makes a repeated trip a no-op, so a sweep that runs every few minutes while
+ * the condition persists raises one flag and not a queue of them. Nothing here
+ * ever resets a flag: an automatic trip means a human has to look.
+ */
+export async function tripGlobalFlag(
+  db: Db,
+  _scope: SystemScope,
+  input: { flag: string; actor: string; reason: string; trippedBy: OpsFlagRow['trippedBy'] },
+): Promise<OpsFlagRow | undefined> {
+  const [row] = await db
+    .insert(opsFlags)
+    .values({ scope: 'global', accountId: null, ...input })
+    .onConflictDoNothing()
+    .returning()
+  return row
+}

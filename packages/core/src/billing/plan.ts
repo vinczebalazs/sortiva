@@ -3,15 +3,15 @@ import { CANCELLATION_FACTS, PLAN_CANCEL_ANYTIME, PLAN_CAP_LINE } from './copy'
 import type { StripeBillingProvider } from './provider'
 
 /**
- * main §4.2 — one tier, two Stripe Prices (monthly, annual) on one Product.
- * "price IDs are config, amounts live in Stripe only — the app never hardcodes
- * a dollar amount", so nothing on this object is a number.
+ * One tier, billed monthly or annually. Price ids are configuration and the
+ * amounts live in Stripe only — the app never hardcodes a dollar amount — so
+ * nothing on this object is a number.
  */
 export type BillingInterval = 'monthly' | 'annual'
 
 export const BILLING_INTERVALS: readonly BillingInterval[] = ['monthly', 'annual']
 
-/** main §4.2 — the plan's inclusions, as ui §2.3 lists them on the card. */
+/** What the plan includes, as the plan card lists them. */
 export const PLAN_INCLUSIONS = [
   'Growth opportunities across all action types',
   'Export and auto-publish',
@@ -31,10 +31,9 @@ export interface PlanScreen {
 }
 
 /**
- * The content of ui §2.3's plan card. Amounts are deliberately absent: the
- * screen reads them from the Stripe Price the merchant is about to buy, so
- * repricing is a Stripe change plus a copy change, never a code change
- * (main §4.2).
+ * The plan card's content. Amounts are deliberately absent: the screen reads
+ * them from the Stripe price the merchant is about to buy, so repricing is a
+ * Stripe change plus a copy change and never a deploy.
  */
 export const PRO_PLAN: PlanScreen = {
   planKey: 'pro',
@@ -47,9 +46,8 @@ export const PRO_PLAN: PlanScreen = {
 }
 
 /**
- * main §4.2 — "Two Stripe Prices (monthly, annual) on one Product; price IDs
- * are config". Resolving one is the only thing the Checkout creator needs to
- * know about pricing.
+ * Two prices, monthly and annual, named by configured ids. Resolving one is the
+ * only thing the Checkout creator needs to know about pricing.
  */
 export interface PriceCatalog {
   readonly monthly: string
@@ -69,20 +67,20 @@ export function priceIdFor(catalog: PriceCatalog, interval: BillingInterval): st
   return priceId
 }
 
-/** One interval's amount, as ui §2.3's plan card renders it. */
+/** One interval's amount, as the plan card renders it. */
 export interface PlanPrice {
   readonly interval: BillingInterval
   readonly priceId: string
   /**
    * Minor units (cents), straight from Stripe. Deliberately not formatted here:
    * a formatted string would bake a currency and a locale into the API, and
-   * ui §9.4's language dropdown means the client decides both.
+   * the product has a language dropdown, so the client decides both.
    */
   readonly unitAmountMinor: number | null
   readonly currency: string
 }
 
-/** ui §2.3's plan card, with the amounts filled in from Stripe. */
+/** The plan card, with the amounts filled in from Stripe. */
 export interface PlanWithPrices extends PlanScreen {
   readonly prices: readonly PlanPrice[]
 }
@@ -91,10 +89,10 @@ export interface PlanWithPrices extends PlanScreen {
  * Raised when the amounts cannot be read from Stripe — no key, no configured
  * price ids, or a provider that cannot fetch them.
  *
- * main §4.2 forbids hardcoding an amount, so there is no fallback to show: the
- * route answers 503 and the screen says the plan is temporarily unavailable.
- * main §14.4's "degrade to pause, never to lower quality", applied to a price —
- * a wrong price is worse than no price.
+ * No amount may be hardcoded anywhere, so there is no fallback to fall back to:
+ * the route answers 503 and the screen says the plan is temporarily
+ * unavailable. Degrading to a stale or guessed price on a purchase screen would
+ * be worse than showing none.
  */
 export class PlanPricesUnavailable extends Error {
   readonly code = 'billing_not_configured'
@@ -114,8 +112,8 @@ export interface PlanPricingDeps {
  * How long a fetched set of amounts is reused.
  *
  * A price changes when someone edits it in the Stripe dashboard, which is rare
- * and never urgent — main §4.2 calls repricing "a Stripe change plus a copy
- * change". Caching keeps the plan screen off Stripe's API on every page view,
+ * and never urgent. Caching keeps the plan screen off Stripe's API on every
+ * page view,
  * which matters because this is the one billing route an unpaid visitor hits
  * repeatedly. A cache lifetime, not a rules threshold.
  */
@@ -128,8 +126,8 @@ interface CacheEntry {
 
 /**
  * Process-local, keyed on the price ids so a config change cannot serve the
- * previous plan's amounts. Deliberately not `request_cache` (main §14.3.6):
- * that table exists to stop us paying twice for a *billable* vendor read, and a
+ * previous plan's amounts. Deliberately not `request_cache`: that table exists
+ * to stop us paying twice for a *billable* vendor read, and a
  * Stripe price lookup is free.
  */
 const priceCache = new Map<string, CacheEntry>()

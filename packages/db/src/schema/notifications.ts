@@ -18,10 +18,10 @@ import {
 } from './enums'
 
 /**
- * tech §1.2 — event notifications (the bell). Append-only records written at
- * the moment the domain event occurs, inside the same transaction as the state
- * change where one exists. Attention items are **not** here: they are live
- * queries over underlying state (tech §1.1), which is invariant 26's other half.
+ * The bell: append-only records written the moment the event happens, inside
+ * the same transaction as the state change where there is one. Attention items
+ * are deliberately **not** here — those are live queries over current state, so
+ * they cannot linger after the thing they were about is resolved.
  *
  * `payload_json` holds **references only** (topic_id, article_id, ...), so copy
  * fixes and localisation never touch stored rows and a deleted referent renders
@@ -36,7 +36,7 @@ export const notifications = pgTable(
       .references(() => accounts.id, { onDelete: 'cascade' }),
     type: notificationTypeEnum('type').notNull(),
     /**
-     * tech §1.2 — type-specific: article_id for publishes, topic_id for gate
+     * Type-specific: article_id for publishes, topic_id for gate
      * holds, opportunity_id for recommendations, ISO week for weekly scans,
      * date for summaries. Not nullable: every type must name its dedupe key,
      * which is what makes the unique index below the exactly-once guarantee
@@ -45,27 +45,28 @@ export const notifications = pgTable(
     dedupeKey: text('dedupe_key').notNull(),
     payloadJson: jsonb('payload_json').notNull().default(sql`'{}'::jsonb`),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-    // tech §1.2 — badge cleared by opening the bell vs item clicked.
+    // Two different things: the badge clears when the bell is opened, an item
+    // is read when it is clicked.
     seenAt: timestamp('seen_at', { withTimezone: true }),
     readAt: timestamp('read_at', { withTimezone: true }),
   },
   (t) => [
     // Invariant 26 — a retried publish job cannot ring the bell twice.
     uniqueIndex('notifications_account_type_dedupe_key').on(t.accountId, t.type, t.dedupeKey),
-    // tech §1.6 — GET /api/notifications?since= returns unseen count + recent items.
+    // Serves the bell's own query: the unseen count plus the recent items.
     index('notifications_account_created_at_idx').on(t.accountId, t.createdAt),
     index('notifications_account_unseen_idx')
       .on(t.accountId)
       .where(sql`${t.seenAt} IS NULL`),
-    // tech §1.7 — pruned at 90 days.
+    // The retention sweep prunes these at 90 days.
     index('notifications_created_at_idx').on(t.createdAt),
   ],
 )
 
 /**
- * tech §1.4 — the email pipeline. The unique index is the exactly-once-send
- * guarantee under at-least-once workers, and the same triple is sent to Resend
- * as its idempotency-key header for provider-side dedupe on top.
+ * The email pipeline. The unique index is what makes a retried worker send once
+ * rather than twice, and the same triple goes to the mail provider as its
+ * idempotency key so their side dedupes too.
  */
 export const emailSends = pgTable(
   'email_sends',
@@ -76,7 +77,8 @@ export const emailSends = pgTable(
       .references(() => accounts.id, { onDelete: 'cascade' }),
     type: notificationTypeEnum('type').notNull(),
     dedupeKey: text('dedupe_key').notNull(),
-    // tech §1.4 — stamped on every send, same reproducibility posture as prompts.
+    // Stamped on every send, so a complaint about an email can be traced to the
+    // exact template that produced it.
     templateVersion: text('template_version').notNull(),
     state: emailSendStateEnum('state').notNull().default('queued'),
     providerMessageId: text('provider_message_id'),
@@ -91,14 +93,16 @@ export const emailSends = pgTable(
     index('email_sends_queued_idx')
       .on(t.queuedAt)
       .where(sql`${t.state} = 'queued'`),
-    // tech §1.7 — kept 12 months.
+    // The retention sweep keeps these for 12 months.
     index('email_sends_queued_at_idx').on(t.queuedAt),
   ],
 )
 
 /**
- * tech §1.5 — Resend bounce/complaint webhooks land here; suppressed addresses
- * skip the queue except for account-security email (deletion confirmation).
+ * Addresses we have stopped emailing. Bounce and complaint webhooks from the
+ * mail provider land here, and a suppressed address skips the queue — except
+ * for account-security mail such as a deletion confirmation, which someone is
+ * entitled to receive regardless.
  * Keyed by address, not by account: an address that bounced stays suppressed
  * regardless of which account tries to reach it.
  */
@@ -113,9 +117,10 @@ export const emailSuppressions = pgTable(
 )
 
 /**
- * tech §1.3 — preferences for the matrix's opt-in rows only. Transactional and
- * pipeline-stopping categories (connection lost, review ready, repair needed)
- * are not toggleable, enforced by there being no column for them to read.
+ * Preferences for the opt-in notifications only. The transactional and
+ * pipeline-stopping ones — connection lost, review ready, repair needed — are
+ * not toggleable, and that is enforced by there being no column for them to
+ * read rather than by a check somewhere.
  */
 export const notificationPrefs = pgTable('notification_prefs', {
   accountId: uuid('account_id')

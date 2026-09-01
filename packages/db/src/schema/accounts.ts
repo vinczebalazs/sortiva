@@ -17,7 +17,7 @@ import {
   subscriptionStatusEnum,
 } from './enums'
 
-/** main §13 `accounts`. One account, one domain, no teams (main §18). */
+/** One account, one domain. There are no teams and no seats in V1. */
 export const accounts = pgTable(
   'accounts',
   {
@@ -29,7 +29,7 @@ export const accounts = pgTable(
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
   },
   (t) => [
-    // main §4.1 — email is the login identity, so it is the account identity.
+    // Email is the login identity, so it is the account identity.
     uniqueIndex('accounts_email_key').on(t.email),
     uniqueIndex('accounts_stripe_customer_id_key')
       .on(t.stripeCustomerId)
@@ -38,15 +38,16 @@ export const accounts = pgTable(
 )
 
 /**
- * main §13 `subscriptions`, §4.2. Written **only** by the Stripe webhook worker
- * (invariant 16).
+ * Our own copy of the Stripe subscription, written **only** by the webhook
+ * worker. Everything that asks "is this account entitled" reads this row, so
+ * entitlement never depends on Stripe answering right now.
  *
  * Two timestamps, because the row answers two different questions and one
  * column cannot hold both answers safely:
  *
  * - `synced_at` — when we last successfully contacted Stripe about this row.
- *   tech §3's nightly job scans it ("re-fetches any subscription whose
- *   `synced_at` is >24h stale"). Advancing it is always safe.
+ *   The nightly reconciliation scans it and re-fetches anything over a day
+ *   stale. Advancing it is always safe.
  * - `state_observed_at` — the ordering floor. See its own note below.
  */
 export const subscriptions = pgTable(
@@ -60,7 +61,7 @@ export const subscriptions = pgTable(
     status: subscriptionStatusEnum('status').notNull(),
     currentPeriodEnd: timestamp('current_period_end', { withTimezone: true }),
     cancelAtPeriodEnd: boolean('cancel_at_period_end').notNull().default(false),
-    /** tech §3 — the staleness clock the nightly reconciliation scans. */
+    /** The staleness clock the nightly reconciliation scans. */
     syncedAt: timestamp('synced_at', { withTimezone: true }).notNull().defaultNow(),
     /**
      * The instant we read the state in this row from Stripe, and the monotonic
@@ -84,8 +85,9 @@ export const subscriptions = pgTable(
 )
 
 /**
- * main §13 `stripe_events`, §4.2, §14.3.8. Signature-verified, insert-or-ignore
- * by event id, 200 immediately, processed async.
+ * Every Stripe event we have received. Signature-verified, insert-or-ignore by
+ * event id, answered 200 immediately, and processed afterwards from this table
+ * — so a redelivery is free and a slow processor never times the webhook out.
  */
 export const stripeEvents = pgTable(
   'stripe_events',
@@ -103,22 +105,26 @@ export const stripeEvents = pgTable(
   ],
 )
 
-/** main §13 `account_settings` — the settings surface (UI spec §9). */
+/** Everything the Settings screens can change. */
 export const accountSettings = pgTable('account_settings', {
   accountId: uuid('account_id')
     .primaryKey()
     .references(() => accounts.id, { onDelete: 'cascade' }),
-  // main §9.4 — fixed publish hour, default 09:00 in the persona country's zone.
+  // A fixed hour of the day to publish at, defaulting to 09:00 in the persona
+  // country's zone.
   publishHour: integer('publish_hour').notNull().default(9),
-  // main §9.4 — IANA zone, defaulted from the persona country in T2.5.
+  // IANA zone name, defaulted from the persona country during onboarding.
   timezone: text('timezone').notNull().default('UTC'),
   draftReview: boolean('draft_review').notNull().default(false),
-  // main §14.1 — auto-repair on by default.
+  // Whether we fix our own published articles when the products they describe
+  // change. On by default.
   autoRepair: boolean('auto_repair').notNull().default(true),
-  // main §9.5 — export is the default; auto-publish is a second consent.
+  // Export is the default; publishing on the merchant's behalf is a separate,
+  // later consent.
   delivery: deliveryModeEnum('delivery').notNull().default('export'),
   shopifyPublishAs: shopifyPublishAsEnum('shopify_publish_as').notNull().default('live'),
-  // main §14.6 — halts generation and publishing, keeps sync and reporting alive.
+  // Halts generation and publishing while leaving sync and reporting running,
+  // so a merchant can go away without losing their data or their history.
   vacationMode: boolean('vacation_mode').notNull().default(false),
   uiLanguage: text('ui_language'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

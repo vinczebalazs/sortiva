@@ -6,8 +6,8 @@ export type AccountView = z.infer<typeof accountResponseSchema>
 export type DomainState = z.infer<typeof domainStateSchema>
 
 /**
- * main §14.5 — of the four kill switches, these are the two that stop this
- * account's work outright. `global.pause_publishing` / `account.pause_publishing`
+ * Of the four kill switches, these are the two that stop this account's work
+ * outright. `global.pause_publishing` / `account.pause_publishing`
  * stop a later stage and have their own surface, so they do not read as "the
  * service is paused" on the dashboard.
  */
@@ -16,9 +16,9 @@ export const SERVICE_PAUSED_FLAGS = ['global.pause_all', 'account.pause_generati
 export interface AccountViewInput {
   readonly accountId: string
   readonly email: string
-  /** main §4.1, §4.3 — absent until the claim in main §5. */
+  /** Absent until the account has claimed a domain. */
   readonly domain: { normalized: string; state: DomainState; platform: string | null } | null
-  /** main §4.2, invariant 16 — the local row, never a Stripe API call. */
+  /** Read from our own row; no request path ever calls Stripe. */
   readonly subscription: {
     // Imported rather than re-listed: this was a second copy of the status set,
     // and it went stale the moment the set gained `incomplete` (card T1.2a).
@@ -26,21 +26,21 @@ export interface AccountViewInput {
     cancelAtPeriodEnd: boolean
     currentPeriodEnd: Date | null
   } | null
-  /** main §6.2 — read scopes at install; `write_content` is a separate grant (invariant 21). */
+  /** Read scopes are granted at install; permission to publish is a separate, later grant. */
   readonly shopify: { grantedScopes: readonly string[]; invalidatedAt: Date | null } | null
-  /** main §14.5 — `scope.flag` names currently tripped for this account. */
+  /** The `scope.flag` names currently tripped for this account. */
   readonly activeFlags: readonly string[]
 }
 
 /**
- * main §4.3 — the dashboard's one question: am I signed in, and is a domain
- * connected? Everything else on this object exists so the shell can render
+ * The dashboard's one question: am I signed in, and is a domain connected?
+ * Everything else on this object exists so the shell can render
  * locked or empty without a second round trip.
  *
  * Two values are constant until later cards, and both are *correct* rather than
- * placeholders: Limited Intelligence means "no Search Console connected"
- * (main §7.11) and nothing can connect Search Console before T3.1; and no scan
- * can have run before the signal runs of main §7.5 exist.
+ * placeholders. Limited Intelligence means "no Search Console connected", and
+ * nothing can connect Search Console before T3.1; and no scan can have run
+ * before the detection runs exist at all.
  */
 export function buildAccountView(input: AccountViewInput): AccountView {
   return {
@@ -69,9 +69,10 @@ export function buildAccountView(input: AccountViewInput): AccountView {
 }
 
 /**
- * main §6.2, §9.5, invariant 21 — read and write are separate consents, so the
- * UI has to distinguish "connected, read only" from "connected, can publish".
- * main §14.4: a 401 from Shopify invalidates the row.
+ * Reading a store and writing to it are separate consents, so the UI has to
+ * distinguish "connected, read only" from "connected, can publish" — a merchant
+ * must never discover we can post to their blog by seeing a post appear. A
+ * rejected token invalidates the row.
  */
 function shopifyConnectionState(
   conn: AccountViewInput['shopify'],

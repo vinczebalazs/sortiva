@@ -22,37 +22,37 @@ import { languageCodeFor, locationCodeFor } from './locations'
 import { DATAFORSEO_ENDPOINTS, ENDPOINT_PRICES, chargeFor } from './pricing'
 
 /**
- * main §12.1 / §14.3.6 / §14.7 — the one path to DataForSEO. Invariant 25 makes
- * this the only place allowed to talk to the vendor, which is what guarantees:
+ * The one path to DataForSEO. Nothing else in the codebase may talk to the
+ * vendor — a lint rule enforces it — which is what makes these guarantees hold
+ * everywhere rather than wherever someone remembered:
  *
- * - **Every request is cached before it is processed** (invariant 20). The
+ * - **Every request is cached before it is processed.** The
  *   vendor's raw envelope is stored the moment it is parsed as JSON, before
  *   anything inspects it — DataForSEO reports per-request failures *inside* an
  *   otherwise-successful HTTP response, and inspecting first left a call the
  *   vendor had already executed and billed with no cache row, so a retry paid
  *   twice (audit `docs/audits/T0.5.md` finding 4).
- * - **Every call that reaches the vendor is recorded twice**: as §14.7's
+ * - **Every call that reaches the vendor is recorded twice**: as a
  *   `dataforseo_request` analytics event, and as a row in the spend ledger the
- *   §14.5 caps read (invariant 17). That includes the failures — a connection
+ *   daily caps are computed from. That includes the failures — a connection
  *   drop, a rate limit, a 5xx and a task-level error all leave a row marked
  *   `outcome: 'failed'`, because DataForSEO bills for work performed, not for
  *   bytes we received. A call that never reached the vendor (no credentials)
  *   records nothing, correctly.
- * - **Params are canonicalised** before hashing — sorted keys, normalised locale
- *   codes (§14.3.6) — so the same question asked twice is one billable read.
+ * - **Params are canonicalised** before hashing — sorted keys, normalised
+ *   locale codes — so the same question asked twice is one billable read.
  */
 
 /**
- * §14.3.6 fixes the request-cache TTL at 24h. §12.1's 30-day keyword and 7-day
- * SERP TTLs are the *semantic* layer above this one, owned by the cards that
- * persist keywords and SERP snapshots; this cache exists to make a step retry
- * free, not to be the product's memory.
+ * The request cache holds an answer for a day. The much longer keyword and SERP
+ * lifetimes live one layer up, owned by the cards that persist those; this cache
+ * exists to make a step retry free, not to be the product's memory.
  */
 const REQUEST_CACHE_TTL_MS = 24 * 60 * 60 * 1000
 
 const DEFAULT_BASE_URL = 'https://api.dataforseo.com/v3'
 
-/** main §14.3.5 — the class, not the exception's shape, decides what happens next. */
+/** The error class, not the exception's shape, is what decides whether the caller retries or gives up. */
 export class SeoRequestFailure extends Error {
   constructor(
     readonly retryable: boolean,
@@ -67,14 +67,14 @@ export class SeoRequestFailure extends Error {
 
 export interface DataForSeoProviderOptions {
   /**
-   * §14.7's analytics capture. **Required** — an optional recorder meant a
+   * The analytics capture. **Required** — an optional recorder meant a
    * wrapper built without one spent real money and produced no record, with no
    * error and no log line. Pass `new UnrecordedCapture()` to opt out by name
    * (audit `docs/audits/T0.5.md` finding 6).
    */
   capture: Pick<PosthogCapture, 'captureSeoRequest'>
   /**
-   * The §14.5 spend meter (invariant 17). Required for the same reason. Pass
+   * The spend meter the daily caps read. Required for the same reason. Pass
    * `new UnrecordedSpend()` to opt out by name.
    */
   ledger: CostLedger
@@ -207,9 +207,10 @@ export class DataForSeoProvider implements SeoDataProvider {
     try {
       if (!sent.ok) throw sent.error
 
-      // Invariant 20 / §14.3.6 — the raw envelope is stored before it is
-      // inspected. `extractResult` below is processing: it is where a
-      // task-level failure inside a 200 body is found.
+      // Store the raw envelope before anything inspects it: a crash after the
+      // vendor answered must not make us pay for the same answer twice.
+      // `extractResult` below is the processing — it is where a task-level
+      // failure hiding inside a 200 body is found.
       await this.cache.writeBeforeProcessing({
         cacheKey,
         kind: 'dataforseo',
@@ -229,9 +230,9 @@ export class DataForSeoProvider implements SeoDataProvider {
   }
 
   /**
-   * §14.7 requires the analytics event; invariant 17 requires the database
-   * counter the §14.5 caps read. Both, from one place, so neither can be
-   * forgotten on a path the other covers.
+   * The analytics event and the database counter the caps are computed from,
+   * written from one place, so neither can be forgotten on a path the other
+   * covers.
    */
   private async record(
     attribution: EventAttribution,
@@ -280,7 +281,7 @@ export class DataForSeoProvider implements SeoDataProvider {
         error: new SeoRequestFailure(
           false,
           'dataforseo_unconfigured',
-          'DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD are not set. Use MockSeoDataProvider outside production (tech §5).',
+          'DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD are not set. Use MockSeoDataProvider outside production.',
         ),
       }
     }

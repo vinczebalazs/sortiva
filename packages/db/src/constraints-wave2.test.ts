@@ -17,7 +17,7 @@ import {
  * competitor at DB level."
  *
  * Every case here talks to a real Postgres and asserts on the error code the
- * *database* raised. main §6.6 and §7.9 both say "enforced in the DB, not just
+ * *database* raised. These are the rules that must hold in the DB, not just
  * the UI / not just application code", and only a real database can show that.
  *
  * The suite fails loudly rather than skipping when no database is reachable —
@@ -156,7 +156,7 @@ describe.skipIf(!available)('schema wave 2 constraints', () => {
 
     it('lets closed rows accumulate as history beside a new open one', async () => {
       const a = await insertAccount(pool, 'a@example.com')
-      // §7.9: "Completed/expired rows stay as history and feed learning."
+      // Completed and expired rows stay as history and feed the learning loop.
       for (const status of ['completed', 'dismissed', 'expired']) {
         await insertOpportunity(a, status)
       }
@@ -185,7 +185,7 @@ describe.skipIf(!available)('schema wave 2 constraints', () => {
     })
 
     it('refuses a row that cannot explain itself (invariant 7)', async () => {
-      // §7.6 marks evidence, impact, confidence, the reason key, the action and
+      // Evidence, impact, confidence, the reason key, the action and
       // rules_version "Required". A row without them is an unexplainable
       // recommendation, so the column list itself refuses it.
       const a = await insertAccount(pool, 'a@example.com')
@@ -280,7 +280,7 @@ describe.skipIf(!available)('schema wave 2 constraints', () => {
         ]),
       ).resolves.toBeDefined()
 
-      // §14.7: the domain group is reserved for claimed domains, so a row is
+      // The domain group is reserved for claimed domains, so a row is
       // never both an account's and a preview's.
       const both = await spend(
         'account_id, preview_target, vendor, call_type, usd_cost, outcome',
@@ -365,7 +365,7 @@ describe.skipIf(!available)('schema wave 2 constraints', () => {
     })
 
     it('survives the deletion of the account that incurred it', async () => {
-      // main §14.6 hard-deletes PII and order-derived aggregates. A vendor
+      // Account deletion removes personal data and order-derived aggregates. A vendor
       // invoice line is neither, and erasing money we spent is the opposite of
       // append-only — so this column carries no cascading foreign key.
       const a = await insertAccount(pool, 'a@example.com')
