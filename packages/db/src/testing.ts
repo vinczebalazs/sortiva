@@ -26,12 +26,33 @@ export interface TestDb {
 }
 
 /** True when a Postgres reachable at TEST_DATABASE_URL exists. */
+/**
+ * Whether a Postgres the tests can use is reachable.
+ *
+ * Locally this returns false and the suite skips, so someone can run the unit
+ * tests without Docker. **In CI it throws instead**, because a skip is green:
+ * without this, a CI database that failed to start would take every
+ * database-backed suite out of the run and the build would still pass.
+ *
+ * This is enforced here rather than left to each suite. Five suites wrote that
+ * assertion by hand and seven did not, which is exactly how a convention decays —
+ * the seven were not careless, they simply never saw the pattern, which lives in
+ * a package they do not own. A rule every caller has to remember is a rule that
+ * holds until someone new writes the next suite.
+ */
 export async function databaseAvailable(): Promise<boolean> {
   const pool = new pg.Pool({ connectionString: TEST_DATABASE_URL, connectionTimeoutMillis: 2000 })
   try {
     await pool.query('select 1')
     return true
-  } catch {
+  } catch (error) {
+    if (process.env.CI) {
+      throw new Error(
+        `No Postgres at ${TEST_DATABASE_URL}. Database-backed tests must not be skipped in CI — ` +
+          `a skipped suite reports green while proving nothing. ` +
+          `Cause: ${error instanceof Error ? error.message : String(error)}`,
+      )
+    }
     return false
   } finally {
     await pool.end().catch(() => {})
