@@ -13,10 +13,10 @@ import {
 } from './types'
 
 /**
- * tech §2's single outbound page fetcher. main §3.2 sets its budget: "one page
- * fetch, hard timeout (~8s), max download size (~1.5 MB), follow at most 2
- * redirects, only ports 80/443, block private/reserved IP ranges after DNS
- * resolution".
+ * The single outbound page fetcher. One fetch, a hard timeout, a maximum
+ * download size, at most two redirects, ports 80 and 443 only, and private or
+ * reserved IP ranges blocked *after* DNS resolution — so a hostname that
+ * resolves inward cannot be used to make us fetch our own network.
  *
  * The interesting part is not the budget, it is the order of operations, so
  * here it is in full. For each hop:
@@ -43,7 +43,7 @@ import {
  * built-in redirect following would perform steps 2–5 without us.
  */
 
-/** main §3.2. Callers may tighten these; the guard itself is not a parameter. */
+/** Callers may tighten these. The guard itself is not a parameter. */
 export const DEFAULT_FETCH_BUDGET: FetchBudget = {
   timeoutMs: 8_000,
   maxBytes: 1_500_000,
@@ -52,7 +52,7 @@ export const DEFAULT_FETCH_BUDGET: FetchBudget = {
 
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308])
 
-/** Cheap extraction (main §3.3) reads markup and text; anything else is a wasted download. */
+/** Extraction reads markup and text; anything else is a download we would throw away. */
 const FETCHABLE_CONTENT_TYPES = [
   'text/html',
   'application/xhtml+xml',

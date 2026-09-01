@@ -1,4 +1,4 @@
-# tech §5 — local dev is docker-compose Postgres. Postgres 16 per tech §2.
+# Local development runs Postgres 16 here, matching what CI and production use.
 services:
   postgres:
     image: postgres:16-alpine

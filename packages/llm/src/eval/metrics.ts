@@ -1,9 +1,9 @@
 /**
- * The two scorers main §14.2's eval sets are graded on.
+ * The two scorers the evaluation sets are graded on.
  *
- * *Distillation eval:* "field-level F1 ≥ 0.85 and **zero** inferred-fact
- * violations (any fabricated field value = hard fail)."
- * *Judge eval:* "per-criterion MAE ≤ 0.5 **and** no draft that humans failed is
+ * *Distillation:* field-level F1 at or above 0.85, and **zero** fabricated field
+ * values — any one of those is a hard fail no aggregate may absorb.
+ * *Judge:* per-criterion mean absolute error at or below 0.5, **and** no draft that humans failed is
  * graded as passing (false-pass = hard fail)."
  *
  * Both hard-fail conditions are separate from the aggregate score on purpose: an
@@ -56,7 +56,7 @@ export function fieldF1(
 export interface MaeScore {
   /** Mean absolute error across every criterion of every case. */
   readonly overall: number
-  /** Per-criterion mean absolute error — what §14.2 actually gates on. */
+  /** Per-criterion mean absolute error — the number the gate actually reads. */
   readonly perCriterion: Readonly<Record<string, number>>
   readonly worstCriterion: string | undefined
 }

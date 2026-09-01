@@ -14,8 +14,8 @@ import {
 } from '@sortiva/core'
 
 /**
- * main §4.2, tech §3 — the only four things we ask Stripe: open a Checkout
- * session, open a Customer Portal session, verify a webhook signature, and
+ * The only four things we ask Stripe: open a Checkout session, open a Customer
+ * Portal session, verify a webhook signature, and
  * re-read a subscription for the nightly reconciliation.
  *
  * This is the one file in the repo allowed to import the Stripe SDK; the lint
@@ -50,8 +50,7 @@ export class StripeProvider implements StripeBillingProvider {
         {
           mode: 'subscription',
           line_items: [{ price: request.priceId, quantity: 1 }],
-          // How the webhook finds the account: main §4.2's
-          // "attach customer + subscription to account".
+          // How the webhook finds the account this purchase belongs to.
           client_reference_id: request.accountId,
           ...(request.customerId
             ? { customer: request.customerId }
@@ -82,7 +81,7 @@ export class StripeProvider implements StripeBillingProvider {
   }
 
   /**
-   * tech §3 — signature verification before anything touches the body. A
+   * Signature verification before anything touches the body. A
    * forged payload must never reach the event store, because the store is what
    * the status worker trusts.
    */

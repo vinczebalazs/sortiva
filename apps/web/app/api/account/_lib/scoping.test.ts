@@ -5,7 +5,7 @@ import { withAccount } from '../../auth/_lib/session'
 import { makeAccountRouteHandler } from './handler'
 
 /**
- * tech §3 — "every query is `WHERE account_id = session.account_id`, enforced by
+ * Every query names the account it reads, enforced by
  * a repository layer that requires the account scope parameter".
  *
  * This drives the real route: the real `withAccount` wrapper, the real handler,
@@ -74,7 +74,7 @@ describe.skipIf(!available)('GET /api/account is scoped to the session account',
 
     expect(body.accountId).toBe(accountB)
     expect(body.domain?.normalized).toBe('beta.com')
-    // main §6.2, invariant 21 — the write grant is visible as a distinct state.
+    // Permission to publish is a distinct state from being connected at all.
     expect(body.connections.shopify).toBe('read_write')
   })
 

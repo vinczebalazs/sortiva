@@ -5,9 +5,9 @@ import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 
 /**
- * Constitution invariant 2, main §3.1: "Preview output is disposable: nothing
- * from `preview_cache` is ever read by ingestion, persona, topics, or evidence.
- * Test asserts no import path from `preview` into `core`."
+ * Preview output is disposable: nothing from `preview_cache` is ever read by
+ * ingestion, persona, topics or evidence, and this test asserts there is no
+ * import path from `preview` into `core`.
  *
  * Why this matters in plain terms: the preview is a public, logged-out teaser
  * built for a few cents — one homepage fetch and a Haiku summary. The real
@@ -119,7 +119,7 @@ describe('invariant 2 — preview output is disposable', () => {
         //
         // The reason it is allowed at all is the reason the rest of this rule
         // exists. Preview spend has to be attributed to the domain a merchant
-        // would later claim, or it never joins to their account (main §14.7).
+        // would later claim, or it never joins to their account.
         // That means the preview and the claim must agree on what the
         // registrable domain is — and two copies of that rule would drift, which
         // is a worse outcome than this one import. Nothing flows the other way:

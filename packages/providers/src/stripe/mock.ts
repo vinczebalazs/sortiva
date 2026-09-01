@@ -21,7 +21,7 @@ import {
  *
  *  - **Idempotency.** A repeated `idempotencyKey` returns the first session, as
  *    Stripe does, so a test of a double-clicked Subscribe button sees
- *    production behaviour (main §14.3.2).
+ *    production behaviour.
  *  - **Signature verification.** `sign()` produces a real `t=…,v1=…` header
  *    using Stripe's own HMAC-SHA256 scheme over `${timestamp}.${body}`, and
  *    `constructEvent` verifies it the same way. A receiver test therefore

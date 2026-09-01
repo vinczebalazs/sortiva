@@ -27,7 +27,7 @@ export const dbAccountStore = makeDbAccountStore()
 
 let capture: PosthogServerCapture | undefined
 
-/** main §14.7 — `signup_completed` is a funnel event, captured server-side. */
+/** `signup_completed` is a funnel event, captured server-side. */
 export function provisioningDeps(): ProvisionAccountDeps {
   capture ??= new PosthogServerCapture()
   return { store: dbAccountStore, capture }

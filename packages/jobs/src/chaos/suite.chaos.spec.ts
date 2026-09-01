@@ -3,8 +3,8 @@ import { databaseAvailable, insertAccount, setupTestDb, type TestDb } from '@sor
 import { CHAOS_SCENARIOS, runChaosScenario } from './harness'
 
 /**
- * `pnpm chaos` — main §14.3.9's nightly test. Separate from `pnpm test` because
- * tech §5 runs it nightly rather than on every merge: it restarts a full
+ * `pnpm chaos` — the nightly kill-and-converge test. Separate from `pnpm test`
+ * because it runs nightly rather than on every merge: it restarts a full
  * synthetic run several times per scenario.
  */
 

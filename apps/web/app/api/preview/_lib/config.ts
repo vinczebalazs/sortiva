@@ -16,7 +16,7 @@ import { OpsFlagPreviewSwitch, PostgresPreviewCache } from './store'
  * `next build`.
  *
  * The rate limiter and the outbound concurrency cap are **per process** by
- * design (tech §2.1: one `app` service, "no Redis in v1"). If the app is ever
+ * design: v1 runs as a single service with no Redis. If the app is ever
  * scaled past one instance, both become per-instance and the effective limits
  * multiply by the replica count — see DECISIONS 2026-09-01 T1.3.
  */
@@ -38,7 +38,7 @@ export function previewScrapeCap(): OutboundScrapeCap {
   return scrapeCap
 }
 
-/** tech §2 — the one SSRF-guarded client, shared with every later page fetch. */
+/** The one guarded HTTP client, shared with every later page fetch. */
 export function previewFetcher(): GuardedPageFetcher {
   fetcher ??= new GuardedPageFetcher()
   return fetcher
@@ -68,9 +68,8 @@ export function previewCapture(): PosthogServerCapture {
 }
 
 /**
- * main §14.2 — prompts are versioned files (`prompts/<name>.v<N>.md`) and the
- * version is stamped on every `$ai_generation` capture, so a stored artefact
- * stays reproducible.
+ * Prompts are versioned files (`prompts/<name>.v<N>.md`) and the version is
+ * stamped on every model call, so a stored artefact stays reproducible.
  *
  * Read here rather than through `@sortiva/llm`'s `loadPrompt`, which cannot be
  * bundled by Next: it composes its path from a directory URL, and webpack

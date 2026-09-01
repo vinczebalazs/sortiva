@@ -6,13 +6,11 @@ import type { AccountScope } from '../scope'
 export type DomainRow = typeof domains.$inferSelect
 
 /**
- * main §5, §2 invariants 1–2; constitution invariant 1.
+ * The claim is an insert-with-conflict, never a check followed by an insert:
+ * the unique index on `domain_normalized` decides the winner, so two concurrent
+ * claims cannot both succeed no matter how the requests interleave.
  *
- * "Claim is an insert-with-conflict, never check-then-insert" — the unique
- * index on `domain_normalized` decides the winner, so two concurrent claims
- * cannot both succeed no matter how the requests interleave.
- *
- * `domainNormalized` must already be PSL-normalised (main §2). Normalisation
+ * `domainNormalized` must already be normalised. Normalisation
  * itself is `packages/core`'s job (T1.4); this layer stores what it is given.
  */
 /**
@@ -50,9 +48,9 @@ export async function findDomainForAccount(
 }
 
 /**
- * main §14.3.1 — a guarded update. Returns undefined when the guard matched no
- * rows, which the caller must treat as "someone else owns this transition"
- * (invariant 15), not as a retryable failure.
+ * A guarded update. Returns undefined when the guard matched no rows, which the
+ * caller must treat as "someone else owns this transition" and stop — never as
+ * a retryable failure.
  */
 export async function transitionDomainState(
   db: Db,

@@ -9,7 +9,7 @@ import { makeDomainClaimStore } from './store'
 
 let capture: PosthogServerCapture | undefined
 
-/** main §14.7 — `domain_claimed` is a funnel event, captured server-side. */
+/** `domain_claimed` is a funnel event, captured server-side. */
 export function claimDeps(): ClaimDomainDeps {
   capture ??= new PosthogServerCapture()
   return { store: makeDomainClaimStore(), capture }

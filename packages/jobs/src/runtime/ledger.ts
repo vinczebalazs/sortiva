@@ -2,12 +2,11 @@ import { eq } from 'drizzle-orm'
 import { idempotencyLedger, type Db } from '@sortiva/db'
 
 /**
- * main §14.3.2 — "Completed keys are stored with their output reference; a
- * worker seeing a completed key returns the stored output without executing.
- * This makes the *cache the ledger*: 'have I done this work' and 'where is the
- * result' are the same lookup."
+ * Completed keys are stored with their output. A worker that sees a completed
+ * key returns that output without executing, so "have I done this work" and
+ * "where is the result" are one lookup rather than two.
  *
- * The queue is at-least-once (§14.3), so this lookup is the only thing between
+ * The queue delivers at least once, so this lookup is the only thing between
  * a redelivered message and a second real execution — a second billed Shopify
  * crawl, a second billed batch of LLM calls. Until this file existed the lookup
  * read `job_steps` (`lookupCompletedKey`, removed from `steps.ts`), which
@@ -19,7 +18,7 @@ import { idempotencyLedger, type Db } from '@sortiva/db'
  * Two rules the table enforces in the database, not here:
  *   - `UPDATE` raises (`migrations/0005_wave2b_guards.sql`), so a completed
  *     key's stored output can never be revised — a replay cannot get a
- *     different answer than the run it is resuming (§14.3.6).
+ *     different answer than the run it is resuming.
  *   - `idempotency_key` is the primary key, so the first writer of a key owns
  *     its answer and every later writer conflicts.
  */
@@ -39,7 +38,7 @@ export interface RecordedWork extends CompletedWork {
 }
 
 /**
- * "Have I already done this work?" — the whole of §14.3.2's short-circuit.
+ * "Have I already done this work?" — the whole of the short-circuit.
  * `undefined` means no record: the work has not been completed under this key.
  */
 export async function lookupCompletedWork(
@@ -58,7 +57,7 @@ export async function lookupCompletedWork(
  * Records that this key's work is finished, with its output.
  *
  * Insert-or-nothing, never an upsert: the table refuses `UPDATE` outright, and
- * the reason is §14.3.6's — a revisable answer would let a replay return
+ * the reason is that a revisable answer would let a replay return
  * something other than what the run it is resuming produced. So a conflict is
  * not an error, it is the first writer keeping its answer; we read that answer
  * back and hand it to the caller so the ledger, the step row and the returned

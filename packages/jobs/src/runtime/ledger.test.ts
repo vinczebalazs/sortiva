@@ -5,10 +5,9 @@ import { describe, expect, it } from 'vitest'
 import { CRON_ENTRIES } from './crontab'
 
 /**
- * main §14.3.2 — "Completed keys are stored with their output reference; a
- * worker seeing a completed key returns the stored output without executing.
- * This makes the *cache the ledger*: 'have I done this work' and 'where is the
- * result' are the same lookup."
+ * Completed keys are stored with their output. A worker that sees a completed
+ * key returns that output without executing, so "have I done this work" and
+ * "where is the result" are one lookup rather than two.
  *
  * That record is not a log of what happened — it is the *evidence* that paid
  * work was already done. Delete it and a redelivered message does the work again
@@ -95,9 +94,9 @@ describe('the idempotency ledger is never deleted (main §14.3.2)', () => {
 
     expect(
       offenders,
-      `${LEDGER_TABLE} rows are the record of which paid work has already been done (main §14.3.2). ` +
+      `${LEDGER_TABLE} rows are the record of which paid work has already been done. ` +
         `Deleting one lets a redelivered job re-run that work and re-bill for it. The retention sweep ` +
-        `tech §2.1 anticipates may prune this table by AGE, well past the point where the queue could ` +
+        `may prune this table by AGE, well past the point where the queue could ` +
         `still redeliver — never by job, never by account, and never as part of deleting a store. If ` +
         `that sweep is what you are writing, change this test deliberately and record it in DECISIONS.`,
     ).toEqual([])

@@ -13,11 +13,10 @@ import {
 } from './testing'
 
 /**
- * `docs/audits/remediation.md` D10 item 1. main §14.5's caps pause an account
- * whose daily spend runs away, and main §14.7 says where that number may come
- * from: "the §14.5 budget auto-trips read spend from our own DB counters —
- * PostHog displays cost, our code enforces caps… a kill switch must work when
- * PostHog is down or events are sampled/delayed" (invariant 17).
+ * `docs/audits/remediation.md` D10 item 1. The daily caps pause an account whose
+ * spend runs away, and the number they read comes from our own database rather
+ * than from analytics — a kill switch has to work when the analytics vendor is
+ * down or its events are delayed.
  *
  * Card `R2` made both paid wrappers hand every cost to a `CostLedger` on every
  * path. Until this adapter the only ledger in the repository was the deliberate
@@ -47,7 +46,7 @@ beforeEach(async () => {
   await truncateAll(harness.pool)
 })
 
-/** What §14.5 asks the table: "what has this account spent today?" */
+/** What the caps ask the table: what has this account spent today? */
 async function rows() {
   const { rows } = await harness.pool.query(
     `SELECT account_id, preview_target, vendor, call_type, usd_cost::float8 AS usd_cost,
@@ -137,7 +136,7 @@ describe('the DataForSEO wrapper writes spend_events through PostgresCostLedger'
 
     const [row] = await rows()
     expect(row.account_id).toBeNull()
-    // §14.7: "the domain group is reserved for claimed domains" — ten strangers
+    // The domain group is reserved for claimed domains — ten strangers
     // previewing nike.com is not Nike-the-account costing us money.
     expect(row.preview_target).toBe('nike.com')
   })

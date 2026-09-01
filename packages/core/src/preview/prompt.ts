@@ -4,20 +4,20 @@ import { PREVIEW_MAX_OUTPUT_TOKENS, PREVIEW_TEMPERATURE } from './limits'
 import type { PreviewPrompt } from './ports'
 
 /**
- * main §3.3 step 5 — "call **Claude Haiku** with a single prompt: produce a 2–3
- * sentence plain-language summary of what this business does and sells, in the
- * site's own language. Temperature low, max ~150 output tokens."
+ * One model call: a two-to-three sentence plain-language summary of what this
+ * business does and sells, in the site's own language, at a low temperature and
+ * a small output budget.
  *
  * Three things this function exists to make non-optional:
  *
- * - `callType: 'preview'`, which main §15 binds to Haiku and §14.7 requires on
- *   every `$ai_generation` capture.
+ * - `callType: 'preview'`, which binds the call to the cheap tier and is what
+ *   every spend record is broken down by.
  * - `previewAttribution`, which carries `target_domain` as a **property** and
- *   deliberately has no field for a domain group. main §14.7: the domain group
- *   is reserved for claimed domains — ten strangers previewing `nike.com` is
- *   not Nike-the-account costing us money.
- * - No JSON schema. §14.2's schema-validation rule names distillation, persona,
- *   seeds and the judge; the preview's output is one short paragraph of prose,
+ *   deliberately has no field for a domain group. That group is reserved for
+ *   claimed domains — ten strangers previewing `nike.com` is not
+ *   Nike-the-account costing us money.
+ * - No JSON schema. Schema validation is for the calls that produce structured
+ *   artefacts; the preview's output is one short paragraph of prose,
  *   and wrapping it in JSON would spend a tenth of a 150-token budget on
  *   punctuation. Emptiness and length are checked in `runPreview` instead.
  */

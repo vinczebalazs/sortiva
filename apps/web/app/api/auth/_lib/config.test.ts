@@ -3,7 +3,7 @@ import type { AccountStore } from '@sortiva/core'
 import { ACCOUNT_ID_CLAIM, buildAuthConfig } from './config'
 
 /**
- * main §4.1 and tech §3 — a session exists only once it names an account, and
+ * A session exists only once it names an account, and
  * that is the only place a request learns its `account_id`. These drive the
  * real Auth.js callbacks; the account store is in memory.
  */

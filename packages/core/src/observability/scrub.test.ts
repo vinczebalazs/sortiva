@@ -4,7 +4,7 @@ import { createLogger } from './logger'
 
 /**
  * T0.5 done-when: "scrubber test proves a token never reaches log output".
- * tech §4: "tokens never appear in logs, PostHog events, or error reports".
+ * Tokens never appear in logs, analytics events or error reports.
  */
 
 const SHOPIFY_TOKEN = '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'

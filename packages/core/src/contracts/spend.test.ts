@@ -11,8 +11,8 @@ import {
 } from './spend'
 
 /**
- * The spend ledger is what main §14.5's kill switches read (invariant 17:
- * "PostHog is telemetry and alerting, not the control plane"). These cover the
+ * The spend ledger is what the kill switches read; analytics is telemetry and
+ * alerting, never the control plane. These cover the
  * port's own rules; the wrappers' suites cover that every call path writes one.
  */
 
@@ -31,7 +31,7 @@ describe('spendAttribution', () => {
       accountId: 'acc-1',
       previewTarget: null,
     })
-    // main §14.7 — "ten strangers previewing nike.com is not Nike-the-account
+    // Ten strangers previewing nike.com is not Nike-the-account
     // costing us money". Never both, which is what the table's check enforces.
     expect(spendAttribution(previewAttribution('nike.com'))).toEqual({
       accountId: null,
@@ -80,7 +80,7 @@ describe('recordSpend', () => {
       recordSpend(ledger, ROW, createLogger({ sink: (l) => lines.push(l), minLevel: 'debug' })),
     ).resolves.toBeUndefined()
 
-    // An unrecorded cost means the §14.5 caps are reading low: error, not warn.
+    // An unrecorded cost means the caps are reading low: error, not warn.
     expect(lines).toHaveLength(1)
     const record = JSON.parse(lines[0]!) as Record<string, unknown>
     expect(record.level).toBe('error')

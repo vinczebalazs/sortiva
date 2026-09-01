@@ -3,9 +3,10 @@ import Google from 'next-auth/providers/google'
 import { provisionAccount, type ProvisionAccountDeps } from '@sortiva/core'
 
 /**
- * main §4.1 — "standard email + OAuth (Google) signup. Nothing exotic."
- * tech §3 — session-cookie auth, and every authenticated route resolves
- * `account_id` from the session, never from the request body.
+ * Email and Google sign-in, nothing exotic. Session-cookie auth, and every
+ * authenticated route resolves `account_id` from the session rather than from
+ * the request body — which is the difference between a scoped read and one
+ * account naming another.
  *
  * Two things this file does not do, both recorded in DECISIONS 2026-08-31 T1.1:
  *
@@ -29,14 +30,14 @@ export interface AuthConfigDeps {
 
 export function buildAuthConfig(deps: AuthConfigDeps): NextAuthConfig {
   return {
-    // tech §2.1 — deployed behind Railway's proxy, not a platform Auth.js detects.
+    // Deployed behind a proxy the auth library does not recognise on its own.
     trustHost: true,
     session: { strategy: 'jwt', maxAge: SESSION_MAX_AGE_SECONDS },
     providers: [
       Google({
         clientId: process.env.AUTH_GOOGLE_ID,
         clientSecret: process.env.AUTH_GOOGLE_SECRET,
-        // main §4.1 — identity only. Search Console is a separate OAuth client
+        // Identity only. Search Console is a separate OAuth client
         // with its own consent screen (invariant 21, read and write are
         // separate consents; see .env.example GSC_OAUTH_CLIENT_ID).
         authorization: { params: { scope: 'openid email profile' } },
@@ -71,7 +72,7 @@ export function buildAuthConfig(deps: AuthConfigDeps): NextAuthConfig {
         return token
       },
 
-      /** tech §3 — this is the only place a request learns its `account_id`. */
+      /** The only place a request learns its `account_id`. */
       session({ session, token }) {
         const accountId = token[ACCOUNT_ID_CLAIM]
         if (typeof accountId === 'string') {

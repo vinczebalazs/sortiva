@@ -3,7 +3,7 @@ import { accountAttribution, createLogger, previewAttribution } from '@sortiva/c
 import { MockPosthogCapture, PosthogServerCapture, UnrecordedCapture } from './index'
 
 /**
- * main §14.7's two attribution rules, asserted on the live wrapper rather than
+ * The two attribution rules, asserted on the live wrapper rather than
  * on the double: "everything is groupable by domain", and "the domain group is
  * reserved for claimed domains — preview events carry `target_domain` as a plain
  * property instead".

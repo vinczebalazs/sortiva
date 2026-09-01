@@ -159,7 +159,7 @@ export function makeBillingStore(options: BillingStoreOptions = {}): BillingStor
  * guarded-transition discipline on the one table Stripe writes.
  *
  * `synced_at` is written alongside it and means something different: when we
- * last contacted Stripe about this row (tech §3's staleness scan). It is the
+ * last contacted Stripe about this row, which the nightly scan reads. It is the
  * only one of the two that any other code path may advance.
  */
 async function applyWrite(database: Db, write: SubscriptionWrite): Promise<SubscriptionWriteResult> {
@@ -204,7 +204,7 @@ function rowCount(result: unknown): number {
 }
 
 /**
- * main §14.3.8, tech §3 — insert-or-ignore by Stripe's event id, then process
+ * Insert-or-ignore by Stripe's event id, then process
  * from the table. The table is the queue: an event stored while nothing was
  * draining is picked up by the next pass rather than lost with the request.
  */
@@ -256,7 +256,7 @@ export function makeStripeEventStore(options: BillingStoreOptions = {}): StripeE
      * `claimUnprocessed` is a plain select that claims nothing, so two webhooks
      * arriving milliseconds apart start two drains over the same rows. Since a
      * subscription event now costs a Stripe read, an overlap doubles our Stripe
-     * calls and double-counts the §14.7 funnel captures.
+     * calls and double-counts the funnel events.
      *
      * A Postgres advisory lock rather than `FOR UPDATE SKIP LOCKED` or a lease
      * column: skipping locked rows needs a transaction held open across Stripe

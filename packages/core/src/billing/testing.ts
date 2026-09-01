@@ -23,7 +23,7 @@ interface StoredRow extends LocalSubscription {
   accountId: string
   stripeSubscriptionId: string
   priceId: string
-  /** tech §3's staleness clock: when we last contacted Stripe about this row. */
+  /** The staleness clock: when we last contacted Stripe about this row. */
   syncedAt: Date
   /** The ordering floor: when we read the state this row holds. */
   stateObservedAt: Date
@@ -137,7 +137,7 @@ function createdOf(event: StoredStripeEvent): number {
   return typeof created === 'number' ? created : event.receivedAt.getTime() / 1000
 }
 
-/** Builds the Stripe event shapes main §4.2 names, in Stripe's own JSON layout. */
+/** Builds the Stripe event shapes we handle, in Stripe's own JSON layout. */
 export function stripeEventFixtures(options: {
   accountId: string
   customerId: string

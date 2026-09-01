@@ -15,9 +15,9 @@ import {
 import { stripeProvider } from '../../../billing/_lib/config'
 
 /**
- * tech §3 — "signature verification (`stripe.webhooks.constructEvent`),
- * insert-or-ignore into `stripe_events` by event ID, 200 immediately, async
- * processing — same pattern" as the Shopify receiver (main §14.3.8).
+ * Verify the signature, insert-or-ignore into `stripe_events` by event id,
+ * answer 200 immediately, process afterwards — the same pattern as the Shopify
+ * receiver.
  *
  * The receiver's job is deliberately tiny: prove the payload came from Stripe,
  * store it, answer. Everything that decides anything runs against the stored
@@ -54,7 +54,7 @@ export function billingWorkerDeps(options: ReceiverOptions = {}): BillingWorkerD
     billing: makeBillingStore(storeOptions),
     events: makeStripeEventStore(storeOptions),
     stripe: options.stripe ?? stripeProvider(),
-    // main §4.2 — the payment-failed email. Until Lane G's T8.1 fills
+    // The payment-failed email. Until Lane G's T8.1 fills
     // `NotificationEmitter`, the registered stub records the emission and
     // reports itself through `pnpm stubs:report`, so the gap is visible rather
     // than silently absent.
@@ -95,7 +95,7 @@ export async function handleStripeWebhook(
   })
 
   if (options.drain !== false) {
-    // Started, not awaited: tech §3 requires the 200 now. The drain is safe to
+    // Started, not awaited: the 200 has to go back now. The drain is safe to
     // lose — it reads the table it did not empty, the nightly reconciliation
     // repairs anything it missed, and every step is idempotent.
     void drainStripeEvents(deps).catch((error: unknown) => {

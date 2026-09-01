@@ -4,9 +4,9 @@
  * migrations and admin scripts."
  *
  * A plain `accountId: string` parameter satisfies that on paper and nothing in
- * practice — any string type-checks, including one read from a request body,
- * which tech §3 explicitly forbids ("Every authenticated route resolves
- * `account_id` from session — never from the request body"). So scope is a
+ * practice — any string type-checks, including one read straight out of a
+ * request body, which is exactly how one account ends up reading another's
+ * data. So scope is a
  * branded type that only `accountScope()` can produce, and every repository
  * method takes it as its first argument. Omitting it is a compile error; see
  * `scope.test-d.ts`.
@@ -35,19 +35,19 @@ export interface AccountScope {
  *
  * Schema wave 2 (T2.0) adds three more, for the same kind of reason:
  * `serp_snapshots` is keyed by canonical request parameters so two accounts
- * asking the same question in the same locale don't pay DataForSEO twice
- * (main §12.1); `rules_overrides` holds global and per-locale rows whose
- * `account_id` is null by design (main §7.10); and `spend_events` records
- * preview spend, which happens before any account exists (main §14.7). Their
+ * asking the same question in the same locale don't make us pay the vendor
+ * twice; `rules_overrides` holds global and per-locale rows whose `account_id`
+ * is null by design; and `spend_events` records preview spend, which happens
+ * before any account exists. Their
  * repositories are not written yet — the cards that need them will take
  * `SystemScope` where the row has no account, and `AccountScope` otherwise.
  * See DECISIONS 2026-08-31 T2.0.
  *
  * Mini-wave 2b (T2.0b) adds two more. `verification_tokens` holds outstanding
- * email sign-in links, which exist before the account does (main §4.1).
+ * email sign-in links, which exist before the account does.
  * `idempotency_ledger` is keyed on a hash and deliberately carries no account
  * column at all — an account cascade must not be able to erase the record that
- * paid work was already done (main §14.3.2, `docs/audits/T0.4.md`). Both take
+ * paid work was already done (`docs/audits/T0.4.md`). Both take
  * `SystemScope`. See DECISIONS 2026-08-31 T2.0b.
  */
 export interface SystemScope {

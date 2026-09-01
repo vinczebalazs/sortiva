@@ -9,8 +9,9 @@ export type RequestCacheRow = typeof requestCache.$inferSelect
 export type OpsFlagRow = typeof opsFlags.$inferSelect
 
 /**
- * main §14.3.8 — "`webhook_events.webhook_id` is unique; insert-or-ignore, then
- * process from the table, never from the request body directly."
+ * `webhook_events.webhook_id` is unique: insert-or-ignore, then process from
+ * the table and never from the request body, so a redelivery is free and the
+ * receiver can answer immediately.
  *
  * Takes a `SystemScope`: the receiver has verified HMAC but not yet resolved
  * which account the event belongs to.
@@ -29,7 +30,7 @@ export async function recordWebhookEvent(
   return row
 }
 
-/** main §4.2, tech §3 — same pattern, keyed by Stripe's event id. */
+/** The same pattern, keyed by Stripe's event id. */
 export async function recordStripeEvent(
   db: Db,
   _scope: SystemScope,
@@ -40,10 +41,9 @@ export async function recordStripeEvent(
 }
 
 /**
- * main §14.3.6, constitution invariant 20 — billable reads and LLM calls are
- * cached at request level and **written before processing**, so a crash after
- * the provider responded but before downstream work still replays from cache
- * and never re-bills.
+ * Billable reads and LLM calls are cached at request level and **written
+ * before processing**, so a crash after the vendor answered but before we
+ * finished with the answer replays from cache rather than buying it again.
  *
  * `putBeforeProcessing` therefore takes the raw response, not a processed
  * result, and is called immediately on receipt.
@@ -80,7 +80,7 @@ export async function putBeforeProcessing(
     })
 }
 
-/** main §3.2, invariant 2 — disposable. Nothing downstream of ingestion reads this. */
+/** Disposable: nothing downstream of ingestion reads the preview cache. */
 export async function readPreviewCache(db: Db, _scope: SystemScope, domainNormalized: string) {
   const [row] = await db
     .select()
@@ -96,8 +96,9 @@ export async function readPreviewCache(db: Db, _scope: SystemScope, domainNormal
 }
 
 /**
- * main §14.5, invariant 17 — kill switches are read from our DB at job dequeue.
- * PostHog observes trips; it never causes or gates them.
+ * Kill switches are read from our own database at job dequeue. Analytics
+ * observes a trip; it never causes or gates one, because a switch has to work
+ * when that vendor does not.
  */
 export async function isGlobalFlagActive(
   db: Db,
@@ -133,8 +134,9 @@ export async function isAccountFlagActive(
 }
 
 /**
- * main §14.5 — "every flip is logged with actor + reason"; auto-trips never
- * auto-reset. Returns undefined when the flag is already active: the partial
+ * Every flip is recorded with who did it and why, and an automatic trip never
+ * resets itself — someone has to look at why it fired. Returns undefined when
+ * the flag is already active: the partial
  * unique index makes a second trip a no-op rather than a duplicate incident.
  */
 export async function tripAccountFlag(

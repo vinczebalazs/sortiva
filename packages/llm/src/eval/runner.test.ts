@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { discoverEvalSets, loadEvalSet, runEvalSet, type EvalSetConfig } from './runner'
 import { fieldF1, meanAbsoluteError } from './metrics'
 
-/** main §14.2 — the eval machinery, including both hard-fail rules. */
+/** The evaluation machinery, including both hard-fail rules. */
 
 const temporaryDirs: string[] = []
 
@@ -111,7 +111,7 @@ describe('eval sets', () => {
       test: async () => ({ information_gain: 2, passed: true }),
     })
 
-    // The scores are perfect; the verdict is not — and §14.2 says the verdict
+    // The scores are perfect; the verdict is not — and it is the verdict
     // is what matters.
     expect(result.mae?.perCriterion.information_gain).toBe(0)
     expect(result.passed).toBe(false)

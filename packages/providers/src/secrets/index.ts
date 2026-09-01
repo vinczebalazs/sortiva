@@ -8,9 +8,9 @@ import {
 import { registerSecret } from '@sortiva/core'
 
 /**
- * tech §4 — "application-layer envelope encryption: per-row data key, wrapped by
- * a master key in the platform KMS (or `age` key in the deploy secret store for
- * v1). Decryption only in the worker/API process at point of use."
+ * Envelope encryption in our own application layer: a per-row data key, wrapped
+ * by a master key held in the deploy secret store. Decryption happens only in
+ * our processes, at the point of use, so a database dump alone yields nothing.
  *
  * Envelope rather than encrypting with the master key directly, for one
  * practical reason: rotating the master key then means re-wrapping a short key
@@ -73,7 +73,7 @@ export class TokenCipher {
     const master = options.master ?? env.ENCRYPTION_MASTER_KEY
     if (!master) {
       throw new EncryptionError(
-        'ENCRYPTION_MASTER_KEY is not set. Tokens are encrypted at rest (tech §4); refusing to start without the key.',
+        'ENCRYPTION_MASTER_KEY is not set. Tokens are encrypted at rest; refusing to start without the key.',
       )
     }
     this.current = parseMasterKey(master, 'ENCRYPTION_MASTER_KEY')
@@ -87,7 +87,7 @@ export class TokenCipher {
     }
 
     // Registering them means a master key that somehow reaches a log line or an
-    // exception message is redacted (tech §4, scrubber).
+    // exception message is redacted by the scrubber.
     registerSecret(master)
     for (const raw of retired) registerSecret(raw)
   }
@@ -199,7 +199,7 @@ const CONNECTION_STRING = /^[a-z][a-z0-9+.-]*:\/\/[^/@\s]*:[^/@\s]+@/i
 /**
  * Registers every secret-shaped environment variable with the log scrubber.
  * Called once at process start, so a secret that reaches a log line or an
- * exception message is redacted wherever it appears (tech §4).
+ * exception message is redacted wherever it appears.
  *
  * Two families qualify. **Secret-shaped names** — anything ending in SECRET,
  * TOKEN, PASSWORD, API_KEY or KEY. **Connection strings** — audit

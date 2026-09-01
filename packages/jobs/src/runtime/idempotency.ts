@@ -9,8 +9,8 @@ import type { JobStepName } from './steps'
 const SEP = '\u0000'
 
 /**
- * main §14.3.2 — "Keys are *computed from inputs*, never random, so a retry of
- * the same work produces the same key":
+ * Keys are computed from inputs and never random, so a retry of the same work
+ * arrives at the same key and the ledger can recognise it:
  *
  *   idempotency_key = sha256(account_id + step_name + input_version)
  *
@@ -34,7 +34,7 @@ export function deriveIdempotencyKey(
 /**
  * Builds a stable `input_version` from an arbitrary set of inputs. Keys are
  * sorted and values JSON-encoded, so property order in the caller cannot change
- * the key — the same canonicalisation rule §14.3.6 applies to cache keys.
+ * the key — the same canonicalisation the vendor cache keys use.
  */
 export function inputVersion(parts: Record<string, unknown>): string {
   const canonical = Object.keys(parts)

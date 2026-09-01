@@ -7,7 +7,7 @@ import type { PosthogCapture } from '../contracts/analytics'
  * the guarded fetcher, Turnstile and the instrumented LLM wrapper.
  */
 
-/** One `preview_cache` row (main §13, §3.3 step 6: `{domain, summary, fetched_at}`). */
+/** One `preview_cache` row. */
 export interface PreviewCacheEntry {
   readonly domain: string
   readonly summary: string
@@ -34,7 +34,7 @@ export interface PreviewPage {
   readonly bytes: number
 }
 
-/** tech §2's single SSRF-guarded client, as the preview sees it. */
+/** The one guarded HTTP client, as the preview sees it. */
 export interface PreviewFetcher {
   fetch(request: {
     url: string
@@ -42,7 +42,7 @@ export interface PreviewFetcher {
   }): Promise<PreviewPage>
 }
 
-/** main §3.2 — Cloudflare Turnstile, verified before any fetch happens. */
+/** The bot challenge, verified server-side before any fetch happens. */
 export interface PreviewChallenge {
   verify(
     token: string,
@@ -51,15 +51,15 @@ export interface PreviewChallenge {
 }
 
 /**
- * main §14.5 / invariant 17 — the preview spend trip, read from our own
- * `ops_flags` table. PostHog observes trips; it never causes or gates them.
+ * The preview spend trip, read from our own `ops_flags` table. Analytics
+ * observes a trip; it never causes or gates one.
  */
 export interface PreviewKillSwitch {
   isPreviewPaused(): Promise<boolean>
 }
 
 /**
- * The versioned prompt text (main §14.2 — `prompts/<name>.v<N>.md`). Supplied by
+ * The versioned prompt text, from `prompts/<name>.v<N>.md`. Supplied by
  * the caller because `packages/llm` owns the loader and `packages/core` cannot
  * depend on it without a cycle.
  */

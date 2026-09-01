@@ -46,7 +46,7 @@ export async function proofs(db: Db): Promise<void> {
 
   // ── Passing a bare account id instead of a scope. This is the case that ────
   // ── matters: a raw string is exactly what a request body would supply, ─────
-  // ── and tech §3 forbids account_id coming from there. ──────────────────────
+  // ── and account_id must never come from there. ─────────────────────────────
   // @ts-expect-error a raw account id is not an AccountScope
   await insertDomainRow(db, '11111111-1111-1111-1111-111111111111', 'example.com')
   // @ts-expect-error a structurally-similar object is not an AccountScope

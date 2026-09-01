@@ -5,17 +5,15 @@ import { bytea } from './columns'
 import { intentClassEnum, storePageTypeEnum } from './enums'
 
 /**
- * main §13 `store_pages`, §12.3.
- *
  * What the store already has: one row per URL, built from the Shopify Admin API
  * (collections, products, pages, blogs, articles) plus our own published
  * articles — there is no crawler in V1. This inventory is what the
- * existing-target check of §7.7 reads before any CREATE, which is the rule that
+ * existing-target check reads before any CREATE, which is the rule that
  * makes "improve the collection you already have" the default instead of
  * publishing a page that competes with it.
  *
  * `checksum` is the change detector: a changed page invalidates cached
- * intent-gap analyses (§10.3) and re-scores open opportunities on that URL at
+ * intent-gap analyses and re-scores open opportunities on that URL at
  * the next scan.
  */
 export const storePages = pgTable(
@@ -33,11 +31,11 @@ export const storePages = pgTable(
     title: text('title'),
     seoTitle: text('seo_title'),
     seoDescription: text('seo_description'),
-    /** §12.3 — extracted headings, the input to §10.3's coverage analysis. */
+    /** The page's headings, which is what the coverage analysis compares against the top results. */
     headingsJson: jsonb('headings_json').notNull().default(sql`'[]'::jsonb`),
-    /** tech §2.1 — compressed like `raw_body_html`; Postgres is the store. */
+    /** Compressed like `raw_body_html`. Postgres is the store; there is no blob service. */
     bodyCompressed: bytea('body_compressed'),
-    /** §12.3 — parsed from `body_html`. Theme navigation is a known blind spot. */
+    /** Parsed from the page body. Links that live in the theme's navigation are a known blind spot. */
     outboundInternalLinks: text('outbound_internal_links')
       .array()
       .notNull()

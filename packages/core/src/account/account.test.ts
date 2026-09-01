@@ -5,7 +5,7 @@ import { provisionAccount, SIGNUP_COMPLETED_EVENT, type AccountStore } from './p
 import { buildAccountView, SERVICE_PAUSED_FLAGS } from './view'
 
 /**
- * Records captures through the production attribution rules (main §14.7), so an
+ * Records captures through the production attribution rules, so an
  * assertion about groups is an assertion about what PostHog would receive.
  */
 function recorder() {

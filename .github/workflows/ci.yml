@@ -1,12 +1,12 @@
-# tech §5 — CI gates on every merge: typecheck, unit + integration tests, lint,
-# and the PostHog provisioning script in check mode (drift between the repo
-# definitions and the live project fails the build).
+# What gates every merge: typecheck, unit and integration tests, lint, and the
+# analytics provisioning script in check mode, so drift between the definitions
+# in this repo and the live project fails the build.
 #
 # Two suites run on their own cadence rather than per-merge, because both cost
-# real money or real time: `pnpm eval` (main §14.2's frozen eval sets, gated on
-# prompt or model changes) and `pnpm chaos` (main §14.3.9, nightly). The
-# signal-detection fixtures (main §7.8) are plain unit tests and run with the
-# rest. Playwright (`pnpm e2e`, tech §6) runs against a deployed environment.
+# real money or real time: `pnpm eval`, the frozen evaluation sets, gated on
+# prompt or model changes; and `pnpm chaos`, nightly. The signal-detection
+# fixtures are plain unit tests and run with the rest. Playwright (`pnpm e2e`)
+# runs against a deployed environment.
 name: CI
 
 on:
@@ -82,8 +82,8 @@ jobs:
       - name: Build
         run: pnpm build
 
-  # main §14.2 — "run in CI on any change to a prompt file or model ID — deploy
-  # blocks on failure". Gated on the paths that can change a model's behaviour.
+  # Runs on any change to a prompt file or a model id, and a failure blocks the
+  # deploy. Gated on the paths that can change a model's behaviour.
   eval:
     runs-on: ubuntu-latest
     timeout-minutes: 30

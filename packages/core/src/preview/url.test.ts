@@ -21,7 +21,7 @@ describe('normalisePreviewUrl', () => {
   })
 
   it('keeps a subdomain that is not www, because the preview fetches what was pasted', () => {
-    // The domain *claim* folds to eTLD+1 (main §2, T1.4). A preview must not:
+    // The domain *claim* folds to the registrable domain. A preview must not:
     // shop.example.com and example.com can be different websites.
     expect(normalisePreviewUrl('shop.example.com').domain).toBe('shop.example.com')
     expect(normalisePreviewUrl('example.com').domain).toBe('example.com')

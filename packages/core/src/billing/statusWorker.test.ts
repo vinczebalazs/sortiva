@@ -226,8 +226,8 @@ describe('the status worker is the single writer of subscriptions.status (main �
     expect(status(h)?.status).toBe('canceled')
     expect(ended.generationAllowed).toBe(false)
     expect(ended.publishingAllowed).toBe(false)
-    // main §14.6 — "the account keeps read access to its articles, calendar
-    // history, and GSC reporting", indefinitely.
+    // The account keeps read access to its articles, calendar history and
+    // reporting, indefinitely.
     expect(ended.readAllowed).toBe(true)
     expect(h.capture.events.map((e) => e.event)).toContain('subscription_canceled')
   })
@@ -399,8 +399,8 @@ describe('Stripe cannot find a subscription it just told us about', () => {
     h.stripe.current = null
     await deliver(h, ACTIVATE)
 
-    // main §14.7 — `dlq_entry_created` already carries the alert
-    // "sustained > 1h", so this surfaces without a new dashboard.
+    // `dlq_entry_created` already carries an alert on sustained volume, so this
+    // surfaces without anyone building a new dashboard.
     const dlq = h.capture.events.filter((e) => e.event === 'dlq_entry_created')
     expect(dlq).toHaveLength(1)
     expect(dlq[0]?.properties?.['error_class']).toBe('subscription_not_found')
@@ -437,7 +437,7 @@ describe('Stripe cannot find a subscription it just told us about', () => {
  * can still succeed. T1.2 stored it as `incomplete_expired` — a merchant who
  * gave up — and fired the `subscription_canceled` funnel event for it, so an
  * account whose card was still being authorised counted as churn from the
- * moment it was created (main §14.7's funnel).
+ * moment it was created.
  */
 describe('a merchant mid-purchase is not churn', () => {
   it('keeps `incomplete` distinct from `incomplete_expired`', async () => {

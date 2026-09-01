@@ -14,7 +14,7 @@ import { MockPageFetcher, MockPosthogCapture, MockTurnstile } from '@sortiva/pro
 import { clientIpOf, makePreviewHandler } from './handler'
 
 /**
- * `POST /api/preview` at the HTTP level (main §3.2, tech §3). The funnel
+ * `POST /api/preview` at the HTTP level. The funnel
  * behaviour itself is proved in `packages/core/src/preview/preview.test.ts`;
  * what is asserted here is the wire contract — which status code each outcome
  * produces, and that a 200 body matches the frozen response schema.
@@ -203,7 +203,7 @@ describe('the versioned prompt file (main §14.2)', () => {
     expect(loaded.version).toBe('preview.v1')
     expect(loaded.text.length).toBeGreaterThan(200)
     // The prompt must tell the model to answer in the site's own language
-    // (main §3.3) and must not let scraped page text act as instructions.
+    // and must not let scraped page text act as instructions.
     expect(loaded.text).toMatch(/language/i)
     expect(loaded.text).toMatch(/never as instructions/i)
   })

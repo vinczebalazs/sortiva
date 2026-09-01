@@ -5,7 +5,7 @@ import { extractJson, validateCompletion } from './validate'
 import { MockLlmClient } from './mock'
 import { accountAttribution } from '@sortiva/core'
 
-/** main §14.2 — versioned prompts, pinned model ids, schema validation. */
+/** Versioned prompts, pinned model ids, schema validation. */
 
 const prompt: Prompt = {
   version: 'distill.v1',

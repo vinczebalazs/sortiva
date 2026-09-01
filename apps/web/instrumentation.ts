@@ -1,11 +1,11 @@
 /**
- * tech §2.1 — the Graphile Worker runs in-process with the Next.js server in
- * v1. Next calls `register()` once per server process on the Node runtime,
- * which is the only startup hook the App Router offers.
+ * The job worker runs in-process with the web server in v1. Next calls
+ * `register()` once per server process on the Node runtime, which is the only
+ * startup hook the App Router offers.
  *
- * Safe because main §14.3 already made a killed worker a non-event: every step
- * is resumable, checkpointed and effectively-once, and the §14.3.9 chaos test
- * proves interrupted jobs converge.
+ * Safe because a killed worker is already a non-event: every step is resumable,
+ * checkpointed and effectively-once, and the chaos test proves interrupted jobs
+ * converge.
  *
  * This file is also the process's **composition root**: the one place that knows
  * which concrete adapters exist and builds them (see
@@ -16,13 +16,13 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME !== 'nodejs') return
 
-  // tech §4 — every secret-shaped environment variable is registered with the
+  // Every secret-shaped environment variable is registered with the
   // log scrubber before anything can log, so a token that reaches an exception
   // message is redacted wherever it appears. Must run first.
   const { registerEnvSecrets, PosthogServerCapture } = await import('@sortiva/providers')
   registerEnvSecrets()
 
-  // main §14.7 — everything observable is a PostHog event captured server-side.
+  // Everything observable is an analytics event captured server-side.
   // One client per process: it batches events, and a second client would mean a
   // second batch the shutdown drain below never flushes. `initAppServices` runs
   // the factory at most once, so that cannot happen even if this hook does.
@@ -35,8 +35,8 @@ export async function register() {
   // (measured; DECISIONS 2026-09-01 R5). `railway.toml` sets it on the start
   // command. The flip side is that Next no longer exits on the signal by itself,
   // so one of the two paths below must always register a handler that does.
-  // main §4.2, tech §3 — the nightly subscription reconciliation is already in
-  // the worker's crontab; this is where its handler joins the registry. Lanes
+  // The nightly subscription reconciliation is already in the worker's crontab;
+  // this is where its handler joins the registry. Lanes
   // register their tasks here, before the worker reads the list.
   const { registerBillingTasks } = await import('./app/api/webhooks/stripe/_lib/tasks')
   registerBillingTasks()
@@ -56,7 +56,7 @@ export async function register() {
     // With the worker running, its drain owns the shutdown flush — it fires
     // after in-flight jobs finish, so their events go too. With the worker off
     // (local UI work today; a web-only Railway service if the worker ever
-    // splits, tech §2.1) nothing else would empty the batch, and the last
+    // splits) nothing else would empty the batch, and the last
     // events before every deploy would be lost — the failure this wiring exists
     // to prevent.
     const drain = () => {

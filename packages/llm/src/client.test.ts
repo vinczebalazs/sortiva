@@ -21,7 +21,7 @@ import { MODELS } from './models'
  *
  * Card R2 adds the audit's path table (`docs/audits/T0.5.md`): every exit from
  * this wrapper that reached Anthropic must leave a cost record in *both* the
- * analytics capture (§14.7) and the spend ledger the §14.5 caps read
+ * analytics capture and the spend ledger the caps read
  * (invariant 17), including the ones where the call failed.
  */
 
@@ -192,7 +192,7 @@ describe('AnthropicLlmClient', () => {
     const [replayed] = replayCapture.of('$ai_generation')
     expect(replayed!.properties.cache_hit).toBe(true)
     expect(replayed!.properties.$ai_total_cost_usd).toBe(0)
-    // §14.7 requirement (3) — the replay is recorded at zero, not omitted.
+    // The replay is recorded at zero, not omitted.
     expect(replayLedger.rows).toHaveLength(1)
     expect(replayLedger.rows[0]).toMatchObject({ usdCost: 0, cacheHit: true, outcome: 'succeeded' })
   })

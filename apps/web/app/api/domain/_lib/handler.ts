@@ -8,11 +8,11 @@ import type { AccountHandler } from '../../auth/_lib/session'
 import { claimDeps } from './config'
 
 /**
- * `POST /api/domain/claim` — main §5, ui §3.1. Parse → call core → serialise,
- * and nothing else: normalisation, the transactional claim and the ingestion
- * enqueue all live behind `claimDomain`.
+ * `POST /api/domain/claim`. Parse, call core, serialise, and nothing else:
+ * normalisation, the transactional claim and the ingestion enqueue all live
+ * behind `claimDomain`.
  *
- * The account comes from the session, never from the body (tech §3) — which is
+ * The account comes from the session, never from the body — which is
  * also what makes "already claimed by this account" answerable at all.
  */
 
@@ -58,7 +58,7 @@ export function makeClaimHandler(options: ClaimHandlerOptions = {}): AccountHand
 
 function serialise(result: ClaimDomainResult): Response {
   switch (result.kind) {
-    // main §5 — a returning merchant re-pasting their own domain gets the same
+    // A returning merchant re-pasting their own domain gets the same
     // 200 as the merchant who just claimed it, so the client's next move is the
     // same redirect to the progress screen either way.
     case 'claimed':
@@ -72,8 +72,8 @@ function serialise(result: ClaimDomainResult): Response {
         { status: 200 },
       )
     case 'taken_by_other':
-      // tech §3 — a guarded transition that lost returns 409 with the
-      // machine-readable code the UI maps to its copy.
+      // A claim that lost the race returns 409 with the machine-readable code
+      // the UI maps to its copy.
       return error(409, 'domain_already_claimed', result.message)
     case 'account_has_other_domain':
       // Not a 409: `domain_already_claimed` is a closed enum of codes the UI

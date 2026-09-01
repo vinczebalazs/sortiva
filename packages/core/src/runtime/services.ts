@@ -29,15 +29,14 @@ import type { PosthogCapture } from '../contracts/analytics'
  *    a domain module quietly acquiring ambient telemetry is visible in review
  *    and in a grep, not hidden behind an existing import.
  *
- * PostHog remains telemetry, never the control plane (main §14.7, constitution
- * invariant 17): nothing here reads back from the analytics client, and no
+ * Analytics remains telemetry, never the control plane: nothing here reads back
+ * from the analytics client, and no
  * kill switch, cap or entitlement check may. Those read the database.
  */
 export interface AppServices {
   /**
-   * main §14.7's server-side capture. Every event carries ids, counts, costs
-   * and flags only — never product content, prompts or article text
-   * (invariant 26).
+   * The server-side analytics capture. Every event carries ids, counts, costs
+   * and flags only — never product content, prompts or article text.
    */
   readonly analytics: PosthogCapture
 }

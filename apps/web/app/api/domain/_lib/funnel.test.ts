@@ -68,7 +68,7 @@ describe.skipIf(!available)('M1 funnel: signup → plan → claim → progress',
   const session = (id: string) => async () => id
 
   it('walks a merchant from nothing to an ingesting domain', async () => {
-    // ── 1. Signup (main §4.1) ────────────────────────────────────────────────
+    // ── 1. Signup ────────────────────────────────────────────────────────────
     const { accountId, created } = await provisionAccount(
       { store: makeDbAccountStore(harness.db), capture },
       { email: 'merchant@example.com', provider: 'google' },
@@ -76,13 +76,13 @@ describe.skipIf(!available)('M1 funnel: signup → plan → claim → progress',
     expect(created).toBe(true)
     expect(capture.of(SIGNUP_COMPLETED_EVENT)).toHaveLength(1)
 
-    // main §4.3 — auth is not a connected domain: the dashboard's empty state.
+    // Being signed in is not a connected domain: the dashboard's empty state.
     const account = () => withAccount(makeAccountRouteHandler(harness.db), session(accountId))
     const afterSignup = await (await account()(get('/api/account'), undefined)).json()
     expect(afterSignup.domain).toBeNull()
     expect(afterSignup.subscription.status).toBe('none')
 
-    // ── 2. Plan → Stripe Checkout (main §4.2, ui §2.3) ───────────────────────
+    // ── 2. Plan → Stripe Checkout ────────────────────────────────────────────
     const checkout = withAccount(
       makeCheckoutHandler({ database: harness.db, stripe, prices: PRICES, appUrl: APP_URL }),
       session(accountId),
@@ -113,7 +113,7 @@ describe.skipIf(!available)('M1 funnel: signup → plan → claim → progress',
     expect(afterPayment.subscription.status).toBe('active')
     expect(afterPayment.domain).toBeNull()
 
-    // ── 3. Claim the domain (main §5, ui §3.1) ───────────────────────────────
+    // ── 3. Claim the domain ──────────────────────────────────────────────────
     const claim = withAccount(
       makeClaimHandler({
         deps: { store: makeDomainClaimStore({ database: harness.db }), capture },
@@ -132,7 +132,7 @@ describe.skipIf(!available)('M1 funnel: signup → plan → claim → progress',
     expect(claimed.normalized).toBe('acme-supply.co.uk')
     expect(capture.of(DOMAIN_CLAIMED_EVENT)).toHaveLength(1)
 
-    // ── 4. The progress state (main §5 step 3, ui §3.2) ──────────────────────
+    // ── 4. The progress state ────────────────────────────────────────────────
     // What the dashboard reads to stop rendering "Connect your domain" and
     // start rendering the ingestion stepper.
     const afterClaim = await (await account()(get('/api/account'), undefined)).json()
@@ -144,8 +144,8 @@ describe.skipIf(!available)('M1 funnel: signup → plan → claim → progress',
     expect(afterClaim.subscription.status).toBe('active')
 
     // And what the stepper's steps come from: a durable run whose first step is
-    // waiting for a worker, with every later step pending behind it (ui §3.2's
-    // seven-step stepper, main §14.3.1's dependency gating).
+    // waiting for a worker, with every later step pending behind it — the
+    // seven-step stepper, gated by the step dependencies.
     const steps = await harness.pool.query<{ step: string; state: string }>(
       'SELECT step, state FROM job_steps WHERE job_id = $1',
       [claimed.ingestionJobId],

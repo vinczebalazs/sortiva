@@ -4,10 +4,11 @@ import { jobDlq, jobSteps, type Db } from '@sortiva/db'
 export type DlqEntry = typeof jobDlq.$inferSelect
 
 /**
- * main §14.3.5 — "DLQ entries carry the full replay context: step, idempotency
- * key, input refs, last error, attempt timestamps. Ops can replay a DLQ item
- * with one action *because* idempotency makes replay safe — completed sub-work
- * no-ops, only the failed remainder executes."
+ * A dead-letter entry carries everything needed to run the work again: the
+ * step, its idempotency key, the input references, the last error and the
+ * attempt timestamps. An operator can replay one with a single action precisely
+ * because the key makes replaying safe — sub-work that already completed
+ * no-ops, and only the failed remainder executes.
  */
 export interface DlqInput {
   accountId?: string
@@ -43,7 +44,7 @@ export async function deadLetter(db: Db, input: DlqInput): Promise<DlqEntry> {
   return row
 }
 
-/** main §14.7 — "DLQ depth > 0 for > 1h alerts". */
+/** How many entries are still unreplayed. Sustained depth is what raises the alert. */
 export async function dlqDepth(db: Db): Promise<number> {
   const [row] = await db
     .select({ n: sql<number>`count(*)::int` })
@@ -62,9 +63,9 @@ export async function listOpenDlq(db: Db, limit = 100): Promise<DlqEntry[]> {
 }
 
 /**
- * main §14.3.5 — "Ops can replay a DLQ item with one action *because*
- * idempotency makes replay safe — completed sub-work no-ops, only the failed
- * remainder executes."
+ * One action replays a dead-lettered item, which is safe because the
+ * idempotency key means completed sub-work no-ops and only the failed remainder
+ * runs.
  *
  * Marks the entry replayed and returns its step to `pending`, so the normal
  * dispatcher picks it up. The step keeps its checkpoint, and the idempotency

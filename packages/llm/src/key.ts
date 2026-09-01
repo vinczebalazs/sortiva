@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto'
 
 /**
- * §14.3.6 — the cache key is `(prompt_version, model_id, sha256(rendered
- * prompt))`. The prompt is serialised canonically so message order and role are
+ * The cache key is `(prompt_version, model_id, sha256(rendered prompt))`. The
+ * prompt is serialised canonically so message order and role are
  * part of the hash and nothing else is.
  *
  * Its own file, rather than living in `client.ts`, so the test double can key

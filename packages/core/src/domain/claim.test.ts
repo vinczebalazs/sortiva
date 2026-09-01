@@ -5,7 +5,7 @@ import { DOMAIN_ALREADY_CLAIMED_MESSAGE } from './copy'
 import type { ClaimRequest, DomainClaimStore, StoreClaimResult } from './ports'
 
 /**
- * main §5's three outcomes, and which of them is a funnel event. The store is a
+ * The claim's three outcomes, and which of them is a funnel event. The store is a
  * double here; `apps/web/app/api/domain/_lib/domain.test.ts` proves the same
  * three against real SQL, where the race actually lives.
  */
@@ -45,7 +45,7 @@ describe('claimDomain (main §5)', () => {
       ingestionJobId: 'job-1',
     })
     // The store is handed the normalised value and a derived run id, never the
-    // raw input (main §2, §14.3.2).
+    // raw input, so two spellings of one domain share a run.
     expect(seen).toEqual([
       { accountId: ACCOUNT, normalized: 'example.co.uk', runId: 'claim:example.co.uk' },
     ])
@@ -68,7 +68,7 @@ describe('claimDomain (main §5)', () => {
 
     expect(result.kind).toBe('already_yours')
     expect(result).toMatchObject({ ingestionJobId: 'job-1', state: 'ingesting' })
-    // main §14.7 — counting a re-visit as a claim would inflate the funnel the
+    // Counting a re-visit as a claim would inflate the funnel the
     // same way counting every sign-in as a signup would.
     expect(telemetry.events).toEqual([])
   })

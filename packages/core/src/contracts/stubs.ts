@@ -1,6 +1,6 @@
 /**
- * Build plan §4 — every seam between parallel lanes is an interface with a test
- * double, and consumers may pass their done-when against the double. That is
+ * Every seam between parallel lanes is an interface with a test double, and a
+ * consumer card may pass its tests against the double. That is
  * only safe if the repo can always answer "which stubs are still wired?" — so
  * every stub registers itself here and every call it serves emits `stub_used`.
  *
@@ -10,21 +10,21 @@
  *
  * Why a registry rather than a comment convention: a stub that quietly ships is
  * a feature that silently does nothing. `existingTargetCheck` returning
- * `no_match` forever means every CREATE bypasses main §7.7's cannibalisation
- * gate — the one thing invariant 6 says must never happen — and nothing would
- * look broken.
+ * `no_match` forever means every CREATE bypasses the check that stops us
+ * publishing a second page competing with one we already have — and nothing
+ * would look broken.
  */
 
 import type { PosthogCapture, EventAttribution } from './analytics'
 
 export interface StubRegistration {
-  /** The contract's name, as build plan §4 lists it. */
+  /** The contract's name. */
   readonly contract: string
   /** The card that replaces this stub with the real implementation. */
   readonly filledBy: string
   /** What the stub does instead, in one line. */
   readonly behaviour: string
-  /** The milestone by which it must be gone, per build plan §4/§5. */
+  /** The milestone by which it must be gone. */
   readonly mustBeGoneBy: string
 }
 

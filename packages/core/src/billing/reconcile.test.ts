@@ -5,8 +5,8 @@ import type { RemoteSubscription } from './provider'
 import type { BillingWorkerDeps } from './processing'
 
 /**
- * main §4.2 — "Stripe is the source of truth; our row is a cache of it,
- * reconciled nightly … because webhooks drop here too." This is what catches a
+ * Stripe is the source of truth and our row is a cache of it, re-derived
+ * nightly because webhooks drop. This is what catches a
  * dropped `customer.subscription.updated`: without it, an account whose payment
  * failed while a webhook was lost would keep generating articles we are not
  * being paid for, indefinitely and silently.

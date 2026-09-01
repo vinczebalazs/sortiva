@@ -3,9 +3,8 @@ import { ROUTES, type ConflictCode, type RouteDefinition } from '@sortiva/core'
 import { fixtureFor } from './fixtures'
 
 /**
- * MSW handlers for every route in the contract (build plan §4, T0.7 — "MSW
- * handlers for the frontend"). Lane F builds screens against these before the
- * backend cards land.
+ * MSW handlers for every route in the contract. Lane F builds screens against
+ * these before the backend cards land.
  *
  * They are generated from the route table rather than written by hand, so a
  * route added to the contract cannot be missing a mock, and a mock cannot
@@ -22,7 +21,7 @@ export interface HandlerOptions {
   baseUrl?: string
   /**
    * Force a route to answer with a conflict, so the frontend can build its
-   * state-conflict toasts (tech §3) without waiting for a real race.
+   * state-conflict toasts without waiting for a real race.
    */
   conflicts?: Partial<Record<string, ConflictCode>>
   /** Force a route to answer 401, for the unauthenticated shell. */

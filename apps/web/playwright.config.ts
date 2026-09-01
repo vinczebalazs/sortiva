@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
 /**
- * tech §6 — the UI flows (onboarding, calendar ops, review, override) run under
+ * The UI flows — onboarding, calendar operations, review, override — run under
  * Playwright. Locally and in CI they run against `next dev` on a seeded
  * development database (`pnpm db:seed`); against a deployed environment, set
  * `E2E_BASE_URL` and no server is started.
@@ -36,7 +36,7 @@ export default defineConfig({
           reuseExistingServer: !process.env.CI,
           timeout: 120_000,
           // The in-process worker would start picking up jobs mid-test; the
-          // flows under test drive their own state (tech §2.1).
+          // flows under test drive their own state.
           env: { WORKER_ENABLED: 'false' },
         },
       }),

@@ -2,17 +2,17 @@ import { date, index, integer, numeric, pgTable, primaryKey, text, uuid } from '
 import { accounts } from './accounts'
 
 /**
- * main §13 `landing_revenue_daily`, §17.3, §6.2, §14.6.
+ * Shopify order landing pages, aggregated per day per URL.
  *
- * Shopify order `landing_site` aggregated per day per landing URL. V1 captures
- * this and shows nothing (§17.3: display lands in V1.5) — early fake precision
- * about revenue is worse than clicks.
+ * V1 captures this and shows nothing: attributing revenue to an article on a
+ * few weeks of data would be fake precision, and worse than showing clicks.
+ * Capturing now means the history exists when it can be read honestly.
  *
- * Constitution invariant 4: customer fields are stripped at read time, before
+ * Customer fields are stripped at read time, before
  * anything is written. As with `top_products`, the rule shows up here as an
  * absence — there is no column an email, name, address or order id could go in,
  * which is what makes the GDPR customer webhooks' "no data held" answer
- * literally true (§14.6, §17.3).
+ * literally true rather than a claim we would have to check.
  */
 export const landingRevenueDaily = pgTable(
   'landing_revenue_daily',

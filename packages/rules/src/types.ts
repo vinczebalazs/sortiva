@@ -1,12 +1,12 @@
 /**
  * Compile-time view of `signals.config.yaml`. The runtime authority is
- * `schema/signals.config.schema.json`, validated at load (main §7.10); these
+ * `schema/signals.config.schema.json`, validated at load; these
  * types exist so consumers get a typed accessor instead of `any`.
  */
 
 export type SignalPriority = 'P0' | 'P1'
 
-/** Closed enum matching main §7.3, as required by the `signal_type` field (main §7.6). */
+/** The closed set of signal types. Every one must name a key in the config, or a detected row has no thresholds to be judged by. */
 export const SIGNAL_TYPES = [
   'striking_distance',
   'low_ctr_at_strong_rank',

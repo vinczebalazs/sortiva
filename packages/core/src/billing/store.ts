@@ -57,7 +57,7 @@ export interface OrphanedCustomer {
  * a re-fetch). Nothing else in the system implements this interface.
  */
 export interface BillingStore {
-  /** main §13 — `accounts.stripe_customer_id` is how a webhook finds its account. */
+  /** `accounts.stripe_customer_id` is how a webhook finds the account it belongs to. */
   findAccountIdByCustomerId(customerId: string): Promise<string | null>
   accountExists(accountId: string): Promise<boolean>
   /** Idempotent: writing the customer id it already holds is a no-op. */
@@ -69,7 +69,7 @@ export interface BillingStore {
    */
   writeSubscription(write: SubscriptionWrite): Promise<SubscriptionWriteResult>
   readSubscription(accountId: string): Promise<LocalSubscription | null>
-  /** tech §3 — "re-fetches any subscription whose `synced_at` is >24h stale". */
+  /** Rows the nightly reconciliation should re-fetch, because we have not heard about them recently enough. */
   staleSubscriptions(olderThan: Date, limit: number): Promise<readonly StaleSubscription[]>
   /**
    * Accounts with a Stripe customer id and no subscription row. Nothing else in
@@ -93,8 +93,8 @@ export interface StoredStripeEvent {
 }
 
 /**
- * main §14.3.8 / tech §3 — insert-or-ignore by Stripe's event id, 200
- * immediately, process from the table rather than from the request body.
+ * Insert-or-ignore by Stripe's event id, answer 200 immediately, and process
+ * from the table rather than from the request body.
  */
 export interface StripeEventStore {
   /** False when this event id was already stored — Stripe's at-least-once retry. */

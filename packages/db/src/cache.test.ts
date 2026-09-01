@@ -3,7 +3,7 @@ import { PostgresRequestCache } from './cache'
 import { databaseAvailable, setupTestDb, truncateAll, type TestDb } from './testing'
 
 /**
- * main §14.3.6 / invariant 20 against a real Postgres. A cache asserted in
+ * Write-before-processing against a real Postgres. A cache asserted in
  * TypeScript is not a cache: the whole guarantee is that the row is committed
  * before processing, and only the database can prove that.
  */

@@ -2,7 +2,7 @@ import { mapStripeStatus, type StripeEventEnvelope } from './provider'
 import type { SubscriptionStatus } from './entitlement'
 
 /**
- * main §4.2 lists exactly the events we handle. Anything else Stripe sends is
+ * Exactly the events we act on. Anything else Stripe sends is
  * stored (so the audit trail is complete) and then ignored — an unhandled type
  * must never fall through to a status write.
  */
@@ -36,7 +36,7 @@ export type BillingEvent =
       readonly subscriptionId: string | null
     }
   | {
-      /** main §4.2 — the single writer of `subscriptions.status`. */
+      /** The only kind of event that writes `subscriptions.status`. */
       readonly kind: 'subscription_state'
       readonly eventId: string
       readonly occurredAt: Date

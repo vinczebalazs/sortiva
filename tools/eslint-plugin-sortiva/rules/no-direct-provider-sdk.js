@@ -1,6 +1,6 @@
 /**
- * Constitution invariant 25 / main §14.2, §14.7, tech §1.4, §2: every LLM call
- * goes through packages/llm; every DataForSEO call through `SeoDataProvider`;
+ * Every LLM call goes through packages/llm; every SEO-data call through
+ * `SeoDataProvider`;
  * every email through `EmailProvider`. Importing the vendor SDK anywhere but its
  * own wrapper directory is a lint error, so no call site can escape
  * instrumentation, caching, or cost accounting.

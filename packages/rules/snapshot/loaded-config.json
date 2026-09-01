@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "rules_version": "5a6195953c8e9d50e51f6dd480098c8d4ce4c1d4ff8518d7d2972e04a03b2eef",
+  "rules_version": "9b4fdbe8b6e9ffdaf3a569552201ef9c4c66176131a4673f2660626e54552eee",
   "defaults": {
     "signals": {
       "striking_distance": {

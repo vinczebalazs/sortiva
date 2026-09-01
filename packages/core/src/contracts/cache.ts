@@ -1,6 +1,6 @@
 /**
- * main §14.3.6, constitution invariant 20 — billable reads (DataForSEO) and LLM
- * calls are cached at request level and **written before the response is
+ * Billable vendor reads and LLM calls are cached at request level and **written
+ * before the response is
  * processed**, so a crash after the vendor answered but before we finished with
  * the answer replays from cache on retry and never re-bills.
  *
@@ -13,7 +13,7 @@
 export interface RequestCacheEntry {
   /** Canonical key. LLM: `(prompt_version, model_id, sha256(prompt))`. SEO: `(endpoint, sha256(canonical_params))`. */
   readonly cacheKey: string
-  /** `llm` | `dataforseo` — separates the two classes §14.3.6 distinguishes for retention and cost reporting. */
+  /** `llm` | `dataforseo` — separates the two kinds of paid call for retention and cost reporting. */
   readonly kind: string
   readonly responseJson: unknown
   readonly expiresAt: Date
@@ -57,7 +57,7 @@ export class InMemoryRequestCache implements RequestCache {
   }
 }
 
-/** A cache that never hits. Used where §14.3.6 classifies a call as a pure read. */
+/** A cache that never hits. For calls that cost nothing to repeat. */
 export class NullRequestCache implements RequestCache {
   async read(): Promise<undefined> {
     return undefined

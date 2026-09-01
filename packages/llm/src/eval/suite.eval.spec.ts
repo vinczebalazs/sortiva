@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { discoverEvalSets, runEvalSet, EVAL_RUNNERS } from './runner'
 
 /**
- * `pnpm eval` — main §14.2's frozen eval sets. tech §5 runs this in CI whenever
+ * `pnpm eval` — the frozen evaluation sets. CI runs this whenever
  * a prompt file or a model id changes; a failure blocks the deploy.
  *
  * It is a separate command from `pnpm test` on purpose: eval sets call the model

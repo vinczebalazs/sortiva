@@ -4,8 +4,8 @@ import { registeredTaskNames, taskList } from './tasks'
 import { installSignalHandlers, startWorker, type StartedWorker } from './worker'
 
 /**
- * tech §2.1 — the worker starts alongside the Next.js server in the same
- * process. Called from `apps/web/instrumentation.ts`, which Next runs once per
+ * The worker starts alongside the web server in the same process. Called from
+ * `apps/web/instrumentation.ts`, which Next runs once per
  * server process on the Node runtime.
  *
  * Two guards, both deliberate:
@@ -25,8 +25,8 @@ export interface BootstrapOptions {
   /**
    * The process's analytics client, built by the entry point's composition root
    * (`@sortiva/core/runtime/services`). **Required, not optional**, so a second
-   * worker entry point — the day the worker splits into its own Railway service
-   * (tech §2.1) — cannot start without telemetry by simply not mentioning it.
+   * worker entry point — the day the worker splits into its own service —
+   * cannot start without telemetry by simply not mentioning it.
    * A caller that genuinely wants none names `UnrecordedCapture`, the same
    * opt-out `AnthropicLlmClient` and `DataForSeoProvider` take.
    *
@@ -78,7 +78,7 @@ export async function bootstrapWorker(
     // PostHog batches events and sends them in the background, so the events of
     // the last few seconds before a deploy live only in memory. This empties
     // that batch inside Railway's grace period, after the jobs have drained, so
-    // the events a draining step just emitted go too (main §14.7; tech §2.1).
+    // the events a draining step just emitted go too.
     onStopped: () => flushAnalytics(options.analytics, logger),
     exit: options.exit ?? ((code) => process.exit(code)),
   })
@@ -93,7 +93,7 @@ export async function bootstrapWorker(
  * Sends whatever PostHog has buffered and closes the client. Failures are logged
  * rather than raised: a telemetry flush must never turn a clean drain into a
  * failed one, because the drain is what lets in-flight work finish before
- * Railway kills the process (tech §2.1).
+ * the platform kills the process.
  */
 export async function flushAnalytics(
   analytics: Pick<PosthogCapture, 'shutdown'>,

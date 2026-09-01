@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { EmailSendFailure, type EmailMessage } from '@sortiva/core'
 import { MockEmailProvider, ResendEmailProvider } from './index'
 
-/** tech §1.4 — the send path, its idempotency key, and its failure classes. */
+/** The send path, its idempotency key, and its failure classes. */
 
 function message(overrides: Partial<EmailMessage> = {}): EmailMessage {
   return {

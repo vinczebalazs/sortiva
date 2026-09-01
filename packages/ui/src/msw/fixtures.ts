@@ -13,7 +13,7 @@ import {
 
 /**
  * One response body per route, for the MSW mock server the frontend builds
- * against before its backend lands (build plan §4, T0.7).
+ * against before its backend lands.
  *
  * Every fixture is validated against its route's response schema by the handler
  * test, so a mock the frontend builds against can never describe a shape the
@@ -106,9 +106,9 @@ export const RESPONSE_FIXTURES: Record<string, unknown> = {
     servicePaused: false,
   },
   // Amounts here are fixture data, not the plan's price: the real response
-  // reads them from Stripe on every request (main §4.2 — the app never
-  // hardcodes a dollar amount). The annual figure is the monthly one less 20%
-  // over twelve months, so the toggle in ui §2.3 has something to show.
+  // reads them from Stripe on every request, because the app never hardcodes a
+  // dollar amount. The annual figure is the monthly one less 20% over twelve
+  // months, so the monthly/annual toggle has something to show.
   'GET /api/billing/plan': {
     planKey: 'pro',
     name: 'Pro',
@@ -293,7 +293,7 @@ export const RESPONSE_FIXTURES: Record<string, unknown> = {
     connected: true,
     series: [
       { date: TODAY, clicks: 41, impressions: 1820 },
-      // main §14.4 — a gap renders as a gap, never interpolated.
+      // A gap renders as a gap, never as an interpolated line.
       { date: '2026-02-03', clicks: null, impressions: null },
     ],
     markers: [{ date: TODAY, kind: 'article_published', label: 'Wide-fit trail shoes' }],

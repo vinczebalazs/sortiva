@@ -1,15 +1,14 @@
 /**
- * tech §2 — "one SSRF-guarded HTTP client (same budget and private-IP blocking
- * as the preview endpoint, main §3.2) serves **every** non-API page fetch".
+ * One HTTP client, guarded against being pointed at our own network, serves
+ * **every** page fetch the product makes.
  *
- * The consumers named there are the preview card (main §3), the persona's
- * homepage/about read (main §6.5), the Gate 3 judge's competitor content and
- * intent-gap analysis (main §10.3). They share this interface so the guard is
- * one implementation rather than four, and so a later card cannot quietly ship
- * a second, weaker fetch path.
+ * Its consumers are the preview card, the persona's homepage read, the draft
+ * judge's competitor content and intent-gap analysis. They share this interface
+ * so the guard is one implementation rather than four, and so a later card
+ * cannot quietly ship a second, weaker fetch path.
  */
 
-/** main §3.2 — "hard timeout (~8s), max download size (~1.5 MB), follow at most 2 redirects". */
+/** What one fetch may cost us: how long it may take, how much it may download, and how far it may be redirected. */
 export interface FetchBudget {
   readonly timeoutMs: number
   readonly maxBytes: number
@@ -36,7 +35,7 @@ export interface PageFetchResult {
 /**
  * Why a fetch was refused. Every reason is a distinct value so a caller can
  * tell "this site blocked us" from "this URL was an attack" — and so the
- * preview's graceful generic card (main §3.3) can be served for the former
+ * preview's graceful generic card can be served for the former
  * without ever hiding the latter from the logs.
  */
 export type PageFetchReason =

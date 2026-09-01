@@ -5,7 +5,7 @@ import { databaseAvailable, setupTestDb, truncateAll, type TestDb } from '@sorti
 import { makeDbAccountStore } from './provisioning'
 
 /**
- * main §4.1 — "an account is created with `domain = null`" — against real
+ * An account is created with no domain — against real
  * Postgres, through the same store the Auth.js callback uses, so the unique
  * index rather than a mock decides what happens when two sign-ins race.
  */
@@ -46,7 +46,7 @@ describe.skipIf(!available)('signup creates the account (main §4.1, §14.7)', (
       { email: 'founder@example.com', plan: 'pro', stripe_customer_id: null },
     ])
 
-    // main §4.1, §4.3 — `domain = null` is the absence of a `domains` row.
+    // No domain means the absence of a `domains` row, not a nullable column.
     const domains = await harness.pool.query('SELECT 1 FROM domains WHERE account_id = $1', [
       accountId,
     ])

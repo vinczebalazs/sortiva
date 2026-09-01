@@ -1,9 +1,9 @@
 import { defineConfig } from 'vitest/config'
 
 /**
- * `pnpm eval` — main §14.2's frozen eval sets, on their own gate. tech §5 runs
- * them "when prompts/models changed", not on every merge, because they call the
- * model and cost money.
+ * `pnpm eval` — the frozen evaluation sets, on their own gate. They run when a
+ * prompt or a model id changes rather than on every merge, because they call the
+ * model and cost real money.
  */
 export default defineConfig({
   test: {

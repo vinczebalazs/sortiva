@@ -1,16 +1,15 @@
 #!/usr/bin/env node
 /**
- * `pnpm stubs:report` — build plan §4: "a CI check fails if any stub is still
- * wired at M3 exit", and T0.7's done-when: "wired-stub report lists all stubs
- * (expected: all)".
+ * `pnpm stubs:report` — lists every seam still served by a test double. A CI
+ * check fails if any is still wired at the M3 exit gate.
  *
  * Through M0 every seam is a stub and this is expected to list all of them; the
  * milestone exit gates pass `--fail-if-any` once their producer card has landed.
  *
  * Why it matters more than it sounds: `existingTargetCheck` returning `no_match`
- * forever means every CREATE bypasses the check main §7.7 makes mandatory
- * before any CREATE — invariant 6 — and nothing about the product would look
- * broken.
+ * forever means every CREATE bypasses the check that stops us publishing a
+ * second page competing with one we already have — and nothing about the
+ * product would look broken.
  */
 const failIfAny = process.argv.includes('--fail-if-any')
 const milestoneArg = process.argv.find((a) => a.startsWith('--milestone='))

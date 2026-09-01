@@ -3,10 +3,10 @@ import { assertCrontabTasksExist, crontab, type CronEntry, CRON_ENTRIES } from '
 import { beginShutdown } from './shutdown'
 
 /**
- * tech §2 / §2.1 — Graphile Worker runs **in-process with the web server** in
- * v1. That is normally frowned on because deploys and crashes kill running
- * jobs; main §14.3 already made that a non-event (every step is resumable,
- * checkpointed and effectively-once) and the §14.3.9 chaos test proves it.
+ * The job worker runs **in-process with the web server** in v1. That is normally
+ * frowned on because deploys and crashes kill running jobs — but a killed job is
+ * already a non-event here: every step is resumable, checkpointed and
+ * effectively-once, and the chaos test proves it.
  *
  * Splitting the worker into its own Railway service is a start-command change
  * on the same image — deliberately not taken yet.
@@ -40,7 +40,7 @@ export async function startWorker(options: WorkerOptions): Promise<StartedWorker
 
   const runner = await run({
     connectionString,
-    // tech §2.1 — sized for the 512 MB app service that also serves requests.
+    // Sized for the small app service that also serves requests.
     concurrency: options.concurrency ?? Number(process.env.WORKER_CONCURRENCY ?? 4),
     // We install our own; see installSignalHandlers.
     noHandleSignals: true,
@@ -62,9 +62,8 @@ export async function startWorker(options: WorkerOptions): Promise<StartedWorker
 }
 
 /**
- * tech §2.1 — "Railway sends SIGTERM with a grace period on deploy; Graphile
- * Worker drains gracefully, and anything that doesn't finish resumes
- * idempotently."
+ * The platform sends SIGTERM with a grace period on deploy. We drain
+ * gracefully, and anything that does not finish in time resumes on its own.
  *
  * `runner.stop()` stops accepting new jobs and waits for in-flight ones. We
  * install the handler ourselves (rather than letting Graphile do it) so the

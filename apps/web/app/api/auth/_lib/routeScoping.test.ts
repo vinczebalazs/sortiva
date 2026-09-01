@@ -10,7 +10,7 @@ import { ROUTES } from '@sortiva/core'
  * A rule that lives only in a reviewer's head is not enforced, so this walks
  * every shipped route file and requires that any route the frozen route table
  * marks `auth: 'session'` goes through `withAccount` — the one function that
- * turns a session into the scope repositories demand (tech §3). It grows with
+ * turns a session into the scope repositories demand. It grows with
  * the app: a later lane's authenticated route that queries on an id from the
  * request body fails here.
  */

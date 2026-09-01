@@ -4,8 +4,9 @@ import { putBeforeProcessing, readCachedRequest } from './repositories/system'
 import { systemScope } from './scope'
 
 /**
- * The production adapter for main §14.3.6's request-level cache. Backed by the
- * `request_cache` table — tech §2.1 rules out Redis, so Postgres is the cache.
+ * The production adapter for the request-level cache on paid vendor calls.
+ * Backed by the `request_cache` table: there is no Redis in v1, so Postgres is
+ * the cache.
  *
  * The scope is a system scope because the row is keyed by canonical request
  * params, not by tenant: two accounts asking DataForSEO the same question share
@@ -13,7 +14,7 @@ import { systemScope } from './scope'
  */
 export class PostgresRequestCache implements RequestCache {
   private readonly scope = systemScope(
-    'request_cache is keyed on canonical request params, not on an account (main §14.3.6)',
+    'request_cache is keyed on canonical request params, not on an account',
   )
 
   constructor(private readonly db: Db) {}

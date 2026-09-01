@@ -1,6 +1,7 @@
 /**
- * main §3.2 — "Cloudflare Turnstile token required on every request; verified
- * server-side **before any fetch happens**."
+ * A bot-challenge token is required on every preview request, and it is verified
+ * server-side **before any fetch happens** — a check that runs after we have
+ * already paid for a scrape is not a cost control.
  *
  * Turnstile is Cloudflare's anti-bot check: the browser solves a challenge and
  * hands the page a one-time token, which we post back to Cloudflare to confirm.

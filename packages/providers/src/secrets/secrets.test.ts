@@ -3,7 +3,7 @@ import { randomBytes } from 'node:crypto'
 import { REDACTED, resetRegisteredSecrets, scrubString } from '@sortiva/core'
 import { EncryptionError, TokenCipher, registerEnvSecrets, safeEqual } from './index'
 
-/** tech §4 — token encryption at rest, key rotation, and the log scrubber. */
+/** Token encryption at rest, key rotation, and the log scrubber. */
 
 const KEY_A = randomBytes(32).toString('base64')
 const KEY_B = randomBytes(32).toString('base64')

@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "The single instrumented Anthropic client, prompts, schemas, eval sets (main §14.2, §14.7).",
+  "description": "The single instrumented Anthropic client, plus the versioned prompts, schemas and eval sets.",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {

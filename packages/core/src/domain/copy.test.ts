@@ -6,7 +6,7 @@ import {
 } from './copy'
 
 /**
- * main §5 writes the already-claimed error out in full, so it is a fixed string
+ * The already-claimed error is fixed copy, used word for word, so it is a string
  * and not a paraphrase: the merchant it reaches has to know that contacting
  * support is the way out, and the support team has to recognise the sentence.
  */

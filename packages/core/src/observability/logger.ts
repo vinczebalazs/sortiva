@@ -2,7 +2,7 @@ import { scrub } from './scrub'
 
 /**
  * The scrubber is only a guarantee if everything that writes a log goes through
- * it (tech §4). This is that path: a minimal structured logger whose sink is
+ * it. This is that path: a minimal structured logger whose sink is
  * injectable, so the scrubber's test can assert on the exact bytes written.
  */
 

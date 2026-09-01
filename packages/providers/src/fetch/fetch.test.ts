@@ -6,7 +6,7 @@ import { PageFetchError } from './types'
 import { loopbackAllowedPolicy } from './testing'
 
 /**
- * main §3.2 / tech §2 — the SSRF guard. This suite is deliberately adversarial:
+ * The SSRF guard. This suite is deliberately adversarial:
  * the fetcher is a security boundary that four later cards reuse, and a test
  * here that passes for the wrong reason is worse than no test, because it looks
  * like protection.

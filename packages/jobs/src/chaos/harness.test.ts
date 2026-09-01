@@ -17,7 +17,7 @@ import {
 /**
  * The harness under test. A chaos harness that does not actually kill anything,
  * or that passes a run which never converged, is worse than no harness — it
- * reports green while proving nothing (main §14.3.9).
+ * reports green while proving nothing.
  */
 
 let harness: TestDb
@@ -46,7 +46,7 @@ function countingScenario(ledger: string[]): ChaosScenario {
     async drive(ctx) {
       for (const page of ['p1', 'p2', 'p3', 'p4', 'p5']) {
         // Effectively-once: a page already written is not written again, which
-        // is what a checkpointed step does on resume (main §14.3.4).
+        // is what a checkpointed step does on resume.
         if (!ledger.includes(page)) ledger.push(page)
         ctx.checkpoint(`wrote ${page}`)
       }

@@ -14,10 +14,10 @@ import {
  * Constitution invariants 23 and 24, and T1.2's done-when: "snapshot asserts the
  * literal cap string".
  *
- * The cap is a **ceiling, not a promise** (main §8.6): some days legitimately
+ * The cap is a **ceiling, not a promise**: some days legitimately
  * produce nothing. Any wording that implies a target — "1/day", "30 per month",
  * "x of y" — would turn a quality guarantee into a quota the product must pad
- * to meet, which main §20 forbids outright.
+ * to meet.
  */
 
 describe('the plan cap line is canonical copy (main Appendix A)', () => {
@@ -80,9 +80,9 @@ describe('price ids are config (main §4.2)', () => {
 })
 
 /**
- * ui §2.3 puts a price and a monthly/annual toggle on the plan card; main §4.2
- * says "amounts live in Stripe only — the app never hardcodes a dollar amount".
- * So the screen has to ask Stripe, and `/api/billing/plan` is what it asks.
+ * The plan card carries a price and a monthly/annual toggle, and amounts live in
+ * Stripe only — the app never hardcodes one. So the screen has to ask, and
+ * `/api/billing/plan` is what it asks.
  */
 describe('plan prices come from Stripe and are cached (main §4.2, ui §2.3)', () => {
   const prices = { monthly: 'price_m', annual: 'price_a' }
@@ -148,7 +148,7 @@ describe('plan prices come from Stripe and are cached (main §4.2, ui §2.3)', (
   })
 
   it('pauses rather than inventing an amount when Stripe cannot be read', async () => {
-    // main §14.4 — degrade to pause, never to something half-right. A wrong
+    // Pause rather than degrade to something half-right. A wrong
     // price on a purchase screen is worse than no price. Every reason Stripe
     // might be unreadable arrives as the same thing, because the screen has
     // nothing useful to do with the difference.

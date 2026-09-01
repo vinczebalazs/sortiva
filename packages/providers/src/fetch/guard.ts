@@ -2,8 +2,8 @@ import { isIP } from 'node:net'
 import { PageFetchError } from './types'
 
 /**
- * The SSRF policy, as pure functions over strings. main §3.2: "only ports
- * 80/443, block private/reserved IP ranges **after DNS resolution**".
+ * The SSRF policy, as pure functions over strings: ports 80 and 443 only, and
+ * private or reserved IP ranges blocked **after DNS resolution**.
  *
  * "SSRF" is server-side request forgery: a visitor hands us a URL that points
  * at our own private network or at a cloud provider's metadata service, and a
@@ -55,8 +55,8 @@ export interface AddressVerdict {
 
 /**
  * What a fetch may connect to: which address categories, and which ports.
- * Production uses `PUBLIC_ONLY` — public addresses, ports 80 and 443, exactly
- * what main §3.2 specifies.
+ * Production uses `PUBLIC_ONLY` — public addresses, ports 80 and 443, and
+ * nothing else.
  *
  * The seam exists so the integration tests can run a real HTTP server on
  * loopback and an ephemeral port; see `testing.ts`, which is the only other

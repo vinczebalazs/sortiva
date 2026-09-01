@@ -44,7 +44,7 @@ export default tseslint.config(
       // Invariant 9 — every threshold number lives in packages/rules.
       'sortiva/no-threshold-literals': 'error',
 
-      // CLAUDE.md code-structure rules / tech §3 — no code outside packages/db
+      // No code outside packages/db
       // may import a raw table or the raw database handle, so no query can
       // reach a table without naming the account whose data it touches.
       // Audit T0.3 [major]; remediation D5 (stopgap half).
@@ -82,9 +82,9 @@ export default tseslint.config(
 
   // The bounded D5 exemption. `job_steps`, `ingestion_jobs`, `job_dlq` and
   // `idempotency_ledger` have no scoped repositories to call: `job_steps` has no
-  // account_id column of its own (main §13 hangs it off ingestion_jobs), the
-  // ledger deliberately has none at all (main §14.3.2 — an account cascade must
-  // not reach it), and supplying the helpers means editing packages/db, which
+  // account_id column of its own (it hangs off ingestion_jobs), the ledger
+  // deliberately has none at all so an account cascade cannot erase the record
+  // that paid work was done, and supplying the helpers means editing packages/db, which
   // neither R1 nor R3 owns. These three files are the whole exemption; it is
   // named function-by-function in DECISIONS 2026-08-31 R1 and 2026-08-31 R3, and
   // ends when the durable D5 card lands.
@@ -156,7 +156,7 @@ export default tseslint.config(
       '**/*.spec.{ts,tsx}',
       '**/testing.ts',
       '**/fixtures/**',
-      // The chaos scenarios (main §14.3.9) are test code that has to set up and
+      // The chaos scenarios are test code that has to set up and
       // inspect rows a repository does not expose.
       'packages/jobs/src/chaos/**',
     ],

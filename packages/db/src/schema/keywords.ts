@@ -13,12 +13,10 @@ import { accounts } from './accounts'
 import { discoverySourceEnum } from './enums'
 
 /**
- * main §13 `keywords`, §6.6, §12.1.
- *
  * Seed terms derived from the persona and product families, then enriched
  * through DataForSEO using the persona's language and country as the location
  * parameters. `confirmed` is the merchant's decision at the confirmation screen
- * (§6.8); `enriched_at` is what the 30-day metric cache (§12.1) is judged against.
+ * screen; `enriched_at` is what the 30-day metric cache is judged against.
  */
 export const keywords = pgTable(
   'keywords',
@@ -45,17 +43,17 @@ export const keywords = pgTable(
 )
 
 /**
- * main §13 `competitors`, §6.6, §7.2.1. Constitution invariant 5.
+ * **Business** competitors only, and at most five per account.
  *
- * **Business** competitors only, and at most five per account. §6.6: "the cap is
- * enforced in the API and DB (application-level check + count constraint), not
- * just the UI, because competitor count directly drives DataForSEO cost".
+ * The cap is enforced in the API *and* in the database, not just in the UI,
+ * because competitor count drives what we pay the SEO data vendor — a sixth
+ * competitor added through a stale form is a bill, not a cosmetic problem.
  *
  * The count constraint is a trigger, not anything drizzle can express — see
  * `migrations/0003_wave2_guards.sql`, which is where a sixth row is refused.
  *
  * Query-level SERP competitors are a separate, uncapped, non-editable concept
- * that lives inside `serp_snapshots` (§12.6) and is never copied here. They may
+ * that lives inside `serp_snapshots` and is never copied here. They may
  * be *suggested* to the merchant, never auto-added.
  */
 export const competitors = pgTable(
@@ -65,7 +63,7 @@ export const competitors = pgTable(
     accountId: uuid('account_id')
       .notNull()
       .references(() => accounts.id, { onDelete: 'cascade' }),
-    /** PSL-normalised eTLD+1, the same normalisation as `domains` (main §2). */
+    /** The registrable domain, put through the same normalisation as `domains`. */
     domainNormalized: text('domain_normalized').notNull(),
     source: discoverySourceEnum('source').notNull(),
     addedAt: timestamp('added_at', { withTimezone: true }).notNull().defaultNow(),

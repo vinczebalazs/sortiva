@@ -1,12 +1,12 @@
 /**
- * Constitution invariant 25 / main §12.1, §14.3.6, §14.7 — the companion to
- * `no-direct-provider-sdk`, for vendors that have no SDK to ban.
+ * The companion to `no-direct-provider-sdk`, for vendors that have no SDK to
+ * ban.
  *
  * DataForSEO is a plain HTTPS endpoint: there is no package name to forbid, so
  * the sibling rule leaves it as the one unguarded paid vendor, and any file in
  * the repo could `fetch('https://api.dataforseo.com/...')` directly — bypassing
- * the request cache (§14.3.6), the endpoint→price map, and the cost record the
- * §14.5 spend caps read. This rule bans the host string itself outside the one
+ * the request cache, the endpoint-to-price map, and the cost record the spend
+ * caps read. This rule bans the host string itself outside the one
  * wrapper directory that owns it, in string literals and template literals
  * alike, which closes that hole.
  */

@@ -7,7 +7,7 @@ import { makeAccountRouteHandler } from '../../account/_lib/handler'
 import { makeCheckoutHandler, makePortalHandler } from './handlers'
 
 /**
- * main §4.2, ui §2.3 / §9.4 — the two payment surfaces. Driven end to end: the
+ * The two payment surfaces. Driven end to end: the
  * real `withAccount` wrapper, the real handlers, real repositories, a real
  * Postgres. Only Stripe itself is the double.
  */
@@ -71,7 +71,7 @@ describe.skipIf(!available)('billing routes (main §4.2)', () => {
 
     const request = stripe.checkoutSessions[0]!
     expect(request.priceId).toBe(PRICES.monthly)
-    // How the webhook finds the account (main §4.2 "attach customer … to account").
+    // How the webhook finds the account this purchase belongs to.
     expect(request.accountId).toBe(accountId)
     expect(request.successUrl.startsWith(APP_URL)).toBe(true)
   })
@@ -144,7 +144,7 @@ describe.skipIf(!available)('read access is never revoked by billing state (inva
     await truncateAll(harness.pool)
   })
 
-  /** main §14.6 — a cancelled account keeps read access to everything, indefinitely. */
+  /** A cancelled account keeps read access to everything, indefinitely. */
   const deadStates = ['canceled', 'past_due', 'incomplete_expired'] as const
 
   for (const status of deadStates) {

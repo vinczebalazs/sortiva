@@ -1,7 +1,6 @@
 /**
- * tech §4 — "tokens never appear in logs, PostHog events, or error reports
- * (scrubber on the exception path)"; main §14.7 — events carry ids and
- * aggregates only.
+ * Tokens never appear in logs, analytics events or error reports, and events
+ * carry ids and aggregates only.
  *
  * Two mechanisms, because either alone leaks:
  *

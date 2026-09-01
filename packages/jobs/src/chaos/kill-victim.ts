@@ -51,7 +51,7 @@ const outcome = await runStep<{ page: number }>({
     let page = ctx.checkpoint?.page ?? 0
     while (page < totalPages) {
       page += 1
-      // §14.3.4 — the cursor is committed page by page, so a crash resumes here.
+      // The cursor is committed page by page, so a crash resumes here.
       await ctx.save({ page })
       process.stdout.write(`page ${page}\n`)
       if (page === killAfter) {

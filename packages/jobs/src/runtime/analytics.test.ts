@@ -96,7 +96,7 @@ describe('an event reaches the analytics endpoint (main §14.7)', () => {
 
     // An existing capture point, reached the way a call site reaches it: through
     // the bundle the entry point built. No new event type (`stub_used` is the
-    // build-plan §4 marker that already exists).
+    // stub marker that already exists).
     captureStubUsed(appServices().analytics, 'existingTargetCheck', accountAttribution('acct-r5', 'example.com'), {
       method: 'check',
     })
@@ -115,7 +115,7 @@ describe('an event reaches the analytics endpoint (main §14.7)', () => {
     expect(delivered?.distinct_id).toBe('acct-r5')
     expect(delivered?.properties.contract).toBe('existingTargetCheck')
     expect(delivered?.properties.account_id).toBe('acct-r5')
-    // main §14.7 — "everything is groupable by domain".
+    // Everything is groupable by domain.
     expect(delivered?.properties.$groups).toEqual({ domain: 'example.com' })
     expect(received[0]?.body.api_key).toBe('phc_r5_local_test')
   })

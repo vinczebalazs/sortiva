@@ -1,7 +1,8 @@
 /**
- * Constitution invariant 9 / main §7.10: every threshold number lives in
- * `packages/rules` (signals.config.yaml). This rule is the "lint bans numeric
- * comparisons against volume/position/impression/CTR fields elsewhere" half.
+ * Every threshold number lives in `packages/rules` (signals.config.yaml), so
+ * there is one place to change what the system believes and one hash that
+ * records which numbers produced a result. This rule is the half that catches a
+ * number quietly reappearing as a comparison somewhere else.
  */
 
 const DEFAULT_FIELD_TERMS = ['volume', 'position', 'impression', 'impressions', 'click', 'clicks', 'ctr']
@@ -42,7 +43,7 @@ export default {
     type: 'problem',
     docs: {
       description:
-        'Ban numeric comparisons against volume/position/impression/CTR fields outside packages/rules (main §7.10, invariant 9).',
+        'Ban numeric comparisons against volume/position/impression/CTR fields outside packages/rules.',
     },
     schema: [
       {
@@ -55,7 +56,7 @@ export default {
     ],
     messages: {
       thresholdLiteral:
-        'Threshold literal {{value}} compared against `{{field}}`. All numbers from main §7.3/§7.6/§8.2/§9.6 live in packages/rules (signals.config.yaml) and are read through the typed accessor. (invariant 9)',
+        'Threshold literal {{value}} compared against `{{field}}`. Every number that decides detection, scoring or a gate lives in packages/rules (signals.config.yaml) and is read through the typed accessor.',
     },
   },
   create(context) {

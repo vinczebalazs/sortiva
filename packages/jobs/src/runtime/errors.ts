@@ -1,13 +1,15 @@
 /**
- * main §14.3.5 — every step failure is one of two classes, and the class, not
- * the exception's shape, decides what happens next.
+ * Every step failure is one of two classes, and the class — not the exception's
+ * shape — decides what happens next.
  *
- * `failed_retryable`: timeouts, 429s, 5xx, LLM `failed_validation` after its own
- * single in-call retry (§14.2). Max 3 step-level retries on the §14.3.5 schedule.
+ * `failed_retryable`: timeouts, 429s, 5xx, and an LLM completion that failed
+ * validation after its own single in-call retry. Three step-level retries on a
+ * backoff, then the dead-letter queue.
  *
- * `failed_terminal`: schema-invalid input, revoked token, 4xx that retrying
- * cannot fix. No retries. Token errors route to `awaiting_shopify_auth` (§6.2);
- * everything else to the DLQ.
+ * `failed_terminal`: schema-invalid input, a revoked token, a 4xx that retrying
+ * cannot fix. No retries. A dead token routes to `awaiting_shopify_auth`,
+ * because it needs the merchant rather than another attempt; everything else
+ * goes to the dead-letter queue.
  *
  * An error that is neither is treated as retryable — the safe default under a
  * queue that is already at-least-once.
@@ -17,7 +19,7 @@ export abstract class StepFailure extends Error {
   abstract readonly retryable: boolean
 
   constructor(
-    /** A short, stable slug. Ends up on the DLQ row and on `dlq_entry_created` (main §14.7). */
+    /** A short, stable slug. Ends up on the dead-letter row and on the alert built over it. */
     readonly errorClass: string,
     message: string,
     options?: { cause?: unknown },
@@ -36,8 +38,9 @@ export class TerminalFailure extends StepFailure {
 }
 
 /**
- * main §14.3.5 / §6.2 — a revoked or invalid token is terminal for the step and
- * moves the account to `awaiting_shopify_auth` rather than to the DLQ. Modelled
+ * A revoked or invalid token is terminal for the step and moves the account to
+ * `awaiting_shopify_auth` rather than to the dead-letter queue — retrying
+ * cannot fix it and an operator cannot either, only the merchant can. Modelled
  * as its own class so the executor can route it without string-matching.
  */
 export class TokenInvalidFailure extends TerminalFailure {
@@ -51,8 +54,8 @@ export class TokenInvalidFailure extends TerminalFailure {
 }
 
 /**
- * main §14.3.1 — "a worker whose guard matches zero rows stops immediately —
- * someone else owns the step."
+ * A worker whose guard matched no rows stops immediately: someone else owns the
+ * step.
  *
  * Raised when a guarded write inside a running step finds no row: the step was
  * reclaimed (its lease expired, see `lease.ts`) and another worker owns it now.

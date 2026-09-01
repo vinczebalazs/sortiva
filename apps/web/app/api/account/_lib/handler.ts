@@ -3,7 +3,7 @@ import type { AccountHandler } from '../../auth/_lib/session'
 import { loadAccountView } from './load'
 
 /**
- * main §4.3 — the dashboard shell's one read. Kept out of `route.ts` so the
+ * The dashboard shell's one read. Kept out of `route.ts` so the
  * integration test can drive the identical function through the identical
  * `withAccount` wrapper, against its own isolated database and a session it
  * controls.

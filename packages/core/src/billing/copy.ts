@@ -10,15 +10,15 @@
  */
 
 /**
- * main §4.2 — "The cap wording appears verbatim on the plan screen and in the
- * Stripe product description". Invariant 23: a ceiling, never a denominator or
- * a target, so nothing here renders "x of y".
+ * Used word for word on the plan screen and in the Stripe product description.
+ * It states a ceiling, never a denominator or a target, so nothing renders it as
+ * "x of y" — the cap is what we will not exceed, not what we promise to hit.
  */
 export const PLAN_CAP_LINE = 'Up to 1 article per day, quality permitting' as const
 
 /**
- * main §14.6, ui §9.4 — "stated wherever cancellation is offered": on the
- * Customer Portal return screen, on the Settings billing card, and on the
+ * Stated wherever cancellation is offered: on the Customer Portal return
+ * screen, on the Settings billing card, and on the
  * delete-account confirmation.
  */
 export const CANCELLATION_FACTS = [
@@ -27,14 +27,14 @@ export const CANCELLATION_FACTS = [
   'You keep read access to everything.',
 ] as const
 
-/** ui §2.3 — the plan card's own reassurance line, above the single button. */
+/** The plan card's own reassurance line, above the single button. */
 export const PLAN_CANCEL_ANYTIME = 'Cancel anytime.' as const
 
-/** ui §2.3 — the neutral note when the merchant backs out of Stripe Checkout. */
+/** The neutral note when the merchant backs out of Stripe Checkout. */
 export const CHECKOUT_CANCELED_NOTE = 'No charge was made.' as const
 
 /**
- * main §4.2, ui §10 — the non-dismissible banner while the subscription is
+ * The non-dismissible banner while the subscription is
  * `past_due`. Stripe Smart Retries is still working the card in the background;
  * the merchant's only action is the Customer Portal.
  */

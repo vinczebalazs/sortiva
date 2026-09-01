@@ -18,8 +18,8 @@ import { resetStubRegistry, wiredStubs } from './stubs'
 import { accountAttribution } from './analytics'
 
 /**
- * Build plan §4 — "every contract has a double + fixture", and every double
- * behaves as the plan's "stub behaviour until filled" column specifies.
+ * Every contract has a double and a fixture, and every double behaves as the
+ * build plan's "stub behaviour until filled" column specifies.
  */
 
 let capture: MockPosthogCapture
@@ -130,8 +130,8 @@ describe('NotificationEmitter stub', () => {
     const second = await emitter.emit('article_published', { articleId: 'a1' }, 'a1', attribution)
 
     expect(first.created).toBe(true)
-    // tech §1.4 — "the constraint makes the second a no-op. This is what
-    // prevents a retried publish job from ringing the bell twice."
+    // The constraint makes the second a no-op, which is what stops a retried
+    // publish job ringing the bell twice.
     expect(second.created).toBe(false)
     expect(emitter.of('article_published')).toHaveLength(1)
   })

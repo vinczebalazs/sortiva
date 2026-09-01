@@ -1,9 +1,10 @@
 import { createHash } from 'node:crypto'
 
 /**
- * main §14.3.6 — billable reads are cached on `(endpoint,
- * sha256(canonical_params))`, with canonicalisation defined as "sorted keys,
- * normalized locale codes". Both the live provider and the test double key on
+ * Billable reads are cached on `(endpoint, sha256(canonical_params))`, where
+ * canonicalisation means sorted keys and normalised locale codes — so the same
+ * question asked twice is one purchase. Both the live provider and the test
+ * double key on
  * this function, so the double's billable-call count means the same thing the
  * real one's does.
  */

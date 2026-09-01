@@ -1,8 +1,8 @@
 /**
  * CLAUDE.md code-structure rules — "Every repository method requires an
  * `accountId` scope parameter; there is no unscoped table access outside
- * migrations and admin scripts"; tech §3 — "every query is
- * `WHERE account_id = session.account_id`, enforced by a repository layer".
+ * migrations and admin scripts". Every query names the account whose data it
+ * touches, enforced by a repository layer rather than by remembering.
  *
  * T0.3 made that unbreakable *inside* the three repository files it wrote: a
  * branded `AccountScope` value only `accountScope()` can produce, proved by a
@@ -111,7 +111,7 @@ export default {
     type: 'problem',
     docs: {
       description:
-        'Ban raw table and database-handle imports from @sortiva/db outside packages/db, so no query can reach a table without naming an account (CLAUDE.md code-structure rules, tech §3).',
+        'Ban raw table and database-handle imports from @sortiva/db outside packages/db, so no query can reach a table without naming an account.',
     },
     schema: [
       {
@@ -124,9 +124,9 @@ export default {
     ],
     messages: {
       rawTable:
-        'Raw `{{name}}` from @sortiva/db. Tables and the database handle may only be imported inside {{allow}}; everywhere else goes through a repository that takes an AccountScope. (CLAUDE.md code-structure rules, tech §3)',
+        'Raw `{{name}}` from @sortiva/db. Tables and the database handle may only be imported inside {{allow}}; everywhere else goes through a repository that takes an AccountScope.',
       rawModule:
-        'Raw `{{module}}` import. The schema and client modules may only be imported inside {{allow}}; everywhere else goes through a repository that takes an AccountScope. (CLAUDE.md code-structure rules, tech §3)',
+        'Raw `{{module}}` import. The schema and client modules may only be imported inside {{allow}}; everywhere else goes through a repository that takes an AccountScope.',
     },
   },
   create(context) {

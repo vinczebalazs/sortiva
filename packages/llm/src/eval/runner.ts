@@ -3,15 +3,15 @@ import { join } from 'node:path'
 import { fieldF1, meanAbsoluteError, type F1Score, type MaeScore } from './metrics'
 
 /**
- * main §14.2 — "Frozen eval sets, run in CI on any change to a prompt file or
- * model ID — deploy blocks on failure."
+ * Frozen evaluation sets, run in CI whenever a prompt file or a model id
+ * changes. A deploy blocks on failure.
  *
  * An eval set is a directory named `<name>.eval` holding an `eval.json` and a
  * `cases/` folder of `<id>.input.json` / `<id>.gold.json` pairs. The names the
- * spec fixes — `distillation.eval`, `judge.eval`, `persona.smoke` — are
+ * fixed names — `distillation.eval`, `judge.eval`, `persona.smoke` — are
  * directory names here, so CI and audits can find them (CLAUDE.md).
  *
- * Sets are **append-only** (§14.2): a production failure gets minimised and
+ * Sets are **append-only**: a production failure gets minimised and
  * added as a regression case. Nothing here deletes or rewrites a case.
  *
  * The set declares which *runner* produces a prediction from an input; runners
@@ -28,13 +28,14 @@ export interface EvalSetConfig {
   /** Key in the runner registry. Absent from the registry = the set cannot run. */
   readonly runner: string
   readonly promptVersion?: string
-  /** Minimum F1 the set must reach (`field_f1`). §14.2: distillation ≥ 0.85. */
+  /** Minimum F1 the set must reach (`field_f1`). Distillation is held to 0.85. */
   readonly minF1?: number
-  /** Maximum per-criterion MAE (`criterion_mae`). §14.2: judge ≤ 0.5. */
+  /** Maximum per-criterion error against the human grades. The judge is held to 0.5. */
   readonly maxMae?: number
   /**
-   * Hard fails that no aggregate may absorb (§14.2): a fabricated field value,
-   * or a draft humans failed being graded as passing.
+   * Hard fails that no aggregate may absorb: a fabricated field value, or a
+   * draft humans failed being graded as passing. A set that averaged these away
+   * would report health while shipping the two failures that matter most.
    */
   readonly allowFabricatedFacts?: boolean
   readonly allowFalsePass?: boolean
@@ -179,8 +180,8 @@ export async function runEvalSet(
       falsePositives += score.falsePositives
       falseNegatives += score.falseNegatives
 
-      // §14.2: "any fabricated field value = hard fail" — checked per case, so
-      // the aggregate cannot absorb it.
+      // Any fabricated field value fails outright, checked per case so the
+      // aggregate cannot absorb it.
       if (!config.allowFabricatedFacts && score.fabricated.length > 0) {
         failures.push(`case ${testCase.id}: fabricated ${score.fabricated.join(', ')}`)
       }
@@ -211,8 +212,8 @@ export async function runEvalSet(
       }
     }
 
-    // §14.2: "no draft that humans failed is graded as passing (false-pass =
-    // hard fail)". A gold case marks itself failed with `passed: false`.
+    // No draft that humans failed may be graded as passing. A gold case marks
+    // itself failed with `passed: false`.
     if (!config.allowFalsePass) {
       for (const [index, testCase] of cases.entries()) {
         const gold = testCase.gold as { passed?: boolean }

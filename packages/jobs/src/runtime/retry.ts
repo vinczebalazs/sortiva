@@ -1,7 +1,7 @@
 /**
- * main §14.3.5 — "max 3 step-level retries, exponential backoff 1m / 5m / 25m
- * with ±20% jitter (prevents synchronized retry stampedes after a provider
- * outage)."
+ * At most three step-level retries, backing off 1m, then 5m, then 25m. The
+ * jitter matters more than the intervals: without it, everything that failed
+ * during a vendor outage retries in lockstep the moment the vendor returns.
  */
 
 const MINUTE_MS = 60_000

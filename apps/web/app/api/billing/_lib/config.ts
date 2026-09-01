@@ -2,9 +2,9 @@ import type { PriceCatalog, StripeBillingProvider } from '@sortiva/core'
 import { StripeProvider } from '@sortiva/providers'
 
 /**
- * main §4.2 — "price IDs are config, amounts live in Stripe only — the app
- * never hardcodes a dollar amount". Repricing is a Stripe change plus a copy
- * change, never a code change.
+ * Price ids are configuration; the amounts live in Stripe only and the app never
+ * hardcodes a dollar amount. Repricing is a Stripe change plus a copy change,
+ * never a deploy.
  *
  * Everything here is read lazily, at the moment a route actually needs it: no
  * Stripe key exists in dev, and a module-level client would fail `next build`.

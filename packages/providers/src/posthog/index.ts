@@ -13,7 +13,7 @@ import {
 } from '@sortiva/core'
 
 /**
- * main §14.7 — the server-side capture wrapper. Invariant 25 makes this the only
+ * The server-side analytics capture wrapper. A lint rule makes this the only
  * file allowed to import `posthog-node`, so three rules hold everywhere by
  * construction rather than by review:
  *
@@ -23,10 +23,12 @@ import {
  *   reserved for claimed domains; ten strangers previewing `nike.com` is not
  *   Nike-the-account costing us money. Enforced by `resolveAttribution`.
  * - **Nothing customer-derived leaves the process.** Properties are scrubbed
- *   (tech §4), so a token in a property is redacted before it reaches the wire.
+ *   before sending, so a token in a property is redacted before it reaches the
+ *   wire.
  *
- * PostHog is telemetry and alerting, never the control plane (main §14.7): no
- * code path reads back from here to make a decision.
+ * Analytics is telemetry and alerting, never the control plane: no code path
+ * reads back from here to make a decision, because a kill switch has to keep
+ * working when this vendor does not.
  */
 
 /** PostHog's own AI-analytics event name, so the built-in LLM dashboards work. */
@@ -60,8 +62,8 @@ export class PosthogServerCapture implements PosthogCapture {
       // records nothing, with no error and no log line — so a deploy missing
       // `POSTHOG_API_KEY` spent real money invisibly. It still degrades rather
       // than throwing (local dev has no project), but it now says so once.
-      // Note this only silences §14.7's *dashboards*; the §14.5 caps read the
-      // spend ledger, which is a separate port and unaffected.
+      // Note this only silences the *dashboards*; the spend caps read our own
+      // ledger, which is a separate port and unaffected.
       ;(options.logger ?? createLogger()).warn('posthog_capture_disabled', {
         reason: apiKey ? 'explicitly disabled' : 'POSTHOG_API_KEY is not set',
       })
@@ -104,8 +106,8 @@ export class PosthogServerCapture implements PosthogCapture {
     properties: Record<string, unknown> = {},
   ): void {
     const resolved = resolveAttribution(attribution)
-    // tech §4 — the scrubber sits on the exception path; a token in a message or
-    // a stack frame is redacted before PostHog ever sees it.
+    // The scrubber sits on the exception path too: a token in a message or a
+    // stack frame is redacted before it ever leaves the process.
     this.client?.captureException(scrub(error), resolved.distinctId, {
       ...scrub({ ...resolved.properties, ...properties }),
       $groups: resolved.groups,
@@ -121,7 +123,7 @@ export class PosthogServerCapture implements PosthogCapture {
   }
 }
 
-/** main §14.7 — the required properties on top of PostHog's default AI capture. */
+/** The properties we require on top of PostHog's own AI capture. */
 function aiProperties(
   event: AiGenerationEvent,
   base: Record<string, unknown>,
@@ -207,7 +209,7 @@ export class MockPosthogCapture implements PosthogCapture {
     return this.events.filter((e) => e.event === event)
   }
 
-  /** Total LLM + DataForSEO spend seen — the number §14.7's cost dashboards trend. */
+  /** Total LLM and SEO-data spend seen — the number the cost dashboards trend. */
   get totalUsdCost(): number {
     return this.events.reduce((total, e) => {
       const ai = typeof e.properties.$ai_total_cost_usd === 'number' ? e.properties.$ai_total_cost_usd : 0

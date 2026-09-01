@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * main §14.7 — "Dashboards and alerts are provisioned as code — never clicked
- * together by hand. All insights, dashboards … alert definitions, and the
- * `domain` group type are created and updated via the PostHog API … from
+ * Dashboards and alerts are provisioned as code, never clicked together by
+ * hand. All insights, dashboards, alert definitions and the `domain` group type
+ * are created and updated through the API from
  * definition files versioned in the repo, applied idempotently by a setup script
  * that runs in CI/deploy (create-or-update by a stable key, so re-running
  * converges instead of duplicating)."
  *
- * tech §5 adds: CI runs it in **check mode**, and drift between the repo
- * definitions and the live project fails the build.
+ * CI runs it in **check mode**, so drift between the definitions in this repo
+ * and the live project fails the build.
  *
  *   node scripts/posthog-provision.mjs --check     compare, never write
  *   node scripts/posthog-provision.mjs --apply     create or update by key
@@ -20,9 +20,9 @@
  *     "name": "Cost per domain",
  *     ... kind-specific fields }
  *
- * Rationale for the shape (§14.7): "A dashboard that isn't in the definition
- * files doesn't officially exist." The `key` is what makes re-running converge
- * rather than duplicate, so it is required and must be unique.
+ * A dashboard that is not in the definition files does not officially exist.
+ * The `key` is what makes re-running converge rather than duplicate, so it is
+ * required and must be unique.
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'

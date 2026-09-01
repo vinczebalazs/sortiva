@@ -3,10 +3,12 @@ import { priceIdFor, type BillingInterval, type PriceCatalog } from './plan'
 import type { StripeBillingProvider } from './provider'
 
 /**
- * main §4.2 — "**Stripe Checkout** for purchase and **Stripe Customer Portal**
- * for everything after (card updates, invoices, cancel). Our app never renders
- * a card form." These two functions are the only places in the product that
- * start a payment surface, and neither of them reads or writes entitlement.
+ * Stripe Checkout for the purchase, Stripe's Customer Portal for everything
+ * after it — card updates, invoices, cancellation. We render no card form,
+ * ever, which is what keeps card details out of our systems entirely.
+ *
+ * These two functions are the only places in the product that start a payment
+ * surface, and neither of them reads or writes entitlement.
  */
 
 export const CHECKOUT_STARTED_EVENT = 'checkout_started'
@@ -23,13 +25,13 @@ export interface CheckoutRequest {
   readonly accountId: string
   readonly email: string
   readonly interval: BillingInterval
-  /** Set once this account has been through Checkout before (main §13 `accounts`). */
+  /** Set once this account has been through Checkout before. */
   readonly customerId?: string | null
 }
 
 /**
- * ui §2.3 — success returns to onboarding, cancel returns to the plan screen
- * with the neutral "no charge was made" note.
+ * Success returns to onboarding; cancel returns to the plan screen with the
+ * neutral "no charge was made" note.
  */
 export function checkoutReturnUrls(appUrl: string): { successUrl: string; cancelUrl: string } {
   const base = appUrl.replace(/\/+$/, '')
@@ -53,7 +55,7 @@ export async function startCheckout(
     ...(request.customerId ? { customerId: request.customerId } : {}),
     successUrl,
     cancelUrl,
-    // main §14.3.2 — derived from the inputs, never random. A double-submitted
+    // Derived from the inputs, never random. A double-submitted
     // Subscribe button therefore returns the same Checkout session rather than
     // opening a second one against the same account.
     idempotencyKey: `checkout:${request.accountId}:${priceId}`,
@@ -70,7 +72,7 @@ export async function startCheckout(
 
 /**
  * The account has never completed Checkout, so Stripe holds no customer to open
- * a Portal for. Not a 409: no guarded transition failed (tech §3), and not a
+ * a Portal for. Not a 409: no state change lost a race, and not a
  * 402 either — the account is not being refused work, there is simply nothing
  * to manage.
  */
@@ -89,9 +91,9 @@ export interface PortalDeps {
 }
 
 /**
- * main §4.2, §14.6 — cancellation happens here, in Stripe's Portal, as
- * `cancel_at_period_end`. We never build a cancel button of our own, so the
- * three cancellation facts (Appendix A) are what the return screen states.
+ * Cancellation happens in Stripe's Portal, as `cancel_at_period_end`. We never
+ * build a cancel button of our own, so the three cancellation facts are what
+ * the return screen states.
  */
 export async function openBillingPortal(
   deps: PortalDeps,

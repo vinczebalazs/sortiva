@@ -5,7 +5,7 @@ One file per prompt version: `<name>.v<N>.md`.
 **Versions are never edited in place.** A change to a prompt is a new file at the
 next version. That is what makes the `prompt_version` stamped on a stored
 artefact mean something a year later, and what lets the eval suite run the old
-and the new side by side (main §14.2).
+and the new side by side.
 
 Load one with `loadPrompt(name, majorVersion)` and fill its `{{placeholders}}`
 with `renderPrompt`. An unfilled placeholder is an error, not an empty string —

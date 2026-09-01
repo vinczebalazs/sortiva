@@ -11,12 +11,12 @@ import {
 import { buildAccountView, type AccountView } from '@sortiva/core'
 
 /**
- * Reads everything main §4.3's dashboard shell needs, every query scoped by the
- * session's account (tech §3). Returns null when the session names an account
+ * Reads everything the dashboard shell needs, every query scoped by the
+ * session's account. Returns null when the session names an account
  * that no longer exists — a deleted account holding a still-valid JWT.
  *
- * No Stripe call anywhere here: invariant 16 puts entitlement in the local
- * `subscriptions` row, written only by the webhook worker.
+ * No Stripe call anywhere here: entitlement lives in our own `subscriptions`
+ * row, written only by the webhook worker, so this page never waits on them.
  */
 export async function loadAccountView(
   scope: AccountScope,

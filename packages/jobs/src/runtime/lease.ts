@@ -1,21 +1,20 @@
 import type { JobStepName } from './steps'
 
 /**
- * main §14.3.1 — "restarting a job just means re-dispatching non-succeeded
- * steps." A step killed mid-flight leaves its row in `running`, and `running` is
- * not `succeeded`; without a rule for how long that state may last, "re-dispatch
- * the non-succeeded steps" cannot tell a live worker from a dead one, and the
- * row is never offered again.
+ * Restarting a run means re-dispatching every step that has not succeeded. A
+ * step killed mid-flight leaves its row in `running`, which is not `succeeded`
+ * — but without a rule for how long that state may last, nothing can tell a
+ * live worker from a dead one, and the row is never offered to anyone again.
  *
  * A lease is that rule: the longest a `running` row is believed to belong to a
  * live worker. Past it the row is reclaimable — `dispatchableSteps` offers it and
- * `claimStep` will take it. Reclaiming is safe because §14.3.3's per-account lock
+ * `claimStep` will take it. Reclaiming is safe because the per-account lock
  * already means at most one worker touches an account's steps at a time, so a
  * lease that expires early costs a duplicated attempt, never two live writers.
  *
- * Durations are not in the spec; §14.3.3's "steps are sized to minutes, not
- * hours" and the ~8-minute worst case it gives for `catalog_sync` are what they
- * are chosen against. See DECISIONS 2026-08-31 R1.
+ * The durations are ours: steps are sized in minutes rather than hours, and
+ * `catalog_sync`'s roughly eight-minute worst case is what they are chosen
+ * against. See DECISIONS 2026-08-31 R1.
  */
 
 const MINUTE_MS = 60_000
@@ -28,13 +27,13 @@ export const DEFAULT_STEP_LEASE_MS = 15 * MINUTE_MS
  * process (a merchant finishing OAuth, choosing a Search Console property, or
  * confirming onboarding). Those legitimately sit in `running` for days, so a
  * timer must never reclaim them; they are un-parked by the event they wait on,
- * and the merchant is chased by the reminder sweeps (tech §1.4) instead.
+ * and the merchant is chased by the reminder sweeps instead.
  */
 export const STEP_LEASE_MS: Readonly<Record<JobStepName, number | null>> = {
   detect: DEFAULT_STEP_LEASE_MS,
   oauth_wait: null,
-  // §14.3.3 — "~8 minutes worst case" for a 500-product store at the §14.4
-  // rate budget. Doubled, so a slow store is late rather than reclaimed.
+  // About eight minutes at worst for a 500-product store inside the rate
+  // budget. Doubled, so a slow store is late rather than reclaimed.
   catalog_sync: 30 * MINUTE_MS,
   distill: 30 * MINUTE_MS,
   family_group: DEFAULT_STEP_LEASE_MS,

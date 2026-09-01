@@ -5,8 +5,8 @@ import { intBetween, pick, positionAround, seededRandom } from './random'
  * spec-heavy products, the families they group into, and GSC page × query rows —
  * all deterministic from a seed.
  *
- * Why both kinds of product: main §6.3 distils *facts*, not marketing copy, and
- * main §8.2's substance floor holds a topic back when the catalog behind it is
+ * Why both kinds of product: distillation extracts *facts*, not marketing copy,
+ * and the substance floor holds a topic back when the catalog behind it is
  * fluff. A fixture store made only of well-specified products cannot exercise
  * either rule, and scenario 7 ("catalog richness gap → HOLD") has nothing to
  * detect.
@@ -27,7 +27,7 @@ export interface SyntheticProduct {
   /** `spec` products carry populated fields; `fluff` products carry marketing prose. */
   readonly style: ProductStyle
   readonly bodyHtml: string
-  /** Attribute name → value. The substance floor counts populated fields per product (main §8.2). */
+  /** Attribute name to value. The substance floor counts how many of these are populated per product. */
   readonly fields: Readonly<Record<string, string>>
   readonly priceMinorUnits: number
   readonly collections: readonly string[]
@@ -37,12 +37,12 @@ export interface SyntheticProduct {
 export interface SyntheticFamily {
   readonly key: string
   readonly label: string
-  /** main §6.4 — what distinguishes members of the family from one another. */
+  /** What distinguishes members of the family from one another. */
   readonly axes: readonly string[]
   readonly memberIds: readonly string[]
 }
 
-/** One row of the page × query performance table GSC returns (main §12.2). */
+/** One row of the page-by-query performance table Search Console returns. */
 export interface SyntheticGscRow {
   readonly page: string
   readonly query: string
@@ -183,8 +183,8 @@ export function generateSyntheticStore(options: SyntheticStoreOptions = {}): Syn
 }
 
 /**
- * main §8.2's substance floor counts distinct facts across contributing
- * products, each needing enough populated fields. Exposed so a fixture can be
+ * The substance floor counts distinct facts across contributing products, each
+ * needing enough populated fields. Exposed so a fixture can be
  * checked against the floor without re-deriving how to count.
  */
 export function countSubstance(

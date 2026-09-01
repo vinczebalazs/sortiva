@@ -8,9 +8,8 @@ export type SubscriptionRow = typeof subscriptions.$inferSelect
 export type ShopifyConnRow = typeof shopifyConns.$inferSelect
 
 /**
- * main §4.1 — "an account is created with `domain = null`". There is no
- * `domains` row until the claim in main §5, so `domain = null` is the absence
- * of that row rather than a nullable column.
+ * An account starts with no domain. There is no `domains` row until the claim,
+ * so "no domain" is the absence of that row rather than a nullable column.
  *
  * Signup runs before any account exists, so it cannot carry an `AccountScope`;
  * it takes a `SystemScope` with a written reason, per the T0.3 convention.
@@ -25,13 +24,13 @@ export async function findAccountByEmail(
 }
 
 /**
- * main §5's pattern applied to identity: insert-with-conflict, never
- * check-then-insert. Two sign-in callbacks for one email arriving together
+ * Insert-with-conflict, never check-then-insert. Two sign-in callbacks for one
+ * email arriving together
  * cannot both create — the unique index on `accounts.email` decides, and the
  * loser reads the winner's row.
  *
- * `created` is what tells the caller whether this is a signup (main §14.7's
- * `signup_completed`) or a returning user.
+ * `created` is what tells the caller whether this is a signup or a returning
+ * user, which is the difference between a funnel event and no event at all.
  */
 export async function createOrFindAccountByEmail(
   db: Db,
@@ -58,8 +57,8 @@ export async function findAccountById(
 }
 
 /**
- * main §4.2, invariant 16 — entitlement is the local row and nothing else. This
- * is a read; the Stripe webhook worker (T1.2) is the only writer.
+ * Entitlement is this row and nothing else — no request path ever calls Stripe.
+ * This is a read; the Stripe webhook worker (T1.2) is the only writer.
  */
 export async function findSubscriptionForAccount(
   db: Db,
@@ -73,7 +72,7 @@ export async function findSubscriptionForAccount(
   return row
 }
 
-/** main §6.2 — granted scopes and `invalidated_at` are what the UI's connection state is derived from. */
+/** Granted scopes and `invalidated_at` are what the UI's connection state is derived from. */
 export async function findShopifyConnForAccount(
   db: Db,
   scope: AccountScope,
@@ -87,8 +86,8 @@ export async function findShopifyConnForAccount(
 }
 
 /**
- * main §14.5 — the flags currently tripped that bear on this account: the
- * global ones (which apply to everybody) and this account's own. Returned as
+ * The kill switches currently tripped that bear on this account: the global
+ * ones, which apply to everybody, and this account's own. Returned as
  * `scope.flag` names so the policy decision — which flags mean "paused" to the
  * user — stays in `packages/core` rather than in a query.
  */

@@ -4,7 +4,7 @@ import { countSubstance, generateSyntheticStore } from './syntheticStore'
 import { scenario, signalScenarios } from './scenarios'
 
 /**
- * `signals.fixtures` — the fixed suite name CLAUDE.md reserves for main §7.8's
+ * `signals.fixtures` — the fixed suite name CLAUDE.md reserves for the
  * eight acceptance fixtures. Lane C's signal-detection card extends this file
  * with the detection assertions; T0.6 proves the fixtures themselves are
  * deterministic and actually carry the evidence each scenario claims.

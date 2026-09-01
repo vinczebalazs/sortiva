@@ -4,7 +4,8 @@ import { provisioningDeps } from './provisioning'
 
 /**
  * The single Auth.js instance. `handlers` mounts `/api/auth/*`; `auth()` is how
- * the rest of the app reads the session (tech §3 — never from the request body).
+ * the rest of the app reads the session, which is the only place a request may
+ * learn which account it belongs to.
  *
  * The explicit `auth` annotation is not decoration: Auth.js's inferred type
  * names types inside `node_modules`, which `declaration: true` cannot emit. It

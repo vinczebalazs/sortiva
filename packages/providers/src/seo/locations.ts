@@ -1,6 +1,7 @@
 /**
- * main §12.1 — "Locale-aware: pass the persona's `main_language` + `country` as
- * the DataForSEO location/language parameters."
+ * Every vendor call is locale-aware: the store's own language and country go in
+ * as the location and language parameters, because search volumes and rankings
+ * mean nothing without them.
  *
  * DataForSEO's country location codes are Google Ads geo-target IDs, which for
  * countries are `2000 + the ISO-3166-1 numeric code` (United States: 840 → 2840;

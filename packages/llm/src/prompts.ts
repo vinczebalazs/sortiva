@@ -3,13 +3,13 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 /**
- * main §14.2 — "prompts live in versioned files in the repo"; every artefact is
- * stamped with `prompt_version` + `model_id` so any output is reproducible and
- * drift is attributable. CLAUDE.md fixes the filename: `prompts/<name>.v<N>.md`.
+ * Prompts live in versioned files in the repo, at `prompts/<name>.v<N>.md`, and
+ * every artefact is stamped with its `prompt_version` and `model_id` so any
+ * output can be reproduced and any drift attributed.
  *
  * Versions are never edited in place. A prompt change is a new file at the next
  * version, which is what makes `prompt_version` on a stored artefact mean
- * something a year later — and what lets the eval suite (§14.2) run the old and
+ * something a year later — and what lets the eval suite run the old and
  * the new side by side.
  */
 
@@ -23,7 +23,7 @@ import { fileURLToPath } from 'node:url'
  * opaque to the bundler.
  *
  * The prompt files themselves reach production because the deployment runs from
- * the repository tree (tech §2.1's single `app` service). If `next.config.mjs`
+ * the repository tree rather than a bundle. If `next.config.mjs`
  * ever sets `output: 'standalone'`, they need an `outputFileTracingIncludes`
  * entry, exactly as `packages/rules/signals.config.yaml` already has.
  */
@@ -50,7 +50,7 @@ export function loadPrompt(name: string, majorVersion: number): Prompt {
     text = readFileSync(path, 'utf8')
   } catch (error) {
     throw new Error(
-      `Prompt "${version}" not found at ${path}. Prompts are versioned files; bump the version rather than editing one in place (main §14.2).`,
+      `Prompt "${version}" not found at ${path}. Prompts are versioned files; bump the version rather than editing one in place.`,
       { cause: error },
     )
   }

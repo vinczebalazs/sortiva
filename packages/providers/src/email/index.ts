@@ -7,9 +7,10 @@ import {
 } from '@sortiva/core'
 
 /**
- * tech §1.4 — "All email goes through Resend, still wrapped in a thin
- * `EmailProvider` interface … so the send worker and tests never touch the SDK
- * directly — but Resend is the committed vendor, not a placeholder."
+ * All email goes through Resend, wrapped in a thin `EmailProvider` interface so
+ * the send worker and the tests never touch the SDK directly. Resend is the
+ * committed vendor, not a placeholder — the interface is for testability, not
+ * for keeping options open.
  *
  * The message's `idempotencyKey` is our `(account_id, type, dedupe_key)` triple,
  * the same one the `email_sends` unique index enforces. Sending it as Resend's
@@ -19,7 +20,7 @@ import {
 
 export interface ResendEmailProviderOptions {
   apiKey?: string
-  /** tech §1.4 — a dedicated sending subdomain, SPF+DKIM+DMARC verified. */
+  /** A dedicated sending subdomain, with SPF, DKIM and DMARC verified, so our transactional mail does not ride on the main domain's reputation. */
   from?: string
   client?: Resend
 }
@@ -62,7 +63,7 @@ export class ResendEmailProvider implements EmailProvider {
     }
 
     if (response.error) {
-      // main §14.3.5 — rate limits and vendor-side faults retry; a rejected
+      // Rate limits and vendor-side faults are worth retrying; a rejected
       // address or a malformed payload would fail identically forever.
       const name = response.error.name ?? 'unknown'
       const retryable = name === 'rate_limit_exceeded' || name === 'internal_server_error'

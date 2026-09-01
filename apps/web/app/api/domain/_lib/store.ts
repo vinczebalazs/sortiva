@@ -33,7 +33,7 @@ export function makeDomainClaimStore(options: DomainClaimStoreOptions = {}): Dom
     async claimWithIngestionRun(request: ClaimRequest): Promise<StoreClaimResult> {
       return database.transaction(
         async (tx) => {
-          // main §5 step 2, invariant 1 — insert with the unique index, catch
+          // Insert against the unique index and catch
           // the conflict. Nothing reads the table to decide whether to insert,
           // so there is no window between the check and the write.
           const [inserted] = await tx
@@ -43,10 +43,11 @@ export function makeDomainClaimStore(options: DomainClaimStoreOptions = {}): Dom
             .returning()
 
           if (inserted) {
-            // main §5 step 3 — the claim and its ingestion run commit together.
-            // Find-or-create rather than create: the run id is derived from the
-            // domain (§14.3.2), so an account re-claiming a domain whose row was
-            // released (§14.6) would otherwise collide with its own old run.
+            // The claim and its ingestion run commit together, so a claim can
+            // never land without work behind it. Find-or-create rather than
+            // create: the run id is derived from the domain, so an account
+            // re-claiming a domain whose row was released after deletion would
+            // otherwise collide with its own old run.
             const jobId = await findOrCreateRun(tx, request)
             return { kind: 'claimed', state: inserted.state, ingestionJobId: jobId }
           }
@@ -65,8 +66,8 @@ export function makeDomainClaimStore(options: DomainClaimStoreOptions = {}): Dom
             .limit(1)
 
           if (byDomain && byDomain.accountId === request.accountId) {
-            // main §5 — "Claimed by this account → no-op / redirect to
-            // dashboard." The run is found rather than created; it is created
+            // Already this account's domain: a no-op, and the caller
+            // redirects. The run is found rather than created; it is created
             // only if the claim somehow committed without one, which keeps the
             // response's `ingestionJobId` answerable on every path.
             const jobId = await findOrCreateRun(tx, request)

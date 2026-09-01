@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 import * as schema from './schema'
 
 /**
- * Integration-test harness. tech §5 puts a Postgres 16 service in CI and
+ * Integration-test harness. There is a Postgres 16 service in CI and
  * docker-compose locally; these tests exercise real constraints, because a
  * constraint asserted in TypeScript is not a constraint.
  */

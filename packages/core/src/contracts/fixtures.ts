@@ -8,12 +8,12 @@ import type {
 } from './opportunities'
 
 /**
- * Fixture data for the build-plan §4 seams: one realistic example per contract,
+ * Fixture data for the cross-lane seams: one realistic example per contract,
  * shared by the doubles, the MSW handlers and the API schema tests, so all three
  * describe the same product rather than three plausible inventions.
  *
- * The numbers are main §7.8's own — scenario 1's striking-distance case — so a
- * fixture and an acceptance fixture tell the same story.
+ * The numbers come from the striking-distance worked example, so this fixture
+ * and the acceptance fixture tell the same story.
  */
 
 export const FIXTURE_ACCOUNT_ID = '11111111-1111-4111-8111-111111111111'
@@ -85,7 +85,7 @@ export const fixtureCreateOpportunity: Opportunity = {
   reasonParams: { volume: 880 },
 }
 
-/** A HOLD, so the blocked-precondition rendering path has a fixture (main §7.4, ui §5.2). */
+/** A HOLD, so the blocked-precondition rendering path has a fixture. */
 export const fixtureHoldOpportunity: Opportunity = {
   ...fixtureOpportunity,
   id: '44444444-4444-4444-8444-444444444444',
@@ -121,10 +121,10 @@ export const fixtureScheduledTopic: ScheduledTopic = {
 }
 
 /**
- * A passing verdict with the floors main §8.4 sets: information gain and
- * grounding at 4, the rest at 3. Invariant 11 gates on the minimum, never the
- * average — a fixture that scored 5s everywhere would let a consumer's test
- * pass without ever exercising the floor.
+ * A passing verdict sitting exactly on the floors: information gain and
+ * grounding at 4, the rest at 3. Grading is on the minimum, never the average,
+ * so a fixture that scored 5s everywhere would let a consumer's test pass
+ * without ever exercising the floor.
  */
 export const fixtureJudgeVerdict: JudgeVerdict = {
   passed: true,

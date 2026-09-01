@@ -1,9 +1,9 @@
-# main §14.3.9 — "a chaos test in CI kills workers at random points during a full
-# synthetic ingestion + publish run and asserts the end state … This test is the
-# specification's teeth; without it, the guarantees above rot silently."
+# Kills workers at random points during a full synthetic ingestion and publish
+# run, then asserts the end state. This is what gives the effectively-once
+# guarantees teeth; without it they rot silently.
 #
-# tech §5 runs it nightly rather than per-merge: each scenario restarts a full
-# synthetic run several times.
+# Nightly rather than per-merge: each scenario restarts a full synthetic run
+# several times.
 name: Chaos
 
 on:

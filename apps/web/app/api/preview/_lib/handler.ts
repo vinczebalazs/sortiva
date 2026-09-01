@@ -19,9 +19,9 @@ import {
 } from './config'
 
 /**
- * `POST /api/preview` — main §3.2. The product's only unauthenticated surface
- * (tech §3), so everything that costs money sits behind Turnstile, the per-IP
- * rate limits and the 7-day cache.
+ * `POST /api/preview` — the product's only unauthenticated surface, so
+ * everything that costs money sits behind the bot challenge, the per-IP rate
+ * limits and the 7-day cache.
  *
  * Parse → call core → serialise, and nothing else: the ordering of the checks,
  * the cost controls and the graceful generic card all live in `runPreview`.

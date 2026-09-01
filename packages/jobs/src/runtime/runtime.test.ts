@@ -130,8 +130,8 @@ describe('step dependency graph (main §14.3.1, §6)', () => {
   })
 
   it('runs gsc_connect after keyword discovery but never lets it block confirmation', () => {
-    // main §6.7 "runs right after keyword/competitor discovery and before
-    // confirmation"; main §14.3.1 "never blocks awaiting_confirmation".
+    // It runs right after keyword and competitor discovery, but a merchant who
+    // skips Search Console must still be able to finish onboarding.
     expect(STEP_DEPENDENCIES.gsc_connect).toEqual(['keywords_competitors'])
     expect(STEP_DEPENDENCIES.awaiting_confirmation).not.toContain('gsc_connect')
   })
@@ -348,8 +348,8 @@ describe.skipIf(!available)('step state machine against Postgres', () => {
       expect(first).toMatchObject({ status: 'succeeded', executed: true })
       expect(executions).toBe(1)
 
-      // A *second ingestion run* for the same account. §14.3.2's guarantee is
-      // that identical inputs produce an identical key, so the new run's step
+      // A *second ingestion run* for the same account. Identical inputs produce
+      // an identical key, so the new run's step
       // finds the first run's completed key and returns its output. This is
       // what makes "re-running distillation for an unchanged product a no-op
       // by construction" true.
@@ -425,7 +425,7 @@ describe.skipIf(!available)('step state machine against Postgres', () => {
       )
       expect(survivors.rows[0]!.n, 'the job rows really are gone').toBe(0)
 
-      // Same account, same inputs, so §14.3.2 derives the same key: this is the
+      // Same account, same inputs, so the derived key is the same: this is the
       // redelivered message.
       const { jobId: secondJobId } = await createRun(ctx.db, accountId, 'run-after-deletion')
       const second = await runStep({
@@ -454,7 +454,7 @@ describe.skipIf(!available)('step state machine against Postgres', () => {
       expect(recorded.rows).toHaveLength(1)
       expect(recorded.rows[0]!.output_ref).toEqual({ platform: 'shopify' })
 
-      // main §14.6 deletes an account's data outright. The ledger has no foreign
+      // Account deletion removes their data outright. The ledger has no foreign
       // key to accounts, so the evidence of what was already paid for survives —
       // which is the difference between this table and the job rows.
       await pool.query('DELETE FROM accounts WHERE id = $1', [accountId])
@@ -492,8 +492,8 @@ describe.skipIf(!available)('step state machine against Postgres', () => {
     })
 
     it('refuses to revise a completed key: the first answer wins', async () => {
-      // §14.3.6 — "a retry can't get a *different* persona than the run it's
-      // resuming". The database refuses UPDATE outright (migration 0005), so
+      // A retry must not come back with a different answer than the run it is
+      // resuming. The database refuses UPDATE outright (migration 0005), so
       // recording is insert-or-nothing and a second recorder reads back the
       // first one's answer rather than replacing it.
       const key = deriveIdempotencyKey(accountId, 'persona', 'v1')
@@ -565,7 +565,7 @@ describe.skipIf(!available)('step state machine against Postgres', () => {
 
     /**
      * The three ways a *session*-scoped advisory lock can go wrong that the
-     * transaction-scoped form in §14.3.3 cannot. Each of these was a live defect
+     * transaction-scoped form cannot. Each of these was a live defect
      * before card R1 (audit T0.4).
      */
     it('frees the store even when the unlock itself fails', async () => {
@@ -665,7 +665,7 @@ describe.skipIf(!available)('step state machine against Postgres', () => {
         )
         // A 32-bit key collides between unrelated stores with near-certainty in
         // the low hundreds of thousands of accounts, quietly serialising two
-        // merchants behind each other — §14.3.3 promises "fully parallel".
+        // merchants behind each other, when they are supposed to be parallel.
         expect(BigInt(rows[0]!.key)).toBeTypeOf('bigint')
         expect(Math.abs(Number(rows[0]!.key))).toBeGreaterThan(0)
       } finally {

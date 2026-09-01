@@ -4,7 +4,8 @@ import { appendSpendEvent } from './repositories/spend'
 import { accountScope, systemScope } from './scope'
 
 /**
- * The production adapter for main §14.5's spend meter. Before it, the only
+ * The production adapter for the spend meter the daily caps read. Before it,
+ * the only
  * `CostLedger` in the repository was `UnrecordedSpend` — a deliberate no-op —
  * so both paid-vendor wrappers recorded every cost to PostHog and nothing to
  * our own database, and the caps in `packages/rules/signals.config.yaml` had
@@ -22,7 +23,7 @@ import { accountScope, systemScope } from './scope'
  */
 export class PostgresCostLedger implements CostLedger {
   private static readonly PREVIEW_SCOPE = systemScope(
-    'preview spend precedes any account; §14.7 attributes it to the target domain instead',
+    'preview spend precedes any account; it is attributed to the target domain instead',
   )
 
   constructor(private readonly db: Db) {}

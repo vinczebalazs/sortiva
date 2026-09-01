@@ -1,11 +1,11 @@
 import { normaliseClaimDomain } from '../domain/normalise'
 /**
- * main §3.2 — "cache key = normalized domain".
+ * The preview's cache key: a normalised domain.
  *
- * This is the preview's own normalisation and it is deliberately weaker than
- * the one the domain *claim* needs (main §2, §5: eTLD+1 via the Public Suffix
- * List, so `shop.example.co.uk` and `example.co.uk` are one account). That
- * stricter normaliser belongs to T1.4 and lives in `packages/core/domain`.
+ * This normalisation is deliberately weaker than the one the domain *claim*
+ * needs, which folds everything to the registrable domain so
+ * `shop.example.co.uk` and `example.co.uk` cannot become two accounts. That
+ * stricter normaliser lives in `packages/core/domain`.
  *
  * The difference matters and is intentional: a claim folds subdomains together
  * because an account owns a business, whereas a preview must fetch the exact
@@ -21,7 +21,7 @@ export class InvalidPreviewUrl extends Error {
 }
 
 export interface NormalisedPreviewTarget {
-  /** The `preview_cache` key and the `target_domain` event property (main §14.7). */
+  /** The `preview_cache` key, and the domain the analytics event is attributed to. */
   readonly domain: string
   /**
    * The registrable domain behind `domain` — what this business would claim at
@@ -34,7 +34,7 @@ export interface NormalisedPreviewTarget {
    * row is better than an unrecorded one.
    */
   readonly billableDomain: string
-  /** main §3.3 step 1 — "fetch homepage HTML", whatever path was pasted. */
+  /** The homepage we fetch, whatever path the visitor pasted. */
   readonly homepageUrl: string
 }
 
@@ -75,12 +75,12 @@ export function normalisePreviewUrl(input: string): NormalisedPreviewTarget {
     throw new InvalidPreviewUrl(input, 'the domain name is malformed')
   }
 
-  // A non-standard port is not part of a site's identity and main §3.2 permits
-  // only 80/443 anyway; dropping it here keeps one cache key per site.
+  // A non-standard port is not part of a site's identity, and the fetcher
+  // permits only 80/443 anyway; dropping it keeps one cache key per site.
   return { domain: host, billableDomain: billableFor(host), homepageUrl: `https://${host}/` }
 }
 
-/** main §3.3 step 4 — a second fetch, on the same host, at one of the known about paths. */
+/** The one extra fetch, on the same host, at a likely about path. */
 export function aboutUrl(domain: string, path: string): string {
   return `https://${domain}${path}`
 }

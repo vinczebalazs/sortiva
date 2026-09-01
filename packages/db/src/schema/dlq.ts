@@ -4,17 +4,16 @@ import { accounts } from './accounts'
 import { ingestionJobs, jobSteps } from './jobs'
 
 /**
- * main §14.3.5 — "DLQ entries carry the full replay context: step, idempotency
- * key, input refs, last error, attempt timestamps. Ops can replay a DLQ item
- * with one action *because* idempotency makes replay safe."
+ * Work that failed terminally, with everything needed to run it again: the
+ * step, its idempotency key, the input references, the last error and the
+ * attempt timestamps. An operator can replay one of these with a single action
+ * precisely because the key makes replaying safe.
  *
- * main §13 lists no table for this and T0.4's done-when requires one ("DLQ entry
- * carries step + key + error"), so it lands as a wave-1 addendum — see
- * DECISIONS 2026-08-27 T0.4.
+ * The table is ours rather than the spec's — see DECISIONS 2026-08-27 T0.4.
  *
  * `job_id` / `step_id` are nullable because not all dead-lettered work is an
  * ingestion step: publish, sweeps and email sends are Graphile jobs with the
- * same retry policy (§14.3.5) and the same need for a replayable record.
+ * same retry policy and the same need for a replayable record.
  */
 export const jobDlq = pgTable(
   'job_dlq',
@@ -26,20 +25,20 @@ export const jobDlq = pgTable(
     /** The step or task name. Text, not the `job_step` enum, so non-ingestion tasks fit. */
     step: text('step').notNull(),
     idempotencyKey: text('idempotency_key').notNull(),
-    /** The typed failure class (§14.3.5), e.g. `token_revoked`, `schema_invalid`. */
+    /** The typed failure class, e.g. `token_revoked`, `schema_invalid`. */
     errorClass: text('error_class').notNull(),
     lastError: text('last_error').notNull(),
     attempts: integer('attempts').notNull(),
     /** Enough to re-run: the checkpoint cursor, the payload, upstream artefact ids. */
     inputRefs: jsonb('input_refs').notNull().default(sql`'{}'::jsonb`),
-    /** §14.3.5 "attempt timestamps". */
+    /** When this work first failed, as opposed to when it gave up. */
     firstFailedAt: timestamp('first_failed_at', { withTimezone: true }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     replayedAt: timestamp('replayed_at', { withTimezone: true }),
     replayedBy: text('replayed_by'),
   },
   (t) => [
-    // main §14.7 — "DLQ depth > 0 for > 1h alerts"; depth is the open rows.
+    // Serves the alert on dead-letter depth. "Depth" is the open rows.
     index('job_dlq_open_idx')
       .on(t.createdAt)
       .where(sql`${t.replayedAt} IS NULL`),

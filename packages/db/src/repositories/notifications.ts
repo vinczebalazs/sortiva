@@ -8,8 +8,8 @@ export type NotificationType = NotificationRow['type']
 export type EmailSendRow = typeof emailSends.$inferSelect
 
 /**
- * tech §1.2, constitution invariant 26 — append-only records with a unique
- * `(account_id, type, dedupe_key)`. At-least-once workers may attempt duplicate
+ * Append-only records with a unique `(account_id, type, dedupe_key)`. Workers
+ * that may run twice will attempt duplicate
  * inserts; the constraint makes the second a no-op, which is what stops a
  * retried publish job ringing the bell twice.
  *
@@ -23,7 +23,7 @@ export async function emitNotification(
   input: {
     type: NotificationType
     dedupeKey: string
-    /** tech §1.2 — references only. Never display text. */
+    /** References only. Never display text, so a copy fix never rewrites stored rows. */
     payload?: Record<string, unknown>
   },
 ): Promise<NotificationRow | undefined> {
@@ -40,7 +40,7 @@ export async function emitNotification(
   return row
 }
 
-/** tech §1.6 — the bell's poll: unseen count + recent items. */
+/** The bell's poll: the unseen count plus the recent items. */
 export async function listNotifications(
   db: Db,
   scope: AccountScope,
@@ -63,8 +63,8 @@ export async function countUnseenNotifications(db: Db, scope: AccountScope): Pro
 }
 
 /**
- * tech §1.4, invariant 26 — the same triple, and the same exactly-once
- * guarantee. The send worker drains queued rows; this only enqueues.
+ * The same triple, and the same send-once guarantee. The send worker drains
+ * queued rows; this only enqueues.
  */
 export async function queueEmail(
   db: Db,

@@ -3,9 +3,9 @@ import { registerTask } from '@sortiva/jobs'
 import { billingWorkerDeps, drainNow } from './receiver'
 
 /**
- * main §4.2 — "Stripe is the source of truth; our row is a cache of it,
- * reconciled nightly … because webhooks drop here too." tech §3 sets the
- * window at 24h stale.
+ * Stripe is the source of truth and our row is a cache of it, re-derived
+ * nightly because webhooks drop here as everywhere else. Anything we have not
+ * heard about for a day is re-fetched.
  *
  * `subscription_reconciliation_nightly` is already in the worker's crontab
  * (`packages/jobs` CRON_ENTRIES); this is the handler it names. Registering it

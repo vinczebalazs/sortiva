@@ -1,7 +1,6 @@
 /**
- * tech §2.1 — "Railway sends SIGTERM with a grace period on deploy; Graphile
- * Worker drains gracefully, and anything that doesn't finish resumes
- * idempotently."
+ * The platform sends SIGTERM with a grace period on deploy. The worker drains
+ * gracefully, and anything that does not finish in time resumes on its own.
  *
  * `StepContext.signal` is the half of that a long step reads: a loop checks it
  * and returns at its last checkpoint instead of being killed between two pages.

@@ -17,13 +17,14 @@ import { languageCodeFor, locationCodeFor } from './locations'
 import { DATAFORSEO_ENDPOINTS, priceFor } from './pricing'
 
 /**
- * The `SeoDataProvider` test double (main §12.1: "swappable and mockable in
- * tests"; tech §5: staging runs against it, so real spend happens only in prod).
+ * The `SeoDataProvider` test double. Staging runs against it, so real vendor
+ * spend only ever happens in production.
  *
  * It is not a stub that returns fixtures. It deduplicates by the same canonical
  * cache key as the live provider and accounts cost from the same price map,
- * which is what lets the chaos test assert §14.3.9's guarantee: "DataForSEO
- * billable-call count equals the number of *distinct* canonical requests."
+ * which is what lets the chaos test assert the guarantee that matters: the
+ * billable-call count equals the number of *distinct* canonical requests, no
+ * matter how many times a worker was killed and resumed.
  */
 
 export interface SeoFixture {

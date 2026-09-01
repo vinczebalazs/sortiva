@@ -16,13 +16,13 @@ import { isGlobalFlagActive, previewCache, systemScope, type Db } from '@sortiva
  * paste rather than a rewrite.
  *
  * The scope is a system scope because a preview happens before an account
- * exists (main §3): there is no `account_id` to scope by, and `preview_cache`
+ * exists: there is no `account_id` to scope by, and `preview_cache`
  * is keyed by domain for exactly that reason.
  */
 
-const SCOPE = systemScope('preview_cache has no account: a preview happens pre-signup (main §3)')
+const SCOPE = systemScope('preview_cache has no account: a preview happens pre-signup')
 
-/** What `preview_cache.summary` (jsonb) holds. main §3.3 step 6: `{domain, summary, fetched_at}`. */
+/** What `preview_cache.summary` (jsonb) holds. */
 interface StoredPreviewSummary {
   readonly summary: string
 }
@@ -64,9 +64,9 @@ export class PostgresPreviewCache implements PreviewCacheStore {
 }
 
 /**
- * main §14.5, invariant 17 — "Daily preview LLM spend > its own cap → pause the
- * preview endpoint only". Read from `ops_flags`, our own table: PostHog
- * displays cost, our code enforces caps.
+ * Whether the preview's own daily spend cap has tripped, pausing that endpoint
+ * and nothing else. Read from `ops_flags`, our own table: analytics displays
+ * cost, our code enforces the caps.
  *
  * Only the *reading* side is here. The job that compares the day's preview
  * spend against `auto_trips.preview_spend.global_cap_usd_per_day` and raises the

@@ -244,7 +244,7 @@ export function signalScenarios(): readonly SignalScenario[] {
 
 export function scenario(id: number): SignalScenario {
   const found = signalScenarios().find((s) => s.id === id)
-  if (!found) throw new Error(`No worked-example scenario ${id}; they are numbered 1–8.`)
+  if (!found) throw new Error(`No worked-example scenario ${id}; the set defines 1–8.`)
   return found
 }
 

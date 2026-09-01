@@ -9,7 +9,7 @@ import { makeBillingStore } from '../../../billing/_lib/store'
 import { billingWorkerDeps, handleStripeWebhook } from './receiver'
 
 /**
- * tech §3 — the receiver verifies, stores and answers; the status worker
+ * The receiver verifies, stores and answers; the status worker
  * decides. This drives the whole chain against real SQL, because the ordering
  * guard that makes an out-of-order webhook safe is a `WHERE` clause, and a
  * `WHERE` clause asserted in TypeScript is not a guard.
@@ -278,7 +278,7 @@ describe.skipIf(!available)('POST /api/webhooks/stripe (main §4.2, §14.3.8)', 
    * `claimUnprocessed` is a plain select that claims nothing, so two webhooks
    * arriving milliseconds apart start two drains over the same rows. Since a
    * subscription event now costs a Stripe read, an overlap doubles our Stripe
-   * calls and double-counts the §14.7 funnel captures.
+   * calls and double-counts the funnel events.
    */
   it('only one drain runs at a time', async () => {
     await post(fixtures.checkoutCompleted('evt_1', 1_000))

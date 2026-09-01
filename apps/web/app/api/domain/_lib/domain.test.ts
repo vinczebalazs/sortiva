@@ -14,7 +14,7 @@ import { makeClaimHandler } from './handler'
 import { makeDomainClaimStore } from './store'
 
 /**
- * main §5 and invariant 1 against a real database, because the whole point of
+ * The claim against a real database, because the whole point of
  * the claim is a race two transactions have with each other, and a race can
  * only be lost in SQL.
  */
@@ -71,9 +71,9 @@ describe.skipIf(!available)('POST /api/domain/claim (main §5, ui §3.1)', () =>
     expect(response.status).toBe(200)
     const body = await response.json()
 
-    // main §2 — the claim is at the registrable domain, not the host typed.
+    // The claim is at the registrable domain, not the host that was typed.
     expect(body.normalized).toBe('example.co.uk')
-    // main §5 step 3 / ui §3.2 — the dashboard flips to the progress stepper.
+    // The dashboard flips to the progress stepper.
     expect(body.state).toBe('ingesting')
     expect(body.ingestionJobId).toMatch(/^[0-9a-f-]{36}$/)
 
@@ -85,14 +85,14 @@ describe.skipIf(!available)('POST /api/domain/claim (main §5, ui §3.1)', () =>
       { domain_normalized: 'example.co.uk', state: 'ingesting', release_after: null },
     ])
 
-    // main §5 step 3 — "Claiming enqueues the deep ingestion job".
+    // Claiming enqueues the deep ingestion job, in the same commit.
     const run = await harness.pool.query<{ id: string; run_id: string; status: string }>(
       'SELECT id, run_id, status FROM ingestion_jobs WHERE account_id = $1',
       [accountId],
     )
     expect(run.rows).toHaveLength(1)
     expect(run.rows[0]!.id).toBe(body.ingestionJobId)
-    // §14.3.2 — derived from the claim, never random.
+    // Derived from the claim, never random.
     expect(run.rows[0]!.run_id).toBe(ingestionRunId('example.co.uk'))
 
     const steps = await harness.pool.query<{ step: string; state: string }>(
@@ -103,11 +103,11 @@ describe.skipIf(!available)('POST /api/domain/claim (main §5, ui §3.1)', () =>
 
     // The done-when's "`detect` step pending" as the worker runtime sees it:
     // `detect` is the only step whose dependencies are met, so a worker picking
-    // this run up starts platform detection and nothing else (main §14.3.1).
+    // this run up starts platform detection and nothing else.
     const dispatchable = await dispatchableSteps(harness.db, body.ingestionJobId)
     expect(dispatchable.map((s) => s.step)).toEqual(['detect'])
 
-    // main §14.7 — the funnel event, carrying the domain group from this moment.
+    // The funnel event, carrying the domain group from this moment on.
     const claimed = capture.of(DOMAIN_CLAIMED_EVENT)
     expect(claimed).toHaveLength(1)
     expect(claimed[0]!.distinctId).toBe(accountId)
@@ -149,7 +149,7 @@ describe.skipIf(!available)('POST /api/domain/claim (main §5, ui §3.1)', () =>
     expect(second.status).toBe(200)
     const secondBody = await second.json()
 
-    // main §5 — "no-op / redirect to dashboard": same domain, same run, so the
+    // A no-op that redirects: same domain, same run, so the
     // client lands on the same progress screen instead of a second onboarding.
     expect(secondBody).toEqual(firstBody)
     expect(await rowCount('SELECT count(*) n FROM domains WHERE account_id = $1', [accountId])).toBe(1)
@@ -245,7 +245,7 @@ describe.skipIf(!available)('POST /api/domain/claim (main §5, ui §3.1)', () =>
   })
 
   it('keeps a domain blocked while a deleted account is inside its grace window', async () => {
-    // main §14.6 — "domain claim released after a 7-day grace window (protects
+    // The claim is released after a 7-day grace window (which protects
     // against accidental deletion freeing the domain to a squatter the same
     // hour)". `domains.release_after` is the deadline the deletion sweep (T8.3)
     // reads before hard-deleting the row; it is *not* a modifier on the unique

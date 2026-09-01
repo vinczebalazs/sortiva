@@ -1,8 +1,9 @@
 import Ajv, { type ErrorObject, type ValidateFunction } from 'ajv'
 
 /**
- * main §14.2 — "Schema validation on every model call (distillation, persona,
- * seeds, judge): validate against a JSON Schema; … never 'parse what we can'."
+ * Every model call that produces a structured artefact is validated against a
+ * JSON Schema. A completion that does not fit is a failure, never something to
+ * salvage the parseable half of.
  */
 
 const ajv = new Ajv({ allErrors: true, strict: false })

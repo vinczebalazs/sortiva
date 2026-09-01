@@ -1,8 +1,7 @@
 import { index, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core'
 
 /**
- * The store behind sign-in by email (main §4.1 — "standard email + OAuth
- * (Google) signup"). One row per outstanding magic link.
+ * The store behind sign-in by email. One row per outstanding magic link.
  *
  * Card `T1.1` shipped Google-only sign-in and recorded this table's absence as
  * a blocker rather than working around it (DECISIONS 2026-08-31 T1.1). The
@@ -14,8 +13,8 @@ import { index, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzl
  * expires, so a forwarded copy or a corporate mail scanner's prefetch can spend
  * it a second time.
  *
- * main §13 does not list this table; it is the one thing §4.1 requires that the
- * data model omits. Added by the mini-wave `T2.0b`
+ * The table is ours rather than the spec's data model, which omits it. Added by
+ * the mini-wave `T2.0b`
  * (`docs/audits/remediation.md` D7 item 1).
  *
  * Column names are Auth.js's, not this repository's: `expires`, not the house
@@ -39,7 +38,7 @@ export const verificationTokens = pgTable(
     // A secret that opened two mailboxes would be two live links, which is the
     // one thing this table exists to prevent.
     uniqueIndex('verification_tokens_token_key').on(t.token),
-    // The sweep that clears expired links (tech §2.1 retention) scans this.
+    // The retention sweep that clears expired links scans this.
     index('verification_tokens_expires_idx').on(t.expires),
   ],
 )

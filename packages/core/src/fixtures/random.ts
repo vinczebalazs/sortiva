@@ -1,6 +1,7 @@
 /**
  * A seeded PRNG, because every fixture in this directory must be deterministic:
- * the eight §7.8 scenarios are *acceptance* fixtures, and an acceptance test
+ * the eight worked-example scenarios are *acceptance* fixtures, and an
+ * acceptance test
  * whose input differs between runs cannot fail for a reason you can act on.
  *
  * mulberry32 — small, fast, and stable across Node versions, which

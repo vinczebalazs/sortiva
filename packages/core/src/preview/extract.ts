@@ -1,7 +1,7 @@
 import { PREVIEW_MAX_INPUT_CHARS } from './limits'
 
 /**
- * main §3.3 — "Extraction pipeline (cheap by design)". In priority order:
+ * Pulling usable text out of a homepage, cheaply by design. In priority order:
  * `<title>`, `meta description`, OpenGraph tags, JSON-LD `Organization` /
  * `Product` blocks, then a Readability-style pass over the body as fallback
  * content, concatenated and truncated to a small token budget.
@@ -29,8 +29,8 @@ export interface PreviewExtraction {
   readonly text: string
   /**
    * How much usable signal was found, across the structured tags *and* the body
-   * text — main §3.3 step 4 branches on "the above", meaning steps 2 and 3
-   * together, so the readable body counts.
+   * text. The decision to try one more page branches on this total, so the
+   * readable body counts towards it as much as the structured tags do.
    */
   readonly signalChars: number
 }
@@ -86,7 +86,7 @@ export function extractPreviewSignals(html: string): PreviewExtraction {
   return { signals, text, signalChars: text.length }
 }
 
-/** main §3.3 step 3 — "a Readability.js-style extraction on the homepage body as fallback content". */
+/** A Readability-style extraction over the homepage body, as fallback content. */
 export function readableText(html: string): string {
   const body = firstGroup(html, /<body[^>]*>([\s\S]*)<\/body>/i) ?? html
   const stripped = body.replace(STRIPPED_BLOCKS, ' ').replace(/<!--[\s\S]*?-->/g, ' ')
@@ -113,7 +113,7 @@ function metaContent(html: string, attribute: string, name: string): string | un
   return firstGroup(html, withContentAfter) ?? firstGroup(html, withContentBefore)
 }
 
-/** main §3.3 step 2 — "JSON-LD `Organization`/`Product` blocks". */
+/** JSON-LD `Organization` and `Product` blocks, which are the most reliable signal when a site has them. */
 function jsonLd(html: string): { organization?: string; products: string[] } {
   const products: string[] = []
   let organization: string | undefined

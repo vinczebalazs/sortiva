@@ -2,16 +2,15 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import type pg from 'pg'
 
 /**
- * main §14.3.3 — "All pipeline work for an account serializes through a
- * per-account advisory lock (Postgres `pg_advisory_xact_lock(account_id)` **or
- * equivalent**). This kills an entire class of races cheaply: reconciliation
- * sweep vs. webhook burst vs. user clicking 're-sync' can all enqueue work, but
- * only one mutator touches an account's derived data at a time."
+ * All pipeline work for one account serialises through a per-account advisory
+ * lock. This kills an entire class of races cheaply: the reconciliation sweep, a
+ * webhook burst and a user clicking "re-sync" can all enqueue work at once, but
+ * only one of them touches that account's derived data at a time.
  *
  * We take the "or equivalent" — a **session-level** lock on a dedicated client,
  * not `pg_advisory_xact_lock`. The transaction-scoped form would require holding
- * one transaction open for a whole step, and §14.3.4 requires long steps to
- * commit checkpoints as they go; a checkpoint that is only visible after the
+ * one transaction open for a whole step, and a long step has to commit
+ * checkpoints as it goes; a checkpoint that is only visible after the
  * step commits is not a checkpoint. Holding the lock on its own connection lets
  * the step body checkpoint on pooled connections while still serialising.
  * See DECISIONS 2026-08-27 T0.4.
@@ -25,7 +24,7 @@ import type pg from 'pg'
  *    either unlocks or *destroys* the connection, and none returns it to the
  *    pool still holding the lock.
  *  - **It cannot hang a waiter forever.** A bounded `lock_timeout` turns a stuck
- *    holder into a loud, retryable failure on the §14.3.5 backoff.
+ *    holder into a loud, retryable failure on the normal retry backoff.
  *  - **It is re-entrant.** A transaction lock re-taken inside its own
  *    transaction simply succeeds; a second pool connection would wait on the
  *    first forever. The re-entry guard below turns that into a thrown error.
@@ -41,9 +40,9 @@ export const ACCOUNT_LOCK_NAMESPACE = 0x5027 // "So" for Sortiva.
 
 /**
  * How long a worker waits for another worker to finish with an account before
- * giving up. Long enough to queue behind a `catalog_sync` (§14.3.3's ~8-minute
- * worst case), short enough that a stuck holder surfaces the same hour instead
- * of parking the store silently. Not a spec number — DECISIONS 2026-08-31 R1.
+ * giving up. Long enough to queue behind a `catalog_sync`, whose worst case is
+ * about eight minutes, and short enough that a stuck holder surfaces the same
+ * hour instead of parking the store silently. See DECISIONS 2026-08-31 R1.
  */
 export const ACCOUNT_LOCK_TIMEOUT_MS = 10 * 60_000
 
@@ -53,7 +52,7 @@ const LOCK_NOT_AVAILABLE = '55P03'
 /**
  * The wait for an account exceeded `ACCOUNT_LOCK_TIMEOUT_MS`. Carries the two
  * fields `classify()` recognises structurally, so a stuck lock becomes a normal
- * retry on the §14.3.5 backoff rather than an unclassified hang.
+ * retry on the normal backoff rather than an unclassified hang.
  */
 export class AccountLockTimeout extends Error {
   readonly retryable = true
@@ -117,8 +116,8 @@ export interface AccountLockOptions {
  * 64-bit key, in the single-argument advisory-lock space. The previous two-int
  * form gave 32 bits of account hash, in which two unrelated stores collide with
  * near-certainty in the low hundreds of thousands of accounts and quietly
- * serialise behind each other — §14.3.3 promises cross-account work is "fully
- * parallel". `hashtextextended` takes our namespace as its seed, so the
+ * serialise behind each other, when work on different accounts is supposed to
+ * be fully parallel. `hashtextextended` takes our namespace as its seed, so the
  * namespace survives the move.
  */
 async function lockKey(client: pg.PoolClient, accountId: string): Promise<string> {
@@ -212,7 +211,7 @@ async function acquire(
  *
  * Throws `AccountLockReentry` when this call stack already holds the account,
  * and `AccountLockTimeout` when the wait exceeds the bounded timeout — the
- * latter retries on the §14.3.5 backoff rather than hanging.
+ * latter retries on the normal backoff rather than hanging.
  */
 export async function withAccountLock<T>(
   pool: pg.Pool,

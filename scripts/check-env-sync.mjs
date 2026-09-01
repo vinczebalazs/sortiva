@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * `.env.example` documents every required variable (tech §4) and `.env` mirrors
+ * `.env.example` documents every required variable and `.env` mirrors
  * it key-for-key. This fails the moment the two drift, so a new variable can
  * never land in one file only.
  *

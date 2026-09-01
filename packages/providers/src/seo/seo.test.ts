@@ -20,9 +20,8 @@ import { DATAFORSEO_ENDPOINTS, assertEndpointsPriced, chargeFor, priceFor } from
  *
  * Card R2 adds the audit's path table (`docs/audits/T0.5.md`): every exit from
  * this wrapper that reached DataForSEO must leave a cost record in *both* the
- * analytics capture (§14.7) and the spend ledger the §14.5 caps read
- * (invariant 17) — and the one exit that never reached the vendor must leave
- * neither.
+ * analytics capture and the spend ledger the caps read — and the one exit that
+ * never reached the vendor must leave neither.
  */
 
 const LOCALE = { languageCode: 'da-DK', countryCode: 'DK' }
@@ -100,7 +99,7 @@ describe('DataForSeoProvider', () => {
     expect(events[1]!.properties).toMatchObject({ cache_hit: true, usd_cost: 0, billable: false })
     expect(events[1]!.groups).toEqual({ domain: 'example.dk' })
 
-    // §14.7 requirement (3): the replay is recorded at zero, not omitted.
+    // The replay is recorded at zero, not omitted.
     expect(ledger.rows).toHaveLength(2)
     expect(ledger.rows[1]).toMatchObject({ usdCost: 0, cacheHit: true, outcome: 'succeeded' })
     expect(ledger.totalUsdCost).toBe(TASK_PRICE)
@@ -230,7 +229,7 @@ describe('DataForSeoProvider', () => {
       expect(ok.data[0]!.monthlySearchVolume).toBe(1300)
 
       // Failure path: the caller still gets the *vendor's* error, which the
-      // §14.3.5 retry classification depends on — not a database error.
+      // retry classification depends on — not a database error.
       await expect(metrics(provider({ fetchImpl: fakeFetch({}, 429) }))).rejects.toBeInstanceOf(
         SeoRequestFailure,
       )
@@ -312,7 +311,7 @@ describe('MockSeoDataProvider', () => {
       locale: LOCALE,
       attribution: ATTRIBUTION,
     })
-    // Same question, different casing and order: one billable read (§14.3.9).
+    // Same question, different casing and order: one billable read.
     await mock.keywordMetrics({ keywords: ['Løbesko'], locale: LOCALE, attribution: ATTRIBUTION })
     // A different market is a different question.
     await mock.keywordMetrics({

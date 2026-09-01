@@ -6,18 +6,18 @@ import type { AccountScope, SystemScope } from '../scope'
 export type SpendEventRow = typeof spendEvents.$inferSelect
 
 /**
- * main §14.5's spend caps read a counter; this is the write side of it. main
- * §14.7 draws the boundary the table exists to hold — "the §14.5 budget
- * auto-trips read spend from our own DB counters", and "PostHog is telemetry
- * and alerting, **not** the control plane… a kill switch must work when PostHog
- * is down or events are sampled/delayed" (constitution invariant 17).
+ * The daily spend caps read a counter; this is the write side of it.
+ *
+ * That counter is ours rather than the analytics vendor's, because a kill switch
+ * has to work when the vendor is down or its events are delayed — which is
+ * exactly when spend is most likely to be running away.
  *
  * Append-only, and not by convention: migration `0003_wave2_guards.sql` makes
  * the database refuse `UPDATE` outright. A cost recorded wrongly is corrected
  * with a second row, so what we believed at the time stays readable.
  *
  * The scope is the account column, not a check beside it. Preview spend happens
- * before any account exists (§14.7's preview-attribution rule), so those rows
+ * before any account exists, so those rows
  * take a `SystemScope` and carry `preview_target` instead; the table's
  * `spend_events_attribution_ck` constraint is what makes every dollar
  * attributable to exactly one of the two.
@@ -29,7 +29,7 @@ export async function appendSpendEvent(
     /** Set only for preview spend, which has no account. */
     previewTarget?: string | null
     vendor: SpendEventRow['vendor']
-    /** The LLM `call_type`, or the DataForSEO endpoint (§14.7). */
+    /** One of our LLM call types, or the vendor endpoint for a SEO-data read. */
     callType: string
     usdCost: number
     cacheHit: boolean

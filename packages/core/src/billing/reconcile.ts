@@ -7,18 +7,17 @@ import {
 } from './processing'
 
 /**
- * main §4.2 — "Stripe is the source of truth; our row is a cache of it,
- * **reconciled nightly** … because webhooks drop here too." tech §3 fixes the
- * staleness window: "re-fetches any subscription whose `synced_at` is >24h
- * stale".
+ * Stripe is the source of truth and our row is a cache of it, so it is
+ * re-derived nightly — webhooks drop here as everywhere else, and a merchant
+ * wrongly cut off or wrongly entitled is not something to discover from a
+ * support ticket.
  *
- * This is the billing analogue of the catalog sweep (main §14.3.8): the system
- * never assumes a delivery arrived, it re-derives from the vendor on a
- * schedule. It runs in a scheduled job, not a request path, which is the line
- * invariant 16 draws.
+ * The billing analogue of the catalog drift sweep: never assume a delivery
+ * arrived, re-derive on a schedule. It runs in a scheduled job and never in a
+ * request path, which is what keeps Stripe's availability out of the product.
  */
 
-/** tech §3 — the staleness window, in hours. */
+/** How stale a row may be before the nightly job re-fetches it, in hours. */
 export const RECONCILE_STALE_AFTER_HOURS = 24
 
 const MS_PER_HOUR = 3_600_000

@@ -3,8 +3,7 @@ import pg from 'pg'
 
 /**
  * Seeds a development or Playwright database with one account whose store is a
- * deterministic synthetic catalog (tech §6 — "Playwright against staging",
- * build plan T0.6 — "Playwright scaffold against a seeded dev DB").
+ * deterministic synthetic catalog, for the browser tests to run against.
  *
  * Deterministic on purpose: a UI test that asserts "4 families" must get the
  * same four families on every run, or it is a flake generator.

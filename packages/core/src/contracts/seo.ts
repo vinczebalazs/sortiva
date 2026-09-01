@@ -1,17 +1,17 @@
 import type { EventAttribution } from './analytics'
 
 /**
- * main §12.1 — "Wrap it behind an internal `SeoDataProvider` interface so the
- * vendor is swappable and mockable in tests." Every request is a **billable
- * read** (§14.3.6): request-level cache keyed on the endpoint plus canonicalised
- * params, written before the response is processed, and a `dataforseo_request`
- * event carrying `usd_cost` (§14.7).
+ * The SEO data vendor behind an interface of our own, so it is swappable and
+ * mockable. Every request is a **billable read**: cached on the endpoint plus
+ * canonicalised params, written before the response is processed, and recorded
+ * with its cost.
  *
- * All calls are job-side; §12.1 forbids them in a request/response path.
+ * All calls are job-side. None may sit in a request path, where a slow vendor
+ * would become a slow page.
  */
 
 export interface SeoLocale {
-  /** Persona `main_language`, e.g. `da`. Passed as the vendor's language parameter (§12.1). */
+  /** The store's main language, e.g. `da`. Passed as the vendor's language parameter, so a wrong value silently buys the wrong market's numbers. */
   readonly languageCode: string
   /** ISO-3166 alpha-2, e.g. `DK`. Passed as the vendor's location parameter. */
   readonly countryCode: string
@@ -63,13 +63,13 @@ export interface RankedKeyword {
   readonly monthlySearchVolume: number | null
 }
 
-/** What one provider call cost and where it came from — the input to §14.7's cost events. */
+/** What one provider call cost and where it came from — the input to the cost events and the spend ledger. */
 export interface SeoCallMeta {
   readonly endpoint: string
   readonly cacheHit: boolean
   /** False on a cache hit: a replay is not a billable read. */
   readonly billable: boolean
-  /** From the endpoint→price map. Zero on a cache hit (main §14.7). */
+  /** From the endpoint-to-price map. Zero on a cache hit, which is recorded rather than omitted. */
   readonly usdCost: number
 }
 

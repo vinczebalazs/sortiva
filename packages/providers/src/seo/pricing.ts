@@ -1,8 +1,7 @@
 /**
- * main §14.7 — "`usd_cost` comes from a config table mapping endpoint → unit
- * price (DataForSEO bills different amounts per endpoint — SERP vs. keyword-data
- * vs. ranked-keywords). The price map is config, reviewed when DataForSEO
- * changes pricing."
+ * What each vendor endpoint costs us. The vendor bills different amounts per
+ * endpoint — a SERP read is not a keyword-data read — so cost cannot be a single
+ * number. This map is configuration, reviewed whenever their pricing changes.
  *
  * This is that table. It is deliberately *not* in `packages/rules`: invariant 9
  * governs product thresholds (search volume, position, CTR) that decide what
@@ -10,8 +9,8 @@
  * not a decision we make.
  *
  * **UNSIGNED.** The values below are starting figures, not confirmed against a
- * current DataForSEO price list. They set the scale for the §14.5 daily spend
- * cap and for cost-per-domain reporting; both are wrong in proportion if these
+ * current DataForSEO price list. They set the scale for the daily spend caps
+ * and for cost-per-domain reporting; both are wrong in proportion if these
  * are. Verify before the first production spend.
  */
 
@@ -85,7 +84,7 @@ export function priceFor(endpoint: string, rows: number): number {
 }
 
 /**
- * Every endpoint we can call must have a price, or the §14.5 spend cap is
+ * Every endpoint we can call must have a price, or the spend cap is
  * reading a number that is wrong by an unknown amount. Runs when this module
  * loads, so the process refuses to start rather than discovering it mid-job.
  */
@@ -96,7 +95,7 @@ export function assertEndpointsPriced(
   const unpriced = endpoints.filter((endpoint) => !prices[endpoint])
   if (unpriced.length > 0) {
     throw new Error(
-      `No price configured for DataForSEO endpoint(s) ${unpriced.map((e) => `"${e}"`).join(', ')}. Add them to ENDPOINT_PRICES — an unpriced endpoint reports zero cost and defeats the §14.5 spend cap.`,
+      `No price configured for DataForSEO endpoint(s) ${unpriced.map((e) => `"${e}"`).join(', ')}. Add them to ENDPOINT_PRICES — an unpriced endpoint reports zero cost and defeats the spend cap.`,
     )
   }
 }

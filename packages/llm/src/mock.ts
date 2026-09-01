@@ -15,20 +15,20 @@ import { CALL_TYPE_TIER, MODELS, estimateTokens, overrideModel, usdCost } from '
 import { validateCompletion } from './validate'
 
 /**
- * The test double for `LlmClient` (work plan §4). It is not a stub that returns
+ * The test double for `LlmClient`. It is not a stub that returns
  * a constant: it enforces the same schema contract as the real client and
  * **accounts cost**, so a test can assert what a pipeline would have spent and
- * a chaos run can assert that a resumed job did not pay twice (main §14.3.9).
+ * a chaos run can assert that a resumed job did not pay twice.
  *
  * Audit `docs/audits/T0.5.md` finding 11 — a double that models a different
  * cost curve than production misleads any spend estimate built on it. Three
  * divergences are closed here:
  *
  * - it takes the same `RequestCache` the live client does, so a replay is free
- *   in a test exactly as it is in production (§14.3.6);
+ *   in a test exactly as it is in production;
  * - it takes the same analytics capture and spend ledger, so a pipeline test
- *   sees the two records production writes (§14.7, invariant 17);
- * - it performs main §14.2's single repair attempt, so `attempts` means the
+ *   sees the two records production writes;
+ * - it performs the same single repair attempt, so `attempts` means the
  *   same thing on both sides.
  *
  * Token counts are estimated from text length (≈4 characters per token) — the
@@ -121,7 +121,7 @@ export class MockLlmClient implements LlmClient {
     const validated = validateCompletion(first.text, request.schema)
     if (validated.ok) return this.finish<T>(request, modelId, [first], validated.value, 1)
 
-    // main §14.2 — retry **once** with the validation error appended, exactly as
+    // Retry **once** with the validation error appended, exactly as
     // the live client does, so `attempts` means the same thing in both.
     const repairMessages: LlmRequest['messages'] = [
       ...request.messages,

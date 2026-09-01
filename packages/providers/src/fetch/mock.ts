@@ -1,10 +1,9 @@
 import { PageFetchError, type PageFetchRequest, type PageFetchResult, type PageFetcher } from './types'
 
 /**
- * The test double every consumer of the fetcher tests against (work plan §4:
- * "in-memory doubles"). It records what was asked for, so a test can assert the
- * thing that matters most about the preview cache — that a cache hit means no
- * fetch happened at all (main §3.2).
+ * The in-memory test double every consumer of the fetcher tests against. It
+ * records what was asked for, so a test can assert the thing that matters most
+ * about the preview cache: that a cache hit means no fetch happened at all.
  */
 export class MockPageFetcher implements PageFetcher {
   /** Every URL this fetcher was asked for, in order. */

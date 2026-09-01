@@ -1,10 +1,9 @@
 import { accountScope, type AccountScope } from '@sortiva/db'
 
 /**
- * tech §3 — "Every authenticated route resolves `account_id` from session —
- * never from the request body", and "every query is `WHERE account_id =
- * session.account_id`, enforced by a repository layer that requires the account
- * scope parameter".
+ * Every authenticated route resolves `account_id` from the session and never
+ * from the request body, and every query names that account — enforced by a
+ * repository layer that will not compile without the scope.
  *
  * This is the seam between those two sentences, and the only place the
  * conversion exists. A handler wrapped in `withAccount` is handed an

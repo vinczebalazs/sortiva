@@ -1,12 +1,12 @@
 import { PREVIEW_RATE_LIMITS } from './limits'
 
 /**
- * main §3.2 — "Rate limiting: per-IP (e.g. 5/min, 20/day) and a global
- * concurrency cap on outbound scrapes."
+ * Per-IP rate limits and a global cap on how many outbound scrapes we will have
+ * in flight at once.
  *
- * In-process, deliberately. tech §2.1 pins v1 to a single `app` service with
- * "no Redis in v1", and a Postgres round trip per public request to count
- * requests would make the counter cost more than the thing it protects. The
+ * In-process, deliberately: v1 runs as a single service with no Redis, and a
+ * database round trip per public request to count requests would make the
+ * counter cost more than the thing it protects. The
  * limits are a cost guard behind Turnstile and the 7-day cache, not an
  * authorisation boundary — see DECISIONS 2026-09-01 T1.3 for what changes if
  * the app is ever run on more than one instance.
@@ -94,9 +94,9 @@ function secondsUntilFree(oldest: number, windowMs: number, now: number): number
 }
 
 /**
- * main §3.2's "global concurrency cap on outbound scrapes". Non-blocking on
- * purpose: a full pool answers with the graceful generic card (main §3.3)
- * rather than queueing a public request behind other people's scrapes.
+ * The global cap on outbound scrapes in flight. Non-blocking on purpose: a full
+ * pool answers with the graceful generic card rather than queueing a public
+ * request behind other people's scrapes.
  */
 export class OutboundScrapeCap {
   private inFlight = 0

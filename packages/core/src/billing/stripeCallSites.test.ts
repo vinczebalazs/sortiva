@@ -34,7 +34,7 @@ const REMOTE_METHODS = [
 const CALL_SITES_ALLOWED = [
   // The wrapper itself and its test double.
   'packages/providers/src/stripe/',
-  // The Checkout and Customer Portal creators (main §4.2).
+  // The Checkout and Customer Portal creators.
   'packages/core/src/billing/checkout.ts',
   // The webhook status worker — reads the subscription a Checkout session named.
   'packages/core/src/billing/processing.ts',
