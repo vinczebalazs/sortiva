@@ -6,105 +6,48 @@
  *
  * Rather than proving that by hand once, this plants each violation in a
  * throwaway file, runs the real lint command, asserts it failed with the
- * expected rule, and removes the file. CI runs it on every merge, so the two
+ * expected rule, and removes the file. CI runs it on every merge, so the
  * enforcement rules can never silently stop working.
+ *
+ * Cases live one-per-file in `scripts/lint-proofs/` and are discovered, so a lane
+ * adding a rule adds a file rather than editing a list every other lane edits.
  */
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 
-const CASES = [
-  {
-    name: 'raw @anthropic-ai/sdk import outside packages/llm (invariant 25)',
-    file: 'packages/core/src/__lintproof__/raw-sdk-import.ts',
-    source: [
-      "import Anthropic from '@anthropic-ai/sdk'",
-      '',
-      'export const client = new Anthropic()',
-      '',
-    ].join('\n'),
-    expectRule: 'sortiva/no-direct-provider-sdk',
-  },
-  {
-    name: 'threshold literal outside packages/rules (invariant 9)',
-    file: 'packages/core/src/__lintproof__/threshold-literal.ts',
-    source: [
-      'export function shouldRefresh(position: number): boolean {',
-      '  if (position < 15) {',
-      '    return true',
-      '  }',
-      '  return false',
-      '}',
-      '',
-    ].join('\n'),
-    expectRule: 'sortiva/no-threshold-literals',
-  },
-  {
-    name: 'raw table import from @sortiva/db outside packages/db (account scoping, D5)',
-    file: 'packages/core/src/__lintproof__/raw-table-import.ts',
-    source: [
-      "import { db, notifications } from '@sortiva/db'",
-      '',
-      'export function unscoped() {',
-      '  return db().select().from(notifications)',
-      '}',
-      '',
-    ].join('\n'),
-    expectRule: 'sortiva/no-raw-db-access',
-  },
-  {
-    name: 'raw schema-module import outside packages/db (account scoping, D5)',
-    file: 'packages/core/src/__lintproof__/raw-schema-module.ts',
-    source: ["import * as tables from '@sortiva/db/schema'", '', 'export default tables', ''].join('\n'),
-    expectRule: 'sortiva/no-raw-db-access',
-  },
-  {
-    // R4 / remediation D10 item 3. The banned names are derived from
-    // `packages/db/src/schema`, so these two cases are the proof that the
-    // derivation reaches tables added after the rule was written: `spend_events`
-    // is schema wave 2 and `idempotency_ledger` is mini-wave 2b, and the
-    // hand-written list this replaced named neither.
-    name: 'raw wave-2 table import outside packages/db (account scoping, D5 + D10)',
-    file: 'packages/core/src/__lintproof__/raw-wave2-table.ts',
-    source: [
-      "import { spendEvents } from '@sortiva/db'",
-      '',
-      'export default spendEvents',
-      '',
-    ].join('\n'),
-    expectRule: 'sortiva/no-raw-db-access',
-  },
-  {
-    name: 'raw wave-2b table import outside packages/db (account scoping, D5 + D10)',
-    file: 'packages/core/src/__lintproof__/raw-wave2b-table.ts',
-    source: [
-      "import { idempotencyLedger } from '@sortiva/db'",
-      '',
-      'export default idempotencyLedger',
-      '',
-    ].join('\n'),
-    expectRule: 'sortiva/no-raw-db-access',
-  },
-  {
-    // R2 / audit `docs/audits/T0.5.md` finding 9. DataForSEO has no SDK to ban,
-    // so the sibling rule cannot see it; the host string is the thing fenced in.
-    name: 'direct api.dataforseo.com call outside the SEO wrapper (invariant 25)',
-    file: 'packages/llm/src/__lintproof__/dataforseo-host.ts',
-    source: [
-      'export async function keywordVolume(keyword: string): Promise<Response> {',
-      "  return fetch('https://api.dataforseo.com/v3/keywords_data/google_ads/search_volume/live', {",
-      "    method: 'POST',",
-      '    body: JSON.stringify([{ keywords: [keyword] }]),',
-      '  })',
-      '}',
-      '',
-    ].join('\n'),
-    expectRule: 'sortiva/no-direct-vendor-http',
-  },
-]
+const CASES = await loadCases()
+
+/**
+ * One case per file in `scripts/lint-proofs/`, discovered rather than listed.
+ *
+ * This used to be a single array, and five cards edited it in wave 1 — a merge
+ * conflict in the check that proves every other check still works is the worst
+ * place to resolve one by hand. A lane now adds a file; nobody edits a shared
+ * list. The count is asserted below so a file that fails to load cannot quietly
+ * reduce the number of things being proved.
+ */
+async function loadCases() {
+  const dir = join(repoRoot, 'scripts', 'lint-proofs')
+  const files = readdirSync(dir)
+    .filter((f) => f.endsWith('.mjs'))
+    .sort()
+  const loaded = []
+  for (const file of files) {
+    const mod = await import(pathToFileURL(join(dir, file)).href)
+    if (!mod.default?.name || !mod.default?.file || !mod.default?.expectRule) {
+      throw new Error(`${file} does not export a case with name, file and expectRule`)
+    }
+    loaded.push(mod.default)
+  }
+  if (loaded.length === 0) {
+    throw new Error('No planted violations found. An empty proof proves nothing.')
+  }
+  return loaded
+}
 
 /** Runs `eslint` on one file and returns its JSON report (exit code 1 is the expected path). */
 function lintFile(relPath) {

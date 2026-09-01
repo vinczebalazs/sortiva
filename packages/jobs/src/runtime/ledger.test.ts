@@ -114,8 +114,8 @@ describe('the idempotency ledger is never deleted (main §14.3.2)', () => {
   it('the retention sweep is told in writing how this table may be pruned', () => {
     const sweep = CRON_ENTRIES.find((entry) => entry.task === 'retention_sweep_daily')
     expect(sweep, 'the retention sweep is no longer registered').toBeDefined()
-    expect(sweep!.spec).toContain(LEDGER_TABLE)
-    expect(sweep!.spec).toContain('PRUNE BY AGE ONLY')
+    expect(sweep!.why).toContain(LEDGER_TABLE)
+    expect(sweep!.why).toContain('PRUNE BY AGE ONLY')
   })
 
   it('the runtime reads the ledger table, not the job rows it used to read', () => {

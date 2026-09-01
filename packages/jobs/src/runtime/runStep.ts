@@ -21,22 +21,25 @@ import {
 } from './steps'
 
 /**
- * main §14.3 — "the queue delivers **at-least-once**; every worker must
- * therefore be **effectively-once** through its own idempotency mechanics."
+ * The queue delivers each job *at least* once, so a step can be handed to us
+ * twice — after a crash, a redeploy, a lost acknowledgement. Every worker has
+ * to survive that without doing paid work twice, and this is the one place
+ * those mechanics live, so no step handler re-implements them.
  *
- * This is the one place those mechanics live, so no step handler has to
- * re-implement them. In order (constitution invariant 18):
+ * In order:
  *
- *   1. serialise on the account's advisory lock (§14.3.3)
+ *   1. serialise on the account's advisory lock, so two workers never touch one
+ *      store at the same time
  *   2. consult the completed-work ledger; a hit returns the stored output and
- *      does not execute (§14.3.2). The ledger is `idempotency_ledger`, a table
- *      with no foreign key to jobs or accounts, so the evidence outlives the
- *      run it came from (`ledger.ts`)
- *   3. claim the step with a guarded transition; a zero-row guard stops (§14.3.1)
- *   4. run the handler with a checkpoint API (§14.3.4)
+ *      does not execute. The ledger is `idempotency_ledger`, a table with no
+ *      foreign key to jobs or accounts, so the evidence outlives the run it came
+ *      from (`ledger.ts`)
+ *   3. claim the step with a guarded update; if it matches no rows someone else
+ *      owns the step and we stop
+ *   4. run the handler, giving it a way to save its position part-way
  *   5. record the completion in the ledger *before* marking the step succeeded,
- *      then succeed; or classify the failure and either schedule a retry on the
- *      §14.3.5 schedule or dead-letter it
+ *      then succeed; or classify the failure and either schedule a retry or
+ *      dead-letter it
  */
 
 export interface StepContext<C = unknown> {
@@ -47,11 +50,11 @@ export interface StepContext<C = unknown> {
   readonly step: JobStepName
   readonly idempotencyKey: string
   readonly attempt: number
-  /** The last committed cursor, or undefined on a first run (§14.3.4). */
+  /** The last committed cursor, or undefined on a first run. */
   readonly checkpoint: C | undefined
   /** Commits progress on its own so a crash resumes here, not at the start. */
   save(checkpoint: C): Promise<void>
-  /** Aborted on graceful shutdown (tech §2.1). Long loops should check it. */
+  /** Aborted when the process is asked to shut down. Long loops should check it, or a deploy kills their work outright. */
   readonly signal: AbortSignal
   /**
    * Already stamped with this store's account id, the job, the step and the
@@ -59,9 +62,9 @@ export interface StepContext<C = unknown> {
    * and cannot forget to say which store it is talking about.
    *
    * Identifiers, states, durations, counts and error classes only. Never a
-   * product title, body, prompt or draft: main §14.7's privacy note ("ids and
-   * aggregates only — never product content, article text, prompts, or anything
-   * customer-derived") applies to logs exactly as it does to events.
+   * product title, body, prompt or draft. Ids and aggregates only — never
+   * product content, article text, prompts, or anything customer-derived —
+   * which applies to logs exactly as it does to analytics events.
    */
   readonly log: Logger
 }
@@ -80,7 +83,7 @@ export interface RunStepOptions<C> {
   accountId: string
   jobId: string
   stepId: string
-  /** Derived from inputs, never random (§14.3.2). */
+  /** Derived from the step's inputs, never random: a redelivery has to arrive at the same key or the ledger cannot recognise it. */
   idempotencyKey: string
   handler: (ctx: StepContext<C>) => Promise<unknown>
   /**
@@ -114,9 +117,9 @@ export async function runStep<C = unknown>(options: RunStepOptions<C>): Promise<
       idempotency_key: idempotencyKey,
     }
 
-    // §14.3.2 — the cache is the ledger. A completed key returns its stored
-    // output without executing, which is what makes a retry of finished work
-    // free rather than merely safe. The lookup is against `idempotency_ledger`,
+    // A completed key returns its stored output without executing, which is
+    // what makes a retry of finished work free rather than merely safe. The
+    // lookup is against `idempotency_ledger`,
     // which no cascade, retention sweep or re-run of onboarding can empty, so
     // this holds even when the job rows of the run that did the work are gone.
     const completed = await lookupCompletedWork(db, idempotencyKey)
@@ -131,12 +134,12 @@ export async function runStep<C = unknown>(options: RunStepOptions<C>): Promise<
 
     // Is this a step whose worker died mid-flight? A `running` row past its
     // lease is reclaimable; the per-account lock we are holding is what makes
-    // reclaiming safe (§14.3.3).
+    // reclaiming safe.
     const expired = existing ? isReclaimable(existing, now(), options.leaseMs) : false
 
-    // A step that has burnt the §14.3.5 attempt budget by being killed over and
-    // over is not reclaimed again — that would be an invisible crash loop. It
-    // dead-letters, which is the operator's signal (DLQ depth alerts, §14.7).
+    // A step that has burnt its attempt budget by being killed over and over is
+    // not reclaimed again — that would be an invisible crash loop. It
+    // dead-letters instead, which is what raises an alert someone will see.
     if (expired && existing && retriesExhausted(existing.attempts)) {
       await guardedTransition(db, stepId, 'running', 'failed_terminal', {
         lastError: 'the worker running this step died and did not come back',
@@ -160,7 +163,7 @@ export async function runStep<C = unknown>(options: RunStepOptions<C>): Promise<
       return { status: 'dead_lettered', errorClass: 'lease_expired' }
     }
 
-    // §14.3.1 — guarded claim. Zero rows means someone else owns the step.
+    // Guarded claim. Zero rows means someone else owns the step.
     const claimed = await claimStep(db, stepId, idempotencyKey, {
       expiredBefore: expired && existing ? leaseExpiryFor(existing.step, now(), options.leaseMs) : null,
     })
@@ -227,7 +230,7 @@ export async function runStep<C = unknown>(options: RunStepOptions<C>): Promise<
       // pair that rolls back loses the record of work that really happened.
       const recorded = await recordCompletedWork(db, idempotencyKey, output)
       if (!recorded.firstWriter) {
-        // Someone recorded this key first. §14.3.6 — a replay must not get a
+        // Someone recorded this key first. A replay must not come back with a
         // different answer than the run it is resuming, so the stored answer
         // wins and this run's own output is discarded.
         log.warn('step.ledger_conflict', {
@@ -249,9 +252,9 @@ export async function runStep<C = unknown>(options: RunStepOptions<C>): Promise<
       })
       return { status: 'succeeded', output: recorded.outputRef, executed: settled !== undefined }
     } catch (error) {
-      // §14.3.1 — "a worker whose guard matches zero rows stops immediately".
-      // The step now belongs to someone else; touching the row further would be
-      // exactly the interference the guard exists to prevent.
+      // A worker whose guard matched no rows stops immediately. The step now
+      // belongs to someone else; touching the row further would be exactly the
+      // interference the guard exists to prevent.
       if (error instanceof StepOwnershipLost) {
         log.warn('step.ownership_lost', { duration_ms: now().getTime() - startedAt })
         return { status: 'not_claimed' }
@@ -277,10 +280,12 @@ async function settleFailure<C>(
   const duration_ms = now().getTime() - args.startedAt
   // The stack is the half that was missing: a bare message says a step failed,
   // a stack says where. Both go through the scrubber, so a token embedded in
-  // either is redacted before it reaches the sink (tech §4).
+  // either is redacted before it reaches the sink.
   const stack = error instanceof Error ? error.stack : undefined
 
-  // §14.3.5 / §6.2 — token errors route to awaiting_shopify_auth, not the DLQ.
+  // A dead Shopify token is not a bug to retry: it needs the merchant to
+  // reconnect, so it moves the account to awaiting_shopify_auth rather than
+  // filling the dead-letter queue with work nobody can fix.
   if (error instanceof TokenInvalidFailure) {
     await guardedTransition(db, stepId, 'running', 'failed_terminal', { lastError: message })
     log.warn('step.awaiting_reauth', {

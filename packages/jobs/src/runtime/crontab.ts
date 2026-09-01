@@ -1,12 +1,12 @@
 /**
- * tech §2 — "Scheduled jobs (Graphile crontab)". The registry lives here so the
- * full set of recurring work is visible in one file; the tasks themselves are
+ * Every recurring job the product runs. The registry lives here so the full set
+ * of scheduled work is visible in one file; the tasks themselves are
  * owned by the lanes that build them, and a name here without a task registered
  * is caught at worker start (see `assertCrontabTasksExist`).
  *
  * Times are UTC — Graphile's crontab is server-time. Per-account clock work
- * (the publish hour in the persona country's timezone, main §9.4; the Monday
- * signal scan on the persona clock, main §9.6.1) is resolved *inside* the task
+ * (the publish hour in the persona country's timezone; the Monday signal scan
+ * on the persona clock) is resolved *inside* the task
  * against `account_settings.timezone`, not by the schedule. A crontab cannot
  * express "09:00 in each account's own zone", and pretending otherwise is how
  * a German store gets published to at 09:00 UTC.
@@ -17,79 +17,79 @@ export interface CronEntry {
   task: string
   /** Standard 5-field crontab expression, UTC. */
   schedule: string
-  /** Why this exists, and which section requires it. */
-  spec: string
+  /** Why this job exists and what it is expected to do. */
+  why: string
 }
 
 export const CRON_ENTRIES: readonly CronEntry[] = [
   {
     task: 'generation_cycle_daily',
     schedule: '0 3 * * *',
-    spec: 'main §9.1 — the daily generation cycle, run early enough that Gate 3 and the repair loop finish before any account\'s publish hour (§9.4).',
+    why: 'The daily generation cycle. Runs early enough that grading and the one repair loop finish before any account\'s publish hour.',
   },
   {
     task: 'reconciliation_sweep_daily',
     schedule: '30 4 * * *',
-    spec: 'main §14.1, §14.3.8 — catalog drift sweep; also syncs the content inventory (main §12.3).',
+    why: 'Catches catalog changes the webhooks missed, and syncs the store\'s content inventory.',
   },
   {
     task: 'gsc_sync_daily',
     schedule: '0 5 * * *',
-    spec: 'main §12.2 — daily GSC page × query sync.',
+    why: 'Pulls the day\'s Search Console page-by-query data.',
   },
   {
     task: 'landing_revenue_aggregate_daily',
     schedule: '30 5 * * *',
-    spec: 'main §17.3 — daily landing-revenue aggregation, capture only in V1.',
+    why: 'Aggregates revenue by landing page. V1 only captures it; nothing reads it yet.',
   },
   {
     task: 'signal_scan_weekly',
     schedule: '0 6 * * 1',
-    spec: 'main §7.5, §9.6.1 — the Monday signal scan. The task filters to accounts whose local Monday it is.',
+    why: 'The weekly signal scan. The task filters to accounts for whom it is locally Monday, because the schedule cannot express per-account time zones.',
   },
   {
     task: 'ctr_curve_refit_weekly',
     schedule: '0 7 * * 1',
-    spec: 'tech §2 — weekly CTR-curve refit; the input to the Low-CTR signal (main §7.3).',
+    why: 'Refits each store\'s own click-through curve, which is what the low-CTR signal compares against instead of an absolute rate.',
   },
   {
     task: 'replenishment_monthly',
     schedule: '0 8 1 * *',
-    spec: 'main §9.6.1 — monthly replenishment when the planned horizon drops below the configured days.',
+    why: 'Tops the calendar back up when its planned horizon drops below the configured number of days.',
   },
   {
     task: 'monthly_summary',
     schedule: '0 8 1 * *',
-    spec: 'tech §1.4 — the monthly summary email, assembled per account at 08:00 persona-country time.',
+    why: 'The monthly summary email, assembled per account at 08:00 in the persona country\'s time.',
   },
   {
     task: 'publish_intent_recovery_sweep',
     schedule: '*/5 * * * *',
-    spec: 'main §14.3.7 — every 5 min, adopt or re-execute pending publish intents older than 10 min.',
+    why: 'Finds publish attempts that never confirmed, checks the remote for our marker, and adopts or retries them — so a crash mid-publish cannot leave a post half-made or make two.',
   },
   {
     task: 'oauth_reminder_sweep',
     schedule: '0 * * * *',
-    spec: 'tech §1.4 — hourly sweep for the 24h OAuth reminder; idempotent via the notification dedupe key.',
+    why: 'Sends the 24-hour reminder to finish connecting Shopify. Safe to run repeatedly: the notification dedupe key stops a second send.',
   },
   {
     task: 'export_url_reminder_sweep',
     schedule: '15 * * * *',
-    spec: 'tech §1.4 — hourly sweep for the 7d export-URL reminder.',
+    why: 'Sends the 7-day reminder that an exported article has not been published yet.',
   },
   {
     task: 'subscription_reconciliation_nightly',
     schedule: '0 2 * * *',
-    spec: 'main §4.2, tech §3 — re-fetch any subscription whose synced_at is >24h stale. No Stripe call ever sits in a request path.',
+    why: 'Re-fetches any subscription we have not heard about in over a day, so a missed webhook cannot leave someone wrongly entitled or wrongly cut off. This is the only place we call Stripe on a schedule; no request path ever does.',
   },
   {
     task: 'retention_sweep_daily',
     schedule: '0 1 * * *',
-    spec:
-      'tech §1.7, §2.1 — notifications at 90d, email_sends at 12mo, webhook_events at 30d, ' +
+    why:
+      'Deletes what we no longer need: notifications at 90d, email_sends at 12mo, webhook_events at 30d, ' +
       'request_cache on TTL, gsc rollups at 16mo. ' +
       // `idempotency_ledger` is the record of which paid work has already been
-      // done (main §14.3.2, "the cache is the ledger"). Delete a row inside the
+      // done. Delete a row inside the
       // window in which the queue could still redeliver that work and the replay
       // runs it for real: a re-billed Shopify crawl for `catalog_sync`, a
       // re-billed set of LLM calls for `distill`. So it is prunable only by age,
@@ -97,7 +97,7 @@ export const CRON_ENTRIES: readonly CronEntry[] = [
       // never as part of deleting a store's data. `ledger.test.ts` fails if any
       // production code path deletes from it at all, so a future age-based sweep
       // has to change that test deliberately rather than by accident.
-      'idempotency_ledger: PRUNE BY AGE ONLY, never by job or account — it is the record of completed paid work (§14.3.2), not history.',
+      'idempotency_ledger: PRUNE BY AGE ONLY, never by job or account — it is the record of completed paid work, not history.',
   },
 ]
 

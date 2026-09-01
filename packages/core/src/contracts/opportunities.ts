@@ -1,7 +1,7 @@
 import type { EventAttribution } from './analytics'
 
 /**
- * The vocabulary the Opportunity Engine's seams speak (main §7). Declared here
+ * The vocabulary the Opportunity Engine's seams speak. Declared here
  * rather than in Lane C's package so the contracts below — and the API schemas —
  * can name these types before the engine exists.
  *
@@ -10,11 +10,11 @@ import type { EventAttribution } from './analytics'
  * this shape at the seam.
  */
 
-/** main §7.4 — the action catalog. */
+/** Everything we can propose doing about an opportunity. */
 export const OPPORTUNITY_ACTIONS = ['CREATE', 'OPTIMIZE', 'REFRESH', 'FIX', 'HOLD'] as const
 export type OpportunityAction = (typeof OPPORTUNITY_ACTIONS)[number]
 
-/** main §7.9 — `new → accepted → scheduled → executing → completed | dismissed | blocked | expired`. */
+/** An opportunity's lifecycle: `new → accepted → scheduled → executing → completed | dismissed | blocked | expired`. */
 export const OPPORTUNITY_STATUSES = [
   'new',
   'accepted',
@@ -33,14 +33,15 @@ export type ImpactBand = (typeof IMPACT_BANDS)[number]
 export const CONFIDENCE_BANDS = ['high', 'medium', 'low'] as const
 export type ConfidenceBand = (typeof CONFIDENCE_BANDS)[number]
 
-/** main §8.7 — the article template an intent class selects. */
+/** The article template an intent class selects. */
 export const INTENT_CLASSES = ['buying_guide', 'comparison', 'how_to', 'informational'] as const
 export type IntentClass = (typeof INTENT_CLASSES)[number]
 
 /**
- * main §7.6 — "Every opportunity row has evidence (with source + window per
- * fact)". The source and window are not decoration: the UI renders them on the
- * card ("Search Console, last 28 days"), and a fact without them cannot be shown.
+ * One fact behind an opportunity. The source and window are not decoration:
+ * the UI renders them on the card ("Search Console, last 28 days"), and a fact
+ * that cannot say where it came from or over what period cannot be shown at
+ * all.
  */
 export interface EvidenceFact {
   readonly key: string
@@ -53,9 +54,10 @@ export interface EvidenceFact {
 }
 
 /**
- * main §7.9 — the dedupe key. The partial unique index is on
- * `(account_id, signal_type, entity_ref)`, so an entity reference is part of a
- * signal's identity, not a display field.
+ * What an opportunity is *about*. The open-opportunity unique index is on
+ * `(account_id, signal_type, entity_ref)`, so this is part of a signal's
+ * identity rather than a display field — get it wrong and re-detection creates
+ * a duplicate instead of updating the row.
  */
 export interface EntityRef {
   readonly kind: 'query_cluster' | 'page' | 'product' | 'family' | 'article'
@@ -76,52 +78,53 @@ export interface Opportunity {
   readonly confidenceScore: number
   readonly confidence: ConfidenceBand
   readonly evidence: readonly EvidenceFact[]
-  /** main §7.1, invariant 8 — the why-line renders from this key, never from an LLM. */
+  /** The why-line renders from this key and the record around it. No LLM ever writes a reason the merchant reads. */
   readonly reasonTemplateKey: string
   /** Values the template interpolates. Numbers and ids only. */
   readonly reasonParams: Readonly<Record<string, string | number>>
-  /** main §7.9 — an open precondition; the card renders a blocked ribbon. */
+  /** Something that must be resolved first; while it is open the card renders a blocked ribbon. */
   readonly preconditions: readonly string[]
-  /** main §7.10 — the hash of `signals.config.yaml` that produced this row. */
+  /** The hash of `signals.config.yaml` that produced this row, so a result can always be traced to the numbers behind it. */
   readonly rulesVersion: string
-  /** main §7.11 — produced without Search Console data. */
+  /** Produced without Search Console data, so it rests on inference rather than measurement. */
   readonly limitedIntelligence: boolean
   readonly detectedAt: string
   readonly expiresAt?: string
 }
 
 /**
- * main §7.7 — "The existing-target check (mandatory before any CREATE) … the
- * single most important rule in the merge". Invariant 6: Gate 1's
- * cannibalisation check and §7.7 are the *same function*, and a match converts
- * to OPTIMIZE or REFRESH — never a competing URL.
+ * The existing-target check runs before any CREATE and is the same function as
+ * the cannibalization check — deliberately, so the two can never disagree. A
+ * match converts the work to OPTIMIZE or REFRESH; it never results in a second
+ * page of ours competing with the first.
  */
 export interface QueryCluster {
   /** The head term the cluster is named by. */
   readonly head: string
-  /** The related-keyword expansion (main §9.6.3). */
+  /** The related keywords the head term expands to. */
   readonly members: readonly string[]
   readonly intentClass: IntentClass
-  /** Product families this cluster maps to (main §6.4). */
+  /** Product families this cluster maps to. */
   readonly familyIds: readonly string[]
 }
 
 export type ExistingTargetOutcome =
   | { readonly match: 'none' }
-  /** §7.7.3 — a real match. CREATE must not proceed; this becomes OPTIMIZE or REFRESH. */
+  /** A real match. CREATE must not proceed; this becomes OPTIMIZE or REFRESH. */
   | {
       readonly match: 'strong'
       readonly url: string
       readonly action: 'OPTIMIZE' | 'REFRESH'
-      /** Which of §7.7's three lookups found it: `gsc`, `content_mapping`, `limited_intelligence`. */
+      /** Which of the three lookups found it: Search Console data, our own content mapping, or the no-GSC fallback. */
       readonly via: 'gsc' | 'content_mapping' | 'limited_intelligence'
       readonly position?: number
     }
   /**
-   * §7.7.4 — "If the match is weak (position > 30, or a product page for a
-   * category-level intent), CREATE may proceed **only** with the existing URL
-   * recorded in `evidence.existing_target` and an internal-linking task
-   * attached". The caller must honour both halves.
+   * A weak match — the page ranks badly, or it is a product page for a
+   * category-level query. CREATE may proceed, but **only** with the existing
+   * URL recorded in the evidence and an internal-linking task attached. The
+   * caller must honour both halves; doing one without the other leaves us with
+   * two pages and nothing tying them together.
    */
   | {
       readonly match: 'weak'
@@ -136,19 +139,19 @@ export interface ExistingTargetCheck {
 }
 
 /**
- * Build plan §4 — Lane C produces accepted content opportunities; Lane D's
- * replenishment and calendar seeding consume them.
+ * Lane C produces accepted content opportunities; Lane D's replenishment and
+ * calendar seeding consume them.
  */
 export interface OpportunitySource {
-  /** main §7.9 — CREATE and REFRESH are auto-accepted under the V1 autopilot policy. */
+  /** CREATE and REFRESH are auto-accepted: V1 runs on autopilot, so these need no merchant approval. */
   acceptedContentOpportunities(accountId: string): Promise<readonly Opportunity[]>
 }
 
-/** Build plan §4 — Lane D produces the scheduler; Lane C's onboarding run seeds the calendar. */
+/** Lane D produces the scheduler; Lane C's onboarding run seeds the calendar. */
 export interface ScheduledTopic {
   readonly topicId: string
   readonly opportunityId: string
-  /** ISO date (no time): the calendar is a date grid (main §8.7). */
+  /** ISO date, no time: the calendar is a grid of days, not a schedule of moments. */
   readonly scheduledFor: string
   readonly title: string
   readonly state: 'planned' | 'checking' | 'generating' | 'in_review' | 'published' | 'rejected_by_gate' | 'vetoed'
@@ -156,16 +159,17 @@ export interface ScheduledTopic {
 
 export interface TopicScheduler {
   /**
-   * main §8.7 — "picks the next open calendar day by default; a date picker
-   * allows any future day". A pinned occupant is never displaced.
+   * Picks the next open calendar day by default; a caller may name any future
+   * day instead. A pinned occupant is never displaced.
    */
   schedule(opportunity: Opportunity, date?: string): Promise<ScheduledTopic>
 }
 
 /**
- * Build plan §4 — Lane D's judge, reused by Lane E to grade OPTIMIZE
- * recommendations. Invariant 11: the judge is a separate call, blind to the
- * writer's context, and **never** run on a smaller model.
+ * Lane D's judge, reused by Lane E to grade OPTIMIZE recommendations. It is a
+ * separate call, blind to the writer's context, and never run on a cheaper
+ * model — a grader that saw the writer's reasoning, or that thought less hard
+ * than the writer did, is not a check on anything.
  */
 export interface JudgeScores {
   readonly informationGain: number
@@ -176,7 +180,7 @@ export interface JudgeScores {
 export interface JudgeVerdict {
   readonly passed: boolean
   readonly scores: JudgeScores
-  /** Plain-language justification per criterion; rendered on the §8.6 rejection card. */
+  /** Plain-language justification per criterion; the merchant reads these on the rejection card. */
   readonly justifications: Readonly<Record<string, string>>
   readonly promptVersion: string
   readonly modelId: string
@@ -187,8 +191,8 @@ export interface JudgeLite {
 }
 
 /**
- * Build plan §4 — Lane B's product/collection change stream, consumed by Lane
- * C's content inventory and Lane D's drift detection (main §14.1).
+ * Lane B's product/collection change stream, consumed by Lane C's content
+ * inventory and Lane D's drift detection.
  */
 export interface CatalogEvent {
   readonly accountId: string
@@ -200,7 +204,7 @@ export interface CatalogEvent {
     | 'price_changed'
     | 'availability_changed'
   readonly entityId: string
-  /** main §14.3.8 — out-of-order delivery is normal; consumers compare this. */
+  /** Deliveries arrive out of order as a matter of course; consumers order by this rather than by arrival. */
   readonly occurredAt: string
   readonly changedFields: readonly string[]
 }
@@ -210,9 +214,9 @@ export interface CatalogEvents {
 }
 
 /**
- * tech §1.2 — notifications are append-only records with a unique
- * `(account_id, type, dedupe_key)`; every lane emits at its own points.
- * Invariant 26.
+ * Notifications are append-only rows, unique on
+ * `(account_id, type, dedupe_key)`, so a retried job cannot notify twice. Every
+ * lane emits at its own points.
  */
 export const NOTIFICATION_TYPES = [
   'ingestion_review_ready',
@@ -236,9 +240,9 @@ export type NotificationType = (typeof NOTIFICATION_TYPES)[number]
 
 export interface NotificationEmitter {
   /**
-   * tech §1.2 — `refs` holds **references only** (topic_id, article_id,
-   * opportunity_id …). Display text is produced at render time, so a copy fix
-   * never requires touching stored rows.
+   * `refs` holds **references only** (topic_id, article_id, opportunity_id …).
+   * Display text is produced at render time, so a copy fix never requires
+   * rewriting stored rows.
    */
   emit(
     type: NotificationType,

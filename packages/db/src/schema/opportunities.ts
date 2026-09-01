@@ -23,7 +23,7 @@ import {
   signalTypeEnum,
 } from './enums'
 
-/** main §7.9 — the statuses an opportunity is still open in. */
+/** The statuses an opportunity is still open in. */
 export const OPEN_OPPORTUNITY_STATUSES = [
   'new',
   'accepted',
@@ -33,14 +33,14 @@ export const OPEN_OPPORTUNITY_STATUSES = [
 ] as const
 
 /**
- * main §13 `opportunities`, §7.6, §7.9. Constitution invariants 7 and 10.
+ * One thing worth doing for one store, and the record of why we think so.
  *
- * Invariant 7: signal and action are never mapped one-to-one, and every row
- * carries its evidence, impact, confidence, reason template key, recommended
- * action, preconditions and `rules_version`. Everything §7.6 marks "Required"
- * is `NOT NULL` here, so a row that cannot explain itself cannot be written.
+ * A signal is never mapped straight onto an action: every row carries its own
+ * evidence, impact, confidence, reason key, recommended action, preconditions
+ * and the version of the rules that produced it. All of those are `NOT NULL`,
+ * so a row that cannot explain itself cannot be written at all.
  *
- * Invariant 8: `reason_template_key` + `reason_params_json` are the *only* way
+ * `reason_template_key` + `reason_params_json` are the *only* way
  * a why-line is produced. There is deliberately no column holding rendered
  * prose, because a column that exists is a column an LLM's output can be put in.
  *
@@ -56,25 +56,26 @@ export const opportunities = pgTable(
       .references(() => accounts.id, { onDelete: 'cascade' }),
     signalType: signalTypeEnum('signal_type').notNull(),
     entityType: opportunityEntityTypeEnum('entity_type').notNull(),
-    /** Part of the dedupe key, so it is an identity, not a display field (§7.9). */
+    /** Part of the dedupe key, so it is an identity rather than a display field. */
     entityRef: text('entity_ref').notNull(),
-    /** §7.6 — auditable; each fact carries `source`, `window`, `fetched_at`. */
+    /** Auditable: each fact carries where it came from, over what window, and when we fetched it. */
     evidenceJson: jsonb('evidence_json').notNull(),
     impact: impactBandEnum('impact').notNull(),
-    /** §7.6 — 0–100, a percentile rank within the row's own action family. */
+    /** 0–100, a percentile rank within this store's own candidates of the same action type — never a cross-store number. */
     impactScore: integer('impact_score').notNull(),
-    /** §7.6 — 0–100 stored, shown as a band. */
+    /** 0–100 stored; the merchant sees a band. */
     confidence: integer('confidence').notNull(),
     reasonTemplateKey: text('reason_template_key').notNull(),
     reasonParamsJson: jsonb('reason_params_json').notNull().default(sql`'{}'::jsonb`),
     recommendedAction: recommendedActionEnum('recommended_action').notNull(),
-    /** §7.6 — non-empty implies `blocked` / HOLD. A list, e.g. `["catalog_richness_gap"]`. */
+    /** Anything that must be resolved first. Non-empty means the row is blocked; e.g. `["catalog_richness_gap"]`. */
     preconditionsJson: jsonb('preconditions_json').notNull().default(sql`'[]'::jsonb`),
     status: opportunityStatusEnum('status').notNull().default('new'),
     /**
-     * §7.11 — produced without Search Console data. §14.7's
-     * `opportunity_detected` event carries it as a property and the card renders
-     * the Limited Intelligence badge from it; §13's sketch omits the column.
+     * Produced without Search Console data, so it rests on inference rather
+     * than measurement. The analytics event carries it and the card renders the
+     * Limited Intelligence badge from it, which is why it is stored rather than
+     * recomputed.
      */
     limitedIntelligence: boolean('limited_intelligence').notNull().default(false),
     /**
@@ -87,21 +88,21 @@ export const opportunities = pgTable(
     rulesVersion: text('rules_version').notNull(),
     detectedAt: timestamp('detected_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-    /** §7.9 — expiry is logged with its reason and never deletes the row. */
+    /** Why the row expired. Expiry records a reason and never deletes: the history is what the learning loop reads. */
     expiredReason: text('expired_reason'),
     appliedAt: timestamp('applied_at', { withTimezone: true }),
-    /** §9.6.10 — null until the +28-day measurement runs. */
+    /** Null until the 28-day measurement runs; before that there is nothing honest to record. */
     outcomeJson: jsonb('outcome_json'),
     outcomeMeasuredAt: timestamp('outcome_measured_at', { withTimezone: true }),
   },
   (t) => [
     /**
-     * Invariant 10 / §7.9: "partial unique index on
-     * `(account_id, signal_type, entity_ref) WHERE status IN (new, accepted,
-     * scheduled, executing, blocked)` — a re-detected signal updates evidence
-     * and score on the open row instead of creating a duplicate."
-     * Completed, dismissed and expired rows stay as history and feed learning,
-     * which is why they are outside the index.
+     * Only one *open* opportunity may exist per
+     * `(account_id, signal_type, entity_ref)`, so a signal detected again next
+     * week updates the evidence and score on the existing row instead of
+     * stacking up duplicates in the merchant's list. Completed, dismissed and
+     * expired rows stay as history and feed learning, which is why they are
+     * outside the index.
      */
     uniqueIndex('opportunities_open_signal_entity_key')
       .on(t.accountId, t.signalType, t.entityRef)
@@ -113,8 +114,6 @@ export const opportunities = pgTable(
 )
 
 /**
- * main §13 `opportunity_tasks`, §7.5 step 6, §10.4.
- *
  * The concrete units of work an opportunity decomposes into — the things the
  * merchant marks applied one at a time on the recommendation card.
  */
@@ -136,12 +135,10 @@ export const opportunityTasks = pgTable(
 )
 
 /**
- * main §13 `optimize_recommendations`, §10.3.
- *
  * The generated advice for one existing store page. Nothing here is ever
- * written to Shopify in V1 (invariant 21) — the merchant copies or downloads
- * it. A recommendation that fails the grounding lint twice is stored as
- * `failed_validation` rather than shown half-finished (§10.3 step 4).
+ * written to Shopify in V1 — the merchant copies or downloads it. A
+ * recommendation that fails its grounding check twice is stored as
+ * `failed_validation` rather than shown half-finished.
  */
 export const optimizeRecommendations = pgTable(
   'optimize_recommendations',
@@ -152,7 +149,7 @@ export const optimizeRecommendations = pgTable(
       .references(() => opportunities.id, { onDelete: 'cascade' }),
     pageUrl: text('page_url').notNull(),
     recommendationJson: jsonb('recommendation_json').notNull(),
-    /** §10.3 step 5 — the judge-lite scores; grounding and intent-match, floors ≥ 4. */
+    /** The grader's scores for this recommendation: grounding and intent match, each of which has to clear its floor. */
     judgeScoresJson: jsonb('judge_scores_json'),
     /** Invariant 25 — prompt version and model id stamped on every artefact. */
     promptVersion: text('prompt_version').notNull(),
@@ -165,11 +162,9 @@ export const optimizeRecommendations = pgTable(
 )
 
 /**
- * main §13 `signal_runs`, §7.5.
- *
- * One row per detection pass, with the counts §14.7's `signal_run_completed`
- * event reports. `(account_id, run_id)` is unique so an at-least-once worker
- * re-running the same pass records it once (main §14.3).
+ * One row per detection pass, with the counts the run's analytics event
+ * reports. `(account_id, run_id)` is unique, so a queue that delivers the same
+ * pass twice still records it once.
  */
 export const signalRuns = pgTable(
   'signal_runs',
@@ -192,8 +187,6 @@ export const signalRuns = pgTable(
 )
 
 /**
- * main §13 `dismissed_opportunities`, §7.9.
- *
  * The opportunity-level not-interested list. Keyed on the same
  * `(signal_type, entity_ref)` pair the dedupe index uses, so a dismissed
  * signal is never re-proposed — with a "show dismissed" view to undo it.
@@ -214,12 +207,11 @@ export const dismissedOpportunities = pgTable(
 )
 
 /**
- * main §13 `rules_overrides`, §7.10.
- *
  * The layered configuration table. V1 ships global and per-locale defaults from
- * `packages/rules/signals.config.yaml` and this table stays empty — §7.10 says
- * "the override tables exist in the schema even if empty". Invariant 9 is
- * unaffected: no threshold literal lives in application code either way.
+ * `packages/rules/signals.config.yaml` and this table stays empty; it exists now
+ * so the layering code path is real and exercised rather than retrofitted under
+ * a live system later. Either way no threshold literal lives in application
+ * code.
  *
  * `account_id` is null for a global or locale-wide override, so this is one of
  * the tables reached under `SystemScope`; see `scope.ts`.

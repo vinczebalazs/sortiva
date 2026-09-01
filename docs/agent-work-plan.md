@@ -42,6 +42,30 @@ Concurrency ceiling: **four implementers at once**. Above that, schema-wave cont
 | **F — Frontend** | `apps/web/app/(app)/**`, `apps/web/app/(public)/**`, `packages/ui` | ui §1–§11 | API contracts (OpenAPI/zod from M0) via MSW mocks; real APIs as lanes land | every screen |
 | **G — Ops, notifications, email** | `packages/core/{notifications,email,lifecycle}`, `packages/providers/{email,posthog}`, `packages/jobs/{notify,retention,sweeps}`, `apps/web/app/api/{notifications,webhooks/resend}`, `ops/posthog/*` | tech §1, §5; main §14.5, §14.6, §14.7 | M0; emission points from every lane via `NotificationEmitter` | bell/email, kill switches, dashboards-as-code |
 
+**Files no lane owns, and what to do about them.** The lane table above divides
+directories. It does not divide the handful of files *every* lane must append to,
+and in wave 1 those were the entire collision surface — measured across the merge:
+`packages/core/src/index.ts` and `eslint.config.mjs` touched by eight cards each,
+`packages/db/src/index.ts` by seven, `apps/web/instrumentation.ts` and
+`packages/db/src/testing.ts` by six, `scripts/prove-lint.mjs` by five.
+
+Three different answers, by shape:
+
+- **Append-only lists** — the barrel `index.ts` files and `DECISIONS.md` — are
+  marked `merge=union` in `.gitattributes`. Two lanes adding different lines now
+  merge with no conflict and both survive. The decision journal alone needed
+  hand-resolving in three of four wave-1 merges, and a hand-resolved merge is a
+  chance to silently drop somebody's work.
+- **Registries** are discovered rather than listed. `pnpm lint:prove` reads one
+  file per planted violation from `scripts/lint-proofs/`, so a lane adding a rule
+  adds a file. It refuses to run on an empty directory, because an empty proof
+  proves nothing. Prefer this shape for anything a lane extends.
+- **Ordered code** — `eslint.config.mjs`, `apps/web/instrumentation.ts`,
+  `packages/db/src/testing.ts` — is deliberately *not* union-merged, because
+  merging both sides of a file whose lines depend on each other can be silently
+  wrong rather than loudly broken. These stay integrator-resolved. If a lane needs
+  to change one, say so in the session report so the integrator expects it.
+
 **Schema ownership:** nobody. Migrations land only in schema-wave cards (T0.3, T2.0, T4.0, T8.0), each authored by the lane that needs the wave most and reviewed by the integrator. A feature card needing an extra column writes a `DECISIONS.md` entry and either waits for the next wave or asks the integrator to hot-add a mini-wave — it never adds a migration itself.
 
 ---
@@ -67,23 +91,115 @@ Rule: a consumer card's done-when may pass against the stub, but the milestone e
 
 ## 5. Milestones, dependency order & parallel waves
 
+**Revised 2026-09-01**, after wave 1 shipped, from the dependencies as they
+actually are rather than as the original wave diagram assumed. The change is not
+cosmetic: schema wave 2 is merged, which unblocks two lanes the diagram put a
+whole wave later.
+
+### What is done
+
+M0 complete. M1 complete. `T2.0` merged, plus two mini-waves (`T1.2a`, `T2.0b`)
+and five remediation cards (`R1`–`R5`) that came out of the audits and are not in
+§6's numbering. Nineteen commits on `main`; twelve of the fifty-eight planned
+cards.
+
+### What can start immediately
+
+Four lanes, which is the concurrency cap. None of these four waits on another:
+
+| Lane | Card | Unblocked because |
+|---|---|---|
+| **B** | `T2.1` | `T1.4` (domain claim) is merged |
+| **F** | `T9.1` | frontend build cards need only `T0.7` |
+| **C** | `T3.1` | needs `T2.0` and `T0.7`; nothing from the rest of M2 |
+| **G** | `T8.0` | a schema wave, dependent on nothing |
+
+Start `T8.0` early on purpose. It is a schema wave, and schema waves are the only
+cards allowed to add a column — so every later card that discovers it needs one
+waits for the next wave or negotiates a mini-wave. Wave 1 needed three such
+negotiations. Landing wave 4's schema before the cards that consume it removes
+that scramble.
+
+### The critical path, and it is only one lane
+
+Lane B's remaining cards are genuinely serial — sync the catalogue, distil
+products into facts, group facts into families, build the persona from the
+families, derive keywords from the axes, confirm. Each consumes the previous
+one's output.
+
+That matters because **`T2.4` (families) and `T2.5` (persona) gate the entire
+content engine and the catalog half of the Opportunity Engine**:
+
 ```
-M0 Foundation ──────────────────────────────┐ (serial: 1–2 agents)
-                                             │
-Wave 1:   M1 Platform (A)   ║  M2 Store Intel (B)  ║  M9.1–9.2 Shell+public (F)
-                                             │
-Wave 2:   M3 Opp. Engine (C) ║ M4 Content (D) ║ M9.3 Onboarding (F) ║ M8.1/8.3 Notif+lifecycle (G)
-                                             │
-Wave 3:   M5 Publish+repair (D) ║ M6 OPTIMIZE/FIX (E) ║ M9.4–9.6 Screens (F) ║ M8.2/8.4 Email+ops (G)
-                                             │
-Wave 4:   M7 Learning (C+D) ║ M9.7–9.8 Settings+E2E (F) ║ integration fixes
-                                             │
-M10 Exit gates (serial: chaos test, invariant sweep, drift check, dev-store smoke, listing checklist)
+T2.1 → T2.2 → T2.3 → T2.4 → T2.5 ──┬──→ T2.6 → T2.7
+                                    ├──→ M4 (7 cards) → M5 (3 cards) → M7
+                                    └──→ T3.5 → T3.6 → T3.7 ──→ M6
 ```
 
-Hard dependencies (a card cannot start before these are merged): M2 needs T1.4 (domain claim). M3 needs T2.0 (schema wave 2) and T0.7; full signal detection needs T2.4–T2.5 merged (until then it runs on fixtures). M4 needs T2.4–T2.5 and T0.7. M5 needs T4.4. M6 needs T3.6 and T4.4. M7 needs T5.1 (published articles) and T3.7. Frontend integration cards need their backend cards; frontend build cards need only T0.7.
+Roughly fifteen cards of unavoidable sequence. Everything else fits alongside
+without extending it, so adding sessions beyond four shortens nothing — the
+schedule is set by Lane B, then Lane D.
 
-Each milestone ends with an **exit gate** card whose done-when proves the milestone as a whole; a milestone cannot be declared complete by summing its cards.
+### M3 splits, and the original diagram hid it
+
+The old diagram put all of M3 in one wave behind M2. Four of its seven cards do
+not need M2 at all:
+
+- `T3.1` Search Console OAuth and sync — needs `T2.0` only.
+- `T3.2` store content inventory — needs `store_pages` (in `T2.0`) and the
+  `CatalogEvents` contract, which has a stand-in until `T2.2`.
+- `T3.3` query clusters and the CTR curve — needs `T3.1`'s data.
+- `T3.4` Search-Console signal detection — needs `T3.3`.
+
+Only `T3.5` onward needs families and persona. Lane C can therefore run four
+cards deep while Lane B is still on its second.
+
+### Revised waves
+
+```
+Now:      T2.1 (B) ║ T9.1 (F) ║ T3.1 (C) ║ T8.0 (G)
+Then:     T2.2 → T2.3 → T2.4 → T2.5 → T2.6 → T2.7   (B, serial — the critical path)
+          T3.2 → T3.3 → T3.4                        (C, parallel to B)
+          T9.2 → T9.3 → T9.4 …                      (F, parallel throughout)
+          T8.1 → T8.2 → T8.3                        (G, parallel throughout)
+After T2.5:   M4 (D) ║ T3.5 → T3.6 → T3.7 (C)
+After T4.4:   M5 (D) ║ M6 (E)
+After T5.1 + T3.7:   M7 (C+D)
+Finally:  M10 exit gates, serial
+```
+
+### Hard dependencies
+
+A card cannot start before these are merged. `M2` needs `T1.4` ✅. `M3` needs
+`T2.0` ✅ and `T0.7` ✅; `T3.5` onward additionally needs `T2.4`–`T2.5`. `M4`
+needs `T2.4`–`T2.5`. `M5` needs `T4.4`. `M6` needs `T3.6` and `T4.4`. `M7` needs
+`T5.1` and `T3.7`. Frontend integration cards need their backend cards; frontend
+build cards need only `T0.7`.
+
+### One card to pull forward
+
+**The spend caps should not wait for `T8.4`.** They are currently the last card of
+milestone 8, in the third wave. The meter is already populated — every paid vendor
+call writes to `spend_events` — and the cap values are already in
+`packages/rules`. What is missing is "sum the last day, compare, refuse to
+dequeue", which is a small fraction of that card.
+
+From the moment `T2.2` starts making real vendor calls, spending is unbounded with
+no brake, and the first month of real merchants is when a runaway loop is most
+likely. Splitting the caps out as a small early card in Lane G removes that,
+independently of the incident records, four-eyes reset and dashboards that make up
+the rest of `T8.4`.
+
+### Cards created outside this numbering
+
+Recorded in full in `docs/audits/remediation.md`: the spec-citation sweep, the
+operations card (diagnosis script, one-command dead-letter replay, a health check
+that can fail, crash reporting), and the durable account-scoping fix. None is
+owned by a lane; each is small and can slot between cards.
+
+Each milestone still ends with an **exit gate** card whose done-when proves the
+milestone as a whole; a milestone cannot be declared complete by summing its
+cards.
 
 ---
 

@@ -56,7 +56,13 @@ export default tseslint.config(
   // proves the rule works has to plant it. Those two files are the definition
   // and the proof, not a call site.
   {
-    files: ['tools/eslint-plugin-sortiva/rules/no-direct-vendor-http.js', 'scripts/prove-lint.mjs'],
+    files: [
+      'tools/eslint-plugin-sortiva/rules/no-direct-vendor-http.js',
+      'scripts/prove-lint.mjs',
+      // The planted violations themselves. Each case file exists to contain the
+      // thing the rule bans; that is the whole point of it.
+      'scripts/lint-proofs/**',
+    ],
     rules: { 'sortiva/no-direct-vendor-http': 'off' },
   },
 

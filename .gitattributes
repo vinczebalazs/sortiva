@@ -1,0 +1,27 @@
+# Append-only files: every lane adds a line, nobody edits an existing one.
+#
+# These were the top collision sites in wave 1 — the decision journal alone
+# needed hand-resolving in three of four merges, and a hand-resolved merge is a
+# chance to silently drop somebody's work. `merge=union` keeps both sides
+# instead of raising a conflict.
+#
+# Safe here because these files are lists, not logic: two lanes appending
+# different entries want both entries. If two lanes ever add the *same* export,
+# union produces a duplicate line and the typecheck fails loudly, which is the
+# right failure.
+#
+# Do NOT add a file here whose lines depend on each other, or where two lanes
+# might edit the same line. `eslint.config.mjs`, `apps/web/instrumentation.ts`
+# and `packages/db/src/testing.ts` are all shared and all excluded on purpose:
+# order matters in them, so a merged-both-sides result could be silently wrong
+# rather than loudly broken.
+
+DECISIONS.md              merge=union
+
+packages/core/src/index.ts          merge=union
+packages/db/src/index.ts            merge=union
+packages/db/src/schema/index.ts     merge=union
+packages/db/src/repositories/index.ts merge=union
+packages/providers/src/index.ts     merge=union
+packages/jobs/src/index.ts          merge=union
+packages/ui/src/index.ts            merge=union
