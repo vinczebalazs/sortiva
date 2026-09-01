@@ -434,7 +434,7 @@ Audit output is always a written report with `[severity] §ref — finding / spe
 
 ## 9. Standing rules (every card, every session)
 
-1. Read the card's cited sections before writing code; cite them in the commit message.
+1. Read the card's cited sections before writing code. Do not cite them in the commit message or in code comments — the commit title says what changed, in words.
 2. Undictated choices go to `DECISIONS.md` immediately. Large ones (user-visible behaviour, an interface another lane consumes) stop the session and ask.
 3. New thresholds go to `packages/rules`, never inline. New copy goes to `packages/ui/strings`, never inline.
 4. Stay inside your lane's directories; migrations only in schema-wave cards; contracts change only through the integrator.
