@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto'
 import { migrate } from 'drizzle-orm/node-postgres/migrator'
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres'
 import pg from 'pg'
@@ -67,12 +68,26 @@ export async function databaseAvailable(): Promise<boolean> {
  * in parallel, and two suites truncating the same tables produce failures that
  * look like constraint bugs and are not. `label` must be unique per test file.
  */
+/**
+ * A suffix unique to this process, so two test runs cannot own the same database.
+ *
+ * The names used to be fixed constants, and every suite began by force-dropping
+ * its database — which disconnects whoever is attached. Two runs a second apart
+ * therefore destroyed each other: one passed, the other failed with "terminating
+ * connection due to administrator command", or skipped wholesale because the
+ * connection probe timed out. That is what made a fifth of the suite quietly not
+ * run (`docs/audits/false-confidence.md`, finding 3) — and a skipped test is
+ * green, so every other result was provisional.
+ */
+const RUN_SUFFIX = randomBytes(4).toString('hex')
+
 export async function setupTestDb(label: string): Promise<TestDb> {
-  const databaseName = `sortiva_test_${label.replace(/[^a-z0-9]+/gi, '_').toLowerCase()}`
+  const slug = label.replace(/[^a-z0-9]+/gi, '_').toLowerCase()
+  const databaseName = `sortiva_test_${slug}_${RUN_SUFFIX}`
 
   const admin = new pg.Pool({ connectionString: TEST_DATABASE_URL })
   try {
-    await admin.query(`DROP DATABASE IF EXISTS "${databaseName}" WITH (FORCE)`)
+    // No blanket drop: this name belongs to this run and nothing else can hold it.
     await admin.query(`CREATE DATABASE "${databaseName}"`)
   } finally {
     await admin.end()
@@ -90,6 +105,19 @@ export async function setupTestDb(label: string): Promise<TestDb> {
     databaseName,
     close: async () => {
       await pool.end()
+      // Drop what this run created. Previously nothing did, and the next run's
+      // force-drop was the cleanup — which is what made runs destroy each other.
+      // FORCE here only ever targets this run's own database, and it also clears
+      // a connection a suite forgot to close.
+      const admin = new pg.Pool({ connectionString: TEST_DATABASE_URL })
+      try {
+        await admin.query(`DROP DATABASE IF EXISTS "${databaseName}" WITH (FORCE)`)
+      } catch {
+        // A leftover database is untidy, not a failure — never fail a green run
+        // on cleanup. `pnpm db:down && pnpm db:up` clears any that accumulate.
+      } finally {
+        await admin.end()
+      }
     },
   }
 }

@@ -40,10 +40,15 @@ const SCHEMA_DIR = join(
 )
 
 /**
- * The live handles `@sortiva/db` exports. Four names, fixed by `client.ts`, and
- * not derivable from the schema.
+ * The live handles `@sortiva/db` exports — not derivable from the schema, so this
+ * list is written by hand. It was missing `dbPool`, the raw connection pool, and
+ * a file was already importing it past the rule.
+ *
+ * A hand-written list next to a derived one is the part that rots, so
+ * `no-raw-db-access.test.ts` fails if `client.ts` ever exports a name this list
+ * does not carry.
  */
-const CLIENT_EXPORTS = ['db', 'schema', 'createPool', 'closeDb']
+export const CLIENT_EXPORTS = ['db', 'dbPool', 'schema', 'createPool', 'closeDb']
 
 /**
  * Every table `@sortiva/db` publishes, read out of the schema rather than

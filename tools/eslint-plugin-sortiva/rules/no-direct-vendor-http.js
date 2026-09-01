@@ -17,6 +17,15 @@ const DEFAULT_HOSTS = [
     allow: ['packages/providers/src/seo/'],
     wrapper: 'SeoDataProvider (@sortiva/providers)',
   },
+  {
+    // The sibling rule bans the `@anthropic-ai/sdk` package, which is how anyone
+    // would reasonably call this vendor — but nothing stopped a plain `fetch` to
+    // the same address, which would be uncached, uncosted, and absent from the
+    // spend ledger the caps read.
+    host: 'api.anthropic.com',
+    allow: ['packages/llm/src/'],
+    wrapper: 'LlmClient (@sortiva/llm)',
+  },
 ]
 
 function normalise(filename) {
