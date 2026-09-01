@@ -1,5 +1,9 @@
 # Wave 1, second handoff — the integration is now the work
 
+> **Superseded by `handoff-wave2.md`.** The integration this document calls for
+> has happened: everything is merged to `main`, 883 tests pass, and nothing is in
+> flight. Kept for the history of wave 1. Work from `handoff-wave2.md`.
+
 Written for the founder, who assigns the work, and for the session that picks it up.
 Read this instead of asking anyone what happened; nothing here needs chat history.
 
