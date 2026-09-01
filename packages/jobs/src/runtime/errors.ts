@@ -51,6 +51,26 @@ export class TokenInvalidFailure extends TerminalFailure {
 }
 
 /**
+ * main §14.3.1 — "a worker whose guard matches zero rows stops immediately —
+ * someone else owns the step."
+ *
+ * Raised when a guarded write inside a running step finds no row: the step was
+ * reclaimed (its lease expired, see `lease.ts`) and another worker owns it now.
+ * Not a step failure — the work is somebody else's problem, and this worker must
+ * stop rather than dead-letter a step that is progressing fine elsewhere. The
+ * executor turns it into `not_claimed`.
+ */
+export class StepOwnershipLost extends Error {
+  readonly retryable = false
+  readonly errorClass = 'ownership_lost'
+
+  constructor(readonly stepId: string) {
+    super(`step ${stepId} is no longer owned by this worker; stopping`)
+    this.name = 'StepOwnershipLost'
+  }
+}
+
+/**
  * Provider wrappers raise their own already-classified failures
  * (`LlmValidationFailure`, `LlmRequestFailure`, `SeoRequestFailure`,
  * `EmailSendFailure`) and cannot extend `StepFailure` — `packages/core` and the

@@ -19,8 +19,8 @@
     "@sortiva/core": "workspace:*"
   },
   "devDependencies": {
+    "@sortiva/providers": "workspace:*",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8",
-    "@sortiva/providers": "workspace:*"
+    "vitest": "^2.1.8"
   }
 }

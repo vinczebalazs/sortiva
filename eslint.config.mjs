@@ -37,9 +37,27 @@ export default tseslint.config(
       // Invariant 25 — one instrumented wrapper per vendor SDK.
       'sortiva/no-direct-provider-sdk': 'error',
 
+      // Invariant 25, for the vendor with no SDK to ban: DataForSEO is a plain
+      // HTTPS endpoint, so the host string itself is what has to be fenced in.
+      'sortiva/no-direct-vendor-http': 'error',
+
       // Invariant 9 — every threshold number lives in packages/rules.
       'sortiva/no-threshold-literals': 'error',
+
+      // CLAUDE.md code-structure rules / tech §3 — no code outside packages/db
+      // may import a raw table or the raw database handle, so no query can
+      // reach a table without naming the account whose data it touches.
+      // Audit T0.3 [major]; remediation D5 (stopgap half).
+      'sortiva/no-raw-db-access': 'error',
     },
+  },
+
+  // The rule that bans a vendor host has to name that host, and the test that
+  // proves the rule works has to plant it. Those two files are the definition
+  // and the proof, not a call site.
+  {
+    files: ['tools/eslint-plugin-sortiva/rules/no-direct-vendor-http.js', 'scripts/prove-lint.mjs'],
+    rules: { 'sortiva/no-direct-vendor-http': 'off' },
   },
 
   // packages/rules is the one place threshold numbers are allowed to be compared.
@@ -54,6 +72,39 @@ export default tseslint.config(
   {
     files: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', '**/fixtures/**', '**/__fixtures__/**'],
     rules: { 'sortiva/no-threshold-literals': 'off' },
+  },
+
+  // The bounded D5 exemption. `job_steps`, `ingestion_jobs`, `job_dlq` and
+  // `idempotency_ledger` have no scoped repositories to call: `job_steps` has no
+  // account_id column of its own (main §13 hangs it off ingestion_jobs), the
+  // ledger deliberately has none at all (main §14.3.2 — an account cascade must
+  // not reach it), and supplying the helpers means editing packages/db, which
+  // neither R1 nor R3 owns. These three files are the whole exemption; it is
+  // named function-by-function in DECISIONS 2026-08-31 R1 and 2026-08-31 R3, and
+  // ends when the durable D5 card lands.
+  {
+    files: [
+      'packages/jobs/src/runtime/steps.ts',
+      'packages/jobs/src/runtime/dlq.ts',
+      'packages/jobs/src/runtime/ledger.ts',
+    ],
+    rules: { 'sortiva/no-raw-db-access': 'off' },
+  },
+
+  // Integration tests set up and inspect rows directly; the rule exists to stop
+  // *production* code reaching a table without an account, not to stop a test
+  // asserting on what the repositories wrote.
+  {
+    files: [
+      '**/*.test.{ts,tsx}',
+      '**/*.spec.{ts,tsx}',
+      '**/testing.ts',
+      '**/fixtures/**',
+      // The chaos scenarios (main §14.3.9) are test code that has to set up and
+      // inspect rows a repository does not expose.
+      'packages/jobs/src/chaos/**',
+    ],
+    rules: { 'sortiva/no-raw-db-access': 'off' },
   },
 
   // CLAUDE.md: route handlers parse -> call core -> serialise.

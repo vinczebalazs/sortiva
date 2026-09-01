@@ -1,18 +1,31 @@
-import { createHash } from 'node:crypto'
 import Anthropic from '@anthropic-ai/sdk'
 import {
   LlmRequestFailure,
   LlmValidationFailure,
   NullRequestCache,
+  recordSpend,
+  type CostLedger,
   type LlmClient,
   type LlmRequest,
   type LlmResult,
   type LlmUsage,
+  type Logger,
   type PosthogCapture,
   type RequestCache,
+  type SpendOutcome,
 } from '@sortiva/core'
-import { CALL_TYPE_TIER, resolveModel, usdCost, type ModelSpec } from './models'
+import { llmCacheKey } from './key'
+import {
+  CALL_TYPE_TIER,
+  estimateTokens,
+  overrideModel,
+  resolveModel,
+  usdCost,
+  type ModelSpec,
+} from './models'
 import { validateCompletion } from './validate'
+
+export { llmCacheKey }
 
 /**
  * Invariant 25 / main §14.7 — the single instrumented Anthropic client. Every
@@ -34,9 +47,17 @@ import { validateCompletion } from './validate'
  *  4. Validates against the call's JSON Schema; on failure retries **once** with
  *     the validation error appended; on the second failure raises the typed
  *     `failed_validation` (§14.2).
- *  5. Captures `$ai_generation` per model call with `call_type`,
- *     `prompt_version` and `cache_hit`; replays are captured at zero cost so
- *     cached work does not inflate spend numbers (§14.7).
+ *  5. Records every model call twice: as §14.7's `$ai_generation` analytics
+ *     event, and as a row in the spend ledger the §14.5 caps read (invariant
+ *     17 — "PostHog displays cost, our code enforces caps"). Replays are
+ *     recorded at zero cost so cached work does not inflate spend numbers.
+ *
+ * The rule that shapes all of it: **recording a cost is an obligation of making
+ * the call, not a side effect of the call succeeding** (`docs/audits/
+ * remediation.md` D2). Anthropic bills for tokens processed, not for bytes we
+ * received, so a 500, a rate limit, a timeout, a dropped connection, a stream
+ * cut off partway and a cache write that fails after a good answer each leave a
+ * record. Only a call that never reached the vendor records nothing.
  */
 
 /** §14.3.6 gives billable reads a 24h TTL; LLM replays exist to make a step retry free, so they follow it. */
@@ -46,11 +67,23 @@ const DEFAULT_CACHE_TTL_MS = 24 * 60 * 60 * 1000
 const STREAMING_MAX_TOKENS_THRESHOLD = 8_192
 
 export interface AnthropicLlmClientOptions {
+  /**
+   * §14.7's analytics capture. **Required** — an optional recorder meant a
+   * client built without one spent real money and produced no record, with no
+   * error and no log line. Pass `new UnrecordedCapture()` to opt out by name
+   * (audit `docs/audits/T0.5.md` finding 6).
+   */
+  capture: Pick<PosthogCapture, 'captureAiGeneration'>
+  /**
+   * The §14.5 spend meter (invariant 17). Required for the same reason. Pass
+   * `new UnrecordedSpend()` to opt out by name.
+   */
+  ledger: CostLedger
   anthropic?: Anthropic
   cache?: RequestCache
-  capture?: Pick<PosthogCapture, 'captureAiGeneration'>
   env?: NodeJS.ProcessEnv
   now?: () => number
+  logger?: Logger
 }
 
 interface ModelCall {
@@ -70,16 +103,20 @@ interface CachedCompletion {
 export class AnthropicLlmClient implements LlmClient {
   private readonly anthropic: Anthropic
   private readonly cache: RequestCache
-  private readonly capture: Pick<PosthogCapture, 'captureAiGeneration'> | undefined
+  private readonly capture: Pick<PosthogCapture, 'captureAiGeneration'>
+  private readonly ledger: CostLedger
   private readonly env: NodeJS.ProcessEnv
   private readonly now: () => number
+  private readonly logger: Logger | undefined
 
-  constructor(options: AnthropicLlmClientOptions = {}) {
+  constructor(options: AnthropicLlmClientOptions) {
     this.anthropic = options.anthropic ?? new Anthropic()
     this.cache = options.cache ?? new NullRequestCache()
     this.capture = options.capture
+    this.ledger = options.ledger
     this.env = options.env ?? process.env
     this.now = options.now ?? (() => Date.now())
+    this.logger = options.logger
   }
 
   async complete<T = unknown>(request: LlmRequest): Promise<LlmResult<T>> {
@@ -121,7 +158,16 @@ export class AnthropicLlmClient implements LlmClient {
   private modelFor(request: LlmRequest): ModelSpec {
     const tier = CALL_TYPE_TIER[request.callType]
     const spec = resolveModel(tier, this.env)
-    return request.model ? { ...spec, id: request.model } : spec
+    if (request.model === undefined || request.model === spec.id) return spec
+    // Invariant 11 / main §8.4: "the judge is never run on a smaller model".
+    // A per-call override is exactly the mechanism that would permit it, so the
+    // judge's model is settled by the tier map and the environment, full stop.
+    if (request.callType === 'judge') {
+      throw new Error(
+        `The Gate 3 judge's model cannot be overridden per call (invariant 11, main §8.4): it is fixed at "${spec.id}", and "${request.model}" was requested.`,
+      )
+    }
+    return overrideModel(request.model)
   }
 
   private finish<T>(
@@ -167,28 +213,38 @@ export class AnthropicLlmClient implements LlmClient {
         // cache_hit: true and **zero cost**".
         usdCost: 0,
       }
-      this.emit(request, spec, call)
+      await this.record(request, spec, call, 'succeeded')
       return call
     }
 
-    const message = await this.send(spec, request, messages)
-    const text = textOf(message)
-    const usage: LlmUsage = {
-      inputTokens: message.usage.input_tokens,
-      outputTokens: message.usage.output_tokens,
-      cacheReadInputTokens: message.usage.cache_read_input_tokens ?? 0,
-      cacheCreationInputTokens: message.usage.cache_creation_input_tokens ?? 0,
+    const sent = await this.send(spec, request, messages)
+    if (!sent.ok) {
+      // The request reached Anthropic, so the tokens it processed are billed
+      // whether or not the answer reached us. `sent.usage` is the stream's
+      // accumulated usage where there was one, and an estimate otherwise.
+      await this.record(
+        request,
+        spec,
+        {
+          text: '',
+          usage: sent.usage,
+          cacheHit: false,
+          latencyMs: this.now() - started,
+          usdCost: usdCost(spec, sent.usage.inputTokens, sent.usage.outputTokens),
+        },
+        'failed',
+        { cost_estimated: sent.costEstimated },
+      )
+      throw sent.error
     }
 
-    // Invariant 20: the write happens before the completion is parsed or
-    // validated. A crash on the next line still replays instead of re-billing.
-    await this.cache.writeBeforeProcessing({
-      cacheKey,
-      kind: 'llm',
-      responseJson: { text, usage, modelId: spec.id } satisfies CachedCompletion,
-      expiresAt: new Date(this.now() + (request.cacheTtlMs ?? DEFAULT_CACHE_TTL_MS)),
-    })
-
+    const text = textOf(sent.message)
+    const usage: LlmUsage = {
+      inputTokens: sent.message.usage.input_tokens,
+      outputTokens: sent.message.usage.output_tokens,
+      cacheReadInputTokens: sent.message.usage.cache_read_input_tokens ?? 0,
+      cacheCreationInputTokens: sent.message.usage.cache_creation_input_tokens ?? 0,
+    }
     const call: ModelCall = {
       text,
       usage,
@@ -196,15 +252,38 @@ export class AnthropicLlmClient implements LlmClient {
       latencyMs: this.now() - started,
       usdCost: usdCost(spec, usage.inputTokens, usage.outputTokens),
     }
-    this.emit(request, spec, call)
-    return call
+
+    try {
+      // Invariant 20: the write happens before the completion is parsed or
+      // validated. A crash on the next line still replays instead of re-billing.
+      await this.cache.writeBeforeProcessing({
+        cacheKey,
+        kind: 'llm',
+        responseJson: { text, usage, modelId: spec.id } satisfies CachedCompletion,
+        expiresAt: new Date(this.now() + (request.cacheTtlMs ?? DEFAULT_CACHE_TTL_MS)),
+      })
+      return call
+    } finally {
+      // In a `finally` so a database hiccup on the cache write cannot lose a
+      // cost we have already paid (audit finding 5) — while still leaving the
+      // cache write first, which invariant 20 requires.
+      await this.record(request, spec, call, 'succeeded')
+    }
   }
 
+  /**
+   * Returns rather than throws, because the caller has to record what a failed
+   * call cost — and, for a stream cut off partway, the vendor's own count of
+   * the tokens it generated before the connection died.
+   */
   private async send(
     spec: ModelSpec,
     request: LlmRequest,
     messages: LlmRequest['messages'],
-  ): Promise<Anthropic.Message> {
+  ): Promise<
+    | { ok: true; message: Anthropic.Message }
+    | { ok: false; error: LlmRequestFailure; usage: LlmUsage; costEstimated: boolean }
+  > {
     const params: Anthropic.MessageCreateParamsNonStreaming = {
       model: spec.id,
       max_tokens: request.maxTokens,
@@ -215,18 +294,60 @@ export class AnthropicLlmClient implements LlmClient {
         : {}),
     }
 
-    try {
-      if (request.maxTokens >= STREAMING_MAX_TOKENS_THRESHOLD) {
-        return await this.anthropic.messages.stream(params).finalMessage()
+    if (request.maxTokens >= STREAMING_MAX_TOKENS_THRESHOLD) {
+      const stream = this.anthropic.messages.stream(params)
+      try {
+        return { ok: true, message: await stream.finalMessage() }
+      } catch (error) {
+        // A stream that ends early still generated — and was billed for — the
+        // tokens accumulated so far. The SDK keeps a running snapshot of the
+        // message, including its usage, which is the real figure rather than an
+        // estimate (audit finding 3).
+        const partial = stream.currentMessage?.usage
+        return {
+          ok: false,
+          error: classifyAnthropicError(error, request.callType),
+          usage: partial
+            ? {
+                inputTokens: partial.input_tokens,
+                outputTokens: partial.output_tokens,
+                cacheReadInputTokens: partial.cache_read_input_tokens ?? 0,
+                cacheCreationInputTokens: partial.cache_creation_input_tokens ?? 0,
+              }
+            : estimatedUsage(request, messages),
+          costEstimated: partial === undefined,
+        }
       }
-      return await this.anthropic.messages.create(params)
+    }
+
+    try {
+      return { ok: true, message: await this.anthropic.messages.create(params) }
     } catch (error) {
-      throw classifyAnthropicError(error, request.callType)
+      return {
+        ok: false,
+        error: classifyAnthropicError(error, request.callType),
+        usage: estimatedUsage(request, messages),
+        costEstimated: true,
+      }
     }
   }
 
-  private emit(request: LlmRequest, spec: ModelSpec, call: ModelCall): void {
-    this.capture?.captureAiGeneration({
+  /**
+   * §14.7 requires the analytics event; invariant 17 requires the database
+   * counter the §14.5 caps read. Both, from one place, so neither can be
+   * forgotten on a path the other covers.
+   *
+   * Invariant 26: ids, counts, costs and flags only — no prompt or completion
+   * text is passed to either.
+   */
+  private async record(
+    request: LlmRequest,
+    spec: ModelSpec,
+    call: ModelCall,
+    outcome: SpendOutcome,
+    extra: Record<string, unknown> = {},
+  ): Promise<void> {
+    this.capture.captureAiGeneration({
       attribution: request.attribution,
       callType: request.callType,
       promptVersion: request.promptVersion,
@@ -236,7 +357,30 @@ export class AnthropicLlmClient implements LlmClient {
       latencyMs: call.latencyMs,
       usdCost: call.usdCost,
       cacheHit: call.cacheHit,
+      properties: { outcome, ...extra },
     })
+    await recordSpend(
+      this.ledger,
+      {
+        attribution: request.attribution,
+        vendor: 'anthropic',
+        callType: request.callType,
+        usdCost: call.usdCost,
+        cacheHit: call.cacheHit,
+        outcome,
+      },
+      this.logger,
+    )
+  }
+}
+
+/** Input tokens for a call whose usage never came back. See `estimateTokens`. */
+function estimatedUsage(request: LlmRequest, messages: LlmRequest['messages']): LlmUsage {
+  return {
+    inputTokens: estimateTokens((request.system ?? '') + messages.map((m) => m.content).join('')),
+    outputTokens: 0,
+    cacheReadInputTokens: 0,
+    cacheCreationInputTokens: 0,
   }
 }
 
@@ -257,22 +401,6 @@ function textOf(message: Anthropic.Message): string {
     .filter((block): block is Anthropic.TextBlock => block.type === 'text')
     .map((block) => block.text)
     .join('')
-}
-
-/**
- * §14.3.6 — the cache key is `(prompt_version, model_id, sha256(rendered
- * prompt))`. The prompt is serialised canonically so message order and role are
- * part of the hash and nothing else is.
- */
-export function llmCacheKey(
-  promptVersion: string,
-  modelId: string,
-  system: string | undefined,
-  messages: readonly { role: string; content: string }[],
-): string {
-  const rendered = JSON.stringify({ system: system ?? null, messages })
-  const digest = createHash('sha256').update(rendered, 'utf8').digest('hex')
-  return `llm:${promptVersion}:${modelId}:${digest}`
 }
 
 /** main §14.3.5 — 429s, 5xx and connection errors retry; a 4xx that retrying cannot fix does not. */

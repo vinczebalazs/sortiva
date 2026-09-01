@@ -32,6 +32,23 @@ export interface AccountScope {
  * `SystemScope` carrying a written reason. The rule stays "no repository
  * method without a scope"; system access is explicit and greppable.
  * See DECISIONS 2026-08-27 T0.3.
+ *
+ * Schema wave 2 (T2.0) adds three more, for the same kind of reason:
+ * `serp_snapshots` is keyed by canonical request parameters so two accounts
+ * asking the same question in the same locale don't pay DataForSEO twice
+ * (main §12.1); `rules_overrides` holds global and per-locale rows whose
+ * `account_id` is null by design (main §7.10); and `spend_events` records
+ * preview spend, which happens before any account exists (main §14.7). Their
+ * repositories are not written yet — the cards that need them will take
+ * `SystemScope` where the row has no account, and `AccountScope` otherwise.
+ * See DECISIONS 2026-08-31 T2.0.
+ *
+ * Mini-wave 2b (T2.0b) adds two more. `verification_tokens` holds outstanding
+ * email sign-in links, which exist before the account does (main §4.1).
+ * `idempotency_ledger` is keyed on a hash and deliberately carries no account
+ * column at all — an account cascade must not be able to erase the record that
+ * paid work was already done (main §14.3.2, `docs/audits/T0.4.md`). Both take
+ * `SystemScope`. See DECISIONS 2026-08-31 T2.0b.
  */
 export interface SystemScope {
   readonly [systemScopeBrand]: true

@@ -15,6 +15,34 @@
       "when": 1787807254658,
       "tag": "0001_wave1_addendum_job_dlq",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788201024854,
+      "tag": "0002_wave2",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788201039119,
+      "tag": "0003_wave2_guards",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788202284222,
+      "tag": "0004_wave2b",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788202294045,
+      "tag": "0005_wave2b_guards",
+      "breakpoints": true
     }
   ]
 }

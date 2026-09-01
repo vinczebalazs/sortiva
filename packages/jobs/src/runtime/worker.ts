@@ -1,5 +1,6 @@
 import { run, type Runner, type TaskList } from 'graphile-worker'
 import { assertCrontabTasksExist, crontab, type CronEntry, CRON_ENTRIES } from './crontab'
+import { beginShutdown } from './shutdown'
 
 /**
  * tech §2 / §2.1 — Graphile Worker runs **in-process with the web server** in
@@ -70,6 +71,12 @@ export async function startWorker(options: WorkerOptions): Promise<StartedWorker
  * process can also close the pool and flush telemetry in the same drain, and so
  * a second signal during a drain does not start a second stop.
  *
+ * This is also the producer of the shutdown signal every long step reads
+ * (`shutdown.ts`, surfaced as `StepContext.signal`). It fires *before* the drain
+ * is awaited, so a step in the middle of an eight-minute catalogue sync spends
+ * Railway's grace period saving its cursor and returning, rather than learning
+ * about the deploy only once the drain it is itself blocking has finished.
+ *
  * @returns a function that removes the handlers, for tests.
  */
 export function installSignalHandlers(
@@ -92,6 +99,7 @@ export function installSignalHandlers(
     }
     draining = true
     logger.log(`[worker] ${signal} received, draining in-flight jobs`)
+    beginShutdown(`${signal} received`)
     void worker
       .stop()
       .then(() => options.onStopped?.())

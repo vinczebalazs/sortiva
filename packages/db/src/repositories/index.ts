@@ -1,3 +1,4 @@
 export * from './domains'
 export * from './notifications'
+export * from './spend'
 export * from './system'

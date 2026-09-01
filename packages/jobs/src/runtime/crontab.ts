@@ -85,7 +85,19 @@ export const CRON_ENTRIES: readonly CronEntry[] = [
   {
     task: 'retention_sweep_daily',
     schedule: '0 1 * * *',
-    spec: 'tech §1.7, §2.1 — notifications at 90d, email_sends at 12mo, webhook_events at 30d, request_cache on TTL, gsc rollups at 16mo.',
+    spec:
+      'tech §1.7, §2.1 — notifications at 90d, email_sends at 12mo, webhook_events at 30d, ' +
+      'request_cache on TTL, gsc rollups at 16mo. ' +
+      // `idempotency_ledger` is the record of which paid work has already been
+      // done (main §14.3.2, "the cache is the ledger"). Delete a row inside the
+      // window in which the queue could still redeliver that work and the replay
+      // runs it for real: a re-billed Shopify crawl for `catalog_sync`, a
+      // re-billed set of LLM calls for `distill`. So it is prunable only by age,
+      // and only well past redelivery — never by job, never by account, and
+      // never as part of deleting a store's data. `ledger.test.ts` fails if any
+      // production code path deletes from it at all, so a future age-based sweep
+      // has to change that test deliberately rather than by accident.
+      'idempotency_ledger: PRUNE BY AGE ONLY, never by job or account — it is the record of completed paid work (§14.3.2), not history.',
   },
 ]
 

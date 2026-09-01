@@ -62,30 +62,50 @@ export async function listOpenDlq(db: Db, limit = 100): Promise<DlqEntry[]> {
 }
 
 /**
- * main §14.3.5 — the one-action replay. Marks the entry replayed and returns
- * the step to `pending`, so the normal dispatcher picks it up. The step keeps
- * its checkpoint, and the idempotency ledger means completed sub-work no-ops.
+ * main §14.3.5 — "Ops can replay a DLQ item with one action *because*
+ * idempotency makes replay safe — completed sub-work no-ops, only the failed
+ * remainder executes."
  *
- * Returns `undefined` when the entry was already replayed — the guarded update
- * makes a double click a no-op rather than a second run.
+ * Marks the entry replayed and returns its step to `pending`, so the normal
+ * dispatcher picks it up. The step keeps its checkpoint, and the idempotency
+ * ledger means completed sub-work no-ops.
+ *
+ * The outcome is explicit rather than a bare row, because two of the three cases
+ * look like success and are not:
+ *
+ *  - `already_replayed` — the guarded update matched nothing, so a double click
+ *    is a no-op rather than a second run.
+ *  - `step_missing` — the entry outlived its step row (`job_dlq.step_id` is
+ *    `ON DELETE set null`), or it was never an ingestion step at all (publish,
+ *    sweeps and email sends dead-letter here too). There is nothing to
+ *    reschedule, and an operator must be told that rather than shown a green
+ *    tick over a button that did nothing.
  */
+export type DlqReplayOutcome =
+  | { status: 'replayed'; entry: DlqEntry }
+  | { status: 'already_replayed' }
+  | { status: 'step_missing'; entry: DlqEntry }
+
 export async function replayDlqEntry(
   db: Db,
   dlqId: string,
   replayedBy: string,
-): Promise<DlqEntry | undefined> {
+): Promise<DlqReplayOutcome> {
   const [entry] = await db
     .update(jobDlq)
     .set({ replayedAt: new Date(), replayedBy })
     .where(and(eq(jobDlq.id, dlqId), isNull(jobDlq.replayedAt)))
     .returning()
-  if (!entry) return undefined
+  if (!entry) return { status: 'already_replayed' }
 
-  if (entry.stepId) {
-    await db
-      .update(jobSteps)
-      .set({ state: 'pending', attempts: 0, nextAttemptAt: null, updatedAt: new Date() })
-      .where(eq(jobSteps.id, entry.stepId))
-  }
-  return entry
+  if (!entry.stepId) return { status: 'step_missing', entry }
+
+  const [reset] = await db
+    .update(jobSteps)
+    .set({ state: 'pending', attempts: 0, nextAttemptAt: null, updatedAt: new Date() })
+    .where(eq(jobSteps.id, entry.stepId))
+    .returning({ id: jobSteps.id })
+  if (!reset) return { status: 'step_missing', entry }
+
+  return { status: 'replayed', entry }
 }

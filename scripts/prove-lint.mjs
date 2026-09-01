@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * T0.1 done-when: "`pnpm lint` fails on a deliberately planted raw SDK import
- * and on a planted `if (position < 15)` outside rules."
+ * and on a planted `if (position < 15)` outside rules." R1 adds the same proof
+ * for the account-scoping rule (remediation D5).
  *
  * Rather than proving that by hand once, this plants each violation in a
  * throwaway file, runs the real lint command, asserts it failed with the
@@ -40,6 +41,68 @@ const CASES = [
       '',
     ].join('\n'),
     expectRule: 'sortiva/no-threshold-literals',
+  },
+  {
+    name: 'raw table import from @sortiva/db outside packages/db (account scoping, D5)',
+    file: 'packages/core/src/__lintproof__/raw-table-import.ts',
+    source: [
+      "import { db, notifications } from '@sortiva/db'",
+      '',
+      'export function unscoped() {',
+      '  return db().select().from(notifications)',
+      '}',
+      '',
+    ].join('\n'),
+    expectRule: 'sortiva/no-raw-db-access',
+  },
+  {
+    name: 'raw schema-module import outside packages/db (account scoping, D5)',
+    file: 'packages/core/src/__lintproof__/raw-schema-module.ts',
+    source: ["import * as tables from '@sortiva/db/schema'", '', 'export default tables', ''].join('\n'),
+    expectRule: 'sortiva/no-raw-db-access',
+  },
+  {
+    // R4 / remediation D10 item 3. The banned names are derived from
+    // `packages/db/src/schema`, so these two cases are the proof that the
+    // derivation reaches tables added after the rule was written: `spend_events`
+    // is schema wave 2 and `idempotency_ledger` is mini-wave 2b, and the
+    // hand-written list this replaced named neither.
+    name: 'raw wave-2 table import outside packages/db (account scoping, D5 + D10)',
+    file: 'packages/core/src/__lintproof__/raw-wave2-table.ts',
+    source: [
+      "import { spendEvents } from '@sortiva/db'",
+      '',
+      'export default spendEvents',
+      '',
+    ].join('\n'),
+    expectRule: 'sortiva/no-raw-db-access',
+  },
+  {
+    name: 'raw wave-2b table import outside packages/db (account scoping, D5 + D10)',
+    file: 'packages/core/src/__lintproof__/raw-wave2b-table.ts',
+    source: [
+      "import { idempotencyLedger } from '@sortiva/db'",
+      '',
+      'export default idempotencyLedger',
+      '',
+    ].join('\n'),
+    expectRule: 'sortiva/no-raw-db-access',
+  },
+  {
+    // R2 / audit `docs/audits/T0.5.md` finding 9. DataForSEO has no SDK to ban,
+    // so the sibling rule cannot see it; the host string is the thing fenced in.
+    name: 'direct api.dataforseo.com call outside the SEO wrapper (invariant 25)',
+    file: 'packages/llm/src/__lintproof__/dataforseo-host.ts',
+    source: [
+      'export async function keywordVolume(keyword: string): Promise<Response> {',
+      "  return fetch('https://api.dataforseo.com/v3/keywords_data/google_ads/search_volume/live', {",
+      "    method: 'POST',",
+      '    body: JSON.stringify([{ keywords: [keyword] }]),',
+      '  })',
+      '}',
+      '',
+    ].join('\n'),
+    expectRule: 'sortiva/no-direct-vendor-http',
   },
 ]
 
