@@ -1,3 +1,4 @@
+import type { PosthogCapture } from '@sortiva/core'
 import { CRON_ENTRIES } from './crontab'
 import { registeredTaskNames, taskList } from './tasks'
 import { installSignalHandlers, startWorker, type StartedWorker } from './worker'
@@ -21,12 +22,31 @@ import { installSignalHandlers, startWorker, type StartedWorker } from './worker
 let started: StartedWorker | undefined
 
 export interface BootstrapOptions {
+  /**
+   * The process's analytics client, built by the entry point's composition root
+   * (`@sortiva/core/runtime/services`). **Required, not optional**, so a second
+   * worker entry point — the day the worker splits into its own Railway service
+   * (tech §2.1) — cannot start without telemetry by simply not mentioning it.
+   * A caller that genuinely wants none names `UnrecordedCapture`, the same
+   * opt-out `AnthropicLlmClient` and `DataForSeoProvider` take.
+   *
+   * The worker needs it for two reasons: to flush the batch on shutdown (below),
+   * and to hand to the step handlers lanes will register.
+   */
+  analytics: PosthogCapture
   connectionString?: string
   logger?: Pick<Console, 'log' | 'error'>
+  /**
+   * Test seams. The drain ends in `process.exit`, and the signals it listens for
+   * are the ones a test runner also listens for, so a test that wants to drive a
+   * real drain has to redirect both.
+   */
+  signals?: readonly NodeJS.Signals[]
+  exit?: (code: number) => void
 }
 
 export async function bootstrapWorker(
-  options: BootstrapOptions = {},
+  options: BootstrapOptions,
 ): Promise<StartedWorker | undefined> {
   const logger = options.logger ?? console
 
@@ -54,11 +74,34 @@ export async function bootstrapWorker(
 
   installSignalHandlers(started, {
     logger,
-    exit: (code) => process.exit(code),
+    ...(options.signals ? { signals: options.signals } : {}),
+    // PostHog batches events and sends them in the background, so the events of
+    // the last few seconds before a deploy live only in memory. This empties
+    // that batch inside Railway's grace period, after the jobs have drained, so
+    // the events a draining step just emitted go too (main §14.7; tech §2.1).
+    onStopped: () => flushAnalytics(options.analytics, logger),
+    exit: options.exit ?? ((code) => process.exit(code)),
   })
 
   logger.log(
     `[worker] started with ${registered.size} task(s), cron ${enableCron ? 'enabled' : 'disabled'}`,
   )
   return started
+}
+
+/**
+ * Sends whatever PostHog has buffered and closes the client. Failures are logged
+ * rather than raised: a telemetry flush must never turn a clean drain into a
+ * failed one, because the drain is what lets in-flight work finish before
+ * Railway kills the process (tech §2.1).
+ */
+export async function flushAnalytics(
+  analytics: Pick<PosthogCapture, 'shutdown'>,
+  logger: Pick<Console, 'log' | 'error'> = console,
+): Promise<void> {
+  try {
+    await analytics.shutdown()
+  } catch (error) {
+    logger.error('[worker] flushing analytics on shutdown failed', error)
+  }
 }
