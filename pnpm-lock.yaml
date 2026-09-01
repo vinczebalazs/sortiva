@@ -110,6 +110,9 @@ importers:
         specifier: ^8.13.1
         version: 8.23.0
     devDependencies:
+      '@sortiva/providers':
+        specifier: workspace:*
+        version: link:../providers
       '@types/pg':
         specifier: ^8.11.10
         version: 8.23.1
@@ -162,13 +165,13 @@ importers:
       '@sortiva/core':
         specifier: workspace:*
         version: link:../core
-      '@sortiva/providers':
-        specifier: workspace:*
-        version: link:../providers
       ajv:
         specifier: ^8.17.1
         version: 8.20.0
     devDependencies:
+      '@sortiva/providers':
+        specifier: workspace:*
+        version: link:../providers
       typescript:
         specifier: ^5.7.2
         version: 5.9.3

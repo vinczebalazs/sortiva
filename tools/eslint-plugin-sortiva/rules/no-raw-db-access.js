@@ -24,36 +24,70 @@
  * repository's signature.
  */
 
-/** Everything `@sortiva/db` exports that is a table object or a live handle. */
-const RAW_EXPORTS = [
-  // client
+import { readFileSync, readdirSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const SCHEMA_DIR = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '..',
+  '..',
+  '..',
+  'packages',
   'db',
+  'src',
   'schema',
-  'createPool',
-  'closeDb',
-  // schema/accounts
-  'accounts',
-  'subscriptions',
-  'stripeEvents',
-  'accountSettings',
-  // schema/domains
-  'domains',
-  'previewCache',
-  'shopifyConns',
-  // schema/jobs
-  'ingestionJobs',
-  'jobSteps',
-  'requestCache',
-  'opsFlags',
-  'webhookEvents',
-  // schema/dlq
-  'jobDlq',
-  // schema/notifications
-  'notifications',
-  'emailSends',
-  'emailSuppressions',
-  'notificationPrefs',
-]
+)
+
+/**
+ * The live handles `@sortiva/db` exports. Four names, fixed by `client.ts`, and
+ * not derivable from the schema.
+ */
+const CLIENT_EXPORTS = ['db', 'schema', 'createPool', 'closeDb']
+
+/**
+ * Every table `@sortiva/db` publishes, read out of the schema rather than
+ * copied into a list here.
+ *
+ * R1 wrote the list by hand, before schema wave 2, and it named none of the 22
+ * tables that wave added nor the 2 from wave 2b — so for those tables the rule
+ * read as protection and was none (`docs/audits/remediation.md` D10 item 3). A
+ * hand-maintained list of a growing set goes stale on the next migration; this
+ * one cannot, because the schema is the list.
+ *
+ * The two failure modes of deriving it are both loud rather than silent: an
+ * unreadable schema directory throws, and a table declared in a shape the
+ * pattern does not recognise makes the counts disagree and throws. A rule that
+ * quietly matches nothing is the exact failure this replaces.
+ */
+function tablesFromSchema() {
+  const names = []
+  let declarations = 0
+
+  const files = readdirSync(SCHEMA_DIR).filter((f) => f.endsWith('.ts') && !f.includes('.test.'))
+  for (const file of files) {
+    const source = readFileSync(join(SCHEMA_DIR, file), 'utf8')
+    declarations += (source.match(/pgTable\(/g) ?? []).length
+    for (const match of source.matchAll(/export const ([A-Za-z0-9_$]+) = pgTable\(/g)) {
+      names.push(match[1])
+    }
+  }
+
+  if (names.length === 0) {
+    throw new Error(
+      `sortiva/no-raw-db-access found no tables in ${SCHEMA_DIR}. The rule bans what it can name, so an empty list disables it silently — failing the lint run instead.`,
+    )
+  }
+  if (names.length !== declarations) {
+    throw new Error(
+      `sortiva/no-raw-db-access matched ${names.length} of ${declarations} pgTable() declarations in ${SCHEMA_DIR}. A table declared in an unrecognised shape would be exempt without anyone deciding that; declare it as \`export const <name> = pgTable(\` or teach this rule the new shape.`,
+    )
+  }
+  return names
+}
+
+/** Everything `@sortiva/db` exports that is a table object or a live handle. */
+const RAW_EXPORTS = [...CLIENT_EXPORTS, ...tablesFromSchema()]
 
 /** Deep entry points that are nothing but raw surface, whatever they import. */
 const RAW_MODULES = ['@sortiva/db/schema', '@sortiva/db/client']

@@ -1,5 +1,7 @@
 import {
   NullRequestCache,
+  recordSpend,
+  type CostLedger,
   type EventAttribution,
   type KeywordMetric,
   type KeywordMetricsRequest,
@@ -13,8 +15,8 @@ import {
   type SeoResult,
   type SerpRequest,
   type SerpResult,
+  type SpendOutcome,
 } from '@sortiva/core'
-import { recordSpend, type CostLedger, type SpendOutcome } from '../spend'
 import { seoCacheKey } from './key'
 import { languageCodeFor, locationCodeFor } from './locations'
 import { DATAFORSEO_ENDPOINTS, ENDPOINT_PRICES, chargeFor } from './pricing'

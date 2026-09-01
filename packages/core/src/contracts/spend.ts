@@ -1,4 +1,5 @@
-import type { EventAttribution, Logger } from '@sortiva/core'
+import type { Logger } from '../observability/logger'
+import type { EventAttribution } from './analytics'
 
 /**
  * main §14.7 — "The §14.5 budget auto-trips read spend from our own DB counters

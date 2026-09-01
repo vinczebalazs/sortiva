@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 /**
@@ -12,7 +13,21 @@ import { fileURLToPath } from 'node:url'
  * the new side by side.
  */
 
-const PROMPTS_DIR = new URL('../prompts/', import.meta.url)
+/**
+ * Deliberately *not* `new URL('../prompts/', import.meta.url)`. Webpack treats
+ * that exact form as an asset reference it must resolve at build time, and a
+ * directory is not an asset — so `next build` failed with "Can't resolve
+ * '../prompts/'" the moment any route imported this package, which is why card
+ * `T1.3` read its prompt file by hand instead of through the loader. Composing
+ * the path from `fileURLToPath` keeps the same resolution at runtime and is
+ * opaque to the bundler.
+ *
+ * The prompt files themselves reach production because the deployment runs from
+ * the repository tree (tech §2.1's single `app` service). If `next.config.mjs`
+ * ever sets `output: 'standalone'`, they need an `outputFileTracingIncludes`
+ * entry, exactly as `packages/rules/signals.config.yaml` already has.
+ */
+const PROMPTS_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'prompts')
 
 export interface Prompt {
   /** `<name>.v<N>` — the value stamped on artefacts and captured on every event. */
@@ -29,7 +44,7 @@ export function loadPrompt(name: string, majorVersion: number): Prompt {
   const hit = cache.get(version)
   if (hit) return hit
 
-  const path = fileURLToPath(new URL(`${version}.md`, PROMPTS_DIR))
+  const path = join(PROMPTS_DIR, `${version}.md`)
   let text: string
   try {
     text = readFileSync(path, 'utf8')

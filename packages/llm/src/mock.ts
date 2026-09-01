@@ -1,6 +1,8 @@
 import {
   LlmValidationFailure,
   NullRequestCache,
+  recordSpend,
+  type CostLedger,
   type LlmClient,
   type LlmRequest,
   type LlmResult,
@@ -8,7 +10,6 @@ import {
   type PosthogCapture,
   type RequestCache,
 } from '@sortiva/core'
-import { recordSpend, type CostLedger } from '@sortiva/providers/spend/index'
 import { llmCacheKey } from './key'
 import { CALL_TYPE_TIER, MODELS, estimateTokens, overrideModel, usdCost } from './models'
 import { validateCompletion } from './validate'

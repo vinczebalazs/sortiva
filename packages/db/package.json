@@ -21,6 +21,7 @@
     "@sortiva/core": "workspace:*"
   },
   "devDependencies": {
+    "@sortiva/providers": "workspace:*",
     "@types/pg": "^8.11.10",
     "drizzle-kit": "^0.30.1",
     "typescript": "^5.7.2",

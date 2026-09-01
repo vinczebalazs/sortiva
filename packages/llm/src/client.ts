@@ -3,6 +3,8 @@ import {
   LlmRequestFailure,
   LlmValidationFailure,
   NullRequestCache,
+  recordSpend,
+  type CostLedger,
   type LlmClient,
   type LlmRequest,
   type LlmResult,
@@ -10,8 +12,8 @@ import {
   type Logger,
   type PosthogCapture,
   type RequestCache,
+  type SpendOutcome,
 } from '@sortiva/core'
-import { recordSpend, type CostLedger, type SpendOutcome } from '@sortiva/providers/spend/index'
 import { llmCacheKey } from './key'
 import {
   CALL_TYPE_TIER,

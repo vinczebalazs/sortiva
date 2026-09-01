@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { accountAttribution, createLogger, previewAttribution } from '@sortiva/core'
+import { createLogger } from '../observability/logger'
+import { accountAttribution, previewAttribution } from './analytics'
 import {
   InMemoryCostLedger,
   UnrecordedSpend,
@@ -7,7 +8,7 @@ import {
   spendAttribution,
   spendEventViolation,
   type SpendEvent,
-} from './index'
+} from './spend'
 
 /**
  * The spend ledger is what main §14.5's kill switches read (invariant 17:

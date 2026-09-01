@@ -11,7 +11,7 @@ import type {
   SerpRequest,
   SerpResult,
 } from '@sortiva/core'
-import { recordSpend, type CostLedger } from '../spend'
+import { recordSpend, type CostLedger } from '@sortiva/core'
 import { seoCacheKey } from './key'
 import { languageCodeFor, locationCodeFor } from './locations'
 import { DATAFORSEO_ENDPOINTS, priceFor } from './pricing'
