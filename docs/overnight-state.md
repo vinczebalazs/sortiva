@@ -4,25 +4,48 @@ Rewritten after **every** card lands or stops, and re-read before any card is
 launched and before any merge. Its test: a completely fresh session, with none of
 the conversation that produced it, could take over from this file alone.
 
-**Last rewritten:** 2026-09-01, 22:47, by the integrator session. No card landed;
-what changed is a set of founder decisions about content, folded into the cards
-they affect.
+**Last rewritten:** 2026-09-01, 23:00, by the integrator session. No card has
+landed. What changed: the founder said start, and three lanes are now building.
 
 ---
 
 ## Right now
 
-**No lane is running. Nothing is in flight.** The three worktrees that had been
-created for lanes B, C and F (`../sortiva-b`, `-c`, `-f`) were empty — clean trees,
-no commits beyond `main` — and were removed on the founder's instruction. Their
-branches `night-b`, `night-c`, `night-f` still exist, all pointing at an ancestor
-of `main`, and hold nothing.
+**Three lanes are building.** The founder said "start on the work" at 22:56 on
+2026-09-01. Each lane is a separate session in its own worktree, created from
+`73c9fb9`, with dependencies installed and `.env` copied in. A Postgres for the
+tests has been running in Docker throughout (`sortiva-postgres`, port 54329); the
+test harness gives every process its own database with a random suffix, so three
+lanes on one server cannot destroy each other's runs.
 
-`main` is at the commit recorded below. The working tree is clean.
+| Lane | Card | Branch | Worktree | State |
+|---|---|---|---|---|
+| B — Store Intelligence | `T2.1` | `lane-b` | `../sortiva-lane-b` | building |
+| C — Search Intelligence | `T3.1` | `lane-c` | `../sortiva-lane-c` | building |
+| F — Frontend | `T9.1` | `lane-f` | `../sortiva-lane-f` | building |
+
+**`T8.0` was deliberately not launched**, though the order lists it as the fourth
+parallel card. Two reasons. It is schema wave 4, whose entire content is "the
+columns earlier cards deferred" — and collecting those is the integrator's job,
+not done yet. And two of the documents disagree on how many sessions may run at
+once: `overnight-run.md` says four, `handoff-wave2.md` says two or three. Three
+satisfies both. Machine load was 2.04 across 12 cores at launch.
 
 **The founder is awake and directing.** The unattended rules in
 `docs/overnight-run.md` describe how to work when they are not; while they are,
-ask rather than assume.
+ask rather than assume. Each lane was told explicitly: a product choice with no
+documented default stops the lane and gets reported, never guessed.
+
+**One question is already known to be waiting inside `T2.1`** and was put to the
+founder at launch rather than left for the lane to hit: the worker turns its
+schedule on only when all twelve scheduled jobs have a handler, and eleven have
+none — so nothing scheduled runs at all, including the nightly billing repair,
+whose handler is written and tested. All-or-nothing, or enable the entries that
+have handlers? Three separate pieces of machinery wait behind that one line.
+
+The stale branches `night-b`, `night-c`, `night-f` still exist, all pointing at an
+ancestor of `main`, and hold nothing. The founder has not said whether to delete
+them.
 
 ## What is on `main`
 
@@ -47,10 +70,10 @@ only ever runs against a database which already has the tables has not been test
 
 ## Where the order stands
 
-From `docs/handoff-wave2.md` §"The order" — **none of these has started**:
+From `docs/handoff-wave2.md` §"The order":
 
-1. Four lanes in parallel, none waiting on another: **`T2.1`** (lane B), **`T9.1`**
-   (F), **`T3.1`** (C), **`T8.0`** (G).
+1. Four lanes in parallel, none waiting on another: **`T2.1`** (B), **`T9.1`** (F),
+   **`T3.1`** (C), **`T8.0`** (G). **Three are running; `T8.0` is not — see above.**
 2. **The operations card**, after `T2.1` and before `T2.2`. The reasoning, from
    `docs/overnight-run.md`: `T2.1` is what makes background steps actually run, so
    it is the first moment a diagnosis script can be tested against a store that is
@@ -58,8 +81,8 @@ From `docs/handoff-wave2.md` §"The order" — **none of these has started**:
    strand one.
 3. Then the dependency order, which lane B sets.
 
-Four concurrent building sessions is the cap. Check `uptime` before launching;
-five saturated this 12-core machine earlier and all five stalled at once.
+Each lane merges into `main` and runs the full gate before that lane starts its
+next card. A lane never runs two cards at once.
 
 ## Decisions taken, and what depends on them
 
@@ -154,7 +177,7 @@ Nothing has been acted on beyond recording it here.
 
 ## Lanes stopped, and the question that stopped them
 
-None. No lane has started.
+None yet. Three are building; see the table at the top for which.
 
 ## What the next card must know
 
