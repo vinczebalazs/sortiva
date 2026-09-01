@@ -12,9 +12,29 @@ buildCommand = "pnpm install --frozen-lockfile && pnpm --filter @sortiva/web run
 watchPatterns = ["apps/**", "packages/**", "package.json", "pnpm-lock.yaml"]
 
 [deploy]
+# Migrations run before the new deployment serves traffic (tech §5: "forward-only,
+# applied on deploy before the new code serves traffic"). Without this the first
+# deploy would serve code against a database with no tables.
+#
+# `drizzle-kit` is a devDependency. The build installs every dependency, so it is
+# present at pre-deploy time — if anyone ever adds `--prod` to the install above,
+# this command is what breaks, and it breaks the deploy rather than the app.
+preDeployCommand = ["pnpm db:migrate"]
+
+# NEXT_MANUAL_SIG_HANDLE=1 on the start command stops Next installing its own
+# SIGTERM handler. Measured (DECISIONS 2026-09-01 R5): without it Next exits on
+# the signal before our handler finishes, so in-flight jobs are killed instead of
+# drained and the last analytics events are dropped on every deploy.
+#
+# Safe because a handler always exists on both paths: with the worker running,
+# `installSignalHandlers` drains it and exits; with WORKER_ENABLED=false, the
+# startup hook registers its own drain and exits. If that ever stops being true
+# the process would hang until Railway kills it, so treat both paths as load
+# bearing — there is a test for each.
+#
 # --max-old-space-size pinned per tech §2.1 so a leak OOMs loudly instead of
 # silently billing a swollen resident set.
-startCommand = "node --max-old-space-size=384 apps/web/node_modules/next/dist/bin/next start -p $PORT"
+startCommand = "NEXT_MANUAL_SIG_HANDLE=1 node --max-old-space-size=384 apps/web/node_modules/next/dist/bin/next start -p $PORT"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 30
 restartPolicyType = "ON_FAILURE"
@@ -26,4 +46,4 @@ numReplicas = 1
 sleepApplication = false
 
 [environments.production.deploy]
-startCommand = "node --max-old-space-size=384 apps/web/node_modules/next/dist/bin/next start -p $PORT"
+startCommand = "NEXT_MANUAL_SIG_HANDLE=1 node --max-old-space-size=384 apps/web/node_modules/next/dist/bin/next start -p $PORT"

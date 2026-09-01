@@ -398,3 +398,50 @@ re-freeze. If it is internal only, remove it with the rest.
 code against them. With build-time decisions superseding the spec, an auditor must compare against
 **spec plus the recorded decisions**, or it will report deliberate changes as defects. Audit briefs
 updated accordingly.
+
+## D14 — The two deploy facts, fixed (founder, 2026-09-01)
+
+Both found by the coverage investigation (`docs/audits/coverage-gaps.md`), both one line,
+neither owned by any card.
+
+1. **Migrations were never applied on deploy.** `railway.toml`'s build installed and
+   compiled; its start ran the server. Nothing anywhere ran a migration, so **the first
+   deploy would have served code against a database with no tables** — against tech §5's
+   "forward-only, applied on deploy before the new code serves traffic". Fixed with
+   `preDeployCommand = ["pnpm db:migrate"]`, which Railway runs before the deployment
+   takes traffic. Verified by running that exact command against a freshly created empty
+   database: 41 tables.
+
+   One dependency worth knowing: `drizzle-kit` is a devDependency and the build installs
+   everything, so it is present at pre-deploy time. If anyone adds `--prod` to the install,
+   this is what breaks — and it breaks the deploy rather than the running app, which is the
+   right direction.
+
+2. **The graceful shutdown was inert.** Card `R5` measured that Next installs its own
+   signal handler and exits before ours finishes, so on every deploy in-flight jobs were
+   killed rather than drained and the last analytics events were dropped. Fixed by setting
+   `NEXT_MANUAL_SIG_HANDLE=1` on the start command, in `railway.toml` rather than a
+   dashboard, so it travels with the repo.
+
+   **The flip side, which is why `R5` referred it up rather than doing it:** Next no longer
+   exits on the signal by itself, so one of our two paths must always register a handler
+   that does. Both do, and I verified it — with the worker running, `installSignalHandlers`
+   drains and exits (its `exit` option defaults to a real `process.exit`); with
+   `WORKER_ENABLED=false`, the startup hook registers its own drain and exits. If that ever
+   stops being true the process hangs until the platform kills it. Written at both sites.
+
+### Flagged, not fixed: `railway.toml` is a deprecated format
+
+Railway's own documentation now says Config as Code (`railway.json` / `railway.toml`) is
+**deprecated**, replaced by Infrastructure as Code (`.railway/railway.ts`), with a hard
+cutoff of **2026-12-01**. The line that matters more than the cutoff: **"New services
+cannot opt into Config as Code."**
+
+This project has never deployed, so its Railway service does not exist yet. If that
+sentence means what it says, the file just fixed may be ignored entirely when the service
+is first created — and both fixes above, plus the memory cap and the no-scale-to-zero
+setting, would silently not apply.
+
+Not acted on, because migrating the deployment format is a change to how the product is
+deployed rather than a fix to what it does, and nothing deploys today. **Worth settling
+before the first deploy, not after.**

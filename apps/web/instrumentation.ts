@@ -32,7 +32,9 @@ export async function register() {
   // Both shutdown paths below depend on the process being started with
   // NEXT_MANUAL_SIG_HANDLE=1: without it Next installs its own SIGTERM handler
   // and exits before either the job drain or the analytics flush can finish
-  // (measured; DECISIONS 2026-09-01 R5). The deploy config does not set it yet.
+  // (measured; DECISIONS 2026-09-01 R5). `railway.toml` sets it on the start
+  // command. The flip side is that Next no longer exits on the signal by itself,
+  // so one of the two paths below must always register a handler that does.
   // main §4.2, tech §3 — the nightly subscription reconciliation is already in
   // the worker's crontab; this is where its handler joins the registry. Lanes
   // register their tasks here, before the worker reads the list.
