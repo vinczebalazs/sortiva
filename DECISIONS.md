@@ -16,6 +16,148 @@ Class (filled by audit): a: fine as-is | b: promote to spec | c: contradicts spe
 
 (entries below, newest first)
 
+## 2026-09-01 — T1.4 — The domain claim resolves eTLD+1 with `tldts`, ICANN section only, plus an explicit multi-tenant allowlist
+Decision: `packages/core/src/domain/normalise.ts` resolves the registrable domain with the `tldts` package (a new dependency of `packages/core`, MIT, bundles the Public Suffix List). It uses the list's ICANN section only, and adds one explicit allowlist entry — `myshopify.com` — for which the claim stops one label lower (`acme.myshopify.com`, not `myshopify.com`).
+Why: main §2 requires eTLD+1 "using the Public Suffix List", which is a data set, not an algorithm — a hand-rolled "last two labels" rule gets `example.co.uk` wrong, and hand-maintaining the list is worse. The alternative rejected is turning on the list's PRIVATE section wholesale, which `tldts` offers as a flag: that section holds thousands of entries (`github.io`, `blogspot.com`, `s3.amazonaws.com`), so enabling it would silently change how every merchant on any of those platforms is claimed. main §2 asks instead for "allowlisting known multi-tenant suffixes", so the allowlist is a code constant with a test pinning its contents, and adding an entry is a deliberate change. Also decided here: a host whose suffix is not in the ICANN list (`example.con` — a typo, not a store) is rejected as ui §3.1's "invalid domain" rather than claimed, because claiming it parks an account on a domain that can never resolve. No DNS lookup happens at claim time; unreachability is the `detect` step's business (main §6.1).
+Nearest spec: main §2 — names the Public Suffix List and the allowlist, silent on the library and on unknown TLDs.
+
+## 2026-09-01 — T1.4 — The claim returns a four-way result decided inside one transaction, and the ingestion run commits with it
+Decision: the claim port (`packages/core/src/domain/ports.ts`) is a single method, `claimWithIngestionRun`, which inserts with `ON CONFLICT DO NOTHING`, reads the conflicting row back **in the same transaction**, and returns `claimed | already_yours | taken_by_other | account_has_other_domain`. On a real claim it also creates the `ingestion_jobs` row and its `job_steps` inside that transaction. The transaction is pinned to `read committed`.
+Why: main §5 asks for three distinct behaviours and T0.3's `claimDomain` repository returns `undefined` for all of them (audit T0.3, `[minor]` "Claiming a domain cannot report which of three things went wrong"); this card is where that need became real. Reading the conflict back inside the transaction is what makes the answer non-stale — a follow-up query could see a different world than the insert did. The isolation level is load-bearing rather than incidental: under `read committed` each statement takes a fresh snapshot, so the loser of a race sees the winner's just-committed row and can say *why* it lost; under `repeatable read` it would see nothing and could not. Putting the ingestion run in the same transaction follows main §5 step 3 — a claim that committed without its run would leave the merchant on a progress screen nothing will ever advance, and no code path re-checks.
+Nearest spec: main §5 steps 1–3; audit `docs/audits/T0.3.md`.
+
+## 2026-09-01 — T1.4 — Claim persistence lives in `apps/web`, not `packages/db`, and replaces the repository's `claimDomain`
+Decision: `apps/web/app/api/domain/_lib/store.ts` holds the transactional claim; `packages/db/src/repositories/domains.ts::claimDomain` is left untouched and is now dead code with no caller.
+Why: the constitution puts repositories in `packages/db`, and this belongs beside `findDomainForAccount` there. `packages/db` was held by a concurrent session for the whole of this card and could not be edited — the same constraint T1.2 recorded for the billing queries. **The move is a mechanical follow-up for the integrator**, and it should replace `claimDomain` rather than sit next to it, so there is one claim function and not two with different guarantees.
+Nearest spec: CLAUDE.md code-structure rules — repository location is convention, not spec.
+
+## 2026-09-01 — T1.4 — `domains.release_after` is a deletion-sweep deadline, not a modifier on uniqueness
+Decision: the claim path ignores `release_after` entirely. A domain row blocks every other account until the row is **deleted**; the 7-day grace of main §14.6 is implemented by the deletion sweep (T8.3) not deleting the row before the deadline. A test in `apps/web/app/api/domain/_lib/domain.test.ts` pins this: a claim is refused while `release_after` is in the future *and* while it is in the past, and succeeds once the row is gone.
+Why: audit T0.3 flagged the column as "a mechanism with nothing behind it" and asked for a decision between (a) a partial unique index `WHERE release_after IS NULL`, which makes the release real in the database, and (b) an audit note on a row a later card hard-deletes. (b) is what ships, because (a) needs a migration and this card is forbidden from adding one while two other branches carry migrations. Consequence to accept knowingly: the release depends on the sweep job running. If T8.3's sweep never runs, the domain stays blocked forever — which fails in the safe direction (nobody is handed someone else's domain) but does not deliver §14.6's "released after 7 days". **Recommended for the next schema wave:** the partial index, as defence in depth, together with the matching one on `shopify_conns.invalidated_at`. Until then the column means "the sweep may delete this row after this time" and nothing else.
+Nearest spec: main §14.6 — "domain claim released after a 7-day grace window"; audit `docs/audits/T0.3.md`.
+
+## 2026-09-01 — T1.4 — An account that already holds a different domain gets 422 `account_has_other_domain`, not a 409
+Decision: when the session's account already holds another domain, the route answers HTTP 422 with `{ code: 'account_has_other_domain' }` and a message naming the domain they already hold. Only "someone else has it" answers 409 `domain_already_claimed` with main §5's verbatim string.
+Why: invariant 1 has two halves and main §5 writes copy for only one of them; the other is unreachable through the intended UI, because main §4.3 shows the connect box only to an account with no domain. It is reachable by a stale tab, a second browser, or a direct API call. The frozen route table (T0.7) lists `domain_already_claimed` as the one conflict code this route may return, and that enum is closed on purpose — the UI maps each code to specific copy — so this card may not add one, and reusing `domain_already_claimed` would send a merchant to support with the wrong story about their own domain. 422 keeps the closed 409 enum intact while still being a machine-readable refusal. **This is invented user-facing behaviour and copy; it needs founder ratification, and if the answer is "there should be a self-serve way to change your domain" it becomes a different card entirely.**
+Nearest spec: main §5 — silent on this case; `packages/core/src/api/errors.ts` — the closed conflict enum.
+
+## 2026-09-01 — T1.4 — The claim enqueues durable step rows, not a Graphile job
+Decision: claiming creates the `ingestion_jobs` row and all nine `job_steps` rows (via the worker runtime's own `createRun`), with `detect` the only step whose dependencies are met. It does **not** push a Graphile Worker job.
+Why: main §5 step 3 says the claim "enqueues the deep ingestion job", and the durable record of that job is the run and its steps — which is what ui §3.2's progress stepper renders and what a worker re-dispatches from after a crash (main §14.3.1). The task that executes `detect` does not exist: `packages/jobs`' task registry is empty and T2.1 (Lane B) owns the `detect` step. Queueing a job naming an unregistered task would create a permanently failing job, and the worker deliberately refuses to enable cron until every scheduled task has a handler. So the run waits, correctly, for the first worker able to run it. The run id is derived — `claim:<domain_normalized>` — per main §14.3.2, so a retried or repeated claim reuses one run instead of starting a second onboarding. **T2.1 must dispatch from these rows, not create its own run.**
+Nearest spec: main §5 step 3, §14.3.1–14.3.2 — silent on which half of "enqueue" the claim owns.
+
+
+## 2026-09-01 — T1.3 — `loadPrompt` cannot be called from the Next bundle; the preview reads its prompt file directly
+Decision: `apps/web/app/api/preview/_lib/config.ts` reads `packages/llm/prompts/preview.v1.md` through a single literal `new URL(<file>, import.meta.url)` and `readFileSync`, and deep-imports `@sortiva/llm/client` so the barrel (which re-exports the loader) is never pulled into the bundle.
+Why: `packages/llm/src/prompts.ts` builds its path as `new URL('../prompts/', import.meta.url)` — a **directory**. Webpack resolves `new URL()` at build time and fails with "Module not found: Can't resolve '../prompts/'", so `next build` breaks the moment any route imports `@sortiva/llm`. Verified: adding the package to `transpilePackages` does not help. A single literal *file* URL is the form webpack handles, which is why `packages/rules` already loads `signals.config.yaml` this way and builds fine.
+**This is a shared problem, not a preview problem, and it needs a one-line fix in `packages/llm` that T1.3 was not permitted to make:** compose the path as one literal (e.g. `new URL(\`../prompts/${version}.md\`, import.meta.url)`) or resolve from `fileURLToPath(new URL('.', import.meta.url))` with `node:path`. Until then, every Next-side card that needs a prompt hits the same wall. The preview's local reader should be deleted the moment `loadPrompt` is bundler-safe.
+Nearest spec: main §14.2 — "prompts live in versioned files in the repo"; CLAUDE.md — `prompts/<name>.v<N>.md` loaded via `loadPrompt`.
+
+## 2026-09-01 — T1.3 — The preview cache **writer** lives in `apps/web`, not in `packages/db`, and should be moved
+Decision: `PostgresPreviewCache` (read + write of `preview_cache`) and `OpsFlagPreviewSwitch` are in `apps/web/app/api/preview/_lib/store.ts`. They use the shared `previewCache` table definition and a `SystemScope` exactly as a repository would.
+Why: `packages/db/src/repositories/system.ts` already has `readPreviewCache` and is the correct home for the matching writer, but this card was instructed not to edit `packages/db` while other sessions hold it. **Flagged rather than resolved silently**: this is the one place in the codebase where table access sits outside `packages/db`, which CLAUDE.md's code-structure rules do not allow for. It is a cut-and-paste move at the next integration pass, and the invariant-2 boundary test already restricts who may name `previewCache` to exactly this directory.
+Nearest spec: CLAUDE.md code-structure rules — "no unscoped table access outside migrations and admin scripts"; main §13 `preview_cache`.
+
+## 2026-09-01 — T1.3 — The preview endpoint reads the spend trip; it does not raise it
+Decision: the preview checks one `ops_flags` row, `global.pause_preview`, on every cache miss. The job that sums the day's preview LLM spend and compares it against `auto_trips.preview_spend.global_cap_usd_per_day` (already in `signals.config.yaml`) is **not** in this card.
+Why: invariant 17 puts spend enforcement in our own code against our own DB counters, and card R2 is building that cost ledger in another worktree. Inventing a second spend counter here would give the product two answers to "what did previews cost today". What T1.3 delivers is the half §14.5 describes as behaviour — "serve cache hits as normal, and answer cache misses with the graceful generic card" — wired to a flag anything can raise. **Outstanding:** nothing raises `global.pause_preview` automatically until R2's ledger lands; today it is a manual switch.
+Nearest spec: main §14.5 — names the trip and its effect; §14.7 — "the budget auto-trips read spend from our own DB counters".
+
+## 2026-09-01 — T1.3 — The preview's numbers live in `packages/core/src/preview/limits.ts`
+Decision: the fetch budget (8 s / 1.5 MB / 2 redirects), the rate limits (5/min, 20/day, 4 concurrent scrapes), the 7-day TTL, the ~200-char signal floor and the ~2k-token input budget are named constants in one file, each carrying its spec §.
+Why: invariant 9 puts thresholds in `packages/rules`, but `signals.config.yaml` is scoped by T0.2 to the Opportunity Engine's numbers (main §7.3, §7.6, §8.2, §9.6, §10.2, §14.5) and this card may not edit that package. These are main §3.2's endpoint budget, which that config has no section for. If the integrator wants them tunable without a deploy, they need a `preview:` block in `signals.config.yaml` and a schema change — a rules-package card, not this one.
+Nearest spec: main §7.10 / invariant 9 — "no threshold literal outside `packages/rules`", written about the scoring layer.
+
+## 2026-09-01 — T1.3 — Rate limits and the outbound concurrency cap are per process
+Decision: `PreviewRateLimiter` and `OutboundScrapeCap` hold their counters in memory in the `app` process.
+Why: tech §2.1 pins v1 to a single `app` service and "no Redis in v1", and a Postgres round trip per public request to count requests would cost more than the fetch it protects. **The limit this accepts:** if `app` is ever scaled past one replica, both become per-instance and the effective limits multiply by the replica count. That is survivable — they sit behind Turnstile and in front of a 7-day cache, and they are a cost guard rather than an authorisation boundary — but it is the thing to change first when a second replica is added.
+Nearest spec: main §3.2 — states the limits, silent on where the counter lives.
+
+## 2026-09-01 — T1.3 — A full outbound concurrency pool serves the generic card rather than queueing
+Decision: `OutboundScrapeCap.acquire()` returns nothing when the cap is reached and the request answers with main §3.3's generic card.
+Why: the alternative is holding a public request open behind other strangers' scrapes, which turns a concurrency cap into a latency amplifier and a denial-of-service lever. The generic card is the spec's own answer for "we could not read this site" and costs nothing.
+Nearest spec: main §3.2 — "a global concurrency cap on outbound scrapes", silent on saturation behaviour.
+
+## 2026-09-01 — T1.3 — Check order: URL → rate limit → Turnstile → cache → spend trip → fetch
+Decision: the per-IP rate limit is checked before Turnstile; Turnstile gates the cache read as well as the fetch; the spend trip is checked *after* the cache.
+Why, in order. Rate limiting first because it is local and free, so an abusive caller costs us nothing, not even a Cloudflare round trip. Turnstile before the cache because main §3.2 requires a token "on every request" — gating only the fetch would leave the cache scrapeable by any bot that skips the challenge. The trip after the cache because main §14.5 requires a tripped preview to "serve cache hits as normal".
+Nearest spec: main §3.2 — "verified server-side before any fetch happens"; §14.5.
+
+## 2026-09-01 — T1.3 — A generic card is never written to the preview cache
+Decision: only a real summary produces a `preview_cache` row. Fetch failures, thin pages, model failures, the spend trip and the concurrency cap all return the generic card without storing it.
+Why: the TTL is 7 days (main §3.2). Caching a failure would mean a site that was down for ten minutes shows every later visitor "we couldn't read this site" for a week — the funnel dead-ending in slow motion, which is exactly what main §3.3 forbids. The cost of not caching failures is bounded by the rate limits and the Turnstile check in front of them.
+Nearest spec: main §3.3 step 6 — "store `{domain, summary, fetched_at}`", silent on failures.
+
+## 2026-09-01 — T1.3 — Rate-limited and challenge-failed requests emit no PostHog event
+Decision: `preview_requested` is captured after the rate limit and Turnstile have both passed; a refused caller produces no event at all.
+Why: a public endpoint that captures an event per rejected request hands an attacker a free way to inflate our PostHog bill and distort the funnel. §14.7's preview abuse canary is "total preview spend/day", which is unaffected — a refused request spends nothing. **The limit this accepts:** blocked-attempt volume is not visible in PostHog; it is visible in the app logs and in the 429 rate at the edge.
+Nearest spec: main §14.7 — lists `preview_requested` / `preview_served`, silent on refusals.
+
+## 2026-09-01 — T1.3 — The preview's Haiku call returns prose, with no JSON schema
+Decision: `call_type: preview` sends no `schema`, and `runPreview` treats a completion under 20 characters as a failed summary.
+Why: main §14.2's schema-validation rule names its call types explicitly — "distillation, persona, seeds, judge" — and preview is not among them; main §3.3 asks for "a 2–3 sentence plain-language summary". Wrapping one short paragraph in JSON would spend a meaningful share of a 150-token output budget on punctuation. The degeneracy check preserves §14.2's actual principle, "never parse what we can", for prose.
+Nearest spec: main §14.2, §3.3.
+
+## 2026-09-01 — T1.3 — Extraction is regular expressions over a capped string, not a DOM
+Decision: `extractPreviewSignals` reads `<title>`, meta description, OpenGraph tags and JSON-LD with regular expressions and strips tags for the body-text fallback. No `jsdom`, no `@mozilla/readability`.
+Why: main §3.3 titles the pipeline "cheap by design" and calls step 3 "Readability.js-**style**". A real DOM parse of hostile HTML on the product's only public endpoint is both a memory cost per request and an attack surface, for output that feeds one 150-token summary. Input is capped before parsing and malformed JSON-LD is skipped rather than thrown.
+Nearest spec: main §3.3 step 3.
+
+## 2026-09-01 — T1.3 — The preview normalises to a host, not to eTLD+1
+Decision: `normalisePreviewUrl` lowercases, strips the scheme, `www.`, the path, the query and any port, and keeps every other subdomain. `shop.example.com` and `example.com` are two preview cache rows.
+Why: the domain *claim* normaliser (main §2, §5 — PSL eTLD+1, T1.4) folds subdomains together because one account owns one business. A preview must not: it fetches the exact site pasted, and folding `shop.example.com` into `example.com` would show a stranger a card about a different website. **The consequence to know about:** §14.7 says a domain's pre-signup preview spend becomes visible when it later connects; that join works on the `www`-stripped host, so a visitor who previewed a subdomain and later claims the apex will not have the two joined. Preview output is disposable (invariant 2), so nothing else depends on the two agreeing.
+Nearest spec: main §3.2 — "cache key = normalized domain", silent on which normalisation.
+
+## 2026-09-01 — T1.3 — The preview always fetches the homepage over https
+Decision: whatever is pasted, the fetch target is `https://<domain>/`.
+Why: main §3.3 step 1 is "fetch homepage HTML" regardless of the pasted path, and main §3.2's budget is "one page fetch". Trying http after an https failure would be a second fetch outside that budget; a store that is http-only in 2026 gets the generic card.
+Nearest spec: main §3.2, §3.3 step 1.
+
+## 2026-09-01 — T1.3 — The visitor's address comes from `x-forwarded-for`
+Decision: the per-IP bucket is the left-most `x-forwarded-for` entry, then `x-real-ip`, then a shared `unknown` bucket.
+Why: Railway proxies to the app, so the socket address is always the proxy's and per-IP limiting would otherwise be one global bucket. A spoofed header can only cost the spoofer their own bucket, never anyone else's, because the limit is a cost guard in front of a cache and not an authorisation boundary. The `unknown` bucket means a request arriving with no proxy headers at all shares one limit with every other such request, which is the conservative direction.
+Nearest spec: main §3.2 — "per-IP", silent on how the IP is determined behind a proxy.
+
+## 2026-09-01 — T1.3 — A missing Turnstile secret answers 503, it does not disable the check
+Decision: `wire()` constructs `CloudflareTurnstile`, which throws when `TURNSTILE_SECRET_KEY` is absent; the handler turns that into `503 preview_unavailable`.
+Why: mirrors T1.2's `BillingNotConfigured` handling. The alternative — running the preview with the check disabled when the secret is missing — makes a deploy misconfiguration silently open the funnel's spend to bots, which is the one failure main §14.5 says must never happen quietly.
+Nearest spec: main §3.2; tech §4 — "`.env.example` documents every required variable".
+
+## 2026-09-01 — T1.3 — `prompts/preview.v1.md` lands in `packages/llm`, crossing this card's directory constraint
+Decision: the preview's system prompt is `packages/llm/prompts/preview.v1.md`, a new file in a package this session was told not to edit. Nothing else in `packages/llm` was touched; `packages/core` receives the prompt *text* through a port because `packages/llm` depends on `packages/core` and the reverse import would be circular.
+Why: CLAUDE.md requires prompts to be versioned files at `prompts/<name>.v<N>.md`, and `packages/llm/prompts/README.md` already allocates the `preview` prompt to this card by name. Holding the prompt as a string constant in `packages/core` would break the versioning rule that makes `prompt_version` on a stored artefact meaningful. The file is new, so it cannot collide with a concurrent edit. **Flagged rather than done silently.**
+Nearest spec: main §14.2 — "prompts live in versioned files in the repo"; CLAUDE.md code-structure rules.
+
+## 2026-09-01 — T1.3 — The shared page fetcher lives in `packages/providers/src/fetch`, not in `packages/core`
+Decision: the single SSRF-guarded HTTP client tech §2 requires is a new `packages/providers/src/fetch` module: `PageFetcher` interface, `GuardedPageFetcher` implementation, `MockPageFetcher` double, and the address/port policy as pure functions. `packages/core/src/preview` depends on a structural port, not on the implementation.
+Why: it is an outbound I/O client behind an interface with a test double, which is precisely what `packages/providers` is for (CLAUDE.md plumbing rules); `packages/core` is domain logic and a boundary test keeps vendor plumbing out of it. Putting it in core would also mean core owning `node:dns` and `node:http`. The seam it is *not* in — `packages/core/src/contracts/` — was frozen at T0.7 and this card is not allowed to change it, so the interface ships beside its implementation and should be promoted into `contracts/` at the next re-freeze, before T2.5 (persona), T4.3 (evidence packs) and T6.1 (intent gap) start calling it.
+Nearest spec: tech §2 — "one SSRF-guarded HTTP client ... serves every non-API page fetch", silent on which package.
+
+## 2026-09-01 — T1.3 — The fetch policy is one object covering address categories *and* ports, with a named test carve-out
+Decision: `FetchPolicy { allowedCategories, allowedPorts }`. Production is `PUBLIC_ONLY` — public addresses only, ports 80/443 only (main §3.2). `packages/providers/src/fetch/testing.ts` exports `loopbackAllowedPolicy(port)`, which differs only by admitting the `loopback` category and one ephemeral port.
+Why: the redirect tests have to redirect *from* a real HTTP server, and a real server on this machine can only listen on loopback on an ephemeral port — both of which production correctly refuses. Rather than stub the guard out (which would make the tests a rehearsal), the carve-out is one named function, is not imported by any production code, and `fetch.test.ts` asserts that `PUBLIC_ONLY` refuses that same server on both counts. Every other blocked range — 10/8, 172.16/12, 192.168/16, 169.254/16, CGNAT, unique-local, multicast, reserved, tunnels — is still enforced by the same code production runs.
+Nearest spec: main §3.2 — states the rule, silent on how to test it.
+
+## 2026-09-01 — T1.3 — A host that resolves to *any* blocked address is refused entirely
+Decision: `GuardedPageFetcher` resolves the hostname with `all: true` and rejects if a single returned address is out of policy, rather than picking a permitted one.
+Why: a name answering with both a public and a private address is either misconfigured or hostile, and choosing the good one leaves the outcome to resolver ordering — which the attacker, not us, controls. Refusing the host is the only stable reading of main §3.2's "block private/reserved IP ranges after DNS resolution".
+Nearest spec: main §3.2 — silent on multi-address answers.
+
+## 2026-09-01 — T1.3 — The connection is pinned to the address the guard cleared
+Decision: after validation the request is issued with a `lookup` function that ignores the hostname and returns the one validated address, with `agent: false` so no pooled socket bypasses it, plus a post-connect re-check of `socket.remoteAddress`.
+Why: without pinning, the resolver runs a second time inside the socket layer, and an attacker controlling the DNS answer can return a public address for our check and a private one for our connection — DNS rebinding, the standard way a "checked" fetcher is defeated. Redirects are also followed manually for the same reason: a client's built-in redirect following would connect without re-running the guard.
+Nearest spec: main §3.2 — requires the check, silent on the check-to-connect gap.
+
+## 2026-09-01 — T1.3 — Outbound page fetches request no compression
+Decision: the fetcher sends `accept-encoding: identity` and refuses any `Content-Type` outside html/xhtml/xml/plain text.
+Why: the 1.5 MB cap (main §3.2) has to count bytes we would have to hold. A decompressing client turns that cap into a decompression bomb — a few hundred KB on the wire expanding to gigabytes in memory — on a public, unauthenticated endpoint. Refusing non-page content types stops us paying egress for a PDF or a video the extractor cannot read anyway.
+Nearest spec: main §3.2 — "max download size (~1.5 MB)", silent on encoding.
+
+## 2026-09-01 — T1.3 — Turnstile fails closed
+Decision: `CloudflareTurnstile` throws at construction when `TURNSTILE_SECRET_KEY` is missing, and returns `success: false` when siteverify is unreachable or answers non-200.
+Why: Turnstile is the first of the three cost controls on a public endpoint (main §3.2), and everything after it spends money. A verifier that passes traffic through when Cloudflare is down inverts its purpose; the funnel losing previews during a Cloudflare outage is the cheaper failure. Constructing rather than request-time throwing means a missing secret is an ops failure visible at boot, not a silent bypass.
+Nearest spec: main §3.2 — "verified server-side before any fetch happens", silent on verifier failure.
+
 ## 2026-09-01 — T1.2a — A `customer.subscription.*` event is a signal to re-read, not a description of the new state
 Decision: on every `customer.subscription.updated` / `.deleted`, the webhook worker calls `subscriptions.retrieve` and writes what Stripe answers, stamped with the moment of that read. The event payload's `status`, `price`, `current_period_end` and `cancel_at_period_end` are no longer written. `checkout.session.completed` already worked this way, so the two paths now agree.
 Why: Stripe stamps events to the second and routinely fires several for one subscription inside one second. The T1.2 audit showed that when two same-second events disagreed, the winner was decided by the alphabetical order of a random Stripe event id — so a stale "not active" could beat the "active" that arrived with it and lock a merchant who had just paid out of generation and publishing for up to 24 hours, until the nightly reconciliation ran. A fresh read cannot lose that race: it is by definition the newest view of Stripe that exists, so ordering stops mattering at all. Founder-directed; the audit's preferred fix. Cost is one Stripe read per subscription event, on a stream bounded by merchant count. Permitted because main §4.2 forbids a Stripe call "in a request path or at scheduler dequeue" and a webhook worker is neither. Alternative rejected: a higher-resolution ordering key, which cannot work — Stripe does not give us sub-second event times.
