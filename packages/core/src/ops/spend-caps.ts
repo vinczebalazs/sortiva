@@ -100,8 +100,9 @@ export function median(values: readonly number[]): number | null {
   if (values.length === 0) return null
   const sorted = [...values].sort((a, b) => a - b)
   const mid = Math.floor(sorted.length / 2)
-  const value = sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
-  return value ?? null
+  const upper = sorted[mid] ?? 0
+  const value = sorted.length % 2 === 1 ? upper : ((sorted[mid - 1] ?? 0) + upper) / 2
+  return value
 }
 
 /** How money is written in a flag's reason, so two trips read the same way. */

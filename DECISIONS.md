@@ -16,6 +16,56 @@ Class (filled by audit): a: fine as-is | b: promote to spec | c: contradicts spe
 
 (entries below, newest first)
 
+## 2026-09-01 — T8.4a — Calls that failed at the vendor **do** count towards the spend caps
+Decision: `COUNT_FAILED_VENDOR_CALLS` in `packages/core/src/ops/spend-caps.ts` is `true`. It is a single exported boolean and the only place the policy is written; every query takes it as its `includeFailed` argument.
+Why: when a paid call fails, neither vendor tells us what the attempt cost, so the ledger stores our estimate and marks the row `failed`. DataForSEO very likely bills nothing for a request it rejected as malformed, so counting those rows probably over-counts. Counting them anyway, because the disaster this brake exists to catch — a retry storm, a bad prompt version rejected over and over, a credential that stopped working — is made almost entirely of *failed* calls, and a meter that ignores failures is blind to exactly that shape. The two errors are not symmetric: over-counting pauses one account until an operator looks (minutes, reversible); under-counting runs an unbounded bill (not reversible). **This is the founder's switch to flip**, one line, and every cap and test follows it. Recorded as still-open in `docs/handoff-wave2.md` under "open decisions" — this entry closes it with a default, not with a ruling.
+Nearest spec: main §14.5 — names the caps, silent on what a failed call contributes.
+
+## 2026-09-01 — T8.4a — The gate refuses when the kill switches cannot be read
+Decision: `mayAccountWorkRun` in `packages/jobs/src/runtime/gate.ts` returns `{allowed: false, reason: 'unreadable'}` when the database throws, rather than treating an unreadable switch as permission to proceed.
+Why: "assume fine" means the one condition under which the brakes silently stop existing is a database problem, which is also when a runaway is most plausible. The cost is near zero in practice: the work being gated reads and writes the same database and would fail moments later anyway, so refusing loses nothing but never lets a paid vendor call go out on the strength of a switch we could not read. This is main §14.4's posture — degrade to pause, never to a guess — applied to the brake itself.
+Nearest spec: main §14.4, §14.5 — silent on an unreadable flag.
+
+## 2026-09-01 — T8.4a — One gate for all paid account work, not one per work type
+Decision: `mayAccountWorkRun(db, accountId)` takes no work-type parameter. It checks `global.pause_all` and `account.pause_generation`, and a caller that gets `allowed: false` runs nothing for that account. Publishing is out of its scope and keeps its own switches.
+Why: main §14.5 says the per-account spend trip "pauses that account's generation". Read narrowly, an account paused for runaway model spend would still be free to run catalogue ingestion — which spends model money on distillation, and is therefore a likely source of the runaway the trip just caught. A brake that leaves the throttle open is not a brake. The narrow reading also gives every future caller a per-work-type decision to make, which is how half the code paths end up not consulting the switch at all. The accepted cost: an operator who manually raises `account.pause_generation` also stops that account's ingestion, which is broader than the flag's name suggests. **Flagged as a deviation from the spec's wording**, taken in the safe direction.
+Nearest spec: main §14.5 — "pause that account's generation".
+
+## 2026-09-01 — T8.4a — A day is a UTC day, and the trailing comparison excludes today
+Decision: caps are measured midnight-to-midnight UTC (`utcDayWindow`), and the trailing window used for "unusual for this account" ends where today begins (`trailingWindow`).
+Why: the vendors bill us on one clock, not on each store's, so a per-store local day would make the same dollar fall on different days depending on who spent it — the same runaway would trip at different totals for a Copenhagen store and a Los Angeles one. Excluding today from its own comparison is arithmetic hygiene: a day cannot be unusual against a typical day that includes it.
+Nearest spec: main §14.5 — "daily", "trailing-30-day median"; silent on the clock.
+
+## 2026-09-01 — T8.4a — A typical day is the median of days the account actually spent; no history means the flat ceiling only
+Decision: `dailyAccountVendorSpend` returns a row only for days with spend, and `accountSpendVerdict` skips the multiple rule when there is no earlier spending day or the median is zero.
+Why: counting no-spend days as zero would make the median zero for any account that does not work daily, and ten times zero is zero — so any spending at all would trip. That would pause every new account on its first paid call. With no history the flat dollar ceiling is the only honest rule: the first day of a store's life has nothing to be unusual against. The residual risk, stated: an account whose only prior day was very cheap has a low bar on its second day, and the direction of that error is a pause, which is the direction main §14.4 prefers.
+Nearest spec: main §14.5 — "> 10x its trailing-30-day median"; silent on days with no spend and on accounts with no history.
+
+## 2026-09-01 — T8.4a — The preview cap sums every account-less spend row, whatever the vendor
+Decision: `sumPreviewSpend` filters on `account_id IS NULL` and not on vendor.
+Why: the table's attribution constraint means an account-less row is preview spend by construction. Filtering to the model vendor would match today's behaviour exactly and let a future preview path that pays a second vendor escape the cap silently. main §14.5 calls this trip the abuse canary for a public endpoint, so it should catch everything a stranger can make us pay for.
+Nearest spec: main §14.5 — "daily preview LLM spend".
+
+## 2026-09-01 — T8.4a — The cap sweep runs every five minutes; the interval is what bounds the overspend
+Decision: `spend_cap_sweep` is scheduled `*/5 * * * *` in `packages/jobs/src/runtime/crontab.ts`.
+Why: nothing else in the product looks at the meter, so between two runs a runaway is unbounded — the schedule *is* the response time of the brake. Five minutes matches the existing publish-recovery sweep and costs three indexed sums per run. A nightly run would make "daily cap" mean "we find out tomorrow".
+Nearest spec: main §14.5 — "checked at job dequeue (effective within 60s)" describes reading a flag, not raising one; silent on how often the caps are evaluated.
+
+## 2026-09-01 — T8.4a — `global.pause_enrichment` is raised with nothing yet reading it
+Decision: the search-data cap raises `global.pause_enrichment`. No code consumes that flag, because the enrichment work it would stop is not built.
+Why: main §14.5 names the trip and its effect. Raising the flag now means the record and the alert exist from the day the first paid search call is made; the lane that builds enrichment reads the flag at its own dequeue, the way the preview endpoint already reads `global.pause_preview`. The alternative — waiting — leaves the vendor bill uncapped through the cards that start spending on it.
+Nearest spec: main §14.5 — "Global DataForSEO daily spend > configured cap → `global` enrichment pause".
+
+## 2026-09-01 — T8.4a — `apps/web/instrumentation.ts` may name the database, as a composition root
+Decision: added `apps/web/instrumentation.ts` to the existing composition-root exemption from `sortiva/no-raw-db-access` in `eslint.config.mjs` — the block that already exempts the Stripe receiver. It hands the `db` factory to `registerOpsTasks`; it reads no table.
+Why: a scheduled job cannot be given its database by a request, so somebody at the top of the process has to name it, and this file is the process's composition root — the exempting comment beside the Stripe receiver already names this file as where that construction belongs. Deliberately not added to the D5 list above it, which says not to grow. A factory rather than a handle is passed so that registering opens no connection: a local session with the worker off must still boot without a database.
+Nearest spec: CLAUDE.md code-structure rules — no raw table access outside `packages/db`; silent on composition roots.
+
+## 2026-09-01 — T8.4a — Spend-cap code lives in `packages/core/src/ops`, a directory no lane owns
+Decision: the pure cap arithmetic is `packages/core/src/ops/spend-caps.ts`; the sweep is `packages/jobs/src/sweeps/spend-caps.ts`; the dequeue gate is `packages/jobs/src/runtime/gate.ts`.
+Why: the build plan gives Lane G the kill switches but lists its `packages/core` directories as `notifications`, `email`, `lifecycle` — none of which this is. `ops` is a new directory named after what it holds, chosen over stretching `lifecycle`. The split keeps the arithmetic testable with no database: `packages/core` is handed totals and ceilings and answers yes or no, `packages/jobs` supplies them.
+Nearest spec: build plan §3 — lane ownership; silent on this directory.
+
 ## 2026-09-01 — T1.4 — The domain claim resolves eTLD+1 with `tldts`, ICANN section only, plus an explicit multi-tenant allowlist
 Decision: `packages/core/src/domain/normalise.ts` resolves the registrable domain with the `tldts` package (a new dependency of `packages/core`, MIT, bundles the Public Suffix List). It uses the list's ICANN section only, and adds one explicit allowlist entry — `myshopify.com` — for which the claim stops one label lower (`acme.myshopify.com`, not `myshopify.com`).
 Why: main §2 requires eTLD+1 "using the Public Suffix List", which is a data set, not an algorithm — a hand-rolled "last two labels" rule gets `example.co.uk` wrong, and hand-maintaining the list is worse. The alternative rejected is turning on the list's PRIVATE section wholesale, which `tldts` offers as a flag: that section holds thousands of entries (`github.io`, `blogspot.com`, `s3.amazonaws.com`), so enabling it would silently change how every merchant on any of those platforms is claimed. main §2 asks instead for "allowlisting known multi-tenant suffixes", so the allowlist is a code constant with a test pinning its contents, and adding an entry is a deliberate change. Also decided here: a host whose suffix is not in the ICANN list (`example.con` — a typo, not a store) is rejected as ui §3.1's "invalid domain" rather than claimed, because claiming it parks an account on a domain that can never resolve. No DNS lookup happens at claim time; unreachability is the `detect` step's business (main §6.1).
