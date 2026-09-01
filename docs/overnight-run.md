@@ -36,11 +36,16 @@ that depended on it, so it can be reversed before more is built on top.
 
 ## Order
 
-The citation sweep runs **last**, not first — the reverse of the standing advice
-in `handoff-wave2.md`, and deliberately. It needs a tree with nothing in flight;
-tonight that moment is at the end rather than the start, and sweeping last also
-cleans whatever tonight's cards write. Every card prompt states the no-citations
-rule explicitly, so nothing new should need much cleaning.
+**The citation sweep is done** — it landed as `b0c1413`, removing 1,007 spec
+references and leaving 15, all in shipped migrations, for the reason journalled
+in `DECISIONS.md`. So the tree is quiet in the way lanes need, and there is no
+longer a whole-repo job waiting for a gap.
+
+Order is now simply the dependency order in `docs/handoff-wave2.md`. The one
+sequencing judgement left: the operations card slots **after `T2.1` and before
+`T2.2`**, because `T2.1` is what makes background steps actually run — so it is
+the first moment a diagnosis script can be tested against a store that is really
+stuck rather than a fixture — and `T2.2` is the card most likely to strand one.
 
 ## The morning report will say
 

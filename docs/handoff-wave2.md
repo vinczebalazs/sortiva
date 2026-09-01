@@ -11,7 +11,9 @@ happened. Keep that file for the history; work from this one.
 
 ## Where things stand
 
-**Everything is merged. `main` holds nineteen cards. Nothing is in flight.**
+**Everything is merged. Nothing is in flight.** Since this was written, two more
+cards landed on `main`: the spend caps (`T8.4a`) and the citation sweep
+(`T-SWEEP`).
 
 The full gate is green on the merged tree, each command run separately:
 
@@ -20,7 +22,7 @@ The full gate is green on the merged tree, each command run separately:
 | `pnpm lint` | clean |
 | `pnpm lint:prove` | 7 planted violations, all rejected |
 | `pnpm typecheck` | 9 packages |
-| `pnpm test` | **883 passing, 56 files** |
+| `pnpm test` | **914 passing** |
 | `pnpm contracts:check` | 56 routes; schemas and the API document agree |
 | `pnpm build` | 9 routes |
 | `pnpm eval` · `pnpm chaos` | pass |
@@ -60,11 +62,17 @@ to do first.
 
 ## The order
 
-1. **The spec-citation sweep**, alone, on the quiet tree — see below for why.
-2. **`T2.1` and `T9.1` in parallel.** Different lanes, different directories.
-3. **The operations card**, third.
+1. **Four lanes in parallel** — `T2.1` (B), `T9.1` (F), `T3.1` (C), `T8.0` (G).
+   None waits on another.
+2. **The operations card**, after `T2.1` and before `T2.2` — see below.
+3. Then the dependency order, which is set by Lane B.
 
-Two or three concurrent sessions, never more; see the mechanics at the end.
+Four concurrent building sessions is the cap, and check the machine's load before
+launching another; see the mechanics at the end.
+
+**The citation sweep is done** (`b0c1413`) — 1,007 references removed, 15 left in
+shipped migrations because a migration records how the product came to be rather
+than how it works now, journalled in `DECISIONS.md`. It no longer gates anything.
 
 ---
 
@@ -112,26 +120,30 @@ contract rather than a surprise.
 
 ---
 
-## Two smaller jobs, carded and unstarted
+## The operations card — when, and why then
 
-**Run the sweep first, before anything else, on its own.**
+**After `T2.1`, before `T2.2`.**
 
-It touches 203 files — nearly the whole repository — so it needs a tree with
-nothing in flight, and that is true only right now. The moment `T2.1` and `T9.1`
-start they own directories the sweep must touch, and it either waits behind them
-or collides with them.
+Not before `T2.1`, because nothing in the running product executes a background
+step yet: there are no stuck stores to diagnose, nothing in the dead-letter queue
+to replay, and no worker failures for a crash reporter to catch. Built today you
+could not tell a working diagnosis script from a broken one, because every store
+looks identical and idle.
 
-There is a second reason, and it is the better one. A session writing `T2.1`
-reads the code around it and copies the style it finds. That code is currently
-full of the citations the founder has ruled against, so the rule lives only in
-`CLAUDE.md`, contradicted by every file the session opens. Sweeping first makes
-the code itself demonstrate the rule.
+Not after `T2.2` either. `T2.2` is the catalogue sync — paginated, rate-limited,
+checkpointed, talking to a vendor over a network — and of everything in the plan
+it is the most likely to leave a merchant stranded halfway through onboarding at
+two in the morning. Having the diagnosis script and the replay action *before*
+that ships is the difference between answering a support question in seconds and
+reconstructing state from hand-written SQL.
 
-The operations card then follows in the normal run of work. It writes its new
-files under the new convention anyway, because `CLAUDE.md` already forbids
-citations — so nothing is lost by putting the sweep ahead of it.
+One caveat to carry into it: the health check and the crash reporter are useful
+immediately, but **the diagnosis script and the replay action stay dormant until
+cron is switched on** — the all-or-nothing policy question `T2.1` inherits. Three
+separate pieces of machinery now wait behind that one line, the spend caps
+included.
 
-### The operations card
+### What it contains
 
 Nobody can answer "why is this store stuck", and nobody can un-stick it. Four
 small things, none owned by any existing card:
@@ -147,17 +159,6 @@ small things, none owned by any existing card:
 - wiring the crash reporter. `captureException` is implemented on the analytics
   wrapper and has **zero production callers**, so an unhandled error goes to
   stdout and nowhere else.
-
-### The spec-citation sweep
-
-The founder's ruling: the build is the source of truth, so code carries no spec
-references. A section number tells a reader nothing, and it points at a document
-that may already be out of date relative to the code beside it while looking like
-an explanation. Deviations get flagged in `DECISIONS.md`, never in a comment.
-
-**1,007 occurrences across 203 files.** `CLAUDE.md` and the build plan were
-amended when the ruling was made; the code was not, deliberately, because eleven
-branches were live at the time.
 
 ---
 
