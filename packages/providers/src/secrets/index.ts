@@ -193,16 +193,28 @@ export function safeEqual(a: string, b: string): boolean {
   return timingSafeEqual(left, right)
 }
 
+/** A URL carrying `user:password@` — a database or broker connection string. */
+const CONNECTION_STRING = /^[a-z][a-z0-9+.-]*:\/\/[^/@\s]*:[^/@\s]+@/i
+
 /**
  * Registers every secret-shaped environment variable with the log scrubber.
  * Called once at process start, so a secret that reaches a log line or an
  * exception message is redacted wherever it appears (tech §4).
+ *
+ * Two families qualify. **Secret-shaped names** — anything ending in SECRET,
+ * TOKEN, PASSWORD, API_KEY or KEY. **Connection strings** — audit
+ * `docs/audits/T0.5.md` finding 14: `DATABASE_URL` matches none of those
+ * suffixes and carries a password inline, so a Postgres error that echoed the
+ * connection string printed it. Matching on the *value* rather than adding
+ * `URL$` to the name pattern is what keeps `APP_URL` readable in logs, which is
+ * where it belongs.
  */
 export function registerEnvSecrets(env: NodeJS.ProcessEnv = process.env): string[] {
   const registered: string[] = []
   for (const [name, value] of Object.entries(env)) {
     if (!value) continue
-    if (!/(SECRET|TOKEN|PASSWORD|API_KEY|KEY)$/.test(name)) continue
+    const secretName = /(SECRET|TOKEN|PASSWORD|API_KEY|KEY)$/.test(name)
+    if (!secretName && !CONNECTION_STRING.test(value)) continue
     // A publishable key or a Turnstile site key belongs in logs; registering it
     // would redact values that are meant to be readable.
     if (/PUBLIC|SITE_KEY|PROJECT_ID/.test(name)) continue

@@ -84,3 +84,42 @@ export function usdCost(spec: ModelSpec, inputTokens: number, outputTokens: numb
 export function specForModelId(modelId: string): ModelSpec | undefined {
   return Object.values(MODELS).find((m) => m.id === modelId)
 }
+
+/**
+ * `LlmRequest.model` lets a caller override the model for one call. Audit
+ * `docs/audits/T0.5.md` finding 8: the previous version applied the override to
+ * the model's *name* but kept the tier's *prices*, so overriding a Haiku call
+ * with Sonnet recorded roughly half the real cost, and it skipped the "no
+ * moving aliases" check that the environment-variable path performs.
+ *
+ * The auditor's preferred fix was to delete `LlmRequest.model` outright, but it
+ * is declared in a frozen contract (`packages/core/src/contracts/llm.ts`) other
+ * lanes build against, so this card takes the alternative it offered: route the
+ * override through a lookup that only accepts a known, priced, explicitly-named
+ * model.
+ */
+export function overrideModel(modelId: string): ModelSpec {
+  if (ALIAS_PATTERN.test(modelId)) {
+    throw new Error(
+      `LlmRequest.model="${modelId}" looks like a moving alias. main §14.2 requires explicit model ids so every artefact is reproducible.`,
+    )
+  }
+  const spec = specForModelId(modelId)
+  if (!spec) {
+    throw new Error(
+      `LlmRequest.model="${modelId}" is not in the model registry, so the call would be priced at another model's rates and misreport spend (main §14.7). Add it to MODELS with its prices, or drop the override.`,
+    )
+  }
+  return spec
+}
+
+/**
+ * Input tokens for a call whose usage figures never came back. Anthropic bills
+ * for work performed, so a request that reached the API and then failed still
+ * costs — estimated here at the same ≈4-characters-per-token rate the test
+ * double uses. Recorded spend on a failed call is therefore an approximation,
+ * and is marked as one.
+ */
+export function estimateTokens(text: string): number {
+  return Math.max(1, Math.ceil(text.length / 4))
+}

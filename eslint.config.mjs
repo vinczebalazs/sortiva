@@ -37,6 +37,10 @@ export default tseslint.config(
       // Invariant 25 — one instrumented wrapper per vendor SDK.
       'sortiva/no-direct-provider-sdk': 'error',
 
+      // Invariant 25, for the vendor with no SDK to ban: DataForSEO is a plain
+      // HTTPS endpoint, so the host string itself is what has to be fenced in.
+      'sortiva/no-direct-vendor-http': 'error',
+
       // Invariant 9 — every threshold number lives in packages/rules.
       'sortiva/no-threshold-literals': 'error',
 
@@ -46,6 +50,14 @@ export default tseslint.config(
       // Audit T0.3 [major]; remediation D5 (stopgap half).
       'sortiva/no-raw-db-access': 'error',
     },
+  },
+
+  // The rule that bans a vendor host has to name that host, and the test that
+  // proves the rule works has to plant it. Those two files are the definition
+  // and the proof, not a call site.
+  {
+    files: ['tools/eslint-plugin-sortiva/rules/no-direct-vendor-http.js', 'scripts/prove-lint.mjs'],
+    rules: { 'sortiva/no-direct-vendor-http': 'off' },
   },
 
   // packages/rules is the one place threshold numbers are allowed to be compared.

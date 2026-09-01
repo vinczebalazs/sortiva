@@ -1,11 +1,13 @@
 import { PostHog } from 'posthog-node'
 import {
   DOMAIN_GROUP,
+  createLogger,
   resolveAttribution,
   scrub,
   type AiGenerationEvent,
   type AnalyticsEvent,
   type EventAttribution,
+  type Logger,
   type PosthogCapture,
   type SeoRequestEvent,
 } from '@sortiva/core'
@@ -36,6 +38,7 @@ export interface PosthogServerCaptureOptions {
   client?: PostHog
   /** A missing key disables capture rather than throwing — local dev has no project. */
   enabled?: boolean
+  logger?: Logger
 }
 
 export class PosthogServerCapture implements PosthogCapture {
@@ -52,6 +55,17 @@ export class PosthogServerCapture implements PosthogCapture {
       enabled && apiKey
         ? new PostHog(apiKey, { host: options.host ?? process.env.POSTHOG_HOST })
         : undefined
+    if (!this.client) {
+      // Audit `docs/audits/T0.5.md` finding 6: without a key this wrapper
+      // records nothing, with no error and no log line — so a deploy missing
+      // `POSTHOG_API_KEY` spent real money invisibly. It still degrades rather
+      // than throwing (local dev has no project), but it now says so once.
+      // Note this only silences §14.7's *dashboards*; the §14.5 caps read the
+      // spend ledger, which is a separate port and unaffected.
+      ;(options.logger ?? createLogger()).warn('posthog_capture_disabled', {
+        reason: apiKey ? 'explicitly disabled' : 'POSTHOG_API_KEY is not set',
+      })
+    }
   }
 
   capture(event: AnalyticsEvent): void {
@@ -217,6 +231,29 @@ export class MockPosthogCapture implements PosthogCapture {
     this.events.push(captured)
     return captured
   }
+}
+
+/**
+ * **A capture that records nothing.** The counterpart of `UnrecordedSpend`:
+ * both wrappers now require a recorder, so a caller that genuinely does not
+ * want telemetry has to name this class (audit `docs/audits/T0.5.md` finding
+ * 6). "Not recorded" is then a visible choice in the code, never what a missing
+ * argument quietly produced.
+ *
+ * `PosthogServerCapture` with no key behaves the same way, but reaching that
+ * state is a deployment mistake; reaching this one is a decision.
+ */
+export class UnrecordedCapture implements PosthogCapture {
+  capture(_event: AnalyticsEvent): void {}
+  captureAiGeneration(_event: AiGenerationEvent): void {}
+  captureSeoRequest(_event: SeoRequestEvent): void {}
+  captureException(
+    _error: unknown,
+    _attribution: EventAttribution,
+    _properties?: Record<string, unknown>,
+  ): void {}
+  async flush(): Promise<void> {}
+  async shutdown(): Promise<void> {}
 }
 
 export { DOMAIN_GROUP }

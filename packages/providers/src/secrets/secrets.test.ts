@@ -89,6 +89,22 @@ describe('registerEnvSecrets', () => {
     expect(scrubString('with a-long-vendor-password')).toBe(`with ${REDACTED}`)
     expect(scrubString('site 0x4AAAAAAApublicvalue')).toBe('site 0x4AAAAAAApublicvalue')
   })
+
+  it('registers a connection string, whose name matches no secret suffix', () => {
+    // Audit `docs/audits/T0.5.md` finding 14: a Postgres error that echoes the
+    // connection string used to print the password with it.
+    const registered = registerEnvSecrets({
+      DATABASE_URL: 'postgres://sortiva:s3cr3t@db.internal:5432/sortiva',
+      APP_URL: 'https://app.sortiva.com',
+    })
+
+    expect(registered).toEqual(['DATABASE_URL'])
+    expect(scrubString('connect to postgres://sortiva:s3cr3t@db.internal:5432/sortiva failed')).toBe(
+      `connect to ${REDACTED} failed`,
+    )
+    // A URL with no credentials in it is not a secret, and stays readable.
+    expect(scrubString('serving https://app.sortiva.com')).toBe('serving https://app.sortiva.com')
+  })
 })
 
 describe('safeEqual', () => {

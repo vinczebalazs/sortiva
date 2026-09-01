@@ -61,6 +61,22 @@ const CASES = [
     source: ["import * as tables from '@sortiva/db/schema'", '', 'export default tables', ''].join('\n'),
     expectRule: 'sortiva/no-raw-db-access',
   },
+  {
+    // R2 / audit `docs/audits/T0.5.md` finding 9. DataForSEO has no SDK to ban,
+    // so the sibling rule cannot see it; the host string is the thing fenced in.
+    name: 'direct api.dataforseo.com call outside the SEO wrapper (invariant 25)',
+    file: 'packages/llm/src/__lintproof__/dataforseo-host.ts',
+    source: [
+      'export async function keywordVolume(keyword: string): Promise<Response> {',
+      "  return fetch('https://api.dataforseo.com/v3/keywords_data/google_ads/search_volume/live', {",
+      "    method: 'POST',",
+      '    body: JSON.stringify([{ keywords: [keyword] }]),',
+      '  })',
+      '}',
+      '',
+    ].join('\n'),
+    expectRule: 'sortiva/no-direct-vendor-http',
+  },
 ]
 
 /** Runs `eslint` on one file and returns its JSON report (exit code 1 is the expected path). */
