@@ -31,6 +31,21 @@ export function db(): Database {
   return database
 }
 
+/**
+ * The pool behind `db()`, for the advisory locks that need a dedicated
+ * connection they can hold (main §14.3.3, invariant 18) rather than a pooled
+ * query. Callers that only run queries should use `db()`.
+ *
+ * Exported because a caller who builds its own pool instead would take locks
+ * against a second connection set while its writes went through the first —
+ * lock and write must share a database, and sharing the pool is the cheapest
+ * way to be sure they do.
+ */
+export function dbPool(): pg.Pool {
+  db()
+  return pool!
+}
+
 export async function closeDb(): Promise<void> {
   await pool?.end()
   pool = undefined

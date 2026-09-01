@@ -102,7 +102,10 @@ export const accountResponseSchema = z.object({
     .nullable(),
   /** main §4.2, invariant 16 — read from the local row only; never a Stripe call. */
   subscription: z.object({
-    status: z.enum(['active', 'past_due', 'canceled', 'incomplete_expired', 'none']),
+    // `incomplete` — the first payment is still being authorised — is a fifth
+    // status added by card T1.2a; see `packages/db/src/schema/enums.ts`. Like
+    // `incomplete_expired` it is not entitled, so no consumer's gating changes.
+    status: z.enum(['active', 'past_due', 'canceled', 'incomplete', 'incomplete_expired', 'none']),
     cancelAtPeriodEnd: z.boolean(),
     currentPeriodEnd: isoDateTimeSchema.nullable(),
   }),
@@ -119,6 +122,37 @@ export const accountResponseSchema = z.object({
 
 export const checkoutRequestSchema = z.object({ interval: z.enum(['monthly', 'annual']) })
 export const redirectResponseSchema = z.object({ url: z.string().url() })
+
+/**
+ * ui §2.3's plan card: the price, the monthly/annual toggle, the verbatim cap
+ * line and the inclusions.
+ *
+ * Amounts come from Stripe on every response (main §4.2 — "amounts live in
+ * Stripe only — the app never hardcodes a dollar amount"), in minor units with
+ * their currency, so the client formats and the API bakes in no locale. The
+ * −20% annual saving is not a field: it is whatever the two amounts say it is,
+ * which is the point of reading them from Stripe.
+ */
+export const planResponseSchema = z.object({
+  planKey: z.literal('pro'),
+  name: z.string(),
+  /** main Appendix A, verbatim. Invariant 23 — never rendered with a denominator. */
+  capLine: z.string(),
+  inclusions: z.array(z.string()),
+  cancelAnytime: z.string(),
+  /** main §14.6 — the three cancellation facts, stated wherever cancellation is offered. */
+  cancellationFacts: z.array(z.string()),
+  prices: z.array(
+    z.object({
+      interval: z.enum(['monthly', 'annual']),
+      priceId: z.string(),
+      /** Cents, or the currency's smallest unit. Null for a metered price. */
+      unitAmountMinor: z.number().int().nullable(),
+      /** ISO 4217, lower-case, as Stripe returns it. */
+      currency: z.string(),
+    }),
+  ),
+})
 
 export const settingsSchema = z.object({
   /** main §9.5 — export is the default; auto-publish is a second consent. */

@@ -5,7 +5,7 @@ import {
   type StripeBillingProvider,
 } from '@sortiva/core'
 import { StubNotificationEmitter } from '@sortiva/core'
-import type { Db } from '@sortiva/db'
+import { dbPool, type Db } from '@sortiva/db'
 import { PosthogServerCapture } from '@sortiva/providers'
 import {
   makeBillingStore,
@@ -38,9 +38,16 @@ let capture: PosthogServerCapture | undefined
 
 export function billingWorkerDeps(options: ReceiverOptions = {}): BillingWorkerDeps {
   const database = options.database
+  // Invariant 18 — all work for one account serialises. The pool has to come
+  // from the composition root: with none, `makeBillingStore` silently skips the
+  // per-account lock, so before this card the lock engaged only in tests, which
+  // are the one place it was never needed. A test handing in its own isolated
+  // database supplies the matching pool; production takes the shared one, so
+  // the lock and the write always meet on the same database.
+  const pool = options.pool ?? (database ? undefined : dbPool())
   const storeOptions = {
     ...(database ? { database } : {}),
-    ...(options.pool ? { pool: options.pool } : {}),
+    ...(pool ? { pool } : {}),
   }
   capture ??= new PosthogServerCapture()
   return {

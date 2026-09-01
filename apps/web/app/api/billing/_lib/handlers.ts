@@ -2,6 +2,8 @@ import {
   BillingNotSetUp,
   checkoutRequestSchema,
   openBillingPortal,
+  planWithPrices,
+  PlanPricesUnavailable,
   startCheckout,
   UnknownBillingInterval,
 } from '@sortiva/core'
@@ -127,5 +129,32 @@ function billingFailure(thrown: unknown): Response {
   throw thrown
 }
 
+/**
+ * ui §2.3 — the plan card's price and its monthly/annual toggle.
+ *
+ * Public and read-only: the plan screen is reachable before signup, it reads no
+ * account row and it changes nothing. main §4.2 keeps amounts in Stripe alone,
+ * so this asks Stripe and caches the answer (`planWithPrices`).
+ */
+export function makePlanHandler(options: BillingHandlerOptions = {}) {
+  return async (): Promise<Response> => {
+    try {
+      const plan = await planWithPrices({
+        stripe: options.stripe ?? stripeProvider(),
+        prices: options.prices ?? priceCatalog(),
+      })
+      return Response.json(plan)
+    } catch (thrown) {
+      if (thrown instanceof PlanPricesUnavailable) {
+        // No fallback amount exists to show — main §4.2 forbids one — so this
+        // pauses rather than inventing a price (main §14.4).
+        return error(503, thrown.code, 'Plan pricing is temporarily unavailable.')
+      }
+      return billingFailure(thrown)
+    }
+  }
+}
+
 export const checkoutHandler = makeCheckoutHandler()
 export const portalHandler = makePortalHandler()
+export const planHandler = makePlanHandler()

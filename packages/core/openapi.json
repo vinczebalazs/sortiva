@@ -103,6 +103,7 @@
                             "active",
                             "past_due",
                             "canceled",
+                            "incomplete",
                             "incomplete_expired",
                             "none"
                           ]
@@ -2383,6 +2384,107 @@
                   },
                   "required": [
                     "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/billing/plan": {
+      "get": {
+        "operationId": "get-billing-plan",
+        "summary": "The Pro plan card: live Stripe amounts, cap line, inclusions.",
+        "description": "Spec: main §4.2; ui §2.3",
+        "tags": [
+          "billing"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "planKey": {
+                      "type": "string",
+                      "const": "pro"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "capLine": {
+                      "type": "string"
+                    },
+                    "inclusions": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "cancelAnytime": {
+                      "type": "string"
+                    },
+                    "cancellationFacts": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "prices": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "interval": {
+                            "type": "string",
+                            "enum": [
+                              "monthly",
+                              "annual"
+                            ]
+                          },
+                          "priceId": {
+                            "type": "string"
+                          },
+                          "unitAmountMinor": {
+                            "anyOf": [
+                              {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "currency": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "interval",
+                          "priceId",
+                          "unitAmountMinor",
+                          "currency"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "planKey",
+                    "name",
+                    "capLine",
+                    "inclusions",
+                    "cancelAnytime",
+                    "cancellationFacts",
+                    "prices"
                   ],
                   "additionalProperties": false
                 }

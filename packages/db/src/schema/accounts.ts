@@ -39,8 +39,15 @@ export const accounts = pgTable(
 
 /**
  * main §13 `subscriptions`, §4.2. Written **only** by the Stripe webhook worker
- * (invariant 16); `synced_at` drives the nightly reconciliation of any row
- * stale > 24h.
+ * (invariant 16).
+ *
+ * Two timestamps, because the row answers two different questions and one
+ * column cannot hold both answers safely:
+ *
+ * - `synced_at` — when we last successfully contacted Stripe about this row.
+ *   tech §3's nightly job scans it ("re-fetches any subscription whose
+ *   `synced_at` is >24h stale"). Advancing it is always safe.
+ * - `state_observed_at` — the ordering floor. See its own note below.
  */
 export const subscriptions = pgTable(
   'subscriptions',
@@ -53,7 +60,21 @@ export const subscriptions = pgTable(
     status: subscriptionStatusEnum('status').notNull(),
     currentPeriodEnd: timestamp('current_period_end', { withTimezone: true }),
     cancelAtPeriodEnd: boolean('cancel_at_period_end').notNull().default(false),
+    /** tech §3 — the staleness clock the nightly reconciliation scans. */
     syncedAt: timestamp('synced_at', { withTimezone: true }).notNull().defaultNow(),
+    /**
+     * The instant we read the state in this row from Stripe, and the monotonic
+     * guard on the upsert (`WHERE state_observed_at <= EXCLUDED…`).
+     *
+     * DANGER: writing `now()` here on any path that did not just read this
+     * subscription from Stripe sets the ordering floor to the present, so every
+     * later webhook is discarded as stale and the account's billing status
+     * freezes — silently, with no error and no log. Only the guarded upsert in
+     * the billing store may write this column.
+     */
+    stateObservedAt: timestamp('state_observed_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (t) => [
     uniqueIndex('subscriptions_stripe_subscription_id_key').on(t.stripeSubscriptionId),

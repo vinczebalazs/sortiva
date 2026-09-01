@@ -40,7 +40,7 @@ function seed(billing: InMemoryBillingStore, syncedAt: Date) {
     status: 'active',
     currentPeriodEnd: new Date('2026-09-30T00:00:00Z'),
     cancelAtPeriodEnd: false,
-    observedAt: syncedAt,
+    stateObservedAt: syncedAt,
   })
 }
 
@@ -103,5 +103,40 @@ describe('nightly reconciliation (tech §3)', () => {
     expect(staleCutoff(new Date('2026-08-31T02:00:00Z'))).toEqual(
       new Date('2026-08-30T02:00:00Z'),
     )
+  })
+})
+
+/**
+ * The sweep above only ever scanned rows that already exist, so a merchant who
+ * paid and never got a subscription row was invisible to it: there is no row to
+ * be stale. That is the state a live-key/test-key mismatch leaves behind, and
+ * it is the one state where the merchant has been charged and has no access.
+ */
+describe('a merchant who paid and has no subscription row', () => {
+  it('is found by the nightly sweep and raised on the alerting event', async () => {
+    const { billing, deps } = harness(remotePastDue, NOW)
+    const captured: { event: string; properties?: Record<string, unknown> }[] = []
+    // `seedAccount` attached the customer id; no subscription row was written,
+    // which is exactly what `checkout.session.completed` leaves behind when the
+    // read-back fails.
+    const report = await reconcileSubscriptions(
+      { ...deps, capture: { capture: (e) => void captured.push(e) } },
+      {},
+    )
+
+    expect(report.orphaned).toEqual([ACCOUNT])
+    expect(billing.rows.get(ACCOUNT)).toBeUndefined()
+
+    const dlq = captured.filter((e) => e.event === 'dlq_entry_created')
+    expect(dlq).toHaveLength(1)
+    expect(dlq[0]?.properties?.['error_class']).toBe('customer_without_subscription')
+  })
+
+  it('stops reporting the account once the row exists', async () => {
+    const { billing, deps } = harness(remotePastDue, NOW)
+    await seed(billing, FRESH)
+
+    const report = await reconcileSubscriptions(deps, {})
+    expect(report.orphaned).toEqual([])
   })
 })

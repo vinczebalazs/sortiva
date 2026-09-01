@@ -1,13 +1,14 @@
-import { and, eq, isNull, lte, sql } from 'drizzle-orm'
+import { and, eq, isNotNull, isNull, lte, sql } from 'drizzle-orm'
 import { accountScope, db, schema, type Db } from '@sortiva/db'
 // Deep import, not the package barrel: `@sortiva/jobs`'s index re-exports the
 // Graphile Worker runtime, which would drag the worker library into every
 // request bundle that touches this file. The lock module itself imports only
 // `pg` types.
-import { withAccountLock } from '@sortiva/jobs/runtime/lock'
+import { tryWithAccountLock, withAccountLock } from '@sortiva/jobs/runtime/lock'
 import type {
   BillingStore,
   LocalSubscription,
+  OrphanedCustomer,
   StaleSubscription,
   StoredStripeEvent,
   StripeEventStore,
@@ -100,6 +101,7 @@ export function makeBillingStore(options: BillingStoreOptions = {}): BillingStor
           accountId: subscriptions.accountId,
           stripeSubscriptionId: subscriptions.stripeSubscriptionId,
           syncedAt: subscriptions.syncedAt,
+          stateObservedAt: subscriptions.stateObservedAt,
         })
         .from(subscriptions)
         .where(lte(subscriptions.syncedAt, olderThan))
@@ -107,14 +109,58 @@ export function makeBillingStore(options: BillingStoreOptions = {}): BillingStor
         .limit(limit)
       return rows
     },
+
+    /**
+     * A merchant who reached Checkout — `accounts.stripe_customer_id` is
+     * written before the subscription is read back — and holds no subscription
+     * row, so is not entitled. The staleness scan above cannot see them:
+     * there is no row to be stale.
+     */
+    async orphanedCustomers(limit: number): Promise<readonly OrphanedCustomer[]> {
+      const rows = await database
+        .select({
+          accountId: accounts.id,
+          stripeCustomerId: accounts.stripeCustomerId,
+        })
+        .from(accounts)
+        .leftJoin(subscriptions, eq(subscriptions.accountId, accounts.id))
+        .where(
+          and(
+            isNotNull(accounts.stripeCustomerId),
+            isNull(accounts.deletedAt),
+            isNull(subscriptions.accountId),
+          ),
+        )
+        .limit(limit)
+      return rows.map((row) => ({
+        accountId: row.accountId,
+        stripeCustomerId: row.stripeCustomerId ?? '',
+      }))
+    },
+
+    /**
+     * The staleness clock alone — never `state_observed_at`. Used when we
+     * reached Stripe but the guarded write did not apply, so the row is
+     * demonstrably current even though this read lost the race.
+     */
+    async markSynced(accountId: string, syncedAt: Date): Promise<void> {
+      await database
+        .update(subscriptions)
+        .set({ syncedAt })
+        .where(and(eq(subscriptions.accountId, accountId), lte(subscriptions.syncedAt, syncedAt)))
+    },
   }
 }
 
 /**
- * The guarded upsert. `synced_at` holds the **Stripe-side** time of the state
- * stored, so `WHERE synced_at <= EXCLUDED.synced_at` is what makes an
- * out-of-order or replayed delivery a no-op instead of a rollback — invariant
- * 15's guarded-transition discipline on the one table Stripe writes.
+ * The guarded upsert. `state_observed_at` holds the moment we read this state
+ * from Stripe, so `WHERE state_observed_at <= EXCLUDED.state_observed_at` makes
+ * a write carrying an older read a no-op instead of a rollback — invariant 15's
+ * guarded-transition discipline on the one table Stripe writes.
+ *
+ * `synced_at` is written alongside it and means something different: when we
+ * last contacted Stripe about this row (tech §3's staleness scan). It is the
+ * only one of the two that any other code path may advance.
  */
 async function applyWrite(database: Db, write: SubscriptionWrite): Promise<SubscriptionWriteResult> {
   const [existing] = await database
@@ -126,11 +172,11 @@ async function applyWrite(database: Db, write: SubscriptionWrite): Promise<Subsc
   const result = await database.execute(sql`
     INSERT INTO subscriptions (
       account_id, stripe_subscription_id, price_id, status,
-      current_period_end, cancel_at_period_end, synced_at
+      current_period_end, cancel_at_period_end, synced_at, state_observed_at
     ) VALUES (
       ${write.accountId}::uuid, ${write.stripeSubscriptionId}, ${write.priceId},
       ${write.status}::subscription_status, ${write.currentPeriodEnd},
-      ${write.cancelAtPeriodEnd}, ${write.observedAt}
+      ${write.cancelAtPeriodEnd}, ${write.stateObservedAt}, ${write.stateObservedAt}
     )
     ON CONFLICT (account_id) DO UPDATE SET
       stripe_subscription_id = EXCLUDED.stripe_subscription_id,
@@ -138,8 +184,9 @@ async function applyWrite(database: Db, write: SubscriptionWrite): Promise<Subsc
       status                 = EXCLUDED.status,
       current_period_end     = EXCLUDED.current_period_end,
       cancel_at_period_end   = EXCLUDED.cancel_at_period_end,
-      synced_at              = EXCLUDED.synced_at
-    WHERE subscriptions.synced_at <= EXCLUDED.synced_at
+      synced_at              = GREATEST(subscriptions.synced_at, EXCLUDED.synced_at),
+      state_observed_at      = EXCLUDED.state_observed_at
+    WHERE subscriptions.state_observed_at <= EXCLUDED.state_observed_at
     RETURNING account_id
   `)
 
@@ -175,9 +222,10 @@ export function makeStripeEventStore(options: BillingStoreOptions = {}): StripeE
     },
 
     async claimUnprocessed(limit: number): Promise<readonly StoredStripeEvent[]> {
-      // Ordered by Stripe's own `created`, not by our arrival time, so a burst
-      // is applied in the order Stripe generated it. The write guard still
-      // covers what ordering cannot.
+      // Oldest first. Ordering is no longer load-bearing: every subscription
+      // write now re-reads the subscription from Stripe and is stamped with the
+      // moment of that read, so a burst applied in any order converges on the
+      // same state. `withDrainLock` below is what stops two drains overlapping.
       const result = await database.execute(sql`
         SELECT event_id, type, payload, received_at
         FROM stripe_events
@@ -201,8 +249,36 @@ export function makeStripeEventStore(options: BillingStoreOptions = {}): StripeE
         .set({ processedAt: new Date() })
         .where(eq(stripeEvents.eventId, eventId))
     },
+
+    /**
+     * One drain at a time, across every process sharing this database.
+     *
+     * `claimUnprocessed` is a plain select that claims nothing, so two webhooks
+     * arriving milliseconds apart start two drains over the same rows. Since a
+     * subscription event now costs a Stripe read, an overlap doubles our Stripe
+     * calls and double-counts the §14.7 funnel captures.
+     *
+     * A Postgres advisory lock rather than `FOR UPDATE SKIP LOCKED` or a lease
+     * column: skipping locked rows needs a transaction held open across Stripe
+     * network calls, and a lease needs a column this card's sanctioned
+     * migration scope does not cover. The lock is non-blocking — a second drain
+     * returns immediately rather than queueing, because it would only re-read
+     * rows the first drain is already working. See DECISIONS 2026-09-01 T1.2a.
+     */
+    withDrainLock: options.pool
+      ? async <T>(body: () => Promise<T>): Promise<T | null> => {
+          const result = await tryWithAccountLock(options.pool!, DRAIN_LOCK_KEY, body)
+          return result === undefined ? null : result
+        }
+      : undefined,
   }
 }
+
+/**
+ * Not an account id — `tryWithAccountLock` hashes whatever string it is given
+ * into the advisory-lock namespace, so a fixed string names a global lock.
+ */
+const DRAIN_LOCK_KEY = 'billing:stripe_event_drain'
 
 function rowsOf(result: unknown): Record<string, unknown>[] {
   if (Array.isArray(result)) return result as Record<string, unknown>[]

@@ -1,6 +1,7 @@
 import type { LocalSubscription, SubscriptionStatus } from './entitlement'
 import type {
   BillingStore,
+  OrphanedCustomer,
   StaleSubscription,
   StoredStripeEvent,
   StripeEventStore,
@@ -11,9 +12,9 @@ import type {
 /**
  * In-memory doubles for the two billing ports, in the T0.5 pattern: they
  * enforce the contract rather than record calls. `writeSubscription` applies
- * the same `synced_at` guard the SQL binding does, so a test that proves an
- * out-of-order event is rejected here is proving the rule, and the integration
- * test proves the SQL implements it.
+ * the same `state_observed_at` guard the SQL binding does, so a test that
+ * proves a write carrying an older read is rejected here is proving the rule,
+ * and the integration test proves the SQL implements it.
  *
  * Not exported from `billing/index.ts` — test surface, not product surface.
  */
@@ -22,7 +23,10 @@ interface StoredRow extends LocalSubscription {
   accountId: string
   stripeSubscriptionId: string
   priceId: string
+  /** tech §3's staleness clock: when we last contacted Stripe about this row. */
   syncedAt: Date
+  /** The ordering floor: when we read the state this row holds. */
+  stateObservedAt: Date
 }
 
 export class InMemoryBillingStore implements BillingStore {
@@ -50,7 +54,7 @@ export class InMemoryBillingStore implements BillingStore {
   async writeSubscription(write: SubscriptionWrite): Promise<SubscriptionWriteResult> {
     const existing = this.rows.get(write.accountId)
     const previousStatus: SubscriptionStatus | null = existing?.status ?? null
-    if (existing && existing.syncedAt.getTime() > write.observedAt.getTime()) {
+    if (existing && existing.stateObservedAt.getTime() > write.stateObservedAt.getTime()) {
       return { applied: false, previousStatus }
     }
     this.rows.set(write.accountId, {
@@ -60,7 +64,8 @@ export class InMemoryBillingStore implements BillingStore {
       status: write.status,
       currentPeriodEnd: write.currentPeriodEnd,
       cancelAtPeriodEnd: write.cancelAtPeriodEnd,
-      syncedAt: write.observedAt,
+      syncedAt: maxDate(existing?.syncedAt, write.stateObservedAt),
+      stateObservedAt: write.stateObservedAt,
     })
     return { applied: true, previousStatus }
   }
@@ -84,8 +89,25 @@ export class InMemoryBillingStore implements BillingStore {
         accountId: row.accountId,
         stripeSubscriptionId: row.stripeSubscriptionId,
         syncedAt: row.syncedAt,
+        stateObservedAt: row.stateObservedAt,
       }))
   }
+
+  async orphanedCustomers(limit: number): Promise<readonly OrphanedCustomer[]> {
+    return [...this.customers.entries()]
+      .filter(([, accountId]) => !this.rows.has(accountId))
+      .slice(0, limit)
+      .map(([stripeCustomerId, accountId]) => ({ accountId, stripeCustomerId }))
+  }
+
+  async markSynced(accountId: string, syncedAt: Date): Promise<void> {
+    const row = this.rows.get(accountId)
+    if (row) row.syncedAt = maxDate(row.syncedAt, syncedAt)
+  }
+}
+
+function maxDate(a: Date | undefined, b: Date): Date {
+  return a && a.getTime() > b.getTime() ? a : b
 }
 
 export class InMemoryStripeEventStore implements StripeEventStore {

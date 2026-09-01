@@ -59,6 +59,15 @@ export interface PortalSession {
   readonly url: string
 }
 
+/** What a Stripe Price says an amount is. Minor units, because Stripe uses them. */
+export interface RemotePrice {
+  readonly priceId: string
+  /** Cents, or the currency's own smallest unit. Null for a metered price. */
+  readonly unitAmountMinor: number | null
+  /** ISO 4217, lower-case as Stripe returns it. */
+  readonly currency: string
+}
+
 export interface StripeBillingProvider {
   createCheckoutSession(request: CheckoutSessionRequest): Promise<CheckoutSession>
   createPortalSession(request: PortalSessionRequest): Promise<PortalSession>
@@ -66,6 +75,19 @@ export interface StripeBillingProvider {
   constructEvent(rawBody: string, signature: string | null): StripeEventEnvelope
   /** tech §3 — the nightly reconciliation's one call. Null when Stripe has no such subscription. */
   fetchSubscription(subscriptionId: string): Promise<RemoteSubscription | null>
+  /**
+   * The amounts behind the two configured price ids, for the plan screen.
+   *
+   * main §4.2 — "amounts live in Stripe only — the app never hardcodes a dollar
+   * amount", so the only way to show a price is to ask Stripe what it is.
+   *
+   * **Optional, and currently unimplemented by both the real client and the
+   * mock**: those live in `packages/providers/src/stripe/`, which card T1.2a was
+   * not permitted to edit. `/api/billing/plan` answers 503 while it is absent,
+   * which is main §14.4's "degrade to pause" rather than inventing an amount.
+   * See DECISIONS 2026-09-01 T1.2a.
+   */
+  fetchPrices?(priceIds: readonly string[]): Promise<readonly RemotePrice[]>
 }
 
 export class WebhookSignatureError extends Error {
@@ -87,17 +109,18 @@ export class StripeCallFailed extends Error {
 }
 
 /**
- * Stripe has nine subscription statuses; main §13 stores four. The mapping is
- * lossy on purpose, and the loss is safe because only two distinctions drive
- * behaviour: `active` is the one entitled state (main §4.2), and `past_due` is
- * the one that raises the dunning banner and email. Everything else means
- * "not entitled, no dunning".
+ * Stripe has nine subscription statuses; we store five. The mapping is lossy on
+ * purpose, and the loss is safe because only two distinctions drive behaviour:
+ * `active` is the one entitled state (main §4.2), and `past_due` is the one
+ * that raises the dunning banner and email. Everything else means "not
+ * entitled, no dunning".
  *
- * `incomplete` is the one genuinely awkward case — Stripe's "the first payment
- * has not completed yet", which can still succeed — and it lands under
- * `incomplete_expired` because §13's enum has no cell for it. No user-facing
- * copy distinguishes the two, and both gate identically. See DECISIONS
- * 2026-08-31 T1.2.
+ * `incomplete` — "the first payment has not completed yet", which can still
+ * succeed — now keeps its own value instead of landing under
+ * `incomplete_expired`. Collapsing the two recorded a merchant mid-purchase as
+ * one who gave up, and then counted them as churn on main §14.7's
+ * `subscription_canceled` funnel event from the moment their row was created.
+ * See DECISIONS 2026-09-01 T1.2a.
  */
 export function mapStripeStatus(status: string): SubscriptionStatus {
   switch (status) {
@@ -111,6 +134,7 @@ export function mapStripeStatus(status: string): SubscriptionStatus {
     case 'paused':
       return 'canceled'
     case 'incomplete':
+      return 'incomplete'
     case 'incomplete_expired':
       return 'incomplete_expired'
     default:

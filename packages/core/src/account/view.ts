@@ -1,5 +1,6 @@
 import type { z } from 'zod'
 import type { accountResponseSchema, domainStateSchema } from '../api/schemas'
+import type { SubscriptionStatus } from '../billing/entitlement'
 
 export type AccountView = z.infer<typeof accountResponseSchema>
 export type DomainState = z.infer<typeof domainStateSchema>
@@ -19,7 +20,9 @@ export interface AccountViewInput {
   readonly domain: { normalized: string; state: DomainState; platform: string | null } | null
   /** main §4.2, invariant 16 — the local row, never a Stripe API call. */
   readonly subscription: {
-    status: 'active' | 'past_due' | 'canceled' | 'incomplete_expired'
+    // Imported rather than re-listed: this was a second copy of the status set,
+    // and it went stale the moment the set gained `incomplete` (card T1.2a).
+    status: SubscriptionStatus
     cancelAtPeriodEnd: boolean
     currentPeriodEnd: Date | null
   } | null

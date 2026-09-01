@@ -1,6 +1,14 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { CANCELLATION_FACTS, PLAN_CAP_LINE } from './copy'
-import { priceIdFor, PRO_PLAN, UnknownBillingInterval } from './plan'
+import {
+  clearPlanPriceCache,
+  planWithPrices,
+  PLAN_PRICE_CACHE_MS,
+  PlanPricesUnavailable,
+  priceIdFor,
+  PRO_PLAN,
+  UnknownBillingInterval,
+} from './plan'
 
 /**
  * Constitution invariants 23 and 24, and T1.2's done-when: "snapshot asserts the
@@ -68,5 +76,93 @@ describe('price ids are config (main §4.2)', () => {
     expect(() => priceIdFor({ monthly: '', annual: 'price_a' }, 'monthly')).toThrow(
       UnknownBillingInterval,
     )
+  })
+})
+
+/**
+ * ui §2.3 puts a price and a monthly/annual toggle on the plan card; main §4.2
+ * says "amounts live in Stripe only — the app never hardcodes a dollar amount".
+ * So the screen has to ask Stripe, and `/api/billing/plan` is what it asks.
+ */
+describe('plan prices come from Stripe and are cached (main §4.2, ui §2.3)', () => {
+  const prices = { monthly: 'price_m', annual: 'price_a' }
+
+  function stripeDouble(amounts: Record<string, number>) {
+    let calls = 0
+    return {
+      get calls() {
+        return calls
+      },
+      provider: {
+        fetchPrices: async (ids: readonly string[]) => {
+          calls += 1
+          return ids.map((priceId) => ({
+            priceId,
+            unitAmountMinor: amounts[priceId] ?? null,
+            currency: 'usd',
+          }))
+        },
+      },
+    }
+  }
+
+  beforeEach(() => clearPlanPriceCache())
+
+  it('reads both amounts from Stripe and never writes one down', async () => {
+    const stripe = stripeDouble({ price_m: 8900, price_a: 85440 })
+    const plan = await planWithPrices({ stripe: stripe.provider, prices })
+
+    expect(plan.prices).toEqual([
+      { interval: 'monthly', priceId: 'price_m', unitAmountMinor: 8900, currency: 'usd' },
+      { interval: 'annual', priceId: 'price_a', unitAmountMinor: 85440, currency: 'usd' },
+    ])
+    // The cap line rides along verbatim (invariant 24).
+    expect(plan.capLine).toBe(PLAN_CAP_LINE)
+  })
+
+  it('serves the cached amounts rather than asking Stripe on every page view', async () => {
+    const stripe = stripeDouble({ price_m: 8900, price_a: 85440 })
+    await planWithPrices({ stripe: stripe.provider, prices })
+    await planWithPrices({ stripe: stripe.provider, prices })
+    expect(stripe.calls).toBe(1)
+  })
+
+  it('asks again once the cache has expired', async () => {
+    const stripe = stripeDouble({ price_m: 8900, price_a: 85440 })
+    let clock = 0
+    const deps = { stripe: stripe.provider, prices, now: () => clock }
+    await planWithPrices(deps)
+    clock += PLAN_PRICE_CACHE_MS + 1
+    await planWithPrices(deps)
+    expect(stripe.calls).toBe(2)
+  })
+
+  it('does not serve the previous plan amounts after a price id changes', async () => {
+    const stripe = stripeDouble({ price_m: 8900, price_a: 85440, price_m2: 12900 })
+    await planWithPrices({ stripe: stripe.provider, prices })
+    const repriced = await planWithPrices({
+      stripe: stripe.provider,
+      prices: { monthly: 'price_m2', annual: 'price_a' },
+    })
+    expect(repriced.prices[0]?.unitAmountMinor).toBe(12900)
+  })
+
+  it('pauses rather than inventing an amount when Stripe cannot be read', async () => {
+    // main §14.4 — degrade to pause, never to something half-right. A wrong
+    // price on a purchase screen is worse than no price.
+    await expect(planWithPrices({ stripe: {}, prices })).rejects.toBeInstanceOf(
+      PlanPricesUnavailable,
+    )
+  })
+
+  it('pauses when Stripe answers without one of the configured prices', async () => {
+    const stripe = stripeDouble({ price_m: 8900 })
+    await expect(
+      planWithPrices({
+        stripe: { fetchPrices: async () => [{ priceId: 'price_m', unitAmountMinor: 8900, currency: 'usd' }] },
+        prices,
+      }),
+    ).rejects.toBeInstanceOf(PlanPricesUnavailable)
+    expect(stripe.calls).toBe(0)
   })
 })

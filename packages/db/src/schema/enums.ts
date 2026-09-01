@@ -9,11 +9,23 @@ import { pgEnum } from 'drizzle-orm/pg-core'
 /** main §4.2 — single tier. */
 export const planEnum = pgEnum('plan', ['pro'])
 
-/** main §4.2, §13 `subscriptions`. Entitled = `active`. */
+/**
+ * main §4.2, §13 `subscriptions`. Entitled = `active`.
+ *
+ * `incomplete` is a fifth value the spec text does not list — main §4.2 and §13
+ * both enumerate four. It exists because Stripe distinguishes a merchant whose
+ * first payment is still being authorised (`incomplete`) from one whose
+ * authorisation window ran out (`incomplete_expired`); folding the first into
+ * the second records someone mid-purchase as someone who gave up, and then
+ * counts them as churn on the §14.7 funnel. Neither status is entitled, so no
+ * gating behaviour changes. Founder-directed under card T1.2a; both spec
+ * enumerations need the matching edit. See DECISIONS 2026-09-01 T1.2a.
+ */
 export const subscriptionStatusEnum = pgEnum('subscription_status', [
   'active',
   'past_due',
   'canceled',
+  'incomplete',
   'incomplete_expired',
 ])
 

@@ -5,7 +5,17 @@ import { PAYMENT_FAILED_BANNER } from './copy'
  * main §13 `subscriptions`.status. `none` is not a Stripe status — it is the
  * absence of a row, which is every account between signup and Checkout.
  */
-export type SubscriptionStatus = 'active' | 'past_due' | 'canceled' | 'incomplete_expired'
+export type SubscriptionStatus =
+  | 'active'
+  | 'past_due'
+  | 'canceled'
+  /**
+   * The merchant's first payment is still being authorised. A fifth value the
+   * spec text does not list — see the note on the database enum in
+   * `packages/db/src/schema/enums.ts`. Not entitled, so it changes no gate.
+   */
+  | 'incomplete'
+  | 'incomplete_expired'
 
 export type EntitlementStatus = SubscriptionStatus | 'none'
 
@@ -84,6 +94,10 @@ function bannerFor(
   if (status === 'past_due') {
     return { kind: 'payment_failed', message: PAYMENT_FAILED_BANNER, dismissible: false }
   }
+  // `incomplete` is deliberately absent: the merchant's first payment is still
+  // being authorised, so telling them the plan is cancelled would be wrong.
+  // That window is what ui §2.3's "setting up your account…" interstitial
+  // covers, and it resolves to `active` or `incomplete_expired` on its own.
   if (status === 'canceled' || status === 'incomplete_expired') return { kind: 'canceled' }
   if (status === 'active' && subscription?.cancelAtPeriodEnd) {
     // main §14.6 — entitlement runs to period end; the three cancellation facts

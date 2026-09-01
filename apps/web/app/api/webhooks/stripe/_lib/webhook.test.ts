@@ -137,12 +137,16 @@ describe.skipIf(!available)('POST /api/webhooks/stripe (main §4.2, §14.3.8)', 
   it('payment_failed → past_due → paid drives the stored status', async () => {
     await deliver([fixtures.checkoutCompleted('evt_1', 1_000)])
 
+    // A subscription event is a signal to re-read, so what Stripe holds is what
+    // gets stored — set it before delivering, exactly as Stripe would.
+    stripe.setSubscription(remote('past_due'))
     await deliver([
       fixtures.invoicePaymentFailed('evt_2', 2_000),
       fixtures.subscriptionUpdated('evt_3', 2_001, { status: 'past_due' }),
     ])
     expect(await storedStatus()).toBe('past_due')
 
+    stripe.setSubscription(remote('active'))
     await deliver([
       fixtures.invoicePaid('evt_4', 3_000),
       fixtures.subscriptionUpdated('evt_5', 3_001, { status: 'active' }),
@@ -152,6 +156,7 @@ describe.skipIf(!available)('POST /api/webhooks/stripe (main §4.2, §14.3.8)', 
 
   it('cancel_at_period_end keeps entitlement until the period actually ends', async () => {
     await deliver([fixtures.checkoutCompleted('evt_1', 1_000)])
+    stripe.setSubscription({ ...remote('active'), cancelAtPeriodEnd: true })
     await deliver([
       fixtures.subscriptionUpdated('evt_6', 4_000, { status: 'active', cancelAtPeriodEnd: true }),
     ])
@@ -162,28 +167,57 @@ describe.skipIf(!available)('POST /api/webhooks/stripe (main §4.2, §14.3.8)', 
     )
     expect(rows[0]).toMatchObject({ status: 'active', cancel_at_period_end: true })
 
+    stripe.setSubscription(remote('canceled'))
     await deliver([fixtures.subscriptionDeleted('evt_7', 5_000)])
     expect(await storedStatus()).toBe('canceled')
   })
 
-  it('a late event cannot roll a newer status back (the SQL guard)', async () => {
+  it('a late event lands on what Stripe currently holds, not on its own payload', async () => {
     await deliver([fixtures.checkoutCompleted('evt_1', 1_000)])
+    stripe.setSubscription(remote('canceled'))
     await deliver([fixtures.subscriptionUpdated('evt_8', 6_000, { status: 'canceled' })])
     expect(await storedStatus()).toBe('canceled')
 
     // The `active` update Stripe generated *before* the cancellation, arriving
-    // after it. Ordering is not guaranteed; the guard is.
+    // after it. Its payload says active; Stripe says canceled. Since card T1.2a
+    // the payload is never written — the event only triggers a re-read — so the
+    // cancellation stands.
     await deliver([fixtures.subscriptionUpdated('evt_9', 5_000, { status: 'active' })])
     expect(await storedStatus()).toBe('canceled')
   })
 
+  it('two events stamped in the same second cannot decide the status between them', async () => {
+    // The T1.2 audit's finding: Stripe stamps to the second and fires several
+    // events per subscription inside one second, and the old rule broke the tie
+    // on the alphabetical order of a random Stripe event id. Landing on a stale
+    // "not active" locked out a merchant who had just paid, for up to 24h.
+    await deliver([fixtures.checkoutCompleted('evt_1', 1_000)])
+    stripe.setSubscription(remote('active'))
+
+    const SAME_SECOND = 7_000
+    await deliver([
+      fixtures.subscriptionUpdated('evt_aaa', SAME_SECOND, { status: 'past_due' }),
+      fixtures.subscriptionUpdated('evt_zzz', SAME_SECOND, { status: 'active' }),
+    ])
+    expect(await storedStatus()).toBe('active')
+
+    // ...and with the ids the other way round, which is the ordering that
+    // produced the wrong answer under the old rule.
+    await deliver([
+      fixtures.subscriptionUpdated('evt_zzz2', SAME_SECOND, { status: 'active' }),
+      fixtures.subscriptionUpdated('evt_aaa2', SAME_SECOND, { status: 'past_due' }),
+    ])
+    expect(await storedStatus()).toBe('active')
+  })
+
   it('reprocessing every stored event changes nothing (effectively-once)', async () => {
+    stripe.setSubscription(remote('past_due'))
     await deliver([
       fixtures.checkoutCompleted('evt_1', 1_000),
       fixtures.subscriptionUpdated('evt_3', 2_001, { status: 'past_due' }),
     ])
     const before = await harness.pool.query(
-      'SELECT status, cancel_at_period_end, synced_at FROM subscriptions WHERE account_id = $1',
+      'SELECT status, cancel_at_period_end FROM subscriptions WHERE account_id = $1',
       [accountId],
     )
 
@@ -191,10 +225,40 @@ describe.skipIf(!available)('POST /api/webhooks/stripe (main §4.2, §14.3.8)', 
     await drainStripeEvents(deps())
 
     const after = await harness.pool.query(
-      'SELECT status, cancel_at_period_end, synced_at FROM subscriptions WHERE account_id = $1',
+      'SELECT status, cancel_at_period_end FROM subscriptions WHERE account_id = $1',
       [accountId],
     )
+    // The state is unchanged. The two timestamps are deliberately excluded:
+    // a reprocess does re-read Stripe, so both legitimately advance — that is
+    // the row recording a fresh contact, not a state change.
     expect(after.rows).toEqual(before.rows)
+  })
+
+  /**
+   * The paid-but-unentitled case, against real SQL. Stripe answers "no such
+   * subscription" for every object belonging to the other mode, so a
+   * live-key/test-key mismatch puts every new subscriber here.
+   */
+  it('a subscription Stripe cannot find leaves the event open and the orphan visible', async () => {
+    // Stripe holds no such object — what a wrong-mode API key looks like.
+    stripe.removeSubscription(SUBSCRIPTION)
+    await deliver([fixtures.checkoutCompleted('evt_1', 1_000)])
+
+    expect(await storedStatus()).toBeFalsy()
+    const open = await harness.pool.query<{ event_id: string }>(
+      'SELECT event_id FROM stripe_events WHERE processed_at IS NULL',
+    )
+    expect(open.rows.map((r) => r.event_id)).toEqual(['evt_1'])
+
+    // The nightly sweep can now see the account, which it could not before:
+    // there is no subscription row for the staleness scan to find.
+    const store = makeBillingStore({ database: harness.db })
+    expect(await store.orphanedCustomers(10)).toEqual([{ accountId, stripeCustomerId: CUSTOMER }])
+
+    // And it repairs itself once the key is right.
+    stripe.setSubscription(remote('active'))
+    await drainStripeEvents(deps())
+    expect(await storedStatus()).toBe('active')
   })
 
   it('the nightly sweep repairs a status a dropped webhook never delivered', async () => {
@@ -208,5 +272,34 @@ describe.skipIf(!available)('POST /api/webhooks/stripe (main §4.2, §14.3.8)', 
     const report = await reconcileSubscriptions(deps())
     expect(report.repaired).toBe(1)
     expect(await storedStatus()).toBe('past_due')
+  })
+
+  /**
+   * `claimUnprocessed` is a plain select that claims nothing, so two webhooks
+   * arriving milliseconds apart start two drains over the same rows. Since a
+   * subscription event now costs a Stripe read, an overlap doubles our Stripe
+   * calls and double-counts the §14.7 funnel captures.
+   */
+  it('only one drain runs at a time', async () => {
+    await post(fixtures.checkoutCompleted('evt_1', 1_000))
+    await post(fixtures.subscriptionUpdated('evt_2', 2_000, { status: 'active' }))
+
+    const both = await Promise.all([drainStripeEvents(deps()), drainStripeEvents(deps())])
+    const processed = both.map((outcomes) => outcomes.length)
+
+    // One drain does the work; the other finds the lock held and returns empty
+    // rather than queueing behind it.
+    expect(processed.filter((n) => n === 0)).toHaveLength(1)
+    expect(processed.reduce((a, b) => a + b, 0)).toBe(2)
+    expect(await storedStatus()).toBe('active')
+  })
+
+  it('the lock is released, so the next drain still runs', async () => {
+    await post(fixtures.checkoutCompleted('evt_1', 1_000))
+    await drainStripeEvents(deps())
+
+    await post(fixtures.subscriptionUpdated('evt_2', 2_000, { status: 'active' }))
+    const second = await drainStripeEvents(deps())
+    expect(second).toHaveLength(1)
   })
 })
