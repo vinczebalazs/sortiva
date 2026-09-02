@@ -9,6 +9,10 @@ export { makeGscConnectStore, type GscConnectStoreOptions } from './stores/gsc'
 export { makeNotificationStore, type NotificationStoreOptions } from './stores/notifications'
 export { makeEmailStore, type EmailStoreOptions } from './stores/email'
 export {
+  makeAccountLifecycleStore,
+  type AccountLifecycleStoreOptions,
+} from './stores/lifecycle'
+export {
   makeWebhookEventStore,
   type WebhookEventStore,
   type WebhookEventStoreOptions,
