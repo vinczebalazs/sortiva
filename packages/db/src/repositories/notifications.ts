@@ -131,7 +131,17 @@ export async function countUnseenNotifications(db: Db, scope: AccountScope): Pro
 export async function queueEmail(
   db: Db,
   scope: AccountScope,
-  input: { type: NotificationType; dedupeKey: string; templateVersion: string },
+  input: {
+    type: NotificationType
+    dedupeKey: string
+    templateVersion: string
+    /**
+     * `suppressed` is written straight away for an address that has bounced or
+     * complained: the row is the record that we decided not to mail, which is
+     * the answer to "why did I never get that".
+     */
+    state?: EmailSendRow['state']
+  },
 ): Promise<EmailSendRow | undefined> {
   const [row] = await db
     .insert(emailSends)
@@ -140,6 +150,7 @@ export async function queueEmail(
       type: input.type,
       dedupeKey: input.dedupeKey,
       templateVersion: input.templateVersion,
+      ...(input.state ? { state: input.state } : {}),
     })
     .onConflictDoNothing()
     .returning()

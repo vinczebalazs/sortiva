@@ -11,3 +11,4 @@ export { makeNotificationStore, type NotificationStoreOptions } from './stores/n
 // The integration-test harness is deliberately NOT re-exported here: it pulls in
 // the migrator and resolves ../migrations from disk, which has no business in an
 // application bundle. Test files import it as `@sortiva/db/testing`.
+export { makeEmailStore, type EmailStoreOptions } from './stores/email'
