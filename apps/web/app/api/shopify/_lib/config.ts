@@ -208,25 +208,29 @@ export function seedsPrompt(): SeedKeywordsPrompt {
  * pay twice, what records every call that reached the vendor, and what the
  * daily spend ceiling is computed from.
  *
- * Without credentials — every environment but production, per the cost
- * discipline — it is the vendor's own test double, which prices from the same
- * map and de-duplicates on the same canonical key. Falling back to the double
- * rather than to a live call is deliberate: a missing credential must never be
- * the reason a staging run starts spending.
+ * Which one runs is decided by `SEO_PROVIDER_MODE` and by nothing else. Set it
+ * to `mock` — as `.env.example` does — and every environment but production
+ * runs against the vendor's own test double, which prices from the same map and
+ * de-duplicates on the same canonical key, so no staging run can spend.
+ *
+ * Deliberately *not* inferred from missing credentials, which is how the
+ * Shopify client below chooses. The two failures are not alike. A Shopify
+ * client with no credentials cannot get past a consent screen, so the stand-in
+ * is obviously a stand-in. A search vendor with no credentials would quietly
+ * describe every store as having no search demand and no competitors — a
+ * plausible-looking answer that is wrong, which is exactly what the product
+ * refuses to produce. So an unconfigured live provider fails loudly instead.
  */
 export function seoProvider(): SeoDataProvider {
   if (seo) return seo
-  const mocked =
-    process.env.SEO_PROVIDER_MODE === 'mock' ||
-    !process.env.DATAFORSEO_LOGIN ||
-    !process.env.DATAFORSEO_PASSWORD
-  seo = mocked
-    ? new MockSeoDataProvider({}, ingestionCapture())
-    : new DataForSeoProvider({
-        cache: new PostgresRequestCache(db()),
-        capture: ingestionCapture(),
-        ledger: new PostgresCostLedger(db()),
-      })
+  seo =
+    process.env.SEO_PROVIDER_MODE === 'mock'
+      ? new MockSeoDataProvider({}, ingestionCapture())
+      : new DataForSeoProvider({
+          cache: new PostgresRequestCache(db()),
+          capture: ingestionCapture(),
+          ledger: new PostgresCostLedger(db()),
+        })
   return seo
 }
 
