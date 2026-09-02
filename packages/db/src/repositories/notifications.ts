@@ -47,6 +47,33 @@ export async function emitNotification(
 }
 
 /**
+ * The one notification behind an email, found by the triple both rows share.
+ *
+ * The email row carries only the type and the dedupe key; the references — which
+ * article, which run — are on the notification. Looking them up here is what
+ * lets an email name the thing it is about without the email row storing words.
+ */
+export async function findNotification(
+  db: Db,
+  scope: AccountScope,
+  type: NotificationType,
+  dedupeKey: string,
+): Promise<NotificationRow | undefined> {
+  const [row] = await db
+    .select()
+    .from(notifications)
+    .where(
+      and(
+        eq(notifications.accountId, scope.accountId),
+        eq(notifications.type, type),
+        eq(notifications.dedupeKey, dedupeKey),
+      ),
+    )
+    .limit(1)
+  return row
+}
+
+/**
  * The bell's poll, every thirty seconds. `since` is the timestamp of the newest
  * item the browser already holds, so the common case — nothing new — returns an
  * empty list.

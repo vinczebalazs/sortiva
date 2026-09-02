@@ -1,6 +1,7 @@
 import { and, asc, count, eq, gte, inArray, lt, sql } from 'drizzle-orm'
 import type { Db } from '../client'
 import {
+  accountSettings,
   accounts,
   emailSends,
   emailSuppressions,
@@ -198,6 +199,23 @@ export async function saveNotificationPrefs(
       target: notificationPrefs.accountId,
       set: { ...prefs, updatedAt: at },
     })
+}
+
+/**
+ * Every live account and the zone its clock runs in, for the sweeps that have
+ * to act at a local hour. The schedule cannot express "08:00 in each account's
+ * own zone", so the sweep runs hourly and filters here.
+ */
+export async function accountsWithTimezone(
+  db: Db,
+  _scope: SystemScope,
+): Promise<readonly { accountId: string; timezone: string }[]> {
+  const rows = await db
+    .select({ accountId: accounts.id, timezone: accountSettings.timezone })
+    .from(accounts)
+    .leftJoin(accountSettings, eq(accountSettings.accountId, accounts.id))
+    .where(sql`${accounts.deletedAt} is null`)
+  return rows.map((row) => ({ accountId: row.accountId, timezone: row.timezone ?? 'UTC' }))
 }
 
 /**
