@@ -13,30 +13,40 @@ plan for the run is `docs/nightly-plan.md`** — read it after this file.
 
 ## Right now
 
-**Status at 2026-09-02, 19:47.** `main` is at `44177e4`, clean, and fully green. **Five
+**Status at 2026-09-02, 19:56.** `main` is at `0b84ffa`, clean, and fully green. **Six
 cards have landed tonight**, each merged and gated separately: `T8.0`, `T-START`,
-`T-ANALYTICS`, `T3.4`, `T8.1`. Tests are at **1,541**, up from 1,362 at the start of the
-night. Stubs are at **7**, up from 6 — deliberately, and the new one announces itself.
+`T-ANALYTICS`, `T3.4`, `T8.1`, `T-EMAIL`. Tests are at **1,562**, up from 1,362 at the
+start of the night. Stubs are at 7, up from 6 — deliberately; the new one announces
+itself.
 
 | Lane | Branch | Worktree | Where it is |
 |---|---|---|---|
-| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START` merged (`d34daa6`); **`T2.2` building** — the critical path, and the most consequential card of the run. Audit scheduled after it |
-| C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4` merged (`fa7cff4`); **`T-EMAIL` building**; then the lane is held for `T2.5` |
+| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START` merged (`d34daa6`); **`T2.2` building** — the critical path, and the most consequential card of the run. **Audit scheduled after it** |
+| C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4` (`fa7cff4`) and `T-EMAIL` (`0b84ffa`) merged; **idle and deliberately held** — `T3.5` needs `T2.4`–`T2.5` from Lane B and must not start early |
 | F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS` merged (`42ddd50`); **`T9.3` building**; then `T9.4` → `T9.5` |
-| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | `T8.0` (`6400b62`) and `T8.1` (`44177e4`) merged; **idle, next is `T8.2`**, after which an audit is scheduled |
+| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | `T8.0` (`6400b62`) and `T8.1` (`44177e4`) merged; **`T8.2` building**. **Audit scheduled after it** |
 
-**Two integrator actions are outstanding and both are named in full below.**
+**Two integrator actions are outstanding, both named in full in their card's section.**
 
 1. **Plug in the bell** — a one-line swap in `apps/web/app/api/shopify/_lib/config.ts`
    that `T8.1` could not make because the file is Lane B's and Lane B is in it. **Do it
    after `T2.2` merges, as its own commit.** Until then no notification reaches a real
-   row in production. See the `T8.1` section.
+   row in production. It turns on notification writes, so it is named in the morning
+   report rather than done quietly.
 2. **Expect a hand-resolved conflict in `packages/ui/strings/en.json`** when `T9.3`
    merges — `T8.1` added 34 contiguous lines at the end of a file lane F is writing in,
-   and it is not union-merged.
+   and it is not union-merged. **`T-EMAIL` also parked email copy outside that file**
+   pending `T8.2`'s ruling on where email copy lives; reconcile those two when `T8.2`
+   lands.
+
+**Two audits are scheduled and neither has run**: after `T2.2` (before `T2.3` may start)
+and after `T8.2`. **A third is recommended but not scheduled** — `T-EMAIL`'s lane asked
+for one on the Google account-linking flag and the verified-address guard that fences it.
+Nothing builds on `T-EMAIL` tonight, so it can wait for the morning or take lane C's idle
+slot.
 
 **Every lane has obeyed the one-card rule tonight**, including lane F, which broke it
-earlier in the day. All five cards reported, stopped, and left clean worktrees.
+earlier in the day. All six cards reported, stopped, and left clean worktrees.
 
 **The gate flakes under concurrent lane load — re-run before believing a red.** It
 happened twice tonight, in two shapes, and both times an immediate re-run was clean:
@@ -51,51 +61,18 @@ database, killing a connection a suite forgot to close).
 "Critical dependency: the request of a dependency is an expression" from `cosmiconfig`,
 reached through `graphile-worker`'s own config loader. The worker runs **in-process with
 the web server by design** (tech §2), so the job library is in the server bundle and its
-vendor config loader comes with it. It is pre-existing, not from any card tonight, and
+vendor config loader comes with it. Pre-existing, not from any card tonight, and
 `pnpm smoke:boot` proves the built app still starts and serves. It is the same *shape* as
 the defect `T-BOOT` repaired, which is why it is written down rather than left to be
 rediscovered.
 
-**A trap the integrator created and then had to repair.** `.env` is gitignored and lives
+**A trap the integrator created and then repaired.** `.env` is gitignored and lives
 per-worktree. When `T-ANALYTICS` added `NEXT_PUBLIC_POSTHOG_KEY` to `.env.example`, the
 integrator copied the new `.env` into every worktree — including two whose branches
-predated the `.env.example` change, so `env:check` failed there with 37 against 36.
-**Lane G hit it and correctly refused to guess; lane B was warned not to "fix" it.** The
-lesson for the next run: refresh a worktree's `.env` only when that worktree's branch
-also has the matching `.env.example`, or fast-forward it first.
-
-**Setup done at the start of this run, and one thing the previous state file got
-wrong.** It recorded all lane worktrees as "clean and level with `main`". They were
-clean, but 7, 39 and 44 commits *behind* — every commit fully merged, none carrying
-unmerged work. All three were fast-forwarded before anything launched, so no lane is
-building against a stale tree. Lane G's worktree was created for this run, `.env`
-copied in, `pnpm install` run there (exit 0). The sleep hold was re-applied
-(`caffeinate -dimsu -t 21600`, and an earlier one was still alive).
-
-**`T8.0`'s deferred-column list was collected by the integrator before lane G started**,
-so the lane inherited a list rather than a search. The lane then found the list wrong
-about one item and refused to build it — that correction is in the `T8.0` section
-below and is more consequential than the migration itself.
-
-**Four decisions were taken on 2026-09-02 and all four are journalled with the
-alternative that was rejected and why.** Do not re-argue any of them from memory —
-read the entries. Three became cards (`T-START`, `T-ANALYTICS`, `T-EMAIL`); the
-fourth is already built and merged (the change contract can now describe a blog post
-or a static page being edited or deleted).
-
-**Two questions are still open and neither blocks the run:** whether to switch the
-recurring job schedule on, and the deployed start command that would not find the
-build. Both are described in their own sections below.
-
-**The learning loop is out of v1** on the founder's instruction.
-
-**A warning about editing this file.** Two separate scripted edits have damaged it.
-One replaced a span between two headings and swallowed five sections, including both
-founder decisions; it was restored from git. Another used a pattern that matched
-nothing, so the timestamp silently stayed eight hours stale while the body updates
-landed. **Edit it by hand or by line position, verify the section list afterwards
-(`grep -n '^## '`), and re-read the result.**
-
+predated the `.env.example` change, so `env:check` failed there with 37 against 36. Lane
+G hit it and correctly refused to guess; lane B was warned not to "fix" it. **The lesson:
+refresh a worktree's `.env` only when its branch also has the matching `.env.example`, or
+fast-forward it first.**
 ## Picking this up again
 
 *This section described how to restart after the 08:10 stop. It is kept because
@@ -136,6 +113,104 @@ protect, and leaving a laptop permanently awake is not this session's call to ma
 merchant's onboarding (this is what holds lane B), and how a browser sends an
 analytics event (raised by lane F; it does not block, because the seam has a
 do-nothing default).
+
+## `T-EMAIL` LANDED — sign in with a link, and one done-when deliberately not met
+
+**Merged as `0b84ffa` into `main`, three commits, full gate green.** Tests 1,562.
+
+**A merchant can now sign in by typing their email address instead of using Google.**
+They get a one-time link; opening it signs them in and, the first time, creates their
+account. Google sign-in is unchanged, and both routes land on the same account, because
+the account **is** the email address — which is what the unique index on the address
+already said.
+
+### The card's premise was wrong, and the correction saved the night's work
+
+The card — and `T1.1` before it — said the auth library refuses an email provider without
+a **database session adapter**. **That is two requirements read as one.** The lane
+verified it in the library's own configuration check rather than taking it on trust: a
+magic-link provider needs storage for a single-use link and a way to look an account up
+by address. The session-storage functions are demanded only when the session strategy is
+set to `database`. Ours is tokens, so they are never asked for.
+
+**So email sign-in was buildable with the tables we already have, and is built. Sessions
+were never the price.** The state file said this card was "larger than adding a provider
+looks"; that framing came from the same misreading and is now corrected.
+
+### What is parked, and why it is a founder decision
+
+**A session still cannot be revoked before it expires.** That is the card's fourth
+done-when and **it is not met**. The lane did not fake it, and the reason is not
+reluctance: **there is no `sessions` table anywhere in the schema.** Waves 1 to 4 create
+forty tables and none holds a session. A session has to *be* somewhere before it can be
+deleted, wave 4 is closed, and a feature card does not add its own migration.
+
+*Today's consequence, plainly:* signing out clears the cookie in that browser and nothing
+else. A copied session cookie stays good until it lapses, at most a day after it was
+issued.
+
+**Session lifetime stays at 24 hours, decided by the lane on its own authority and
+journalled** — the card explicitly permitted "kept with a journalled reason". The
+reasoning: a session that cannot be revoked must expire soon enough to bound the damage;
+that is still exactly the situation, so the number that was right for it is still right.
+Revisiting it is the second half of moving sessions into the database, not something to
+do first.
+
+### Two things worth looking at
+
+**1. Google is now told to match by email address, and the danger is fenced rather than
+accepted.** With an adapter present the library runs a linking step it used to skip: it
+asks storage which account owns a given Google identity, and we have nowhere to answer
+from. Its default answer for an unknown identity whose address already has an account is
+to **refuse** — which would have locked out every existing Google user. So the Google
+provider now carries `allowDangerousEmailAccountLinking`. What removes the actual danger:
+the sign-in guard turns away any provider that states it has **not** verified the address.
+A *missing* statement is deliberately not treated as a "no", because that would lock
+everyone out silently. This is not a policy change — sign-in has resolved accounts by
+lowercased address since `T1.1`. **The lane recommends an audit on this pair and the
+integrator agrees.**
+
+**2. The branded sign-in screen's Google button cannot work — proved, not inferred.**
+`packages/ui/src/public/SignIn.tsx` posts without the anti-forgery token the library
+requires and comes back with an error. The lane hit it writing tests, which have to fetch
+that token first, and correctly left it alone because it is Lane F's component and lane F
+is editing that area tonight. **Consequence for the founder decision that email sign-in
+ships in v1: it is built and reachable at the library's own page, but our `/signin` screen
+still offers only Google.** Making it reachable is a small frontend change — an address
+field, a hidden token, a different post target, and two or three strings — and it fixes
+the Google button in the same edit. **No card owns it.**
+
+**A number the founder may want to move:** a sign-in link lasts **15 minutes**. The
+library's default is a full day. It is one constant plus the sentence generated from it.
+
+**The sign-in email deliberately bypasses the notification queue**, and the reasoning is
+sound: the queue's row needs an account id and the requester may not have an account yet,
+and asking for a second link *must* send a second email — so the dedupe rule that
+protects every other send would suppress exactly the send being requested. Invariant 25
+is still satisfied: the send goes through the instrumented `EmailProvider` wrapper, not
+the library's own mail transport.
+
+**A knowing departure from `CLAUDE.md`, flagged rather than hidden:** the email's words
+live with the auth code rather than in `packages/ui/strings/en.json`, pending a ruling on
+where email copy lives once `T8.2` decides. **`T8.2` is building right now** — the
+integrator should reconcile these two when it lands.
+
+**One behaviour change to note:** a new sign-up through Google now records its provider as
+`oauth` rather than `google` in the funnel.
+
+**No collision with lane G** — the lane touched nothing in `packages/core/notifications`,
+`packages/core/email` or `packages/providers/email`, and said so explicitly.
+
+**Files outside Lane C's directories:** the auth library files (Lane A — granted by the
+card), two `packages/db` files plus a union-merged barrel, and **`vitest.config.ts`**, a
+shared root file, which gained one setting so the library's Next wrapper can be loaded in
+a test at all. That one is the merge hazard for any other lane touching the root test
+configuration.
+
+**Real-vendor evidence outstanding — three items, taking the list to eight cards:** no
+email has ever been sent through Resend; the Google linking flag and the verified-address
+guard have never met a live Google response; and nothing has been exercised in a browser,
+because no screen offers email sign-in yet.
 
 ## `T8.1` LANDED — the bell writes a row, and it refuses to store words
 
@@ -539,18 +614,18 @@ What it changed that everyone inherits:
   `pnpm-lock.yaml` changed — `packages/ui` now depends on React. **That lockfile is
   the merge hazard for lanes B and C if they added a dependency.**
 
-**Gate on the merged tree, after five cards** (`T9.1`, `T2.1`, `T3.1`, `T3.2`, `T9.2`,
-`T-OPS`, `T3.3`, plus tonight's `T8.0`, `T-START`, `T-ANALYTICS`, `T3.4`, `T8.1`), each
-command run separately on 2026-09-02 at 19:44–19:46, never chained:
+**Gate on the merged tree, after six cards** (`T9.1`, `T2.1`, `T3.1`, `T3.2`, `T9.2`,
+`T-OPS`, `T3.3`, plus tonight's `T8.0`, `T-START`, `T-ANALYTICS`, `T3.4`, `T8.1`,
+`T-EMAIL`), each command run separately on 2026-09-02 at 19:53–19:56, never chained:
 
 | | |
 |---|---|
 | `pnpm lint` | clean |
 | `pnpm lint:prove` | **11** planted violations, all rejected |
 | `pnpm typecheck` | 9 packages |
-| `pnpm test` | **1541 passing**, 114 files |
+| `pnpm test` | **1562 passing**, 117 files |
 | `pnpm contracts:check` | 56 routes; zod and OpenAPI agree |
-| `pnpm build` | compiles; the four notification and attention routes present |
+| `pnpm build` | compiles |
 | `pnpm smoke:boot` | `GET / -> 200`, `GET /api/health -> 200`, in 0.6s |
 | `pnpm eval` · `pnpm chaos` | 2 tests each, pass |
 | `pnpm env:check` | `.env` and `.env.example` both declare **37** variables |
@@ -559,7 +634,8 @@ command run separately on 2026-09-02 at 19:44–19:46, never chained:
 
 **Every test count reconciles, card by card.** 1,362 on `main` at the start of the night
 → `T8.0` +7 (1,369) → `T-START` +4 (1,373) → `T-ANALYTICS` +31 (1,404) → `T3.4` +61
-(1,465) → `T8.1` +76 (1,541). A discrepancy the previous state file carried is also
+(1,465) → `T8.1` +76 (1,541) → `T-EMAIL` +21 (1,562). A discrepancy the previous state
+file carried is also
 settled: its header said 1,362 and its gate table said 1,357; lane B noticed the
 five-test gap and correctly declined to
 chase it. The header was right, the table was five stale.
@@ -1038,9 +1114,9 @@ Lane C was told this when it was resumed.
 
 ## Questions waiting on the founder
 
-**Four are open. None blocks a lane tonight; each blocks something specific later.**
-Questions 1 and 2 came from `T8.0` this evening. Questions 3 and 4 are the two the run
-inherited. The question that used to be here about *what starts a merchant's
+**Five are open. None blocks a lane tonight; each blocks something specific later.**
+Questions 1 and 2 came from `T8.0`, question 3 from `T-EMAIL`; questions 4 and 5 are the
+two the run inherited. The question that used to be here about *what starts a merchant's
 onboarding* is **answered and built** — `T-START`.
 
 **1. When a merchant deletes a page from their store, how should we record that it is
@@ -1081,7 +1157,28 @@ its own card, not an index.
 
 *What is blocked:* nothing today. It matters the first time an account is deleted.
 
-**3. Should the recurring job schedule be switched on?** The worker refuses to run
+**3. Should a signed-in session be revocable before it expires?** Right now signing out
+clears the cookie in that browser and nothing else — a copied session cookie stays good
+until it lapses, at most a day after it was issued. `T-EMAIL` could not fix this and
+parked it: **there is no `sessions` table anywhere in the schema**, and a session must
+exist somewhere before anything can delete it. Wave 4 is closed, and a feature card does
+not add its own migration, so the lane wrote it up instead of reaching for one.
+
+*What it buys:* "sign out everywhere", and instant lockout when an account is deleted or
+a password-equivalent is compromised. Both are genuinely absent today.
+
+*What it costs:* **a database read on every authenticated request**, on a platform chosen
+for being cheap. That is the whole trade, and it is why this is a founder call rather than
+an obvious improvement.
+
+*The shape if you say yes:* a mini-wave adding one small table, then a change of session
+strategy. The 24-hour session lifetime should be revisited in the same breath — it is
+short *because* revocation is impossible, so the reason for the number goes away with it.
+
+*What is blocked:* nothing tonight. It is a security property the product does not have,
+not a broken feature.
+
+**4. Should the recurring job schedule be switched on?** The worker refuses to run
 *any* recurring job until *every* one of the fourteen has a handler, and ten still do
 not — so **none of them runs**. Two of the dormant ones are finished, tested and
 merged: the nightly billing repair, and **the spend caps that pause the product before
@@ -1100,7 +1197,7 @@ The integrator's recommendation if you switch it on: run the entries that have h
 and log loudly at every start-up naming the ones that do not, so a job that is not
 running says so rather than being silently absent.
 
-**4. The deployed start command would not find the build.** `railway.toml` runs the
+**5. The deployed start command would not find the build.** `railway.toml` runs the
 server from the repository root while the build output is in `apps/web`, so the server
 would exit with "Could not find a production build". Two one-line fixes; which is right
 depends on what working directory the platform gives the service, and the project has
