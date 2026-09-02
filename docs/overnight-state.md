@@ -13,20 +13,29 @@ plan for the run is `docs/nightly-plan.md`** — read it after this file.
 
 ## Right now
 
-**Four lane worktrees now exist, all clean and all level with `main` at `c9e787b`.**
-The three older lane branches were 7 to 44 commits behind and were fast-forwarded to
-`main` before anything was launched; lane G's worktree was created for this run,
-`.env` copied into it, and `pnpm install` run there (exit 0).
+**Status at 2026-09-02, 19:10.** `main` is at `6400b62`, clean, and fully green — see
+the gate table below. `T8.0` has landed. Four lanes are running; four worktrees exist,
+one per lane.
 
-| Lane | Branch | Worktree | Cards this run |
+| Lane | Branch | Worktree | Where it is |
 |---|---|---|---|
-| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START`, then `T2.2` — **the critical path** |
-| C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4`, then `T-EMAIL` |
-| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS`, then `T9.3` → `T9.4` → `T9.5` |
-| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | `T8.0`, then `T8.1` → `T8.2` |
+| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | **`T-START` reported complete, awaiting integrator merge**; then `T2.2` — the critical path |
+| C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4` building; then `T-EMAIL` |
+| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS` building; then `T9.3` → `T9.4` → `T9.5` |
+| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | **`T8.0` merged as `6400b62`**; next is `T8.1` → `T8.2` |
 
-**`T8.0`'s deferred-column list has been collected** and is written out in full in its
-own section below, so lane G inherits a list rather than a search.
+**Setup done at the start of this run, and one thing the previous state file got
+wrong.** It recorded all lane worktrees as "clean and level with `main`". They were
+clean, but 7, 39 and 44 commits *behind* — every commit fully merged, none carrying
+unmerged work. All three were fast-forwarded before anything launched, so no lane is
+building against a stale tree. Lane G's worktree was created for this run, `.env`
+copied in, `pnpm install` run there (exit 0). The sleep hold was re-applied
+(`caffeinate -dimsu -t 21600`, and an earlier one was still alive).
+
+**`T8.0`'s deferred-column list was collected by the integrator before lane G started**,
+so the lane inherited a list rather than a search. The lane then found the list wrong
+about one item and refused to build it — that correction is in the `T8.0` section
+below and is more consequential than the migration itself.
 
 **Four decisions were taken on 2026-09-02 and all four are journalled with the
 alternative that was rejected and why.** Do not re-argue any of them from memory —
@@ -208,26 +217,43 @@ What it changed that everyone inherits:
   `pnpm-lock.yaml` changed — `packages/ui` now depends on React. **That lockfile is
   the merge hazard for lanes B and C if they added a dependency.**
 
-**Gate on the merged tree** (`T9.1`, `T2.1`, `T3.1`, `T3.2`, `T9.2`, `T-OPS`, `T3.3`), each command run separately on 2026-09-02:
+**Gate on the merged tree, after `T8.0`** (`T9.1`, `T2.1`, `T3.1`, `T3.2`, `T9.2`,
+`T-OPS`, `T3.3`, `T8.0`), each command run separately on 2026-09-02 at 19:04–19:07,
+never chained:
 
 | | |
 |---|---|
 | `pnpm lint` | clean |
-| `pnpm lint:prove` | **9** planted violations, all rejected (was 7; two are new) |
+| `pnpm lint:prove` | **10** planted violations, all rejected |
 | `pnpm typecheck` | 9 packages |
-| `pnpm test` | **1357 passing**, 100 files (was 914 at wave 2 start) |
+| `pnpm test` | **1369 passing**, 101 files (was 1357 / 100 before `T8.0`) |
 | `pnpm contracts:check` | 56 routes; zod and OpenAPI agree |
-| `pnpm build` | compiles; the gallery page and both Shopify routes present |
+| `pnpm build` | compiles |
+| `pnpm smoke:boot` | `GET / -> 200`, `GET /api/health -> 200`, in 0.7s |
 | `pnpm eval` · `pnpm chaos` | pass |
-| `pnpm env:check` | `.env` and `.env.example` both declare 36 variables |
 | `pnpm db:migrate` on an **empty** database | 41 tables, 3 guard triggers |
 
-The migration row was re-run against a database created for the purpose and
-dropped afterwards, not against the dev database. `T9.1` added no migrations, so
-the numbers are unchanged from wave 1. Note if you re-check it: counting
-`information_schema.triggers` gives **4**, because a trigger that fires on two
-events has two rows. There are three triggers — the competitor cap, the
-write-once idempotency ledger, and append-only spend events.
+The migration row was run against a database created for the purpose and dropped
+afterwards, never against the dev database. Wave 4 adds no table, so 41 is unchanged;
+it replaces an index. Both indexes were read back from the live database to prove the
+migration did what it says: `shopify_conns_shop_handle_key` is now conditional on
+`invalidated_at IS NULL`, and `domains_domain_normalized_key` is deliberately still
+unconditional. Note if you re-check the triggers: counting
+`information_schema.triggers` gives **4**, because a trigger that fires on two events
+has two rows. There are three — the competitor cap, the write-once idempotency ledger,
+and append-only spend events.
+
+**A flake worth knowing about before it wastes someone's night.** The first `pnpm test`
+run of this gate reported **all 1369 tests passing and then exited non-zero**, on a
+single Postgres error (`57P01`, "terminating connection due to administrator command")
+raised out of `packages/jobs/src/runtime/crash.test.ts` during teardown. An immediate
+re-run was clean and exited zero. The cause is in `packages/db/src/testing.ts`: a suite
+closes by issuing `DROP DATABASE ... WITH (FORCE)`, which deliberately kills any
+connection the suite forgot to close — and under the load of four lanes building at
+once, that kill surfaced as an unhandled error instead of being swallowed. **It is a
+teardown race, not a product failure, and it is not caused by `T8.0`.** If a gate goes
+red this way — every test passing, one `57P01`, non-zero exit — re-run before
+investigating. Left unactioned; it belongs to whoever next touches the test harness.
 
 Earlier commits on `main`: `b0c1413` removed 1,007 spec references from the code;
 `f6775dd` added the spend caps that pause the product before the bill arrives.
@@ -559,105 +585,101 @@ someone who reads that language. Noted in `content-pointers.md` §6.
 `T7.2`, which is far enough out that it was left alone. `content-pointers.md` §9
 holds it.
 
-## `T8.0` — what schema wave 4 actually contains
+## `T8.0` LANDED — what schema wave 4 changed, and the two things it refused
 
-**Collected by the integrator on 2026-09-02 at 18:50, by reading every `DECISIONS.md`
-entry that mentions a migration, a column, an index or a table, and checking each
-claim against the migrations and the schema files rather than against the journal
-alone. This is the list the lane inherits; it should not have to search.**
+**Merged into `main` as `6400b62` on 2026-09-02 at 19:06, two commits, full gate green
+(see the gate table below).** Schema wave 4 is closed. `T8.1` and `T8.2` may not add a
+migration; if either needs a column it writes a `DECISIONS.md` entry and negotiates a
+mini-wave with the integrator.
 
-A schema wave is a card that is allowed to change the database. Every other card is
-forbidden from adding a migration, so anything a card needed and could not have was
-written down instead and waits here. `T8.0`'s own scope line also says "retention
-bookkeeping".
+### What it changed — one thing, and it is user-visible
 
-**It is thin — an hour of work, not a lane's worth.** Three items are genuinely
-wanted; everything else that looked outstanding turned out to be built already,
-declined on a substantive ground, or conditional on a card nobody has written.
+**Losing a Shopify connection now frees the store instead of holding it forever.**
 
-### Wanted — build these
+Before this, the store's handle — its `shop.myshopify.com` name — was unique across
+every connection row that had ever existed. So when a merchant uninstalled the app, or
+deleted their account and came back later under a new one, the abandoned row still
+owned that store and nothing in the product could clear it. The next attempt to connect
+that same store, by them or by anyone, died on a database constraint the merchant could
+do nothing about. Uniqueness now applies to *live* connections only: two live
+connections to one store are still impossible, a dead one stops holding the store, and
+its row is kept as evidence rather than deleted. Whoever reconnects still has to pass
+Shopify's own install, so a store is never handed to someone the merchant did not let in.
 
-1. **A partial unique index on `domains.release_after`, `WHERE release_after IS NULL`.**
-   Requested by the `T1.4` entry of 2026-09-01 as "defence in depth", in those words.
-   Today a domain is freed for another account to claim only because a sweep job
-   deletes its row. The index would make that release a fact the database enforces
-   rather than a consequence of a job having run. If the sweep never runs, the domain
-   stays blocked forever — which is safe (nobody is handed someone else's domain) but
-   is not the seven-day release the spec promises.
-2. **The matching partial unique index on `shopify_conns.invalidated_at`**, same
-   entry, same reasoning.
-3. **A way to mark an inventory page as deleted.** The inventory is the one row per
-   web address the store publishes. When a merchant deletes a page, the row stays and
-   nothing says the page is gone — `T3.2` chose that deliberately, because deleting
-   the row destroys the only evidence the address ever existed, and marking it needed
-   a column it was not allowed to add. Its entry ends: "This needs the founder or the
-   integrator to settle before the existing-target check ships in `T3.5`." **`T3.5` is
-   the card that breaks without it** — it would recommend improving a page that no
-   longer exists. This is the one item in the wave with a card waiting on it.
+**One consequence the lane found and fixed in the same commit.** Two rows may now carry
+the same store handle — one dead, one live — so the lookup answering "whose store is
+this?" for an incoming Shopify webhook is no longer single on its own. It now asks for
+the live row. Left alone it could have routed an uninstall to the abandoned account and
+silently done nothing to the one that actually has the store. **Anything new that
+queries by store handle must ask for the live row too.** The integrator verified before
+merging that `findAccountByShopHandle` is the only lookup by handle in the tree — every
+other read reaches the connection through the account — and that the save path conflicts
+on the account, not the handle, so the narrowed index does not disturb it.
 
-**A shape question the lane must not decide alone.** Item 3 can be a nullable
-`deleted_at` timestamp or a state column, and the choice leaks into what `T3.5` reads.
-It is an interface another lane consumes, so under `CLAUDE.md` prime directive 3 the
-lane journals its reasoning and **stops and asks** rather than picking. If that stops
-lane G, it stops cleanly after items 1 and 2.
+Files: `packages/db/migrations/0007_wave4.sql`, `packages/db/src/schema/domains.ts`,
+`packages/db/src/repositories/connections.ts`, new test
+`packages/db/src/constraints-wave4.test.ts`.
 
-### Already built — no longer outstanding, do not re-add
+### The collected list was wrong about one item, and the lane was right to refuse it
 
-- **`verification_tokens`**, the table email sign-in was blocked on (`T1.1`, 2026-08-31).
-  It exists — `packages/db/migrations/0004_wave2b.sql`.
-- **The durable completed-work ledger.** `docs/audits/remediation.md` lines 103–109
-  still lists "the idempotency ledger's home" under **Still open** and says "Not yet
-  decided". **That page is stale.** The table exists as `idempotency_ledger` in
-  `0004_wave2b.sql`, with a write-once trigger in `0005_wave2b_guards.sql`. Verified
-  by reading the migrations. `docs/nightly-plan.md` inherits the same stale claim and
-  is wrong on that bullet too.
-- **Every table `T8.1` and `T8.2` need.** Checked against the schema files, not
-  assumed: `notifications`, `email_sends`, `email_suppressions` and
-  `notification_prefs` all exist. Lane G's next two cards are not waiting on this wave
-  for anything. Tech §1.7's retention rules (notifications pruned at 90 days,
-  `email_sends` kept 12 months) are sweep behaviour that `T8.3` implements; they need
-  no new column, so "retention bookkeeping" in the card's scope line has no
-  outstanding item behind it that this collection could find.
+**This correction matters more than the migration.** The integrator's collected brief
+(and the `T1.4` journal entry it came from, and `docs/nightly-plan.md`) called a partial
+unique index on `domains.release_after` "defence in depth", and said it would deliver
+the seven-day release the spec promises. **It would deliver the opposite, and the lane
+stopped rather than build it.**
 
-### Asked about and deliberately declined — do not revive without a new reason
+A conditional unique index permits strictly *more* rows than an unconditional one — it
+is a deliberate relaxation, never an extra guard. The domain row carries a "may be
+released after" date, set when an account is deleted. Making uniqueness conditional on
+that date being empty frees the domain **the instant the date is set**, which is at
+deletion — whereas the spec sets that date precisely to hold the domain for seven days
+first, so a squatter cannot take it the same hour. Postgres cannot put a deadline inside
+an index condition, so there is no version of this index that both survives the release
+sweep never running and keeps the grace window.
 
-- **`spend_events.price_unknown`.** `docs/nightly-plan.md` lists this as one of the
-  four known deferrals. **It is wrong, and the state file is right.** The `R2` entry
-  names the gap and says in terms it is "Not requested as a schema change", because a
-  vendor call whose price nobody configured now fails when the pricing module loads,
-  which makes the request-time path that would write such a row unreachable. **Checked
-  rather than taken on trust:** `assertEndpointsPriced()` still runs at module load
-  (`packages/providers/src/seo/pricing.ts:103`), so the reasoning still holds after
-  `T-BOOT` moved two other loaders off module load. A call we could not price is
-  already identifiable as zero cost with no cache hit.
-- **`idempotency_ledger.account_id`.** `T2.0b` flagged it rather than taking it, and
-  `R3` gave the strong reason: an account column would hand a future data-deletion
-  path a way to erase the record of paid work account by account, which is the one
-  thing that table exists to prevent.
+Three further reasons it was refused, each independent: delivering both would mean the
+claim path starts reading a deadline it deliberately ignores today, in **another lane's
+directory**, pinned by a test asserting the opposite; two rows could then exist for one
+domain, so every lookup by domain would need to disambiguate; and unlike a Shopify
+store, claiming a domain has no external gate — anyone can type it, so the grace window
+is the only thing between a deleted account and a squatter.
 
-### Looked outstanding and is not — conditional on a card nobody has written
+**Deferred, not declined.** It is now a founder question — see "Questions waiting on the
+founder" below.
 
-Each of these appears in `DECISIONS.md` as "that would be a column in the next schema
-wave". None is requested, because the card that would want it does not exist.
+### It also stopped on the inventory deletion marker, as instructed
 
-- **The detected Shopify store name, queryable before a connection exists** (`T2.1`).
-  It lives in the step's recorded output, which is durable and one indexed row away.
-  Only a card wanting it across accounts would need the column.
-- **A column on `ctr_curve` saying whether its numbers were measured or defaulted**
-  (`T3.3`). Deliberately answered by the absence of a row instead, which is
-  unambiguous where a stored fallback would not be.
-- **Stored cluster share tables** (`T3.3`). Deliberately computed on demand: they are
-  a pure restatement of data already stored, so a stored copy is a second source of
-  truth that goes stale.
-- **A per-episode marker for the Shopify connect reminder** (`T2.1`). The product
-  sends one reminder per account ever, by decision, so nothing needs the marker.
+The one item in the wave with a card waiting on it. Stopped because the shape is an
+interface `T3.5` consumes. Also now a founder question below. **Nothing in lane G is
+blocked by it** — `T8.1` and `T8.2` do not read the inventory.
 
-### One thing the card text asks for that does not exist
+### What the wave closed without building
 
-The card says "Read first: `DECISIONS.md` (class-b entries tagged `schema`)". **There
-is no such tagging.** Entries carry a `Class (filled by audit):` line and it is empty
-almost everywhere. The lane should read this section instead of hunting for a tag,
-and the card text should be corrected.
+Re-checked against the migrations rather than the journal, and recorded in the lane's
+fourth `DECISIONS.md` entry:
+
+- **Already built:** `verification_tokens` and the durable completed-work ledger
+  (`idempotency_ledger`, both in migration `0004`). **`docs/audits/remediation.md` lines
+  103–109 and `docs/nightly-plan.md` are both still stale on the ledger**, calling it
+  undecided. Neither was edited — that is a spec-keeper's correction, not a lane's.
+- **Every table `T8.1` and `T8.2` need already exists**: `notifications`, `email_sends`,
+  `email_suppressions`, `notification_prefs`. Verified in the migration files.
+- **Declined earlier on substantive grounds:** `spend_events.price_unknown` (the check
+  that would make such a row possible still runs at module load, verified at
+  `packages/providers/src/seo/pricing.ts:103`), and `idempotency_ledger.account_id` (an
+  account column would hand a future data-deletion path a way to erase the record of
+  paid work account by account, which is what that table exists to prevent).
+- **"Retention bookkeeping"** in the card's scope line has no column behind it. Tech
+  §1.7's pruning rules — notifications at 90 days, `email_sends` at 12 months — are
+  sweep behaviour belonging to `T8.3`, and both tables already carry the timestamp a
+  sweep reads.
+
+### Card-text correction, confirmed
+
+`T8.0` says to read "`DECISIONS.md` (class-b entries tagged `schema`)". **No such
+tagging exists** — the `Class (filled by audit):` line is present and empty almost
+everywhere. The card should point at an integrator-collected list instead. Unactioned;
+it is a build-plan edit, not a lane's.
 
 ## A trap waiting inside `T3.1`, found before the lane hit it
 
@@ -679,43 +701,77 @@ Lane C was told this when it was resumed.
 
 ## Questions waiting on the founder
 
-Neither blocks a lane today; both block something specific later.
+**Four are open. None blocks a lane tonight; each blocks something specific later.**
+Questions 1 and 2 came from `T8.0` this evening. Questions 3 and 4 are the two the run
+inherited. The question that used to be here about *what starts a merchant's
+onboarding* is **answered and built** — `T-START`.
 
-**1. Nothing starts a merchant's onboarding, and there are two ways to fix it.**
-Claiming a domain writes down the nine steps of work to be done and pushes nothing
-onto the job queue — deliberately, because until `T2.1` no code existed that could
-run step one. That code exists now. What is missing is the thing that pokes it.
+**1. When a merchant deletes a page from their store, how should we record that it is
+gone?** The product keeps one row per web address the store publishes — its inventory.
+When a merchant deletes a page, the row stays and nothing says the page is gone.
+`T3.2` chose that deliberately: deleting the row destroys the only evidence the address
+ever existed, and marking it needed a column no card outside a schema wave may add.
+`T8.0` was the schema wave, and it stopped rather than choose the shape, because
+whatever shape is chosen is read by card `T3.5`.
 
-- **(a) Switch the scheduled jobs on.** The worker refuses to run *any* recurring
-  job until *every* one of the fourteen has a handler, and eleven still do not, so
-  none run. Relaxing that to "run the ones that have handlers" is one line — and it
-  also switches on two other finished, tested, currently dormant machines: the
-  nightly billing repair, and the spend caps that pause the product before a runaway
-  bill. Wider blast radius: three things start moving, not one.
-- **(b) Have the domain claim push the job itself** the instant it commits. One
-  line, no schedule involved, nothing else changes — but that line lives in Lane A's
-  claim code, a directory `T2.1` does not own.
+Two shapes. **A single date field** meaning "this is when the page disappeared" —
+smallest change, and empty means the page is live. **A status field** naming which
+condition the row is in — live, gone, or something added later such as "moved" or "we
+cannot reach it". The date is simpler now; the status field costs nothing extra today
+and avoids a second migration if a third condition ever appears.
 
-A merchant who *does* connect their store moves forward fine; the connect flow
-resumes onboarding itself. It is only the very first step, detection immediately
-after the claim, that has nothing to trigger it.
+*What is blocked:* `T3.5`, the check that stops the product proposing a new page for
+something an existing page already covers. Without this it would recommend improving a
+page that no longer exists. Lane G is **not** blocked — `T8.1` and `T8.2` never read
+the inventory. Schema wave 4 is closed, so building it means a mini-wave.
 
-The integrator's recommendation, if (a) is chosen: run the entries that have
-handlers and log loudly at every start-up for the ones that do not, so a job that
-is not running says so. **Lane B is held until this is answered.**
+**2. When an account is deleted, should its domain be claimable by someone else
+immediately, or should the seven-day hold stay?** The spec holds a deleted account's
+domain for seven days before anyone else can claim it, so a squatter cannot take it the
+same hour. Today that hold is delivered by a cleanup job deleting the row when the week
+is up — which means if that job never runs, the domain stays blocked forever. Safe
+(nobody is handed someone else's domain) but not what was promised.
 
-**2. How does a browser send an analytics event?** Raised by `T9.1`, which found the
-specs contradicting each other: the main spec says everything observable is emitted
-server-side, and the UI spec requires seven events no server call can see — an
-opportunity card being read, a veto clicked, a calendar drag. Two ways, and each
-forecloses the other: the browser talks to the analytics vendor directly (needs a
-browser SDK, a public key in the page, and session replay deliberately off on every
-view showing store data), or the browser posts to an endpoint of ours which captures
-server-side (needs a route that is not in the frozen API contract). `T9.1` built
-neither and shipped the seam instead — one interface, a do-nothing default, a
-recording double for tests — so every screen card is unblocked and binding a
-transport later touches one file. **No screen's analytics is real until this is
-answered.**
+An earlier journal entry recommended a database rule to fix it and called it "defence
+in depth". **`T8.0` checked and it is the reverse.** The proposed rule would free the
+domain the *instant* the account is deleted — a zero-day release, not a seven-day one —
+because the deadline cannot live inside the rule. So the choice is genuinely between
+the two behaviours, and the recommendation as written should be struck either way.
+
+If you want both — hold for seven days, then release even if the cleanup job never runs
+— that is a small change to the claim path in another lane's territory and should be
+its own card, not an index.
+
+*What is blocked:* nothing today. It matters the first time an account is deleted.
+
+**3. Should the recurring job schedule be switched on?** The worker refuses to run
+*any* recurring job until *every* one of the fourteen has a handler, and ten still do
+not — so **none of them runs**. Two of the dormant ones are finished, tested and
+merged: the nightly billing repair, and **the spend caps that pause the product before
+a runaway bill arrives**. Relaxing the rule to "run the ones that have handlers" is one
+line.
+
+This used to be bundled with "what starts a merchant's onboarding". That is now
+answered and built (`T-START`, which has the claim queue its own first step), so this
+stands alone as its own question.
+
+*Why it is worth answering during the run rather than after it:* `T2.2` is the first
+card that spends real money at scale, and it is the next card in lane B. The spend caps
+are among the jobs that do not currently run.
+
+The integrator's recommendation if you switch it on: run the entries that have handlers
+and log loudly at every start-up naming the ones that do not, so a job that is not
+running says so rather than being silently absent.
+
+**4. The deployed start command would not find the build.** `railway.toml` runs the
+server from the repository root while the build output is in `apps/web`, so the server
+would exit with "Could not find a production build". Two one-line fixes; which is right
+depends on what working directory the platform gives the service, and the project has
+never been deployed, so nobody knows. **This stops a deployment, not a build**, and
+`pnpm smoke:boot` cannot catch it because it starts from the application directory. It
+is in no card's scope and should be settled with the other deployment questions — the
+platform's config format is also deprecated and the project's old service was deleted.
+Full detail is in the "BLOCKER — the deployed start command" section above.
 
 ## A lane broke the one-card rule, and it cost something
 
