@@ -493,6 +493,27 @@ Scope: refresh eligibility (position 5–15 config, impressions ≥ median, 60-d
 Read first: main §9.6.5, §10.5, §7.3 (Striking Distance row), ui §6.3 (button state).
 Done when: an article refreshed 30 days ago is ineligible; expected-gain ordering matches the §9.6.5 example (pos 6 / 10k beats pos 12 / 800); replenishment fixture with many eligible refreshes caps at 40 %.
 
+### Remediation cards — created 2026-09-02 by the integrator from scheduled audits
+
+Build plan §7 says audit findings become cards or `DECISIONS.md` entries. These two come
+from the **scheduled `T2.2` audit** and are recorded here so they cannot be lost in a
+report. Neither has been acted on: the overnight rules forbid the integrator from fixing
+an audit finding. **`R-PRIVACY` should be done before any Shopify Partner credential
+exists.**
+
+**R-PRIVACY — the webhook receiver must stop storing shoppers' personal data** · Lane B
+Scope: the Shopify webhook receiver stores the entire message body verbatim for every topic it accepts, and the two customer-privacy topics (`customers/redact`, `customers/data_request`) carry a shopper's `email` and `phone` inside a `customer` object. The drain then logs the literal answer "no customer data held" about a row that holds exactly that, and nothing deletes it. Reduce the stored body for the three privacy topics to the non-personal envelope (`shop_id`, `shop_domain`, the id lists), or store no body for them at all.
+Read first: main §14.6, §6.2, §17.3; the `T2.2` audit's critical finding as recorded in `docs/overnight-state.md`.
+Done when: a realistic `customers/redact` body is planted **through the receiver** and a test asserts the stored row contains none of the shopper's values — the same non-vacuity shape `packages/core/src/catalog/orders.test.ts` already uses, which plants a full order and proves the fixture really contained what was stripped. The existing invariant-4 test cannot catch this because it scans **column names** and this data sits inside a JSONB blob; extend it or add beside it.
+Invariants: 4.
+Note: the answer we give Shopify is the correct one. It is the data we keep that is wrong.
+
+**R-STREAM — the change stream has a producer and no consumer, and the check that would have said so was switched off** · integrator to assign
+Scope: `T2.2` filled the `CatalogEvents` seam on the producer side and it works. Nothing in production registers or enqueues the consumer — `registerCatalogEventTasks` has zero production callers and `DatabaseCatalogEvents` is referenced only from its own test — so Lane C's event-driven inventory freshness is dark and the inventory is only as current as the nightly walk. Meanwhile `scripts/stub-report.mjs`, whose job is to fail a milestone when the product is running on a stand-in, had the corresponding line removed on the grounds that the seam was filled. The seam is now neither stub nor wired, and reported as done.
+Read first: build plan §4 (the `CatalogEvents` contract); main §12.3, §14.1; the `T2.2` audit as recorded in `docs/overnight-state.md`.
+Done when: either the consumer is registered in the composition root and the sweep enqueues a drain per store, **or** the stub-report line is restored until someone does — and in both cases a test proves the report tells the truth about whether the seam is wired.
+Note: the ownership is genuinely open — the producer is Lane B's, the consumer is Lane C's, and the report is nobody's. That is why this is the integrator's to assign rather than a lane's to take.
+
 ### M8 — Notifications, email, lifecycle, ops · Lane G
 
 **T8.0 — Schema wave 4**
