@@ -1,7 +1,9 @@
 import { type RulesLayer, rules } from '@sortiva/rules'
-import { type SignalScenario, type SyntheticGscRow, scenario } from '../fixtures'
+import { type SignalScenario, type SyntheticGscRow, type SyntheticProduct, type SyntheticStore, scenario } from '../fixtures'
+import { type FactSheet, emptyFactSheet } from '../distill/schema'
 import { buildQueryClusters, type ClusterDefinition, type ClusterShareRow } from '../search'
 import { type DetectionWindow, type PageFact, indexPages } from './types'
+import type { ProductSubstance } from './substance'
 
 /**
  * Turning a worked example into detector input.
@@ -129,3 +131,41 @@ export function shiftWeeks(window: DetectionWindow, weeks: number): DetectionWin
 export const FETCHED_AT = '2026-01-29T06:00:00.000Z'
 
 export type { SignalScenario }
+
+/**
+ * A synthetic product's attributes as a fact sheet.
+ *
+ * The fixture store predates distillation and describes a product with its own
+ * loose attribute bag; the substance floor reads the ten-field sheet that
+ * distillation produces. This is the join between them, and it is deliberately
+ * conservative — an attribute with no home on the sheet is dropped rather than
+ * squeezed into a field it does not belong in, because inflating a fixture
+ * product's substance would make the floor look like it passes when it does
+ * not.
+ */
+export function factSheetFor(product: SyntheticProduct): FactSheet {
+  const fields = product.fields
+  const list = (value: string | undefined): string[] => (value ? [value] : [])
+  return {
+    ...emptyFactSheet(),
+    material: fields.material ?? null,
+    weight: fields.weight_g ? `${fields.weight_g} g` : null,
+    dimensions: fields.drop_mm ? `${fields.drop_mm} mm drop` : null,
+    care: fields.care ?? null,
+    use_cases_stated: list(fields.use_case),
+    verifiable_claims: list(fields.waterproofing),
+    fluff_discarded: product.style === 'fluff',
+  }
+}
+
+/** Every product of one fixture family, ready for the substance floor. */
+export function substanceInputFor(store: SyntheticStore, familyKey: string): ProductSubstance[] {
+  return store.products
+    .filter((product) => product.familyKey === familyKey)
+    .map((product) => ({
+      productId: product.id,
+      title: product.title,
+      familyId: familyKey,
+      factSheet: factSheetFor(product),
+    }))
+}
