@@ -1,5 +1,6 @@
-import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
+import { createServer, request as httpRequest, type IncomingMessage, type ServerResponse } from 'node:http'
 import { RESPONSE_FIXTURES } from '@sortiva/ui/msw/fixtures'
+import { ContentState, articleDetail, articlesList } from './content-state'
 
 /**
  * The site, with the API answered from fixtures.
@@ -80,6 +81,108 @@ function signInAnswer(response: ServerResponse, rawBody: string): void {
   response.end()
 }
 
+/**
+ * The Content screens, answered from state rather than from a fixed body.
+ *
+ * Every other route here can answer the same thing twice, because nothing the
+ * public funnel does changes what the next read should say. The calendar is the
+ * opposite: vetoing a topic and then finding it gone *is* the assertion, and
+ * half of what the screen renders depends on which side of today a day falls
+ * on. So these routes are served by `ContentState`, which lives for the length
+ * of one run.
+ */
+const content = new ContentState()
+
+function contentAnswer(
+  response: ServerResponse,
+  method: string,
+  pathname: string,
+  rawBody: string,
+): boolean {
+  const parsed = (): Record<string, unknown> => {
+    try {
+      return JSON.parse(rawBody === '' ? '{}' : rawBody) as Record<string, unknown>
+    } catch {
+      return {}
+    }
+  }
+
+  if (method === 'GET' && pathname === '/api/calendar') {
+    json(response, 200, content.calendar())
+    return true
+  }
+
+  // Test scaffolding, not a product route: what the screens actually sent, so a
+  // flow can assert that vetoing a topic also dismissed the opportunity behind
+  // it — which is a second request the screen makes and nothing on the page
+  // shows.
+  if (method === 'GET' && pathname === '/api/_e2e/calls') {
+    json(response, 200, { calls: content.calls })
+    return true
+  }
+
+  // Also scaffolding: each flow starts from the same calendar, so the suite
+  // does not pass or fail by the order it ran in.
+  if (method === 'POST' && pathname === '/api/_e2e/reset') {
+    content.reset()
+    json(response, 200, { ok: true })
+    return true
+  }
+
+  if (method === 'POST' && pathname === '/api/calendar/topics') {
+    const input = parsed()
+    const answer = content.add({
+      title: String(input.title ?? ''),
+      date: String(input.date ?? ''),
+      pin: Boolean(input.pin),
+    })
+    json(response, answer.status, answer.body)
+    return true
+  }
+
+  const topicAction = /^\/api\/calendar\/topics\/([^/]+)\/(veto|move|pin)$/.exec(pathname)
+  if (method === 'POST' && topicAction) {
+    const id = topicAction[1]!
+    const input = parsed()
+    const answer =
+      topicAction[2] === 'veto'
+        ? content.veto(id)
+        : topicAction[2] === 'move'
+          ? content.move(id, String(input.date ?? ''))
+          : content.pin(id, Boolean(input.pinned))
+    json(response, answer.status, answer.body)
+    return true
+  }
+
+  const dismiss = /^\/api\/opportunities\/([^/]+)\/dismiss$/.exec(pathname)
+  if (method === 'POST' && dismiss) {
+    const answer = content.dismissOpportunity(dismiss[1]!)
+    json(response, answer.status, answer.body)
+    return true
+  }
+
+  if (method === 'GET' && pathname === '/api/articles') {
+    json(response, 200, articlesList())
+    return true
+  }
+
+  const article = /^\/api\/articles\/([^/]+)$/.exec(pathname)
+  if (method === 'GET' && article) {
+    const detail = articleDetail(article[1]!)
+    json(response, detail ? 200 : 404, detail ?? { error: { code: 'not_found', message: 'gone' } })
+    return true
+  }
+
+  const articleAction = /^\/api\/articles\/([^/]+)\/([a-z-]+)$/.exec(pathname)
+  if (method === 'POST' && articleAction) {
+    content.calls.push(`article ${articleAction[2]} ${articleAction[1]}`)
+    json(response, 200, { ok: true })
+    return true
+  }
+
+  return false
+}
+
 async function handle(request: IncomingMessage, response: ServerResponse): Promise<void> {
   const method = (request.method ?? 'GET').toUpperCase()
   const url = new URL(request.url ?? '/', `http://localhost:${PORT}`)
@@ -89,6 +192,7 @@ async function handle(request: IncomingMessage, response: ServerResponse): Promi
   if (url.pathname === '/api/auth/signin/google' && method === 'POST') {
     return signInAnswer(response, body)
   }
+  if (contentAnswer(response, method, url.pathname, body)) return
 
   const fixture = RESPONSE_FIXTURES[`${method} ${url.pathname}`]
   if (fixture !== undefined) return json(response, 200, fixture)
@@ -96,7 +200,17 @@ async function handle(request: IncomingMessage, response: ServerResponse): Promi
   await passThrough(request, response, url, method, body)
 }
 
-/** Everything that is not a fixture is the app itself. */
+/**
+ * Everything that is not a fixture is the app itself.
+ *
+ * The `Host` header is rewritten to point back here, and that rewrite is the
+ * whole reason the app's own server-side reads land on these fixtures: a page
+ * being rendered has no browser, so it works out where to call itself from the
+ * host it was asked on. It is sent with Node's own HTTP client rather than
+ * `fetch`, because `Host` is a header the fetch standard forbids setting — the
+ * assignment is dropped in silence, the app calls its real API instead, and the
+ * page renders as though the merchant had no data.
+ */
 async function passThrough(
   request: IncomingMessage,
   response: ServerResponse,
@@ -104,35 +218,45 @@ async function passThrough(
   method: string,
   body: string,
 ): Promise<void> {
-  const headers = new Headers()
+  const headers: Record<string, string> = {}
   for (const [name, value] of Object.entries(request.headers)) {
-    if (value === undefined || name === 'host' || name === 'connection') continue
-    headers.set(name, Array.isArray(value) ? value.join(', ') : value)
+    // `accept-encoding` goes with them: this proxy pipes the answer through
+    // untouched, so a compressed one would reach the browser as bytes it never
+    // agreed to decode.
+    if (value === undefined || ['host', 'connection', 'accept-encoding'].includes(name)) continue
+    headers[name] = Array.isArray(value) ? value.join(', ') : value
   }
-  // The app reads its own host header to call itself; keeping it pointed here
-  // is what makes its server-side reads land on the fixtures too.
-  headers.set('host', `localhost:${PORT}`)
+  headers.host = `localhost:${PORT}`
+  if (body !== '') headers['content-length'] = String(Buffer.byteLength(body))
 
-  let upstream: Response
-  try {
-    upstream = await fetch(`${APP_ORIGIN}${url.pathname}${url.search}`, {
-      method,
-      headers,
-      body: body === '' ? undefined : body,
-      redirect: 'manual',
+  const upstream = new URL(`${APP_ORIGIN}${url.pathname}${url.search}`)
+
+  await new Promise<void>((resolve) => {
+    const proxied = httpRequest(
+      {
+        hostname: upstream.hostname,
+        port: upstream.port,
+        path: `${upstream.pathname}${upstream.search}`,
+        method,
+        headers,
+      },
+      (answer) => {
+        const out = { ...answer.headers }
+        delete out['connection']
+        delete out['transfer-encoding']
+        response.writeHead(answer.statusCode ?? 502, out)
+        answer.pipe(response)
+        answer.on('end', resolve)
+      },
+    )
+    proxied.on('error', () => {
+      if (!response.headersSent) response.writeHead(502, { 'content-type': 'text/plain' })
+      response.end('the app is not answering')
+      resolve()
     })
-  } catch {
-    response.writeHead(502, { 'content-type': 'text/plain' })
-    response.end('the app is not answering')
-    return
-  }
-
-  const out = new Headers(upstream.headers)
-  out.delete('content-encoding')
-  out.delete('content-length')
-  out.delete('transfer-encoding')
-  response.writeHead(upstream.status, Object.fromEntries(out.entries()))
-  response.end(Buffer.from(await upstream.arrayBuffer()))
+    if (body !== '') proxied.write(body)
+    proxied.end()
+  })
 }
 
 createServer((request, response) => {

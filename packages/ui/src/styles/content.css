@@ -1,0 +1,794 @@
+/*
+ * The Content module: the calendar grid, the articles library, and the
+ * read-only article.
+ *
+ * Two things in here are arguments rather than decoration. A day cell keeps its
+ * height whether or not anything is on it, so a month with gaps reads as a
+ * month with gaps rather than as a collapsed, shorter month — the ceiling is
+ * one article a day and quiet days are normal, and the layout should not make
+ * them look like an error. And a topic's state is a coloured dot *plus* a word,
+ * never colour alone, so the calendar survives greyscale and colour-blind
+ * viewing.
+ *
+ * Colours and shape come from `tokens.css`; nothing here hardcodes a value the
+ * token set already names.
+ */
+
+.sortiva-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 1180px;
+}
+
+.sortiva-calendar__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.sortiva-calendar__heading {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.sortiva-calendar__intro,
+.sortiva-calendar__horizon {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--sortiva-text-muted);
+  max-width: 62ch;
+}
+
+.sortiva-calendar__views {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+
+.sortiva-calendar__views button {
+  border: 1px solid var(--sortiva-line-strong);
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius-inner);
+  padding: 6px 14px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.sortiva-calendar__views button[aria-pressed='true'] {
+  background: var(--sortiva-accent);
+  border-color: var(--sortiva-accent);
+  color: #fff;
+}
+
+.sortiva-calendar__paused {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: var(--sortiva-radius-inner);
+  background: var(--sortiva-warning-soft);
+  font-size: 13px;
+}
+
+.sortiva-calendar__legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  font-size: 12.5px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-calendar__legend li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.sortiva-calendar__swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--sortiva-line-strong);
+  flex: none;
+}
+
+.sortiva-calendar__swatch[data-legend-swatch='published'] {
+  background: var(--sortiva-positive);
+}
+.sortiva-calendar__swatch[data-legend-swatch='rejected_by_gate'] {
+  background: var(--sortiva-warning);
+}
+.sortiva-calendar__swatch[data-legend-swatch='in_review'] {
+  background: var(--sortiva-refresh);
+}
+.sortiva-calendar__swatch[data-legend-swatch='generating'] {
+  background: var(--sortiva-accent);
+}
+.sortiva-calendar__swatch[data-legend-swatch='planned'] {
+  background: var(--sortiva-line-strong);
+}
+.sortiva-calendar__swatch[data-legend-swatch='open'] {
+  background: transparent;
+  border: 1px dashed var(--sortiva-line-strong);
+}
+
+/* The one sentence that says an empty day is a normal outcome. It sits with the
+   legend rather than in a tooltip because it is the most misreadable thing on
+   the screen. */
+.sortiva-calendar__gap-note {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--sortiva-text-muted);
+  max-width: 78ch;
+}
+
+.sortiva-calendar__month {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sortiva-calendar__month h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  min-width: 11ch;
+  text-align: center;
+}
+
+.sortiva-calendar__month button {
+  border: 1px solid var(--sortiva-line-strong);
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius-inner);
+  padding: 5px 12px;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.sortiva-calendar__grid {
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: var(--sortiva-radius);
+  overflow: hidden;
+  background: var(--sortiva-surface);
+}
+
+.sortiva-calendar__weekdays,
+.sortiva-calendar__week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.sortiva-calendar__weekdays {
+  background: var(--sortiva-surface-sunken);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-calendar__weekdays span {
+  padding: 8px 10px;
+}
+
+.sortiva-calendar__day {
+  border-top: 1px solid var(--sortiva-line-strong);
+  border-left: 1px solid var(--sortiva-line-strong);
+  /* Fixed height so a month full of gaps is still a month, not a short list. */
+  min-height: 96px;
+  padding: 6px 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sortiva-calendar__day:first-child {
+  border-left: 0;
+}
+
+.sortiva-calendar__day[data-day-in-month='false'] {
+  background: var(--sortiva-surface-sunken);
+}
+
+.sortiva-calendar__day[data-day-position='today'] {
+  box-shadow: inset 0 0 0 2px var(--sortiva-accent);
+}
+
+.sortiva-calendar__daynum {
+  font-size: 11.5px;
+  color: var(--sortiva-text-muted);
+}
+
+/* The ghost "+". Only ever on a future day: a day that has passed with nothing
+   on it offers nothing, because there is nothing to catch up on. */
+.sortiva-calendar__add {
+  border: 1px dashed var(--sortiva-line-strong);
+  border-radius: var(--sortiva-radius-inner);
+  background: transparent;
+  color: var(--sortiva-text-muted);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1;
+  padding: 8px;
+  cursor: pointer;
+  opacity: 0.45;
+}
+
+.sortiva-calendar__day:hover .sortiva-calendar__add {
+  opacity: 1;
+}
+
+.sortiva-calendar__refusal {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--sortiva-critical);
+}
+
+@keyframes sortiva-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+.sortiva-calendar__day[data-day-refused='true'] {
+  animation: sortiva-shake 0.35s ease-in-out 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sortiva-calendar__day[data-day-refused='true'] {
+    animation: none;
+    outline: 2px solid var(--sortiva-critical);
+  }
+}
+
+.sortiva-calendar__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sortiva-calendar__list li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: var(--sortiva-radius-inner);
+  background: var(--sortiva-surface);
+  padding: 8px 12px;
+}
+
+.sortiva-calendar__list-date {
+  font-size: 12.5px;
+  color: var(--sortiva-text-muted);
+  min-width: 13ch;
+}
+
+.sortiva-calendar__empty {
+  border: 1px dashed var(--sortiva-line-strong);
+  border-radius: var(--sortiva-radius);
+  padding: 32px;
+  text-align: center;
+}
+
+/* ── The chip ─────────────────────────────────────────────────────────────── */
+
+.sortiva-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: var(--sortiva-radius-inner);
+  background: var(--sortiva-surface);
+  padding: 5px 6px;
+  font-size: 12px;
+}
+
+.sortiva-chip[draggable='true'] {
+  cursor: grab;
+}
+
+.sortiva-chip__open {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+}
+
+.sortiva-chip__state {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-chip__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--sortiva-line-strong);
+  flex: none;
+}
+
+.sortiva-chip[data-topic-state='published'] .sortiva-chip__dot {
+  background: var(--sortiva-positive);
+}
+.sortiva-chip[data-topic-state='rejected_by_gate'] .sortiva-chip__dot {
+  background: var(--sortiva-warning);
+}
+.sortiva-chip[data-topic-state='in_review'] .sortiva-chip__dot {
+  background: var(--sortiva-refresh);
+}
+.sortiva-chip[data-topic-state='generating'] .sortiva-chip__dot,
+.sortiva-chip[data-topic-state='checking'] .sortiva-chip__dot {
+  background: var(--sortiva-accent);
+}
+.sortiva-chip[data-topic-state='vetoed'] {
+  opacity: 0.5;
+}
+
+.sortiva-chip__title {
+  font-size: 12px;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.sortiva-chip__kind,
+.sortiva-chip__signal {
+  font-size: 10px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-chip__pin::before {
+  content: '📌';
+  font-size: 9px;
+}
+
+/* ── Popover, add form, confirm ───────────────────────────────────────────── */
+
+.sortiva-topic-popover,
+.sortiva-add-topic,
+.sortiva-confirm {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: min(420px, calc(100vw - 48px));
+  background: var(--sortiva-surface);
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow-raised);
+  padding: 18px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sortiva-topic-popover__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.sortiva-topic-popover__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.sortiva-topic-popover__close,
+.sortiva-topic-popover__veto,
+.sortiva-topic-popover__pin {
+  border: 1px solid var(--sortiva-line-strong);
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius-inner);
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.sortiva-topic-popover__close {
+  margin-left: auto;
+}
+
+.sortiva-topic-popover__facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 12ch 1fr;
+  gap: 6px 12px;
+  font-size: 12.5px;
+}
+
+.sortiva-topic-popover__facts dt {
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-topic-popover__facts dd {
+  margin: 0;
+}
+
+.sortiva-topic-popover__volume {
+  display: block;
+  color: var(--sortiva-text-muted);
+  font-size: 11.5px;
+}
+
+.sortiva-topic-popover__actions,
+.sortiva-add-topic__actions,
+.sortiva-confirm__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.sortiva-topic-popover__hint,
+.sortiva-add-topic__intro,
+.sortiva-add-topic__checking {
+  margin: 0;
+  font-size: 12px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-add-topic__answer {
+  border-radius: var(--sortiva-radius-inner);
+  background: var(--sortiva-surface-sunken);
+  padding: 12px;
+  font-size: 12.5px;
+}
+
+.sortiva-add-topic__answer h4 {
+  margin: 0 0 6px;
+  font-size: 13px;
+}
+
+.sortiva-add-topic__answer[data-add-answer='rejected'] {
+  background: var(--sortiva-warning-soft);
+}
+
+/* ── The rejection card ───────────────────────────────────────────────────── */
+
+.sortiva-rejection {
+  border: 1px solid var(--sortiva-warning);
+  background: var(--sortiva-warning-soft);
+  border-radius: var(--sortiva-radius-inner);
+  padding: 12px 14px;
+  font-size: 12.5px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sortiva-rejection__heading {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sortiva-rejection__gate,
+.sortiva-rejection__reason {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.sortiva-rejection__gate {
+  color: var(--sortiva-text-muted);
+}
+
+/* ── Articles library ─────────────────────────────────────────────────────── */
+
+.sortiva-articles {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 1180px;
+}
+
+.sortiva-articles__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: var(--sortiva-surface);
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: var(--sortiva-radius);
+  overflow: hidden;
+}
+
+.sortiva-articles__table th,
+.sortiva-articles__table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-top: 1px solid var(--sortiva-line-strong);
+  vertical-align: top;
+}
+
+.sortiva-articles__table thead th {
+  border-top: 0;
+  background: var(--sortiva-surface-sunken);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-articles__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.sortiva-articles__badge {
+  font-size: 10.5px;
+  border-radius: 999px;
+  border: 1px solid var(--sortiva-line-strong);
+  padding: 2px 8px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-articles__downloads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sortiva-articles__downloads button,
+.sortiva-articles__url button {
+  border: 1px solid var(--sortiva-line-strong);
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius-inner);
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+
+.sortiva-articles__url {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.sortiva-articles__url input {
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: var(--sortiva-radius-inner);
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 12px;
+  min-width: 26ch;
+}
+
+.sortiva-articles__error {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--sortiva-critical);
+}
+
+.sortiva-articles__empty {
+  border: 1px dashed var(--sortiva-line-strong);
+  border-radius: var(--sortiva-radius);
+  padding: 32px;
+  text-align: center;
+}
+
+/* ── Article detail ───────────────────────────────────────────────────────── */
+
+.sortiva-article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 24px;
+  align-items: start;
+  max-width: 1180px;
+}
+
+@media (max-width: 900px) {
+  .sortiva-article {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.sortiva-article__main,
+.sortiva-article__aside {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sortiva-article__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sortiva-article__note {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--sortiva-text-muted);
+  line-height: 1.6;
+}
+
+.sortiva-article__body {
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: var(--sortiva-radius);
+  background: var(--sortiva-surface);
+  padding: 24px 28px;
+  line-height: 1.75;
+}
+
+.sortiva-article__body img {
+  max-width: 100%;
+  height: auto;
+}
+
+.sortiva-article__panel {
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: var(--sortiva-radius);
+  background: var(--sortiva-surface);
+  padding: 14px 16px;
+  font-size: 12.5px;
+}
+
+.sortiva-article__panel h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sortiva-article__scores {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sortiva-article__scores li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.sortiva-article__score {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.sortiva-article__justification {
+  margin: 4px 0 0;
+  color: var(--sortiva-text-muted);
+  line-height: 1.6;
+}
+
+.sortiva-override {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(15 18 26 / 45%);
+  z-index: 60;
+  padding: 20px;
+}
+
+.sortiva-override__panel {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow-raised);
+  padding: 22px;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.sortiva-override__panel h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.sortiva-override__facts {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-content__tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.sortiva-content__tabs a {
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 12.5px;
+  text-decoration: none;
+  color: var(--sortiva-text);
+}
+
+.sortiva-content__tabs a[aria-current='page'] {
+  background: var(--sortiva-accent);
+  border-color: var(--sortiva-accent);
+  color: #fff;
+}
+
+/* ── Buttons and fields, local to this module ─────────────────────────────── */
+
+.sortiva-content-button {
+  border: 1px solid var(--sortiva-line-strong);
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius-inner);
+  padding: 7px 14px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.sortiva-content-button--primary {
+  background: var(--sortiva-accent);
+  border-color: var(--sortiva-accent);
+  color: #fff;
+}
+
+.sortiva-content-button--destructive {
+  background: var(--sortiva-critical);
+  border-color: var(--sortiva-critical);
+  color: #fff;
+}
+
+.sortiva-content-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.sortiva-content-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12.5px;
+}
+
+.sortiva-content-field--check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.sortiva-content-field__label {
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-content-field__input {
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: var(--sortiva-radius-inner);
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 13px;
+}

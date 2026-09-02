@@ -40,6 +40,11 @@ export const VIEW_CONTENT: Readonly<Record<string, ViewContent>> = {
   // Every opportunity names the page, product family or search it is about,
   // all of which are the merchant's own.
   '/opportunities': 'store_data',
+  // The calendar names every topic we plan to write for this store; the library
+  // and the article itself are the store's own pages, written from its catalogue.
+  '/content': 'store_data',
+  '/content/articles': 'store_data',
+  '/content/articles/[articleId]': 'store_data',
   '/plan': 'no_store_data',
   '/signin': 'no_store_data',
   '/ui-gallery/banner-stack': 'no_store_data',

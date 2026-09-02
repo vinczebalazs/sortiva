@@ -118,6 +118,42 @@ export const SCREEN_FIXTURE_DEPENDENCIES: readonly ScreenFixtureDependency[] = [
     fields: ['scheduledFor'],
     note: "The date in the confirmation toast is the server's answer rather than the one asked for: at most one topic occupies a day, so a request for a taken day comes back with a different date and the merchant has to be told which. A 409 on this or on dismiss / restore / recommendations / tasks ends in a re-read of the list and a toast, and the screen reads `error.code` — `opportunity_not_open` is worded differently from the rest — so the code must be the machine-readable one rather than a sentence.",
   },
+  {
+    screen: 'Content — the calendar',
+    route: 'GET /api/calendar',
+    fields: ['topics', 'paused.active', 'nextReplenishmentAt'],
+    note: '**`scheduledFor` is the whole screen.** Every topic must carry the date it is scheduled to generate on, and at most one topic may share a date — the day cell holds one, and a second for the same day is dropped rather than stacked, so a duplicate becomes invisible instead of loud. Each topic also needs `state`, `pinned`, `why`, and — where it came from one — `opportunityId` and `signalType`, which are what the chip links back to. **`why.templateKey` must be a key the string catalogue holds**, because the sentence is rendered from `packages/ui/strings/en.json` and never sent as text. A topic in `rejected_by_gate` must carry `rejection` with its `gate` and reason, or a day that produced nothing renders with no explanation, which is the one thing the screen exists to avoid; the reason for a thin catalogue must use the key `quality_rejection.insufficient_richness`, aliased to the canonical sentence the product may not reword. **The response must never carry a count of empty or missed days, and the range asked for must be answered honestly rather than compacted** — days with nothing on them are how the merchant sees that a quiet day is normal, and a response that omitted them would be indistinguishable from a plan with no gaps.',
+  },
+  {
+    screen: 'Content — acting on a topic',
+    route: 'POST /api/calendar/topics/{topicId}/veto',
+    fields: ['ok'],
+    note: "The veto is held for the five seconds its undo is on offer and only then sent, because **there is no route that un-vetoes a topic** — vetoed topics go on a list replenishment consults, so this is one-way. If that changes and a restore appears, the screen should send immediately and undo through it instead. A refused veto (`topic_already_published`) puts the chip back and re-reads; the code must be the machine-readable one rather than a sentence. The same click then dismisses the originating opportunity through `POST /api/opportunities/{id}/dismiss`, so **`topics[].opportunityId` has to be the opportunity that actually produced the topic** — dismissing the wrong one would silently remove work the merchant never asked to lose.",
+  },
+  {
+    screen: 'Content — moving a topic',
+    route: 'POST /api/calendar/topics/{topicId}/move',
+    fields: ['id', 'scheduledFor', 'pinned'],
+    note: 'Dropping onto an occupied day is **two move requests, not one**: the contract has no swap, so the screen moves the dragged topic and then the displaced one. They are not atomic — if the second is refused the first stands and the calendar is re-read — which is the strongest argument for a swap endpoint. The rules the screen applies before sending (a pinned topic does not move, a pinned topic is not displaced, only a planned topic moves, and only onto a future day) must match what the server enforces, or a drop the screen allows comes back 409 for a reason the merchant was not warned about.',
+  },
+  {
+    screen: 'Content — adding a topic by hand',
+    route: 'POST /api/calendar/topics',
+    fields: ['outcome', 'topic', 'warning', 'convertedToOpportunityId', 'rejection'],
+    note: 'The four outcomes are rendered differently and each needs its own field filled: `planned_with_warning` without a `warning` renders a heading over nothing, `converted` without `convertedToOpportunityId` leaves the merchant told we made an Optimize opportunity with no way to reach it, and `rejected` without `rejection` refuses without saying why. `warning` and `rejection` are template keys, never sentences.',
+  },
+  {
+    screen: 'Content — the articles library',
+    route: 'GET /api/articles',
+    fields: ['articles', 'cursor'],
+    note: '**`performance` must stay null until the measurement window is up**, because null is what makes a row read "too new" rather than as a zero — an article published on Tuesday with `clicks28d: 0` would look like a failure instead of an unmeasured one. `publishedUrl` null on an exported, published article is what raises the "waiting for your URL" tag and puts the row in the attention filter, so it must not be filled with a guess. `publishedViaOverride` is shown rather than hidden. `cursor` is read but **paging is not built**: the screen renders whatever one response returns, so a store with hundreds of articles shows only the first page until someone builds it.',
+  },
+  {
+    screen: 'Content — one article',
+    route: 'GET /api/articles/{articleId}',
+    fields: ['article', 'html', 'metadata', 'evidencePack', 'qualityReport', 'history'],
+    note: '`html` is rendered as it stands and is the only field the screen injects as markup, so **it must be the article as it will publish and must never contain anything the pipeline did not put there**. The override dialog has to restate the criteria the draft failed, and **the response does not say which they are**: it carries scores and justifications, and the floors that decide a pass live in `packages/rules`, where the screen must not re-derive them. So the dialog names the criteria the judge wrote a justification for, which is right only while justifications are written for what the judge marked down — **a `failedCriteria` list on `qualityReport` would close this properly**. Two further gaps: a held article carries no rejection reason of its own (the calendar\'s topic does, this does not), so the article page shows the judge\'s report in its place; and `history[].event` is a bare string with no enumerated set, so an event we have no wording for is spelled out from its own name.',
+  },
 ]
 
 /** Reads `a.b.c` out of a fixture body, treating a missing key as undefined. */
