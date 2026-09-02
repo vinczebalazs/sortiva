@@ -2,6 +2,7 @@ import { toStorePageRow } from './pages'
 import type {
   FamilyLookup,
   InventoryCursor,
+  InventoryTarget,
   StoreContentRecord,
   StoreContentSource,
   StorePageRow,
@@ -74,6 +75,22 @@ export async function syncInventoryRecords(
     changed: changed.length,
     changedUrls: changed.map((row) => row.url),
   }
+}
+
+/**
+ * Re-reads the things the store said changed, and writes back whatever moved.
+ *
+ * A webhook is a reason to look now, not a different way of looking: the same
+ * mapping and the same checksum diff as a sweep batch.
+ */
+export async function resyncInventoryTargets(
+  deps: InventorySyncDeps,
+  accountId: string,
+  targets: readonly InventoryTarget[],
+): Promise<InventorySyncResult> {
+  if (targets.length === 0) return { seen: 0, changed: 0, changedUrls: [] }
+  const records = await deps.source.read(accountId, targets)
+  return syncInventoryRecords(deps, accountId, records)
 }
 
 async function toRows(

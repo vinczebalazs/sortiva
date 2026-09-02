@@ -34,14 +34,15 @@ export interface StoreContentRecord {
   readonly updatedAt?: string
 }
 
-/** How far through the store a sync got, so the next run resumes rather than restarts. */
-export interface InventoryCursor {
-  /** Kinds already finished, in the order they are walked. */
-  readonly done: readonly StoreContentKind[]
-  /** The kind in progress and the last storefront id read for it. */
-  readonly kind?: StoreContentKind
-  readonly sinceId?: string
-}
+/**
+ * How far through the store a sync got, so the next run resumes rather than
+ * restarts.
+ *
+ * Opaque on purpose: only the source that produced it knows what it means, and
+ * a second storefront would number its pages differently. It is plain strings
+ * because it travels through a job payload as JSON.
+ */
+export type InventoryCursor = Readonly<Record<string, string>>
 
 export interface StoreContentBatch {
   readonly records: readonly StoreContentRecord[]
@@ -61,6 +62,17 @@ export interface StoreContentSource {
   /** The store's public address, e.g. `https://shop.example`. Every row's URL is built from it. */
   storefrontOrigin(accountId: string): Promise<string>
   next(accountId: string, cursor: InventoryCursor | undefined, limit: number): Promise<StoreContentBatch>
+  /**
+   * Re-reads named things, after the store said they changed. Things the store
+   * no longer has come back missing rather than as an error.
+   */
+  read(accountId: string, targets: readonly InventoryTarget[]): Promise<readonly StoreContentRecord[]>
+}
+
+/** One thing to go and re-read: which kind, and the store's own id for it. */
+export interface InventoryTarget {
+  readonly kind: StoreContentKind
+  readonly shopifyId: string
 }
 
 /** One inventory row, ready to be written. */

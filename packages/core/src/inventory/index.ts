@@ -7,13 +7,10 @@ export {
 
 export { contentChecksum, storeUrlFor, toStorePageRow, type InventoryRowInput } from './pages'
 
-export {
-  catalogEventsToTargets,
-  type CatalogEventFanout,
-  type InventoryTarget,
-} from './events'
+export { catalogEventsToTargets, type CatalogEventFanout } from './events'
 
 export {
+  resyncInventoryTargets,
   syncInventoryBatch,
   syncInventoryRecords,
   type InventorySyncDeps,
@@ -22,6 +19,7 @@ export {
 
 export type {
   FamilyLookup,
+  InventoryTarget,
   InventoryCursor,
   StoreContentBatch,
   StoreContentKind,

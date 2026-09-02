@@ -8,6 +8,7 @@ import type {
   InventoryCursor,
   StoreContentBatch,
   StoreContentRecord,
+  StoreContentSource,
   StorePageRow,
   StorePageWriter,
 } from './ports'
@@ -161,21 +162,26 @@ const noFamilies: FamilyLookup = {
   },
 }
 
-function sourceOf(batches: readonly StoreContentBatch[]) {
+function sourceOf(batches: readonly StoreContentBatch[], byTarget: readonly StoreContentRecord[] = []) {
   let call = 0
   const cursors: (InventoryCursor | undefined)[] = []
-  return {
-    cursors,
-    source: {
-      async storefrontOrigin() {
-        return ORIGIN
-      },
-      async next(_accountId: string, cursor: InventoryCursor | undefined) {
-        cursors.push(cursor)
-        return batches[call++] ?? { records: [] }
-      },
+  const source: StoreContentSource = {
+    async storefrontOrigin() {
+      return ORIGIN
+    },
+    async next(_accountId, cursor) {
+      cursors.push(cursor)
+      return batches[call++] ?? { records: [] }
+    },
+    async read(_accountId, targets) {
+      return byTarget.filter((candidate) =>
+        targets.some(
+          (target) => target.kind === candidate.kind && target.shopifyId === candidate.shopifyId,
+        ),
+      )
     },
   }
+  return { cursors, source }
 }
 
 describe('walking a store into the inventory', () => {
@@ -186,7 +192,7 @@ describe('walking a store into the inventory', () => {
           record({ kind: 'collection', shopifyId: '1', handle: 'boots' }),
           record({ kind: 'page', shopifyId: '2', handle: 'about', bodyHtml: '<p>Us.</p>' }),
         ],
-        next: { done: ['collection'], kind: 'page', sinceId: '2' },
+        next: { stage: 'page', sinceId: '2' },
       },
     ])
     const writer = new RecordingWriter()
@@ -196,7 +202,7 @@ describe('walking a store into the inventory', () => {
 
     expect(result.seen).toBe(2)
     expect(result.changed).toBe(2)
-    expect(result.next).toEqual({ done: ['collection'], kind: 'page', sinceId: '2' })
+    expect(result.next).toEqual({ stage: 'page', sinceId: '2' })
     expect([...writer.rows.keys()].sort()).toEqual([
       'https://shop.example/collections/boots',
       'https://shop.example/pages/about',
@@ -243,7 +249,7 @@ describe('walking a store into the inventory', () => {
 
     await syncInventoryBatch({ source, writer, families }, 'acc', undefined, 50)
 
-    expect(writer.rows.get('https://shop.example/collections/boots')?.familyIds.sort()).toEqual([
+    expect(writer.rows.get('https://shop.example/collections/boots')?.familyIds.slice().sort()).toEqual([
       'fam-hiking',
       'fam-town',
     ])

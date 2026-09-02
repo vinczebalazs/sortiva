@@ -1,5 +1,5 @@
 import type { CatalogEvent } from '../contracts/opportunities'
-import type { StoreContentKind } from './ports'
+import type { InventoryTarget, StoreContentKind } from './ports'
 
 /**
  * Turning "the store changed something" into "re-read exactly this".
@@ -7,12 +7,6 @@ import type { StoreContentKind } from './ports'
  * The alternative — re-walking the whole store on every webhook — is both slow
  * and expensive, and a busy store fires these all day.
  */
-
-/** One thing to go and re-read. */
-export interface InventoryTarget {
-  readonly kind: StoreContentKind
-  readonly shopifyId: string
-}
 
 export interface CatalogEventFanout {
   /** Things to re-read, newest change first, each named once. */
