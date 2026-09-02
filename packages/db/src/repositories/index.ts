@@ -1,6 +1,7 @@
 export * from './accounts'
 export * from './connections'
 export * from './domains'
+export * from './inventory'
 export * from './notifications'
 export * from './runs'
 export * from './search'
