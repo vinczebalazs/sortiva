@@ -1,5 +1,5 @@
-import { headers } from 'next/headers'
 import type { ShellAccount } from '@sortiva/ui'
+import { getJson, requestContext, type JsonLoader, type RequestContext } from './api'
 
 /**
  * The two responses the app frame needs before it can render anything.
@@ -43,31 +43,18 @@ export function parseAcceptLanguage(header: string | null): readonly string[] {
     .filter((tag) => tag.length > 0 && tag !== '*')
 }
 
-export interface ShellRequest {
-  readonly cookie: string
-  readonly origin: string
-  readonly acceptLanguage: string | null
-}
+export type ShellRequest = RequestContext
 
-async function fetchJson<T>(path: string, request: ShellRequest): Promise<T | null> {
-  try {
-    const response = await fetch(new URL(path, request.origin), {
-      headers: request.cookie ? { cookie: request.cookie } : {},
-      cache: 'no-store',
-    })
-    if (!response.ok) return null
-    return (await response.json()) as T
-  } catch {
-    // A frame that throws takes every screen with it. Settings in particular is
-    // still a mock, so a missing endpoint must degrade rather than break.
-    return null
-  }
-}
-
-/** The testable half: everything but reading the incoming request's headers. */
+/**
+ * The testable half: everything but reading the incoming request's headers.
+ *
+ * The loader degrades to null rather than throwing, which is what a frame
+ * needs: one that dies takes every screen with it, and Settings in particular
+ * is still a mock, so a missing endpoint has to be survivable.
+ */
 export async function buildShellState(
   request: ShellRequest,
-  load: <T>(path: string, request: ShellRequest) => Promise<T | null> = fetchJson,
+  load: JsonLoader = getJson,
 ): Promise<ShellState> {
   const [account, settings] = await Promise.all([
     load<ShellAccount>('/api/account', request),
@@ -82,13 +69,5 @@ export async function buildShellState(
 }
 
 export async function loadShellState(): Promise<ShellState> {
-  const headerList = await headers()
-  const host = headerList.get('host') ?? 'localhost:3000'
-  const protocol = headerList.get('x-forwarded-proto') ?? 'http'
-
-  return buildShellState({
-    cookie: headerList.get('cookie') ?? '',
-    origin: `${protocol}://${host}`,
-    acceptLanguage: headerList.get('accept-language'),
-  })
+  return buildShellState(await requestContext())
 }

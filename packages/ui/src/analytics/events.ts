@@ -79,6 +79,15 @@ const UI_EVENT_DEFINITIONS = {
   banner_dismissed: { banner: 'enum' },
   /** A locked destination was clicked before the store was connected. */
   locked_nav_clicked: { nav_item: 'enum', domain_state: 'enum' },
+  /**
+   * A merchant told us we grouped their products wrongly. Families are
+   * read-only in this version, so this report is the only signal that the
+   * grouping is off — and how big the family was, together with which signal
+   * produced it, is what says whether we merged too much or too little. What
+   * the merchant typed goes to support and never here: it is free text about
+   * their own catalogue.
+   */
+  family_grouping_reported: { family_id: 'id', member_count: 'count', grouping_source: 'enum' },
 } as const satisfies Record<string, Record<string, PropertyKind>>
 
 export type UiEventDefinitions = typeof UI_EVENT_DEFINITIONS
