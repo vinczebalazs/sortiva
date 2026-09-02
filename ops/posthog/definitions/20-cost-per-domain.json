@@ -1,0 +1,70 @@
+[
+  {
+    "kind": "insight",
+    "key": "cost-top-spenders",
+    "name": "Top spenders by domain",
+    "description": "All-in cost per store: model spend plus search-data spend, never model spend alone. A store that looks cheap on the model chart can be expensive on search data, and the two are billed by different vendors.",
+    "query": {
+      "kind": "TrendsQuery",
+      "series": [
+        { "kind": "EventsNode", "event": "$ai_generation", "math": "sum", "math_property": "$ai_total_cost_usd" },
+        { "kind": "EventsNode", "event": "dataforseo_request", "math": "sum", "math_property": "usd_cost" }
+      ],
+      "breakdownFilter": { "breakdown_type": "group", "breakdown_group_type_index": 0, "breakdown": "$group_key" },
+      "dateRange": { "date_from": "-30d" }
+    }
+  },
+  {
+    "kind": "insight",
+    "key": "cost-per-published-article",
+    "name": "Cost per published article",
+    "description": "What one article cost us all-in, stamped when it shipped. The split between the two vendors travels with it, so an unusually expensive article can be explained rather than just noticed.",
+    "query": {
+      "kind": "TrendsQuery",
+      "series": [
+        { "kind": "EventsNode", "event": "article_cost_finalized", "math": "avg", "math_property": "usd_total" }
+      ],
+      "breakdownFilter": { "breakdown_type": "group", "breakdown_group_type_index": 0, "breakdown": "$group_key" },
+      "dateRange": { "date_from": "-90d" }
+    }
+  },
+  {
+    "kind": "insight",
+    "key": "cost-llm-vs-seo-split",
+    "name": "Model vs search-data split",
+    "description": "Which vendor the money actually goes to, product-wide. The number that says whether a cost problem is a prompt problem or a query-volume problem.",
+    "query": {
+      "kind": "TrendsQuery",
+      "series": [
+        { "kind": "EventsNode", "event": "article_cost_finalized", "math": "sum", "math_property": "usd_llm" },
+        { "kind": "EventsNode", "event": "article_cost_finalized", "math": "sum", "math_property": "usd_seo" }
+      ],
+      "dateRange": { "date_from": "-90d" }
+    }
+  },
+  {
+    "kind": "dashboard",
+    "key": "cost-per-domain",
+    "name": "Cost per domain",
+    "description": "Top spenders, cost per published article by domain, and the split between the model vendor and the search-data vendor. Always both — LLM-only is the number that misleads.",
+    "tiles": ["cost-top-spenders", "cost-per-published-article", "cost-llm-vs-seo-split"]
+  },
+  {
+    "kind": "alert",
+    "key": "alert-domain-spend-over-cap",
+    "name": "A domain's daily model spend is over its cap",
+    "description": "Mirrors the per-account trip in our own code, so a human sees what the code already acted on. This alert never causes the pause; the sweep reading our own ledger does.",
+    "insight": "cost-top-spenders",
+    "threshold": { "type": "absolute", "bounds": { "upper": 5.0 } },
+    "calculation_interval": "hourly"
+  },
+  {
+    "kind": "alert",
+    "key": "alert-global-spend-over-cap",
+    "name": "Global daily search-data spend is over its cap",
+    "description": "The vendor bill is one bill, so this ceiling is product-wide. Mirrors the global trip.",
+    "insight": "cost-llm-vs-seo-split",
+    "threshold": { "type": "absolute", "bounds": { "upper": 50.0 } },
+    "calculation_interval": "hourly"
+  }
+]

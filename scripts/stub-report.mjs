@@ -52,6 +52,15 @@ await import('../packages/core/src/notifications/ports.ts')
 await import('../packages/jobs/src/notify/assembler.ts')
 await import('../packages/jobs/src/notify/export-url-reminder.ts')
 
+// The two brakes that cannot see. The judge fail-rate and publish error-rate
+// trips are built and tested, but nothing records a draft's gate decision or a
+// publish attempt yet — no `articles` table, no `publish_intents` — so each is
+// wired to a counter that reports "not measurable" rather than a healthy zero.
+// The arithmetic is real; only the counting is missing.
+const ops = await import('../packages/core/src/ops/counters.ts')
+new ops.UnrecordedJudgeOutcomes()
+new ops.UnrecordedPublishOutcomes()
+
 const stubs = wiredStubs()
 
 console.log(`${stubs.length} stub(s) wired:\n`)

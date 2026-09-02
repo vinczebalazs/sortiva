@@ -20,7 +20,6 @@
  *   check. Pausing is the whole of the degraded behaviour.
  */
 
-import { PREVIEW_PAUSED_FLAG } from '../preview/limits'
 import {
   ACCOUNT_PAUSED_FLAG as ACCOUNT_GENERATION_PAUSED_FLAG,
   ALL_WORK_PAUSED_FLAG,
@@ -28,6 +27,19 @@ import {
 } from './spend-caps'
 
 export { ACCOUNT_GENERATION_PAUSED_FLAG }
+
+/**
+ * The switch that pauses the logged-out preview, named here rather than
+ * imported from the preview module.
+ *
+ * **This literal is deliberately a second copy.** Nothing outside the preview
+ * may import from it — that ban is what stops throwaway preview output leaking
+ * into the real pipeline, and a test enforces it across the whole workspace.
+ * The rule is worth more than the duplication, so the catalogue below names the
+ * switch itself. `kill-switches.test.ts` reads the preview module as *text* and
+ * fails if the two ever stop agreeing, which is a pin without a dependency.
+ */
+const PREVIEW_PAUSED_FLAG = 'global.pause_preview'
 
 /** Which flags an operator may raise or lower by hand, and what each stops. */
 export interface KillSwitchDefinition {

@@ -1,0 +1,7 @@
+{
+  "kind": "group_type",
+  "key": "domain",
+  "name": "domain",
+  "description": "Every event is groupable by the merchant's claimed domain, keyed on domain_normalized, so \"what is site X costing us\" is one insight rather than a join. Preview traffic deliberately has no group: ten strangers previewing nike.com is not Nike costing us money, so those events carry target_domain as a plain property instead.",
+  "group_type_index": 0
+}

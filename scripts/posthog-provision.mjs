@@ -1,139 +1,91 @@
 #!/usr/bin/env node
 /**
- * Dashboards and alerts are provisioned as code, never clicked together by
- * hand. All insights, dashboards, alert definitions and the `domain` group type
- * are created and updated through the API from
- * definition files versioned in the repo, applied idempotently by a setup script
- * that runs in CI/deploy (create-or-update by a stable key, so re-running
- * converges instead of duplicating)."
+ * Dashboards, insights and alerts are provisioned as code, never clicked
+ * together by hand. This is the entry point; everything it decides lives in
+ * `packages/providers/src/posthog/provision.ts`, beside its tests.
  *
- * CI runs it in **check mode**, so drift between the definitions in this repo
- * and the live project fails the build.
+ *   pnpm posthog:check          compare the project against the repo, never write
+ *   pnpm posthog:apply          create or update by key; safe to run repeatedly
  *
- *   node scripts/posthog-provision.mjs --check     compare, never write
- *   node scripts/posthog-provision.mjs --apply     create or update by key
+ * Definitions live in `ops/posthog/definitions/*.json`. A chart nobody put in a
+ * file there does not officially exist.
  *
- * Definitions live in `ops/posthog/definitions/*.json`, one object per file:
- *
- *   { "kind": "dashboard" | "insight" | "alert" | "group_type",
- *     "key":  "cost-per-domain",          // stable; the create-or-update key
- *     "name": "Cost per domain",
- *     ... kind-specific fields }
- *
- * A dashboard that is not in the definition files does not officially exist.
- * The `key` is what makes re-running converge rather than duplicate, so it is
- * required and must be unique.
+ * **Without credentials**, check mode validates the files and says clearly that
+ * it could not compare them with the live project. It does not pass silently
+ * and it does not fail either: a workspace with no analytics secrets is the
+ * normal case for everyone building, and a check that is red for everybody is a
+ * check nobody reads. Where the comparison must actually happen — CI and
+ * deploy, which do have the secrets — set `POSTHOG_REQUIRE_LIVE_CHECK=true` and
+ * a missing key becomes a failure instead of a note.
  */
-import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 const DEFINITIONS_DIR = join(repoRoot, 'ops', 'posthog', 'definitions')
 
-const KINDS = new Set(['dashboard', 'insight', 'alert', 'group_type'])
+const { loadDefinitions, checkDrift, apply, HttpPosthogAdminApi, DefinitionError } = await import(
+  '../packages/providers/src/posthog/provision.ts'
+)
 
 const mode = process.argv.includes('--apply') ? 'apply' : 'check'
-
-function loadDefinitions() {
-  if (!existsSync(DEFINITIONS_DIR)) return []
-  const files = readdirSync(DEFINITIONS_DIR).filter((f) => f.endsWith('.json')).sort()
-  const seen = new Map()
-  const definitions = []
-
-  for (const file of files) {
-    const path = join(DEFINITIONS_DIR, file)
-    let parsed
-    try {
-      parsed = JSON.parse(readFileSync(path, 'utf8'))
-    } catch (error) {
-      fail(`${file}: not valid JSON — ${error.message}`)
-    }
-    for (const definition of Array.isArray(parsed) ? parsed : [parsed]) {
-      if (!KINDS.has(definition.kind)) {
-        fail(`${file}: unknown kind "${definition.kind}" (expected one of ${[...KINDS].join(', ')})`)
-      }
-      if (!definition.key) {
-        fail(`${file}: every definition needs a stable "key" — it is what makes re-running converge instead of duplicating`)
-      }
-      const id = `${definition.kind}:${definition.key}`
-      if (seen.has(id)) {
-        fail(`${file}: duplicate ${id}, already defined in ${seen.get(id)}`)
-      }
-      seen.set(id, file)
-      definitions.push({ ...definition, sourceFile: file })
-    }
-  }
-  return definitions
-}
 
 function fail(message) {
   console.error(`FAIL  ${message}`)
   process.exit(1)
 }
 
-async function posthogFetch(path, init = {}) {
-  const host = process.env.POSTHOG_HOST ?? 'https://eu.posthog.com'
-  const key = process.env.POSTHOG_PERSONAL_API_KEY
-  const project = process.env.POSTHOG_PROJECT_ID
-  const response = await fetch(`${host}/api/projects/${project}${path}`, {
-    ...init,
-    headers: {
-      authorization: `Bearer ${key}`,
-      'content-type': 'application/json',
-      ...(init.headers ?? {}),
-    },
-  })
-  if (!response.ok) {
-    fail(`PostHog API ${path} returned ${response.status}`)
-  }
-  return response.json()
+let definitions
+try {
+  definitions = loadDefinitions(DEFINITIONS_DIR)
+} catch (error) {
+  if (error instanceof DefinitionError) fail(error.message)
+  throw error
 }
 
-async function main() {
-  const definitions = loadDefinitions()
-
-  if (definitions.length === 0) {
-    // The M0 state. Nothing is declared, so nothing can have drifted — and
-    // saying so is honest rather than a skipped check reporting green.
-    console.log(`PASS  no PostHog definitions declared yet (${DEFINITIONS_DIR})`)
-    console.log('      Dashboards land with T8.4: "cost per domain", "preview economics", funnel, calibration.')
-    return
-  }
-
-  const credentialed = Boolean(process.env.POSTHOG_PERSONAL_API_KEY && process.env.POSTHOG_PROJECT_ID)
-  if (!credentialed) {
-    // Definitions exist but cannot be verified. Passing here would mean the
-    // build stops noticing drift the moment someone forgets a secret.
-    fail(
-      `${definitions.length} definition(s) declared but POSTHOG_PERSONAL_API_KEY / POSTHOG_PROJECT_ID are not set, so drift cannot be checked.`,
-    )
-  }
-
-  const live = await posthogFetch('/dashboards/?limit=500')
-  const liveByKey = new Map(
-    (live.results ?? []).map((d) => [`dashboard:${d.name}`, d]),
-  )
-
-  const drift = []
-  for (const definition of definitions) {
-    const id = `${definition.kind}:${definition.key}`
-    if (!liveByKey.has(id)) drift.push(`${id} (${definition.sourceFile}) is not in the live project`)
-  }
-
-  if (mode === 'check') {
-    if (drift.length > 0) {
-      console.error('FAIL  PostHog project has drifted from the repo definitions:')
-      for (const line of drift) console.error(`      - ${line}`)
-      process.exit(1)
-    }
-    console.log(`PASS  ${definitions.length} definition(s) match the live project`)
-    return
-  }
-
-  console.log(`APPLY not yet implemented — ${definitions.length} definition(s) would be created or updated.`)
-  console.log('      The writer lands with T8.4, which is the card that adds the first dashboards.')
-  process.exit(1)
+if (definitions.length === 0) {
+  console.log(`PASS  no definitions declared yet (${DEFINITIONS_DIR})`)
+  process.exit(0)
 }
 
-await main()
+const counts = {}
+for (const definition of definitions) counts[definition.kind] = (counts[definition.kind] ?? 0) + 1
+const summary = Object.entries(counts)
+  .map(([kind, n]) => `${n} ${kind}${n === 1 ? '' : 's'}`)
+  .join(', ')
+
+const host = process.env.POSTHOG_HOST ?? 'https://eu.posthog.com'
+const personalApiKey = process.env.POSTHOG_PERSONAL_API_KEY
+const projectId = process.env.POSTHOG_PROJECT_ID
+
+if (!personalApiKey || !projectId) {
+  const detail =
+    'POSTHOG_PERSONAL_API_KEY / POSTHOG_PROJECT_ID are not set, so the live project could not be read'
+  if (mode === 'apply') fail(`cannot apply: ${detail}.`)
+  if (process.env.POSTHOG_REQUIRE_LIVE_CHECK === 'true') fail(`drift cannot be checked: ${detail}.`)
+  console.log(`PASS  ${summary} are valid and internally consistent.`)
+  console.log(`      NOT CHECKED against the live project: ${detail}.`)
+  console.log('      Set POSTHOG_REQUIRE_LIVE_CHECK=true where that must be a failure (CI, deploy).')
+  process.exit(0)
+}
+
+const api = new HttpPosthogAdminApi({ host, projectId, personalApiKey })
+
+if (mode === 'check') {
+  const drift = await checkDrift(api, definitions)
+  if (drift.length > 0) {
+    console.error(`FAIL  the analytics project has drifted from the repo (${drift.length}):`)
+    for (const item of drift) console.error(`      - ${item.detail}`)
+    process.exit(1)
+  }
+  console.log(`PASS  ${summary} match the live project`)
+  process.exit(0)
+}
+
+const result = await apply(api, definitions)
+console.log(
+  `APPLIED  created ${result.created.length}, updated ${result.updated.length}, already correct ${result.unchanged.length}`,
+)
+for (const id of result.created) console.log(`  + ${id}`)
+for (const id of result.updated) console.log(`  ~ ${id}`)
+for (const skipped of result.skipped) console.log(`  · ${skipped.id} — ${skipped.why}`)

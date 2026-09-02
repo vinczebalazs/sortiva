@@ -25,6 +25,7 @@ import {
 import { rules } from '@sortiva/rules'
 import { runtimeLogger } from '../runtime/logging'
 import { registerTask } from '../runtime/tasks'
+import { evaluateAutoTrips, type AutoTripDeps } from './auto-trips'
 
 /**
  * Reads the day's spending out of our own ledger, compares it with the ceilings
@@ -180,11 +181,18 @@ let registered = false
  * local UI session with the worker switched off — should not need a database to
  * boot.
  */
-export function registerOpsTasks(getDb: () => Db): void {
+export function registerOpsTasks(getDb: () => Db, deps: AutoTripDeps = {}): void {
   if (registered) return
   registered = true
   registerTask(SPEND_CAP_SWEEP_TASK, async () => {
-    await evaluateSpendCaps(getDb())
+    const db = getDb()
+    // Both halves of the same act: read our own counters, compare with the
+    // ceilings, raise a switch. The money ceilings run first because a runaway
+    // bill is the condition with no upper bound, and each half raises its own
+    // switches independently — a failure in one must not leave the other
+    // unevaluated.
+    await evaluateSpendCaps(db)
+    await evaluateAutoTrips(db, deps)
   })
 }
 

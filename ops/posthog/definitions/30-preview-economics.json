@@ -1,0 +1,57 @@
+[
+  {
+    "kind": "insight",
+    "key": "preview-spend-per-day",
+    "name": "Preview spend per day",
+    "description": "The abuse canary. The bot check, the rate limits and the cache should keep this near-flat; a spike means one of the three is being defeated. Preview events carry target_domain as a property and no domain group, because a stranger's browsing is not a merchant's cost.",
+    "query": {
+      "kind": "TrendsQuery",
+      "series": [
+        { "kind": "EventsNode", "event": "$ai_generation", "math": "sum", "math_property": "$ai_total_cost_usd", "properties": [{ "key": "call_type", "value": "preview", "operator": "exact", "type": "event" }] }
+      ],
+      "dateRange": { "date_from": "-30d" }
+    }
+  },
+  {
+    "kind": "insight",
+    "key": "preview-cache-hit-rate",
+    "name": "Preview cache-hit rate",
+    "description": "The entire cost model for the logged-out preview assumes this stays high. If it falls, the preview stops being nearly free without anything else looking wrong.",
+    "query": {
+      "kind": "TrendsQuery",
+      "series": [{ "kind": "EventsNode", "event": "preview_served" }],
+      "breakdownFilter": { "breakdown_type": "event", "breakdown": "cache_hit" },
+      "dateRange": { "date_from": "-30d" }
+    }
+  },
+  {
+    "kind": "insight",
+    "key": "preview-cost-per-signup",
+    "name": "Preview spend per signup",
+    "description": "The actual \"is the lure worth it\" number: what we spend on strangers, against how many of them sign up.",
+    "query": {
+      "kind": "TrendsQuery",
+      "series": [
+        { "kind": "EventsNode", "event": "$ai_generation", "math": "sum", "math_property": "$ai_total_cost_usd", "properties": [{ "key": "call_type", "value": "preview", "operator": "exact", "type": "event" }] },
+        { "kind": "EventsNode", "event": "signup_completed" }
+      ],
+      "dateRange": { "date_from": "-30d" }
+    }
+  },
+  {
+    "kind": "dashboard",
+    "key": "preview-economics",
+    "name": "Preview economics",
+    "description": "Total preview spend per day, cache-hit rate, and spend per acquired signup — the three numbers that say whether the free preview is paying for itself or being farmed.",
+    "tiles": ["preview-spend-per-day", "preview-cache-hit-rate", "preview-cost-per-signup"]
+  },
+  {
+    "kind": "alert",
+    "key": "alert-preview-spend-over-cap",
+    "name": "Daily preview spend is over its own cap",
+    "description": "Previews have no domain group to trip on, so this is its own alert rather than part of the per-domain one. If it fires at all, the bot check or the cache is being defeated — investigate, do not raise the cap.",
+    "insight": "preview-spend-per-day",
+    "threshold": { "type": "absolute", "bounds": { "upper": 10.0 } },
+    "calculation_interval": "hourly"
+  }
+]

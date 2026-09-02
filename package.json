@@ -23,11 +23,13 @@
     "db:generate": "pnpm --filter @sortiva/db run db:generate",
     "db:seed": "tsx scripts/seed-dev-db.mjs",
     "env:check": "node scripts/check-env-sync.mjs",
-    "posthog:check": "node scripts/posthog-provision.mjs --check",
+    "posthog:check": "tsx scripts/posthog-provision.mjs --check",
     "contracts:check": "tsx scripts/contracts-check.mjs",
     "stubs:report": "tsx scripts/stub-report.mjs",
     "diagnose": "tsx scripts/diagnose-store.mjs",
-    "dlq": "tsx scripts/replay-dlq.mjs"
+    "dlq": "tsx scripts/replay-dlq.mjs",
+    "posthog:apply": "tsx scripts/posthog-provision.mjs --apply",
+    "switch": "tsx scripts/kill-switch.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

@@ -1,0 +1,62 @@
+[
+  {
+    "kind": "insight",
+    "key": "opportunity-mix-by-action",
+    "name": "Opportunity mix by recommended action",
+    "description": "What the engine is actually proposing — write something new, improve a page, refresh a page, fix something technical, or hold. A mix that swings hard towards one action is usually a detection change, not a change in stores.",
+    "query": {
+      "kind": "TrendsQuery",
+      "series": [{ "kind": "EventsNode", "event": "opportunity_detected" }],
+      "breakdownFilter": { "breakdown_type": "event", "breakdown": "recommended_action" },
+      "dateRange": { "date_from": "-90d" }
+    }
+  },
+  {
+    "kind": "insight",
+    "key": "opportunity-mix-by-signal",
+    "name": "Opportunity mix by signal",
+    "description": "Which detections are firing. Signal and action are never mapped one to one, so this and the chart above are different questions and both are worth asking.",
+    "query": {
+      "kind": "TrendsQuery",
+      "series": [{ "kind": "EventsNode", "event": "opportunity_detected" }],
+      "breakdownFilter": { "breakdown_type": "event", "breakdown": "signal_type" },
+      "dateRange": { "date_from": "-90d" }
+    }
+  },
+  {
+    "kind": "insight",
+    "key": "opportunity-limited-intelligence-share",
+    "name": "Share detected without Search Console",
+    "description": "How much of what we propose is being decided without a store's own search data. High is not a fault, but it changes what the confidence on a card means.",
+    "query": {
+      "kind": "TrendsQuery",
+      "series": [{ "kind": "EventsNode", "event": "opportunity_detected" }],
+      "breakdownFilter": { "breakdown_type": "event", "breakdown": "limited_intelligence" },
+      "dateRange": { "date_from": "-90d" }
+    }
+  },
+  {
+    "kind": "insight",
+    "key": "opportunity-outcomes",
+    "name": "Measured outcomes by action type",
+    "description": "What actually happened 28 days after we acted, by action type. Labels are relative to each store's own median, so this is a distribution rather than a pass mark.",
+    "query": {
+      "kind": "TrendsQuery",
+      "series": [{ "kind": "EventsNode", "event": "opportunity_outcome_measured" }],
+      "breakdownFilter": { "breakdown_type": "event", "breakdown": "label" },
+      "dateRange": { "date_from": "-180d" }
+    }
+  },
+  {
+    "kind": "dashboard",
+    "key": "opportunity-mix",
+    "name": "Opportunity mix",
+    "description": "What the engine proposes, why, how much of it is decided without Search Console, and what came of it four weeks later.",
+    "tiles": [
+      "opportunity-mix-by-action",
+      "opportunity-mix-by-signal",
+      "opportunity-limited-intelligence-share",
+      "opportunity-outcomes"
+    ]
+  }
+]

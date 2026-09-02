@@ -41,10 +41,12 @@ export async function register() {
   const { registerBillingTasks } = await import('./app/api/webhooks/stripe/_lib/tasks')
   registerBillingTasks()
 
-  // The automatic brakes on money: a sweep that sums the day's vendor spending
-  // out of our own ledger and pauses whatever crossed a ceiling. Handed the
-  // database factory rather than a handle, so registering it here opens no
-  // connection — the pool appears the first time the sweep actually runs.
+  // The automatic brakes: one sweep that reads our own counters and pauses
+  // whatever crossed a ceiling — the day's vendor spending, the share of drafts
+  // the quality judge is rejecting, the share of publish attempts failing, and
+  // a store's daily allowance of a paid analysis it triggers by clicking.
+  // Handed the database factory rather than a handle, so registering it here
+  // opens no connection — the pool appears the first time the sweep runs.
   const { registerOpsTasks, installKillSwitchReader } = await import('@sortiva/jobs')
   const { db } = await import('@sortiva/db')
   // Registering a task is what puts it behind the kill switches; this is how
@@ -54,7 +56,11 @@ export async function register() {
   // because a process whose jobs consult no switches looks exactly like a
   // healthy one.
   installKillSwitchReader(db)
-  registerOpsTasks(db)
+  // The sweep is handed the analytics client so a trip is announced as well as
+  // enforced. It is told, never asked: the switch is a database write and the
+  // event that follows cannot prevent or undo it, so a trip still fires with
+  // the vendor unreachable.
+  registerOpsTasks(db, { analytics })
 
   // Onboarding. This is what makes a claimed domain actually start moving: the
   // claim writes the run and its steps and queues nothing, so until a handler
