@@ -18,5 +18,15 @@ export default defineConfig({
     environment: 'node',
     globals: false,
     reporters: ['default'],
+    server: {
+      deps: {
+        // Auth.js's Next.js wrapper imports `next/server`, which only resolves
+        // through the package's `exports` map. Node's own loader does not read
+        // it, so the import fails unless Vite processes this package instead of
+        // handing it to Node — which is what listing it here does. Needed to
+        // drive the real sign-in handlers in a test.
+        inline: ['next-auth'],
+      },
+    },
   },
 })
