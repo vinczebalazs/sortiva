@@ -1057,7 +1057,8 @@
         "gates",
         "learning",
         "budgets",
-        "auto_trips"
+        "auto_trips",
+        "search_console"
       ],
       "properties": {
         "signals": {
@@ -1077,6 +1078,9 @@
         },
         "auto_trips": {
           "$ref": "#/definitions/auto_trips"
+        },
+        "search_console": {
+          "$ref": "#/definitions/search_console"
         }
       }
     },
@@ -1102,6 +1106,41 @@
         },
         "auto_trips": {
           "type": "object"
+        },
+        "search_console": {
+          "type": "object"
+        }
+      }
+    },
+    "search_console": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "backfill_months",
+        "backfill_chunk_days",
+        "daily_sync_lookback_days",
+        "data_lag_days"
+      ],
+      "properties": {
+        "backfill_months": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16
+        },
+        "backfill_chunk_days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 90
+        },
+        "daily_sync_lookback_days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 90
+        },
+        "data_lag_days": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30
         }
       }
     }

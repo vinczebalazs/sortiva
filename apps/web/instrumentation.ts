@@ -61,6 +61,21 @@ export async function register() {
   registerIngestionTasks(ingestionDeps)
   registerReminderTasks(db, notificationEmitter)
 
+  // Search Console: the nightly pull of each connected store's clicks,
+  // impressions and positions, and the one-time import of its history. Handed
+  // the factories rather than handles for the same reason as above, and handed
+  // the one Google client and the one token cipher the process has — a second
+  // cipher would be a second place a merchant's Google credentials are read.
+  const { registerGscTasks } = await import('@sortiva/jobs')
+  const { dbPool } = await import('@sortiva/db')
+  const { GscOAuthProvider, TokenCipher } = await import('@sortiva/providers')
+  registerGscTasks({
+    getDb: db,
+    getPool: dbPool,
+    provider: new GscOAuthProvider(),
+    codec: new TokenCipher(),
+  })
+
   const { bootstrapWorker, flushAnalytics } = await import('@sortiva/jobs')
   const worker = await bootstrapWorker({ analytics })
 
