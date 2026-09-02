@@ -8,7 +8,7 @@ import {
   type Logger,
   type PosthogCapture,
 } from '@sortiva/core'
-import { db, findFamily } from '@sortiva/db'
+import { makeFamilyStore, type FamilyStore } from '@sortiva/db'
 import type { AccountHandler } from '../../auth/_lib/session'
 
 /**
@@ -20,7 +20,7 @@ import type { AccountHandler } from '../../auth/_lib/session'
  */
 
 export interface ReportGroupingDeps {
-  readonly getDb: typeof db
+  readonly families: FamilyStore
   readonly log: Logger
   readonly capture?: Pick<PosthogCapture, 'capture'>
 }
@@ -44,7 +44,7 @@ export function makeReportGroupingHandler(deps: ReportGroupingDeps): AccountHand
 
     // Read through the account scope, so a family id belonging to another
     // merchant answers "not found" rather than confirming that it exists.
-    const family = await findFamily(deps.getDb(), scope, parsed.data.familyId)
+    const family = await deps.families.find(scope, parsed.data.familyId)
     if (!family) {
       return Response.json(
         { error: { code: 'family_not_found', message: 'That grouping is gone.' } },
@@ -74,7 +74,7 @@ export function makeReportGroupingHandler(deps: ReportGroupingDeps): AccountHand
 }
 
 export function reportGroupingDeps(): ReportGroupingDeps {
-  return { getDb: db, log: createLogger({ base: { component: 'products' } }) }
+  return { families: makeFamilyStore(), log: createLogger({ base: { component: 'products' } }) }
 }
 
 function badRequest(code: string, message: string): Response {

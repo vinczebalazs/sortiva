@@ -13,7 +13,6 @@ import {
 } from '@sortiva/db'
 import { rules } from '@sortiva/rules'
 import { inputVersion } from '../runtime/idempotency'
-import type { IngestionDeps } from './deps'
 import type { StepDefinition } from './steps'
 
 /**

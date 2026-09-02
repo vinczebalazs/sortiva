@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { createLogger, okSchema, type PosthogCapture } from '@sortiva/core'
-import { accountScope, reconcileFamilies } from '@sortiva/db'
+import { accountScope, makeFamilyStore, reconcileFamilies } from '@sortiva/db'
 import { databaseAvailable, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
 import { withAccount } from '../../auth/_lib/session'
 import { makeReportGroupingHandler } from './handlers'
@@ -84,7 +84,7 @@ describe.skipIf(!available)('reporting a wrong grouping', () => {
   const route = (accountId: string | null) =>
     withAccount(
       makeReportGroupingHandler({
-        getDb: () => harness.db,
+        families: makeFamilyStore({ database: harness.db }),
         log: createLogger({ sink: (line) => logged.push(line) }),
         capture,
       }),

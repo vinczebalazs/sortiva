@@ -2082,3 +2082,13 @@ Nearest spec: main §14.3.1–14.3.4; CLAUDE.md invariant 18.
 Decision: `IngestionDeps` takes an optional `capture`, bound in the Shopify composition root to the same `PosthogServerCapture` the model wrapper already uses there. `family_grouping_completed` carries the account, how many products were grouped, how many families resulted, how many have no axes, how many rows were merged as one product, the count by grouping signal, and how many are low confidence.
 Why: the card names the event and nothing in the ingestion bundle could emit one — the steps had a notification emitter and no analytics client. Optional rather than required, so a missing client can never fail the work it was only reporting on. Every property is a count or an enum name: a family's *name* is the merchant's word for their own products, which is store content, and a test asserts none of the fixture's names, titles, tags or attribute values appears in the serialised event.
 Nearest spec: main §14.7 (server-side capture); CLAUDE.md invariant 26.
+
+## 2026-09-02 — T2.4 — The report route reads families through a store port, not a database handle
+Decision: a new `makeFamilyStore` in `packages/db/src/stores/`, exposing `find` and `list`, both taking an `AccountScope`. The route handler holds it and holds no database.
+Why: the route first imported the database handle directly and `pnpm lint` refused it — the rule exists because a handle outside `packages/db` is how a query ends up running without naming the account whose data it touches. This is the same shape and the same answer as `makeWebhookEventStore` and `makeNotificationStore` (DECISIONS 2026-09-02, T8.2): the handle stays in the package that owns it, the scope stays mandatory, and an integration test hands in its own isolated database, which is what lets the route test run end to end against real Postgres rather than against a mock.
+Nearest spec: tech §3; CLAUDE.md code-structure rules ("every repository method requires an `accountId` scope parameter").
+
+## 2026-09-02 — T2.4 — The onboarding walk's end marker moved from grouping to the persona
+Decision: `ingestion.test.ts`'s assertion that a resumed run stops at `family_group` because it "belongs to a later card" now says the run executes it and stops at `persona`.
+Why: `T2.3` wrote that assertion naming this card as the one that would change it, exactly as `T2.2` did for `T2.3`. It is one line in another card's test and is the intended way the marker moves down the pipeline; `T2.5` will move it again, to `keywords_competitors`.
+Nearest spec: main §6.4–6.5 (the step order); the build plan's card list.

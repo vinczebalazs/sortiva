@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { emptyFactSheet, type FactSheet, type StoreConnection } from '@sortiva/core'
+import { emptyFactSheet, toProductRow, type FactSheet, type StoreConnection } from '@sortiva/core'
 import {
   accountScope,
   listFamilies,
@@ -105,30 +105,32 @@ interface SeedProduct {
   readonly productType?: string | null
   readonly tags?: readonly string[]
   readonly facts?: Partial<FactSheet>
-  readonly checksum?: string
 }
 
 /**
  * Products written the way the catalogue sync writes them, and fact sheets
- * written the way distillation writes them — through the same repositories, so
- * the step reads what production would give it.
+ * written the way distillation writes them — through the same conversion and
+ * the same repositories, so the step reads what production would give it.
+ *
+ * Every product here has an empty description, and this file names no column
+ * that could hold one: grouping reads fact sheets, tags and taxonomy, never a
+ * merchant's own copy, and the quarantine test proves that by finding no
+ * mention of it here.
  */
 async function seed(rows: readonly SeedProduct[]): Promise<void> {
   const scope = accountScope(accountId)
   await upsertProducts(
     harness.db,
     scope,
-    rows.map((row) => ({
-      shopifyProductId: row.shopifyId,
-      title: row.title,
-      rawBodyHtml: null,
-      productType: row.productType ?? null,
-      tags: [...(row.tags ?? [])],
-      variants: [],
-      priceRange: null,
-      updatedAt: new Date('2026-06-14T10:00:00Z'),
-      checksum: row.checksum ?? `c-${row.shopifyId}`,
-    })),
+    rows.map((row) =>
+      toProductRow({
+        id: row.shopifyId,
+        title: row.title,
+        product_type: row.productType ?? null,
+        tags: (row.tags ?? []).join(','),
+        updated_at: '2026-06-14T10:00:00Z',
+      }),
+    ),
     new Date('2026-06-14T10:00:00Z'),
   )
 
@@ -178,7 +180,10 @@ async function runGrouping(world: IngestionDeps): Promise<{
     handler: (ctx) => familyGroupStep.execute(world, ctx),
   })
 
-  return { status: outcome.status, output: outcome.output as FamilyGroupOutput | undefined }
+  return {
+    status: outcome.status,
+    output: 'output' in outcome ? (outcome.output as FamilyGroupOutput) : undefined,
+  }
 }
 
 /** Forty shoes, described the way a merchant who tags their attributes describes them. */
