@@ -1,0 +1,56 @@
+import type pg from 'pg'
+import type { Db } from '@sortiva/db'
+import type {
+  NotificationEmitter,
+  ShopifyOAuthProvider,
+  StoreConnection,
+  StoreDomainStore,
+  StorePageFetcher,
+} from '@sortiva/core'
+
+/**
+ * Everything the onboarding steps reach outside themselves, in one bundle the
+ * process assembles once and hands down.
+ *
+ * Written as ports rather than concrete clients so a step can be driven against
+ * an in-memory Shopify and an in-memory page fetcher — which is what makes the
+ * whole of onboarding testable without a Partner account or a live store.
+ */
+
+/** The store's own record, as read back to confirm a freshly granted token works. */
+export interface ShopSnapshot {
+  readonly id: number
+  readonly name: string
+  readonly myshopifyDomain: string
+  readonly ianaTimezone: string | null
+  readonly countryCode: string | null
+  readonly currency: string | null
+}
+
+export interface ShopReader {
+  getShop(input: { shop: string; accessToken: string }): Promise<ShopSnapshot>
+}
+
+/** Reading and writing one store's connection, tokens decrypted at the edge. */
+export interface ConnectionStore {
+  read(accountId: string): Promise<StoreConnection | undefined>
+  /** The decrypted token, for a caller about to make a call with it. */
+  readToken(accountId: string): Promise<string | undefined>
+  markInvalid(accountId: string, at: Date): Promise<Date>
+}
+
+export interface IngestionDeps {
+  readonly db: Db
+  /** Advisory locks need a connection they can hold for the length of a step. */
+  readonly pool: pg.Pool
+  readonly fetcher: StorePageFetcher
+  readonly shopify: ShopifyOAuthProvider
+  readonly shop: ShopReader
+  readonly connections: ConnectionStore
+  readonly domains: StoreDomainStore & {
+    /** The domain this account claimed, normalised. */
+    readNormalized(accountId: string): Promise<string | undefined>
+  }
+  readonly notifications?: NotificationEmitter
+  readonly now?: () => Date
+}

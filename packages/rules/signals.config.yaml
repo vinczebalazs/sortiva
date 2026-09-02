@@ -463,6 +463,31 @@ defaults:
       rate_max: 0.20
       window_hours: 1
 
+  # ── Search Console sync ────────────────────────────────────────────────────
+  # How much Search Console history we hold and how often we go back for it.
+  # These decide what detection has to work with, so they belong with the other
+  # numbers that shape a result rather than being buried in the sync job.
+  search_console:
+    # How far back the one-time import at connect reaches. Google itself serves
+    # no more than 16 months, so asking for more returns nothing; asking for
+    # less would leave year-on-year comparisons impossible for the first year.
+    backfill_months: 16
+    # The import is done in chunks of this many days, and each finished chunk is
+    # committed before the next starts. Smaller means less repeated work after a
+    # crash and more round trips; larger means the opposite. Changing it changes
+    # only how much progress a killed import loses.
+    backfill_chunk_days: 30
+    # Each daily sync re-pulls this many days, not just yesterday. Google keeps
+    # revising recent days for about a week after the fact, so a single-day pull
+    # would freeze the first, lowest number it ever reported. Re-pulling
+    # overwrites the same rows, so the cost of a larger window is bandwidth
+    # rather than duplicates.
+    daily_sync_lookback_days: 7
+    # Search Console data arrives about two days late. Every window ends this
+    # many days before today, so we never treat "not reported yet" as "nobody
+    # searched".
+    data_lag_days: 2
+
 # ── Per-locale demand floors ─────────────────────────────────────────────────
 #
 # UNSIGNED, all of it. Per-country floors are required and no table was

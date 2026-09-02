@@ -24,6 +24,7 @@ export class MockPageFetcher implements PageFetcher {
       body,
       bytes: Buffer.byteLength(body),
       chain: [url],
+      headers: {},
       ...init,
     })
     return this

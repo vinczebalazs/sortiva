@@ -19,9 +19,16 @@ lanes on one server cannot destroy each other's runs.
 
 | Lane | Card | Branch | Worktree | State |
 |---|---|---|---|---|
-| B — Store Intelligence | `T2.1` | `lane-b` | `../sortiva-lane-b` | building |
-| C — Search Intelligence | `T3.1` | `lane-c` | `../sortiva-lane-c` | building |
+| B — Store Intelligence | — | `lane-b` | `../sortiva-lane-b` | **held**; `T2.1` merged |
+| C — Search Intelligence | — | `lane-c` | `../sortiva-lane-c` | free; `T3.1` merged |
 | F — Frontend | `T9.2` | `lane-f` | `../sortiva-lane-f` | building; `T9.1` merged |
+
+**Lane B is deliberately held rather than moved to its next card.** `T2.1` is
+finished and merged, but the card it raised a question about — how a merchant's
+onboarding gets started at all — is the same question the operations card next in
+that lane depends on. `docs/overnight-run.md` says a lane that stops for a decision
+stays stopped until the founder answers. Starting the operations card first would
+build the diagnosis script and the replay action into machinery that cannot run.
 
 **`T8.0` was deliberately not launched**, though the order lists it as the fourth
 parallel card. Two reasons. It is schema wave 4, whose entire content is "the
@@ -66,6 +73,84 @@ recoverable, an uncommitted half is a guess.
 
 ## What is on `main`
 
+**`T3.1` landed on 2026-09-02** — a store's search history can now be pulled in.
+Twelve commits, merged as `521679e`; the merge conflicted in one file (both this
+card and `T2.1` register background jobs at the same start-up hook) and both sides
+were kept.
+
+Search Console is Google's free report of what people searched for before they
+landed on a store's pages, how often each page was shown, and where it sat in the
+results. It is the only honest answer to "what does this store already rank for",
+and the engine is meant to consult it before proposing anything so it never writes
+a new page for something an existing page already serves.
+
+- **A property for the wrong website is refused outright, not warned about.** A
+  merchant's Google account often reads sites they run for other people; attaching
+  one of those makes every later conclusion about the wrong website, with nothing
+  in the product to reveal it. A lookalike that merely *ends* with the claimed
+  domain is refused too.
+- **Declining stays first-class.** Skipping is recorded and the rest of onboarding
+  carries on untouched.
+- **The nightly pull takes the last seven days, not yesterday.** Google keeps
+  revising recent days for about a week; a single-day pull would freeze the first,
+  lowest figure it ever reported.
+- **The sixteen-month history imports newest first**, a month at a time, each
+  month handing the rest to a fresh job — so a crash costs one month, not the
+  import. A merchant who confirms their profile while it is still running already
+  has the months the signals weigh most heavily.
+- **When Google permission dies, reporting stops and nothing else does** — proved
+  by taking the steps of a live run before and after and showing none moved.
+
+**A done-when in the card is wrong and was not implemented as written.** `T3.1`
+asks the skip path to set `account_settings.limited_intelligence`. There is no such
+column and there should not be: mini-wave `T2.0b` was asked to add it, read the
+spec and declined, because running-without-Search-Console is defined as the state
+an account is *in* while it has no connection — one entry condition and one exit
+condition, both about whether a connection exists. A stored flag is a second source
+of truth that can disagree: the badge outlives the connection the merchant just
+made, or reads "fine" with nothing to read. Implemented as derived, no column, no
+migration. **The card text should be corrected.**
+
+*Consequence worth knowing:* `GET /api/account` had been returning
+`limitedIntelligence: true` unconditionally — correct while nothing could connect
+Search Console, and a badge that never goes away the moment something can. It is
+now wired to the real value.
+
+**`T2.1` landed on 2026-09-02** — a merchant's store can now actually be connected.
+Eleven commits, merged as `73ca6c9`. In plain terms:
+
+- We work out whether a site is a Shopify store from marks its storefront leaves —
+  a response header, theme files on Shopify's own network, the object every theme
+  defines — and only spend a second request on the product feed if none appear.
+  Anything else is parked with the agreed explanation, keeping its domain, and the
+  seven later onboarding steps are marked skipped so the progress screen stops
+  showing work that will never start.
+- **We ask for four read permissions and nothing else, and we check the answer.**
+  If Shopify hands back a grant carrying any write permission, the token is thrown
+  away rather than stored — because the app's permissions are configured in
+  Shopify's dashboard, outside this repository, so a misconfiguration there could
+  otherwise hand us the write access the screen promises we will never take.
+- The token is encrypted before it reaches the database. A test reads the raw
+  column and proves the token is not in it, and that a different key cannot read it.
+- Shopify rejecting our token and the merchant uninstalling are handled as one
+  event: the store moves to the reconnect screen, the merchant is told exactly once
+  however many times the event is processed, and everything already made for them
+  stays readable. Nothing goes to the failed-work queue, because no operator could
+  fix it — only the merchant can.
+
+**Not satisfied, and it must be before launch:** the card's dev-store handshake.
+There are no Shopify Partner credentials, so the whole exchange was run against a
+real local HTTP server standing in for Shopify instead. **This card needs re-running
+against a real dev store**, and it now joins Stripe, Turnstile, Anthropic and
+PostHog on that list.
+
+**Two things `T2.2` should inherit rather than rewrite:** the Shopify request
+signature check, which is written and tested here including that it verifies the
+exact bytes received rather than a re-serialisation; and the fact that
+`awaiting_shopify_auth` alone does not say which screen to draw — first-time
+connect versus reconnect-after-loss is decided by whether a connection row exists,
+and `shopifyConnectionState` answers it.
+
 **`T9.1` landed on 2026-09-02** — the app shell and, more consequentially, the
 string catalogue. Eight commits, merged as `6613241`.
 
@@ -88,16 +173,16 @@ What it changed that everyone inherits:
   `pnpm-lock.yaml` changed — `packages/ui` now depends on React. **That lockfile is
   the merge hazard for lanes B and C if they added a dependency.**
 
-**Gate on the merged tree**, each command run separately on 2026-09-02:
+**Gate on the merged tree** (`T9.1` + `T2.1` + `T3.1`, commit `521679e`), each command run separately on 2026-09-02:
 
 | | |
 |---|---|
 | `pnpm lint` | clean |
 | `pnpm lint:prove` | **9** planted violations, all rejected (was 7; two are new) |
 | `pnpm typecheck` | 9 packages |
-| `pnpm test` | **1023 passing**, 65 files (was 914) |
+| `pnpm test` | **1177 passing**, 80 files (was 914 at wave 2 start) |
 | `pnpm contracts:check` | 56 routes; zod and OpenAPI agree |
-| `pnpm build` | **10 routes** (was 9 — the gallery page) |
+| `pnpm build` | compiles; the gallery page and both Shopify routes present |
 | `pnpm eval` · `pnpm chaos` | pass |
 | `pnpm env:check` | `.env` and `.env.example` both declare 36 variables |
 | `pnpm db:migrate` on an **empty** database | 41 tables, 3 guard triggers |
@@ -259,14 +344,28 @@ Lane C was told this when it was resumed.
 
 Neither blocks a lane today; both block something specific later.
 
-**1. Should scheduled jobs with working code start running now?** The worker turns
-its schedule on only when all twelve scheduled jobs have a handler, and eleven have
-none — so nothing scheduled runs at all, including the nightly billing repair and
-the five-minute spend-cap sweep, whose code is written and tested. `T2.1` writes
-the first of the eleven, so it is the first card that could change the rule. The
-integrator's recommendation put to the founder: run the entries that have handlers
-and log loudly at every start-up for the ones that do not, so a job that is not
-running says so. **Lane B will reach this.**
+**1. Nothing starts a merchant's onboarding, and there are two ways to fix it.**
+Claiming a domain writes down the nine steps of work to be done and pushes nothing
+onto the job queue — deliberately, because until `T2.1` no code existed that could
+run step one. That code exists now. What is missing is the thing that pokes it.
+
+- **(a) Switch the scheduled jobs on.** The worker refuses to run *any* recurring
+  job until *every* one of the fourteen has a handler, and eleven still do not, so
+  none run. Relaxing that to "run the ones that have handlers" is one line — and it
+  also switches on two other finished, tested, currently dormant machines: the
+  nightly billing repair, and the spend caps that pause the product before a runaway
+  bill. Wider blast radius: three things start moving, not one.
+- **(b) Have the domain claim push the job itself** the instant it commits. One
+  line, no schedule involved, nothing else changes — but that line lives in Lane A's
+  claim code, a directory `T2.1` does not own.
+
+A merchant who *does* connect their store moves forward fine; the connect flow
+resumes onboarding itself. It is only the very first step, detection immediately
+after the claim, that has nothing to trigger it.
+
+The integrator's recommendation, if (a) is chosen: run the entries that have
+handlers and log loudly at every start-up for the ones that do not, so a job that
+is not running says so. **Lane B is held until this is answered.**
 
 **2. How does a browser send an analytics event?** Raised by `T9.1`, which found the
 specs contradicting each other: the main spec says everything observable is emitted
@@ -280,6 +379,38 @@ neither and shipped the seam instead — one interface, a do-nothing default, a
 recording double for tests — so every screen card is unblocked and binding a
 transport later touches one file. **No screen's analytics is real until this is
 answered.**
+
+## Loose ends the three landed cards left
+
+Small, real, and each belongs to a named next card rather than to a sweep.
+
+- **Two lanes parked user-facing copy outside the string catalogue** because
+  `packages/ui/strings` did not exist when they started: billing's wording sits in
+  `packages/core/src/billing/copy.ts`, Search Console's in
+  `packages/core/src/search/copy.ts`. `T9.1` created the catalogue and left a test
+  that fails if billing's two homes ever disagree. Moving both is mechanical.
+- **A build failure the tests cannot catch.** A route that queues background work
+  pulled in the threshold config's file loader, which reads a YAML file off disk —
+  in a bundle that has no disk. `pnpm build` failed while every test passed. Fixed
+  in `T3.1` by splitting the queue call into its own near-empty module. **Any lane
+  whose route enqueues background work will hit this**, so it is worth knowing
+  before it is diagnosed a second time.
+- **`pnpm test` and `pnpm lint:prove` must not run at the same time.** The proof
+  script plants and deletes a file that a billing test reads off a `git ls-files`
+  listing, so the test crashes on a file that vanished underneath it. Harmless
+  when the gate is run one command at a time, as the rules already require — but a
+  real trap for any CI that parallelises the two.
+- **A long-dead Search Console connection never starts counting as limited.** A
+  store whose permission died months ago goes on reasoning from ageing data with
+  nothing saying so. Bounding it needs a staleness horizon nobody has specified;
+  it belongs with the detection cards that would read it.
+- **The Search Console callback is not in the frozen API table**, deliberately —
+  it is Google's browser redirect answering with a 302, never called by our own
+  code, the same exception `/api/auth/*` already has. A five-line addition if the
+  integrator wants it listed.
+- **Resolved without anyone needing to decide it:** `T3.1` had to guess where a
+  merchant lands after connecting and chose `/settings/connections`; `T9.1`
+  independently pointed three separate places at the same path. They agree.
 
 ## Audit findings, unactioned
 
@@ -318,7 +449,7 @@ None yet. Three are building; see the table at the top for which.
   corrupted the signup funnel. Both are for the spec keepers, neither blocks a card.
 - **Still no vendor credentials.** Stripe, Turnstile, Anthropic and PostHog work is
   built and tested against fakes, and the real-vendor evidence is recorded as
-  outstanding rather than claimed. Three cards need re-running against real keys.
+  outstanding rather than claimed. **Two more joined that list today**: the Shopify handshake in `T2.1` was proved against a local server standing in for Shopify, and the Search Console flow in `T3.1` against a stand-in that pages the way Google does. Five cards now need re-running against real keys.
 - **Email sign-in is unfinished and unowned.** It shipped Google-only because no
   table existed for a magic link's single-use token. That table exists now. No card
   owns finishing it.

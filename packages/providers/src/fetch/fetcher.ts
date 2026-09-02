@@ -103,7 +103,14 @@ export class GuardedPageFetcher implements PageFetcher {
         throw new PageFetchError('timeout', `Exceeded ${budget.timeoutMs}ms.`, target.url.href)
       }
 
-      const hopResult = await this.hop(target.url, address, remaining, budget, this.userAgent)
+      const hopResult = await this.hop(
+        target.url,
+        address,
+        remaining,
+        budget,
+        this.userAgent,
+        request.contentTypes,
+      )
 
       if (!REDIRECT_STATUSES.has(hopResult.status)) {
         return {
@@ -113,6 +120,7 @@ export class GuardedPageFetcher implements PageFetcher {
           body: hopResult.body,
           bytes: hopResult.bytes,
           chain,
+          headers: hopResult.headers,
         }
       }
 
@@ -165,6 +173,7 @@ export class GuardedPageFetcher implements PageFetcher {
     timeoutMs: number,
     budget: FetchBudget,
     userAgent: string,
+    extraContentTypes: readonly string[] = [],
   ): Promise<HopResult> {
     const policy = this.policy
     const send = url.protocol === 'https:' ? httpsRequest : httpRequest
@@ -208,10 +217,14 @@ export class GuardedPageFetcher implements PageFetcher {
         (res: IncomingMessage) => {
           const status = res.statusCode ?? 0
 
+          const headers = flattenHeaders(res.headers)
+
           if (REDIRECT_STATUSES.has(status)) {
             const location = firstHeader(res.headers.location)
             res.resume()
-            finish(() => resolve({ status, contentType: '', body: '', bytes: 0, location }))
+            finish(() =>
+              resolve({ status, contentType: '', body: '', bytes: 0, headers, location }),
+            )
             return
           }
 
@@ -224,7 +237,7 @@ export class GuardedPageFetcher implements PageFetcher {
           }
 
           const contentType = firstHeader(res.headers['content-type']) ?? ''
-          if (!isFetchableContentType(contentType)) {
+          if (!isFetchableContentType(contentType, extraContentTypes)) {
             res.resume()
             finish(() =>
               reject(
@@ -281,6 +294,7 @@ export class GuardedPageFetcher implements PageFetcher {
                 contentType,
                 body: buffer.toString(charsetOf(contentType)),
                 bytes: buffer.length,
+                headers,
               }),
             )
           })
@@ -320,7 +334,23 @@ interface HopResult {
   readonly contentType: string
   readonly body: string
   readonly bytes: number
+  readonly headers: Readonly<Record<string, string>>
   readonly location?: string
+}
+
+/**
+ * Node hands back repeated headers as arrays. Detection compares strings, so
+ * they are joined rather than dropped — losing the second `set-cookie` would be
+ * invisible, and an array-or-string type would push that decision onto every
+ * caller.
+ */
+function flattenHeaders(raw: IncomingMessage['headers']): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const [name, value] of Object.entries(raw)) {
+    if (value === undefined) continue
+    out[name.toLowerCase()] = Array.isArray(value) ? value.join(', ') : value
+  }
+  return out
 }
 
 /** `node:dns`'s `lookup` signature, answering with the one address the guard cleared. */
@@ -355,10 +385,11 @@ function firstHeader(value: string | string[] | undefined): string | undefined {
   return value
 }
 
-function isFetchableContentType(contentType: string): boolean {
+function isFetchableContentType(contentType: string, extra: readonly string[] = []): boolean {
   const mime = (contentType.split(';')[0] ?? '').trim().toLowerCase()
   if (mime === '') return true // No Content-Type at all: read it and let extraction decide.
-  return FETCHABLE_CONTENT_TYPES.includes(mime)
+  if (FETCHABLE_CONTENT_TYPES.includes(mime)) return true
+  return extra.some((allowed) => allowed.trim().toLowerCase() === mime)
 }
 
 function charsetOf(contentType: string): BufferEncoding {

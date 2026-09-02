@@ -4,6 +4,7 @@ export { PostgresCostLedger } from './spend'
 export { accountScope, systemScope, type AccountScope, type SystemScope } from './scope'
 export * from './schema'
 export * from './repositories'
+export { makeGscConnectStore, type GscConnectStoreOptions } from './stores/gsc'
 
 // The integration-test harness is deliberately NOT re-exported here: it pulls in
 // the migrator and resolves ../migrations from disk, which has no business in an

@@ -26,6 +26,7 @@ export {
   type RulesDocument,
   type RulesLayer,
   type ScoringConfig,
+  type SearchConsoleConfig,
   type SignalCommon,
   type SignalPriority,
   type SignalType,
