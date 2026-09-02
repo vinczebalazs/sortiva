@@ -72,7 +72,9 @@ describe.skipIf(!available)('connecting Search Console', () => {
 
   beforeAll(async () => {
     harness = await setupTestDb('web_gsc_connect')
-  })
+    // Creating a database and applying every migration is slower than vitest's
+    // default hook budget when the machine is busy.
+  }, 60_000)
 
   afterAll(async () => {
     await harness.close()
@@ -82,7 +84,7 @@ describe.skipIf(!available)('connecting Search Console', () => {
     await truncateAll(harness.pool)
     accountId = await insertAccount(harness.pool, `gsc-${Math.random().toString(36).slice(2)}@example.com`)
     await harness.pool.query(
-      `INSERT INTO domains (account_id, domain_input, domain_normalized, state) VALUES ($1, $2, $2, 'ingesting')`,
+      `INSERT INTO domains (account_id, domain_normalized, state) VALUES ($1, $2, 'ingesting')`,
       [accountId, 'example.com'],
     )
     capture = new MockPosthogCapture()
