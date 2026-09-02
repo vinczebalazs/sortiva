@@ -8,6 +8,11 @@ import { seededRandom } from '@sortiva/core'
 import { deriveIdempotencyKey } from '../runtime/idempotency'
 import { createRun, dispatchableSteps, findStep, getStep } from '../runtime/steps'
 import { runStep } from '../runtime/runStep'
+// The scenario imports this module back for `WorkerKilled` and the context
+// types. The cycle is safe because neither side calls the other while its module
+// is still evaluating: this file only lists the scenario in an array, and the
+// scenario only uses `WorkerKilled` inside functions.
+import { catalogSyncKilledMidWalk } from './catalog-sync.scenario'
 
 /**
  * Kills workers at random points during a full synthetic ingestion and publish
@@ -390,4 +395,8 @@ export const CHAOS_SCENARIOS: readonly ChaosScenario[] = [
     async assert() {},
   },
   processDeathMidStep,
+  // T2.2's mid-sync crash, which is the case this harness was written expecting:
+  // the catalogue sync is the longest thing the product does over a network and
+  // so the step most likely to be running when a process ends.
+  catalogSyncKilledMidWalk,
 ]

@@ -34,6 +34,20 @@ import type { ShopifyOauthDeps } from './handlers'
  */
 
 let cipher: TokenCipher | undefined
+let admin: ShopifyAdminClient | undefined
+
+/**
+ * One Admin client per process, because the pacing lives inside it.
+ *
+ * Shopify budgets requests per store, and the client spreads background reads
+ * across that budget. Two clients would each believe they were the only one
+ * talking to a store, and together they would earn the rate limiting the pacing
+ * exists to avoid.
+ */
+export function adminClient(): ShopifyAdminClient {
+  admin ??= new ShopifyAdminClient()
+  return admin
+}
 
 /**
  * One cipher per process. Building it reads and validates the master key, and
@@ -99,11 +113,29 @@ export function ingestionDeps(): IngestionDeps {
     pool: dbPool(),
     fetcher: new GuardedPageFetcher(),
     shopify: shopifyOauthProvider(),
-    shop: new ShopifyAdminClient(),
+    // One client, used two ways. It must be *the same instance*: the
+    // one-request-a-second pacing is kept per store inside it, so a second
+    // client would be a second budget and the two together would spend twice
+    // what Shopify allows.
+    shop: adminClient(),
+    admin: adminClient(),
     connections: connections(),
     domains: makeDomainStore(db()),
     notifications: notificationEmitter(),
   }
+}
+
+/**
+ * What the Shopify webhook receiver runs against.
+ *
+ * The database arrives as a factory rather than a handle: the receiver module is
+ * loaded when its route file is, and opening a connection then would open one
+ * during the build. Naming the concrete database is this file's job — it is the
+ * composition root for everything Shopify — and the receiver itself runs no
+ * query that does not go through a repository.
+ */
+export function shopifyWebhookOptions(): { getDatabase: typeof db } {
+  return { getDatabase: db }
 }
 
 export function shopifyOauthDeps(): ShopifyOauthDeps {

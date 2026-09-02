@@ -24,7 +24,12 @@ new doubles.StubExistingTargetCheck()
 new doubles.StubOpportunitySource()
 new doubles.StubTopicScheduler()
 new doubles.StubJudgeLite()
-new doubles.StubCatalogEvents()
+// `StubCatalogEvents` is deliberately not constructed. `T2.2` filled that seam:
+// the change stream is served in production by `DatabaseCatalogEvents`, reading
+// what merchants actually changed. The double still exists and is still used by
+// tests, which is fine — this report is about seams the *product* is running on
+// a stand-in, and listing a filled one would make the M2 gate fail for a gap
+// that no longer exists.
 new doubles.StubNotificationEmitter()
 
 // Not every stub is a class. The attention list's three article-backed readers

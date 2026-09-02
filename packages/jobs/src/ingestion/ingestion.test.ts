@@ -89,6 +89,21 @@ class FakeConnections implements ConnectionStore {
   }
 }
 
+/**
+ * A store with nothing in it. Enough for the catalogue sync to run to the end,
+ * which is what these tests need now that the step has a handler; what the sync
+ * does with a store that has products is `catalog.test.ts`.
+ */
+class EmptyStore {
+  async getPage<T>(
+    _auth: { shop: string; accessToken: string },
+    path: string,
+  ): Promise<{ body: T; nextPageInfo: string | undefined }> {
+    const key = path.startsWith('orders.json') ? 'orders' : 'products'
+    return { body: { [key]: [] } as T, nextPageInfo: undefined }
+  }
+}
+
 class FakeShopReader implements ShopReader {
   private rejecting = false
 
@@ -131,6 +146,7 @@ function world(domain: string): World {
     fetcher,
     shopify: new MockShopifyOAuthClient(),
     shop,
+    admin: new EmptyStore(),
     connections,
     notifications,
     domains: {
@@ -253,16 +269,19 @@ describe('a Shopify store being onboarded', () => {
 
     const resumed = await dispatchIngestion(w.deps, { accountId })
 
-    expect(resumed?.executed).toEqual(['oauth_wait'])
-    // The next step belongs to a later card, so the run correctly stops there.
+    // Permission granted, so the run carries straight on into reading the
+    // store. Distillation is the next step and belongs to a later card, so the
+    // run correctly stops there.
+    expect(resumed?.executed).toEqual(['oauth_wait', 'catalog_sync'])
     expect(resumed?.stoppedBecause).toBe('no_handler')
-    expect(resumed?.stoppedAt).toBe('catalog_sync')
+    expect(resumed?.stoppedAt).toBe('distill')
     expect(await domainState()).toBe('ingesting')
 
     const states = await stepStates(jobId)
     expect(states['detect']).toBe('succeeded')
     expect(states['oauth_wait']).toBe('succeeded')
-    expect(states['catalog_sync']).toBe('pending')
+    expect(states['catalog_sync']).toBe('succeeded')
+    expect(states['distill']).toBe('pending')
   })
 
   it('recognises work already done rather than paying for it twice', async () => {

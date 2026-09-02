@@ -170,6 +170,152 @@ Nearest spec: ui §3 opening — "The dashboard is the container for all onboard
 Decision: recorded rather than changed. `apps/web/app/api/gsc/_lib/config.ts` returns the merchant to `/settings/connections?gsc=granted` after Google's consent screen. During onboarding the Search Console step and its property picker are part of the progress list on the dashboard, so a merchant who connects mid-setup is dropped out of setup onto a settings screen that does not exist yet.
 Why not fixed: that file belongs to Lane C. The dashboard already reads `?gsc=granted` and shows the property picker when it sees it, so the screen works the moment the return address points back at it during onboarding. Two shapes of fix, both someone else's call: carry the origin through the OAuth state, or return to the dashboard whenever the domain is not yet confirmed.
 Nearest spec: ui §3.6 — the picker is a step in the stepper; main §12.2 — the property picker mechanics.
+## 2026-09-02 — T2.2 — The change stream lives in the webhook table, and the account travels in the row
+
+Decision: `CatalogEvents` — the frozen seam that tells the content inventory and the drift rules what a merchant changed — is backed by `webhook_events`, the existing table for "something arrived, deal with it later". Two kinds of row sit there now, told apart by topic: a **receipt** keyed on Shopify's own delivery id, and a **change** keyed on a fingerprint of the change itself. `webhook_events` has no account column, so the account id travels inside the row's JSON payload and the per-store read filters on it.
+
+Why: the stream has to be durable, per-store, ordered and de-duplicable, and no table for it exists. Adding one is a migration, which a feature card may not do. Of the tables that do exist, this is the only one whose purpose matches. The cost, stated plainly: reading one store's changes cannot use an index on the account, so it is a scan over rows arriving in the last thirty days (the retention sweep prunes at thirty days). At v1 volumes — a webhook is a merchant editing something — that is small. **If it stops being small, the fix is a column in the next schema wave, not a second table.**
+
+Alternative rejected: deriving the stream from the `products` table's own timestamps. It cannot represent a deletion, because a deleted product's row is what would have to be missing, and it cannot represent a blog post or a static page at all.
+
+Nearest spec: main §13 (`webhook_events`), §14.3.8 (process from the table, never from the body); build plan §4 (`CatalogEvents` frozen).
+
+
+## 2026-09-02 — T2.2 — A change is identified by what changed and when, not by which producer found it
+
+Decision: a change row's key is `catalog_change/<account>:<kind>:<entity>:<the merchant's own edit time>`. Recording is insert-or-ignore.
+
+Why: two things produce changes — a webhook we processed, and the nightly re-read that catches the webhooks Shopify dropped. Both see the same edit. Keying on the edit rather than on the delivery makes the second one a no-op by construction, which is what makes "run the sweep twice and it converges" true rather than merely usually true. It is also what stops a store that never changes accumulating change rows for ever, with every consumer downstream re-reading pages that did not move.
+
+Consequence: a change with no edit time of its own — a deletion — is stamped with the sweep's own clock, so a store left with a deleted product records one removal per sweep. The consumers collapse that (a page removed twice is removed once), and the alternative, a key with no time in it at all, would make a deleted-then-recreated product invisible the second time.
+
+Nearest spec: main §14.3.8 (the sweep is idempotent by construction), §14.1 (webhooks plus reconciliation, never webhooks alone).
+
+
+## 2026-09-02 — T2.2 — A product's fingerprint covers its words, not its price or its stock
+
+Decision: `products.checksum` is computed over the title, description, handle, type, vendor, tags, status, variant names and codes, and image addresses. It deliberately excludes prices and stock levels. Price and availability changes are detected separately, by comparing the stored `variants` against the arriving ones.
+
+Why: the same column has two readers with opposite needs. The drift sweep wants to know "did anything change"; distillation (`T2.3`) re-runs when this moves, and a model call per product is the most expensive thing onboarding does. A merchant running a weekend sale changes every price in the shop, and a checksum covering prices would buy a fresh distillation of the entire catalogue for an event that changed no words. main §14.3.2 says the distillation key is "the product's `updated_at` + **body** checksum", which this follows.
+
+The three kinds of change are reported separately into the stream (`product_updated`, `price_changed`, `availability_changed`), which is what lets the content inventory ignore the two that cannot move a page's words — the decision `T3.2` already took.
+
+Nearest spec: main §14.3.2 (the distillation key), §14.1 (drift triggers); DECISIONS 2026-09-02 `T3.2`.
+
+
+## 2026-09-02 — T2.2 — Test orders and cancelled orders are not sales
+
+Decision: an order flagged as one of Shopify's own test orders, or one carrying a cancellation, is dropped when the orders are read. It contributes to neither the best-seller ranking nor the landing-page takings.
+
+Why: main §6.2 says to aggregate order line items over the trailing ninety days and does not say which orders count. Both defaults are wrong in a visible way. Shopify's test orders are placed with a test gateway while a merchant is setting their shop up, and counting them means a brand-new store's "best sellers" are whatever the owner bought from themselves — the first thing they would see, and obviously wrong. A cancelled order is not a purchase, and counting it inflates the revenue figure the ranking is sorted by.
+
+Risk accepted: a refunded order still counts, because a refund is a separate record we do not read. Correcting that means reading refunds, which is more order data for a marginal improvement to a ranking; it is worth revisiting if a merchant disputes their best-seller list.
+
+Nearest spec: main §6.2 — "aggregate order line items over the trailing 90 days"; silent on which orders qualify.
+
+
+## 2026-09-02 — T2.2 — A landing page is kept as a path with its query string removed
+
+Decision: `landing_revenue_daily.landing_url` holds the path a buyer arrived on — `/collections/trail-shoes` — and never the query string Shopify recorded with it.
+
+Why: two reasons, and either alone would be enough. The query carries campaign parameters and advertising click ids, which are per-visitor and belong to the shopper rather than to the shop; keeping them would put visitor-scoped identifiers in a table whose whole purpose is that it holds none. And a page reached through five campaigns would otherwise be five rows meaning the same thing, which makes the aggregate useless for the one question it exists to answer.
+
+Nearest spec: main §17.3 (`landing_site` aggregated per day per landing URL, aggregates only), §14.6.
+
+
+## 2026-09-02 — T2.2 — An order's day is the store's own day, taken from Shopify's stamp verbatim
+
+Decision: the day an order is counted under is the first ten characters of Shopify's `created_at`, not a date computed by converting that timestamp.
+
+Why: Shopify stamps orders with the store's own UTC offset. A sale at 23:30 in a New Zealand shop is the previous day in UTC, so converting would move every evening's takings into the day before and a merchant comparing our numbers with their own Shopify report would find them disagreeing. Reading the characters Shopify already wrote gives the merchant's day with no timezone table and no persona dependency — which matters because the persona, where the store's timezone eventually lives, is built two steps *after* this one.
+
+Nearest spec: main §17.3 (per day per landing URL), §9.4 (per-account clocks); neither says whose day.
+
+
+## 2026-09-02 — T2.2 — The catalogue sync's idempotency key is the store plus the day
+
+Decision: `catalog_sync`'s `input_version` is the shop handle and the current date. A redelivery on the same day returns the stored answer without reading the store; the next night is genuinely different work.
+
+Why: main §14.3.2 specifies "the Shopify shop ID + a monotonically increasing sync generation number", and no column holds a generation number — adding one is a schema wave. The date is a generation number that increments once a day and needs no storage. What it costs: two syncs on the same day are one, so a merchant who reconnects after a failed first attempt on the same day gets the stored answer rather than a fresh read. That is the right answer when the first attempt succeeded and the wrong one if a re-read is genuinely wanted the same day; the nightly reconciliation covers the gap within a day, and a deliberate re-sync path would need its own input version rather than a weaker key.
+
+Nearest spec: main §14.3.2 — names a generation number this schema does not have.
+
+
+## 2026-09-02 — T2.2 — A product the store stopped listing keeps its row; the removal is reported, not acted on
+
+Decision: when the nightly re-read finds a product Shopify no longer lists, a `product_deleted` change is recorded and the `products` row is left exactly where it is. Nothing is deleted and nothing is marked.
+
+Why: the row is the only record that the product ever existed, and the drift rules (`T5.3`) need precisely that — an article recommending a discontinued product has to be repairable, which means knowing what it pointed at. Deleting the row would cascade the product's fact sheet away and leave every reference to it dangling with no way to explain itself. Marking it needs a column, which is a schema wave. This mirrors the decision `T3.2` took for deleted store pages, and inherits its open question: **what should eventually happen to the row is for the founder or the integrator to settle before the drift card ships.**
+
+How "no longer listed" is decided: the sweep stamps every product it sees with the moment its walk began, so anything still carrying an older stamp was not shown to us. Asked that way rather than by accumulating ids, so a walk spread over several runs still gets the right answer.
+
+Nearest spec: main §14.1 (product deleted → flag referencing articles); silent on the catalogue row itself.
+
+
+## 2026-09-02 — T2.2 — There is no request cache on the Shopify reads, deliberately
+
+Decision: invariant 20 requires billable reads and model calls to be cached at request level and written before processing. The catalogue sync and the sweep have no such cache.
+
+Why: the invariant exists to stop us paying twice for one answer — a crash after the vendor responded but before we finished with the response. Shopify Admin reads are not billed; main §14.3.6 classifies them as "pure read: freely retryable, no protection needed beyond backoff". Caching them would add a table write per page for no saving and would make a re-read return stale data during a sweep whose entire purpose is freshness. What *is* protected is the request budget, by the page cursor: a resumed walk does not re-spend the pages it already read, which is the equivalent scarce resource here.
+
+Recorded because a reader checking invariant 20 against this card will find nothing and should find the reason rather than a gap.
+
+Nearest spec: main §14.3.6 (external side-effects by class); invariant 20.
+
+
+## 2026-09-02 — T2.2 — The receiver keeps the store's name beside the body, because the header has nowhere else to go
+
+Decision: a stored Shopify delivery's `payload` is `{ shop_handle, body }` rather than the body alone.
+
+Why: Shopify names the store in the `X-Shopify-Shop-Domain` header, not in the body, and `webhook_events` has no column for it. The drain has to answer "whose store is this" without the request still being open, so the name has to survive the response. This card is the first writer of Shopify rows in that table, so nothing else reads the old shape. A column is a schema wave.
+
+Nearest spec: main §14.3.8 (process from the table, never from the request body); main §13 (`webhook_events`).
+
+
+## 2026-09-02 — T2.2 — `shop/redact` is recorded and answered; the purge itself is not built here
+
+Decision: of the three mandatory privacy webhooks, `customers/redact` and `customers/data_request` are fully answered — logged, and answered "no customer data held", which is true by construction because order ingestion keeps no customer field. `shop/redact` is verified, recorded and logged, and **no store data is erased by this card**.
+
+Why: erasing a store's data within thirty days is account-lifecycle work (main §14.6): it spans billing, tokens, the domain claim's grace window and every table an account owns, and belongs to whoever builds account deletion. Building half of it here would leave two places that delete a store, one of them incomplete. **Flagged for the integrator: `shop/redact` currently has a receiver and no consequence. Some card must own the purge before launch, and none does today.**
+
+Nearest spec: main §14.6 — the three mandatory topics and what each must do.
+
+
+## 2026-09-02 — T2.2 — The rate limit lives inside the one Admin client, so every caller inherits it
+
+Decision: the one-request-a-second budget is enforced inside `ShopifyAdminClient`, per store, and the process holds a single instance of that client. A 429 pauses the whole store for exactly the `Retry-After` Shopify sent.
+
+Why: the budget Shopify enforces is per store, not per caller. Two things read a store on the same night — this card's catalogue sync and the content inventory (`T3.2`) — and a limiter per call site would let each believe it was alone and together earn the rate limiting the pacing exists to avoid. Putting it in the client also means the inventory lane inherits pacing it did not have, with no change to its code. **Visible consequence for Lane C: their nightly walk is now paced. It was not before.**
+
+Nearest spec: main §14.4 — "background sync budgeted at 1 req/s ... honor `Retry-After` exactly".
+
+
+## 2026-09-02 — T2.2 — Files touched outside Lane B's directories
+
+Decision: this card writes into five files no lane owns, listed so the integrator expects them. `packages/db/src/repositories/catalog.ts` and `catalog-events.ts` (new) plus one line in `repositories/index.ts` — repositories, not migrations. `packages/jobs/src/chaos/harness.ts` gains one entry in its scenario list and one import, which is what that file's own comment says T2.2 will do. `apps/web/instrumentation.ts` registers the two new task handlers, beside the ones already there. `apps/web/app/api/webhooks/shopify/[topic]/` is new; the path is the one the frozen route table already names, and `apps/web/app/api/webhooks/` is not in any lane's ownership list (Lane A owns `webhooks/stripe` specifically).
+
+Why: build plan §3 marks `instrumentation.ts` and the chaos harness as integrator-resolved rather than union-merged, and a merge that silently drops half of either is worse than a conflict.
+
+Nearest spec: build plan §3 ("Files no lane owns"), §4 (the frozen route table).
+
+
+## 2026-09-02 — T2.2 — The stub report no longer lists the change stream, and a T2.1 test changed meaning
+
+Decision: two small edits outside this card's own files. `scripts/stub-report.mjs` no longer constructs `StubCatalogEvents`, because that seam is filled — the product runs on the real change stream now, and a report that still listed it would fail the M2 exit gate for a gap that no longer exists. The double itself is untouched and tests still use it. And one assertion in `T2.1`'s onboarding test changed: it said "the next step belongs to a later card, so the run correctly stops", and that later card is this one, so a store with permission granted now carries straight on into reading its catalogue and stops at distillation instead.
+
+Why recorded: the second is a behaviour change to something another card wrote, and a reviewer seeing an edited assertion should find the reason here rather than guess at one.
+
+Nearest spec: build plan §4 (a consumer's tests re-run against the real implementation once the producer lands).
+
+
+## 2026-09-02 — T2.2 — No dev-store evidence: the store reads are proved against an in-memory Shopify
+
+Decision: this card's Shopify behaviour is proved against stand-ins — an in-memory store that pages the way Shopify pages, and, for the rate limiter and the `Link`-header cursor, a real HTTP server standing in for Shopify. There are still no Partner credentials.
+
+Why: the same posture `T2.1` recorded and four earlier cards took with Stripe, Turnstile, Anthropic and PostHog. What a stand-in cannot prove: that Shopify's real cursor format, `Retry-After` behaviour, order and product field shapes, and webhook headers behave as assumed; and that the field lists we send are accepted. **This card must be re-run against a Partner dev store before launch, and it is now the largest single piece of outstanding real-vendor evidence in the build.**
+
+Nearest spec: build plan §6 `T2.2` done-when; `docs/founder-decisions.md` A1.
+
 
 ## 2026-09-02 — T8.0 — A Shopify store is held by its live connection only, so losing one releases the store
 Decision: `shopify_conns.shop_handle` is unique among rows where `invalidated_at IS NULL`, instead of unique across every row that ever existed. The abandoned row is kept, not deleted. Because two rows may now carry one handle, `findAccountByShopHandle` — the "whose store is this" lookup an incoming Shopify webhook depends on — now asks for the live row; it previously relied on the unconditional index to make its answer single, and would otherwise have been free to answer with the abandoned account and route an uninstall to a merchant who no longer has that store.
