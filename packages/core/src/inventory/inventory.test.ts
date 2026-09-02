@@ -262,6 +262,63 @@ describe('walking a store into the inventory', () => {
 describe('reacting to what the store says changed', () => {
   const at = (iso: string) => iso
 
+  it('re-reads an edited blog post and an edited page within minutes, not overnight', () => {
+    const fanout = catalogEventsToTargets([
+      {
+        accountId: 'acc',
+        kind: 'article_updated',
+        entityId: 'a1',
+        occurredAt: at('2026-09-02T10:00:00Z'),
+        changedFields: ['body_html'],
+      },
+      {
+        accountId: 'acc',
+        kind: 'page_updated',
+        entityId: 'pg1',
+        occurredAt: at('2026-09-02T10:01:00Z'),
+        changedFields: ['body_html'],
+      },
+    ])
+    expect(fanout.resync).toEqual([
+      { kind: 'page', shopifyId: 'pg1' },
+      { kind: 'blog_article', shopifyId: 'a1' },
+    ])
+    expect(fanout.removed).toEqual([])
+  })
+
+  it('treats a deleted blog post and a deleted page the way it treats a deleted product', () => {
+    const fanout = catalogEventsToTargets([
+      {
+        accountId: 'acc',
+        kind: 'article_updated',
+        entityId: 'a1',
+        occurredAt: at('2026-09-02T10:00:00Z'),
+        changedFields: ['body_html'],
+      },
+      // The edit arrived first and the deletion second: re-reading a page that no
+      // longer exists would spend a request to learn nothing.
+      {
+        accountId: 'acc',
+        kind: 'article_deleted',
+        entityId: 'a1',
+        occurredAt: at('2026-09-02T10:05:00Z'),
+        changedFields: [],
+      },
+      {
+        accountId: 'acc',
+        kind: 'page_deleted',
+        entityId: 'pg1',
+        occurredAt: at('2026-09-02T10:06:00Z'),
+        changedFields: [],
+      },
+    ])
+    expect(fanout.resync).toEqual([])
+    expect(fanout.removed).toEqual([
+      { kind: 'blog_article', shopifyId: 'a1' },
+      { kind: 'page', shopifyId: 'pg1' },
+    ])
+  })
+
   it('re-reads the product and the collection, and ignores price and stock', () => {
     const fanout = catalogEventsToTargets([
       {

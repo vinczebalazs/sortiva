@@ -32,8 +32,9 @@ export function catalogEventsToTargets(events: readonly CatalogEvent[]): Catalog
   const removed = new Map<string, InventoryTarget>()
 
   for (const event of events) {
-    if (event.kind === 'product_deleted') {
-      removed.set(`product:${event.entityId}`, { kind: 'product', shopifyId: event.entityId })
+    const removedKind = removedKindFor(event.kind)
+    if (removedKind) {
+      removed.set(`${removedKind}:${event.entityId}`, { kind: removedKind, shopifyId: event.entityId })
       continue
     }
     const kind = resyncKindFor(event.kind)
@@ -64,6 +65,23 @@ function resyncKindFor(kind: CatalogEvent['kind']): StoreContentKind | undefined
       return 'product'
     case 'collection_updated':
       return 'collection'
+    case 'article_updated':
+      return 'blog_article'
+    case 'page_updated':
+      return 'page'
+    default:
+      return undefined
+  }
+}
+
+function removedKindFor(kind: CatalogEvent['kind']): StoreContentKind | undefined {
+  switch (kind) {
+    case 'product_deleted':
+      return 'product'
+    case 'article_deleted':
+      return 'blog_article'
+    case 'page_deleted':
+      return 'page'
     default:
       return undefined
   }

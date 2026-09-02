@@ -201,6 +201,10 @@ export interface CatalogEvent {
     | 'product_updated'
     | 'product_deleted'
     | 'collection_updated'
+    | 'article_updated'
+    | 'article_deleted'
+    | 'page_updated'
+    | 'page_deleted'
     | 'price_changed'
     | 'availability_changed'
   readonly entityId: string
