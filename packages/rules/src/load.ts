@@ -167,8 +167,8 @@ export function loadRulesConfig(options: LoadOptions = {}): RulesConfig {
 
   // A locale layer restates only what it changes, so it cannot be validated on
   // its own. Validating the *merged* result against the same schema is what
-  // turns a typo in an override into a startup failure instead of a value that
-  // is silently never read.
+  // turns a typo in an override into a refusal to serve any threshold at all,
+  // instead of a value that is silently never read.
   const { definitions } = schema as { definitions: object }
   const layerValidate = ajv.compile({ definitions, $ref: '#/definitions/layer' })
   const resolved = new Map<string, RulesLayer>()
