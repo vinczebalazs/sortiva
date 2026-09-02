@@ -10,8 +10,10 @@ and merged; the full gate is green on the merged tree. Lane F has moved to `T9.2
 
 ## Right now
 
-**No lane is running. Nothing is in flight.** The founder stopped the work at
-08:10 on 2026-09-02. `main` is at the commit recorded below with a clean tree, and
+**Two lanes are running.** Work was stopped by the founder at 08:10 and restarted
+at 16:30 on 2026-09-02. Both resumed sessions were told the same thing: the
+inherited work is unverified and ungated, so read it against the card and verify it
+rather than assuming it compiles. `main` is at the commit recorded below with a clean tree, and
 every card that landed is merged and gated.
 
 | Lane | Card | Branch | Worktree | State |
@@ -46,7 +48,9 @@ checking that pairing first.
 **Nothing was pushed and nothing was forced.** The three lane branches are ordinary
 local branches; `main` contains only merged, gated work.
 
-**The machine's sleep hold has been released.** It was holding the laptop awake so
+**The machine's sleep hold was re-applied at 16:27** (six-hour expiry). It had been released while nothing was running. The note below explains why it exists.
+
+**Previously:** the machine's sleep hold had been released. It was holding the laptop awake so
 sessions would stop dying mid-response; with no lane running there is nothing to
 protect, and leaving a laptop permanently awake is not this session's call to make.
 **Re-apply it before launching anything** — see the section on it below.
