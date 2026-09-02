@@ -76,6 +76,31 @@ export async function register() {
     codec: new TokenCipher(),
   })
 
+  // The store's own pages — its collections, products, static pages and blog
+  // posts — read into the inventory the Opportunity Engine consults before it
+  // proposes writing anything. Without a handler here the walk can be asked for
+  // and never happens.
+  //
+  // The connection store is rebuilt per call rather than once: building it needs
+  // a live database handle, and registering a task must not open one. Nothing
+  // schedules this yet — the nightly reconciliation sweep is the caller, and it
+  // belongs to the catalog lane; `sweepInventory` is what it calls.
+  const { registerInventoryTasks } = await import('@sortiva/jobs')
+  const { ShopifyAdminClient } = await import('@sortiva/providers')
+  const { makeConnectionStore } = await import('./app/api/shopify/_lib/bindings')
+  const { tokenCipher } = await import('./app/api/shopify/_lib/config')
+  const shopifyConnections = () => makeConnectionStore(db(), tokenCipher())
+  registerInventoryTasks({
+    getDb: db,
+    getPool: dbPool,
+    admin: new ShopifyAdminClient(),
+    connections: {
+      read: (accountId) => shopifyConnections().read(accountId),
+      readToken: (accountId) => shopifyConnections().readToken(accountId),
+      markInvalid: (accountId, at) => shopifyConnections().markInvalid(accountId, at),
+    },
+  })
+
   const { bootstrapWorker, flushAnalytics } = await import('@sortiva/jobs')
   const worker = await bootstrapWorker({ analytics })
 
