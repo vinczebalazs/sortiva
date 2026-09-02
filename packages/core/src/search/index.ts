@@ -27,6 +27,23 @@ export {
 } from './windows'
 
 export {
+  GSC_CONNECTED_EVENT,
+  chooseGscProperty,
+  completeGscGrant,
+  decodeGscTokens,
+  encodeGscTokens,
+  listGscProperties,
+  skipGscConnect,
+  startGscConnect,
+  type ChooseGscPropertyResult,
+  type GscConnectDeps,
+  type GscConnectionRecord,
+  type GscConnectStore,
+  type GscPropertiesResult,
+  type GscTokenCodec,
+} from './connect'
+
+export {
   toPageDailyRows,
   toQueryDailyRows,
   type PageDailyRow,

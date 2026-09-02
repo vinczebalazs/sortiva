@@ -1,6 +1,7 @@
 import type pg from 'pg'
+import { sql } from 'drizzle-orm'
 import type { GscProvider, Logger } from '@sortiva/core'
-import { accountsWithLiveGscConnection, dbPool, systemScope, type Db } from '@sortiva/db'
+import { accountsWithLiveGscConnection, systemScope, type Db } from '@sortiva/db'
 import { dailySyncRange } from '@sortiva/core'
 import { rules } from '@sortiva/rules'
 import { tryWithAccountLock } from '../runtime/lock'
@@ -23,7 +24,12 @@ export const GSC_SYNC_DAILY_TASK = 'gsc_sync_daily'
 
 export interface GscTaskDeps {
   readonly getDb: () => Db
-  readonly getPool?: () => pg.Pool
+  /**
+   * The shared connection pool. Required rather than looked up here: naming
+   * concrete infrastructure is the composition root's job, and a background job
+   * cannot be handed its database by a request.
+   */
+  readonly getPool: () => pg.Pool
   readonly provider: GscProvider
   readonly codec: TokenCodec
   readonly now?: () => Date
@@ -36,12 +42,14 @@ export interface GscTaskDeps {
  * other over the same rows.
  */
 export async function enqueueGscBackfill(
-  pool: pg.Pool,
+  database: Db,
   payload: GscBackfillPayload,
 ): Promise<void> {
-  await pool.query(
-    `select graphile_worker.add_job($1, payload := $2::json, job_key := $3, job_key_mode := 'preserve_run_at')`,
-    [GSC_BACKFILL_TASK, JSON.stringify(payload), `${GSC_BACKFILL_TASK}:${payload.accountId}`],
+  const task = GSC_BACKFILL_TASK
+  const body = JSON.stringify(payload)
+  const key = `${GSC_BACKFILL_TASK}:${payload.accountId}`
+  await database.execute(
+    sql`select graphile_worker.add_job(${task}, payload := ${body}::json, job_key := ${key}, job_key_mode := 'preserve_run_at')`,
   )
 }
 
@@ -59,7 +67,7 @@ export async function runDailyGscSync(deps: GscTaskDeps): Promise<{
   skipped: number
 }> {
   const db = deps.getDb()
-  const pool = (deps.getPool ?? dbPool)()
+  const pool = deps.getPool()
   const log = deps.logger ?? runtimeLogger()
   const now = deps.now ?? (() => new Date())
   const config = rules().defaults.search_console
@@ -128,7 +136,7 @@ export function registerGscTasks(deps: GscTaskDeps): void {
 
   registerTask(GSC_BACKFILL_TASK, async (rawPayload, helpers) => {
     const payload = rawPayload as GscBackfillPayload
-    const pool = (deps.getPool ?? dbPool)()
+    const pool = deps.getPool()
     const log = deps.logger ?? runtimeLogger()
 
     const step = await tryWithAccountLock(pool, payload.accountId, async () =>

@@ -35,6 +35,17 @@ export interface PageDailyRow {
 }
 
 /**
+ * Average position is a mean over impressions, so combining two rows means
+ * re-dividing the accumulated weight by the accumulated total. Written as its
+ * own function because the "nothing was shown" case has a real answer — no
+ * position was ever reported — and returning zero there would read as "ranked
+ * first", which is the opposite of what happened.
+ */
+function weightedPosition(totalWeight: number, total: number): number | null {
+  return total === 0 ? null : totalWeight / total
+}
+
+/**
  * Google can return two rows with the same four dimensions across paged
  * responses; the table keys on those four, so identical keys are merged here
  * rather than left to collide on insert.
@@ -68,7 +79,7 @@ export function toQueryDailyRows(rows: readonly GscSearchAnalyticsRow[]): QueryD
         ...existing.row,
         clicks,
         impressions,
-        position: impressions > 0 ? positionWeight / impressions : existing.row.position,
+        position: weightedPosition(positionWeight, impressions) ?? existing.row.position,
       },
       positionWeight,
     })
@@ -101,8 +112,6 @@ export function toPageDailyRows(rows: readonly QueryDailyRow[]): PageDailyRow[] 
     page: entry.page,
     clicks: entry.clicks,
     impressions: entry.impressions,
-    // No impressions means no position was ever reported; a zero here would read
-    // as "ranked first", which is the opposite of what happened.
-    position: entry.impressions > 0 ? entry.positionWeight / entry.impressions : null,
+    position: weightedPosition(entry.positionWeight, entry.impressions),
   }))
 }
