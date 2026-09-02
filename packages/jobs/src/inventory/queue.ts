@@ -57,3 +57,29 @@ function jobKeySuffix(payload: InventorySyncPayload): string {
     .sort()
     .join(',')
 }
+
+export const INVENTORY_CATALOG_EVENTS_TASK = 'inventory_catalog_events'
+
+export interface CatalogEventDrainPayload {
+  readonly accountId: string
+  /** Where the last drain stopped in the stream. Absent starts from the beginning. */
+  readonly cursor?: string
+}
+
+/**
+ * Asks for one store's catalogue changes to be turned into re-reads.
+ *
+ * One job per store at a time, by job key: a store that changed forty things
+ * needs one pass over its change stream, not forty.
+ */
+export async function enqueueCatalogEventDrain(
+  database: Db,
+  payload: CatalogEventDrainPayload,
+): Promise<void> {
+  const task = INVENTORY_CATALOG_EVENTS_TASK
+  const body = JSON.stringify(payload)
+  const key = `${INVENTORY_CATALOG_EVENTS_TASK}:${payload.accountId}`
+  await database.execute(
+    sql`select graphile_worker.add_job(${task}, payload := ${body}::json, job_key := ${key}, job_key_mode := 'preserve_run_at')`,
+  )
+}

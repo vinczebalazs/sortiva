@@ -16,6 +16,16 @@ Class (filled by audit): a: fine as-is | b: promote to spec | c: contradicts spe
 
 (entries below, newest first)
 
+## 2026-09-02 — T3.2 — The frozen change stream cannot report a blog post being edited, so blog posts refresh nightly only
+Decision: the inventory reacts to catalogue changes through `CatalogEvents` exactly as frozen. That contract reports six kinds of change, all about products and collections, and none about pages, blogs or blog posts. So a merchant editing a blog post has that edit picked up by the nightly walk — within a day — rather than within minutes.
+Why: T3.2's card says the sync runs "on `collections/update` / `articles/*` events via `CatalogEvents`", and `articles/*` has nowhere to arrive. Widening the contract is not this card's to do — the build plan says a frozen seam changes only when the integrator re-freezes it — and the producer (`T2.2`) is not built, so there is nothing to widen it against yet. The consequence is bounded and one-directional: staler blog data, never wrong blog data. **The integrator or Lane B should decide whether `CatalogEvent.kind` gains `article_updated` / `page_updated` before `T2.2` is written**, since adding them afterwards means changing a contract two lanes already consume.
+Nearest spec: main §12.3 — names the `articles/*` webhooks as a sync trigger; build plan §4 — freezes `CatalogEvents` without them.
+
+## 2026-09-02 — T3.2 — Our place in the change stream lives in the job's own payload, not in a table
+Decision: the cursor into `CatalogEvents` is carried in the payload of the draining job, which re-queues itself with the new cursor whenever a pass found anything.
+Why: the stream's own interface hands the cursor to the consumer and expects it back, so somewhere has to hold it. A column would be a migration outside a schema wave, which the build plan forbids a feature card. The queue already stores a payload per job durably, and one job per store at a time is enforced by its job key, so a burst of forty changes is one pass rather than forty. The cost accepted: if that job row is ever lost, our place is lost with it, and the next pass re-reads the stream from the beginning — which costs one extra pass and re-queues re-reads that the checksum diff will then find unchanged and discard. No wrong data, only wasted work.
+Nearest spec: main §14.3.4 — requires resumable steps; silent on where a consumer's stream position lives.
+
 ## 2026-09-02 — T3.2 — Blog posts and static pages get no product families, and the inventory says so rather than guessing
 Decision: a collection's families are the families of the products in it, and a product's family is its own. A store page and a blog post get an empty family list.
 Why: main §12.3 asks for blog posts to be mapped "via the same topic-mapping used for articles". That mapping is part of the topic model, which is Lane D's `T4.1` and does not exist. The alternatives were to invent a second mapping here — a text match against family names — which would be a different answer from the real one and would have to be unpicked later, or to leave the column empty and let `T4.1` backfill it. Empty is honest: nothing downstream can mistake "no family recorded" for "belongs to no family" more badly than it could mistake a wrong family for a right one.
