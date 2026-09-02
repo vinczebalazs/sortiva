@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "rules_version": "9b4fdbe8b6e9ffdaf3a569552201ef9c4c66176131a4673f2660626e54552eee",
+  "rules_version": "924e5a3685fd87c186546a5c3423510a870bc346e085612caa49d4ce36208744",
   "defaults": {
     "signals": {
       "striking_distance": {
@@ -258,6 +258,12 @@
         "rate_max": 0.2,
         "window_hours": 1
       }
+    },
+    "search_console": {
+      "backfill_months": 16,
+      "backfill_chunk_days": 30,
+      "daily_sync_lookback_days": 7,
+      "data_lag_days": 2
     }
   },
   "locales": {
@@ -518,6 +524,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "de": {
@@ -777,6 +789,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "fr": {
@@ -1036,6 +1054,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "es": {
@@ -1295,6 +1319,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "it": {
@@ -1554,6 +1584,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "pt": {
@@ -1813,6 +1849,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "nl": {
@@ -2072,6 +2114,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "pl": {
@@ -2331,6 +2379,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "sv": {
@@ -2590,6 +2644,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "da": {
@@ -2849,6 +2909,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "nb": {
@@ -3108,6 +3174,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "fi": {
@@ -3367,6 +3439,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "cs": {
@@ -3626,6 +3704,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "hu": {
@@ -3885,6 +3969,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "ro": {
@@ -4144,6 +4234,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "el": {
@@ -4403,6 +4499,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "sk": {
@@ -4662,6 +4764,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "sl": {
@@ -4921,6 +5029,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "et": {
@@ -5180,6 +5294,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "lv": {
@@ -5439,6 +5559,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     },
     "lt": {
@@ -5698,6 +5824,12 @@
           "rate_max": 0.2,
           "window_hours": 1
         }
+      },
+      "search_console": {
+        "backfill_months": 16,
+        "backfill_chunk_days": 30,
+        "daily_sync_lookback_days": 7,
+        "data_lag_days": 2
       }
     }
   }

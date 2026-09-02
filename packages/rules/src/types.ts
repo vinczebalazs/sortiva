@@ -212,6 +212,18 @@ export interface LearningConfig {
   }
 }
 
+/**
+ * How much Search Console history we hold and how often we go back for it.
+ * The window a signal looks at is only as good as the data behind it, which is
+ * why these sit with the detection numbers rather than inside the sync job.
+ */
+export interface SearchConsoleConfig {
+  backfill_months: number
+  backfill_chunk_days: number
+  daily_sync_lookback_days: number
+  data_lag_days: number
+}
+
 export interface BudgetsConfig {
   optimize: { generations_per_account_per_day: number }
   intent_gap: { analyses_per_account_per_day: number }
@@ -238,6 +250,7 @@ export interface RulesLayer {
   learning: LearningConfig
   budgets: BudgetsConfig
   auto_trips: AutoTripsConfig
+  search_console: SearchConsoleConfig
 }
 
 export interface RulesDocument {

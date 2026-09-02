@@ -126,6 +126,12 @@ const NAMED_THRESHOLDS: ReadonlyArray<readonly [path: string, spec: string]> = [
   ['auto_trips.judge_fail_rate.trailing_drafts', 'main §14.5 — trailing 50 drafts'],
   ['auto_trips.publish_error_rate.rate_max', 'main §14.5 — publish API error rate > 20%'],
   ['auto_trips.publish_error_rate.window_hours', 'main §14.5 — over 1h'],
+
+  // ── Search Console sync ────────────────────────────────────────────────────
+  ['search_console.backfill_months', 'main §6.7, §12.2 — 16-month history import at connect'],
+  ['search_console.backfill_chunk_days', 'UNSIGNED — how much a killed import re-does'],
+  ['search_console.daily_sync_lookback_days', 'main §12.2 — the daily pull covers the last N days'],
+  ['search_console.data_lag_days', 'main §12.2 — Search Console data lags ~2 days'],
 ]
 
 function at(root: unknown, path: string): unknown {
