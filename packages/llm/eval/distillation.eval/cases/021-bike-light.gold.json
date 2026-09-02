@@ -1,0 +1,21 @@
+{
+  "material": null,
+  "dimensions": null,
+  "weight": null,
+  "capacity": null,
+  "compatibility": [
+    "handlebars 22-35 mm"
+  ],
+  "use_cases_stated": [],
+  "care": null,
+  "certifications": [
+    "IPX6"
+  ],
+  "origin": null,
+  "verifiable_claims": [
+    "800 lumen output",
+    "Runtime 2.5 hours on high",
+    "Runtime 10 hours on low",
+    "USB-C rechargeable"
+  ]
+}

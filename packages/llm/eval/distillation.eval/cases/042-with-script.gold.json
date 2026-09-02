@@ -1,0 +1,18 @@
+{
+  "material": null,
+  "dimensions": null,
+  "weight": null,
+  "capacity": null,
+  "compatibility": [
+    "any Bluetooth 5.0 device"
+  ],
+  "use_cases_stated": [],
+  "care": null,
+  "certifications": [
+    "IPX7"
+  ],
+  "origin": null,
+  "verifiable_claims": [
+    "12 hour battery"
+  ]
+}

@@ -22,6 +22,7 @@
     "pg": "^8.13.1"
   },
   "devDependencies": {
+    "@sortiva/llm": "workspace:*",
     "@sortiva/providers": "workspace:*",
     "@types/pg": "^8.11.10",
     "typescript": "^5.7.2",

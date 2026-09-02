@@ -1,0 +1,9 @@
+{
+  "name": "distillation",
+  "metric": "field_f1",
+  "runner": "distill",
+  "promptVersion": "distill.v1",
+  "minF1": 0.85,
+  "allowFabricatedFacts": false,
+  "description": "Real-shaped product descriptions, fluff-heavy and spec-heavy, in seven languages, each with a hand-written expected fact sheet. Passes at field-level F1 >= 0.85 across the set AND zero fabricated field values in any single case: an invented material is a lie with a product page behind it, and no aggregate may absorb one. Only the ten extracted fields are graded; price and variant axes are merged from our own data rather than asked of the model, and the fact count is computed from the sheet. Append-only: a production failure gets minimised and added here."
+}

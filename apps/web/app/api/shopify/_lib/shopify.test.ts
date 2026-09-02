@@ -238,3 +238,23 @@ describe('the state value we send out and get back', () => {
     })
   })
 })
+
+/**
+ * The distillation prompt is a versioned file, and the version is stamped on
+ * every fact sheet the pipeline writes. If the file were missing or the loader
+ * unreachable from this side of the app, the failure would appear the first
+ * time a real store was distilled, in a background job, hours after a deploy —
+ * so it is asked for here instead.
+ */
+describe('the prompt onboarding distils with', () => {
+  it('loads by version from the prompt files', async () => {
+    const { distillPrompt } = await import('./config')
+    const prompt = distillPrompt()
+
+    expect(prompt.version).toBe('distill.v1')
+    expect(prompt.text).toContain('Extract only')
+    // Loaded once per process: it is a file read, and the step asks for it
+    // per product.
+    expect(distillPrompt()).toBe(prompt)
+  })
+})

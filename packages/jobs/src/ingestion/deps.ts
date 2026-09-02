@@ -1,6 +1,8 @@
 import type pg from 'pg'
 import type { Db } from '@sortiva/db'
 import type {
+  DistillPrompt,
+  LlmClient,
   NotificationEmitter,
   ShopifyOAuthProvider,
   StoreConnection,
@@ -69,6 +71,14 @@ export interface IngestionDeps {
     /** The domain this account claimed, normalised. */
     readNormalized(accountId: string): Promise<string | undefined>
   }
+  /**
+   * The single instrumented model client. Optional only because most steps make
+   * no model call; distillation fails as a terminal error without it rather
+   * than quietly producing empty fact sheets for a whole catalogue.
+   */
+  readonly llm?: LlmClient
+  /** The versioned distillation prompt, loaded from `prompts/distill.v<N>.md` by the process. */
+  readonly distillPrompt?: DistillPrompt
   readonly notifications?: NotificationEmitter
   readonly now?: () => Date
 }
