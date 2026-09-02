@@ -4,6 +4,7 @@ import {
   type Db,
   findAccountById,
   findDomainForAccount,
+  findGscConnForAccount,
   findShopifyConnForAccount,
   findSubscriptionForAccount,
   type AccountScope,
@@ -27,10 +28,11 @@ export async function loadAccountView(
   const account = await findAccountById(database, scope)
   if (!account || account.deletedAt) return null
 
-  const [domain, subscription, shopify, activeFlags] = await Promise.all([
+  const [domain, subscription, shopify, searchConsole, activeFlags] = await Promise.all([
     findDomainForAccount(database, scope),
     findSubscriptionForAccount(database, scope),
     findShopifyConnForAccount(database, scope),
+    findGscConnForAccount(database, scope),
     activeOpsFlagsForAccount(database, scope),
   ])
 
@@ -49,6 +51,9 @@ export async function loadAccountView(
       : null,
     shopify: shopify
       ? { grantedScopes: shopify.grantedScopes, invalidatedAt: shopify.invalidatedAt }
+      : null,
+    searchConsole: searchConsole
+      ? { property: searchConsole.property, invalidatedAt: searchConsole.invalidatedAt }
       : null,
     activeFlags,
   })

@@ -145,3 +145,46 @@ describe('buildAccountView (main §4.3)', () => {
     expect(buildAccountView({ ...base, activeFlags: ['global.pause_publishing'] }).servicePaused).toBe(false)
   })
 })
+
+describe('the Search Console badge turns itself off (T3.1)', () => {
+  const base = {
+    accountId: 'acct-1',
+    email: 'merchant@example.com',
+    domain: null,
+    subscription: null,
+    shopify: null,
+    activeFlags: [] as string[],
+  }
+
+  it('says the account is running on limited data when nothing is connected', () => {
+    expect(buildAccountView(base).limitedIntelligence).toBe(true)
+    expect(buildAccountView({ ...base, searchConsole: null }).connections.searchConsole).toBe('none')
+  })
+
+  it('still says so when Google has granted access but no property is chosen', () => {
+    const view = buildAccountView({
+      ...base,
+      searchConsole: { property: '', invalidatedAt: null },
+    })
+    expect(view.limitedIntelligence).toBe(true)
+    expect(view.connections.searchConsole).toBe('none')
+  })
+
+  it('stops saying so the moment a property is chosen, with no flag to clear', () => {
+    const view = buildAccountView({
+      ...base,
+      searchConsole: { property: 'sc-domain:example.com', invalidatedAt: null },
+    })
+    expect(view.limitedIntelligence).toBe(false)
+    expect(view.connections.searchConsole).toBe('connected')
+  })
+
+  it('a dead permission asks for a reconnect rather than reviving the badge', () => {
+    const view = buildAccountView({
+      ...base,
+      searchConsole: { property: 'sc-domain:example.com', invalidatedAt: new Date() },
+    })
+    expect(view.limitedIntelligence).toBe(false)
+    expect(view.connections.searchConsole).toBe('broken')
+  })
+})
