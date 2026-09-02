@@ -8,6 +8,7 @@ import { RetryableFailure, TerminalFailure, TokenInvalidFailure } from '../runti
 import { inputVersion } from '../runtime/idempotency'
 import type { StepContext } from '../runtime/runStep'
 import { findRunForAccount, findStep, type JobStepName } from '../runtime/steps'
+import { catalogSyncStep } from './catalog'
 import type { IngestionDeps } from './deps'
 
 /**
@@ -153,6 +154,7 @@ export const oauthWaitStep: StepDefinition = {
 export const INGESTION_STEPS: Partial<Record<JobStepName, StepDefinition>> = {
   detect: detectStep,
   oauth_wait: oauthWaitStep,
+  catalog_sync: catalogSyncStep,
 }
 
 async function detect(deps: IngestionDeps, domain: string): Promise<PlatformDetection> {

@@ -211,7 +211,7 @@ export function accumulateOrders(
     }
 
     if (order.landingUrl) {
-      const key = `${order.day} ${order.landingUrl}`
+      const key = `${order.day}|${order.landingUrl}`
       const existing = landing[key]
       landing[key] = {
         day: order.day,

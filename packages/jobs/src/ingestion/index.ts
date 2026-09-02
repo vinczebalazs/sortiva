@@ -1,3 +1,4 @@
+export * from './catalog'
 export * from './deps'
 export * from './dispatch'
 export * from './queue'

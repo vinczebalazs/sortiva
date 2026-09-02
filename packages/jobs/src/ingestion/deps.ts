@@ -31,6 +31,22 @@ export interface ShopReader {
   getShop(input: { shop: string; accessToken: string }): Promise<ShopSnapshot>
 }
 
+/**
+ * Reading one page of a list the store publishes, and being told where the next
+ * page starts.
+ *
+ * Deliberately the same client as `ShopReader` in production rather than a
+ * second one: a second client would be a second set of rate-limit, retry and
+ * dead-token behaviours, and only one of them would get fixed when Shopify
+ * changed something.
+ */
+export interface ShopifyListReader {
+  getPage<T>(
+    input: { shop: string; accessToken: string },
+    path: string,
+  ): Promise<{ body: T; nextPageInfo: string | undefined }>
+}
+
 /** Reading and writing one store's connection, tokens decrypted at the edge. */
 export interface ConnectionStore {
   read(accountId: string): Promise<StoreConnection | undefined>
@@ -46,6 +62,8 @@ export interface IngestionDeps {
   readonly fetcher: StorePageFetcher
   readonly shopify: ShopifyOAuthProvider
   readonly shop: ShopReader
+  /** Absent only in tests that drive steps which never read a list. */
+  readonly admin?: ShopifyListReader
   readonly connections: ConnectionStore
   readonly domains: StoreDomainStore & {
     /** The domain this account claimed, normalised. */
