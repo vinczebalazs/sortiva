@@ -1,5 +1,6 @@
 export * from './catalog'
 export * from './deps'
+export * from './distill'
 export * from './dispatch'
 export * from './queue'
 export * from './reminder'

@@ -1,5 +1,6 @@
 import { gzipSync, gunzipSync } from 'node:zlib'
-import { and, eq, inArray, isNull, lt, notInArray, sql } from 'drizzle-orm'
+import { and, asc, eq, gt, inArray, isNull, lt, notInArray, sql } from 'drizzle-orm'
+import { descriptionText } from '@sortiva/core'
 import type { Db } from '../client'
 import { landingRevenueDaily, products, shopifyConns, topProducts } from '../schema'
 import type { AccountScope, SystemScope } from '../scope'
@@ -336,6 +337,69 @@ export async function productsNotSyncedSince(
     .from(products)
     .where(and(eq(products.accountId, scope.accountId), lt(products.syncedAt, since)))
     .orderBy(products.shopifyProductId)
+}
+
+/**
+ * One product, as the distillation step reads it.
+ *
+ * There is no description in this shape, only the plain text of one — because
+ * the quarantine on a merchant's raw description is not a rule people remember,
+ * it is a boundary this file is the only side of. Everything past here holds
+ * text that has already been stripped of markup and capped in length, and the
+ * step that calls this never sees the stored bytes at all.
+ */
+export interface DistillableProductRecord {
+  readonly id: string
+  readonly shopifyProductId: string
+  readonly title: string
+  /** The description as plain text, ready for the model. Empty when the product has none. */
+  readonly descriptionText: string
+  readonly priceRange: { readonly min: number; readonly max: number } | null
+  /** The two halves of the distillation key: re-running an unchanged product is a no-op by construction. */
+  readonly updatedAt: Date | null
+  readonly checksum: string | null
+}
+
+/**
+ * A page of the store's products for distillation, in id order.
+ *
+ * Paged rather than read whole: a large catalogue's descriptions are the
+ * bulkiest thing we hold, and the step processes them one batch at a time so a
+ * thousand-product store never has a thousand descriptions in memory at once.
+ */
+export async function productsForDistillation(
+  db: Db,
+  scope: AccountScope,
+  options: { after?: string; limit: number },
+): Promise<DistillableProductRecord[]> {
+  const rows = await db
+    .select({
+      id: products.id,
+      shopifyProductId: products.shopifyProductId,
+      title: products.title,
+      rawBodyHtml: products.rawBodyHtml,
+      priceRange: products.priceRange,
+      updatedAt: products.updatedAt,
+      checksum: products.checksum,
+    })
+    .from(products)
+    .where(
+      options.after
+        ? and(eq(products.accountId, scope.accountId), gt(products.id, options.after))
+        : eq(products.accountId, scope.accountId),
+    )
+    .orderBy(asc(products.id))
+    .limit(options.limit)
+
+  return rows.map((row) => ({
+    id: row.id,
+    shopifyProductId: row.shopifyProductId,
+    title: row.title,
+    descriptionText: descriptionText(readProductBody(row)),
+    priceRange: (row.priceRange ?? null) as DistillableProductRecord['priceRange'],
+    updatedAt: row.updatedAt,
+    checksum: row.checksum,
+  }))
 }
 
 /** The product's quarantined description, read back as text. */

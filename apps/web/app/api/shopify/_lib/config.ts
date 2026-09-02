@@ -1,13 +1,20 @@
 import {
   GuardedPageFetcher,
   MockShopifyOAuthClient,
+  PosthogServerCapture,
   ShopifyAdminClient,
   ShopifyOAuthClient,
   TokenCipher,
 } from '@sortiva/providers'
 import { StubNotificationEmitter } from '@sortiva/core'
-import type { NotificationEmitter, ShopifyOAuthProvider } from '@sortiva/core'
-import { db, dbPool } from '@sortiva/db'
+import type { DistillPrompt, NotificationEmitter, ShopifyOAuthProvider } from '@sortiva/core'
+import { db, dbPool, PostgresCostLedger, PostgresRequestCache } from '@sortiva/db'
+// Deep imports for the same reason as the jobs imports below: the `@sortiva/llm`
+// barrel is small, but this file is loaded by the server's start-up hook, and
+// pulling a package's whole surface into that bundle is how the build broke
+// before. See DECISIONS 2026-09-01 T1.3.
+import { AnthropicLlmClient } from '@sortiva/llm/client'
+import { loadPrompt } from '@sortiva/llm/prompts'
 // Deep imports, not the package barrel: `@sortiva/jobs`'s index re-exports the
 // spend-cap sweep, which pulls `packages/rules` — and that reads its config file
 // through a `new URL()` webpack resolves at build time and cannot find. The
@@ -35,6 +42,9 @@ import type { ShopifyOauthDeps } from './handlers'
 
 let cipher: TokenCipher | undefined
 let admin: ShopifyAdminClient | undefined
+let llm: AnthropicLlmClient | undefined
+let capture: PosthogServerCapture | undefined
+let distillPromptCache: DistillPrompt | undefined
 
 /**
  * One Admin client per process, because the pacing lives inside it.
@@ -107,6 +117,44 @@ export function notificationEmitter(): NotificationEmitter {
   return new StubNotificationEmitter()
 }
 
+/**
+ * The one instrumented model client onboarding spends through.
+ *
+ * Invariant 25: every model call in the product goes through this wrapper, and
+ * importing the vendor's own SDK anywhere else is a lint error. It is handed
+ * the request cache and the spend ledger here because both are how a step that
+ * is retried — and onboarding's steps are retried — does not pay twice for the
+ * same answer, and how the daily spend caps see what was spent.
+ */
+export function ingestionLlm(): AnthropicLlmClient {
+  llm ??= new AnthropicLlmClient({
+    cache: new PostgresRequestCache(db()),
+    capture: ingestionCapture(),
+    ledger: new PostgresCostLedger(db()),
+  })
+  return llm
+}
+
+function ingestionCapture(): PosthogServerCapture {
+  capture ??= new PosthogServerCapture()
+  return capture
+}
+
+/**
+ * The distillation prompt, by version, from `packages/llm/prompts`.
+ *
+ * The version is stamped on every fact sheet the step writes, so a year from
+ * now any fact can be traced to the exact instructions and model that produced
+ * it — which is the whole point of prompts being files rather than strings.
+ */
+export function distillPrompt(): DistillPrompt {
+  if (!distillPromptCache) {
+    const prompt = loadPrompt('distill', 1)
+    distillPromptCache = { version: prompt.version, text: prompt.text }
+  }
+  return distillPromptCache
+}
+
 export function ingestionDeps(): IngestionDeps {
   return {
     db: db(),
@@ -121,6 +169,8 @@ export function ingestionDeps(): IngestionDeps {
     admin: adminClient(),
     connections: connections(),
     domains: makeDomainStore(db()),
+    llm: ingestionLlm(),
+    distillPrompt: distillPrompt(),
     notifications: notificationEmitter(),
   }
 }

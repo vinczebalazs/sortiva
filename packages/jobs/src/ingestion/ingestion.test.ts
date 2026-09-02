@@ -8,6 +8,7 @@ import {
 } from '@sortiva/core'
 import { MockShopifyOAuthClient, ShopifyTokenInvalid } from '@sortiva/providers'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
+import { MockLlmClient } from '@sortiva/llm'
 import { createRun } from '../runtime/steps'
 import { dispatchIngestion } from './dispatch'
 import type { ConnectionStore, IngestionDeps, ShopReader, ShopSnapshot } from './deps'
@@ -140,6 +141,15 @@ function world(domain: string): World {
   const notifications = new StubNotificationEmitter()
   const domainStates: DomainState[] = []
 
+  // The store here has no products, so distillation makes no model call — but
+  // the step refuses to run without a client rather than writing empty fact
+  // sheets, so the process's one wrapper is supplied exactly as it is in
+  // production.
+  const llm = new MockLlmClient()
+  llm.setDefault('distill', () => {
+    throw new Error('an empty store has nothing to distil')
+  })
+
   const deps: IngestionDeps = {
     db: harness.db,
     pool: harness.pool,
@@ -148,6 +158,8 @@ function world(domain: string): World {
     shop,
     admin: new EmptyStore(),
     connections,
+    llm,
+    distillPrompt: { version: 'distill.v1', text: 'extract only' },
     notifications,
     domains: {
       async findAccountByShopHandle() {
@@ -269,19 +281,20 @@ describe('a Shopify store being onboarded', () => {
 
     const resumed = await dispatchIngestion(w.deps, { accountId })
 
-    // Permission granted, so the run carries straight on into reading the
-    // store. Distillation is the next step and belongs to a later card, so the
-    // run correctly stops there.
-    expect(resumed?.executed).toEqual(['oauth_wait', 'catalog_sync'])
+    // Permission granted, so the run carries straight on into reading the store
+    // and distilling what it found. Grouping those products into families is the
+    // next step and belongs to a later card, so the run correctly stops there.
+    expect(resumed?.executed).toEqual(['oauth_wait', 'catalog_sync', 'distill'])
     expect(resumed?.stoppedBecause).toBe('no_handler')
-    expect(resumed?.stoppedAt).toBe('distill')
+    expect(resumed?.stoppedAt).toBe('family_group')
     expect(await domainState()).toBe('ingesting')
 
     const states = await stepStates(jobId)
     expect(states['detect']).toBe('succeeded')
     expect(states['oauth_wait']).toBe('succeeded')
     expect(states['catalog_sync']).toBe('succeeded')
-    expect(states['distill']).toBe('pending')
+    expect(states['distill']).toBe('succeeded')
+    expect(states['family_group']).toBe('pending')
   })
 
   it('recognises work already done rather than paying for it twice', async () => {
