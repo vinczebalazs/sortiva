@@ -1,5 +1,6 @@
 export { closeDb, createPool, db, dbPool, schema, type Database, type Db } from './client'
 export { PostgresRequestCache } from './cache'
+export { pingDatabase } from './health'
 export { PostgresCostLedger } from './spend'
 export { accountScope, systemScope, type AccountScope, type SystemScope } from './scope'
 export * from './schema'

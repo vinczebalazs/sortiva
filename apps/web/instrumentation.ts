@@ -118,3 +118,34 @@ export async function register() {
     process.once('SIGINT', drain)
   }
 }
+
+/**
+ * **Where an unhandled error in any route ends up.** Next calls this for every
+ * server-side error it catches, so no route has to remember to report its own,
+ * and the ones with no session — the webhooks, the OAuth callbacks, the public
+ * preview — are covered exactly like the rest.
+ *
+ * Before this, an unhandled error printed to stdout and stopped there: nothing
+ * alerted, and two hundred copies of one fault stayed two hundred separate
+ * lines nobody counted.
+ *
+ * The query string is dropped and no header is forwarded: this reports where it
+ * broke, never what the caller sent.
+ */
+export async function onRequestError(
+  error: unknown,
+  request: { path?: string; method?: string },
+  context?: { routerKind?: string; routePath?: string; routeType?: string },
+): Promise<void> {
+  const { reportCrash } = await import('@sortiva/core/observability/crash')
+  reportCrash(error, {
+    properties: {
+      source: 'route',
+      method: request.method ?? null,
+      path: request.path?.split('?')[0] ?? null,
+      route_path: context?.routePath ?? null,
+      route_type: context?.routeType ?? null,
+      router_kind: context?.routerKind ?? null,
+    },
+  })
+}

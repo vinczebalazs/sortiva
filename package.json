@@ -24,7 +24,9 @@
     "env:check": "node scripts/check-env-sync.mjs",
     "posthog:check": "node scripts/posthog-provision.mjs --check",
     "contracts:check": "tsx scripts/contracts-check.mjs",
-    "stubs:report": "tsx scripts/stub-report.mjs"
+    "stubs:report": "tsx scripts/stub-report.mjs",
+    "diagnose": "tsx scripts/diagnose-store.mjs",
+    "dlq": "tsx scripts/replay-dlq.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
