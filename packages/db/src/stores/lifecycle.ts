@@ -19,18 +19,25 @@ import { accountScope, systemScope } from '../scope'
 export interface AccountLifecycleStoreOptions {
   database?: Db
   /**
-   * Turns a stored token back into a usable one. Left out in tests that do not
-   * care about the vendor calls, in which case the ciphertext is passed through
-   * and the fake revoker never looks at it.
+   * Turns the stored Shopify token back into one Shopify will accept.
+   *
+   * Left out in tests that do not care about the vendor calls, in which case the
+   * ciphertext is passed through and the fake revoker never looks at it.
    */
-  decrypt?: (cipher: string) => string
+  openShopifyToken?: (cipher: string) => string
+  /**
+   * Pulls Google's refresh token out of the stored blob, which holds four
+   * fields rather than one token. Null when there is nothing to hand back.
+   */
+  openGoogleRefreshToken?: (cipher: string) => string | null
 }
 
 export function makeAccountLifecycleStore(
   options: AccountLifecycleStoreOptions = {},
 ): AccountLifecycleStore {
   const database = (): Db => options.database ?? db()
-  const open = (cipher: string): string => (options.decrypt ? options.decrypt(cipher) : cipher)
+  const openShopify = options.openShopifyToken ?? ((cipher: string) => cipher)
+  const openGoogle = options.openGoogleRefreshToken ?? ((cipher: string) => cipher)
 
   return {
     async load(accountId) {
@@ -45,10 +52,10 @@ export function makeAccountLifecycleStore(
           row.shopifyShopHandle && row.shopifyTokenCipher
             ? {
                 shopHandle: row.shopifyShopHandle,
-                accessToken: open(row.shopifyTokenCipher),
+                accessToken: openShopify(row.shopifyTokenCipher),
               }
             : null,
-        googleRefreshToken: row.gscTokensCipher ? open(row.gscTokensCipher) : null,
+        googleRefreshToken: row.gscTokensCipher ? openGoogle(row.gscTokensCipher) : null,
         deletedAt: row.deletedAt,
       }
     },

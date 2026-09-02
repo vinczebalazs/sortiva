@@ -71,10 +71,11 @@ export async function register() {
   const { registerGscTasks } = await import('@sortiva/jobs')
   const { dbPool } = await import('@sortiva/db')
   const { GscOAuthProvider, TokenCipher } = await import('@sortiva/providers')
+  const googleClient = new GscOAuthProvider()
   registerGscTasks({
     getDb: db,
     getPool: dbPool,
-    provider: new GscOAuthProvider(),
+    provider: googleClient,
     codec: new TokenCipher(),
   })
 
@@ -162,6 +163,49 @@ export async function register() {
   })
   registerMonthlySummaryTask({ getDb: db, notifications: notificationEmitter() })
   registerExportUrlReminderTask({ getDb: db, notifications: notificationEmitter() })
+
+  // Ending accounts, honouring store redaction requests, and keeping the
+  // database from growing forever. Two jobs, and they are the reason a deleted
+  // account is actually deleted rather than merely marked:
+  //
+  //  - `account_close` tells Stripe, Shopify and Google that a merchant has
+  //    gone. It is a job and not part of the delete request because a Stripe
+  //    call may never sit in a request path, and because a queued step is
+  //    retried and dead-letters where somebody is alerted.
+  //  - the nightly retention sweep erases deleted accounts once their
+  //    seven-day domain hold has passed, erases a store's data when its
+  //    merchant asks Shopify to have it erased, and prunes each table by age.
+  //    The crontab has named this job since M0; until now nothing answered to
+  //    the name, which meant nothing was ever pruned.
+  //
+  // The token cipher is the process's one cipher, so a merchant's credentials
+  // are decrypted in exactly one place on the way out to be handed back.
+  const { registerAccountCloseTask, registerRetentionTask } = await import('@sortiva/jobs')
+  const { makeAccountLifecycleStore } = await import('@sortiva/db')
+  const { stripeProvider } = await import('./app/api/billing/_lib/config')
+  const { shopifyOauthProvider } = await import('./app/api/shopify/_lib/config')
+  const { decodeGscTokens } = await import('@sortiva/core')
+  registerAccountCloseTask({
+    getPool: dbPool,
+    store: () =>
+      makeAccountLifecycleStore({
+        openShopifyToken: (cipher) => tokenCipher().decrypt(cipher),
+        // Google's grant is stored as four fields in one blob. Revoking the
+        // refresh token revokes the access token with it, so that is the one
+        // worth handing back.
+        openGoogleRefreshToken: (cipher) =>
+          decodeGscTokens(tokenCipher(), cipher).refreshToken,
+      }),
+    billing: () => ({
+      cancelNow: (subscriptionId) => stripeProvider().cancelSubscription(subscriptionId),
+    }),
+    revoker: () => ({
+      revokeShopify: ({ shopHandle, accessToken }) =>
+        shopifyOauthProvider().revokeAccess({ shop: shopHandle, accessToken }),
+      revokeGoogle: (refreshToken) => googleClient.revoke(refreshToken),
+    }),
+  })
+  registerRetentionTask({ getDb: db, getPool: dbPool })
 
   const { bootstrapWorker, flushAnalytics } = await import('@sortiva/jobs')
   const worker = await bootstrapWorker({ analytics })

@@ -108,8 +108,13 @@ export const CRON_ENTRIES: readonly CronEntry[] = [
     task: 'retention_sweep_daily',
     schedule: '0 1 * * *',
     why:
-      'Deletes what we no longer need: notifications at 90d, email_sends at 12mo, webhook_events at 30d, ' +
-      'request_cache on TTL, gsc rollups at 16mo. ' +
+      'Three obligations about time, in this order. It honours a store redaction request — a merchant ' +
+      'who uninstalled us and asked Shopify to have their store data erased — which runs first ' +
+      'because the only durable record of such a request is a stored delivery, and this same job ' +
+      'deletes stored deliveries at thirty days. It erases accounts whose merchant asked to be ' +
+      'deleted a week ago, which is the same act that releases their domain. Then it ' +
+      'deletes what we no longer need: notifications at 90d, email_sends at 12mo, webhook_events at 30d, ' +
+      'request_cache and unused sign-in links on their own expiry, gsc rows at 16mo. ' +
       // `idempotency_ledger` is the record of which paid work has already been
       // done. Delete a row inside the
       // window in which the queue could still redeliver that work and the replay
