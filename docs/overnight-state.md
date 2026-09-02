@@ -13,38 +13,56 @@ plan for the run is `docs/nightly-plan.md`** — read it after this file.
 
 ## Right now
 
-**Status at 2026-09-02, 19:24.** `main` is at `fa7cff4`, clean, and fully green — see
-the gate table below. **Four cards have landed tonight**, each merged and gated
-separately: `T8.0`, `T-START`, `T-ANALYTICS`, `T3.4`. Tests are at **1,465**, up from
-1,362 at the start of the night.
+**Status at 2026-09-02, 19:47.** `main` is at `44177e4`, clean, and fully green. **Five
+cards have landed tonight**, each merged and gated separately: `T8.0`, `T-START`,
+`T-ANALYTICS`, `T3.4`, `T8.1`. Tests are at **1,541**, up from 1,362 at the start of the
+night. Stubs are at **7**, up from 6 — deliberately, and the new one announces itself.
 
 | Lane | Branch | Worktree | Where it is |
 |---|---|---|---|
-| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START` merged (`d34daa6`); **`T2.2` building** — the critical path, and the most consequential card of the run |
-| C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4` merged (`fa7cff4`); **next is `T-EMAIL`**, then the lane is held for `T2.5` |
-| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS` merged (`42ddd50`); **next is `T9.3`** → `T9.4` → `T9.5` |
-| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | `T8.0` merged (`6400b62`); **`T8.1` building**; then `T8.2`, after which an audit is scheduled |
+| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START` merged (`d34daa6`); **`T2.2` building** — the critical path, and the most consequential card of the run. Audit scheduled after it |
+| C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4` merged (`fa7cff4`); **`T-EMAIL` building**; then the lane is held for `T2.5` |
+| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS` merged (`42ddd50`); **`T9.3` building**; then `T9.4` → `T9.5` |
+| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | `T8.0` (`6400b62`) and `T8.1` (`44177e4`) merged; **idle, next is `T8.2`**, after which an audit is scheduled |
 
-**An audit is scheduled after `T2.2`** (build plan §7) and must run before `T2.3`
-starts. Another is scheduled after `T8.2`. Audits are read-only and their findings are
-held for the morning unless one blocks the next card in that lane.
+**Two integrator actions are outstanding and both are named in full below.**
 
-**Every lane obeyed the one-card rule tonight**, including lane F, which broke it
-earlier in the day. All four reported, stopped, and left clean worktrees.
+1. **Plug in the bell** — a one-line swap in `apps/web/app/api/shopify/_lib/config.ts`
+   that `T8.1` could not make because the file is Lane B's and Lane B is in it. **Do it
+   after `T2.2` merges, as its own commit.** Until then no notification reaches a real
+   row in production. See the `T8.1` section.
+2. **Expect a hand-resolved conflict in `packages/ui/strings/en.json`** when `T9.3`
+   merges — `T8.1` added 34 contiguous lines at the end of a file lane F is writing in,
+   and it is not union-merged.
+
+**Every lane has obeyed the one-card rule tonight**, including lane F, which broke it
+earlier in the day. All five cards reported, stopped, and left clean worktrees.
 
 **The gate flakes under concurrent lane load — re-run before believing a red.** It
-happened twice tonight, in two different shapes, and both times an immediate re-run was
-clean:
+happened twice tonight, in two shapes, and both times an immediate re-run was clean:
+every test passing with a non-zero exit, on one Postgres `57P01` teardown error; and two
+test *files* failing on 10-second hook timeouts while all 1,404 tests passed. Neither was
+a product failure or caused by the card being merged. **If a gate goes red with every
+test passing, re-run once before investigating.** Unactioned; it belongs to whoever next
+touches the test harness (`packages/db/src/testing.ts` force-drops each suite's own
+database, killing a connection a suite forgot to close).
 
-- **Every test passing and a non-zero exit**, on one Postgres `57P01` error
-  ("terminating connection due to administrator command") from a test file's teardown.
-  The cause is in `packages/db/src/testing.ts`, which force-drops each suite's own
-  database and so kills a connection a suite forgot to close.
-- **Two test *files* failing on 10-second hook timeouts** while all 1,404 tests passed.
+**A build warning that is expected and should not be chased.** `pnpm build` prints
+"Critical dependency: the request of a dependency is an expression" from `cosmiconfig`,
+reached through `graphile-worker`'s own config loader. The worker runs **in-process with
+the web server by design** (tech §2), so the job library is in the server bundle and its
+vendor config loader comes with it. It is pre-existing, not from any card tonight, and
+`pnpm smoke:boot` proves the built app still starts and serves. It is the same *shape* as
+the defect `T-BOOT` repaired, which is why it is written down rather than left to be
+rediscovered.
 
-Neither is a product failure and neither was caused by the card being merged. **The rule
-to apply: if a gate goes red with every test passing, re-run once before investigating.**
-Unactioned; it belongs to whoever next touches the test harness.
+**A trap the integrator created and then had to repair.** `.env` is gitignored and lives
+per-worktree. When `T-ANALYTICS` added `NEXT_PUBLIC_POSTHOG_KEY` to `.env.example`, the
+integrator copied the new `.env` into every worktree — including two whose branches
+predated the `.env.example` change, so `env:check` failed there with 37 against 36.
+**Lane G hit it and correctly refused to guess; lane B was warned not to "fix" it.** The
+lesson for the next run: refresh a worktree's `.env` only when that worktree's branch
+also has the matching `.env.example`, or fast-forward it first.
 
 **Setup done at the start of this run, and one thing the previous state file got
 wrong.** It recorded all lane worktrees as "clean and level with `main`". They were
@@ -118,6 +136,95 @@ protect, and leaving a laptop permanently awake is not this session's call to ma
 merchant's onboarding (this is what holds lane B), and how a browser sends an
 analytics event (raised by lane F; it does not block, because the seam has a
 do-nothing default).
+
+## `T8.1` LANDED — the bell writes a row, and it refuses to store words
+
+**Merged as `44177e4` into `main`, three commits, full gate green.** Tests 1,541.
+
+**The bell.** Every lane already calls one function when something happens; until now
+that call went into a stub that kept things in memory. It now writes a row. **Two
+attempts at the same event produce one notification**, because the key it deduplicates
+on is worked out from the event itself — the article's id, the week a scan ran in, the
+month a summary covers — never generated. A retried job recomputes the same key and its
+second insert does nothing. The caller is told which of the two happened, and can hand
+in an open transaction so a notification about a decision commits with that decision or
+not at all (proved by a rollback test).
+
+**It refuses to store words, and this is the second structural answer to the standing
+audit finding.** A payload may hold identifiers and short tokens only; a caller passing
+an article headline gets an error rather than a stored row. Checked on the way in, which
+is the only place the rule holds without every future emission point having to remember
+it. Note the pairing: `T-ANALYTICS` did the same for events leaving the browser, and this
+does it for records that outlive the thing they describe.
+
+**What the bell says is produced when it is opened**, from a copy key plus values looked
+up at that moment — so reworded or translated copy applies to notifications already
+sitting in a merchant's bell, and a thing since deleted falls back to a line that still
+says what happened ("An article was published") rather than naming an article that no
+longer exists. The fallback is **per type**, keeping the verb and losing only the name.
+
+**The attention list is five live reads, no stored rows**, and nothing on the interface
+could write one. Approving a draft stops the query matching it; that is the whole
+mechanism. **Four routes**, none gated on billing — a merchant whose payment failed still
+needs to be told so. Someone else's notification id is answered exactly as a deleted one.
+
+### Three things this card left for someone else's hand
+
+**1. The bell is built but not plugged in — and this one is the integrator's.** The
+production wiring still hands out the in-memory stub, because the one-line swap lives in
+`apps/web/app/api/shopify/_lib/config.ts` — **Lane B's directory, and Lane B is building
+in it right now** on `T2.2`. The change is `notificationEmitter()` returning
+`new DbNotificationEmitter(db)` instead of `new StubNotificationEmitter()`; that file is
+already exempt from the raw-database lint rule. **Until it is made, no notification
+reaches a real row in production**, and `pnpm stubs:report` correctly still lists
+`NotificationEmitter`. **Do this after `T2.2` merges, as its own commit, so it cannot
+collide with lane B's work.** It turns on notification writes in production, so it is
+worth naming in the morning report rather than doing quietly.
+
+**2. The attention list is two-fifths real.** Two conditions read real tables and are
+proved against Postgres. The other three — a draft awaiting review, an article needing
+repair, an exported article whose published address we were never told — all read the
+`articles` table, **which does not exist**; schema wave 3 (`T4.0`, lane D) creates it.
+They return nothing and *announce* it: `pnpm stubs:report` now names
+`AttentionSources.articles` and any call reaching one emits `stub_used`, because an
+attention list that cannot see drafts is otherwise indistinguishable from an account with
+no drafts. **The stub count is now 7, up from 6.**
+
+**3. A conflict is coming in the copy file.** The card added 34 lines to
+`packages/ui/strings/en.json`, which is **not** union-merged, and **lane F is writing
+screens in it right now**. The added block is contiguous at the end of the file, which is
+the best case for resolving it. Expect to hand-resolve when `T9.3` merges.
+
+**A judgement call flagged for the `T8.2` audit rather than settled:** the two reminder
+windows (7 days, 14 days) are named constants in `packages/core`, not entries in
+`signals.config.yaml`. That is a judgement about where invariant 9's boundary falls —
+whether "no threshold literal outside `packages/rules`" reaches a reminder delay or only
+the numbers that decide what the engine detects.
+
+**A bug worth knowing because it looked like something else.** The bell's thirty-second
+poll compares timestamps **truncated to milliseconds**. Postgres keeps microseconds and
+JavaScript cannot, so a plain "greater than" hands the browser back the very row it used
+as its mark, on every poll, forever. It was found by a test that first looked like clock
+skew.
+
+**For `T8.2`:** the channel matrix already carries the email column, the default-on flag,
+the toggleable flag and which preference column governs each row, all tested against the
+UI spec — read `notificationChannels(type)` rather than re-deriving it. `queueEmail`
+already enforces the same unique triple. Three types reach the inbox only through the
+monthly summary and get no email of their own. **The payload guard applies to
+notifications only:** if a monthly-summary email needs article titles, it must look them
+up at send time, never read them from a stored row.
+
+**Files outside Lane G's directories:** `packages/ui/strings/en.json` (the conflict
+above), `scripts/stub-report.mjs` (five lines — the shared registry the build plan says
+lanes extend), and `packages/db` barrels, which are union-merged.
+
+**An `env:check` failure this card reported was the integrator's fault, not the card's.**
+`T-ANALYTICS` added `NEXT_PUBLIC_POSTHOG_KEY` to `.env.example` after lane G's branch
+point; the integrator had refreshed the worktree's gitignored `.env` to 37 variables while
+its `.env.example` still had 36. The lane correctly refused to guess a default and
+reported it. It passes on the merged tree. **Lane B is exposed to the same mismatch on
+`T2.2` and has been told not to "fix" it.**
 
 ## The thing that keeps killing lanes
 
@@ -432,35 +539,36 @@ What it changed that everyone inherits:
   `pnpm-lock.yaml` changed — `packages/ui` now depends on React. **That lockfile is
   the merge hazard for lanes B and C if they added a dependency.**
 
-**Gate on the merged tree, after four cards** (`T9.1`, `T2.1`, `T3.1`, `T3.2`, `T9.2`,
-`T-OPS`, `T3.3`, plus tonight's `T8.0`, `T-START`, `T-ANALYTICS`, `T3.4`), each command
-run separately on 2026-09-02 at 19:19–19:21, never chained:
+**Gate on the merged tree, after five cards** (`T9.1`, `T2.1`, `T3.1`, `T3.2`, `T9.2`,
+`T-OPS`, `T3.3`, plus tonight's `T8.0`, `T-START`, `T-ANALYTICS`, `T3.4`, `T8.1`), each
+command run separately on 2026-09-02 at 19:44–19:46, never chained:
 
 | | |
 |---|---|
 | `pnpm lint` | clean |
 | `pnpm lint:prove` | **11** planted violations, all rejected |
 | `pnpm typecheck` | 9 packages |
-| `pnpm test` | **1465 passing**, 108 files |
+| `pnpm test` | **1541 passing**, 114 files |
 | `pnpm contracts:check` | 56 routes; zod and OpenAPI agree |
-| `pnpm build` | compiles |
-| `pnpm smoke:boot` | `GET / -> 200`, `GET /api/health -> 200`, in 0.7s |
-| `pnpm eval` · `pnpm chaos` | pass |
+| `pnpm build` | compiles; the four notification and attention routes present |
+| `pnpm smoke:boot` | `GET / -> 200`, `GET /api/health -> 200`, in 0.6s |
+| `pnpm eval` · `pnpm chaos` | 2 tests each, pass |
 | `pnpm env:check` | `.env` and `.env.example` both declare **37** variables |
+| `pnpm stubs:report` | **7** wired stubs (was 6; `T8.1` added one deliberately) |
 | `pnpm db:migrate` on an **empty** database | 41 tables, 3 guard triggers (run after `T8.0`, the only card tonight touching migrations) |
 
-**Every test count reconciles.** 1,362 on `main` at the start of the night → `T8.0` +7
-(1,369) → `T-START` +4 (1,373) → `T-ANALYTICS` +31 (1,404) → `T3.4` +61 (1,465). A
-discrepancy the previous state file carried is also settled: its header said 1,362 and
-its gate table said 1,357; lane B noticed the five-test gap and correctly declined to
+**Every test count reconciles, card by card.** 1,362 on `main` at the start of the night
+→ `T8.0` +7 (1,369) → `T-START` +4 (1,373) → `T-ANALYTICS` +31 (1,404) → `T3.4` +61
+(1,465) → `T8.1` +76 (1,541). A discrepancy the previous state file carried is also
+settled: its header said 1,362 and its gate table said 1,357; lane B noticed the
+five-test gap and correctly declined to
 chase it. The header was right, the table was five stale.
 
-**One integrator action was needed to keep the gate green and it is worth knowing.**
-`T-ANALYTICS` added `NEXT_PUBLIC_POSTHOG_KEY` to `.env.example`. `.env` is per-worktree
-and gitignored, so the integrator had to add the key to the main folder's `.env` by hand
-before `pnpm env:check` would pass. **Any lane worktree created before tonight has the
-36-variable `.env` and will fail `env:check` until the key is added there too.** Lane G's
-`.env` was copied at 18:46 and is also short of it.
+**The `.env` handling this required is written up under "Right now" above**, including
+the mistake the integrator made doing it and how to avoid repeating it. Short version:
+`.env` is gitignored and per-worktree, `T-ANALYTICS` added a variable to `.env.example`,
+and refreshing a worktree's `.env` without also moving its branch forward makes
+`env:check` fail with 37 against 36.
 
 The migration row was run against a database created for the purpose and dropped
 afterwards, never against the dev database. Wave 4 adds no table, so 41 is unchanged;
