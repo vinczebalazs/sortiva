@@ -1,7 +1,11 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "src"
+    "rootDir": "src",
+    // The email templates are React Email components (tech spec's committed
+    // pairing with Resend), so this package compiles JSX. Nothing else here
+    // does, and nothing here renders in a browser — `lib` stays DOM-free.
+    "jsx": "react-jsx"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

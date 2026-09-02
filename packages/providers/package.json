@@ -14,12 +14,16 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@react-email/components": "^1.0.12",
+    "@react-email/render": "^2.1.0",
     "@sortiva/core": "workspace:*",
     "posthog-node": "^5.51.4",
+    "react": "^19.0.0",
     "resend": "^6.25.0",
     "stripe": "^22.6.0"
   },
   "devDependencies": {
+    "@types/react": "^19.0.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   }
