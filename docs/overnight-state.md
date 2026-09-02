@@ -11,61 +11,140 @@ plan for the run is `docs/nightly-plan.md`** — read it after this file.
 
 ---
 
+## THE RUN STOPPED ON A RATE LIMIT — two lanes were killed mid-card
+
+**At about 20:25 on 2026-09-02 both remaining lane sessions died at the same instant**
+with "You've hit your session limit · resets 9:50pm (Europe/Budapest)". This is an
+account-level limit on the model, not a fault in the work and not the machine sleeping.
+**No new lane session can be launched before 21:50.** The integrator's own commands still
+work.
+
+**Nothing was lost that had been committed, and `main` is untouched and green.** `main` is
+at `71b7514`, clean, 1,748 tests. All eight merged cards are unaffected. The two killed
+sessions were building on their own branches, as designed.
+
+### Lane G — `T8.2`, five commits, worktree clean. **Resume, do not restart.**
+
+**It committed in halves exactly as instructed, and that is why its work is safe.** Five
+commits on `lane-g`, nothing uncommitted:
+
+```
+0820770 T8.2: bounces stop the mail, and one click stops the rest
+ed947e0 T8.2: one event now reaches the inbox as well as the bell, and the mail goes out
+6779d7d T8.2: the emails themselves, and the proof that a webhook came from Resend
+0509295 T8.2: what an email says, who gets it, and why a count is never a fraction
+24a8844 T8.2: the email package can render React templates
+```
+
+**What it had left to do, in its own last words: "Now the wiring in the composition root,
+and the route tests."** So the card is **incomplete and must not be merged as it stands** —
+it has not run a gate, and its own done-when checks have not been run.
+
+From its last commit message, what already exists: a bounce or spam complaint stops mail to
+that address immediately, with the receiver proving the request came from Resend before
+touching the body and storing it by the vendor's own id so a redelivery costs one refused
+insert; and one-click unsubscribe works with no session, because the bulk-sender rules
+require it, with the link's signature standing in for one.
+
+**How to resume it:** re-read the card, then `git log -p main..lane-g` to see what is
+already built, then finish the composition-root wiring and the route tests, then run every
+done-when and the full gate. **An audit is scheduled after `T8.2`** (build plan §7).
+
+### Lane F — `T9.4`, no commits, uncommitted work that does not compile. **Audit it before trusting it.**
+
+**It did not commit in halves, and that is the whole difference between the two lanes.**
+Nothing is committed on `lane-f` beyond `main`. Uncommitted in the worktree:
+
+- **Modified `packages/ui/strings/en.json`** — 490 keys against `main`'s 331, so roughly
+  159 lines of new copy. **It still parses** (the integrator checked). This is the file
+  that is *not* union-merged and that already produced one hand-resolved conflict tonight.
+- **A new untracked directory `packages/ui/src/opportunities/`** with four files:
+  `OpportunityCard.tsx`, `list.ts`, `types.ts`, `why.ts`.
+
+**It does not compile.** Its last words were "Now fixing the remaining type errors in
+`list.ts`" — so it was stopped part-way through making the code typecheck. **Assume
+nothing in it works.**
+
+**The integrator deliberately did not commit this work.** Committing another session's
+half-finished code is exactly what caused the damage of 2026-09-01, and a commit would also
+make an unverified draft look like progress. It sits in the worktree, which is where a
+killed session's work is supposed to sit.
+
+**How to resume it:** read `git status` first, then read every one of those five files
+against the card before writing anything — keep what is right, replace what is not, and say
+which was which. This is the same position the `T9.2` session was put in, and it cost that
+session real time. **`why.ts` deserves particular attention: invariant 8 says every
+user-facing "why" renders from template strings over the scoring record and never from a
+language model.**
+
+### What the integrator did and did not do at the stop
+
+- **Did:** check both worktrees before touching anything, record exactly what is in each,
+  and confirm `main` is clean and green.
+- **Did not:** commit lane F's uncommitted work, merge lane G's incomplete card, or
+  relaunch anything. **The rate limit makes relaunching impossible before 21:50 in any
+  case.**
+
 ## Right now
 
-**Status at 2026-09-02, 20:35.** `main` is at `a870e0e`, clean, and fully green.
-**Eight cards have landed tonight**, each merged and gated separately: `T8.0`, `T-START`,
+**Status at 2026-09-02, 20:30.** `main` is at `71b7514`, clean, and fully green.
+**Eight cards landed tonight**, each merged and gated separately: `T8.0`, `T-START`,
 `T-ANALYTICS`, `T3.4`, `T8.1`, `T-EMAIL`, `T9.3`, `T2.2`. Tests are at **1,748**, up from
-1,362 at the start of the night. Stubs are at **6**, down from 7 — `T2.2` filled the
-change stream that two lanes had been building against a stand-in.
+1,362 at the start of the night — **386 added**. Stubs are at **6**, down from 7.
+
+**The run is stopped.** Two lanes were killed mid-card by an account rate limit at about
+20:25; nothing can be relaunched before **21:50**. The section above this one has the
+detail and tells whoever picks up how to resume each.
 
 | Lane | Branch | Worktree | Where it is |
 |---|---|---|---|
-| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START` (`d34daa6`) and **`T2.2` (`a870e0e`)** merged. **Idle. `T2.3` may NOT start until the scheduled audit of `T2.2` has run** (build plan §7) |
-| C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4` (`fa7cff4`) and `T-EMAIL` (`0b84ffa`) merged; **idle and deliberately held** — `T3.5` needs `T2.4`–`T2.5` and must not start early |
-| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS` (`42ddd50`) and `T9.3` (`b6945f9`) merged; **idle, next is `T9.4`** → `T9.5` |
-| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | `T8.0` (`6400b62`) and `T8.1` (`44177e4`) merged; **`T8.2` building**. **Audit scheduled after it** |
+| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START` (`d34daa6`) and **`T2.2` (`a870e0e`)** merged and green. **Idle and clean.** Its scheduled audit **has run** — see the audit section, it found one critical defect. `T2.3` is unblocked by that audit, and the two things `T2.3` must be told are recorded there |
+| C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4` (`fa7cff4`) and `T-EMAIL` (`0b84ffa`) merged and green. **Idle and clean, deliberately held** — `T3.5` needs `T2.4`–`T2.5`, and lane B stopped at `T2.2` as the plan asked, so it never became available |
+| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS` (`42ddd50`) and `T9.3` (`b6945f9`) merged and green. **`T9.4` was killed mid-card with NO commits and uncommitted work that does not compile** — read the stop section before touching it |
+| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | `T8.0` (`6400b62`) and `T8.1` (`44177e4`) merged and green. **`T8.2` was killed mid-card with five commits and a clean worktree** — resume it, do not restart it. An audit is scheduled after it |
 
-**Lane B reached `T2.2` and stopped there, which is what the plan asked for.** It did not
-reach `T2.5`, so lane C stays held and `T3.5` stays unavailable — the one mid-run decision
-the plan told the runner to watch for did not arise.
+**Lane B reached `T2.2` and stopped there, which is what the plan asked for.** The one
+mid-run decision the plan told the runner to watch for — whether lane B would reach `T2.5`
+and free lane C's `T3.5` — did not arise.
 
-### One integrator action is ready and deliberately NOT taken
+### Two integrator actions are ready and deliberately NOT taken
 
-**Plugging in the bell.** `T8.1` built the notification writer and could not wire it,
-because the one-line swap lives in `apps/web/app/api/shopify/_lib/config.ts` — Lane B's
-file, which Lane B was building in. **Lane B is now finished and out of that file, so the
-change is unblocked.** It is: `notificationEmitter()` returns `new DbNotificationEmitter(db)`
-instead of `new StubNotificationEmitter()`. That file is already exempt from the
-raw-database lint rule.
+Both are recorded in full in their own sections. Neither is an oversight; each would
+change behaviour, and the overnight rules say to ask for an action in one plain sentence
+and wait rather than infer permission.
 
-**The integrator has not made it, and the reason is not oversight.** It switches on
-notification writes in production, on a writer that has never run there, and the emitter
-takes part in the caller's transaction — so if it throws, the decision it was reporting
-rolls back with it. Nothing tonight needs it, no lane is blocked by it, and the overnight
-rules say to ask for an action in one plain sentence and wait rather than infer
-permission. **It is a one-line change plus a full gate re-run whenever the founder says
-go.** Until then `pnpm stubs:report` correctly lists `NotificationEmitter`, and no
-notification reaches a real row in production.
+1. **Plugging in the bell.** `T8.1` built the notification writer and could not wire it —
+   the one-line swap lives in a file lane B was building in. **Lane B is now finished and
+   out of that file, so it is unblocked.** It switches on notification writes in
+   production from a writer that has never run there, inside the caller's transaction, so
+   if it throws, the decision it was reporting rolls back with it. Nothing tonight needs
+   it. **One line plus a full gate re-run whenever the founder says go.**
+2. **The change stream's missing consumer**, found by the `T2.2` audit. The producer is
+   real; nothing in production reads it, and the stub report was edited to stop saying so.
+   Whether lane B wires it, lane C does, or the check is restored until someone does, is
+   an integrator decision the integrator has not taken — because taking it is acting on an
+   audit finding.
 
-### The one conflict that was predicted, and how it was resolved
+### Two audits ran tonight and both are recorded, unactioned
 
-`packages/ui/strings/en.json` conflicted on the `T9.3` merge exactly as expected. Both
-sides kept, no key shared between them, file verified to parse — written up in the `T9.3`
-section. **331 keys total.**
+`T2.2`'s was **scheduled and required**; `T-EMAIL`'s was **requested by its own lane** and
+took lane C's idle slot. **The `T2.2` audit found a critical privacy defect and the
+integrator verified it independently before recording it.** Read the audit section first
+in the morning. A third audit is scheduled after `T8.2` and cannot run until that card is
+finished.
 
-**Every lane has obeyed the one-card rule tonight**, including lane F, which broke it
-earlier in the day. All eight cards reported, stopped, and left clean worktrees.
+**Every lane obeyed the one-card rule tonight**, including lane F, which broke it earlier
+in the day. Every card that finished reported, stopped, and left a clean worktree.
 
 **The gate flakes under concurrent lane load — re-run before believing a red.** It
-happened twice on the integrator's gates tonight and once inside lane B's, and every
-re-run was clean. Two shapes: every test passing with a non-zero exit, on one Postgres
-`57P01` teardown error; and test *files* failing on 10-second hook timeouts. Neither was a
-product failure. **If a gate goes red with every test passing, re-run once before
-investigating.** Worth knowing that lane B's re-run then surfaced a *genuine* regression
-underneath the flake, which it fixed — so re-running is not the same as ignoring.
-Unactioned; it belongs to whoever next touches `packages/db/src/testing.ts`, which
-force-drops each suite's own database and kills a connection a suite forgot to close.
+happened twice on the integrator's gates and once inside lane B's, and every re-run was
+clean. Two shapes: every test passing with a non-zero exit, on one Postgres `57P01`
+teardown error; and test *files* failing on 10-second hook timeouts. **If a gate goes red
+with every test passing, re-run once before investigating.** But note that lane B's re-run
+then surfaced a *genuine* regression underneath the flake, which it fixed — **re-running is
+not the same as ignoring.** Unactioned; it belongs to whoever next touches
+`packages/db/src/testing.ts`, which force-drops each suite's own database and kills a
+connection a suite forgot to close.
 
 **A build warning that is expected and should not be chased.** `pnpm build` prints
 "Critical dependency: the request of a dependency is an expression" from `cosmiconfig`,
@@ -82,6 +161,13 @@ predated the `.env.example` change, so `env:check` failed there with 37 against 
 hit it and correctly refused to guess a default; lane B was warned mid-card not to "fix"
 it, and did not. **The lesson: refresh a worktree's `.env` only when its branch also has
 the matching `.env.example`, or fast-forward it first.**
+
+**A mistake the integrator made editing this file, and caught.** Replacing a section by
+line position cut an adjacent heading along with it — exactly the damage this file's own
+warning describes. It was caught by the `grep -n '^## '` check the warning prescribes,
+restored from git, and the full heading list was then diffed against the previous commit
+to prove nothing else was missing. **Do the section-list check after every edit. It works.**
+
 ## Picking this up again
 
 *This section described how to restart after the 08:10 stop. It is kept because
@@ -1417,6 +1503,154 @@ Small, real, and each belongs to a named next card rather than to a sweep.
 stopping a lane on a finding and nothing else. **The `T-EMAIL` auditor was asked
 directly whether any finding should block the next card in any lane and answered no**, so
 no lane was stopped.
+### `T2.2` — the scheduled audit, run 2026-09-02, read-only. **THIS IS THE ONE TO READ FIRST.**
+
+Build plan §7 requires this audit before `T2.3` starts. It has run. **It found one
+critical defect, and the integrator verified that finding independently before recording
+it rather than taking the auditor's word for it.**
+
+#### CRITICAL — we store shoppers' email addresses and phone numbers while telling Shopify we hold none
+
+**The finding, in plain terms.** Shopify sends every app two privacy messages: "a shopper
+asked what data you hold about them" and "a shopper asked you to erase it". Our whole
+answer to both is *we hold nothing about your shoppers* — and that answer is meant to be
+true by construction, not by policy. It is true on the orders path: an order is reduced
+the moment it is read, built fresh from a fixed list of fields, and the test that proves
+it plants a full Shopify order with a customer block and shows none of it survives.
+
+**But the webhook receiver stores the entire message body, verbatim, for every topic it
+accepts — and those two privacy messages carry a `customer` object containing that
+shopper's email address and phone number.** The code then logs the literal answer "no
+customer data held" about a row that holds exactly that. Nothing deletes it.
+
+**Why no test caught it.** The invariant-4 test scans *column names*; this data sits
+inside a JSON blob in a column called `payload`. And the card's own webhook test uses a
+fixture body of `{ shop_id: 1 }` — no customer block, so the failure is invisible.
+
+**Verified by the integrator, not taken on trust:** the receiver writes
+`payload: { shop_handle, body }` with the body unreduced
+(`apps/web/app/api/webhooks/shopify/[topic]/_lib/receiver.ts:88-96`), and
+`customers/redact` and `customers/data_request` are both accepted topics
+(`packages/core/src/catalog/webhooks.ts:32-33`).
+
+**Nothing is at risk tonight.** There are no Shopify Partner credentials, the app has
+never been deployed, and no real Shopify traffic has ever reached this receiver. **The
+exposure begins the first time a real store connects.**
+
+**Not fixed, deliberately.** `docs/overnight-run.md` puts "act on an audit finding" on the
+list of things this session may never do without asking. The fix is small — reduce the
+stored body for the three privacy topics to the non-personal envelope, or store no body
+for them, and extend the invariant-4 test to plant a realistic body through the receiver
+and assert none of the shopper's values survive. **It should be the first thing done in
+the morning, before any Shopify credential exists.**
+
+#### The two HIGH findings
+
+**1. A webhook that fails, or arrives while its store is busy, is discarded for ever.**
+The module's own comments say such a row "keeps its place for the next pass". It does not:
+the failure path stamps the row as processed, and the query that finds work skips
+processed rows. **The busy case is not exotic** — it fires whenever a webhook lands during
+the nightly walk of that same store, which is precisely the burst the design was written
+for. No test covers the failure path. The nightly sweep would eventually re-find the
+underlying change, so this is lost freshness rather than lost data.
+
+**2. The change stream has no production consumer, and the check that should have said so
+was switched off.** `T2.2`'s headline deliverable is filling this seam, and the producer
+is real. But nothing in production registers or enqueues the consumer, and
+`scripts/stub-report.mjs` — the gate whose job is to fail a milestone when the product is
+running on a stand-in — had the corresponding line removed on the grounds that the seam is
+filled. **Net effect: a seam that is now neither stub nor wired, reported as done.**
+Lane C's event-driven inventory freshness is silently dark; the inventory is only as
+current as the nightly walk. **This is an integrator decision — whether lane B wires it,
+lane C does, or the stub-report line is restored until someone does — and the integrator
+has not taken it, because it is acting on an audit finding.** Lane C is held for other
+reasons, so nothing tonight changes either way.
+
+#### The medium findings, in one line each
+
+- **Order revenue's day-settling rests on a sort parameter Shopify's cursor-paginated
+  orders endpoint does not document and may ignore.** A late order for an already-settled
+  day would silently *replace* that day's total rather than add to it — an undercount. The
+  stand-in cannot expose this: it returns rows in the order it was handed them and every
+  fixture is already sorted. **Unverifiable without a real store.**
+- **The nightly landing-revenue job permanently loses each day's earliest orders**, because
+  its lookback window is UTC-relative while the day key is the store's own calendar day,
+  and it replaces rather than merges. Nothing displays this in v1, so no merchant sees it —
+  but the captured history is wrong and there is no backfill path.
+- **Every product a store deletes is re-reported as newly deleted, every night, for ever**,
+  because the deletion is keyed on the sweep's own clock rather than on the product. A
+  store that has deleted 200 products adds 200 rows a night, indefinitely, to an unindexed
+  table. The code's defence is a comment asserting the consumers collapse it, which is
+  enforced nowhere.
+- **A revoked Shopify token during the nightly sweep does not park the account.** The
+  onboarding sync routes a dead token to the reconnect screen; the sweep has no such
+  wrapper, so a store whose token dies without an uninstall message is swept and fails for
+  ever.
+- **The landing-revenue job can run for two minutes without checkpointing**, against the
+  rule that any step over 60 seconds must. A crash loses the whole pass. (**The catalogue
+  sync itself does checkpoint correctly** — the auditor verified the page-then-cursor order
+  and that the chaos scenario proves the resume.)
+- **The uninstall path mutates account state outside the account lock**, against the rule
+  that all of an account's work serialises.
+- **An analytics event is attributed with a Shopify shop handle where an account id
+  belongs**, so those events cannot join the group the spec makes canonical — and sends the
+  string `system` as an account id in one branch. No product content leaks.
+- **The reconciliation sweep is scheduled 90 minutes *after* the generation cycle**, where
+  the spec puts it before, and on UTC rather than the store's own clock. The crontab lines
+  predate `T2.2`, but this is the card that put a real handler behind them.
+- **Product metafields are not fetched**, though the spec names them and gives a reason.
+  Does not block `T2.3`, but caps the fact-sheet richness `T2.3` is graded on, and nothing
+  currently records the omission.
+
+#### What the audit tested and found sound
+
+Worth reading, because it is most of the card. **Pacing** holds and is called the
+strongest part — one limiter per store inside the single client, shared by both callers,
+with the rate-limit pause proved against a real local HTTP server. **Resume after a kill**
+holds for products; the chaos scenario asserts the first page is requested exactly once
+across all kills, which is the assertion that would fail if a restart began from the
+beginning. **Customer stripping holds on the orders path** and is genuinely
+by-construction, with a non-vacuity test proving the fixture really contained the values.
+**The deletion check is correct**, contrary to the auditor's initial worry. **Invariant 21
+holds** — the client exposes no write method at all. **Invariant 20's deliberate
+non-application is correct** and the auditor would not change it: the spec's own table
+classifies Shopify catalogue reads as pure reads needing no protection. **Invariant 26
+holds.** **Signature verification is correct** — raw bytes, length-checked, constant-time.
+**Sweep convergence holds.** And on the question the lane raised itself: **resetting the
+attempt counter between chaos kills is fair, not weakened** — the scenario's assertions are
+about resume and exactly-once, none of which concerns the retry budget. The real weakness
+there is that the scenario never kills through the *order* phase, which carries the most
+fragile checkpoint.
+
+The auditor called the journalling exemplary — fourteen entries each naming what it cost.
+**The one thing that happened without a journal entry is the privacy-webhook body
+storage.**
+
+#### The three questions the audit was asked to answer
+
+- **Does anything block `T2.3`? No.** The path it reads is sound and untouched by every
+  finding. **Two things `T2.3` should be told rather than discover:** the product checksum
+  deliberately covers words but not price or stock, which is a *superset* of the spec's
+  key and means distillation re-runs slightly more often than the spec implies; and
+  **metafields are not being fetched**, so fact sheets will be built without them.
+- **Does anything block another lane? Yes, lane C** — the unwired change stream above.
+  Lane C is already held, so nothing changes tonight. Two further notes for it: its nightly
+  inventory walk is now paced at one request a second and will take proportionally longer,
+  and **lane G's retention card must learn that `webhook_events` now holds two row shapes
+  before it writes a delete.**
+- **Must a founder decide anything before this runs against a real store? Three things.**
+  (1) The privacy-webhook storage must be fixed first — not a judgement call. (2) **Who
+  owns account deletion and the store purge**, which must land before the app listing;
+  recording a redaction request without erasing is defensible only while no real merchant
+  data is held, and the only durable record of such a request is a row the not-yet-built
+  retention policy would delete at exactly 30 days, when the obligation matures. (3)
+  **Whether to obtain Partner dev-store credentials before or after `T2.3`** — two
+  assumptions in this card would fail *silently* rather than loudly without them: that the
+  orders endpoint honours the sort we ask for, and that Shopify's cursor carries our field
+  filter forward. If it does not, order pages after the first would return the full object
+  including the customer block; the reduction would still drop it, but the data would cross
+  the network, which the code's comment explicitly promises it does not.
+
 
 ### `T-EMAIL` — a fresh read-only audit run tonight, 2026-09-02
 
@@ -1494,25 +1728,30 @@ the store's own results. The product still works; it simply does not improve its
 
 ## Lanes stopped, and the question that stopped them
 
-**No lane stopped on a question tonight. Not one of the eight cards hit a product choice
-it could not answer from a document** — which is worth recording, because the run was set
-up expecting that to happen.
+**No lane stopped on a question tonight. Not one of the eight completed cards hit a
+product choice it could not answer from a document** — which is worth recording, because
+the run was set up expecting that to happen.
 
-Three lanes are idle, each for a different and deliberate reason:
+**What stopped the run was an account rate limit, not the work.** Two lanes were killed
+mid-card at about 20:25; see the section at the top of this file.
 
-- **Lane B — waiting on a scheduled audit, not on a question.** `T2.2` is merged and
-  green. Build plan §7 requires an audit of it **before `T2.3` starts**, so the lane is
-  correctly held until that audit has run.
+Where each lane actually stands and why:
+
+- **Lane B — finished `T2.2`, idle and clean.** Not stopped by a question. Its scheduled
+  audit has run and **explicitly answered that nothing blocks `T2.3`**. It could start
+  `T2.3` the moment the rate limit lifts.
 - **Lane C — held by dependency, exactly as the plan instructed.** `T3.5` needs
-  `T2.4`–`T2.5` from lane B, and lane B stopped at `T2.2` as the plan asked. The nightly
-  plan flagged "if lane B reaches `T2.5` while the night is still young, `T3.5` becomes
+  `T2.4`–`T2.5` from lane B, and lane B stopped at `T2.2` as planned. The nightly plan
+  named "if lane B reaches `T2.5` while the night is still young, `T3.5` becomes
   available" as the one mid-run decision to watch for. **It did not arise.**
-- **Lane F — idle between cards only.** `T9.4` is available and depends on nothing.
+- **Lane F — killed mid-`T9.4`**, with no commits and uncommitted work that does not
+  compile.
+- **Lane G — killed mid-`T8.2`**, with five commits and a clean worktree.
 
 **Five questions are waiting on the founder** and none of them stopped a lane — see
-"Questions waiting on the founder" above. Two came from `T8.0`, one from `T-EMAIL`, two
-were inherited. `T-EMAIL` also parked one of its own done-whens rather than fake it, which
-is the closest anything came to a stop.
+"Questions waiting on the founder". Two came from `T8.0`, one from `T-EMAIL`, two were
+inherited. `T-EMAIL` also parked one of its own done-whens rather than fake it, which is
+the closest anything came to a stop.
 
 **A hold that was wrong, kept from an earlier run because the mistake is worth not
 repeating.** Lane B was held from 08:00 to 16:40 on a question that, on checking, its next
