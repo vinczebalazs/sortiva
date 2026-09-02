@@ -6,7 +6,6 @@ import {
   ShopifyOAuthClient,
   TokenCipher,
 } from '@sortiva/providers'
-import { StubNotificationEmitter } from '@sortiva/core'
 import type { DistillPrompt, NotificationEmitter, ShopifyOAuthProvider } from '@sortiva/core'
 import { db, dbPool, PostgresCostLedger, PostgresRequestCache } from '@sortiva/db'
 // Deep imports for the same reason as the jobs imports below: the `@sortiva/llm`
@@ -23,6 +22,7 @@ import { loadPrompt } from '@sortiva/llm/prompts'
 import { dispatchIngestion } from '@sortiva/jobs/ingestion/dispatch'
 import { readDetectedShopHandle } from '@sortiva/jobs/ingestion/steps'
 import type { IngestionDeps } from '@sortiva/jobs/ingestion/deps'
+import { DbNotificationEmitter } from '@sortiva/jobs/notify/emitter'
 import { makeConnectionStore, makeDomainStore, type ConnectionStoreWithSave } from './bindings'
 import type { ShopifyOauthDeps } from './handlers'
 
@@ -109,12 +109,14 @@ export function stateSecret(): string {
 }
 
 /**
- * Where a notification would go. The real emitter belongs to another lane; until
- * it lands the stub records the emission and says loudly that it is a stub,
- * rather than the call site quietly having none.
+ * Where a notification goes.
+ *
+ * Handed the database factory rather than a handle, like everything else here:
+ * this module is loaded when its route file is, and opening a connection then
+ * would open one during the build.
  */
 export function notificationEmitter(): NotificationEmitter {
-  return new StubNotificationEmitter()
+  return new DbNotificationEmitter(db)
 }
 
 /**

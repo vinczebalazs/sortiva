@@ -30,7 +30,13 @@ new doubles.StubJudgeLite()
 // tests, which is fine — this report is about seams the *product* is running on
 // a stand-in, and listing a filled one would make the M2 gate fail for a gap
 // that no longer exists.
-new doubles.StubNotificationEmitter()
+// `StubNotificationEmitter` is deliberately not constructed either, for the same
+// reason and from 2026-09-02: the Shopify composition root now hands out
+// `DbNotificationEmitter`, so a notification written in production reaches a real
+// row and — for the kinds that are emailed — a real queued send. The double still
+// exists and tests still use it. **Unlike the catalogue-events seam, this one was
+// checked end to end before the line was removed**: the emitter is constructed in
+// `apps/web/app/api/shopify/_lib/config.ts`, not merely exported.
 
 // Not every stub is a class. The attention list's three article-backed readers
 // register when their module loads, because there is nothing to construct —
