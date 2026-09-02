@@ -42,8 +42,17 @@ export interface AccountLifecycleStore {
     at: Date
     domainReleaseAt: Date
   }): Promise<boolean>
-  /** The logged-out preview's row for this domain, which §14.6 says goes too. */
+  /** The logged-out preview's row for this domain, which goes too. */
   purgePreviewCache(domainNormalized: string): Promise<void>
+  /**
+   * Asks for the vendor half — cancel the subscription, hand both grants back.
+   *
+   * A port rather than a direct call because the request that deletes an
+   * account has no business holding a database handle or knowing what a queue
+   * is, and because the queueing has to happen through the same handle the
+   * deletion was written with.
+   */
+  queueClosure(accountId: string): Promise<void>
   /** Removes the two stored grants, once the vendors have been told. */
   clearGrants(accountId: string): Promise<void>
 }

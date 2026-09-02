@@ -67,6 +67,10 @@ export async function requestAccountDeletion(
     await deps.store.purgePreviewCache(record.domainNormalized)
   }
 
+  // Last, so nothing tells three vendors a merchant has gone until the deletion
+  // is written down and has stood.
+  await deps.store.queueClosure(input.accountId)
+
   deps.capture?.capture({
     event: ACCOUNT_DELETED_EVENT,
     attribution: accountAttribution(input.accountId, record.domainNormalized ?? undefined),

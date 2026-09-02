@@ -50,6 +50,9 @@ function world(
         calls.push('preview')
         previewPurged.push(domain)
       },
+      async queueClosure() {
+        calls.push('queue-closure')
+      },
       async clearGrants() {
         calls.push('clear-grants')
       },
@@ -80,7 +83,7 @@ describe('the half a merchant waits for', () => {
       accountId: 'acc-1',
     })
 
-    expect(w.calls).toEqual(['mark', 'preview'])
+    expect(w.calls).toEqual(['mark', 'preview', 'queue-closure'])
     expect(result).toEqual({
       kind: 'deleted',
       deletedAt: AT,
@@ -101,6 +104,7 @@ describe('the half a merchant waits for', () => {
       accountId: 'acc-1',
     })
     expect(w.previewPurged).toEqual([])
+    expect(w.calls).toEqual(['mark', 'queue-closure'])
     expect(result).toMatchObject({ domainFreeAt: null })
   })
 

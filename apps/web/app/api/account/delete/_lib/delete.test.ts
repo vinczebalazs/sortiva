@@ -22,7 +22,7 @@ const available = await databaseAvailable()
 describe.skipIf(!available)('POST /api/account/delete', () => {
   let harness: TestDb
   let accountId: string
-  let queued: { accountId: string }[]
+  let queued: string[]
 
   beforeAll(async () => {
     harness = await setupTestDb('web_account_delete')
@@ -67,8 +67,8 @@ describe.skipIf(!available)('POST /api/account/delete', () => {
   function route(sessionAccountId: string | null) {
     const handler = makeDeleteAccountHandler({
       database: harness.db,
-      enqueue: async (_db, payload) => {
-        queued.push(payload)
+      enqueue: async (_db, id) => {
+        queued.push(id)
       },
     })
     return withAccount(handler, async () => sessionAccountId)
@@ -127,7 +127,7 @@ describe.skipIf(!available)('POST /api/account/delete', () => {
 
   it('queues the vendor work rather than doing it while the merchant waits', async () => {
     await route(accountId)(post({ confirmation: 'DELETE' }), undefined)
-    expect(queued).toEqual([{ accountId }])
+    expect(queued).toEqual([accountId])
   })
 
   it('answers success, and queues nothing more, when it has already happened', async () => {

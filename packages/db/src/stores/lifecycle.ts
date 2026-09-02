@@ -30,6 +30,13 @@ export interface AccountLifecycleStoreOptions {
    * fields rather than one token. Null when there is nothing to hand back.
    */
   openGoogleRefreshToken?: (cipher: string) => string | null
+  /**
+   * Queues the vendor half. Handed the store's own database handle, the same way
+   * the Search Console store is handed its backfill enqueuer — so the caller
+   * needs no handle of its own and the queueing uses the connection the deletion
+   * was written on.
+   */
+  enqueueClosure?: (database: Db, accountId: string) => Promise<void>
 }
 
 export function makeAccountLifecycleStore(
@@ -65,6 +72,10 @@ export function makeAccountLifecycleStore(
         at: input.at,
         domainReleaseAt: input.domainReleaseAt,
       })
+    },
+
+    async queueClosure(accountId) {
+      await options.enqueueClosure?.(database(), accountId)
     },
 
     clearGrants(accountId) {

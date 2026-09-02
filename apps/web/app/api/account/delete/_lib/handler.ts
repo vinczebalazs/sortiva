@@ -4,7 +4,7 @@ import {
   type AccountLifecycleStore,
   type PosthogCapture,
 } from '@sortiva/core'
-import { db, makeAccountLifecycleStore, type Db } from '@sortiva/db'
+import { makeAccountLifecycleStore, type Db } from '@sortiva/db'
 // A deep import, not the package barrel: the barrel re-exports the spend-cap
 // sweep, which pulls the threshold config's file loader into a bundle with no
 // filesystem. The domain claim, the Shopify webhook receiver and the Search
@@ -29,14 +29,14 @@ export interface DeleteAccountHandlerOptions {
   store?: AccountLifecycleStore
   capture?: Pick<PosthogCapture, 'capture'>
   /** Overridden in tests that assert on what was queued without a worker present. */
-  enqueue?: (database: Db, payload: { accountId: string }) => Promise<void>
+  enqueue?: (database: Db, accountId: string) => Promise<void>
 }
 
 export function makeDeleteAccountHandler(
   options: DeleteAccountHandlerOptions = {},
 ): AccountHandler {
-  const database = (): Db => options.database ?? db()
-  const enqueue = options.enqueue ?? enqueueAccountClose
+  const enqueue =
+    options.enqueue ?? ((database: Db, accountId: string) => enqueueAccountClose(database, { accountId }))
 
   return async (request, { scope }) => {
     const body = await readJson(request)
@@ -49,7 +49,12 @@ export function makeDeleteAccountHandler(
       )
     }
 
-    const store = options.store ?? makeAccountLifecycleStore({ database: options.database })
+    const store =
+      options.store ??
+      makeAccountLifecycleStore({
+        ...(options.database ? { database: options.database } : {}),
+        enqueueClosure: enqueue,
+      })
     const result = await requestAccountDeletion(
       options.capture ? { store, capture: options.capture } : { store },
       { accountId: scope.accountId },
@@ -64,7 +69,6 @@ export function makeDeleteAccountHandler(
       return Response.json({ ok: true })
     }
 
-    await enqueue(database(), { accountId: scope.accountId })
     return Response.json({ ok: true })
   }
 }

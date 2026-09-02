@@ -3,7 +3,6 @@ import {
   accountScope,
   insertDomainRow,
   markAccountDeleted,
-  systemScope,
   type Db,
 } from '@sortiva/db'
 import {
