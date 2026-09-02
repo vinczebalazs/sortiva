@@ -202,6 +202,9 @@ importers:
       '@sortiva/core':
         specifier: workspace:*
         version: link:../core
+      '@sortiva/ui':
+        specifier: workspace:*
+        version: link:../ui
       posthog-node:
         specifier: ^5.51.4
         version: 5.51.4

@@ -85,7 +85,7 @@ export async function sendQueuedEmail(
     return { status: 'abandoned', reason: 'subject_gone' }
   }
 
-  const rendered = deps.renderer.render(content)
+  const rendered = await deps.renderer.render(content)
   const headers = content.unsubscribeUrl ? unsubscribeHeaders(content.unsubscribeUrl) : undefined
 
   try {

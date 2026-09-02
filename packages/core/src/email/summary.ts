@@ -55,7 +55,7 @@ const K = {
   publishedNone: 'email.monthlySummary.publishedNone',
   heldHeading: 'email.monthlySummary.heldHeading',
   heldNone: 'email.monthlySummary.heldNone',
-  heldItem: 'email.monthlySummary.heldItem',
+  heldTopic: 'email.monthlySummary.heldTopic',
   actionsHeading: 'email.monthlySummary.actionsHeading',
   optimizeGenerated: 'email.monthlySummary.optimizeGenerated',
   optimizeApplied: 'email.monthlySummary.optimizeApplied',
@@ -63,7 +63,7 @@ const K = {
   merchantTasks: 'email.monthlySummary.merchantTasks',
   actionsNone: 'email.monthlySummary.actionsNone',
   nextHeading: 'email.monthlySummary.nextHeading',
-  nextItem: 'email.monthlySummary.nextItem',
+  nextItemPrefix: 'email.monthlySummary.nextItem',
   nextNone: 'email.monthlySummary.nextNone',
   cta: 'email.monthlySummary.cta',
 } as const
@@ -88,10 +88,13 @@ export function monthlySummaryContent(
     lines:
       facts.heldBack.length === 0
         ? [{ key: K.heldNone }]
-        : facts.heldBack.map((topic) => ({
-            key: K.heldItem,
-            params: { title: topic.title, reason: topic.reasonKey },
-          })),
+        : // Two lines per topic: what it was, then why it did not go out. The
+          // reason is itself a copy key, so it is resolved by the renderer like
+          // any other sentence rather than pasted in as a parameter.
+          facts.heldBack.flatMap((topic) => [
+            { key: K.heldTopic, params: { title: topic.title } },
+            { key: topic.reasonKey },
+          ]),
   }
 
   const actionLines = []
@@ -125,8 +128,10 @@ export function monthlySummaryContent(
       facts.nextOpportunities.length === 0
         ? [{ key: K.nextNone }]
         : facts.nextOpportunities.map((opportunity) => ({
-            key: K.nextItem,
-            params: { action: opportunity.action, subject: opportunity.subject },
+            // One sentence per kind of action: "improve your existing page for
+            // X" says something, "optimize — X" does not.
+            key: `${K.nextItemPrefix}.${opportunity.action}`,
+            params: { subject: opportunity.subject },
           })),
   }
 

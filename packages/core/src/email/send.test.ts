@@ -73,7 +73,7 @@ class RecordingProvider implements EmailProvider {
 }
 
 const renderer: EmailRenderer = {
-  render: (content) => ({
+  render: async (content) => ({
     subject: `[${content.subject.key}]`,
     html: `<p>${content.heading.key}</p>`,
     text: content.heading.key,

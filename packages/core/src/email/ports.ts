@@ -64,7 +64,7 @@ export interface EmailAssembler {
  * React.
  */
 export interface EmailRenderer {
-  render(content: EmailContent): Pick<EmailMessage, 'subject' | 'html' | 'text'>
+  render(content: EmailContent): Promise<Pick<EmailMessage, 'subject' | 'html' | 'text'>>
 }
 
 export interface EmailSendDeps {
