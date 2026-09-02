@@ -1,0 +1,163 @@
+import type { EvidenceFact } from '../contracts/opportunities'
+import { INVENTORY_SOURCE, facts, normalisePageUrl, type StorePageType } from './types'
+
+/**
+ * The store's own search listings: the line a shopper reads in Google before
+ * deciding whether to click.
+ *
+ * Two things go wrong with them and both are visible from data we already hold,
+ * with no search vendor and no model involved. A page with no listing text of
+ * its own leaves Google to invent one from the page body, which is rarely the
+ * sentence the merchant would have written. Two pages carrying the *same*
+ * listing text are worse: they look identical in the results, and Google has to
+ * guess which one belongs there.
+ *
+ * Only collections and product pages are looked at. Everything else in a store —
+ * the returns policy, the about page — is not competing for a shopper's click,
+ * and listing it would bury the pages that are.
+ */
+
+/** The two fields a store sets for its own search listing. */
+export type MetadataField = 'seo_title' | 'seo_description'
+
+export interface MetadataPage {
+  readonly url: string
+  readonly pageType: StorePageType
+  readonly seoTitle: string | null
+  readonly seoDescription: string | null
+}
+
+/** Pages sharing one value of one field, and what they share. */
+export interface SharedMetadata {
+  readonly field: MetadataField
+  readonly value: string
+  /** Every address carrying it, this detection's own page included, in address order. */
+  readonly pages: readonly string[]
+}
+
+export interface MetadataSignal {
+  readonly signalType: 'missing_or_weak_metadata'
+  readonly page: string
+  readonly pageType: StorePageType
+  /** Fields the merchant never filled in. */
+  readonly missingFields: readonly MetadataField[]
+  /** Fields this page shares with another of the store's own pages. */
+  readonly duplicateFields: readonly MetadataField[]
+  readonly sharedWith: readonly SharedMetadata[]
+  readonly evidence: readonly EvidenceFact[]
+}
+
+export interface MetadataInput {
+  readonly pages: readonly MetadataPage[]
+  /** When the inventory was read. Passed in, never taken from the clock. */
+  readonly fetchedAt: string
+}
+
+/** The page kinds that compete for a click, and so are the only ones judged. */
+const JUDGED_PAGE_TYPES: ReadonlySet<StorePageType> = new Set<StorePageType>(['collection', 'product'])
+
+const FIELDS: readonly MetadataField[] = ['seo_title', 'seo_description']
+
+function valueOf(page: MetadataPage, field: MetadataField): string | null {
+  const raw = field === 'seo_title' ? page.seoTitle : page.seoDescription
+  const trimmed = raw?.trim() ?? ''
+  return trimmed === '' ? null : trimmed
+}
+
+/**
+ * Finds both problems across a store's listings.
+ *
+ * **One detection per page, whatever is wrong with it**, and a group of pages
+ * sharing a value produces a single detection on the first of them by address.
+ * Two reasons, and they agree. A merchant fixing this is doing one job per page,
+ * not one job per field; and the open-opportunity index is unique on the page,
+ * so a second detection for the same address could not survive being written —
+ * whichever landed last would silently replace the other.
+ *
+ * The group's other members travel in the evidence, because the fix is to make
+ * them differ and you cannot do that without knowing what they currently share.
+ */
+export function detectMetadataProblems(input: MetadataInput): readonly MetadataSignal[] {
+  const pages = input.pages
+    .filter((page) => JUDGED_PAGE_TYPES.has(page.pageType))
+    .map((page) => ({ ...page, url: normalisePageUrl(page.url) }))
+    .sort((a, b) => a.url.localeCompare(b.url))
+
+  // Grouped case-insensitively: two listings differing only in capitalisation
+  // read as the same line in a results page, which is what makes them a
+  // problem. Nested maps rather than one composite key, so no separator has to
+  // be chosen that a listing's own text could never contain.
+  const groups = new Map<MetadataField, Map<string, string[]>>()
+  for (const field of FIELDS) {
+    const byValue = new Map<string, string[]>()
+    for (const page of pages) {
+      const value = valueOf(page, field)
+      if (value === null) continue
+      const key = value.toLowerCase()
+      const group = byValue.get(key)
+      if (group) group.push(page.url)
+      else byValue.set(key, [page.url])
+    }
+    groups.set(field, byValue)
+  }
+
+  const findings = new Map<
+    string,
+    { missing: MetadataField[]; duplicate: MetadataField[]; shared: SharedMetadata[] }
+  >()
+
+  function findingFor(url: string) {
+    const existing = findings.get(url)
+    if (existing) return existing
+    const created = {
+      missing: [] as MetadataField[],
+      duplicate: [] as MetadataField[],
+      shared: [] as SharedMetadata[],
+    }
+    findings.set(url, created)
+    return created
+  }
+
+  for (const page of pages) {
+    for (const field of FIELDS) {
+      if (valueOf(page, field) === null) findingFor(page.url).missing.push(field)
+    }
+  }
+
+  for (const field of FIELDS) {
+    for (const urls of [...(groups.get(field) ?? new Map<string, string[]>()).values()].sort(
+      (a, b) => a[0]!.localeCompare(b[0]!),
+    )) {
+      if (urls.length < 2) continue
+      const anchorUrl = [...urls].sort()[0]!
+      const anchor = pages.find((page) => page.url === anchorUrl)!
+      const finding = findingFor(anchorUrl)
+      finding.duplicate.push(field)
+      finding.shared.push({ field, value: valueOf(anchor, field)!, pages: [...urls].sort() })
+    }
+  }
+
+  return [...findings.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([url, finding]) => {
+      const page = pages.find((candidate) => candidate.url === url)!
+      return {
+        signalType: 'missing_or_weak_metadata' as const,
+        page: url,
+        pageType: page.pageType,
+        missingFields: finding.missing,
+        duplicateFields: finding.duplicate,
+        sharedWith: finding.shared,
+        evidence: facts(input.fetchedAt, [
+          { key: 'page_type', value: page.pageType, source: INVENTORY_SOURCE },
+          { key: 'missing_fields', value: finding.missing.join(',') || 'none', source: INVENTORY_SOURCE },
+          { key: 'duplicate_fields', value: finding.duplicate.join(',') || 'none', source: INVENTORY_SOURCE },
+          {
+            key: 'pages_sharing_metadata',
+            value: finding.shared.reduce((most, group) => Math.max(most, group.pages.length), 0),
+            source: INVENTORY_SOURCE,
+          },
+        ]),
+      }
+    })
+}
