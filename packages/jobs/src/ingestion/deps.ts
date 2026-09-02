@@ -4,6 +4,7 @@ import type {
   DistillPrompt,
   LlmClient,
   NotificationEmitter,
+  PosthogCapture,
   ShopifyOAuthProvider,
   StoreConnection,
   StoreDomainStore,
@@ -80,5 +81,10 @@ export interface IngestionDeps {
   /** The versioned distillation prompt, loaded from `prompts/distill.v<N>.md` by the process. */
   readonly distillPrompt?: DistillPrompt
   readonly notifications?: NotificationEmitter
+  /**
+   * Server-side analytics. Optional so a step runs without telemetry: a missing
+   * client must never be able to fail the work it was only reporting on.
+   */
+  readonly capture?: Pick<PosthogCapture, 'capture'>
   readonly now?: () => Date
 }

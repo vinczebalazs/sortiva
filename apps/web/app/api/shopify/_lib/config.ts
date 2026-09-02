@@ -174,6 +174,7 @@ export function ingestionDeps(): IngestionDeps {
     llm: ingestionLlm(),
     distillPrompt: distillPrompt(),
     notifications: notificationEmitter(),
+    capture: ingestionCapture(),
   }
 }
 

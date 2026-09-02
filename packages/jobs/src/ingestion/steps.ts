@@ -11,6 +11,7 @@ import { findRunForAccount, findStep, type JobStepName } from '../runtime/steps'
 import { catalogSyncStep } from './catalog'
 import type { IngestionDeps } from './deps'
 import { distillStep } from './distill'
+import { familyGroupStep } from './families'
 
 /**
  * The first two steps of onboarding: work out what the merchant's site runs on,
@@ -157,6 +158,7 @@ export const INGESTION_STEPS: Partial<Record<JobStepName, StepDefinition>> = {
   oauth_wait: oauthWaitStep,
   catalog_sync: catalogSyncStep,
   distill: distillStep,
+  family_group: familyGroupStep,
 }
 
 async function detect(deps: IngestionDeps, domain: string): Promise<PlatformDetection> {

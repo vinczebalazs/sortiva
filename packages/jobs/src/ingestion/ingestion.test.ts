@@ -281,12 +281,13 @@ describe('a Shopify store being onboarded', () => {
 
     const resumed = await dispatchIngestion(w.deps, { accountId })
 
-    // Permission granted, so the run carries straight on into reading the store
-    // and distilling what it found. Grouping those products into families is the
-    // next step and belongs to a later card, so the run correctly stops there.
-    expect(resumed?.executed).toEqual(['oauth_wait', 'catalog_sync', 'distill'])
+    // Permission granted, so the run carries straight on: it reads the store,
+    // distils what it found, and groups those products into families. Building
+    // the store's business profile is the next step and belongs to a later card,
+    // so the run correctly stops there.
+    expect(resumed?.executed).toEqual(['oauth_wait', 'catalog_sync', 'distill', 'family_group'])
     expect(resumed?.stoppedBecause).toBe('no_handler')
-    expect(resumed?.stoppedAt).toBe('family_group')
+    expect(resumed?.stoppedAt).toBe('persona')
     expect(await domainState()).toBe('ingesting')
 
     const states = await stepStates(jobId)
@@ -294,7 +295,8 @@ describe('a Shopify store being onboarded', () => {
     expect(states['oauth_wait']).toBe('succeeded')
     expect(states['catalog_sync']).toBe('succeeded')
     expect(states['distill']).toBe('succeeded')
-    expect(states['family_group']).toBe('pending')
+    expect(states['family_group']).toBe('succeeded')
+    expect(states['persona']).toBe('pending')
   })
 
   it('recognises work already done rather than paying for it twice', async () => {
