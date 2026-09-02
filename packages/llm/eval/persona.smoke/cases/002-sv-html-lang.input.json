@@ -1,0 +1,42 @@
+{
+  "note": "No Shopify settings at all. The homepage's own lang attribute carries both halves.",
+  "domain": "lopspar.example",
+  "homepageHtml": "<!doctype html><html lang=\"sv-SE\"><head><title>Löpspår</title></head><body></body></html>",
+  "productCount": 41,
+  "families": [
+    {
+      "name": "Terrängskor",
+      "memberCount": 16,
+      "differentiationAxes": [
+        "underlag",
+        "drop",
+        "bredd"
+      ],
+      "facts": {
+        "material": "mesh"
+      }
+    },
+    {
+      "name": "Löparvästar",
+      "memberCount": 6,
+      "differentiationAxes": [
+        "volym"
+      ],
+      "facts": {
+        "capacity": "5 L"
+      }
+    }
+  ],
+  "topSellers": [
+    {
+      "title": "Fjäll Trail 4",
+      "rank": 1
+    }
+  ],
+  "pages": [
+    {
+      "kind": "homepage",
+      "text": "Skor och utrustning för terränglöpning på svenska stigar."
+    }
+  ]
+}

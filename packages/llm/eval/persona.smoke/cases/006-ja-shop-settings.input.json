@@ -1,0 +1,48 @@
+{
+  "note": "A non-Latin language, from the shop's own locale.",
+  "domain": "kissa.example",
+  "shop": {
+    "primaryLocale": "ja",
+    "countryCode": "JP",
+    "currency": "JPY"
+  },
+  "homepageHtml": "<!doctype html><html lang=\"ja\"><head><title>喫茶道具</title></head><body></body></html>",
+  "productCount": 47,
+  "families": [
+    {
+      "name": "急須",
+      "memberCount": 14,
+      "differentiationAxes": [
+        "容量",
+        "産地"
+      ],
+      "facts": {
+        "capacity": "300 ml",
+        "origin": "常滑"
+      }
+    },
+    {
+      "name": "煎茶",
+      "memberCount": 21,
+      "differentiationAxes": [
+        "産地",
+        "摘採時期"
+      ],
+      "facts": {
+        "origin": "静岡"
+      }
+    }
+  ],
+  "topSellers": [
+    {
+      "title": "常滑焼 急須 300ml",
+      "rank": 1
+    }
+  ],
+  "pages": [
+    {
+      "kind": "about",
+      "text": "常滑と静岡の作り手から直接仕入れた煎茶と茶器を扱っています。"
+    }
+  ]
+}

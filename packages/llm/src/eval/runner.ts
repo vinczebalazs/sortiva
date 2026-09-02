@@ -1,16 +1,17 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { distillEvalRunner } from './distill-runner'
+import { personaEvalRunner } from './persona-runner'
 import { fieldF1, meanAbsoluteError, type F1Score, type MaeScore } from './metrics'
 
 /**
  * Frozen evaluation sets, run in CI whenever a prompt file or a model id
  * changes. A deploy blocks on failure.
  *
- * An eval set is a directory named `<name>.eval` holding an `eval.json` and a
- * `cases/` folder of `<id>.input.json` / `<id>.gold.json` pairs. The names the
- * fixed names — `distillation.eval`, `judge.eval`, `persona.smoke` — are
- * directory names here, so CI and audits can find them (CLAUDE.md).
+ * An eval set is a directory named `<name>.eval` — or `<name>.smoke` — holding
+ * an `eval.json` and a `cases/` folder of `<id>.input.json` / `<id>.gold.json`
+ * pairs. The fixed names — `distillation.eval`, `judge.eval`, `persona.smoke` —
+ * are directory names here, so CI and audits can find them (CLAUDE.md).
  *
  * Sets are **append-only**: a production failure gets minimised and
  * added as a regression case. Nothing here deletes or rewrites a case.
@@ -23,7 +24,7 @@ import { fieldF1, meanAbsoluteError, type F1Score, type MaeScore } from './metri
 export type EvalMetric = 'field_f1' | 'criterion_mae' | 'exact_match'
 
 export interface EvalSetConfig {
-  /** Matches the directory name without `.eval`. */
+  /** Matches the directory name without its `.eval` / `.smoke` suffix. */
   readonly name: string
   readonly metric: EvalMetric
   /** Key in the runner registry. Absent from the registry = the set cannot run. */
@@ -76,7 +77,18 @@ export interface EvalSetResult {
   readonly mae?: MaeScore
 }
 
-/** Walks a tree and returns every `*.eval` directory found. */
+/**
+ * The directory suffixes that mark an evaluation set.
+ *
+ * `.smoke` is here because the spec fixes the sets' names and one of them is
+ * `persona.smoke`, not `persona.eval`. Recognising only `.eval` would mean the
+ * persona set could be written, committed and reviewed while being discovered
+ * by nothing — a suite that is not running looking exactly like a suite that is
+ * passing, which is the one failure this whole file is built to prevent.
+ */
+const EVAL_SET_SUFFIXES = ['.eval', '.smoke']
+
+/** Walks a tree and returns every evaluation-set directory found. */
 export function discoverEvalSets(root: string): EvalSet[] {
   const found: EvalSet[] = []
   if (!existsSync(root)) return found
@@ -86,7 +98,7 @@ export function discoverEvalSets(root: string): EvalSet[] {
       if (entry === 'node_modules' || entry === '.git' || entry === 'dist') continue
       const full = join(dir, entry)
       if (!statSync(full).isDirectory()) continue
-      if (entry.endsWith('.eval')) {
+      if (EVAL_SET_SUFFIXES.some((suffix) => entry.endsWith(suffix))) {
         found.push(loadEvalSet(full))
         continue
       }
@@ -248,4 +260,5 @@ export async function runEvalSet(
  */
 export const EVAL_RUNNERS: EvalRunnerRegistry = {
   distill: (input, config) => distillEvalRunner()(input, config),
+  persona: (input, config) => personaEvalRunner()(input, config),
 }

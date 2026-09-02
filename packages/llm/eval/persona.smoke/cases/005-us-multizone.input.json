@@ -1,0 +1,60 @@
+{
+  "note": "A country that spans several zones. The clock is a choice, and it is the busiest business zone.",
+  "domain": "coldbrewsupply.example",
+  "shop": {
+    "primaryLocale": "en",
+    "countryCode": "US",
+    "currency": "USD"
+  },
+  "homepageHtml": "<!doctype html><html lang=\"en-US\"><head><title>Cold Brew Supply</title></head><body></body></html>",
+  "productCount": 63,
+  "families": [
+    {
+      "name": "Cold Brew Makers",
+      "memberCount": 9,
+      "differentiationAxes": [
+        "capacity",
+        "filter"
+      ],
+      "facts": {
+        "capacity": "1.5 L",
+        "material": "borosilicate glass"
+      }
+    },
+    {
+      "name": "Single Origin Coffee",
+      "memberCount": 31,
+      "differentiationAxes": [
+        "origin",
+        "roast"
+      ],
+      "facts": {
+        "origin": "Ethiopia"
+      }
+    },
+    {
+      "name": "Burr Grinders",
+      "memberCount": 6,
+      "differentiationAxes": [
+        "burr size"
+      ],
+      "facts": {}
+    }
+  ],
+  "topSellers": [
+    {
+      "title": "Cold Brew Maker 1.5L",
+      "rank": 1
+    },
+    {
+      "title": "Yirgacheffe Single Origin",
+      "rank": 2
+    }
+  ],
+  "pages": [
+    {
+      "kind": "homepage",
+      "text": "Everything for brewing coffee cold at home."
+    }
+  ]
+}

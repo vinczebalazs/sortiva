@@ -232,6 +232,20 @@ describe('whether a description describes anything', () => {
     ).toBe('wrong_sentence_count')
   })
 
+  it('holds a language whose words are two characters to a two-character bar', () => {
+    // 急須 is a whole noun in two characters. Holding Japanese to an English
+    // word length would mark every Japanese store's description as saying
+    // nothing about the store.
+    const japanese = storeVocabulary(['急須', '煎茶'])
+    expect(japanese).toContain('急須')
+    expect(
+      describesTheStore(
+        '常滑の作り手から仕入れた急須と、静岡の煎茶を扱う店です。茶器と茶葉の両方をあつかっています。',
+        japanese,
+      ),
+    ).toBe('substantive')
+  })
+
   it('rejects the brief handed back with its headings on', () => {
     expect(
       describesTheStore('Product families:\n- Trailrunning-Schuhe (12 product(s))', vocabulary),

@@ -1,0 +1,45 @@
+{
+  "note": "The language is declared with no region and the currency is ambiguous, so the address answers the country.",
+  "domain": "fietstas.nl",
+  "shop": {
+    "currency": "EUR"
+  },
+  "homepageHtml": "<!doctype html><html lang=\"nl\"><head><title>Fietstas</title></head><body></body></html>",
+  "productCount": 35,
+  "families": [
+    {
+      "name": "Fietstassen",
+      "memberCount": 19,
+      "differentiationAxes": [
+        "volume",
+        "bevestiging"
+      ],
+      "facts": {
+        "capacity": "20 L",
+        "material": "gerecycled polyester"
+      }
+    },
+    {
+      "name": "Bagagedragers",
+      "memberCount": 8,
+      "differentiationAxes": [
+        "materiaal"
+      ],
+      "facts": {
+        "material": "aluminium"
+      }
+    }
+  ],
+  "topSellers": [
+    {
+      "title": "Stadstas 20L",
+      "rank": 1
+    }
+  ],
+  "pages": [
+    {
+      "kind": "homepage",
+      "text": "Waterdichte fietstassen voor woon-werkverkeer en lange tochten."
+    }
+  ]
+}

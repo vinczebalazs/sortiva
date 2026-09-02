@@ -1,0 +1,39 @@
+{
+  "note": "A small, thinly described shop. The description still has to name what it sells rather than praising it.",
+  "domain": "alfareria.es",
+  "shop": {
+    "primaryLocale": "es-ES",
+    "countryCode": "ES",
+    "currency": "EUR"
+  },
+  "homepageHtml": "<!doctype html><html lang=\"es-ES\"><head><title>Alfarería</title></head><body></body></html>",
+  "productCount": 11,
+  "families": [
+    {
+      "name": "Cerámica de mesa",
+      "memberCount": 8,
+      "differentiationAxes": [
+        "esmalte"
+      ],
+      "facts": {}
+    },
+    {
+      "name": "Macetas",
+      "memberCount": 3,
+      "differentiationAxes": [],
+      "facts": {}
+    }
+  ],
+  "topSellers": [
+    {
+      "title": "Plato hondo esmaltado",
+      "rank": 1
+    }
+  ],
+  "pages": [
+    {
+      "kind": "homepage",
+      "text": "Cerámica hecha a torno en un taller de Talavera."
+    }
+  ]
+}

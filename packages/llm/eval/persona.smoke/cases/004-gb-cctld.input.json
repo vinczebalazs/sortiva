@@ -1,0 +1,57 @@
+{
+  "note": "English is declared without a region; the country comes from the address. `.co.uk` is GB, not UK.",
+  "domain": "pennineclimbing.co.uk",
+  "homepageHtml": "<!doctype html><html lang=\"en\"><head><title>Pennine Climbing</title></head><body></body></html>",
+  "productCount": 96,
+  "families": [
+    {
+      "name": "Climbing Harnesses",
+      "memberCount": 18,
+      "differentiationAxes": [
+        "gear loops",
+        "waistbelt"
+      ],
+      "facts": {
+        "certifications": [
+          "EN 12277"
+        ],
+        "weight": "310 g"
+      }
+    },
+    {
+      "name": "Chalk Bags",
+      "memberCount": 12,
+      "differentiationAxes": [
+        "closure"
+      ],
+      "facts": {}
+    },
+    {
+      "name": "Bouldering Mats",
+      "memberCount": 7,
+      "differentiationAxes": [
+        "fold",
+        "thickness"
+      ],
+      "facts": {
+        "dimensions": "132 x 100 x 10 cm"
+      }
+    }
+  ],
+  "topSellers": [
+    {
+      "title": "Gritstone Harness",
+      "rank": 1
+    },
+    {
+      "title": "Edale Bouldering Mat",
+      "rank": 2
+    }
+  ],
+  "pages": [
+    {
+      "kind": "homepage",
+      "text": "Climbing and bouldering gear, tested on Peak District grit."
+    }
+  ]
+}

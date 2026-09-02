@@ -1,0 +1,42 @@
+{
+  "note": "The page declares no lang. Its hreflang tags all agree, so they answer.",
+  "domain": "atelierlumiere.example",
+  "homepageHtml": "<!doctype html><html><head><title>Atelier Lumière</title><link rel=\"alternate\" hreflang=\"fr-FR\" href=\"https://example/fr-FR\"><link rel=\"alternate\" hreflang=\"fr-FR\" href=\"https://example/fr-FR\"><link rel=\"alternate\" hreflang=\"x-default\" href=\"https://example/\"></head><body></body></html>",
+  "productCount": 58,
+  "families": [
+    {
+      "name": "Bougies parfumées",
+      "memberCount": 24,
+      "differentiationAxes": [
+        "parfum",
+        "format"
+      ],
+      "facts": {
+        "material": "cire de soja",
+        "weight": "180 g"
+      }
+    },
+    {
+      "name": "Diffuseurs",
+      "memberCount": 11,
+      "differentiationAxes": [
+        "capacité"
+      ],
+      "facts": {
+        "capacity": "100 ml"
+      }
+    }
+  ],
+  "topSellers": [
+    {
+      "title": "Bougie Figuier 180g",
+      "rank": 1
+    }
+  ],
+  "pages": [
+    {
+      "kind": "about",
+      "text": "Un atelier à Grasse qui coule ses bougies à la main depuis 2014."
+    }
+  ]
+}

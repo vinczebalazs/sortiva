@@ -27,11 +27,23 @@ export type DescriptionVerdict =
   | 'echoes_the_brief'
 
 /**
- * Below this, a "description" is a label. Two sentences about a business in any
- * language run past it comfortably; the shortest genuine answer seen in the
- * smoke set is roughly twice this.
+ * Below this, a "description" is a label rather than a description. Two
+ * sentences about a business in an alphabetic language run past it comfortably.
  */
 const MIN_DESCRIPTION_CHARS = 80
+
+/**
+ * The same bar for a language that writes a word in one or two characters.
+ *
+ * Japanese says in forty characters what German needs a hundred and twenty for,
+ * so a single character count would mark every genuine Japanese description as
+ * too short — the same mistake, in the other direction, as holding a German
+ * description to a Japanese length.
+ */
+const MIN_DESCRIPTION_CHARS_DENSE = 30
+
+/** How much of the text has to be in a dense script before it is judged as one. */
+const DENSE_SHARE = 0.3
 
 /** Sentence-ending punctuation, Latin and CJK. */
 const SENTENCE_END = /[.!?。！？]+/
@@ -53,19 +65,30 @@ export function countSentences(text: string): number {
 }
 
 /**
+ * Scripts that write a whole word in one or two characters. In Japanese, 急須
+ * ("teapot") is two characters and an entire noun; in an alphabet, two letters
+ * is usually a preposition.
+ */
+const DENSE_SCRIPT = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u
+
+/**
  * Terms from the store's own catalogue that a real description of it would be
- * expected to touch: its family names, its best sellers, its own brand.
+ * expected to touch: its family names and its best sellers.
  *
- * Matching is on words of three characters or more, lower-cased, so "Trail
+ * Matching is on words long enough to mean something, lower-cased, so "Trail
  * Running Shoes" is satisfied by a description that says "running shoes" and
- * not by one that says "shoes and more" — and a two-letter word, which in some
- * languages is every second word, cannot satisfy it by accident.
+ * not by one that says "shoes and more" — a two-letter word, which in an
+ * alphabetic language is every second word, cannot satisfy it by accident. The
+ * bar is two characters rather than three for scripts where two characters is a
+ * noun rather than a particle, because holding Japanese to an English word
+ * length would mark every Japanese store's description as saying nothing.
  */
 export function storeVocabulary(terms: readonly string[]): string[] {
   const words = new Set<string>()
   for (const term of terms) {
     for (const word of term.toLowerCase().split(/[^\p{L}\p{N}]+/u)) {
-      if (word.length >= 3) words.add(word)
+      const minimum = DENSE_SCRIPT.test(word) ? 2 : 3
+      if (word.length >= minimum) words.add(word)
     }
   }
   return [...words]
@@ -78,7 +101,7 @@ export function describesTheStore(
   const text = (description ?? '').trim()
   if (text === '') return 'empty'
   if (BRIEF_HEADINGS.some((heading) => text.includes(heading))) return 'echoes_the_brief'
-  if (text.length < MIN_DESCRIPTION_CHARS) return 'too_short'
+  if (text.length < minimumLengthFor(text)) return 'too_short'
 
   const sentences = countSentences(text)
   if (sentences < 2 || sentences > 4) return 'wrong_sentence_count'
@@ -89,4 +112,12 @@ export function describesTheStore(
 
   const lowered = text.toLowerCase()
   return vocabulary.some((word) => lowered.includes(word)) ? 'substantive' : 'generic'
+}
+
+/** The length bar this text's own script is held to. */
+function minimumLengthFor(text: string): number {
+  const letters = text.match(/\p{L}/gu)?.length ?? 0
+  if (letters === 0) return MIN_DESCRIPTION_CHARS
+  const dense = text.match(new RegExp(DENSE_SCRIPT.source, 'gu'))?.length ?? 0
+  return dense / letters >= DENSE_SHARE ? MIN_DESCRIPTION_CHARS_DENSE : MIN_DESCRIPTION_CHARS
 }

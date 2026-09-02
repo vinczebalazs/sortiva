@@ -16,6 +16,17 @@ Class (filled by audit): a: fine as-is | b: promote to spec | c: contradicts spe
 
 (entries below, newest first)
 
+## 2026-09-02 — T2.5 — The eval discovery walk now recognises `.smoke`, because otherwise the persona set would exist and never run
+Decision: `discoverEvalSets` accepts a directory ending in `.eval` **or** `.smoke`. `packages/llm/eval/persona.smoke/` is the set; a test asserts the walk finds it.
+Why: the spec and CLAUDE.md fix the three sets' names as `distillation.eval`, `judge.eval` and `persona.smoke`, and the walk written at M0 matched `.eval` only — its own doc comment lists all three as directory names, so this is a defect rather than a rule. The consequence was not a failure but a silence: the set could be written, reviewed and merged while being discovered by nothing, and `pnpm eval` would report a pass over nine cases it never looked at. The runner already refuses to skip a set whose runner is missing, on exactly that reasoning ("a suite that is not running cannot look like a suite that is passing"); this closes the same hole one level up. The alternative — renaming the directory to `persona.smoke.eval` — was rejected because the fixed names exist so that CI and audits can find them by name.
+Nearest spec: main §14.2 (the three frozen sets and their names); CLAUDE.md ("spec-defined suites … have fixed names so CI and audits can find them").
+
+## 2026-09-02 — T2.5 — A description is judged for length and vocabulary against its own script, not against English
+Decision: the non-degeneracy check holds a description to 80 characters and three-character words in an alphabetic language, and to 30 characters and two-character words where at least 30% of the text is Han, kana or Hangul.
+Why: found by the smoke set's own Japanese case, which failed against the first version of the check. 急須 is a complete noun in two characters and a genuine two-sentence Japanese description runs to about forty; a single English-shaped bar would have marked every Japanese store's description as saying nothing about the store, and the failure would have looked like the model's rather than ours. The share test rather than "contains any such character" so a German description quoting one Japanese product name is still held to a German length.
+Nearest spec: main §14.2 — requires "description non-degeneracy", defines no measure.
+
+
 ## 2026-09-02 — T2.5 — A store's default publish timezone is written once and never moved by a later run
 Decision: `ensureAccountTimezone` inserts `account_settings` with the zone the persona's country implies and does nothing if the row already exists. The step then reads back whatever the account actually has and reports it, so its recorded output names the zone in force rather than the one it proposed.
 Why: this account is the first writer of `account_settings` in the whole product — the row did not exist before this card, and the settings screen and the email schedules read it with a UTC fallback. The zone is a *default*, and main §9.4 explicitly lets the merchant "pick a specific one in settings". Onboarding re-runs for ordinary reasons — a re-sync, a redelivered job, a corrected persona — and an upsert would silently move a merchant's publishing back to our guess every time one happened, with no error and nothing in the interface to explain it. Insert-if-absent makes the write safe to repeat, which is what every step here has to be.

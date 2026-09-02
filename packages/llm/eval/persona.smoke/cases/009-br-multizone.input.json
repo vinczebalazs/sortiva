@@ -1,0 +1,47 @@
+{
+  "note": "Portuguese in Brazil, not Portugal — and Brazil is the second multi-zone country the publish rules name.",
+  "domain": "correnteza.example",
+  "shop": {
+    "primaryLocale": "pt-BR",
+    "countryCode": "BR",
+    "currency": "BRL"
+  },
+  "homepageHtml": "<!doctype html><html lang=\"pt-BR\"><head><title>Correnteza</title></head><body></body></html>",
+  "productCount": 44,
+  "families": [
+    {
+      "name": "Pranchas de stand up paddle",
+      "memberCount": 12,
+      "differentiationAxes": [
+        "comprimento",
+        "volume"
+      ],
+      "facts": {
+        "dimensions": "320 cm",
+        "material": "PVC laminado"
+      }
+    },
+    {
+      "name": "Remos",
+      "memberCount": 9,
+      "differentiationAxes": [
+        "material"
+      ],
+      "facts": {
+        "material": "fibra de carbono"
+      }
+    }
+  ],
+  "topSellers": [
+    {
+      "title": "Prancha SUP 320",
+      "rank": 1
+    }
+  ],
+  "pages": [
+    {
+      "kind": "about",
+      "text": "Fabricamos pranchas de stand up paddle em Florianópolis desde 2016."
+    }
+  ]
+}

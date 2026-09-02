@@ -1,0 +1,45 @@
+{
+  "note": "Nothing declares a language and the shop has no country. A single-country currency names the country; the address names the language.",
+  "domain": "ziolowy.pl",
+  "shop": {
+    "currency": "PLN"
+  },
+  "homepageHtml": "<!doctype html><html><head><title>Ziołowy</title></head><body></body></html>",
+  "productCount": 52,
+  "families": [
+    {
+      "name": "Herbaty ziołowe",
+      "memberCount": 27,
+      "differentiationAxes": [
+        "skład",
+        "gramatura"
+      ],
+      "facts": {
+        "weight": "50 g",
+        "origin": "Polska"
+      }
+    },
+    {
+      "name": "Zaparzacze",
+      "memberCount": 6,
+      "differentiationAxes": [
+        "materiał"
+      ],
+      "facts": {
+        "material": "stal nierdzewna"
+      }
+    }
+  ],
+  "topSellers": [
+    {
+      "title": "Herbata ziołowa Mięta 50g",
+      "rank": 1
+    }
+  ],
+  "pages": [
+    {
+      "kind": "homepage",
+      "text": "Zioła i herbaty zbierane w Bieszczadach."
+    }
+  ]
+}
