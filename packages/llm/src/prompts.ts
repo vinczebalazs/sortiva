@@ -22,12 +22,22 @@ import { fileURLToPath } from 'node:url'
  * the path from `fileURLToPath` keeps the same resolution at runtime and is
  * opaque to the bundler.
  *
+ * It is also worked out when a prompt is first asked for rather than when this
+ * module loads. A module's address is only a real path when the code runs from
+ * the repository tree; doing this at the top level means merely importing the
+ * package can throw, and the one import that mattered was the web server's
+ * start-up hook — where a throw stops the server serving anything at all. The
+ * threshold loader in `packages/rules` failed exactly that way; a lint rule now
+ * holds both packages to the later form.
+ *
  * The prompt files themselves reach production because the deployment runs from
  * the repository tree rather than a bundle. If `next.config.mjs`
  * ever sets `output: 'standalone'`, they need an `outputFileTracingIncludes`
  * entry, exactly as `packages/rules/signals.config.yaml` already has.
  */
-const PROMPTS_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'prompts')
+function promptsDir(): string {
+  return join(dirname(fileURLToPath(import.meta.url)), '..', 'prompts')
+}
 
 export interface Prompt {
   /** `<name>.v<N>` — the value stamped on artefacts and captured on every event. */
@@ -44,7 +54,7 @@ export function loadPrompt(name: string, majorVersion: number): Prompt {
   const hit = cache.get(version)
   if (hit) return hit
 
-  const path = join(PROMPTS_DIR, `${version}.md`)
+  const path = join(promptsDir(), `${version}.md`)
   let text: string
   try {
     text = readFileSync(path, 'utf8')

@@ -25,6 +25,35 @@ History: this is the **third** time this defect has been worked around instead o
 Nearest spec: main §7.10 (thresholds live in `packages/rules`, stamped by `rules_version`); tech §2, §6 (architecture and CI). Neither says when the file is read.
 
 
+## 2026-09-02 — T-BOOT — Deferring the read was not enough on its own: the path also had to stop being written in the one form the bundler rewrites
+Decision: `packages/rules/src/load.ts` now does both halves. It works out where the configuration file sits **inside a function called by the first caller that needs a threshold** (the founder decision), and it *composes* that location — `join(dirname(fileURLToPath(import.meta.url)), '..')` — instead of writing `new URL('signals.config.yaml', new URL('../', import.meta.url))`.
+Why: the second half is not optional, and the founder decision does not name it because it is a mechanical detail. The bundler rewrites `new URL('<something written out literally>', import.meta.url)` **while it is building**, not while it is running: it treats the target as a file it must publish and replaces the expression with a web address that has no disk behind it. Moving that expression inside a function changes only *when* the broken value is used, not that it is broken — the server would have started and then every background job would have failed the first time it asked for a number. Composing the same path out of pieces is invisible to the bundler and resolves identically at runtime. This is the same repair `R4` already made to the prompt loader for the same reason (2026-09-01 R4), and it is why that one has worked since.
+Proved rather than assumed: a throwaway route that reads a threshold was added to the built application, served, and answered with the live `rules_version` and a real threshold value — so the file is genuinely found from inside the production bundle, not merely found by a test running from the repository tree. The route was deleted afterwards and is not in the branch.
+Nearest spec: main §7.10 — the configuration file and `rules_version`; silent on bundling.
+Class (filled by audit):
+
+## 2026-09-02 — T-BOOT — `CONFIG_PATH` is now `configPath()`, a function
+Decision: `@sortiva/rules` exports `configPath()` in place of the `CONFIG_PATH` constant. Nothing outside the package's own tests used it; those were repointed.
+Why: a constant is a value computed when the module loads, which is exactly the thing this card exists to remove — leaving it in place would leave the defect in the package's public surface for the next caller to reintroduce, and the new lint rule would have to be switched off for the line that defines it. A function also tells the reader the truth: the path is worked out when asked for.
+For other lanes: if you need the file's location, call `configPath()`. If you need a number, call `rules()` and never touch the path at all.
+Nearest spec: none — package surface, CLAUDE.md code-structure rules.
+Class (filled by audit):
+
+## 2026-09-02 — T-BOOT — The prompt loader is read on first use too, and the lint rule covers both packages
+Decision: `packages/llm/src/prompts.ts` works out where the prompt files live inside `loadPrompt` rather than at the top of the module, matching `packages/rules`.
+Why: part 2 of the card puts both packages under a rule that forbids the module-load form, so the existing constant would have failed the new rule — and it has the identical defect, which `T1.3` wrote up in January and `R4` half-repaired (it fixed the *shape* of the path, not *when* it is computed). Both halves now match.
+Not done here, and deliberately: `apps/web/app/api/preview/_lib/config.ts` still reads its prompt file by hand, which `T1.3` said should be deleted "the moment `loadPrompt` is bundler-safe". That moment has arrived, but the preview endpoint belongs to another lane and deleting its reader is a behaviour change in a card that has none. **Proposal for the integrator or the preview lane:** that local reader can now go, and the endpoint can call `loadPrompt` like everything else.
+Nearest spec: main §14.2 — prompts are versioned files loaded by version; silent on when the file is located.
+Class (filled by audit):
+
+## 2026-09-02 — T-BOOT — Contradiction with tech §2, surfaced rather than resolved: the config is no longer "schema-validated at worker start"
+Decision: proceeding as the founder decided; recording that it departs from a written line in the tech spec.
+What the spec says: tech §2 and main §7.10 both say `signals.config.yaml` is "loaded at worker start" and "schema-validated at worker start". It now is not — it is loaded and validated by the first piece of work that needs a number.
+Why it is accepted: loading it at start-up is precisely what stopped the server starting, and the founder decision names the trade knowingly ("a genuinely missing or malformed config file is now discovered on the first call that needs a threshold"). The card's answer to the cost is the loud, file-naming error, which is built and proved.
+What it means in practice, plainly: a deployment carrying a broken configuration file will now start, serve pages and answer its health check, and fail only when a background job or a screen actually needs a threshold. Before, it would have refused to start at all — which sounds safer and was not, because "refuses to start" is also what a healthy deployment looked like all week. **For the integrator:** if the spec should be amended rather than departed from, this is the entry to promote; if start-up validation is wanted back, it is a deliberate call to `rules()` in the start-up hook, which is a founder decision and not this card's to take.
+Nearest spec: tech §2 (rules/config layer), main §7.10.
+Class (filled by audit):
+
 ## 2026-09-02 — integrator (merging T3.2 and T9.2) — The mock API server is no longer part of `@sortiva/ui`'s public surface
 Decision: `packages/ui/src/index.ts` no longer re-exports `./msw`. The fixtures and request handlers are reached at `@sortiva/ui/msw` (a new entry in the package's exports map) by the five files that want them — all of them tests or the end-to-end fixture server. One import in `apps/web/app/(app)/_lib/shell-state.test.ts` was repointed; the other four already used direct paths.
 Why: neither card broke the build alone, and together they did. `T3.2` added a page-checksum helper that uses `node:crypto`, exported through the `@sortiva/core` barrel; `T9.2` added a browser component that imports `@sortiva/ui`, whose barrel re-exported the mock fixtures, which import that core barrel. A Node-only module therefore ended up in a browser bundle and `next build` refused it. Dropping the re-export is the smallest fix that is also the right one: a mock server exists to serve tests and the fixture site, and nothing in a production browser bundle should be able to reach it by accident. Taken by the integrator at merge because `main` did not compile; both packages' barrels are shared files no lane owns.

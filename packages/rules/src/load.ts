@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import Ajv, { type ErrorObject } from 'ajv'
 import { parse as parseYaml } from 'yaml'
@@ -9,7 +10,8 @@ import type { DeepPartial, RulesDocument, RulesLayer } from './types'
  * The fallback click curve is read by position, so a missing position would be
  * read as "nobody ever clicks here" rather than as a hole in the table — and a
  * store with no history of its own would then be told every one of its pages is
- * under-clicked. Checked here so the document is rejected at start-up instead.
+ * under-clicked. Checked while the document is read, so a hole is a refusal to
+ * serve any threshold at all rather than a plausible-looking wrong answer.
  */
 function assertStandardCurveComplete(layer: RulesLayer, label: string): void {
   const missing: string[] = []
@@ -26,12 +28,58 @@ function assertStandardCurveComplete(layer: RulesLayer, label: string): void {
   }
 }
 
-const packageRoot = new URL('../', import.meta.url)
+/**
+ * Where this package sits on disk, worked out **when a threshold is first
+ * asked for** and never when this module is loaded.
+ *
+ * Two separate hazards are being avoided here, and both have bitten.
+ *
+ * A module's address is a real file path only when the code runs from the
+ * repository tree. Bundled into the production web build it is not, so doing
+ * this at the top level threw the instant anything imported this package — and
+ * what imported it was the server's start-up hook, which Next treats as a
+ * failed server. Every route answered 500, the landing page and the health
+ * check included, while the build and the whole test suite stayed green.
+ * Deferring the work to the first caller keeps the file out of the bundle,
+ * which is the point of keeping the numbers in a file at all: they can be
+ * changed without a deploy.
+ *
+ * The path is also *composed* rather than written as
+ * `new URL('<literal>', import.meta.url)`. The bundler reads that exact form as
+ * an asset reference it must resolve while building, and rewrites it to a
+ * public URL with no disk behind it. Composing the same path is invisible to it
+ * and resolves identically at runtime.
+ */
+function packageDir(): string {
+  return join(dirname(fileURLToPath(import.meta.url)), '..')
+}
 
-export const CONFIG_PATH = fileURLToPath(new URL('signals.config.yaml', packageRoot))
-const SCHEMA_PATH = fileURLToPath(new URL('schema/signals.config.schema.json', packageRoot))
+/** The config file this process will read. Resolved per call; callers cache the parsed document, not the path. */
+export function configPath(): string {
+  return join(packageDir(), 'signals.config.yaml')
+}
 
-/** Thrown at load. The config is validated at worker start, so an invalid document fails startup rather than surfacing as a wrong threshold hours later. */
+function schemaPath(): string {
+  return join(packageDir(), 'schema', 'signals.config.schema.json')
+}
+
+/** Reads one of the two files the config layer needs, turning "it is not there" into a sentence naming what is missing. */
+function readConfigFile(path: string, what: string): string {
+  try {
+    return readFileSync(path, 'utf8')
+  } catch (error) {
+    throw new RulesConfigError(
+      `${what} could not be read at ${path}. Every threshold the product applies comes from this file; nothing can run without it.`,
+      [error instanceof Error ? error.message : String(error)],
+    )
+  }
+}
+
+/**
+ * Thrown on the first call that needs a threshold. Since the document is read
+ * then rather than at start-up, this error is the only thing that says the
+ * configuration is wrong — so it names the file and the path every time.
+ */
 export class RulesConfigError extends Error {
   constructor(
     message: string,
@@ -89,8 +137,8 @@ export interface LoadOptions {
 }
 
 export function loadRulesConfig(options: LoadOptions = {}): RulesConfig {
-  const path = options.configPath ?? CONFIG_PATH
-  const raw = options.source ?? readFileSync(path, 'utf8')
+  const path = options.configPath ?? configPath()
+  const raw = options.source ?? readConfigFile(path, 'signals.config.yaml')
 
   let parsed: unknown
   try {
@@ -102,7 +150,9 @@ export function loadRulesConfig(options: LoadOptions = {}): RulesConfig {
   }
 
   const ajv = new Ajv({ allErrors: true, strict: false })
-  const schema = JSON.parse(readFileSync(SCHEMA_PATH, 'utf8')) as object
+  const schema = JSON.parse(
+    readConfigFile(schemaPath(), "signals.config.yaml's schema"),
+  ) as object
   const validate = ajv.compile(schema)
 
   if (!validate(parsed)) {
@@ -160,8 +210,9 @@ export function loadRulesConfig(options: LoadOptions = {}): RulesConfig {
 let cached: RulesConfig | undefined
 
 /**
- * Process-wide config: loaded once per process, so reading a threshold never
- * costs a database lookup.
+ * Process-wide config: read from disk by the first caller that needs a number
+ * and held from then on, so reading a threshold costs nothing after that and
+ * merely importing this package costs nothing at all.
  */
 export function rules(): RulesConfig {
   cached ??= loadRulesConfig()
