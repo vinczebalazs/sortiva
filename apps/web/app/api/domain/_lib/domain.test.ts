@@ -1,12 +1,21 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { sql, TransactionRollbackError } from 'drizzle-orm'
 import { DOMAIN_ALREADY_CLAIMED_MESSAGE, DOMAIN_CLAIMED_EVENT, ingestionRunId } from '@sortiva/core'
+import type { Database } from '@sortiva/db'
 import {
+  TEST_DATABASE_URL,
   databaseAvailable,
   insertAccount,
   setupTestDb,
   truncateAll,
   type TestDb,
 } from '@sortiva/db/testing'
+import { INGESTION_DISPATCH_TASK } from '@sortiva/jobs/ingestion/queue'
+import {
+  TRUNCATE_QUEUE_SQL,
+  installQueueSchema,
+  type WorkerUtils,
+} from '@sortiva/jobs/runtime/testing'
 import { dispatchableSteps } from '@sortiva/jobs/runtime/steps'
 import { MockPosthogCapture } from '@sortiva/providers'
 import { withAccount } from '../../auth/_lib/session'
@@ -17,6 +26,11 @@ import { makeDomainClaimStore } from './store'
  * The claim against a real database, because the whole point of
  * the claim is a race two transactions have with each other, and a race can
  * only be lost in SQL.
+ *
+ * The queue is real here too, not a stand-in: what the claim has to guarantee
+ * is that the request to start onboarding and the record of that onboarding
+ * either both survive or neither does, and only one transaction over one real
+ * queue can show that.
  */
 
 const available = await databaseAvailable()
@@ -24,19 +38,47 @@ const available = await databaseAvailable()
 describe.skipIf(!available)('POST /api/domain/claim (main §5, ui §3.1)', () => {
   let harness: TestDb
   let capture: MockPosthogCapture
+  let workerUtils: WorkerUtils
 
   beforeAll(async () => {
     harness = await setupTestDb('web_domain_claim')
+    // The queue's own tables are installed by the worker, not by our
+    // migrations. In production the worker starts in the same process as the
+    // web server and installs them before a request can arrive; here nothing
+    // starts a worker, so the suite installs them itself.
+    const url = new URL(TEST_DATABASE_URL)
+    url.pathname = `/${harness.databaseName}`
+    workerUtils = await installQueueSchema(url.toString())
   })
 
   afterAll(async () => {
+    await workerUtils?.release()
     await harness.close()
   })
 
   beforeEach(async () => {
     await truncateAll(harness.pool)
+    await harness.pool.query(TRUNCATE_QUEUE_SQL)
     capture = new MockPosthogCapture()
   })
+
+  /** What the claim actually put on the queue, oldest first. */
+  async function queuedDispatches(): Promise<
+    { payload: { accountId: string; jobId?: string }; key: string | null }[]
+  > {
+    const { rows } = await harness.pool.query<{
+      payload: { accountId: string; jobId?: string }
+      key: string | null
+    }>(
+      `select j.payload, j.key
+         from graphile_worker._private_jobs as j
+         join graphile_worker._private_tasks as t on t.id = j.task_id
+        where t.identifier = $1
+        order by j.id`,
+      [INGESTION_DISPATCH_TASK],
+    )
+    return rows
+  }
 
   function claimAs(accountId: string) {
     return withAccount(
@@ -112,6 +154,109 @@ describe.skipIf(!available)('POST /api/domain/claim (main §5, ui §3.1)', () =>
     expect(claimed).toHaveLength(1)
     expect(claimed[0]!.distinctId).toBe(accountId)
     expect(claimed[0]!.groups).toEqual({ domain: 'example.co.uk' })
+  })
+
+  it('asks a worker to start the run it just wrote', async () => {
+    const accountId = await insertAccount(harness.pool, 'merchant@example.com')
+
+    const response = await claim(accountId, 'example.com')
+    const body = await response.json()
+
+    // Before this, claiming wrote the nine steps and asked nobody to run them,
+    // so a merchant's very first step — reading their storefront to see what
+    // it is built on — never started. This is what makes it start.
+    const queued = await queuedDispatches()
+    expect(queued).toHaveLength(1)
+    expect(queued[0]!.payload).toEqual({ accountId, jobId: body.ingestionJobId })
+  })
+
+  it('rolls the queued work back with the claim, so neither can outlive the other', async () => {
+    // A job asking for a run that never committed would fail forever; a claim
+    // that committed without one leaves the merchant watching a progress screen
+    // nothing will ever advance. The claim runs inside this transaction, so
+    // rolling it back is how both halves are shown to be one.
+    const accountId = await insertAccount(harness.pool, 'atomic@example.com')
+    const inside = { domains: 0, runs: 0, steps: 0, queued: 0 }
+
+    await expect(
+      harness.db.transaction(async (tx) => {
+        const store = makeDomainClaimStore({
+          // The claim opens a nested transaction, which Postgres makes a
+          // savepoint inside this one — which is what lets the test discard it.
+          database: tx as unknown as Database,
+        })
+        const result = await store.claimWithIngestionRun({
+          accountId,
+          normalized: 'example.com',
+          runId: ingestionRunId('example.com'),
+        })
+        expect(result.kind).toBe('claimed')
+
+        const count = async (from: string): Promise<number> => {
+          const rows = (await tx.execute(sql.raw(`select count(*)::int as n from ${from}`)))
+            .rows as { n: number }[]
+          return rows[0]!.n
+        }
+        inside.domains = await count('domains')
+        inside.runs = await count('ingestion_jobs')
+        inside.steps = await count('job_steps')
+        inside.queued = await count(
+          `graphile_worker._private_jobs j
+             join graphile_worker._private_tasks t on t.id = j.task_id
+            where t.identifier = '${INGESTION_DISPATCH_TASK}'`,
+        )
+
+        tx.rollback()
+      }),
+    ).rejects.toBeInstanceOf(TransactionRollbackError)
+
+    // Uncommitted, everything was there: the claim, the run, its nine steps and
+    // the request to start them.
+    expect(inside).toEqual({ domains: 1, runs: 1, steps: 9, queued: 1 })
+
+    // Rolled back, none of it is.
+    expect(await rowCount('SELECT count(*) n FROM domains')).toBe(0)
+    expect(await rowCount('SELECT count(*) n FROM ingestion_jobs')).toBe(0)
+    expect(await rowCount('SELECT count(*) n FROM job_steps')).toBe(0)
+    expect(await queuedDispatches()).toHaveLength(0)
+  })
+
+  it('queues nothing for a claim that is refused', async () => {
+    const owner = await insertAccount(harness.pool, 'owner@example.com')
+    const squatter = await insertAccount(harness.pool, 'squatter@example.com')
+    const holder = await insertAccount(harness.pool, 'holder@example.com')
+
+    expect((await claim(owner, 'example.com')).status).toBe(200)
+    expect((await claim(holder, 'holder.com')).status).toBe(200)
+
+    // Someone else's domain, a second domain for an account that has one, and
+    // an address that is not a domain at all: no run, so nothing to start.
+    expect((await claim(squatter, 'example.com')).status).toBe(409)
+    expect((await claim(holder, 'second.com')).status).toBe(422)
+    expect((await claim(squatter, 'not a website')).status).toBe(422)
+
+    const owners = (await queuedDispatches()).map((job) => job.payload.accountId)
+    expect(owners.sort()).toEqual([holder, owner].sort())
+  })
+
+  it('does not queue a second job when the same merchant claims again', async () => {
+    const accountId = await insertAccount(harness.pool, 'merchant@example.com')
+
+    // The retry of a request whose response was lost, and the merchant who
+    // pastes their address again after nothing seemed to happen.
+    await claim(accountId, 'example.com')
+    await claim(accountId, 'https://www.example.com/pages/about')
+    await claim(accountId, 'example.com')
+
+    // One run, and one request to move it. The job key is derived from the
+    // account, so the second and third asks land on the first job rather than
+    // stacking up behind it.
+    expect(
+      await rowCount('SELECT count(*) n FROM ingestion_jobs WHERE account_id = $1', [accountId]),
+    ).toBe(1)
+    const queued = await queuedDispatches()
+    expect(queued).toHaveLength(1)
+    expect(queued[0]!.key).toBe(`${INGESTION_DISPATCH_TASK}:${accountId}`)
   })
 
   it("refuses another account's domain with main §5's exact words", async () => {
