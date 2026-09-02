@@ -37,6 +37,9 @@ export const VIEW_CONTENT: Readonly<Record<string, ViewContent>> = {
   // read out of it, their best sellers with revenue against them, and the
   // keywords and competitors drawn from all of it.
   '/dashboard': 'store_data',
+  // Every opportunity names the page, product family or search it is about,
+  // all of which are the merchant's own.
+  '/opportunities': 'store_data',
   '/plan': 'no_store_data',
   '/signin': 'no_store_data',
   '/ui-gallery/banner-stack': 'no_store_data',

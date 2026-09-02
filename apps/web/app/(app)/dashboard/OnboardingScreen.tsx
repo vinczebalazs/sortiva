@@ -114,7 +114,14 @@ export function OnboardingScreen({
 
     default:
       // Confirmation, the first scan and the steady-state dashboard are
-      // rendered by the page itself, which knows them without a browser.
-      return null
+      // rendered by the page itself, which knows them without a browser. This
+      // is reached only when the page could not read what it needed for one of
+      // them — the run is still the truth, so show where it got to rather than
+      // an empty screen.
+      return status ? (
+        <div className="sortiva-onboarding">
+          <Stepper status={status} domain={account.domain?.normalized ?? null} />
+        </div>
+      ) : null
   }
 }

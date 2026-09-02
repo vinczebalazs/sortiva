@@ -301,3 +301,276 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* ── The confirmation review ──────────────────────────────────────────────── */
+
+.sortiva-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 860px;
+  padding-bottom: 90px; /* room for the footer pinned below it */
+}
+
+.sortiva-confirm__header,
+.sortiva-confirm__section {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sortiva-confirm__section-heading {
+  font-family: var(--sortiva-font-heading);
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.sortiva-confirm__section-note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-confirm__section-body {
+  margin: 0;
+  color: var(--sortiva-text-secondary);
+  line-height: 1.55;
+}
+
+.sortiva-confirm label {
+  font-size: 13px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-confirm input,
+.sortiva-confirm textarea {
+  width: 100%;
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: var(--sortiva-radius-inner);
+  padding: 10px 14px;
+  font: inherit;
+}
+.sortiva-confirm textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.sortiva-confirm__pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.sortiva-confirm__badge {
+  font-size: 12px;
+  color: var(--sortiva-text-muted);
+  background: var(--sortiva-surface-sunken);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.sortiva-confirm__remove,
+.sortiva-confirm__handle {
+  background: none;
+  border: 0;
+  padding: 0 6px;
+  font: inherit;
+  color: var(--sortiva-text-muted);
+  cursor: pointer;
+}
+.sortiva-confirm__handle {
+  cursor: grab;
+}
+
+.sortiva-confirm__products,
+.sortiva-confirm__competitors,
+.sortiva-confirm__chips,
+.sortiva-confirm__suggestions ul,
+.sortiva-confirm__axes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sortiva-confirm__chips,
+.sortiva-confirm__axes {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.sortiva-confirm__products li,
+.sortiva-confirm__competitors li,
+.sortiva-confirm__suggestions li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--sortiva-line);
+  border-radius: var(--sortiva-radius-inner);
+}
+
+.sortiva-confirm__product-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.sortiva-confirm__chips li,
+.sortiva-confirm__axes li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--sortiva-surface-sunken);
+  border-radius: 999px;
+  padding: 6px 12px;
+}
+
+.sortiva-confirm__chip-meta {
+  font-size: 12px;
+  color: var(--sortiva-text-muted);
+}
+/* A term whose numbers have not arrived says so rather than showing a zero. */
+.sortiva-confirm__chips li[data-enrichment='pending'] .sortiva-confirm__chip-meta {
+  opacity: 0.7;
+}
+
+.sortiva-confirm__add {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.sortiva-confirm__add input {
+  flex: 1;
+  min-width: 180px;
+}
+.sortiva-confirm__add button {
+  border: 1px solid var(--sortiva-line-strong);
+  background: var(--sortiva-surface);
+  border-radius: 999px;
+  padding: 9px 18px;
+  font: inherit;
+  cursor: pointer;
+}
+.sortiva-confirm__add button:disabled,
+.sortiva-confirm__add input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sortiva-confirm__family summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 10px 0;
+}
+.sortiva-confirm__family-label {
+  flex: 1;
+  font-weight: 500;
+}
+
+.sortiva-confirm__report {
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: var(--sortiva-radius-inner);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sortiva-confirm__richness-band {
+  margin: 0;
+  font-family: var(--sortiva-font-heading);
+  font-size: 20px;
+}
+
+.sortiva-confirm__error {
+  margin: 0;
+  color: var(--sortiva-critical);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Confirming is the end of onboarding, so the button stays in reach at every
+   scroll position of the longest screen in the product. */
+.sortiva-confirm__footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  justify-content: flex-end;
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow-raised);
+  padding: 14px 20px;
+}
+
+/* ── The first scan, and landing on what it found ─────────────────────────── */
+
+.sortiva-finding__stages {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--sortiva-text-secondary);
+}
+
+.sortiva-activation {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sortiva-activation__headline {
+  font-family: var(--sortiva-font-heading);
+  font-size: 26px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.sortiva-activation__explainer {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 18px 22px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.sortiva-activation__explainer ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  flex: 1;
+}
+.sortiva-activation__explainer li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--sortiva-text-secondary);
+}
+
+.sortiva-activation__dismiss {
+  background: none;
+  border: 0;
+  font: inherit;
+  color: var(--sortiva-text-muted);
+  cursor: pointer;
+}
