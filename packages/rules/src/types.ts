@@ -224,6 +224,35 @@ export interface SearchConsoleConfig {
   data_lag_days: number
 }
 
+/**
+ * How a query cluster is assembled: one search intent, made of a head query and
+ * the near-variants of it the store is actually shown for. Detection reasons
+ * about clusters rather than single searches, so these numbers decide which
+ * searches the engine can see at all.
+ */
+export interface ClustersConfig {
+  window_days: number
+  min_query_impressions: number
+  head_min_tokens: number
+  max_member_queries: number
+  max_clusters: number
+}
+
+/**
+ * How the store's own position-to-click-rate curve is fitted, and the plain
+ * table used instead when the store has too little history to fit one from.
+ */
+export interface CtrCurveConfig {
+  window_days: number
+  max_position: number
+  min_sample_impressions: number
+  min_position_buckets: number
+  fitted_ctr_min: number
+  fitted_ctr_max: number
+  /** Click rate by position, keyed by the position written as a string. Complete from 1 to `max_position`; the loader refuses a document where it is not. */
+  standard_curve: Readonly<Record<string, number>>
+}
+
 export interface BudgetsConfig {
   optimize: { generations_per_account_per_day: number }
   intent_gap: { analyses_per_account_per_day: number }
@@ -251,6 +280,8 @@ export interface RulesLayer {
   budgets: BudgetsConfig
   auto_trips: AutoTripsConfig
   search_console: SearchConsoleConfig
+  clusters: ClustersConfig
+  ctr_curve: CtrCurveConfig
 }
 
 export interface RulesDocument {

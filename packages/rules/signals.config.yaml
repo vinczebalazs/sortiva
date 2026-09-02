@@ -488,6 +488,103 @@ defaults:
     # searched".
     data_lag_days: 2
 
+  # ── Query clusters ────────────────────────────────────────────────────────
+  # A cluster is one search intent: a head query plus the near-variants of it
+  # the store is actually shown for. Almost everything downstream reasons about
+  # clusters rather than single queries — a page is judged on the intent it
+  # serves, not on one spelling of it, and two of the store's own pages
+  # splitting one intent between them is only visible once the spellings are
+  # pooled. These numbers decide which searches end up inside a cluster at all,
+  # and a search left out is an opportunity nobody can find.
+  clusters:
+    # How much recent search history the clusters are built from. Matches the
+    # 28-day window every Search Console signal is judged over, so a cluster and
+    # the signals read from it describe the same period.
+    window_days: 28
+    # UNSIGNED. A search shown fewer times than this in the window is left out
+    # of clustering entirely. It is the noise floor: a query with three
+    # impressions tells us nothing and a store has thousands of them. Lower it
+    # and clusters fill with long-tail spellings that move no decision; raise it
+    # and genuinely small markets stop producing clusters at all.
+    min_query_impressions: 10
+    # UNSIGNED. How many words a head query must have before other searches are
+    # allowed to join it. At 1, a head like "shoes" absorbs "running shoes" and
+    # "shoe polish" into one cluster and every conclusion drawn from that
+    # cluster is about nothing in particular. Raise it and broad head terms stop
+    # forming clusters of their own.
+    head_min_tokens: 2
+    # UNSIGNED. The most near-variants one cluster may hold. Bounds both the row
+    # we store and the arithmetic over it. A variant dropped here does not count
+    # toward its cluster's totals, so raising this makes cluster shares slightly
+    # more complete and the rows larger.
+    max_member_queries: 200
+    # UNSIGNED. The most clusters one store may have, keeping the busiest.
+    # Bounds the write for a large store. A cluster dropped is an intent
+    # detection never looks at, so this is the ceiling on how much of a store's
+    # search surface the engine can see.
+    max_clusters: 500
+
+  # ── The store's own click-through curve ───────────────────────────────────
+  # How often people click a result at each Google position, measured from this
+  # store's own history rather than an industry table. It exists so that
+  # "ranking well but nobody clicks" can be judged against what this store
+  # normally achieves at that position — device mix, brand mix and the shape of
+  # the results page distort published benchmarks enough to make them
+  # meaningless for any one store.
+  ctr_curve:
+    # UNSIGNED. How much history the fit is made from. Longer than the 28-day
+    # signal window on purpose: a curve is a slow-moving property of the store
+    # and a month of a small store's data is too thin to fit one from. Shorten
+    # it and the curve follows seasonal noise; lengthen it and it lags a store
+    # that has genuinely changed.
+    window_days: 90
+    # UNSIGNED. The lowest-ranked position the curve describes. Past this,
+    # clicks are so rare that the store has no usable evidence and the signal
+    # that reads the curve does not look this far down anyway.
+    max_position: 20
+    # UNSIGNED. Below this many impressions in the window the store's own data
+    # is not enough to fit a curve from, and the standard curve below is used
+    # instead. This is the number `ctr_curve.sample_n` is judged against. Lower
+    # it and small stores get a curve fitted from thin evidence, which is worse
+    # than a sensible default because it looks specific.
+    min_sample_impressions: 1000
+    # UNSIGNED. How many distinct positions must carry impressions before a fit
+    # is attempted. A curve drawn through two points is a line through two
+    # points, not a description of anything.
+    min_position_buckets: 5
+    # UNSIGNED. The fitted curve is clamped into this range at every position.
+    # A least-squares fit over odd data can otherwise predict a click rate above
+    # 1 at position 1, or effectively zero at position 3, and either would make
+    # the low-click signal fire on every page or on none.
+    fitted_ctr_min: 0.0005
+    fitted_ctr_max: 0.60
+    # UNSIGNED. The fallback used when the store has too little history of its
+    # own: a plain, conservative click-rate-by-position table. It is deliberately
+    # not tuned to any market — it exists so a new store is judged by something
+    # rather than by nothing, and every store that has data of its own is judged
+    # by that instead.
+    standard_curve:
+      "1": 0.2800
+      "2": 0.1550
+      "3": 0.1000
+      "4": 0.0700
+      "5": 0.0530
+      "6": 0.0410
+      "7": 0.0330
+      "8": 0.0280
+      "9": 0.0240
+      "10": 0.0210
+      "11": 0.0150
+      "12": 0.0130
+      "13": 0.0110
+      "14": 0.0100
+      "15": 0.0090
+      "16": 0.0080
+      "17": 0.0075
+      "18": 0.0070
+      "19": 0.0065
+      "20": 0.0060
+
 # ── Per-locale demand floors ─────────────────────────────────────────────────
 #
 # UNSIGNED, all of it. Per-country floors are required and no table was
