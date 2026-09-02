@@ -8,6 +8,7 @@ import {
 } from '@sortiva/core'
 import { rules } from '@sortiva/rules'
 import { runtimeLogger } from '../runtime/logging'
+import type { GscBackfillPayload } from './queue'
 import { syncSearchConsoleRange, type GscSyncDeps } from './sync'
 
 /**
@@ -31,15 +32,6 @@ import { syncSearchConsoleRange, type GscSyncDeps } from './sync'
  * signal weighs most heavily; the older ones improve year-on-year comparisons
  * and can arrive late without holding anything up.
  */
-
-export const GSC_BACKFILL_TASK = 'gsc_backfill'
-
-export interface GscBackfillPayload {
-  readonly accountId: string
-  /** Chunks already written, as `start..end`. Absent on the first job of a chain. */
-  readonly completed?: readonly string[]
-  readonly rowsWritten?: number
-}
 
 export type GscBackfillStep =
   | {

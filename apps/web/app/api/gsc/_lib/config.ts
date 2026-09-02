@@ -1,6 +1,6 @@
 import type { GscConnectDeps } from '@sortiva/core'
 import { makeGscConnectStore } from '@sortiva/db'
-import { enqueueGscBackfill } from '@sortiva/jobs'
+import { enqueueGscBackfill } from '@sortiva/jobs/gsc/queue'
 import { GscOAuthProvider, PosthogServerCapture, TokenCipher } from '@sortiva/providers'
 
 /**

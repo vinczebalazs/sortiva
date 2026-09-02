@@ -1,5 +1,4 @@
 import type pg from 'pg'
-import { sql } from 'drizzle-orm'
 import type { GscProvider, Logger } from '@sortiva/core'
 import { accountsWithLiveGscConnection, systemScope, type Db } from '@sortiva/db'
 import { dailySyncRange } from '@sortiva/core'
@@ -7,7 +6,8 @@ import { rules } from '@sortiva/rules'
 import { tryWithAccountLock } from '../runtime/lock'
 import { runtimeLogger } from '../runtime/logging'
 import { registerTask } from '../runtime/tasks'
-import { GSC_BACKFILL_TASK, runGscBackfillChunk, type GscBackfillPayload } from './backfill'
+import { runGscBackfillChunk } from './backfill'
+import { GSC_BACKFILL_TASK, type GscBackfillPayload } from './queue'
 import { syncSearchConsoleRange, type GscSyncDeps, type TokenCodec } from './sync'
 
 /**
@@ -34,23 +34,6 @@ export interface GscTaskDeps {
   readonly codec: TokenCodec
   readonly now?: () => Date
   readonly logger?: Logger
-}
-
-/**
- * Queues the history import for one store. Keyed on the account, so a merchant
- * who reconnects twice in a minute gets one import rather than two racing each
- * other over the same rows.
- */
-export async function enqueueGscBackfill(
-  database: Db,
-  payload: GscBackfillPayload,
-): Promise<void> {
-  const task = GSC_BACKFILL_TASK
-  const body = JSON.stringify(payload)
-  const key = `${GSC_BACKFILL_TASK}:${payload.accountId}`
-  await database.execute(
-    sql`select graphile_worker.add_job(${task}, payload := ${body}::json, job_key := ${key}, job_key_mode := 'preserve_run_at')`,
-  )
 }
 
 /**

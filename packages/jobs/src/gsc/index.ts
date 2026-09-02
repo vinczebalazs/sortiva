@@ -8,15 +8,18 @@ export {
 
 export {
   GSC_BACKFILL_TASK,
+  enqueueGscBackfill,
+  type GscBackfillPayload,
+} from './queue'
+
+export {
   runGscBackfillChunk,
   type GscBackfillDeps,
-  type GscBackfillPayload,
   type GscBackfillStep,
 } from './backfill'
 
 export {
   GSC_SYNC_DAILY_TASK,
-  enqueueGscBackfill,
   registerGscTasks,
   resetGscTaskRegistration,
   runDailyGscSync,
