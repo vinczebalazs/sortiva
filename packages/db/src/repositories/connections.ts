@@ -1,4 +1,4 @@
-import { and, eq, isNull, sql } from 'drizzle-orm'
+import { and, eq, isNull, lt, sql } from 'drizzle-orm'
 import type { Db } from '../client'
 import { domains, shopifyConns } from '../schema'
 import type { AccountScope, SystemScope } from '../scope'
@@ -141,4 +141,33 @@ export async function setDomainPlatform(
     .update(domains)
     .set({ platform, updatedAt: sql`now()` })
     .where(eq(domains.accountId, scope.accountId))
+}
+
+/**
+ * Stores that have been asked to connect Shopify and have not, long enough ago
+ * to be worth a reminder.
+ *
+ * Only stores that have *never* connected: a store whose connection was lost
+ * later is a different conversation and gets its own message when it happens.
+ *
+ * Deliberately unscoped — a sweep's whole job is to look across every account —
+ * and it reads nothing but the domain and the account it belongs to.
+ */
+export async function storesAwaitingShopifyAuth(
+  db: Db,
+  _scope: SystemScope,
+  waitingSince: Date,
+): Promise<{ accountId: string; domainNormalized: string }[]> {
+  return db
+    .select({ accountId: domains.accountId, domainNormalized: domains.domainNormalized })
+    .from(domains)
+    .leftJoin(shopifyConns, eq(shopifyConns.accountId, domains.accountId))
+    .where(
+      and(
+        eq(domains.state, 'awaiting_shopify_auth'),
+        eq(domains.platform, 'shopify'),
+        isNull(shopifyConns.accountId),
+        lt(domains.updatedAt, waitingSince),
+      ),
+    )
 }
