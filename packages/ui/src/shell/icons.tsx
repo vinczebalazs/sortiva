@@ -133,3 +133,11 @@ export const NAV_ICONS: Readonly<Record<NavItemId, (props: IconProps) => ReactEl
   performance: PerformanceIcon,
   settings: SettingsIcon,
 }
+
+export function MoreIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={2.4} {...props}>
+      <path d="M5 12h.01M12 12h.01M19 12h.01" />
+    </Icon>
+  )
+}

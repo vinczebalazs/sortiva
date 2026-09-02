@@ -37,9 +37,16 @@ describe('the navigation has six destinations', () => {
     ])
   })
 
-  it('renders six of them and no more', () => {
+  it('renders six destinations and no more', () => {
     const html = render(createElement(NavRail, { context: CONNECTED }))
-    expect(html.match(/data-nav-item="/g)).toHaveLength(6)
+    // The two that fold under "More" on a phone are rendered twice — once in
+    // the rail, once in the disclosure — so what is counted is the set of
+    // destinations, not the number of elements.
+    const rendered = new Set(
+      [...html.matchAll(/data-nav-item="([a-z]+)"/g)].map((match) => match[1]),
+    )
+    expect([...rendered]).toHaveLength(6)
+    expect(html).toContain('data-nav-destinations="6"')
   })
 
   it('labels every one of them from the string catalogue', () => {
@@ -54,6 +61,25 @@ describe('the navigation has six destinations', () => {
       'performance',
       'settings',
     ])
+  })
+
+  it('offers the folded pair under a "More" control that needs no scripts', () => {
+    const html = render(createElement(NavRail, { context: CONNECTED }))
+    expect(html).toContain('data-testid="nav-more"')
+    // A disclosure element, so the navigation still opens if the page's
+    // JavaScript never arrives.
+    expect(html).toContain('<details')
+    expect(html).toContain(t('nav.more'))
+    // Both folded destinations appear twice: once in the rail for a desktop,
+    // once inside the disclosure for a phone. Which is shown is the
+    // stylesheet's business.
+    expect(html.match(/data-nav-item="performance"/g)).toHaveLength(2)
+    expect(html.match(/data-nav-item="settings"/g)).toHaveLength(2)
+  })
+
+  it('keeps a locked destination locked inside the "More" control too', () => {
+    const html = render(createElement(NavRail, { context: CONNECTING }))
+    expect(html.match(/data-nav-item="performance"[^>]*data-nav-status="locked"/g)).toHaveLength(2)
   })
 })
 

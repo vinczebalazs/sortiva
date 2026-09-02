@@ -115,6 +115,41 @@
   color: var(--sortiva-text-faint);
 }
 
+/* The "More" disclosure only exists on a phone; on a desktop rail all six
+   destinations fit down the side. */
+.sortiva-nav__more {
+  display: none;
+}
+
+.sortiva-nav__more > summary {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  list-style: none;
+  cursor: pointer;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-nav__more > summary::-webkit-details-marker {
+  display: none;
+}
+
+.sortiva-nav__more-list {
+  list-style: none;
+  margin: 0;
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+  position: absolute;
+  right: 8px;
+  bottom: 68px;
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow-raised);
+}
+
 .sortiva-nav__spinner {
   position: absolute;
   right: -1px;
@@ -274,8 +309,13 @@
   }
 
   .sortiva-nav__brand,
-  .sortiva-nav__lock-note {
+  .sortiva-nav__lock-note,
+  .sortiva-nav__collapsing {
     display: none;
+  }
+
+  .sortiva-nav__more {
+    display: block;
   }
 
   .sortiva-shell__body {

@@ -1,5 +1,5 @@
 import { t as defaultTranslate, type Translate } from '../strings'
-import { BrandMark, LockIcon, NAV_ICONS } from './icons'
+import { BrandMark, LockIcon, MoreIcon, NAV_ICONS } from './icons'
 import { isInteractive, resolveNav, type NavContext, type ResolvedNavItem } from './nav'
 
 /**
@@ -78,19 +78,45 @@ function NavRailItem({ item, t }: { item: ResolvedNavItem; t: Translate }) {
 export function NavRail({ context, t = defaultTranslate }: NavRailProps) {
   const items = resolveNav(context)
   const anyLocked = items.some((item) => !isInteractive(item))
+  const collapsing = items.filter((item) => item.collapsesOnMobile)
 
   return (
-    <nav className="sortiva-nav" aria-label={t('nav.label')} data-testid="nav-rail">
+    <nav
+      className="sortiva-nav"
+      aria-label={t('nav.label')}
+      data-testid="nav-rail"
+      data-nav-destinations={items.length}
+    >
       <span className="sortiva-nav__brand" aria-label={t('nav.brand')} role="img">
         <BrandMark />
       </span>
       <ul className="sortiva-nav__list">
         {items.map((item) => (
-          <li key={item.id}>
+          <li
+            key={item.id}
+            className={item.collapsesOnMobile ? 'sortiva-nav__collapsing' : undefined}
+          >
             <NavRailItem item={item} t={t} />
           </li>
         ))}
       </ul>
+
+      {/* On a phone the bottom bar carries four tabs and the last two move in
+          here. A disclosure element rather than a menu built from scratch: it
+          opens and closes, traps nothing, and needs no JavaScript, so the
+          navigation still works if the page's scripts never arrive. */}
+      <details className="sortiva-nav__more" data-testid="nav-more">
+        <summary aria-label={t('nav.more')}>
+          <MoreIcon />
+        </summary>
+        <ul className="sortiva-nav__more-list">
+          {collapsing.map((item) => (
+            <li key={item.id}>
+              <NavRailItem item={item} t={t} />
+            </li>
+          ))}
+        </ul>
+      </details>
       {anyLocked ? (
         <span className="sortiva-nav__lock-note" title={t('nav.lockedTooltip')}>
           <LockIcon />
