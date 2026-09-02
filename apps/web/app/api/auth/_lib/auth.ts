@@ -1,6 +1,6 @@
 import NextAuth, { type Session } from 'next-auth'
 import { buildAuthConfig } from './config'
-import { provisioningDeps } from './provisioning'
+import { authDeps } from './provisioning'
 
 /**
  * The single Auth.js instance. `handlers` mounts `/api/auth/*`; `auth()` is how
@@ -11,7 +11,7 @@ import { provisioningDeps } from './provisioning'
  * names types inside `node_modules`, which `declaration: true` cannot emit. It
  * also keeps the exported surface to the two things the app uses.
  */
-const nextAuth = NextAuth(buildAuthConfig({ provisioning: provisioningDeps() }))
+const nextAuth = NextAuth(buildAuthConfig(authDeps()))
 
 export const handlers = nextAuth.handlers
 export const auth: () => Promise<Session | null> = nextAuth.auth as () => Promise<Session | null>
