@@ -161,6 +161,7 @@ function world(
       authorizeUrl: () => '',
       verifyCallbackSignature: () => true,
       exchangeCode: async () => ({ accessToken: '', grantedScopes: [] }),
+      revokeAccess: async () => {},
     },
     shop: {
       async getShop() {
