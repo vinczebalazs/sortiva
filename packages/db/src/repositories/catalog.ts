@@ -1,5 +1,5 @@
 import { gzipSync, gunzipSync } from 'node:zlib'
-import { and, eq, inArray, isNull, notInArray, sql } from 'drizzle-orm'
+import { and, eq, inArray, isNull, lt, notInArray, sql } from 'drizzle-orm'
 import type { Db } from '../client'
 import { landingRevenueDaily, products, shopifyConns, topProducts } from '../schema'
 import type { AccountScope, SystemScope } from '../scope'
@@ -315,6 +315,27 @@ export async function accountsWithLiveShopifyConnectionAndHandle(
     .from(shopifyConns)
     .where(isNull(shopifyConns.invalidatedAt))
     .orderBy(shopifyConns.accountId)
+}
+
+/**
+ * Products the store did not show us this time round.
+ *
+ * The sweep stamps every product it sees, so anything still carrying a stamp
+ * from before the walk began is one Shopify no longer lists — deleted, or
+ * archived out of the API's sight. Asked this way rather than by accumulating
+ * ids in memory, so a sweep spread over several runs still gets the right
+ * answer.
+ */
+export async function productsNotSyncedSince(
+  db: Db,
+  scope: AccountScope,
+  since: Date,
+): Promise<{ id: string; shopifyProductId: string }[]> {
+  return db
+    .select({ id: products.id, shopifyProductId: products.shopifyProductId })
+    .from(products)
+    .where(and(eq(products.accountId, scope.accountId), lt(products.syncedAt, since)))
+    .orderBy(products.shopifyProductId)
 }
 
 /** The product's quarantined description, read back as text. */

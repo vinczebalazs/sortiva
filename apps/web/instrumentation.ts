@@ -57,7 +57,9 @@ export async function register() {
   // job, not the entry point's.
   const { registerIngestionTasks } = await import('@sortiva/jobs/ingestion/dispatch')
   const { registerReminderTasks } = await import('@sortiva/jobs/ingestion/reminder')
-  const { ingestionDeps, notificationEmitter } = await import('./app/api/shopify/_lib/config')
+  const { adminClient, ingestionDeps, notificationEmitter } = await import(
+    './app/api/shopify/_lib/config'
+  )
   registerIngestionTasks(ingestionDeps)
   registerReminderTasks(db, notificationEmitter)
 
@@ -86,19 +88,47 @@ export async function register() {
   // schedules this yet — the nightly reconciliation sweep is the caller, and it
   // belongs to the catalog lane; `sweepInventory` is what it calls.
   const { registerInventoryTasks } = await import('@sortiva/jobs')
-  const { ShopifyAdminClient } = await import('@sortiva/providers')
   const { makeConnectionStore } = await import('./app/api/shopify/_lib/bindings')
   const { tokenCipher } = await import('./app/api/shopify/_lib/config')
   const shopifyConnections = () => makeConnectionStore(db(), tokenCipher())
   registerInventoryTasks({
     getDb: db,
     getPool: dbPool,
-    admin: new ShopifyAdminClient(),
+    // The process's one Admin client, so the store's request budget is spent
+    // once rather than once per caller.
+    admin: adminClient(),
     connections: {
       read: (accountId) => shopifyConnections().read(accountId),
       readToken: (accountId) => shopifyConnections().readToken(accountId),
       markInvalid: (accountId, at) => shopifyConnections().markInvalid(accountId, at),
     },
+  })
+
+  // What a merchant changes in their store, and the nightly re-read that
+  // catches what the change messages dropped. Without handlers here, Shopify's
+  // messages pile up unprocessed and the two jobs the schedule already names —
+  // the nightly reconciliation and the landing-page takings — answer to nobody.
+  const { registerShopifyWebhookTasks, registerCatalogSweepTasks, sweepInventory } = await import(
+    '@sortiva/jobs'
+  )
+  registerShopifyWebhookTasks({ ingestion: ingestionDeps, analytics })
+  registerCatalogSweepTasks({
+    ingestion: ingestionDeps,
+    analytics,
+    // The store's own pages, on the same clock and the same budget. Owned by the
+    // inventory lane, called from here because one nightly pass over a store
+    // belongs in one place.
+    syncInventory: () =>
+      sweepInventory({
+        getDb: db,
+        getPool: dbPool,
+        admin: adminClient(),
+        connections: {
+          read: (accountId) => shopifyConnections().read(accountId),
+          readToken: (accountId) => shopifyConnections().readToken(accountId),
+          markInvalid: (accountId, at) => shopifyConnections().markInvalid(accountId, at),
+        },
+      }),
   })
 
   // The weekly refit of each store's own click curve — how often its listings

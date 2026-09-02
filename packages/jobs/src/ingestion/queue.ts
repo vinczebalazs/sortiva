@@ -65,3 +65,39 @@ export async function enqueueShopifyWebhookDrain(
     sql`select graphile_worker.add_job(${task}, payload := ${body}::json, job_key := ${key}, job_key_mode := 'preserve_run_at')`,
   )
 }
+
+/** The names the crontab already gives these two jobs. Changing one means changing that file too. */
+export const RECONCILIATION_SWEEP_TASK = 'reconciliation_sweep_daily'
+export const LANDING_REVENUE_TASK = 'landing_revenue_aggregate_daily'
+export const CATALOG_RECONCILE_TASK = 'catalog_reconcile'
+
+/**
+ * Asks for one store's catalogue to be compared against what we hold.
+ *
+ * The job key is the store, so a sweep that starts while the previous night's
+ * pass is still running nudges it rather than stacking a second walk behind it.
+ */
+export async function enqueueCatalogReconcile(
+  database: Db,
+  payload: { accountId: string; cursor?: string; startedAt?: string },
+): Promise<void> {
+  const task = CATALOG_RECONCILE_TASK
+  const body = JSON.stringify(payload)
+  const key = `${CATALOG_RECONCILE_TASK}:${payload.accountId}`
+  await database.execute(
+    sql`select graphile_worker.add_job(${task}, payload := ${body}::json, job_key := ${key}, job_key_mode := 'preserve_run_at')`,
+  )
+}
+
+/** Asks for one store's landing-page takings to be brought up to date. */
+export async function enqueueLandingRevenue(
+  database: Db,
+  payload: { accountId: string; days?: number },
+): Promise<void> {
+  const task = LANDING_REVENUE_TASK
+  const body = JSON.stringify(payload)
+  const key = `${LANDING_REVENUE_TASK}:${payload.accountId}`
+  await database.execute(
+    sql`select graphile_worker.add_job(${task}, payload := ${body}::json, job_key := ${key}, job_key_mode := 'preserve_run_at')`,
+  )
+}
