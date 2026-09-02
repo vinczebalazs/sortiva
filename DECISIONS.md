@@ -25,6 +25,17 @@ History: this is the **third** time this defect has been worked around instead o
 Nearest spec: main §7.10 (thresholds live in `packages/rules`, stamped by `rules_version`); tech §2, §6 (architecture and CI). Neither says when the file is read.
 
 
+## 2026-09-02 — T-BOOT — The new gate step asks for two pages, and requires the health check to be green as well as answering
+Decision: `pnpm smoke:boot` (`scripts/smoke-boot.mjs`) starts the application `pnpm build` just produced, the way the platform starts it, and requires **200 from both `/` and `/api/health`**. It runs last in CI, after `Build`. It does not build anything itself.
+Why these two: `/` is the public funnel — the page a stranger lands on — and `/api/health` is what the platform polls to decide whether to keep the container. A server whose start-up hook throws answers 500 to both, which is the exact failure that shipped, so either one alone would have caught it; asking for both costs nothing and covers the case where only one is broken.
+Two judgement calls worth knowing about:
+- **Requiring the health check to be *green*, not merely to answer.** It answers 200 only when the database responds and the background worker is running, so this step now also fails if a build cannot reach its database. That is a wider net than "does the server boot" and it can fail for a reason that is not the code's fault — a CI database that did not come up. The failure message names which probe failed, so that is one line to read rather than an investigation. Judged worth it: a container that cannot reach its database is not serving the product either.
+- **A throwaway encryption key per run.** The start-up hook refuses to run without a key for encrypting merchant tokens, and the repository ships none — correctly. The check stores no token, so it makes one per run and throws it away, exactly as the browser-flow harness already does.
+Cost: **under a second** on top of the build (0.8 s wall clock locally, of which the server needs 0.6 s to start and answer). It waits up to 90 s for a server that is slow to answer and 30 s more for the health check to go green, so a *failing* run costs at most two minutes.
+Proved by breaking it: the pre-card loader was put back, the application rebuilt, and this step failed with `GET / -> 500`, `GET /api/health -> 500`, printing the server's own "Failed to prepare server … Invalid URL" underneath. Restored and re-run: both 200.
+Nearest spec: tech §6 (the testing strategy table has no row for "the application starts"), tech §2.1 (the health check and the restart policy this exercises).
+Class (filled by audit):
+
 ## 2026-09-02 — T-BOOT — What the new lint rule covers, and the three judgement calls inside it
 Decision: `sortiva/no-module-load-path-resolution` reports a module that asks where it sits on disk while it is loading. Three calls the card did not make for me:
 1. **It covers `import.meta.dirname` and `import.meta.filename`, not only `import.meta.url`.** Node 20.11 added the two shortcuts; they are the same question asked in fewer words and fail identically. Banning one spelling and not the others would be a rule that reads as protection and is none.
