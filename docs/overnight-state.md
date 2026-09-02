@@ -13,66 +13,75 @@ plan for the run is `docs/nightly-plan.md`** — read it after this file.
 
 ## Right now
 
-**Status at 2026-09-02, 19:56.** `main` is at `0b84ffa`, clean, and fully green. **Six
-cards have landed tonight**, each merged and gated separately: `T8.0`, `T-START`,
-`T-ANALYTICS`, `T3.4`, `T8.1`, `T-EMAIL`. Tests are at **1,562**, up from 1,362 at the
-start of the night. Stubs are at 7, up from 6 — deliberately; the new one announces
-itself.
+**Status at 2026-09-02, 20:35.** `main` is at `a870e0e`, clean, and fully green.
+**Eight cards have landed tonight**, each merged and gated separately: `T8.0`, `T-START`,
+`T-ANALYTICS`, `T3.4`, `T8.1`, `T-EMAIL`, `T9.3`, `T2.2`. Tests are at **1,748**, up from
+1,362 at the start of the night. Stubs are at **6**, down from 7 — `T2.2` filled the
+change stream that two lanes had been building against a stand-in.
 
 | Lane | Branch | Worktree | Where it is |
 |---|---|---|---|
-| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START` merged (`d34daa6`); **`T2.2` building** — the critical path, and the most consequential card of the run. **Audit scheduled after it** |
-| C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4` (`fa7cff4`) and `T-EMAIL` (`0b84ffa`) merged; **idle and deliberately held** — `T3.5` needs `T2.4`–`T2.5` from Lane B and must not start early |
-| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS` merged (`42ddd50`); **`T9.3` building**; then `T9.4` → `T9.5` |
+| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START` (`d34daa6`) and **`T2.2` (`a870e0e`)** merged. **Idle. `T2.3` may NOT start until the scheduled audit of `T2.2` has run** (build plan §7) |
+| C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4` (`fa7cff4`) and `T-EMAIL` (`0b84ffa`) merged; **idle and deliberately held** — `T3.5` needs `T2.4`–`T2.5` and must not start early |
+| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS` (`42ddd50`) and `T9.3` (`b6945f9`) merged; **idle, next is `T9.4`** → `T9.5` |
 | G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | `T8.0` (`6400b62`) and `T8.1` (`44177e4`) merged; **`T8.2` building**. **Audit scheduled after it** |
 
-**Two integrator actions are outstanding, both named in full in their card's section.**
+**Lane B reached `T2.2` and stopped there, which is what the plan asked for.** It did not
+reach `T2.5`, so lane C stays held and `T3.5` stays unavailable — the one mid-run decision
+the plan told the runner to watch for did not arise.
 
-1. **Plug in the bell** — a one-line swap in `apps/web/app/api/shopify/_lib/config.ts`
-   that `T8.1` could not make because the file is Lane B's and Lane B is in it. **Do it
-   after `T2.2` merges, as its own commit.** Until then no notification reaches a real
-   row in production. It turns on notification writes, so it is named in the morning
-   report rather than done quietly.
-2. **Expect a hand-resolved conflict in `packages/ui/strings/en.json`** when `T9.3`
-   merges — `T8.1` added 34 contiguous lines at the end of a file lane F is writing in,
-   and it is not union-merged. **`T-EMAIL` also parked email copy outside that file**
-   pending `T8.2`'s ruling on where email copy lives; reconcile those two when `T8.2`
-   lands.
+### One integrator action is ready and deliberately NOT taken
 
-**Two audits are scheduled and neither has run**: after `T2.2` (before `T2.3` may start)
-and after `T8.2`. **A third is recommended but not scheduled** — `T-EMAIL`'s lane asked
-for one on the Google account-linking flag and the verified-address guard that fences it.
-Nothing builds on `T-EMAIL` tonight, so it can wait for the morning or take lane C's idle
-slot.
+**Plugging in the bell.** `T8.1` built the notification writer and could not wire it,
+because the one-line swap lives in `apps/web/app/api/shopify/_lib/config.ts` — Lane B's
+file, which Lane B was building in. **Lane B is now finished and out of that file, so the
+change is unblocked.** It is: `notificationEmitter()` returns `new DbNotificationEmitter(db)`
+instead of `new StubNotificationEmitter()`. That file is already exempt from the
+raw-database lint rule.
+
+**The integrator has not made it, and the reason is not oversight.** It switches on
+notification writes in production, on a writer that has never run there, and the emitter
+takes part in the caller's transaction — so if it throws, the decision it was reporting
+rolls back with it. Nothing tonight needs it, no lane is blocked by it, and the overnight
+rules say to ask for an action in one plain sentence and wait rather than infer
+permission. **It is a one-line change plus a full gate re-run whenever the founder says
+go.** Until then `pnpm stubs:report` correctly lists `NotificationEmitter`, and no
+notification reaches a real row in production.
+
+### The one conflict that was predicted, and how it was resolved
+
+`packages/ui/strings/en.json` conflicted on the `T9.3` merge exactly as expected. Both
+sides kept, no key shared between them, file verified to parse — written up in the `T9.3`
+section. **331 keys total.**
 
 **Every lane has obeyed the one-card rule tonight**, including lane F, which broke it
-earlier in the day. All six cards reported, stopped, and left clean worktrees.
+earlier in the day. All eight cards reported, stopped, and left clean worktrees.
 
 **The gate flakes under concurrent lane load — re-run before believing a red.** It
-happened twice tonight, in two shapes, and both times an immediate re-run was clean:
-every test passing with a non-zero exit, on one Postgres `57P01` teardown error; and two
-test *files* failing on 10-second hook timeouts while all 1,404 tests passed. Neither was
-a product failure or caused by the card being merged. **If a gate goes red with every
-test passing, re-run once before investigating.** Unactioned; it belongs to whoever next
-touches the test harness (`packages/db/src/testing.ts` force-drops each suite's own
-database, killing a connection a suite forgot to close).
+happened twice on the integrator's gates tonight and once inside lane B's, and every
+re-run was clean. Two shapes: every test passing with a non-zero exit, on one Postgres
+`57P01` teardown error; and test *files* failing on 10-second hook timeouts. Neither was a
+product failure. **If a gate goes red with every test passing, re-run once before
+investigating.** Worth knowing that lane B's re-run then surfaced a *genuine* regression
+underneath the flake, which it fixed — so re-running is not the same as ignoring.
+Unactioned; it belongs to whoever next touches `packages/db/src/testing.ts`, which
+force-drops each suite's own database and kills a connection a suite forgot to close.
 
 **A build warning that is expected and should not be chased.** `pnpm build` prints
 "Critical dependency: the request of a dependency is an expression" from `cosmiconfig`,
 reached through `graphile-worker`'s own config loader. The worker runs **in-process with
 the web server by design** (tech §2), so the job library is in the server bundle and its
-vendor config loader comes with it. Pre-existing, not from any card tonight, and
-`pnpm smoke:boot` proves the built app still starts and serves. It is the same *shape* as
-the defect `T-BOOT` repaired, which is why it is written down rather than left to be
-rediscovered.
+vendor config loader comes with it. Pre-existing, and `pnpm smoke:boot` proves the built
+app still starts and serves. Same *shape* as the defect `T-BOOT` repaired, which is why it
+is written down rather than left to be rediscovered.
 
 **A trap the integrator created and then repaired.** `.env` is gitignored and lives
 per-worktree. When `T-ANALYTICS` added `NEXT_PUBLIC_POSTHOG_KEY` to `.env.example`, the
 integrator copied the new `.env` into every worktree — including two whose branches
-predated the `.env.example` change, so `env:check` failed there with 37 against 36. Lane
-G hit it and correctly refused to guess; lane B was warned not to "fix" it. **The lesson:
-refresh a worktree's `.env` only when its branch also has the matching `.env.example`, or
-fast-forward it first.**
+predated the `.env.example` change, so `env:check` failed there with 37 against 36. Lane G
+hit it and correctly refused to guess a default; lane B was warned mid-card not to "fix"
+it, and did not. **The lesson: refresh a worktree's `.env` only when its branch also has
+the matching `.env.example`, or fast-forward it first.**
 ## Picking this up again
 
 *This section described how to restart after the 08:10 stop. It is kept because
@@ -113,6 +122,151 @@ protect, and leaving a laptop permanently awake is not this session's call to ma
 merchant's onboarding (this is what holds lane B), and how a browser sends an
 analytics event (raised by lane F; it does not block, because the seam has a
 do-nothing default).
+
+## `T2.2` LANDED — a merchant's store is actually read
+
+**Merged as `a870e0e` into `main`, seven commits, full gate green.** Tests 1,748. This
+was the critical path and the most consequential card of the run.
+
+**Onboarding's third step now pulls a merchant's whole catalogue and ninety days of
+orders from Shopify**, works out what they sell most of, and records which pages their
+buyers arrived on. Before this, a connected store sat there and nothing happened to it.
+
+Five things make it safe rather than merely working:
+
+1. **It is paced.** Every read goes at one request a second per store — half what Shopify
+   allows — so walking a large catalogue can never crowd out the merchant's own admin. A
+   rate-limit response holds that store back for exactly as long as Shopify asked, not
+   for a guess. **The pacing lives inside the single Admin client, so Lane C's content
+   inventory inherits it — it was previously unpaced, and that is a visible change for
+   them.**
+2. **It survives being killed.** Roughly eight minutes for a five-hundred-product store,
+   the longest thing the product does over a network. **The page is written first, then
+   the cursor is committed** — a crash between them costs one page re-read onto rows it
+   already wrote, where the other order would silently skip a page of the catalogue.
+3. **It holds nothing belonging to a shopper.** An order is reduced at the moment it is
+   read to line items and a landing path. **Enforced by construction, not by care**: the
+   reduced order is built from a fixed list of fields, so a field Shopify adds next year
+   is dropped by default, and we never ask for the others. The integrator read this
+   module before merging — it is invariant 4 and it is a legal obligation.
+4. **Edits reach us in minutes.** Shopify now has a receiver. It proves the message
+   genuine against the exact bytes sent, writes it down, and answers — nothing else,
+   because Shopify drops a subscription whose owner answers slowly.
+5. **A nightly re-read catches what those messages drop**, which they do routinely and
+   silently.
+
+**The change stream two other lanes were built against is no longer a stand-in.** It
+answers with what merchants actually changed, including the four blog-post and
+static-page kinds the founder decision added this morning. **The stub count fell from 7
+to 6.**
+
+**Proved by mutation, not assertion.** With the saved position ignored, the chaos
+scenario fails with "the walk restarted from the beginning 3 times; a resume must
+continue from its saved position." `pnpm chaos` is now 3 tests, up from 2.
+
+### What the scheduled audit should look at hardest
+
+The lane named five things and the integrator agrees with the list:
+
+1. **The change stream's home.** No table existed and a feature card may not add one, so
+   it lives in `webhook_events` — two row shapes in one table told apart by topic, with
+   the account inside the JSON. **The per-store read therefore cannot use an index on the
+   account.** Journalled, small at v1 volumes, and named as the thing most likely to want
+   revisiting: if it stops being small the fix is a column in the next wave.
+2. **The deletion check** — "products the sweep did not see" is answered by stamping every
+   seen product with the walk's start moment, which couples the sweep to a field the
+   catalog sync also writes with a different value.
+3. **The order aggregation's day-settling**, whose correctness depends on Shopify
+   honouring the sort order we ask for.
+4. **The chaos scenario resets the step's attempt counter** between kills, because the
+   harness kills more often than the production retry budget allows. Documented; an
+   auditor should agree it is a fair test rather than a weakened one.
+5. **Invariant 21** — no write scope was acquired or used, and a cold read confirming it
+   is cheap.
+
+### Two things it decided that need someone
+
+- **`shop/redact` is received and recorded, but nothing is erased.** Purging a store's
+  data is account-lifecycle work. **No card owns it today and one must before launch.**
+- **A product the store stopped listing keeps its row**, mirroring `T3.2`'s decision for
+  deleted pages and inheriting its open question — which is founder question 1.
+
+### The schedule moved, and it moved the wrong way for the money
+
+`T2.2` took the crontab from **5 of 14 jobs having handlers to 7**, registering the daily
+reconciliation sweep and the landing-revenue aggregation. **Seven remain unowned**, and
+because the worker refuses to run *any* recurring job until *every* one has a handler,
+**none of them runs — including the nightly sweep this card just built, and the spend
+caps.** That matters more now than it did this morning: this is the first card that
+spends a store's request budget at scale. The lane built the enforcement points as the
+spec requires and correctly changed nothing about the all-or-nothing rule. **This is
+founder question 4.**
+
+**Real-vendor evidence: this card is now the largest single piece of it in the build.**
+Everything Shopify-side is proved against stand-ins — an in-memory store that pages the
+way Shopify pages, and a real local HTTP server for the rate limiter and cursor headers.
+**Not proved:** Shopify's real cursor format, actual retry-after behaviour, real product
+and order field shapes, real webhook headers, and whether the field lists we send are
+accepted. **`T2.2` must be re-run against a Partner dev store before launch.**
+
+**Files outside Lane B's directories**, all journalled: two new `packages/db` repositories
+plus a union-merged barrel; one chaos-harness entry the harness's own comment says `T2.2`
+would add; two task registrations in `apps/web/instrumentation.ts`; one line in the stub
+report; and one `T2.1` test assertion that said "the next step belongs to a later card" —
+this being that card. **No migration.**
+
+**The integrator checked `apps/web/instrumentation.ts` after the merge**, because it is an
+ordered file that is deliberately not union-merged. All registrations survived, including
+the inventory sweep call that `T3.2` left waiting for the catalog lane to make.
+
+## `T9.3` LANDED — setting a store up now has screens, end to end
+
+**Merged as `b6945f9` into `main`, three commits, full gate green.**
+
+The dashboard is now the container for every stage of connecting a store — **there is no
+wizard route**, so which stage is on screen follows the state of the domain, and closing
+the tab lands the merchant back where they left off. Address field, a seven-row progress
+list following the run live over a stream with a poll fallback, the Shopify card carrying
+the read-only trust copy verbatim, the Search Console card with "Skip for now" always
+visible, two parked states, the seven-section confirmation review, the first-scan wait,
+and the activation landing on the opportunities screen.
+
+**A row over a minute old says so; a failed row stays calm because retries are automatic,
+and only a step that has *stopped* retrying offers a person.**
+
+### The conflict the integrator predicted, and how it was resolved
+
+`packages/ui/strings/en.json` is **not** union-merged, and `T8.1` and `T9.3` each appended
+a block at the same point. Resolved by hand: the two sides were checked for shared keys
+(**none** — 30 notification and attention keys against 147 onboarding keys), both blocks
+kept, one missing comma added at the join, and the result verified to parse with both
+blocks present. **331 keys total.** Recorded because a hand-resolved merge is exactly
+where somebody's work gets silently dropped.
+
+### Two things blocked on other lanes
+
+1. **No route reports the first scan's progress.** The UI spec wants sub-lines mirroring
+   the signal run over a stream; the frozen 55-route contract has neither a scan-status
+   read nor a stream, and this lane cannot add one. **The card names the five stages
+   without ticking them** — a progress bar moving on a timer would be a fabrication on
+   the one screen whose job is to earn trust. A single prop is the plug-in point when the
+   route pair exists.
+2. **Google returns the merchant to Settings mid-onboarding.** The Search Console callback
+   (Lane C's file) redirects to a settings screen. During setup the property picker is a
+   step in the progress list on the dashboard, so a merchant who connects mid-setup is
+   dropped out of setup onto a screen that does not exist yet. **The dashboard already
+   reads the return parameter and shows the picker — it works the moment the return
+   address points back at it.** One line, in another lane's file.
+
+**Three mock-fixture requirements that will bite the backend card if ignored**, all
+registered in the screen contract: the Shopify connection field must read `broken` (not
+`none`) after a token revocation, because two opposite screens share one domain state and
+this field is the only thing separating "never connected" from "connection lost"; the
+last-scan timestamp must stay null until the first scan has actually *produced*
+opportunities, or the merchant is sent to an empty list; and each step's start time must
+be when *that step* began, not the run, because it is what the elapsed clock counts from.
+
+**Files outside Lane F's directories: none.**
 
 ## `T-EMAIL` LANDED — sign in with a link, and one done-when deliberately not met
 
@@ -614,28 +768,30 @@ What it changed that everyone inherits:
   `pnpm-lock.yaml` changed — `packages/ui` now depends on React. **That lockfile is
   the merge hazard for lanes B and C if they added a dependency.**
 
-**Gate on the merged tree, after six cards** (`T9.1`, `T2.1`, `T3.1`, `T3.2`, `T9.2`,
-`T-OPS`, `T3.3`, plus tonight's `T8.0`, `T-START`, `T-ANALYTICS`, `T3.4`, `T8.1`,
-`T-EMAIL`), each command run separately on 2026-09-02 at 19:53–19:56, never chained:
+**Gate on the merged tree, after eight cards tonight** (`T9.1`, `T2.1`, `T3.1`, `T3.2`,
+`T9.2`, `T-OPS`, `T3.3`, plus `T8.0`, `T-START`, `T-ANALYTICS`, `T3.4`, `T8.1`, `T-EMAIL`,
+`T9.3`, `T2.2`), each command run separately on 2026-09-02 at 20:28–20:34, never chained:
 
 | | |
 |---|---|
 | `pnpm lint` | clean |
 | `pnpm lint:prove` | **11** planted violations, all rejected |
 | `pnpm typecheck` | 9 packages |
-| `pnpm test` | **1562 passing**, 117 files |
+| `pnpm test` | **1748 passing**, 129 files |
 | `pnpm contracts:check` | 56 routes; zod and OpenAPI agree |
-| `pnpm build` | compiles |
+| `pnpm build` | compiles; the Shopify webhook receiver, `/dashboard` and `/opportunities` all present |
 | `pnpm smoke:boot` | `GET / -> 200`, `GET /api/health -> 200`, in 0.6s |
-| `pnpm eval` · `pnpm chaos` | 2 tests each, pass |
+| `pnpm eval` | 2 tests, pass |
+| `pnpm chaos` | **3** tests, pass (was 2; `T2.2` added the catalogue-sync kill scenario) |
 | `pnpm env:check` | `.env` and `.env.example` both declare **37** variables |
-| `pnpm stubs:report` | **7** wired stubs (was 6; `T8.1` added one deliberately) |
+| `pnpm stubs:report` | **6** wired stubs (was 7; `T2.2` filled the change stream) |
 | `pnpm db:migrate` on an **empty** database | 41 tables, 3 guard triggers (run after `T8.0`, the only card tonight touching migrations) |
 
 **Every test count reconciles, card by card.** 1,362 on `main` at the start of the night
 → `T8.0` +7 (1,369) → `T-START` +4 (1,373) → `T-ANALYTICS` +31 (1,404) → `T3.4` +61
-(1,465) → `T8.1` +76 (1,541) → `T-EMAIL` +21 (1,562). A discrepancy the previous state
-file carried is also
+(1,465) → `T8.1` +76 (1,541) → `T-EMAIL` +21 (1,562) → `T9.3` +93 (1,655) → `T2.2` +93
+(1,748). **386 tests added tonight.** A discrepancy the previous state file carried is
+also
 settled: its header said 1,362 and its gate table said 1,357; lane B noticed the
 five-test gap and correctly declined to
 chase it. The header was right, the table was five stale.
@@ -1257,21 +1413,72 @@ Small, real, and each belongs to a named next card rather than to a sweep.
 
 ## Audit findings, unactioned
 
-Six investigations ran during wave 1; all reports are in `docs/audits/`, and
-`remediation.md` indexes them and records what was decided. The blockers and major
-findings were fixed during wave 1.
+**Nothing here has been acted on. That is deliberate** — the overnight rules permit
+stopping a lane on a finding and nothing else. **The `T-EMAIL` auditor was asked
+directly whether any finding should block the next card in any lane and answered no**, so
+no lane was stopped.
 
-**Four remain open**, from `docs/audits/false-confidence.md`. Each is small, and each
-is best taken by the card that next touches that area — not as a sweep:
+### `T-EMAIL` — a fresh read-only audit run tonight, 2026-09-02
+
+**Not scheduled by the build plan.** The lane that built the card asked for one on a
+specific pair of changes, and the integrator agreed under build plan §9 rule 6 (flagged
+cards get a fresh-session audit). It used lane C's idle slot, since that lane is held.
+
+**On the two things it was asked to look at hardest:**
+
+- **The account-linking guard is correctly placed, and its stated justification is
+  weaker than claimed.** The auditor verified in the library's own source that the
+  sign-in check runs *before* anything creates or links an account, on every path
+  including the email one, and found **no path today where an unverified address reaches
+  account resolution**. But the reasoning behind its shape does not survive checking —
+  see the medium findings.
+- **The lane's claim that the card's premise was wrong is correct**, verified in the
+  library's own assertion code rather than from the lane's summary. Only three storage
+  functions are required for an email provider; the ten session ones are demanded only
+  when the session strategy is `database`. `T1.1` read two requirements as one.
+
+| Severity | Finding |
+|---|---|
+| **high** | **A session cookie issued *before* this change breaks the next sign-in, stickily.** With no adapter, the token carried Google's numeric id; now the library looks that id up as a UUID, Postgres rejects it, and sign-in fails. Retrying does not help — the bad cookie is still sent — until it lapses (≤24 h) or the user clears cookies. **Traced by reading both code paths, not executed.** Blast radius today is near zero: the app served errors on every route until `T-BOOT` and there is no evidence of real signed-in users. It would bite on a deploy following real sign-in traffic. Suggested fix is three lines — reject a non-UUID id and return nothing, which the library already handles by falling through to matching on address. |
+| **medium** | **The only fence in front of the dangerous linking flag has no test.** The field it checks appears in exactly one line of the whole repository and in no test. The existing sign-in tests pass no provider, so the new branch is never entered — **deleting the guard turns nothing red.** |
+| **medium** | **The guard is a denylist where an allowlist was available, and the reason given for that does not hold.** It refuses only an explicit "not verified"; a missing claim passes, justified as avoiding a silent lockout. But Google always returns that field, and it is the only provider configured — requiring an explicit "yes" would have locked out nobody. It also misses the string `"false"` and `0`, which non-conforming providers do emit. **What keeps it at medium:** the flag is read per-provider, so a future provider added without it is refused rather than linked — the exposure needs a future lane to both add a provider and set the flag on it. |
+| **medium** | **"Every existing Google sign-in test passes unchanged" is satisfied vacuously.** Those tests build a configuration with no email dependency, so **no adapter is attached** — which is no longer the production shape. In production the Google path now runs through the adapter, records signups differently, and depends on the linking flag. **No test covers any of that.** |
+| low | The dangerous flag is load-bearing for *every* returning Google user, not only for cross-method linking — removing it would lock all of them out, not merely refuse linking. Recorded so nobody "cleans it up". |
+| low | A test still asserts account creation through a path production can no longer produce for a new user. Harmless, but it reads as coverage it is not. |
+| low | The sign-in email's queue bypass is justified and one consequence is unstated: with no queued row, the delivery webhook has nothing to update, so "the link never arrived" leaves no trace in our own records. Bounces still reach suppression, so compliance survives. For `T8.2`. |
+| low | Contract-doc drift on the idempotency key's documented shape. Nothing parses the field. For `T8.2`. |
+| low, **a proposal, not a defect** | **The sign-in endpoint is unauthenticated and unthrottled**: anyone can request unlimited links to any address — an outbound-mail cost and a way to aim our verified sending domain at a third party. The product already owns the rate limiter and the bot check used on the preview endpoint, and neither sits in front of this route. **It does not enable account enumeration** — an unknown address gets an identical response and creates no row, which is tested. Out of the card's scope; **a founder decision, not a silent addition.** |
+| low | Signing in as a different account while already signed in silently does nothing. Not a security issue — you cannot become someone else — but a trap once a switch flow exists. |
+| low | The shared root test config gained one setting; genuinely necessary, global in effect, no correctness concern. Already named as a merge hazard. |
+
+**What the audit explicitly cleared:** the parking of the revocation done-when is honest
+and the gap is exactly where the lane said (no `sessions` table exists — checked against
+the schema and every migration); invariant 25 holds and no path sends mail outside the
+instrumented wrapper; single-use links are atomic and cannot be double-spent by racing
+requests; and lane boundaries were respected.
+
+**Read first in the morning:** the high finding. **The one needing a decision rather
+than a fix:** the shape of the verified-address guard.
+
+### An audit is scheduled after `T2.2` and has not run yet
+
+Build plan §7 requires it **before `T2.3` starts**. What it should look at hardest is
+listed in the `T2.2` section above.
+
+### Wave 1, still open
+
+Six investigations ran during wave 1; all reports are in `docs/audits/`, and
+`remediation.md` indexes them. The blockers and major findings were fixed then.
+
+**Four remain open**, from `docs/audits/false-confidence.md`. Each is small, and each is
+best taken by the card that next touches that area — not as a sweep:
 
 | Finding | Whoever next touches |
 |---|---|
 | The single-writer guard on billing status is defeated by aliasing the import | billing |
 | The threshold rule is defeated by naming the constant instead of writing the literal | `packages/rules` |
-| Nothing structurally stops product content reaching an analytics event — secrets are redacted, article text is not | analytics, and any card that emits article events |
+| Nothing structurally stops product content reaching an analytics event — secrets are redacted, article text is not | **Substantially addressed tonight** by `T-ANALYTICS` (a run-time kind for every property, with no kind for text) and `T8.1` (stored payloads refuse words). Neither claims to close it; the wording of the original finding should be revisited against both. |
 | The caching argument on the vendor wrappers silently defaults to off, unlike the cost ledger beside it, which is required | `packages/providers` |
-
-Nothing has been acted on beyond recording it here.
 
 ## The learning loop is out of v1
 
@@ -1287,16 +1494,31 @@ the store's own results. The product still works; it simply does not improve its
 
 ## Lanes stopped, and the question that stopped them
 
-**None.** All three are building; see the table at the top.
+**No lane stopped on a question tonight. Not one of the eight cards hit a product choice
+it could not answer from a document** — which is worth recording, because the run was set
+up expecting that to happen.
 
-Lane B was held from 08:00 to 16:40 on a question that, on checking, its next card
-did not actually depend on. Recorded because the mistake is worth not repeating:
-the hold was taken from a caveat in `docs/handoff-wave2.md` rather than from
-reading what the card needed. **A hold should be justified against the card, not
-against a remembered sentence about it.**
+Three lanes are idle, each for a different and deliberate reason:
 
-The two founder questions remain open either way — see "Questions waiting on the
-founder" above. Neither now blocks a lane.
+- **Lane B — waiting on a scheduled audit, not on a question.** `T2.2` is merged and
+  green. Build plan §7 requires an audit of it **before `T2.3` starts**, so the lane is
+  correctly held until that audit has run.
+- **Lane C — held by dependency, exactly as the plan instructed.** `T3.5` needs
+  `T2.4`–`T2.5` from lane B, and lane B stopped at `T2.2` as the plan asked. The nightly
+  plan flagged "if lane B reaches `T2.5` while the night is still young, `T3.5` becomes
+  available" as the one mid-run decision to watch for. **It did not arise.**
+- **Lane F — idle between cards only.** `T9.4` is available and depends on nothing.
+
+**Five questions are waiting on the founder** and none of them stopped a lane — see
+"Questions waiting on the founder" above. Two came from `T8.0`, one from `T-EMAIL`, two
+were inherited. `T-EMAIL` also parked one of its own done-whens rather than fake it, which
+is the closest anything came to a stop.
+
+**A hold that was wrong, kept from an earlier run because the mistake is worth not
+repeating.** Lane B was held from 08:00 to 16:40 on a question that, on checking, its next
+card did not depend on. The hold was taken from a caveat in `docs/handoff-wave2.md` rather
+than from reading what the card actually needed. **A hold should be justified against the
+card, not against a remembered sentence about it.**
 
 ## What the next card must know
 
