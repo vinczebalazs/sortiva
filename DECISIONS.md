@@ -16,6 +16,73 @@ Class (filled by audit): a: fine as-is | b: promote to spec | c: contradicts spe
 
 (entries below, newest first)
 
+## 2026-09-02 — T-EMAIL — BLOCKED, and not what the card expected: email sign-in never needed database sessions; revoking a session early does, and that needs a table nobody has created
+Decision: email sign-in ships with sessions **unchanged** — still a self-contained token in a cookie, still lasting a day. The card's fourth done-when ("a session can be revoked before it expires, proved by revoking one and showing the next request is unauthenticated") is **not met**, and no attempt was made to fake it. Everything else on the card is built and proved.
+
+Why, in two parts, because the card's premise turned out to be wrong in a way that matters.
+
+**First: the two things are not the same thing, and the library's own code says so.** The card, and `T1.1` before it, read "the auth library refuses to run an email provider without a database session adapter" as one requirement. It is two. Auth.js checks the configuration on every request, and what it demands of a magic-link provider is storage for a single-use link and a way to look an account up by address — three functions. It demands the session-storage functions (`createSession`, `getSessionAndUser`, and the rest) only when the session strategy is set to `database`, or when a strategy is left unstated. With the strategy stated as tokens — which it already was — the session half is never asked for. So email sign-in was buildable with the tables we have, and is now built.
+
+**Second: what actually blocks revocation is a missing table, not a missing provider.** Revoking a session before it expires means a session has to *be* somewhere it can be deleted from, and there is no `sessions` table in this schema — schema waves 1 through 4 create forty tables and none of them holds a session. Adding one is a migration, and wave 4 is closed; a feature card does not add its own (build plan §3). **The integrator has to decide whether to open a mini-wave for it.** The shape needed is Auth.js's: `sessions(session_token text primary key, user_id uuid references accounts(id) on delete cascade, expires timestamptz)`.
+
+**What is worth knowing before that decision is taken**, because it is not a free improvement. Moving sessions into the database buys "sign out everywhere" and instant lockout — real, and currently absent — and costs a database read on **every authenticated request**, on a platform chosen for being cheap (tech §2.1). It also raises the session-lifetime question the card asked about, which cannot be answered until then: today a day is a *bound on the damage* of not being able to revoke, and if revocation existed, the same day would just be an inconvenience with no security work left to do.
+
+Consequence, stated plainly: a session issued today cannot be ended early. Signing out clears the cookie in that browser and nothing more; a copied cookie stays good until it lapses, at most a day after it was issued.
+Nearest spec: main §4.1 ("standard email + OAuth (Google) signup. Nothing exotic.") and tech §3 — neither names a session strategy, mentions revocation, or lists a sessions table. main §13 lists no such table.
+Class (filled by audit):
+
+## 2026-09-02 — T-EMAIL — The session lifetime stays at one day, and the reason it stays is different from the reason it was set
+Decision: `SESSION_MAX_AGE_SECONDS` remains 24 hours. The card asked for it to be changed with a reason or kept with one; this is the reason it is kept.
+Why: `T1.1` set a day because a session that cannot be revoked has to expire soon enough to bound the damage, and Auth.js's own default of thirty days does not. That is still exactly the situation — see the blocker entry above — so the number that was right for it is still right. Revisiting the figure is the *second* half of moving sessions into the database, not something to do now: raising it while expiry is still the only way a session ends would trade a real security property for convenience, and lowering it would sign merchants out more often to buy nothing.
+Nearest spec: main §4.1; tech §3 — silent on session lifetime.
+Class (filled by audit):
+
+## 2026-09-02 — T-EMAIL — Google sign-in is told to match by email address, because that is what it has always done
+Decision: the Google provider is configured with `allowDangerousEmailAccountLinking`, and the sign-in guard is tightened to refuse any identity provider that states it has *not* verified the address it is handing us.
+Why: with a database adapter present, Auth.js runs a linking step it previously skipped. It asks storage "which account owns this Google identity", and we have nowhere to answer from — there is no table tying a provider's id to an account, and adding one would need a schema wave for a column nothing else would read. So the answer is always "unknown", and Auth.js's default response to an unknown identity whose address already has an account is to **refuse the sign-in**. Without this flag, every existing Google user would be locked out the moment email sign-in shipped.
+
+The flag's name warns about a real risk and it is worth naming: if an identity provider hands over an address it never checked, matching on that address hands over the account. The guard is what removes it — Google states whether it verified the address, and a stated "no" is now refused. A *missing* statement is deliberately not treated as a "no", because a provider that simply omits the claim would otherwise lock every user out, which is a worse failure than the one being prevented and would arrive silently.
+
+What this is not: a change of policy. Sign-in has resolved accounts by lowercased email since `T1.1` — `provisionAccount` looks the address up and creates it if absent, whatever provider carried it — and the unique index on `accounts.email` is the same statement in the schema. The flag makes the library agree with what the app already did.
+Nearest spec: main §4.1 — "standard email + OAuth (Google) signup", silent on identity linking.
+Class (filled by audit):
+
+## 2026-09-02 — T-EMAIL — A sign-in link lasts fifteen minutes
+Decision: `SIGN_IN_LINK_MAX_AGE_SECONDS = 15 * 60`. Auth.js's default is 24 hours.
+Why: the link is a bearer credential — whoever holds the message holds the account until it lapses — and it sits in a mailbox, which is forwarded, archived, synced to phones and scanned by corporate filters. Fifteen minutes is comfortably more than mail delivery takes and short enough that a message found later is inert. The day-long default is a convenience setting on a credential, which is the wrong trade for a tool that manages somebody's storefront.
+**This is a number the founder may want to move**, and moving it is one constant plus the "expires in N minutes" line in the email, which is generated from it. Ten minutes is defensible; an hour is defensible if support finds people are being timed out. Nothing in the specs states a figure.
+Nearest spec: main §4.1 — silent on link lifetime.
+Class (filled by audit):
+
+## 2026-09-02 — T-EMAIL — The sign-in email goes straight through the email wrapper, not through the notification queue
+Decision: the magic-link email is sent by calling the `EmailProvider` wrapper directly. It writes no `email_sends` row and takes no `dedupe_key`. The send is made idempotent on the link itself: the vendor's idempotency header carries a hash of that one link's secret.
+Why: the queue's row is `(account_id, type, dedupe_key)` and `account_id` is required — but the person asking for a sign-in link may have no account, which is the entire point of the link. Dedupe would also be actively wrong here. Every other email in this product is a notification that must not go twice; a sign-in link is the opposite — asking for a second one because the first is stale *must* send a second email, so a dedupe key on a notification type would suppress exactly the send the user just asked for. Keying on the link instead gives the property that is actually wanted: a retry of one send cannot deliver twice, and a new link is a new email.
+Invariant 25 is satisfied — the send goes through the one instrumented wrapper, and Auth.js's own bundled email provider (which speaks SMTP through Nodemailer) is deliberately not used. Invariant 26's uniqueness constraint is about `email_sends`, and this send is not one.
+**Flagged for the integrator:** `T8.2` (lane G) is building the email pipeline in parallel and owns `packages/core/email`. If that card decides sign-in mail should be queued after all, this is the one send that would have to change, and it would need the account-less case solving first.
+Nearest spec: tech §1.4 (email pipeline, `email_sends`), §1.5 (suppression — "account-security email" is exempt, and a sign-in link is that). Neither contemplates mail to a non-account.
+Class (filled by audit):
+
+## 2026-09-02 — T-EMAIL — The sign-in email's words live with the sign-in code, not in the UI string file
+Decision: the four sentences of the magic-link email are written in `apps/web/app/api/auth/_lib/signInEmail.ts`, not added to `packages/ui/strings/en.json`.
+Why: CLAUDE.md says copy lives in `packages/ui/strings/*.json` only, and this departs from it knowingly rather than quietly. That file is a screen dictionary owned by the frontend lane; nothing in the repo sends an email with words in it yet; and the card that builds the email pipeline (`T8.2`) is choosing where template copy lives *tonight*. Putting email copy into a screen's dictionary now would pre-empt that choice inside a file another lane is editing, and would have to be undone.
+**This wants a ruling.** Once `T8.2` lands, either email copy joins the UI dictionary — and these four strings move — or emails get their own home and this file follows it. Neither is decided here.
+Nearest spec: main Appendix A lists no sign-in email copy; tech §1.4 says templates are versioned in the repo but does not say where the words go.
+Class (filled by audit):
+
+## 2026-09-02 — T-EMAIL — A new OAuth signup is recorded as `oauth` rather than `google` in the funnel
+Decision: the `provider` property on `signup_completed` reads `email` or `oauth`. It previously read `google` for Google signups.
+Why: with the adapter in place, the account row for a brand-new user is created inside the adapter's `createUser`, and Auth.js does not tell it which provider is signing in — only whether the address has just been verified, which distinguishes a link signup from an OAuth one and nothing finer. The distinction the founder decision actually turns on is preserved ("does email sign-in bring signups Google was losing us"), and there is exactly one OAuth provider, so `oauth` and `google` currently name the same set. Recovering the exact provider name would mean firing the event from a later callback and threading "was this a create" through to it — more moving parts than the property is worth today.
+Consequence: a PostHog breakdown of `signup_completed` by provider will show `google` before this change and `oauth` after, for the same route in. Worth knowing before reading that chart across the boundary.
+Nearest spec: main §14.7 (funnel events) — names the events, not their properties.
+Class (filled by audit):
+
+## 2026-09-02 — T-EMAIL — FLAGGED, not fixed: the sign-in screen's Google button cannot work, and the same defect would have hit the email form
+Decision: not fixed here. Recorded, because it is one line away from my card and in another lane's directory.
+Why: `packages/ui/src/public/SignIn.tsx` posts a form to `/api/auth/signin/google` carrying a `callbackUrl` and nothing else. Auth.js rejects any sign-in POST that does not carry the anti-forgery token it hands out at `GET /api/auth/csrf` — verified in the library's own request dispatcher, and I hit it while writing this card's tests, which have to fetch that token before they can ask for a link. So the button on our sign-in screen returns an error rather than starting a sign-in. The screen belongs to the frontend lane and its copy file (`packages/ui/strings/en.json`) is being edited tonight, so this is surfaced rather than resolved.
+Consequence for the founder decision that email sign-in ships in v1: **the capability is built and reachable at Auth.js's own page (`/api/auth/signin`), but our branded `/signin` screen still offers only Google, and that button is broken.** Adding the email field is a small frontend change — an input named `email`, a hidden `csrfToken` fetched first, posting to `/api/auth/signin/email` — plus two or three new strings, and it fixes the Google button in the same edit. It is not done, and until it is, no merchant reaches email sign-in from the product.
+Nearest spec: ui §1 (sign-in screen); main §4.1.
+Class (filled by audit):
+
 ## 2026-09-02 — T8.0 — A Shopify store is held by its live connection only, so losing one releases the store
 Decision: `shopify_conns.shop_handle` is unique among rows where `invalidated_at IS NULL`, instead of unique across every row that ever existed. The abandoned row is kept, not deleted. Because two rows may now carry one handle, `findAccountByShopHandle` — the "whose store is this" lookup an incoming Shopify webhook depends on — now asks for the live row; it previously relied on the unconditional index to make its answer single, and would otherwise have been free to answer with the abandoned account and route an uninstall to a merchant who no longer has that store.
 Why: the old index made a lost connection a permanent lock. A merchant who uninstalled us, or deleted their account and came back later under a new one, could never reconnect the same store: the leftover row still owned the handle and no path in the product cleared it, so the attempt died on a database constraint the merchant could do nothing about. Recommended in these words by audit `T0.3` ("makes the release real at the database level ... the version that survives a sweep job failing to run") and by the `T1.4` entry of 2026-09-01, and collected into this wave by the integrator. Risk considered and accepted: another account can now connect a store whose connection is dead, including while the original merchant is still being asked to reconnect. Connecting requires completing Shopify's own install on that store, so only someone with real admin rights there can do it — the exposure is narrower than the failure it replaces. Note for the record that "defence in depth", the phrase the `T1.4` entry uses, describes it wrongly: a partial unique index permits strictly more rows than an unconditional one, so this is a deliberate relaxation, not an extra guard.
