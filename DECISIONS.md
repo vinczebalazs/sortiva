@@ -16,6 +16,47 @@ Class (filled by audit): a: fine as-is | b: promote to spec | c: contradicts spe
 
 (entries below, newest first)
 
+## 2026-09-02 — T9.1 — Copy lives in `packages/ui/strings/en.json`, and the billing copy that predates it is held to it by a test
+Decision: `packages/ui/strings` now exists and is the single home for every user-facing sentence. The thirteen sentences the main spec's canonical-copy table pins are keyed by their row (`appendixA.*`) and asserted character for character. Billing's five strings, which an earlier card had to park in `packages/core/src/billing/copy.ts` because this package did not exist, were **not moved** — moving them means editing Lane A's directory and its snapshot tests. Instead a test in `packages/ui` asserts the two homes still say the same thing.
+Why: the constitution names this location and four cards have now parked copy elsewhere waiting for it. Duplicating a sentence in two places is how the two drift apart; a test that fails the moment they disagree is the cheapest guard available to a lane that does not own one of the two files. The follow-up — delete `copy.ts`, point billing at the catalogue — is mechanical and belongs to the integrator or to whichever card next touches billing.
+Nearest spec: CLAUDE.md code-structure rules — names the location; main Appendix A — the strings themselves.
+
+## 2026-09-02 — T9.1 — Sentences the specs name but do not write were authored, and are flagged for the founder
+Decision: three banners exist in the UI spec by name with no wording given, so wording was written for them: the Search Console reconnect banner ("Your Search Console connection was lost — reconnect to keep query and page data current."), the vacation-mode banner ("Vacation mode is on — nothing will publish until you turn it off."), and the counted-overflow line ("{count} more notices in your notifications"). Also authored: the six navigation labels, the locked tooltip ("Available after your store is connected"), and the Opportunities progress note ("Finding opportunities…").
+Why: the banners cannot render without words, and the alternative — leaving them out — drops behaviour the spec requires. These are ordinary interface copy rather than canonical strings, so no invariant governs them, but `docs/founder-decisions.md` §E3 makes copy the founder's call. They are named here so a review has a list rather than a diff to read.
+Nearest spec: ui §1 — names each banner and its dismissibility, gives wording for only the payment-failed and service-pause ones.
+
+## 2026-09-02 — T9.1 — A locked destination renders with no address at all, not as a greyed-out link
+Decision: the four destinations that lock before the store is connected render as a `role="link"` element with `aria-disabled="true"` and **no `href`**, rather than as an anchor styled to look inactive.
+Why: the spec asks for "visible but non-interactive". An anchor that is merely grey is still reachable by keyboard, still appears in a screen reader's list of links, and still navigates — which is how "non-interactive" quietly turns out to be interactive. Removing the address makes the treatment and the behaviour the same fact. The cost is that the element is not focusable, so the tooltip explaining the lock is reachable by pointer and by the accessible name but not by tab; a rail note carrying the same sentence sits at the foot of the rail for that reason.
+Nearest spec: ui §1 — "visible but non-interactive, lock icon + tooltip", silent on the mechanism.
+
+## 2026-09-02 — T9.1 — "The first scan has finished" is read from the scan timestamp, because no field says it
+Decision: Opportunities shows its progress note while `domain.state` is `ready_for_planning` and `connections.lastScanAt` is null.
+Why: the spec wants the note shown "until the onboarding run completes", and `GET /api/account` carries no field for that. The scan timestamp is the same fact by another name — the onboarding run is what writes the first one. This puts a requirement on the backend card that fills the endpoint: the timestamp must be written when a scan **produces** something, not when one starts, or the note disappears while the screen is still empty. Recorded in `packages/ui/src/fixtures/screen-contract.ts` so that card inherits it.
+Nearest spec: ui §1, §3.8; main §6.9 — describe the state, name no field.
+
+## 2026-09-02 — T9.1 — When the shell cannot read the account, it locks everything and raises nothing
+Decision: if `GET /api/account` fails or is missing, the frame renders as though no domain were claimed: every product destination locked, no banners. A missing `GET /api/settings` (still a mock) leaves vacation mode off.
+Why: the frame wraps every screen, so throwing takes the whole product down. Of the two directions to fail in, locking shows a merchant fewer destinations than they have, which corrects itself on the next load; unlocking shows destinations that then fail to load, and raising a banner from a failed fetch would tell a merchant their payment failed when it did not.
+Nearest spec: ui §1 — silent on what the shell does when it cannot read the account.
+
+## 2026-09-02 — T9.1 — The gallery of component states is a route that does not exist in production
+Decision: the card asks for "Storybook/preview for the banner stack". Rather than adding Storybook, the states are a component in `packages/ui` mounted at `/ui-gallery/banner-stack`, which returns not-found when `NODE_ENV` is `production`.
+Why: Storybook is a large dependency tree and a second build for one gallery; a route reuses the build that already exists and renders the real components with the real stylesheet, so what is on the page is what ships. The trade is that there is no isolated component runner, no interaction testing and no visual-regression baseline — if any of those are wanted later, Storybook is still the answer and this page is not in its way. Files named `*.preview.tsx` are exempt from the copy rule, because the labels naming each state are scaffolding rather than product copy.
+Nearest spec: build plan §6, T9.1 done-when — "Storybook/preview", either.
+
+## 2026-09-02 — T9.1 — Browser analytics ships as a typed seam with no transport bound — the transport is a founder question
+Decision: screens report what a merchant did through a `UiAnalytics` interface with a do-nothing default and a recording test double. Nothing is sent anywhere. Each event declares exactly which properties it may carry, so a call site cannot attach a free-text field.
+Why: the two specs disagree about whether browser-observed events exist at all. Main §14.7 says everything observable is emitted "from the backend (server-side capture)"; ui §11 requires seven events that no server call can see — a card being read, a veto clicked, a calendar drag. Sending them needs one of two things, and both are decisions rather than details: the browser talks to the analytics vendor directly, which means a new browser SDK, a public key in the page, and turning session replay off on every view that renders store data; or the browser posts to an endpoint of ours which captures server-side, which means a route that is not in the frozen contract. Building either would foreclose the other, so neither was built. The seam costs nothing and unblocks every screen card. The property table also closes the UI half of the open audit finding that nothing structurally stops product content reaching an analytics event.
+Nearest spec: main §14.7 — server-side capture; ui §11 — UI-only events with the same taxonomy. They contradict each other.
+
+## 2026-09-02 — T9.1 — Six navigation destinations, taken as the assumed default rather than a signed-off decision
+Decision: built with six destinations — Dashboard, Opportunities, Content, Products, Performance, Settings — with Search Console as a tab inside Performance.
+Why: main Appendix B assumes six and `docs/founder-decisions.md` §C8 records it as awaiting sign-off while noting Lane F is building navigation now, and recommends confirming as it stands. Building to the assumed default is what the plan's kickoff checklist expects; noted here so the sign-off has something to point at. Changing it later is a change to one table.
+Nearest spec: main Appendix B; ui §1.
+
+
 ## 2026-09-01 — T4.4 (founder decision, taken ahead of the card) — A draft with nothing new to say is rejected outright, with no repair attempt
 Decision: of the quality criteria, **information gain** — does a reader get anything here they would not get from the pages already ranking — is the one whose failure ends the run immediately. The draft is rejected, the repair attempt is not spent, and the topic's calendar slot reports the reason like any other gate failure. Every other criterion keeps the existing single repair attempt.
 Why: the other criteria fail for reasons a rewrite can fix — a claim stated too strongly, a contradiction, a section that misses the question, weak language. Information gain fails because the evidence had nothing distinctive in it, and no amount of rewriting adds material that was never gathered. Spending a frontier-model repair call on it buys a second draft that says the same nothing, slightly differently, and then fails the same check. The saving is one expensive call on every article that was never going to be publishable; the cost is that a draft which failed only for want of a better angle on the same evidence no longer gets a second try, which we accept because that case is indistinguishable from the common one at the point the check fires.
