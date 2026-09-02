@@ -27,6 +27,11 @@ new doubles.StubJudgeLite()
 new doubles.StubCatalogEvents()
 new doubles.StubNotificationEmitter()
 
+// Not every stub is a class. The attention list's three article-backed readers
+// register when their module loads, because there is nothing to construct —
+// importing it is what wires them.
+await import('../packages/core/src/notifications/ports.ts')
+
 const stubs = wiredStubs()
 
 console.log(`${stubs.length} stub(s) wired:\n`)
