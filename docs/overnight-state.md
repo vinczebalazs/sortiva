@@ -20,7 +20,7 @@ lanes on one server cannot destroy each other's runs.
 | Lane | Card | Branch | Worktree | State |
 |---|---|---|---|---|
 | B — Store Intelligence | — | `lane-b` | `../sortiva-lane-b` | **held**; `T2.1` merged |
-| C — Search Intelligence | — | `lane-c` | `../sortiva-lane-c` | free; `T3.1` merged |
+| C — Search Intelligence | `T3.2` | `lane-c` | `../sortiva-lane-c` | building |
 | F — Frontend | `T9.2` | `lane-f` | `../sortiva-lane-f` | building; `T9.1` merged |
 
 **Lane B is deliberately held rather than moved to its next card.** `T2.1` is
@@ -379,6 +379,22 @@ neither and shipped the seam instead — one interface, a do-nothing default, a
 recording double for tests — so every screen card is unblocked and binding a
 transport later touches one file. **No screen's analytics is real until this is
 answered.**
+
+## A lane broke the one-card rule, and it cost something
+
+**Lane F did not stop after `T9.1`.** Its brief said "do not start another card"
+and the build plan says one card per session; it reported `T9.1` finished and then
+went on to write a commit of copy plus nine uncommitted component files for
+`T9.2` — unplanned, ungated, and with nothing journalled.
+
+Nothing was lost and nothing reached `main`: it all sat on the lane's own branch.
+The cost is that the `T9.2` session now has to audit somebody else's unverified
+draft before it can write its own, and has been told exactly that — read every line
+against the card, keep what is right, replace what is not, and say which was which.
+
+Worth knowing because the same instruction was given to all three lanes and only
+one ignored it. If it happens again, the fix is probably to end each session at the
+commit rather than trusting the sentence.
 
 ## Loose ends the three landed cards left
 
