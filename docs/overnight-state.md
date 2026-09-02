@@ -4,9 +4,8 @@ Rewritten after **every** card lands or stops, and re-read before any card is
 launched and before any merge. Its test: a completely fresh session, with none of
 the conversation that produced it, could take over from this file alone.
 
-**Last rewritten:** 2026-09-01, 23:00, by the integrator session. No card has
-landed. What changed: the founder said start, and three lanes are now building.
-
+**Last rewritten:** 2026-09-02, 07:10, by the integrator session. `T9.1` landed
+and merged; the full gate is green on the merged tree. Lane F has moved to `T9.2`.
 ---
 
 ## Right now
@@ -22,7 +21,7 @@ lanes on one server cannot destroy each other's runs.
 |---|---|---|---|---|
 | B — Store Intelligence | `T2.1` | `lane-b` | `../sortiva-lane-b` | building |
 | C — Search Intelligence | `T3.1` | `lane-c` | `../sortiva-lane-c` | building |
-| F — Frontend | `T9.1` | `lane-f` | `../sortiva-lane-f` | building |
+| F — Frontend | `T9.2` | `lane-f` | `../sortiva-lane-f` | building; `T9.1` merged |
 
 **`T8.0` was deliberately not launched**, though the order lists it as the fourth
 parallel card. Two reasons. It is schema wave 4, whose entire content is "the
@@ -67,24 +66,51 @@ recoverable, an uncommitted half is a guess.
 
 ## What is on `main`
 
-Wave 2 has not started. The last four commits are the wave-1 close-out plus two
-cards that landed on their own:
+**`T9.1` landed on 2026-09-02** — the app shell and, more consequentially, the
+string catalogue. Eight commits, merged as `6613241`.
 
-| Commit | What it was |
+What it changed that everyone inherits:
+
+- **`packages/ui/strings` now exists**, and a lint rule makes text typed into a
+  component a build failure — including the text a person actually reads out of an
+  attribute, like a tooltip or an accessible label. Every card from here on puts
+  its sentences there. The thirteen sentences the product may not reword are keyed
+  to the spec's canonical-copy table and asserted character for character.
+- **Billing's copy still lives in its old home** (`packages/core/src/billing/copy.ts`),
+  because moving it means editing another lane's directory. A test asserts the two
+  homes say the same thing, so drift is a red test. **Deleting the duplicate is a
+  mechanical follow-up nobody owns yet.**
+- **A locked navigation item renders with no web address at all** — not a greyed-out
+  link that still works. Cards adding screens should keep that property.
+- **Two files outside lane F's directories changed**: `eslint.config.mjs` (the new
+  rule, plus an exemption for gallery pages) and `apps/web/app/page.tsx` (one word,
+  forced by the new rule). `tools/eslint-plugin-sortiva/index.js` gained two lines.
+  `pnpm-lock.yaml` changed — `packages/ui` now depends on React. **That lockfile is
+  the merge hazard for lanes B and C if they added a dependency.**
+
+**Gate on the merged tree**, each command run separately on 2026-09-02:
+
+| | |
 |---|---|
-| `6fb14a5` | docs — re-ordering what remained after the sweep |
-| `b0c1413` | `T-SWEEP` — removed 1,007 spec references from the code, left 15 in shipped migrations |
-| `c71f023` | docs — the hard rules for unattended work |
-| `f6775dd` | `T8.4a` — spend caps that pause the product before the bill arrives |
+| `pnpm lint` | clean |
+| `pnpm lint:prove` | **9** planted violations, all rejected (was 7; two are new) |
+| `pnpm typecheck` | 9 packages |
+| `pnpm test` | **1023 passing**, 65 files (was 914) |
+| `pnpm contracts:check` | 56 routes; zod and OpenAPI agree |
+| `pnpm build` | **10 routes** (was 9 — the gallery page) |
+| `pnpm eval` · `pnpm chaos` | pass |
+| `pnpm env:check` | `.env` and `.env.example` both declare 36 variables |
+| `pnpm db:migrate` on an **empty** database | 41 tables, 3 guard triggers |
 
-**Gate result on this tree** (from `docs/handoff-wave2.md`, each command run
-separately): lint clean · 7 planted lint violations all rejected · typecheck 9
-packages · **914 tests passing** · 56 API routes agreeing with the API document ·
-build 9 routes · eval and chaos pass · migrations on an *empty* database produce 41
-tables and 3 guard triggers.
+The migration row was re-run against a database created for the purpose and
+dropped afterwards, not against the dev database. `T9.1` added no migrations, so
+the numbers are unchanged from wave 1. Note if you re-check it: counting
+`information_schema.triggers` gives **4**, because a trigger that fires on two
+events has two rows. There are three triggers — the competitor cap, the
+write-once idempotency ledger, and append-only spend events.
 
-That last row is the one worth re-checking after any schema work: a migration that
-only ever runs against a database which already has the tables has not been tested.
+Earlier commits on `main`: `b0c1413` removed 1,007 spec references from the code;
+`f6775dd` added the spend caps that pause the product before the bill arrives.
 
 ## Where the order stands
 
@@ -228,6 +254,32 @@ derived and reports the card text as wrong — it never adds the column, because
 migrations belong to schema waves and because the spec does not want one.
 
 Lane C was told this when it was resumed.
+
+## Questions waiting on the founder
+
+Neither blocks a lane today; both block something specific later.
+
+**1. Should scheduled jobs with working code start running now?** The worker turns
+its schedule on only when all twelve scheduled jobs have a handler, and eleven have
+none — so nothing scheduled runs at all, including the nightly billing repair and
+the five-minute spend-cap sweep, whose code is written and tested. `T2.1` writes
+the first of the eleven, so it is the first card that could change the rule. The
+integrator's recommendation put to the founder: run the entries that have handlers
+and log loudly at every start-up for the ones that do not, so a job that is not
+running says so. **Lane B will reach this.**
+
+**2. How does a browser send an analytics event?** Raised by `T9.1`, which found the
+specs contradicting each other: the main spec says everything observable is emitted
+server-side, and the UI spec requires seven events no server call can see — an
+opportunity card being read, a veto clicked, a calendar drag. Two ways, and each
+forecloses the other: the browser talks to the analytics vendor directly (needs a
+browser SDK, a public key in the page, and session replay deliberately off on every
+view showing store data), or the browser posts to an endpoint of ours which captures
+server-side (needs a route that is not in the frozen API contract). `T9.1` built
+neither and shipped the seam instead — one interface, a do-nothing default, a
+recording double for tests — so every screen card is unblocked and binding a
+transport later touches one file. **No screen's analytics is real until this is
+answered.**
 
 ## Audit findings, unactioned
 
