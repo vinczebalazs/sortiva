@@ -16,6 +16,41 @@ Class (filled by audit): a: fine as-is | b: promote to spec | c: contradicts spe
 
 (entries below, newest first)
 
+## 2026-09-02 — T3.2 — Blog posts and static pages get no product families, and the inventory says so rather than guessing
+Decision: a collection's families are the families of the products in it, and a product's family is its own. A store page and a blog post get an empty family list.
+Why: main §12.3 asks for blog posts to be mapped "via the same topic-mapping used for articles". That mapping is part of the topic model, which is Lane D's `T4.1` and does not exist. The alternatives were to invent a second mapping here — a text match against family names — which would be a different answer from the real one and would have to be unpicked later, or to leave the column empty and let `T4.1` backfill it. Empty is honest: nothing downstream can mistake "no family recorded" for "belongs to no family" more badly than it could mistake a wrong family for a right one.
+Nearest spec: main §12.3 — names the mapping, points at a mechanism that is not built.
+
+## 2026-09-02 — T3.2 — A page the store has deleted keeps its inventory row; the deletion is reported, not acted on
+Decision: the fan-out from the change stream returns deletions separately from re-reads, and the sync does nothing with them. No row is deleted, and nothing marks a row as gone.
+Why: three things read this inventory and none of them has been built, so what a deleted page should do is genuinely open. Deleting the row loses the only record that the address ever existed, which is what a 404 signal and a redirect recommendation would both need. Marking it gone needs a column, and adding one is a schema wave. Doing neither leaves one stale row per deleted page, which the existing-target check could act on — it would propose improving a page that is gone. That is the cost, and it is bounded and visible. **This needs the founder or the integrator to settle before the existing-target check ships in `T3.5`.**
+Nearest spec: main §12.3 — specifies the sync and the checksum, silent on removal.
+
+## 2026-09-02 — T3.2 — The two search fields are read one request per page, through Shopify's older interface
+Decision: a page's search title and description are fetched as `global.title_tag` / `global.description_tag` metafields, one request per page, using the same REST Admin client every other Shopify read in the product already goes through.
+Why: Shopify's REST interface does not return those two fields inline; its GraphQL interface returns them with 250 pages in one request, which is roughly fifty times cheaper on request budget. But the product has exactly one Shopify client, and it speaks REST. A second client would be a second set of retry, rate-limit and dead-token behaviours, and only one of the two would get fixed the next time Shopify changes something. The cost is paid in walk length, not in money — Shopify's request allowance is per second, not metered — and the walk is already batched and resumable for other reasons. **Worth revisiting as one piece of work when the Shopify client gains a GraphQL path**, not as a second client bolted on here.
+Nearest spec: main §12.3 — names the fields as available through the Admin API, silent on which interface.
+
+## 2026-09-02 — T3.2 — A store's inventory addresses are built from the address the store says it serves on, not the domain the merchant claimed
+Decision: the storefront origin is read from the store's own record (`shop.domain`, falling back to its `myshopify.com` address), not from the claimed domain in `domains`.
+Why: these disagree more often than they look like they should — a store on `example.com` whose canonical storefront is `shop.example.com`, or one still on its `myshopify.com` address. Every inventory row's address exists to be joined against the addresses Search Console reports, and Search Console reports the canonical one. An inventory spelled the other way would silently match nothing, and the failure would look like "this store has no search data" rather than like a bug.
+Nearest spec: main §12.3 — "one row per URL", silent on which spelling; main §2 — claims at eTLD+1, which is a different question.
+
+## 2026-09-02 — T3.2 — The walk through a store is staged and resumed by "everything after this id"
+Decision: the store is read in a fixed order — hand-picked collections, rule-based collections, products, pages, then blog posts — a hundred pages per job run, resuming from the last id seen in the current stage. The resume marker is an opaque bag of strings that only the Shopify reader understands, passed through the job payload.
+Why: collections come first because they carry product membership, which is what gives every later row its families; Shopify keeps hand-picked and rule-based collections in two lists with no combined endpoint, so both are walked. Paging by last-id-seen rather than by Shopify's newer cursor because the cursor arrives in a response header the shared client does not surface, and because last-id-seen restarts from any point — which is what makes a killed run resumable at all. Keeping the marker opaque means a second storefront (WooCommerce, say) can number its pages however it likes without changing the domain code.
+Nearest spec: main §14.3.4 — requires a checkpoint on any step over 60 seconds; silent on its shape.
+
+## 2026-09-02 — T3.2 — A price change or a stock change never re-reads a page
+Decision: of the six kinds of change the catalogue stream reports, only product-created, product-updated and collection-updated cause a re-read. Price changes and availability changes are dropped.
+Why: neither can move a page's title, its search fields, its headings or its links, so the checksum would come back identical and the re-read would have bought nothing. They are also the two most frequent events a busy store emits, so dropping them is most of the saving. The risk accepted: if the emitter ever reports a body edit *as* a price change, we would miss it — the nightly walk catches it within a day.
+Nearest spec: main §12.3 — names the webhooks, silent on which changes matter to the inventory.
+
+## 2026-09-02 — T3.2 — The batch size and the membership sample are job-tuning numbers, deliberately not in `packages/rules`
+Decision: "a hundred pages per run" and "read at most 250 of a collection's products" live as named constants in the job that uses them, not in `signals.config.yaml`.
+Why: invariant 9 puts thresholds in `packages/rules` — the numbers from main §7.3/§7.6/§8.2/§9.6 that decide what counts as an opportunity. These two decide nothing a merchant ever sees: raising the batch size makes a large store finish in fewer nights and each run longer, and a collection with more than 250 products already tells us everything about which families it covers. Putting operational tuning in the calibrated-thresholds file would dilute the thing that file is for, which is a reviewable record of the judgements the product makes.
+Nearest spec: main §7.10 — scopes the config layer to the scoring and detection numbers.
+
 ## 2026-09-02 — T9.1 — Copy lives in `packages/ui/strings/en.json`, and the billing copy that predates it is held to it by a test
 Decision: `packages/ui/strings` now exists and is the single home for every user-facing sentence. The thirteen sentences the main spec's canonical-copy table pins are keyed by their row (`appendixA.*`) and asserted character for character. Billing's five strings, which an earlier card had to park in `packages/core/src/billing/copy.ts` because this package did not exist, were **not moved** — moving them means editing Lane A's directory and its snapshot tests. Instead a test in `packages/ui` asserts the two homes still say the same thing.
 Why: the constitution names this location and four cards have now parked copy elsewhere waiting for it. Duplicating a sentence in two places is how the two drift apart; a test that fails the moment they disagree is the cheapest guard available to a lane that does not own one of the two files. The follow-up — delete `copy.ts`, point billing at the catalogue — is mechanical and belongs to the integrator or to whichever card next touches billing.
