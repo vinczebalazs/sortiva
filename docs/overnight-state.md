@@ -20,7 +20,7 @@ lanes on one server cannot destroy each other's runs.
 | Lane | Card | Branch | Worktree | State |
 |---|---|---|---|---|
 | B — Store Intelligence | — | `lane-b` | `../sortiva-lane-b` | **held**; `T2.1` merged |
-| C — Search Intelligence | `T3.1` | `lane-c` | `../sortiva-lane-c` | building |
+| C — Search Intelligence | — | `lane-c` | `../sortiva-lane-c` | free; `T3.1` merged |
 | F — Frontend | `T9.2` | `lane-f` | `../sortiva-lane-f` | building; `T9.1` merged |
 
 **Lane B is deliberately held rather than moved to its next card.** `T2.1` is
@@ -72,6 +72,49 @@ and often, by explicit path, for exactly this reason: a committed half is
 recoverable, an uncommitted half is a guess.
 
 ## What is on `main`
+
+**`T3.1` landed on 2026-09-02** — a store's search history can now be pulled in.
+Twelve commits, merged as `521679e`; the merge conflicted in one file (both this
+card and `T2.1` register background jobs at the same start-up hook) and both sides
+were kept.
+
+Search Console is Google's free report of what people searched for before they
+landed on a store's pages, how often each page was shown, and where it sat in the
+results. It is the only honest answer to "what does this store already rank for",
+and the engine is meant to consult it before proposing anything so it never writes
+a new page for something an existing page already serves.
+
+- **A property for the wrong website is refused outright, not warned about.** A
+  merchant's Google account often reads sites they run for other people; attaching
+  one of those makes every later conclusion about the wrong website, with nothing
+  in the product to reveal it. A lookalike that merely *ends* with the claimed
+  domain is refused too.
+- **Declining stays first-class.** Skipping is recorded and the rest of onboarding
+  carries on untouched.
+- **The nightly pull takes the last seven days, not yesterday.** Google keeps
+  revising recent days for about a week; a single-day pull would freeze the first,
+  lowest figure it ever reported.
+- **The sixteen-month history imports newest first**, a month at a time, each
+  month handing the rest to a fresh job — so a crash costs one month, not the
+  import. A merchant who confirms their profile while it is still running already
+  has the months the signals weigh most heavily.
+- **When Google permission dies, reporting stops and nothing else does** — proved
+  by taking the steps of a live run before and after and showing none moved.
+
+**A done-when in the card is wrong and was not implemented as written.** `T3.1`
+asks the skip path to set `account_settings.limited_intelligence`. There is no such
+column and there should not be: mini-wave `T2.0b` was asked to add it, read the
+spec and declined, because running-without-Search-Console is defined as the state
+an account is *in* while it has no connection — one entry condition and one exit
+condition, both about whether a connection exists. A stored flag is a second source
+of truth that can disagree: the badge outlives the connection the merchant just
+made, or reads "fine" with nothing to read. Implemented as derived, no column, no
+migration. **The card text should be corrected.**
+
+*Consequence worth knowing:* `GET /api/account` had been returning
+`limitedIntelligence: true` unconditionally — correct while nothing could connect
+Search Console, and a badge that never goes away the moment something can. It is
+now wired to the real value.
 
 **`T2.1` landed on 2026-09-02** — a merchant's store can now actually be connected.
 Eleven commits, merged as `73ca6c9`. In plain terms:
@@ -130,14 +173,14 @@ What it changed that everyone inherits:
   `pnpm-lock.yaml` changed — `packages/ui` now depends on React. **That lockfile is
   the merge hazard for lanes B and C if they added a dependency.**
 
-**Gate on the merged tree** (`T9.1` + `T2.1`), each command run separately on 2026-09-02:
+**Gate on the merged tree** (`T9.1` + `T2.1` + `T3.1`, commit `521679e`), each command run separately on 2026-09-02:
 
 | | |
 |---|---|
 | `pnpm lint` | clean |
 | `pnpm lint:prove` | **9** planted violations, all rejected (was 7; two are new) |
 | `pnpm typecheck` | 9 packages |
-| `pnpm test` | **1108 passing**, 75 files (was 914 at wave 2 start) |
+| `pnpm test` | **1177 passing**, 80 files (was 914 at wave 2 start) |
 | `pnpm contracts:check` | 56 routes; zod and OpenAPI agree |
 | `pnpm build` | compiles; the gallery page and both Shopify routes present |
 | `pnpm eval` · `pnpm chaos` | pass |
@@ -337,6 +380,38 @@ recording double for tests — so every screen card is unblocked and binding a
 transport later touches one file. **No screen's analytics is real until this is
 answered.**
 
+## Loose ends the three landed cards left
+
+Small, real, and each belongs to a named next card rather than to a sweep.
+
+- **Two lanes parked user-facing copy outside the string catalogue** because
+  `packages/ui/strings` did not exist when they started: billing's wording sits in
+  `packages/core/src/billing/copy.ts`, Search Console's in
+  `packages/core/src/search/copy.ts`. `T9.1` created the catalogue and left a test
+  that fails if billing's two homes ever disagree. Moving both is mechanical.
+- **A build failure the tests cannot catch.** A route that queues background work
+  pulled in the threshold config's file loader, which reads a YAML file off disk —
+  in a bundle that has no disk. `pnpm build` failed while every test passed. Fixed
+  in `T3.1` by splitting the queue call into its own near-empty module. **Any lane
+  whose route enqueues background work will hit this**, so it is worth knowing
+  before it is diagnosed a second time.
+- **`pnpm test` and `pnpm lint:prove` must not run at the same time.** The proof
+  script plants and deletes a file that a billing test reads off a `git ls-files`
+  listing, so the test crashes on a file that vanished underneath it. Harmless
+  when the gate is run one command at a time, as the rules already require — but a
+  real trap for any CI that parallelises the two.
+- **A long-dead Search Console connection never starts counting as limited.** A
+  store whose permission died months ago goes on reasoning from ageing data with
+  nothing saying so. Bounding it needs a staleness horizon nobody has specified;
+  it belongs with the detection cards that would read it.
+- **The Search Console callback is not in the frozen API table**, deliberately —
+  it is Google's browser redirect answering with a 302, never called by our own
+  code, the same exception `/api/auth/*` already has. A five-line addition if the
+  integrator wants it listed.
+- **Resolved without anyone needing to decide it:** `T3.1` had to guess where a
+  merchant lands after connecting and chose `/settings/connections`; `T9.1`
+  independently pointed three separate places at the same path. They agree.
+
 ## Audit findings, unactioned
 
 Six investigations ran during wave 1; all reports are in `docs/audits/`, and
@@ -374,7 +449,7 @@ None yet. Three are building; see the table at the top for which.
   corrupted the signup funnel. Both are for the spec keepers, neither blocks a card.
 - **Still no vendor credentials.** Stripe, Turnstile, Anthropic and PostHog work is
   built and tested against fakes, and the real-vendor evidence is recorded as
-  outstanding rather than claimed. Three cards need re-running against real keys.
+  outstanding rather than claimed. **Two more joined that list today**: the Shopify handshake in `T2.1` was proved against a local server standing in for Shopify, and the Search Console flow in `T3.1` against a stand-in that pages the way Google does. Five cards now need re-running against real keys.
 - **Email sign-in is unfinished and unowned.** It shipped Google-only because no
   table existed for a magic link's single-use token. That table exists now. No card
   owns finishing it.
