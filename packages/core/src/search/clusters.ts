@@ -18,6 +18,14 @@ import type { ClustersConfig } from '@sortiva/rules'
  * each other, and the merchant would be told to consolidate pages that should
  * stay apart. The opposite failure, a variant left in a cluster of its own, only
  * costs us a signal we might have found.
+ *
+ * Containment alone is not enough, because "shoes" contains "running shoes" and
+ * those are not one intent. Two rules separate them. A search with exactly the
+ * head's words in another order, or with a filler word added, is always the same
+ * intent and always folds in. A search that adds a real word keeps its own
+ * cluster if the store is shown for it often enough to be worth acting on
+ * separately, and folds in otherwise — the threshold for "often enough" lives in
+ * `packages/rules`.
  */
 
 /** One search over the window, already totalled. */
@@ -112,21 +120,25 @@ function subsumes(head: readonly string[], candidate: ReadonlySet<string>): bool
 /**
  * Builds the clusters for one store from the searches it was actually shown for.
  *
- * Heads are chosen busiest-first, and every remaining search is assigned to the
- * **most specific** head that contains it. That ordering is what stops a broad
- * head swallowing narrower ones: with "shoes" and "running shoes" both present,
- * "trail running shoes" joins "running shoes", not "shoes".
+ * Searches are walked busiest-first, so the phrasing that names a cluster is the
+ * one the store is most often shown for. Each search either starts a cluster or
+ * joins the **most specific** existing one that contains it — which is what
+ * keeps "trail running shoes" with "running shoes" rather than with "shoes".
  */
 export function buildQueryClusters(input: BuildQueryClustersInput): ClusterDraft[] {
   const { config } = input
 
   const eligible = input.queries
     .filter((row) => row.impressions >= config.min_query_impressions)
-    .map((row) => ({
-      ...row,
-      normalized: normaliseQuery(row.query),
-      tokens: contentTokens(row.query),
-    }))
+    .map((row) => {
+      const tokens = contentTokens(row.query)
+      return {
+        ...row,
+        normalized: normaliseQuery(row.query),
+        tokens,
+        signature: [...tokens].sort().join(' '),
+      }
+    })
     .filter((row) => row.normalized.length > 0)
 
   const preferred = new Set((input.preferredHeads ?? []).map(normaliseQuery).filter(Boolean))
@@ -143,7 +155,7 @@ export function buildQueryClusters(input: BuildQueryClustersInput): ClusterDraft
   })
 
   interface Head {
-    readonly normalized: string
+    readonly signature: string
     readonly display: string
     readonly tokens: readonly string[]
     readonly members: { query: string; impressions: number }[]
@@ -152,37 +164,50 @@ export function buildQueryClusters(input: BuildQueryClustersInput): ClusterDraft
   }
 
   const heads: Head[] = []
-  const claimed = new Set<string>()
+  const seen = new Set<string>()
 
   for (const row of byPriority) {
-    if (claimed.has(row.normalized)) continue
-    if (heads.length >= config.max_clusters) break
+    if (seen.has(row.normalized)) continue
+    seen.add(row.normalized)
+
+    // Most specific first, so a search both a narrow and a broad head could take
+    // goes to the narrow one. Without this, "shoes" absorbs "running shoes" and
+    // every conclusion drawn from that cluster is about nothing in particular.
+    const containing = heads
+      .filter((head) => subsumes(head.tokens, new Set(row.tokens)))
+      .sort((a, b) => b.tokens.length - a.tokens.length)
+    const host = containing[0]
+
+    // The same words in a different order, or with a filler word added, is the
+    // same search. It folds into its head however often it is shown — splitting
+    // "linen bedding" from "best linen bedding" would have the store competing
+    // with itself on the strength of the word "best".
+    const sameIntent = host?.signature === row.signature
+
+    // A narrower search that is substantial on its own keeps its own cluster:
+    // people searching "running shoes" want something different from people
+    // searching "shoes", and pooling them would hide both.
+    const standsAlone =
+      !sameIntent && row.tokens.length >= config.head_min_tokens && row.impressions >= config.head_min_impressions
+
+    if (host && !standsAlone) {
+      if (host.members.length >= config.max_member_queries) continue
+      host.members.push({ query: row.query, impressions: row.impressions })
+      host.clicks += row.clicks
+      host.impressions += row.impressions
+      continue
+    }
+
+    if (heads.length >= config.max_clusters) continue
     if (row.tokens.length < config.head_min_tokens) continue
-    claimed.add(row.normalized)
     heads.push({
-      normalized: row.normalized,
+      signature: row.signature,
       display: row.query,
       tokens: row.tokens,
       members: [],
       clicks: row.clicks,
       impressions: row.impressions,
     })
-  }
-
-  // Most specific head first, so a narrower head gets first refusal on any
-  // search both it and a broader head could take.
-  const bySpecificity = [...heads].sort((a, b) => b.tokens.length - a.tokens.length)
-
-  for (const row of byPriority) {
-    if (claimed.has(row.normalized)) continue
-    const tokenSet = new Set(row.tokens)
-    const head = bySpecificity.find((candidate) => subsumes(candidate.tokens, tokenSet))
-    if (!head) continue
-    if (head.members.length >= config.max_member_queries) continue
-    claimed.add(row.normalized)
-    head.members.push({ query: row.query, impressions: row.impressions })
-    head.clicks += row.clicks
-    head.impressions += row.impressions
   }
 
   return heads.map((head) => ({

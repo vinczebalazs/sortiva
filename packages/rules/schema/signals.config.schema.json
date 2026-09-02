@@ -1165,6 +1165,7 @@
         "window_days",
         "min_query_impressions",
         "head_min_tokens",
+        "head_min_impressions",
         "max_member_queries",
         "max_clusters"
       ],
@@ -1182,6 +1183,10 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 10
+        },
+        "head_min_impressions": {
+          "type": "integer",
+          "minimum": 1
         },
         "max_member_queries": {
           "type": "integer",

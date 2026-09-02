@@ -234,6 +234,7 @@ export interface ClustersConfig {
   window_days: number
   min_query_impressions: number
   head_min_tokens: number
+  head_min_impressions: number
   max_member_queries: number
   max_clusters: number
 }

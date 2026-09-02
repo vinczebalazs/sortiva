@@ -513,6 +513,14 @@ defaults:
     # cluster is about nothing in particular. Raise it and broad head terms stop
     # forming clusters of their own.
     head_min_tokens: 2
+    # UNSIGNED. How often a *narrower* search must have been shown before it
+    # gets a cluster of its own rather than folding into the broader one it
+    # contains. People searching "running shoes" want something different from
+    # people searching "shoes", so a substantial narrower search stays separate;
+    # a rare one folds in, where its handful of impressions can add to a total
+    # worth acting on. Raise it and the engine sees fewer, broader intents;
+    # lower it and the long tail fragments into clusters too small to act on.
+    head_min_impressions: 250
     # UNSIGNED. The most near-variants one cluster may hold. Bounds both the row
     # we store and the arithmetic over it. A variant dropped here does not count
     # toward its cluster's totals, so raising this makes cluster shares slightly

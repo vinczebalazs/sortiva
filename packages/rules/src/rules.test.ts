@@ -87,6 +87,7 @@ const NAMED_THRESHOLDS: ReadonlyArray<readonly [path: string, spec: string]> = [
   ['clusters.window_days', 'main §7.3 — clusters are read over the same trailing 28d as the signals'],
   ['clusters.min_query_impressions', 'main §7.3 — a cluster is built from queries; the noise floor is unstated'],
   ['clusters.head_min_tokens', 'main §9.6.3 — head query plus its expansion; how broad a head may be is unstated'],
+  ['clusters.head_min_impressions', 'main §9.6.3 — when a narrower search is its own intent is unstated'],
   ['clusters.max_member_queries', 'main §13 query_clusters.member_queries — unbounded in the spec'],
   ['clusters.max_clusters', 'main §13 query_clusters — unbounded in the spec'],
   ['ctr_curve.window_days', 'main §7.3 — the store\'s own fitted curve; the fit window is unstated'],
