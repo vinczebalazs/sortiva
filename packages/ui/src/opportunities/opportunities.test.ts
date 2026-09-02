@@ -1,6 +1,7 @@
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
+import { RecordingUiAnalytics } from '../analytics'
 import { t } from '../strings'
 import { OpportunityCard } from './OpportunityCard'
 import { OpportunityList } from './OpportunityList'
@@ -394,6 +395,46 @@ describe('the evidence line', () => {
 
   it('is nothing at all when there is no evidence, rather than an empty flourish', () => {
     expect(evidenceLine([])).toBeNull()
+  })
+})
+
+describe('what this screen may report', () => {
+  /**
+   * The card's title is the merchant's own collection name and the why-line is
+   * a sentence about their store. Neither may leave the browser for the
+   * analytics vendor, and the guard is the event property table rather than
+   * anyone's care at the call site.
+   */
+  it('cannot attach an opportunity title or a why-line to any of its events', () => {
+    const recorder = new RecordingUiAnalytics()
+
+    recorder.capture('opportunity_viewed', {
+      opportunity_id: optimize.id,
+      signal_type: optimize.signalType,
+      recommended_action: optimize.recommendedAction,
+      // Neither of these is a declared property of the event, and neither is
+      // expressible as any kind the table has.
+      title: optimize.entityRef.label,
+      why: t('template.striking_distance.page_one_intent_mismatch'),
+    } as never)
+
+    expect(recorder.events[0]?.properties).toEqual({
+      opportunity_id: optimize.id,
+      signal_type: 'striking_distance',
+      recommended_action: 'OPTIMIZE',
+    })
+    expect(recorder.rejected.map((entry) => entry.key)).toEqual(['title', 'why'])
+  })
+
+  it('reports the button pressed as a name, never as its words', () => {
+    const recorder = new RecordingUiAnalytics()
+    const action = primaryAction(optimize)
+    recorder.capture('opportunity_action_clicked', {
+      opportunity_id: optimize.id,
+      action: action?.kind ?? 'none',
+    })
+    expect(recorder.events[0]?.properties.action).toBe('generate')
+    expect(recorder.rejected).toEqual([])
   })
 })
 
