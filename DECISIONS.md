@@ -14,6 +14,46 @@ Class (filled by audit): a: fine as-is | b: promote to spec | c: contradicts spe
 
 ---
 
+## 2026-09-03 — T2.6 — Onboarding proposes a draft competitor list, and the domains inside a stored results page still never become competitors on their own
+Decision: keyword discovery writes up to five `competitors` rows marked as ours (`source = 'auto'`) during onboarding, before the merchant has looked. The per-search cast of whoever occupies a results page stays in `serp_snapshots` and is never written anywhere else; what a merchant sees of it is a *count* ("ranks alongside you in 8 top searches") with an Add button that is their click.
+Why: main §6.6 asks for exactly this — "Take the top candidates as the draft competitor list", "Auto-detection proposes at most 5" — and main §6.8 tells the merchant to "remove any auto-detected entry", with auto and manual rows "visually distinguished (`source` badge)". The confirmation screen already built (`T9.3`) renders both: a list with auto/manual badges and, underneath it, suggestions with an Add button. CLAUDE.md invariant 5 reads more broadly than that ("SERP ranking domains … never enter `competitors`"), but main §7.2.1, which the invariant compresses, defines its terms: a **business competitor** is "auto-proposed at ingestion, hard cap 5", while a **SERP ranking domain** is the per-query, uncapped, non-editable set that lives in snapshots. Both readings were checked against the screens and only this one leaves `source = 'auto'` meaning anything. **Flagged for the integrator** because it is the one place this card could be read as bending an invariant: the structural guarantee actually implemented is that nothing reads a snapshot row into `competitors` — the only writer is `addCompetitor(db, scope, {domain, source})`, every caller of it passes a domain that has been through the blocklist, own-domain and cap filters, and the suggestion reader returns values and performs no writes at all.
+Nearest spec: main §6.6, §6.8, §7.2.1; CLAUDE.md invariant 5.
+
+## 2026-09-03 — T2.6 — A marketplace refusal answers 422, not 409, because the screen that consumes it was built that way
+Decision: adding a competitor that is on the marketplace blocklist without an override answers HTTP 422 with code `competitor_on_blocklist`. `CONFLICT_CODES` and the route contract's `conflicts` list are untouched.
+Why: `T9.3`'s add control treats a 409 as one of two specific messages (own domain, cap reached) and **anything else** as the blocklist, offering "Add anyway" back. A third 409 code would therefore have rendered as "you already have five", which is wrong and unhelpful; a non-409 renders correctly with no frontend change. It also avoids widening `CONFLICT_CODES`, which is a frozen contract enum the UI maps case by case and which is documented as the set of codes *a lost race* returns — a blocklist refusal is not a lost race. The code is still in the body, so a future client can be specific about it.
+Nearest spec: main §6.8 — "cannot be on the marketplace blocklist without an 'add anyway' override"; DECISIONS 2026-09-02 T9.3 (how the screen reads the refusal).
+
+## 2026-09-03 — T2.6 — The marketplace blocklist is a hand-maintained list in core, not a threshold in `packages/rules`
+Decision: `MARKETPLACE_BLOCKLIST` lives in `packages/core/src/keywords/blocklist.ts`. Adding an entry is a code change.
+Why: `packages/rules` holds the numbers that decide what the product writes about, and invariant 9 is about numeric thresholds. This is a list of names, and the same argument the vendor price map made (DECISIONS 2026-08-31 T0.5) applies: it is an external fact we record rather than a decision we tune. Matching is on a domain boundary — exactly, or as a subdomain — so `smile.amazon.com` is caught and `notamazon.com` is not. Amazon and eBay are listed under each national domain because those are separate registrable domains and a German store's results page is full of `amazon.de`.
+Nearest spec: main §6.6 — "filter out marketplaces/aggregators (Amazon, Etsy, eBay, Wikipedia, Pinterest, YouTube — maintain a blocklist)".
+
+## 2026-09-03 — T2.6 — The numbers behind keyword and competitor discovery go into `packages/rules`, which is another lane's package
+Decision: a new `discovery:` block in `signals.config.yaml` (plus its schema, its type and the committed snapshot) holds the seed candidate range, how many keywords survive, how deep a domain counts as ranking, how many searches it must appear for, how many competitors onboarding may propose, how many results pages onboarding buys, and the 30-day / 7-day cache lifetimes.
+Why: invariant 9 says no threshold literal lives outside `packages/rules`, and two of these are named as config by the spec itself — main §7.2.1 sends "top 10 for ≥ 3 keywords" to §7.10 explicitly. Comparing a position against a literal is also a lint error outside that package, so there was no other home for them. **For the integrator:** `packages/rules` is Lane C's after M0, and `rules_version` is a hash of the file's bytes — so this card changes `rules_version` for every lane, which is the intended behaviour of that mechanism (any config change does) but is worth knowing at merge time. One block was added and nothing existing was touched.
+Nearest spec: main §7.10 (the config layer), §7.2.1 (sends its own threshold there), §6.6, §12.1; build plan §3 (lane ownership).
+
+## 2026-09-03 — T2.6 — `seed_serps_max` is UNSIGNED and is the single largest cost of onboarding a store
+Decision: onboarding buys a results page for at most ten of the store's draft keywords.
+Why: main §6.6 says to "query DataForSEO SERPs for the top seed keywords" and names no number, and this is the one number on this card that is straight spend: ten paid reads per store onboarded, plus one priced keyword-metrics read. Ten is enough for a domain appearing for three of them to be a pattern rather than a coincidence, which is the threshold §7.2.1 sets. Marked UNSIGNED in the config with what raising and lowering it costs.
+Nearest spec: main §6.6, §12.1 (billing per request).
+
+## 2026-09-03 — T2.6 — Onboarding's draft competitors and the standing suggestions are computed by one function, not two
+Decision: `rankCompetitorCandidates` takes the ranked domains, the store's own domain, the domains already on the list, and the two thresholds, and returns candidates. Onboarding calls it to fill the draft list; the confirmation screen's suggestions call it against the merchant's *confirmed* terms. Neither can see a domain the other would hide.
+Why: the same discipline main §7.7 imposes on the existing-target check, for the same reason — two similar functions drift, and here the drift would be visible as a marketplace appearing in one place and not the other, or the store being offered itself. Concretely it means the blocklist, the own-domain exclusion (including subdomains) and the position ceiling are applied once.
+Nearest spec: main §6.6 (the draft list), §7.2.1 (the standing suggestions).
+
+## 2026-09-03 — T2.6 — Whether a hand-typed competitor domain resolves is checked where it can be, and never blocks the merchant when it cannot
+Decision: `validateCompetitorDomain` takes `resolves?: boolean`. `false` refuses the domain; `undefined` — nobody looked, or the lookup failed — proceeds. The DNS lookup itself is an optional dependency of the route, with a short timeout.
+Why: main §6.8 asks for a competitor to be "validated as a real resolving domain". The failure modes are not symmetric: refusing a typo saves a merchant a wasted slot, while refusing a real competitor because our resolver had a bad second is us breaking their form for a reason they cannot see or fix. A domain that resolves today can stop tomorrow anyway, so this is a courtesy against typos rather than a guarantee, and it is written to behave like one.
+Nearest spec: main §6.8.
+
+## 2026-09-03 — T2.6 — An unpriced search term is kept and sorted last, not discarded
+Decision: a candidate the vendor returns no search volume for stays in the draft keyword set, ordered below every priced term, and is cut only if better-evidenced terms fill the set first.
+Why: main §6.6 says "the strongest ~10–15 are kept" without saying what happens to a term with no reading. No volume usually means a phrase too specific for the vendor's panel rather than a phrase nobody searches — which is exactly the kind of term a niche store's customers actually type — and the merchant edits this list before it means anything. The draft set is also deliberately not filtered against the demand floor in `packages/rules`: that floor decides whether a topic is worth an article, a later and far more expensive question.
+Nearest spec: main §6.6; main §7.3 (the demand floor, which is a different decision).
+
 (entries below, newest first)
 
 ## 2026-09-02 — T8.3 — BLOCKED: the deletion-confirmation email is still unsendable, and it is now two problems rather than one

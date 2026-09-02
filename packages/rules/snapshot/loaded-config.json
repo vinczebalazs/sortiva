@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "rules_version": "67a690266a74633c5181235049fbd05a63cccce1d8c73104c311e1e0a0c802f5",
+  "rules_version": "501917f3b306aecc619c412534b39ad6f56ee3f752f0700154d84201e965140e",
   "defaults": {
     "signals": {
       "striking_distance": {
@@ -262,6 +262,23 @@
       "publish_error_rate": {
         "rate_max": 0.2,
         "window_hours": 1
+      }
+    },
+    "discovery": {
+      "seed_keywords": {
+        "candidates_min": 15,
+        "candidates_max": 25,
+        "keep_max": 15
+      },
+      "competitors": {
+        "serp_position_max": 10,
+        "appears_in_keywords_min": 3,
+        "auto_proposed_max": 5,
+        "seed_serps_max": 10
+      },
+      "cache": {
+        "keyword_metrics_ttl_days": 30,
+        "serp_snapshot_ttl_days": 7
       }
     },
     "search_console": {
@@ -573,6 +590,23 @@
           "window_hours": 1
         }
       },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
+        }
+      },
       "search_console": {
         "backfill_months": 16,
         "backfill_chunk_days": 30,
@@ -879,6 +913,23 @@
         "publish_error_rate": {
           "rate_max": 0.2,
           "window_hours": 1
+        }
+      },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
         }
       },
       "search_console": {
@@ -1189,6 +1240,23 @@
           "window_hours": 1
         }
       },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
+        }
+      },
       "search_console": {
         "backfill_months": 16,
         "backfill_chunk_days": 30,
@@ -1495,6 +1563,23 @@
         "publish_error_rate": {
           "rate_max": 0.2,
           "window_hours": 1
+        }
+      },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
         }
       },
       "search_console": {
@@ -1805,6 +1890,23 @@
           "window_hours": 1
         }
       },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
+        }
+      },
       "search_console": {
         "backfill_months": 16,
         "backfill_chunk_days": 30,
@@ -2111,6 +2213,23 @@
         "publish_error_rate": {
           "rate_max": 0.2,
           "window_hours": 1
+        }
+      },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
         }
       },
       "search_console": {
@@ -2421,6 +2540,23 @@
           "window_hours": 1
         }
       },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
+        }
+      },
       "search_console": {
         "backfill_months": 16,
         "backfill_chunk_days": 30,
@@ -2727,6 +2863,23 @@
         "publish_error_rate": {
           "rate_max": 0.2,
           "window_hours": 1
+        }
+      },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
         }
       },
       "search_console": {
@@ -3037,6 +3190,23 @@
           "window_hours": 1
         }
       },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
+        }
+      },
       "search_console": {
         "backfill_months": 16,
         "backfill_chunk_days": 30,
@@ -3343,6 +3513,23 @@
         "publish_error_rate": {
           "rate_max": 0.2,
           "window_hours": 1
+        }
+      },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
         }
       },
       "search_console": {
@@ -3653,6 +3840,23 @@
           "window_hours": 1
         }
       },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
+        }
+      },
       "search_console": {
         "backfill_months": 16,
         "backfill_chunk_days": 30,
@@ -3959,6 +4163,23 @@
         "publish_error_rate": {
           "rate_max": 0.2,
           "window_hours": 1
+        }
+      },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
         }
       },
       "search_console": {
@@ -4269,6 +4490,23 @@
           "window_hours": 1
         }
       },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
+        }
+      },
       "search_console": {
         "backfill_months": 16,
         "backfill_chunk_days": 30,
@@ -4575,6 +4813,23 @@
         "publish_error_rate": {
           "rate_max": 0.2,
           "window_hours": 1
+        }
+      },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
         }
       },
       "search_console": {
@@ -4885,6 +5140,23 @@
           "window_hours": 1
         }
       },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
+        }
+      },
       "search_console": {
         "backfill_months": 16,
         "backfill_chunk_days": 30,
@@ -5191,6 +5463,23 @@
         "publish_error_rate": {
           "rate_max": 0.2,
           "window_hours": 1
+        }
+      },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
         }
       },
       "search_console": {
@@ -5501,6 +5790,23 @@
           "window_hours": 1
         }
       },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
+        }
+      },
       "search_console": {
         "backfill_months": 16,
         "backfill_chunk_days": 30,
@@ -5807,6 +6113,23 @@
         "publish_error_rate": {
           "rate_max": 0.2,
           "window_hours": 1
+        }
+      },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
         }
       },
       "search_console": {
@@ -6117,6 +6440,23 @@
           "window_hours": 1
         }
       },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
+        }
+      },
       "search_console": {
         "backfill_months": 16,
         "backfill_chunk_days": 30,
@@ -6425,6 +6765,23 @@
           "window_hours": 1
         }
       },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
+        }
+      },
       "search_console": {
         "backfill_months": 16,
         "backfill_chunk_days": 30,
@@ -6731,6 +7088,23 @@
         "publish_error_rate": {
           "rate_max": 0.2,
           "window_hours": 1
+        }
+      },
+      "discovery": {
+        "seed_keywords": {
+          "candidates_min": 15,
+          "candidates_max": 25,
+          "keep_max": 15
+        },
+        "competitors": {
+          "serp_position_max": 10,
+          "appears_in_keywords_min": 3,
+          "auto_proposed_max": 5,
+          "seed_serps_max": 10
+        },
+        "cache": {
+          "keyword_metrics_ttl_days": 30,
+          "serp_snapshot_ttl_days": 7
         }
       },
       "search_console": {

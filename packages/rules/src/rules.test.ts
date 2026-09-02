@@ -147,6 +147,17 @@ const NAMED_THRESHOLDS: ReadonlyArray<readonly [path: string, spec: string]> = [
   ['auto_trips.publish_error_rate.rate_max', 'main §14.5 — publish API error rate > 20%'],
   ['auto_trips.publish_error_rate.window_hours', 'main §14.5 — over 1h'],
 
+  // ── Keyword & competitor discovery ────────────────────────────────────────
+  ['discovery.seed_keywords.candidates_min', 'main §6.6 — ~15–25 candidate terms'],
+  ['discovery.seed_keywords.candidates_max', 'main §6.6 — ~15–25 candidate terms'],
+  ['discovery.seed_keywords.keep_max', 'main §6.6 — the strongest ~10–15 are kept'],
+  ['discovery.competitors.serp_position_max', 'main §7.2.1 — ranks in the top 10'],
+  ['discovery.competitors.appears_in_keywords_min', 'main §7.2.1 — for ≥ 3 of the confirmed keywords (config, §7.10)'],
+  ['discovery.competitors.auto_proposed_max', 'main §6.6 — auto-detection proposes at most 5'],
+  ['discovery.competitors.seed_serps_max', 'UNSIGNED — how many seed SERPs onboarding buys'],
+  ['discovery.cache.keyword_metrics_ttl_days', 'main §12.1 — keyword metrics: 30-day TTL'],
+  ['discovery.cache.serp_snapshot_ttl_days', 'main §12.1 — SERP snapshots: 7-day TTL'],
+
   // ── Search Console sync ────────────────────────────────────────────────────
   ['search_console.backfill_months', 'main §6.7, §12.2 — 16-month history import at connect'],
   ['search_console.backfill_chunk_days', 'UNSIGNED — how much a killed import re-does'],
