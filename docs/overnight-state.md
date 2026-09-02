@@ -180,34 +180,121 @@ webhook delivery, **and SPF/DKIM/DMARC on a dedicated sending subdomain, which t
 requires before the first production send.** React Email's markup has never met a real mail
 client.
 
+## `T9.4` LANDED — every opportunity a scan finds is now a card a merchant can judge
+
+**Merged as `930a5b2` into `main`, two commits, full gate green.** Tests **1,909**.
+
+### The inherited draft, and a correction worth recording
+
+This card took over the uncommitted, unverified draft its rate-limited predecessor left.
+**The predecessor's last words — "fixing the remaining type errors in `list.ts`" — were
+stale: the four files did compile.** What they had never done was run a test or a lint
+gate, and one of those found a real defect.
+
+| Inherited file | Verdict |
+|---|---|
+| `types.ts` | **Kept unchanged**, after being audited field by field against the frozen response schemas. It matches exactly. |
+| `why.ts` | **Kept unchanged**, audited specifically against invariant 8 — and it complies. It takes the template key the engine stamps on the row plus a bag of numbers, looks the sentence up in the catalogue, and fills the placeholders. **No model output can reach it: the API sends a key, never a sentence.** Its one clever move is right — the canonical existing-page sentence is *aliased* to its Appendix A key rather than copied, so the snapshot that pins that sentence still guards it. |
+| `list.ts` | **Kept with three fixes.** Sorting by confidence compared only the band, so a store where everything scored "high" would not reorder at all. |
+| `OpportunityCard.tsx` | **Kept with three fixes**, including a hardcoded number where copy should be parameterised, and confidence direction conveyed by colour alone — now announced too. |
+| the copy file | **Mostly kept; two sentences reworded.** **The real find:** the repo has a test forbidding any string matching "x of y", because the daily cap is a ceiling and not a target — and **two of the draft's sentences tripped it.** Neither was a denominator in meaning, but both matched. `pnpm test` was red the first time it ran against the draft. |
+
+**Everything else the card asks for did not exist** — the list screen, the drawer,
+dismiss with undo, the conflict path, the wiring, every test, the screen contract and the
+stylesheet.
+
+**The lesson for the next handover:** a killed session's *description* of where it got to
+is the least reliable thing it leaves behind. The files were further along than it said,
+and less verified than they looked.
+
+### What it does
+
+Every opportunity renders as a card a merchant can judge without opening anything: what to
+do, how big, how sure we are and the arithmetic behind that, two or three numbers with
+where they came from and over what period, one sentence of reasoning, and one button whose
+words change per action type. Around them: five sets of filter chips, three sort orders, a
+group-by toggle that always draws the five sections in the same order, and **empty states
+that distinguish "the scan found nothing" from "you filtered everything out"**.
+
+Opening one shows the case in the order that decides whether the product is believed:
+**evidence first** — every fact with source, window and age — then who else ranks, then
+what to change. That last part differs per type: page copy to paste with a copy button per
+field and downloads; a deterministic instruction list that **says outright we will not
+touch the theme**; or, for HOLD, the facts only the merchant can supply.
+
+**Dismissing offers the card back for five seconds.** Any request can come back with a
+conflict — the weekly scan re-scores things under a merchant who has the page open — which
+ends in the list being re-read plus a sentence, **worded differently for "re-scored" and
+"already moved on"**.
+
+### One thing that needs the founder, and it is small but real
+
+**The header can say Tuesday while the empty state promises Monday.** The card's own
+done-when pins the empty-state sentence word for word — *"the next scan runs Monday"* — but
+the API sends an actual next-scan timestamp, and the lane used it in the header rather than
+hardcoding a weekday, because a store whose scan lands elsewhere would otherwise be told
+something untrue every week.
+
+**If scans will never move off Monday, this is harmless.** If they can, the empty-state
+wording needs changing — and it is quoted copy, so the lane correctly did not feel free to
+change it. **This is founder question 6.**
+
+### Five things the backend must get right, registered in the screen contract
+
+1. **`why.templateKey` must be a key the catalogue holds.** The reason sentence is rendered
+   from the catalogue, never sent as text; an unknown key replaces the product's
+   explanation with an apology. The existing-page case must stamp the specific key that is
+   aliased to the canonical sentence.
+2. **Every evidence fact needs its source, and its window where the measurement has one** —
+   a fact with neither reads as a number from nowhere.
+3. **The entity label must be the humanised name**, not a URL or an id — it is the card's
+   title and the only thing a merchant recognises at a glance.
+4. **A failed recommendation must arrive with no fields at all**; the screen shows no
+   partial output.
+5. **The schedule response's date is what the toast names** — one topic per day means the
+   day asked for and the day given can differ.
+
+**Two gaps the response cannot fill today**, both recorded rather than faked: HOLD has no
+per-product deep links because nothing in the response carries product ids, so it sends the
+merchant to Products; and FIX has no impression-share numbers, so it renders an instruction
+list rather than the design's picture of competing URLs.
+
+**Files outside Lane F's directories: none.** Copy additions sit as one contiguous block.
+**This produced the night's third hand-resolved conflict in the copy file.**
+
+**No audit is scheduled after this card** (build plan §7), and the lane did not request one.
+
+**For `T9.5`:** the calendar's topic chips link back to the originating opportunity, and
+the veto flow is specified as also dismissing the opportunity behind it under the same
+undo — **reuse the existing dismiss-with-undo mechanism rather than rebuilding it**. The
+toast strip is already styled. **Pagination is not built**: the list renders whatever one
+response returns.
+
 ## Right now
 
-**Status at 2026-09-02, 22:35.** `main` is at `0bf5897`, clean, and fully green.
-**Nine cards landed tonight**, each merged and gated separately: `T8.0`, `T-START`,
-`T-ANALYTICS`, `T3.4`, `T8.1`, `T-EMAIL`, `T9.3`, `T2.2`, `T8.2`. Tests are at **1,829**,
-up from 1,362 at the start of the night — **467 added**. Stubs are at **8**, up from 6:
-`T8.2` declared two of its own that its predecessor had left invisible, which is the stub
-report working as intended, not a regression.
-
-**Three lanes are building.** The run was stopped by a rate limit between 20:25 and 21:59
-and has resumed — see the section above.
+**Status at 2026-09-02, 23:05.** `main` is at `930a5b2`, clean, and fully green.
+**Ten cards landed tonight**, each merged and gated separately: `T8.0`, `T-START`,
+`T-ANALYTICS`, `T3.4`, `T8.1`, `T-EMAIL`, `T9.3`, `T2.2`, `T8.2`, `T9.4`. Tests are at
+**1,909**, up from 1,362 at the start of the night — **547 added**. Stubs are at 8.
 
 | Lane | Branch | Worktree | Where it is |
 |---|---|---|---|
-| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START` (`d34daa6`) and `T2.2` (`a870e0e`) merged and green; **`T2.2`'s scheduled audit has run and found a critical defect — see the audit section.** **`T2.3` building** |
-| C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4` (`fa7cff4`) and `T-EMAIL` (`0b84ffa`) merged and green. **Idle and clean, deliberately held** — `T3.5` needs `T2.4`–`T2.5`, and lane B stopped at `T2.2` as the plan asked, so it never became available |
-| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS` (`42ddd50`) and `T9.3` (`b6945f9`) merged and green. **`T9.4` building**, taking over the non-compiling draft its killed predecessor left |
-| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | `T8.0` (`6400b62`), `T8.1` (`44177e4`) and **`T8.2` (`0bf5897`)** merged and green. **Idle; its scheduled audit is running.** The milestone's remaining cards are `T8.3` and `T8.4` |
+| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START` and `T2.2` merged and green; **`T2.2`'s audit found a critical defect — see the audit section.** **`T2.3` building** |
+| C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4` and `T-EMAIL` merged and green. **Idle and clean, deliberately held** — `T3.5` needs `T2.4`–`T2.5`, and lane B stopped at `T2.2` as the plan asked |
+| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS`, `T9.3` and **`T9.4` (`930a5b2`)** merged and green. Next is `T9.5`, the last card in its milestone |
+| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | `T8.0`, `T8.1` and `T8.2` (`0bf5897`) merged and green. **Idle; its scheduled audit is running.** Remaining in the milestone: `T8.3`, `T8.4` |
 
-**Three audits have run tonight**, all read-only, all held for the morning: `T-EMAIL`'s
-(requested by its own lane), `T2.2`'s (**scheduled and required — it found the critical
-defect**), and `T8.2`'s (scheduled, running now). **None stopped a lane.**
+**Three audits have run**, all read-only, all held for the morning: `T-EMAIL`'s
+(lane-requested), `T2.2`'s (**scheduled and required — it found the critical defect**), and
+`T8.2`'s (scheduled). **None stopped a lane.**
 
-**Two hand-resolved conflicts, both in `packages/ui/strings/en.json`, both on merge.**
-That file is not union-merged and three cards appended to it tonight. Each time the
-integrator checked the two sides shared no key, kept both, added the comma the conflict
-boundary swallows, and verified the file parses with every block present. **It now holds
-409 keys.** **Expect a third when `T9.4` lands** — it is already modifying that file.
+**Three hand-resolved conflicts, all in `packages/ui/strings/en.json`, all on merge.** That
+file is not union-merged and four cards appended to it tonight. Each time the integrator
+checked the two sides shared no key, kept both, restored the comma the conflict boundary
+swallows, and verified the file parses with every block present afterwards. **It now holds
+586 keys**, against 331 at the start of the night. **The next card touching copy will
+conflict too — this is now the predictable cost of that file's merge setting, and it is
+worth raising with whoever owns `.gitattributes`.**
 
 **Lane B reached `T2.2` and stopped there, which is what the plan asked for.** The one
 mid-run decision the plan told the runner to watch for — whether lane B would reach `T2.5`
@@ -1462,10 +1549,10 @@ Lane C was told this when it was resumed.
 
 ## Questions waiting on the founder
 
-**Five are open. None blocks a lane tonight; each blocks something specific later.**
-Questions 1 and 2 came from `T8.0`, question 3 from `T-EMAIL`; questions 4 and 5 are the
-two the run inherited. The question that used to be here about *what starts a merchant's
-onboarding* is **answered and built** — `T-START`.
+**Six are open. None blocks a lane; each blocks something specific later.** Questions 1
+and 2 came from `T8.0`, question 3 from `T-EMAIL`, question 5 from `T9.4`; questions 4 and
+6 are the two the run inherited. The question that used to be here about *what starts a
+merchant's onboarding* is **answered and built** — `T-START`.
 
 **1. When a merchant deletes a page from their store, how should we record that it is
 gone?** The product keeps one row per web address the store publishes — its inventory.
@@ -1545,7 +1632,21 @@ The integrator's recommendation if you switch it on: run the entries that have h
 and log loudly at every start-up naming the ones that do not, so a job that is not
 running says so rather than being silently absent.
 
-**5. The deployed start command would not find the build.** `railway.toml` runs the
+**5. Can the weekly scan ever fall on a day other than Monday?** A canonical sentence the
+product may not reword tells a merchant with no open opportunities that *"the next scan
+runs Monday"*. But the API sends a real next-scan timestamp, and `T9.4` used that in the
+screen's header rather than hardcoding a weekday — because a store whose scan lands on a
+Tuesday would otherwise be told something untrue every week. **So the header can say
+Tuesday while the empty state promises Monday.**
+
+*If scans will never move off Monday*, this is harmless belt-and-braces and nothing needs
+doing. *If they can* — a store in a distant timezone, a scan deferred by a pause or a spend
+cap — then the empty-state sentence needs rewording, and **it is quoted copy, so only you
+can change it.**
+
+*What is blocked:* nothing. It is a sentence that can contradict the line above it.
+
+**6. The deployed start command would not find the build.** `railway.toml` runs the
 server from the repository root while the build output is in `apps/web`, so the server
 would exit with "Could not find a production build". Two one-line fixes; which is right
 depends on what working directory the platform gives the service, and the project has
