@@ -101,6 +101,17 @@ export async function register() {
     },
   })
 
+  // The weekly refit of each store's own click curve — how often its listings
+  // actually get clicked at each Google position, which is what "ranks well,
+  // nobody clicks" is judged against. The crontab already named this job; until
+  // now nothing answered to the name.
+  //
+  // Rebuilding the intents a store is searched for is deliberately not here: it
+  // has to be current at the moment the weekly signal scan reads it, so the scan
+  // calls `rebuildQueryClustersForAccount` rather than a schedule of its own.
+  const { registerScanTasks } = await import('@sortiva/jobs')
+  registerScanTasks({ getDb: db, getPool: dbPool })
+
   const { bootstrapWorker, flushAnalytics } = await import('@sortiva/jobs')
   const worker = await bootstrapWorker({ analytics })
 

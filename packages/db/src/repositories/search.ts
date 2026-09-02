@@ -1,6 +1,6 @@
-import { and, eq, isNull, ne, sql } from 'drizzle-orm'
+import { and, desc, eq, gte, isNull, lte, ne, sql } from 'drizzle-orm'
 import type { Db } from '../client'
-import { gscConns, gscDaily, gscQueryDaily } from '../schema'
+import { ctrCurve, gscConns, gscDaily, gscQueryDaily, keywords, queryClusters } from '../schema'
 import type { AccountScope, SystemScope } from '../scope'
 
 export type GscConnRow = typeof gscConns.$inferSelect
@@ -207,4 +207,267 @@ export async function upsertGscDaily(
       },
     })
   return values.length
+}
+
+/**
+ * The two ways detection reads a store's search history back out.
+ *
+ * Both are aggregates, never raw rows. Search Console is stored one row per day,
+ * page, search, device and country, and every question the opportunity engine
+ * asks is about a window rather than a day — so the summing happens in the
+ * database, where it is one pass over an index, rather than by pulling months of
+ * rows into a job's memory.
+ */
+
+export interface GscWindow {
+  /** Inclusive, `YYYY-MM-DD`. */
+  readonly startDate: string
+  /** Inclusive, `YYYY-MM-DD`. */
+  readonly endDate: string
+}
+
+export interface GscPageQueryTotal {
+  readonly page: string
+  readonly query: string
+  readonly clicks: number
+  readonly impressions: number
+  readonly position: number | null
+}
+
+/**
+ * Every page-and-search pair the store was shown for in the window, busiest
+ * first, with searches too rare to cluster already dropped.
+ *
+ * The rarity floor is applied here rather than after loading because it is what
+ * bounds the result: a large store has hundreds of thousands of one-impression
+ * searches, and none of them can change a decision. The caller passes the number
+ * from `packages/rules` — this function holds no threshold of its own.
+ */
+export async function gscPageQueryTotals(
+  db: Db,
+  scope: AccountScope,
+  window: GscWindow,
+  minImpressions: number,
+): Promise<GscPageQueryTotal[]> {
+  const rows = await db
+    .select({
+      page: gscQueryDaily.page,
+      query: gscQueryDaily.query,
+      clicks: sql<string>`sum(${gscQueryDaily.clicks})`,
+      impressions: sql<string>`sum(${gscQueryDaily.impressions})`,
+      position: sql<
+        string | null
+      >`sum(${gscQueryDaily.position} * ${gscQueryDaily.impressions}) / nullif(sum(${gscQueryDaily.impressions}), 0)`,
+    })
+    .from(gscQueryDaily)
+    .where(
+      and(
+        eq(gscQueryDaily.accountId, scope.accountId),
+        gte(gscQueryDaily.date, window.startDate),
+        lte(gscQueryDaily.date, window.endDate),
+      ),
+    )
+    .groupBy(gscQueryDaily.page, gscQueryDaily.query)
+    .having(sql`sum(${gscQueryDaily.impressions}) >= ${minImpressions}`)
+    .orderBy(sql`sum(${gscQueryDaily.impressions}) desc`)
+
+  return rows.map((row) => ({
+    page: row.page,
+    query: row.query,
+    clicks: Number(row.clicks),
+    impressions: Number(row.impressions),
+    position: row.position === null ? null : Number(row.position),
+  }))
+}
+
+export interface GscCurveSample {
+  readonly query: string
+  readonly clicks: number
+  readonly impressions: number
+  readonly position: number | null
+}
+
+/**
+ * What the click curve is fitted from: one row per search per whole-number
+ * position, with pages and days collapsed.
+ *
+ * Pages are collapsed because the curve is a statement about positions, not
+ * about pages — the same search shown at position 3 on two different pages is
+ * two observations of position 3. The search text survives so that searches for
+ * the store's own name can be dropped before the fit, which is done in the
+ * domain code where the brand words are worked out.
+ */
+export async function gscCurveSamples(
+  db: Db,
+  scope: AccountScope,
+  window: GscWindow,
+): Promise<GscCurveSample[]> {
+  const bucket = sql<string>`round(${gscQueryDaily.position})`
+  const rows = await db
+    .select({
+      query: gscQueryDaily.query,
+      position: bucket,
+      clicks: sql<string>`sum(${gscQueryDaily.clicks})`,
+      impressions: sql<string>`sum(${gscQueryDaily.impressions})`,
+    })
+    .from(gscQueryDaily)
+    .where(
+      and(
+        eq(gscQueryDaily.accountId, scope.accountId),
+        gte(gscQueryDaily.date, window.startDate),
+        lte(gscQueryDaily.date, window.endDate),
+        sql`${gscQueryDaily.position} is not null`,
+      ),
+    )
+    .groupBy(gscQueryDaily.query, bucket)
+
+  return rows.map((row) => ({
+    query: row.query,
+    clicks: Number(row.clicks),
+    impressions: Number(row.impressions),
+    position: row.position === null ? null : Number(row.position),
+  }))
+}
+
+export type QueryClusterRow = typeof queryClusters.$inferSelect
+
+export interface QueryClusterInput {
+  readonly headQuery: string
+  readonly memberQueries: readonly string[]
+}
+
+/**
+ * Writes the store's clusters, keeping each one's identity across rebuilds.
+ *
+ * A cluster is matched by its head search, and an existing one has its members
+ * updated in place rather than being replaced. That is what makes `cluster_id`
+ * durable: an article written from a cluster points back at that id, and
+ * rebuilding the clusters every week must not orphan the lineage of everything
+ * already published.
+ *
+ * A head that stops appearing keeps its row. Deleting it would silently break
+ * that same reference, and a cluster the store is no longer shown for is a fact
+ * worth keeping — the same posture the opportunity lifecycle takes, where expiry
+ * never deletes.
+ */
+export async function upsertQueryClusters(
+  db: Db,
+  scope: AccountScope,
+  clusters: readonly QueryClusterInput[],
+): Promise<{ inserted: number; updated: number }> {
+  if (clusters.length === 0) return { inserted: 0, updated: 0 }
+
+  const existing = await db
+    .select({ clusterId: queryClusters.clusterId, headQuery: queryClusters.headQuery })
+    .from(queryClusters)
+    .where(eq(queryClusters.accountId, scope.accountId))
+
+  const byHead = new Map(existing.map((row) => [row.headQuery, row.clusterId]))
+
+  let inserted = 0
+  let updated = 0
+  const fresh: { accountId: string; headQuery: string; memberQueries: string[] }[] = []
+
+  for (const cluster of clusters) {
+    const clusterId = byHead.get(cluster.headQuery)
+    if (clusterId) {
+      await db
+        .update(queryClusters)
+        .set({ memberQueries: [...cluster.memberQueries] })
+        .where(eq(queryClusters.clusterId, clusterId))
+      updated += 1
+      continue
+    }
+    fresh.push({
+      accountId: scope.accountId,
+      headQuery: cluster.headQuery,
+      memberQueries: [...cluster.memberQueries],
+    })
+  }
+
+  if (fresh.length > 0) {
+    await db.insert(queryClusters).values(fresh)
+    inserted = fresh.length
+  }
+
+  return { inserted, updated }
+}
+
+export async function listQueryClusters(
+  db: Db,
+  scope: AccountScope,
+): Promise<QueryClusterRow[]> {
+  return db
+    .select()
+    .from(queryClusters)
+    .where(eq(queryClusters.accountId, scope.accountId))
+    .orderBy(queryClusters.headQuery)
+}
+
+export type CtrCurveRow = typeof ctrCurve.$inferSelect
+
+export interface CtrCurveInput {
+  readonly curveJson: Readonly<Record<string, number>>
+  readonly sampleN: number
+  readonly brandedExcluded: boolean
+  readonly fittedAt?: Date
+}
+
+/**
+ * Records a fit. Every refit is a new row, so the table is the history of what
+ * the store's click behaviour looked like over time and the newest row is the
+ * live one — which is what makes "the curve moved and the signal changed with
+ * it" answerable after the fact.
+ */
+export async function insertCtrCurve(
+  db: Db,
+  scope: AccountScope,
+  input: CtrCurveInput,
+): Promise<CtrCurveRow> {
+  const [row] = await db
+    .insert(ctrCurve)
+    .values({
+      accountId: scope.accountId,
+      curveJson: input.curveJson,
+      sampleN: input.sampleN,
+      brandedExcluded: input.brandedExcluded,
+      ...(input.fittedAt ? { fittedAt: input.fittedAt } : {}),
+    })
+    .returning()
+  if (!row) throw new Error('failed to record the fitted click curve')
+  return row
+}
+
+/** The curve in force for this store: the most recent fit. */
+export async function latestCtrCurve(
+  db: Db,
+  scope: AccountScope,
+): Promise<CtrCurveRow | undefined> {
+  const [row] = await db
+    .select()
+    .from(ctrCurve)
+    .where(eq(ctrCurve.accountId, scope.accountId))
+    .orderBy(desc(ctrCurve.fittedAt))
+    .limit(1)
+  return row
+}
+
+/**
+ * The search terms the merchant confirmed during onboarding.
+ *
+ * Read here, in the search-intelligence repository, rather than in a keywords
+ * one, because no keywords repository exists yet and creating the file the
+ * store-intelligence lane will certainly want would collide with it. It is a
+ * read of one column with no writes, so moving it later costs nothing.
+ *
+ * Clusters prefer these as their head, so what a merchant sees named on screen
+ * is the term they themselves confirmed rather than whichever phrasing Google
+ * happened to show the store for most.
+ */
+export async function confirmedKeywordTerms(db: Db, scope: AccountScope): Promise<string[]> {
+  const rows = await db
+    .select({ term: keywords.term })
+    .from(keywords)
+    .where(and(eq(keywords.accountId, scope.accountId), eq(keywords.confirmed, true)))
+  return rows.map((row) => row.term)
 }
