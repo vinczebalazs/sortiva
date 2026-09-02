@@ -51,6 +51,7 @@
   "shell.notificationsUnread": "Notifications, unread",
   "shell.account": "Account",
 
+  "landing.nav.label": "Site sections",
   "landing.nav.howItWorks": "How it works",
   "landing.nav.quality": "Quality",
   "landing.nav.pricing": "Pricing",
@@ -126,6 +127,11 @@
   "landing.faq.cancelling.question": "What happens to my articles if I cancel?",
   "landing.faq.cancelling.answer": "Articles you've already published stay on your store, untouched. Generation and publishing stop at the end of the period you've paid for, and you keep read access to your articles, calendar and reporting.",
 
+  "landing.footer.label": "Site",
+  "landing.footer.privacy": "Privacy",
+  "landing.footer.terms": "Terms",
+  "landing.footer.contact": "Contact",
+
   "landing.cta.heading": "Nothing publishes that you couldn't have seen coming.",
   "landing.cta.analyzeFirst": "Analyze my site first",
 
@@ -155,6 +161,8 @@
   "plan.cardSafety": "Payment is handled entirely by Stripe Checkout. We never see or store your card details.",
   "plan.priceUnavailable": "We can't show the plan price right now. Try again in a moment.",
   "plan.checkoutFailed": "We couldn't open the payment page. Try again in a moment.",
+
+  "plan.steps.label": "Where you are",
 
   "checkout.settingUp.title": "Setting up your account…",
   "checkout.settingUp.note": "Usually a second or two.",
