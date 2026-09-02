@@ -35,3 +35,20 @@ export {
   type LowCtrInput,
   type LowCtrSignal,
 } from './low-ctr'
+
+export {
+  detectContentDecay,
+  type ContentDecayInput,
+  type ContentDecayResult,
+  type ContentDecaySignal,
+} from './decay'
+
+export {
+  detectCannibalization,
+  type CannibalizationInput,
+  type CannibalizationResult,
+  type CannibalizationSignal,
+  type CannibalizationValidation,
+  type CompetingPage,
+  type WeeklyShareRow,
+} from './cannibalization'
