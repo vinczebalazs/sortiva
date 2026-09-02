@@ -257,4 +257,18 @@ describe('the prompt onboarding distils with', () => {
     // per product.
     expect(distillPrompt()).toBe(prompt)
   })
+
+  /**
+   * The same reasoning for the persona: its version is stamped on the stored
+   * profile, and a missing file would surface as a dead-lettered onboarding
+   * step on a real merchant's store rather than here.
+   */
+  it('loads the persona prompt by version too', async () => {
+    const { personaPrompt } = await import('./config')
+    const prompt = personaPrompt()
+
+    expect(prompt.version).toBe('persona.v1')
+    expect(prompt.text).toContain('Describe this shop, not shops in general')
+    expect(personaPrompt()).toBe(prompt)
+  })
 })
