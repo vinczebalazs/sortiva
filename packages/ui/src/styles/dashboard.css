@@ -1,0 +1,306 @@
+/*
+ * The steady-state dashboard.
+ *
+ * The layout follows the order of the argument rather than the shape of the
+ * grid: the growth card is the widest thing on the page and the connection row
+ * is the narrowest, because the first is what the merchant came for and the
+ * last is plumbing they should be able to glance at and forget.
+ *
+ * The month strip is a row of plain counts with no bar, no ring and no track
+ * behind any of them. A progress shape would imply something to fill, and the
+ * daily cap is a ceiling the quality bar is allowed to stop us reaching.
+ *
+ * Colours and shape come from `tokens.css`.
+ */
+
+.sortiva-dash {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1180px;
+}
+
+.sortiva-dash__card {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 20px 22px;
+}
+
+.sortiva-dash__card h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.sortiva-dash__headline {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sortiva-dash__headline h1 {
+  margin: 0;
+  font-family: var(--sortiva-font-heading);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.sortiva-dash__subheading {
+  margin: 18px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sortiva-text-faint);
+}
+
+.sortiva-dash__note {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-dash__link {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sortiva-accent);
+  text-decoration: none;
+}
+
+.sortiva-dash__link:hover,
+.sortiva-dash__link:focus-visible {
+  text-decoration: underline;
+}
+
+/* ── Counts by action ────────────────────────────────────────────────────── */
+
+.sortiva-dash__action-counts {
+  list-style: none;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 14px 0 0;
+  padding: 0;
+}
+
+.sortiva-dash__action-counts li {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  border-radius: 999px;
+  padding: 4px 11px;
+  background: var(--sortiva-surface-sunken);
+  font-size: 12px;
+}
+
+.sortiva-dash__count {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── The three condensed opportunity cards ───────────────────────────────── */
+
+.sortiva-dash__next-best {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.sortiva-dash__opp {
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: var(--sortiva-radius-inner);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sortiva-dash__badge {
+  align-self: flex-start;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: var(--sortiva-accent-soft);
+  color: var(--sortiva-accent);
+}
+
+.sortiva-dash__badge[data-action='OPTIMIZE'] {
+  background: var(--sortiva-optimize-soft);
+  color: var(--sortiva-optimize);
+}
+
+.sortiva-dash__badge[data-action='REFRESH'] {
+  background: var(--sortiva-refresh-soft);
+  color: var(--sortiva-refresh);
+}
+
+.sortiva-dash__badge[data-action='FIX'] {
+  background: var(--sortiva-critical-soft);
+  color: var(--sortiva-critical);
+}
+
+.sortiva-dash__badge[data-action='HOLD'] {
+  background: var(--sortiva-warning-soft);
+  color: var(--sortiva-warning);
+}
+
+.sortiva-dash__pill {
+  align-self: flex-start;
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 11px;
+  background: var(--sortiva-surface-sunken);
+  color: var(--sortiva-text-secondary);
+}
+
+.sortiva-dash__opp-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sortiva-dash__opp-evidence,
+.sortiva-dash__opp-kind {
+  margin: 0;
+  font-size: 12px;
+  color: var(--sortiva-text-muted);
+}
+
+/* ── Next up, and today ──────────────────────────────────────────────────── */
+
+.sortiva-dash__topic {
+  margin-top: 12px;
+}
+
+.sortiva-dash__topic-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.sortiva-dash__topic-date,
+.sortiva-dash__topic-why {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-dash__chip {
+  display: inline-block;
+  margin-top: 8px;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  background: var(--sortiva-accent-soft);
+  color: var(--sortiva-accent);
+  text-decoration: none;
+}
+
+.sortiva-dash__today {
+  margin-top: 16px;
+  border-top: 1px solid var(--sortiva-line);
+  padding-top: 14px;
+}
+
+.sortiva-dash__today h3 {
+  margin: 0 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sortiva-text-faint);
+}
+
+.sortiva-dash__today p {
+  margin: 4px 0 0;
+  font-size: 13px;
+}
+
+/*
+ * A held day is stated, never dressed as a failure: holding a weak topic back is
+ * the product working, and colouring it like an error would teach the merchant
+ * to dread the thing that protects them.
+ */
+.sortiva-dash__today[data-dashboard-today='held'] {
+  border-top-color: var(--sortiva-line-strong);
+}
+
+/* ── The month strip: counts, and nothing to measure them against ────────── */
+
+.sortiva-dash__month {
+  list-style: none;
+  display: flex;
+  gap: 26px;
+  flex-wrap: wrap;
+  margin: 14px 0 0;
+  padding: 0;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sortiva-dash__month a {
+  color: var(--sortiva-accent);
+}
+
+/* ── The attention list ──────────────────────────────────────────────────── */
+
+.sortiva-dash__attention {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.sortiva-dash__attention li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 0;
+  border-top: 1px solid var(--sortiva-line);
+  font-size: 13px;
+}
+
+/*
+ * A recommendation nobody applied is one quiet line among the others, never a
+ * warning: not applying one is a choice the merchant is entitled to make.
+ */
+.sortiva-dash__attention li[data-dashboard-attention='optimize_unapplied'] {
+  color: var(--sortiva-text-muted);
+}
+
+/* ── Connections ─────────────────────────────────────────────────────────── */
+
+.sortiva-dash__connections {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.sortiva-dash__connections li::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 7px;
+  background: var(--sortiva-positive);
+}
+
+.sortiva-dash__connections li[data-dashboard-connection-healthy='false']::before {
+  background: var(--sortiva-warning);
+}

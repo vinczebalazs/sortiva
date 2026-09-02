@@ -1,0 +1,438 @@
+/*
+ * Performance: the chart, the results table, and the Search Console tables.
+ *
+ * Two things in here are arguments rather than decoration.
+ *
+ * The chart's lines are ink and its markers carry the colour. That is the right
+ * way round for the question this screen answers — did what we did move
+ * anything? — because the things we did should be what the eye finds first. The
+ * three marker colours were checked for colour-blind separation rather than
+ * picked by eye, and each also has its own dash pattern and its own label, so
+ * none of them relies on colour alone.
+ *
+ * A row with no verdict yet is dimmed rather than coloured. It is not a bad
+ * result; it is no result, and giving it the same treatment as an
+ * underperformer would be delivering a verdict the measurement window exists to
+ * withhold.
+ *
+ * Colours and shape come from `tokens.css`; nothing here hardcodes a value the
+ * token set already names.
+ */
+
+.sortiva-perf {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1180px;
+}
+
+.sortiva-perf__head h1 {
+  margin: 0;
+  font-family: var(--sortiva-font-heading);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.sortiva-perf__since,
+.sortiva-perf__note {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-perf__section {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 18px 20px;
+}
+
+.sortiva-perf__section h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ── The headline figures ────────────────────────────────────────────────── */
+
+.sortiva-perf__totals-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.sortiva-perf__figure-label {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sortiva-text-faint);
+}
+
+.sortiva-perf__figure-value {
+  margin: 2px 0 0;
+  font-family: var(--sortiva-font-heading);
+  font-size: 28px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.sortiva-perf__missing {
+  margin: 0;
+  font-size: 12px;
+  color: var(--sortiva-text-muted);
+}
+
+/* ── The chart ───────────────────────────────────────────────────────────── */
+
+.sortiva-perf__chart {
+  margin: 0;
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 28px 20px 16px;
+}
+
+.sortiva-perf__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.sortiva-perf__grid {
+  stroke: var(--sortiva-line);
+  stroke-width: 1;
+}
+
+/* The data line: 2px, round joins, and deliberately not a brand colour. */
+.sortiva-perf__line {
+  fill: none;
+  stroke: var(--sortiva-text-secondary);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/*
+ * A day with data on neither side of it. Drawn as a point rather than joined to
+ * anything, because there is nothing to join it to.
+ */
+.sortiva-perf__lone-point,
+.sortiva-perf__end-dot {
+  fill: var(--sortiva-text-secondary);
+  stroke: var(--sortiva-surface);
+  stroke-width: 2;
+}
+
+.sortiva-perf__marker-rule {
+  stroke-width: 1.5;
+  opacity: 0.6;
+}
+
+/* Colour and dash pattern together, so a marker is identifiable without colour. */
+[data-perf-marker='gsc_connected'] {
+  stroke: var(--sortiva-positive);
+  stroke-dasharray: none;
+}
+
+[data-perf-marker='article_published'] {
+  stroke: var(--sortiva-refresh);
+  stroke-dasharray: 4 4;
+}
+
+[data-perf-marker='optimize_applied'] {
+  stroke: var(--sortiva-optimize);
+  stroke-dasharray: 1 4;
+}
+
+.sortiva-perf__panel-title,
+.sortiva-perf__panel-max,
+.sortiva-perf__date,
+.sortiva-perf__marker-label {
+  font-family: var(--sortiva-font-body);
+  font-size: 11px;
+  fill: var(--sortiva-text-muted);
+}
+
+.sortiva-perf__panel-title {
+  font-weight: 600;
+  fill: var(--sortiva-text-secondary);
+}
+
+.sortiva-perf__legend {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  font-size: 12px;
+  color: var(--sortiva-text-secondary);
+}
+
+.sortiva-perf__legend li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.sortiva-perf__legend-key {
+  display: inline-block;
+  width: 14px;
+  height: 0;
+  border-top-width: 2px;
+  border-top-style: solid;
+}
+
+.sortiva-perf__legend-key[data-perf-marker='gsc_connected'] {
+  border-top-color: var(--sortiva-positive);
+  border-top-style: solid;
+}
+
+.sortiva-perf__legend-key[data-perf-marker='article_published'] {
+  border-top-color: var(--sortiva-refresh);
+  border-top-style: dashed;
+}
+
+.sortiva-perf__legend-key[data-perf-marker='optimize_applied'] {
+  border-top-color: var(--sortiva-optimize);
+  border-top-style: dotted;
+}
+
+.sortiva-perf__table-toggle {
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.sortiva-perf__table-toggle summary {
+  cursor: pointer;
+  color: var(--sortiva-text-secondary);
+}
+
+.sortiva-perf__table-toggle table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Tables ──────────────────────────────────────────────────────────────── */
+
+.sortiva-perf__results,
+.sortiva-perf__sc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sortiva-perf__results th,
+.sortiva-perf__sc-table th,
+.sortiva-perf__table-toggle th {
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sortiva-text-faint);
+  font-weight: 600;
+  padding: 0 10px 8px 0;
+}
+
+.sortiva-perf__results td,
+.sortiva-perf__sc-table td,
+.sortiva-perf__table-toggle td {
+  padding: 9px 10px 9px 0;
+  border-top: 1px solid var(--sortiva-line);
+  vertical-align: top;
+}
+
+/*
+ * A result nothing has been said about yet. Dimmed, never coloured: an absence
+ * of judgement should not look like a judgement.
+ */
+.sortiva-perf__results tr[data-perf-result-measured='false'] td {
+  color: var(--sortiva-text-faint);
+}
+
+.sortiva-perf__chip {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 12px;
+  background: var(--sortiva-surface-sunken);
+  color: var(--sortiva-text-secondary);
+}
+
+.sortiva-perf__chip[data-perf-tone='good'] {
+  background: var(--sortiva-positive-soft);
+  color: var(--sortiva-positive);
+}
+
+.sortiva-perf__chip[data-perf-tone='poor'] {
+  background: var(--sortiva-critical-soft);
+  color: var(--sortiva-critical);
+}
+
+.sortiva-perf__chip[data-perf-tone='unmeasured'] {
+  background: transparent;
+  color: var(--sortiva-text-faint);
+  border: 1px dashed var(--sortiva-line-strong);
+}
+
+.sortiva-perf__trend {
+  margin-left: 6px;
+  font-size: 11px;
+}
+
+.sortiva-perf__trend[data-perf-trend='up'] {
+  color: var(--sortiva-positive);
+}
+
+.sortiva-perf__trend[data-perf-trend='down'] {
+  color: var(--sortiva-critical);
+}
+
+.sortiva-perf__delta {
+  display: block;
+  font-size: 11px;
+  color: var(--sortiva-text-faint);
+}
+
+.sortiva-perf__delta[data-sc-delta-direction='up'] {
+  color: var(--sortiva-positive);
+}
+
+.sortiva-perf__delta[data-sc-delta-direction='down'] {
+  color: var(--sortiva-critical);
+}
+
+.sortiva-perf__sc-key {
+  max-width: 340px;
+  word-break: break-word;
+}
+
+/*
+ * The reason this table is not a reporting island: every badge is a link into a
+ * scored opportunity with something to do attached.
+ */
+.sortiva-perf__signal {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 3px 9px;
+  margin: 0 4px 4px 0;
+  font-size: 12px;
+  background: var(--sortiva-accent-soft);
+  color: var(--sortiva-accent);
+  text-decoration: none;
+}
+
+.sortiva-perf__signal:hover,
+.sortiva-perf__signal:focus-visible {
+  text-decoration: underline;
+}
+
+.sortiva-perf__no-signal {
+  color: var(--sortiva-text-faint);
+}
+
+.sortiva-perf__windows {
+  display: flex;
+  gap: 8px;
+}
+
+.sortiva-perf__windows button {
+  border: 1px solid var(--sortiva-line-strong);
+  background: var(--sortiva-surface);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.sortiva-perf__windows button[aria-pressed='true'] {
+  background: var(--sortiva-accent-soft);
+  border-color: var(--sortiva-accent);
+  color: var(--sortiva-accent);
+}
+
+.sortiva-perf__label-counts {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.sortiva-perf__label-figure {
+  margin-left: 8px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Held apart from everything else ─────────────────────────────────────── */
+
+.sortiva-perf__overridden {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 14px 20px;
+  font-size: 13px;
+}
+
+.sortiva-perf__overridden summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* ── Not connected ───────────────────────────────────────────────────────── */
+
+.sortiva-perf__connect {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 28px 24px;
+  max-width: 640px;
+}
+
+.sortiva-perf__connect h2 {
+  margin: 0;
+  font-family: var(--sortiva-font-heading);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.sortiva-perf__connect p {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--sortiva-text-secondary);
+}
+
+.sortiva-perf__connect-note {
+  color: var(--sortiva-text-muted);
+  font-size: 13px;
+}
+
+.sortiva-perf__connect-action {
+  display: inline-block;
+  margin-top: 16px;
+  border-radius: 999px;
+  padding: 9px 18px;
+  background: var(--sortiva-accent);
+  color: var(--sortiva-surface);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sortiva-perf__empty,
+.sortiva-perf__chart-empty {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--sortiva-text-muted);
+}

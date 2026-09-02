@@ -1,0 +1,311 @@
+/*
+ * Products: the richness meter, the merchant tasks, and the catalogue table.
+ *
+ * A task card is given the weight of a card rather than a row in a list,
+ * because it is the only work on this page and it is blocking something the
+ * merchant wants. The completed ones collapse to a line — a cleared checklist
+ * left open turns a page about what to do next into a page about what is
+ * already done.
+ *
+ * Colours and shape come from `tokens.css`.
+ */
+
+.sortiva-products {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1180px;
+}
+
+.sortiva-products__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.sortiva-products__head h1 {
+  margin: 0;
+  font-family: var(--sortiva-font-heading);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.sortiva-products__intro,
+.sortiva-products__section-note,
+.sortiva-products__richness-note {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--sortiva-text-muted);
+  max-width: 62ch;
+}
+
+.sortiva-products__counts {
+  display: flex;
+  gap: 28px;
+  margin: 0;
+}
+
+.sortiva-products__count dt {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sortiva-text-faint);
+}
+
+.sortiva-products__count dd {
+  margin: 2px 0 0;
+  font-family: var(--sortiva-font-heading);
+  font-size: 24px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.sortiva-products__richness,
+.sortiva-products__section {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 18px 20px;
+}
+
+.sortiva-products__richness h2,
+.sortiva-products__section h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.sortiva-products__richness-band {
+  margin: 6px 0 0;
+  font-family: var(--sortiva-font-heading);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.sortiva-products__richness[data-products-richness='sparse'] .sortiva-products__richness-band {
+  color: var(--sortiva-warning);
+}
+
+.sortiva-products__richness[data-products-richness='rich'] .sortiva-products__richness-band {
+  color: var(--sortiva-positive);
+}
+
+/* ── Merchant tasks ──────────────────────────────────────────────────────── */
+
+.sortiva-products__task {
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: var(--sortiva-radius-inner);
+  padding: 16px 18px;
+  margin-top: 14px;
+}
+
+.sortiva-products__task-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sortiva-products__task-badge {
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--sortiva-warning-soft);
+  color: var(--sortiva-warning);
+}
+
+.sortiva-products__task-blocking {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  flex: 1 1 320px;
+}
+
+.sortiva-products__task-products {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.sortiva-products__task-products li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13px;
+  border-top: 1px solid var(--sortiva-line);
+  padding-top: 8px;
+}
+
+.sortiva-products__task-missing {
+  color: var(--sortiva-text-muted);
+  font-size: 12px;
+}
+
+.sortiva-products__task-foot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.sortiva-products__task-open-all {
+  border-radius: 999px;
+  padding: 7px 14px;
+  background: var(--sortiva-accent);
+  color: var(--sortiva-surface);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sortiva-products__task-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-products__completed {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 14px 20px;
+  font-size: 13px;
+}
+
+.sortiva-products__completed summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.sortiva-products__completed ul {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.sortiva-products__completed li {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.sortiva-products__completed-date {
+  color: var(--sortiva-text-faint);
+}
+
+/* ── The catalogue table ─────────────────────────────────────────────────── */
+
+.sortiva-products__table-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sortiva-products__table-head button {
+  border: 1px solid var(--sortiva-line-strong);
+  background: var(--sortiva-surface);
+  border-radius: 999px;
+  padding: 5px 12px;
+  margin-left: 8px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.sortiva-products__table-head button[aria-pressed='true'] {
+  background: var(--sortiva-accent-soft);
+  border-color: var(--sortiva-accent);
+  color: var(--sortiva-accent);
+}
+
+.sortiva-products__table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sortiva-products__table th {
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sortiva-text-faint);
+  font-weight: 600;
+  padding: 0 10px 8px 0;
+}
+
+.sortiva-products__table td {
+  padding: 9px 10px 9px 0;
+  border-top: 1px solid var(--sortiva-line);
+  vertical-align: top;
+}
+
+.sortiva-products__title {
+  display: block;
+  font-weight: 500;
+}
+
+.sortiva-products__missing {
+  display: block;
+  font-size: 12px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-products__band {
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 12px;
+  background: var(--sortiva-surface-sunken);
+  color: var(--sortiva-text-secondary);
+}
+
+.sortiva-products__band[data-product-richness='sparse'] {
+  background: var(--sortiva-warning-soft);
+  color: var(--sortiva-warning);
+}
+
+.sortiva-products__band[data-product-richness='rich'] {
+  background: var(--sortiva-positive-soft);
+  color: var(--sortiva-positive);
+}
+
+/* ── The family list, borrowed whole from the confirmation screen ─────────── */
+
+/*
+ * ui §7 asks for the same read-only list and the same report modal that the
+ * confirmation screen has, so Products renders that component rather than a
+ * second copy of it. What it does not inherit is that screen's page layout —
+ * there, sections are stacked in a single-column grid, which stretches an
+ * inline badge across the full width. These three rules give the borrowed
+ * section this page's card treatment and let its badges sit inline again.
+ */
+
+.sortiva-products > .sortiva-confirm__section {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 18px 20px;
+}
+
+.sortiva-products > .sortiva-confirm__section > .sortiva-confirm__badge {
+  display: inline-block;
+  width: auto;
+  margin-top: 6px;
+}
+
+.sortiva-products > .sortiva-confirm__section .sortiva-confirm__family summary {
+  padding: 10px 0;
+}

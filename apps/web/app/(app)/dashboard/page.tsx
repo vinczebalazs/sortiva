@@ -1,9 +1,13 @@
 import { resolveOnboardingSurface, type ProfileDraft } from '@sortiva/ui'
 import '@sortiva/ui/styles/onboarding.css'
+import '@sortiva/ui/styles/opportunities.css'
+import '@sortiva/ui/styles/performance.css'
+import '@sortiva/ui/styles/dashboard.css'
 import { getJson, requestContext } from '../_lib/api'
 import { buildOnboardingData } from '../_lib/onboarding-data'
 import { OnboardingScreen } from './OnboardingScreen'
 import { ConfirmationSurface, FindingOpportunitiesSurface } from './ConfirmationSurface'
+import { SteadyState } from './SteadyState'
 
 /**
  * The dashboard, which is also the whole of onboarding.
@@ -12,9 +16,9 @@ import { ConfirmationSurface, FindingOpportunitiesSurface } from './Confirmation
  * decides what is on screen, so there is no wizard to be halfway through and no
  * step that can be reached out of order or bookmarked after it is over.
  *
- * The steady-state dashboard — the growth headline, the month strip, the
- * attention list — is a separate screen with its own card. This page stops at
- * the point onboarding ends and leaves it a slot to fill.
+ * Once setting up is over the same address becomes the steady-state dashboard:
+ * the growth headline, what is next, the month's counts, the search chart, what
+ * needs the merchant, and what is connected.
  */
 
 export const dynamic = 'force-dynamic'
@@ -33,7 +37,7 @@ export default async function DashboardPage({
   const params = await searchParams
 
   if (surface === 'complete') {
-    return <div data-dashboard-slot="steady_state" />
+    return <SteadyState request={request} account={account} />
   }
 
   if (surface === 'finding_opportunities') {

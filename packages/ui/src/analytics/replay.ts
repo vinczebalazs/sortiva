@@ -45,6 +45,13 @@ export const VIEW_CONTENT: Readonly<Record<string, ViewContent>> = {
   '/content': 'store_data',
   '/content/articles': 'store_data',
   '/content/articles/[articleId]': 'store_data',
+  // The catalogue itself: every product, its family, and the facts we hold about
+  // each one. There is nothing on this screen that is not the merchant's own.
+  '/products': 'store_data',
+  // Their search traffic, their articles' results, and the queries their store
+  // is found for — the closest thing the product holds to commercial data.
+  '/performance': 'store_data',
+  '/performance/search-console': 'store_data',
   '/plan': 'no_store_data',
   '/signin': 'no_store_data',
   '/ui-gallery/banner-stack': 'no_store_data',

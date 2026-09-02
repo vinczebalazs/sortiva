@@ -154,6 +154,48 @@ export const SCREEN_FIXTURE_DEPENDENCIES: readonly ScreenFixtureDependency[] = [
     fields: ['article', 'html', 'metadata', 'evidencePack', 'qualityReport', 'history'],
     note: '`html` is rendered as it stands and is the only field the screen injects as markup, so **it must be the article as it will publish and must never contain anything the pipeline did not put there**. The override dialog has to restate the criteria the draft failed, and **the response does not say which they are**: it carries scores and justifications, and the floors that decide a pass live in `packages/rules`, where the screen must not re-derive them. So the dialog names the criteria the judge wrote a justification for, which is right only while justifications are written for what the judge marked down — **a `failedCriteria` list on `qualityReport` would close this properly**. Two further gaps: a held article carries no rejection reason of its own (the calendar\'s topic does, this does not), so the article page shows the judge\'s report in its place; and `history[].event` is a bare string with no enumerated set, so an event we have no wording for is spelled out from its own name.',
   },
+  {
+    screen: 'Products — the catalogue and its merchant tasks',
+    route: 'GET /api/products',
+    fields: ['richness.band', 'richness.productsMissingDetails', 'counts', 'merchantTasks', 'products', 'cursor'],
+    note: 'Every merchant task needs `blockingTitle`, `impact` and a `products` array, and **each product needs `shopifyAdminUrl`** — the whole point of the card is that the merchant fixes the gap in Shopify rather than typing facts into us, so a task without those links is a chore with no way to start it. The screen refuses any address that is not an HTTPS `*.myshopify.com` or `admin.shopify.com` URL and renders the product as plain text instead, so a link built from an unvalidated store handle silently loses its link rather than pointing somewhere else. `missingFields` are stored field names (`lug_depth`, `weight_g`) and are rendered through a lookup, so a new one arrives as readable words rather than as a code. `completedAt` non-null is what folds a task away — it must be set when the fields actually arrive, not when the task was created. `cursor` is read but **paging is not built**: a store with hundreds of products shows only the first page.',
+  },
+  {
+    screen: 'Products — the read-only family list',
+    route: 'GET /api/products/families',
+    fields: ['families'],
+    note: 'The same shape and the same component as the confirmation screen, deliberately: each family needs `label`, `memberCount`, `axes`, `groupingSource` and `lowConfidence`, and `groupingSource` must stay within `taxonomy` / `fact_clustering` / `embedding` or the badge falls back to the raw name. `id` must match `products[].familyId` from the response above, because the products table names a product\'s family by looking it up here — a mismatch leaves every row reading "Not grouped".',
+  },
+  {
+    screen: 'Performance — the chart and the results table',
+    route: 'GET /api/performance/overview',
+    fields: ['connected', 'series', 'markers', 'results'],
+    note: '**A day with no Search Console data must arrive with `clicks` and `impressions` null, and must still be in the array.** Null is what breaks the line and what keeps the day out of the totals; omitting the day entirely would join the line across the hole and make a gap invisible. A zero on a day nobody measured is the same lie with a number on it. **`results[].label` decides whether the row shows figures at all**: `unrated` and `not_applied` render as dashes with a "too new to judge" chip, and any other label renders the numbers — so a young article must arrive as `unrated` rather than as a rated row of noughts. `markers[].kind` must be one of the three the chart draws (`gsc_connected`, `article_published`, `optimize_applied`) and its `date` must fall inside `series`, or the marker is dropped rather than pinned to an edge. `publishedViaOverride` moves a row into the separate folded section and out of everything the product learns from. **Two gaps the backend will have to close:** a result carries no `publishedUrl` or confirmation flag, so an exported article awaiting its URL cannot be greyed with a "confirm URL" action here and is indistinguishable from an ordinary row; and the response carries no connect date of its own, so the subtitle falls back to the `gsc_connected` marker and says nothing when there is none.',
+  },
+  {
+    screen: 'Performance — the Search Console tab',
+    route: 'GET /api/performance/search-console',
+    fields: ['rows', 'cursor'],
+    note: '**`signals` is what this table is for.** Each entry needs a `signalType` the string catalogue can name and an `opportunityId` that is actually open, because the badge is a link into it — a row with numbers and no way to act on them is the reporting island the spec says this must not be. `pageType` is rendered only on the pages table and must be null rather than guessed for a URL the content inventory does not hold. `deltaPosition` is read by meaning rather than by sign: negative is an improvement and renders as "up N places", so a backend that flipped the sign would tell every merchant their rankings moved the wrong way. `deltaClicks` and `deltaPosition` must compare like windows — a partial period against a full one produces a change that is entirely an artefact. **One gap:** the cannibalization view ui §8.2 asks for needs per-URL impression shares over time for a query cluster, and this response carries none, so it is not built; the cannibalization badge links to the FIX opportunity that holds the evidence instead.',
+  },
+  {
+    screen: 'Dashboard — the steady state',
+    route: 'GET /api/attention',
+    fields: ['items'],
+    note: 'Each item needs `kind` and the `refs` that say which thing it is about — `articleId` sends the merchant to that article and everything else falls back to the surface that owns the kind, so an item with empty `refs` still renders but lands on a list rather than on the thing. These are a live query and never stored rows: an item must disappear the moment its cause is resolved, because the dashboard has no way to dismiss one.',
+  },
+  {
+    screen: 'Dashboard — the month strip',
+    route: 'GET /api/articles',
+    fields: ['articles'],
+    note: 'The strip counts `state === "published"` rows whose `publishedAt` falls in the month in view, so `publishedAt` must be the moment it actually went out rather than when it was written. **Three of the six lines ui §4 asks for are not built, because nothing answers them:** how many page-improvement recommendations were generated this month, how many were marked applied, and how many repairs ran. The opportunities response carries open counts rather than monthly activity, and an article says only whether it was ever `repaired`, never when. A summary route, or dated activity on these three, would close it. **No line on this strip may ever arrive paired with a target**; a rendered-output test enforces it.',
+  },
+  {
+    screen: 'Dashboard — next up and today',
+    route: 'GET /api/calendar',
+    fields: ['topics', 'nextReplenishmentAt'],
+    note: 'The dashboard reads three weeks either side of today and picks the earliest `planned` topic dated strictly after today as "next up", and the topic dated today — whatever state it reached — as today\'s outcome. **`why.templateKey` must be a key the string catalogue holds**, because the dashboard renders the sentence rather than showing anything sent as text. `articleId` on a published topic is what links the day to what it produced; without it the card names the article and cannot open it. `nextReplenishmentAt` is rendered as a date on the month strip.',
+  },
 ]
 
 /** Reads `a.b.c` out of a fixture body, treating a missing key as undefined. */
