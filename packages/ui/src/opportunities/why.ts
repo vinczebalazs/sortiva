@@ -25,6 +25,11 @@ export type { TemplatedLine }
  */
 const ALIASES: Readonly<Record<string, StringKey>> = {
   'existing_target.prefer_optimize': 'appendixA.existingPageWhyLine' as StringKey,
+  // Why a topic was held back for a catalogue that does not yet say enough
+  // about itself. Same arrangement and the same reason: the sentence is one the
+  // product may not reword, so the calendar day and the held article both reach
+  // the single copy of it rather than each holding one.
+  'quality_rejection.insufficient_richness': 'appendixA.qualityRejectionRichness' as StringKey,
 }
 
 /** Where an engine template key lives in the catalogue. */
