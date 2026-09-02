@@ -35,9 +35,9 @@ placed where the build order puts it.
 
 | Lane | Card | Branch | Worktree | State |
 |---|---|---|---|---|
-| B — Store Intelligence | — | `lane-b` | `../sortiva-lane-b` | **held deliberately**; `T2.2` ready to start once `T-BOOT` lands |
-| C — Search Intelligence | `T-BOOT` | `lane-c` | `../sortiva-lane-c` | building the blocker fix, alone |
-| F — Frontend | — | `lane-f` | `../sortiva-lane-f` | **held deliberately**; `T9.3` ready to start once `T-BOOT` lands |
+| B — Store Intelligence | — | `lane-b` | `../sortiva-lane-b` | free. Next: `T2.2` — the critical path |
+| C — Search Intelligence | — | `lane-c` | `../sortiva-lane-c` | free; `T-BOOT` merged. Next: `T3.4` |
+| F — Frontend | — | `lane-f` | `../sortiva-lane-f` | free. Next: `T9.3` |
 
 ## Picking this up again
 
@@ -269,7 +269,41 @@ to the catalog lane, and the function is exported and ready for it to call. And 
 change-stream consumer is built but not registered with the worker, because its
 producer is `T2.2` and wiring a stand-in into production would be a false green.
 
-## BLOCKER — the application does not start, and nothing owns the fix
+## FIXED — the application would not start
+
+**FIXED on 2026-09-02 by `T-BOOT`, and proved rather than asserted.** The
+configuration file is now located and read by the first piece of work that needs a
+number, not when the module loads. A lint rule rejects the old shape in both
+packages that read files off disk, with a planted violation proving the rule bites
+(`pnpm lint:prove` is now 10 of 10). And the gate gained `pnpm smoke:boot`, which
+starts the built application and asks it for a page — the one check nothing did.
+
+Evidence, from the merged tree:
+
+```
+$ pnpm smoke:boot
+PASS  GET /            -> 200
+PASS  GET /api/health  -> 200
+The built application started and served both pages in 0.6s.
+```
+
+The lane proved each half by breaking it: restoring the old loader made the smoke
+step fail with the original error; corrupting the config file left both pages at 200
+and produced one clear error naming the file; deleting the file produced another;
+restoring the old code shape produced a lint error. A useful by-product it
+journalled: **deferring the read alone was not enough** — a variant that deferred but
+still wrote the path in the form the bundler rewrites booted fine and would have
+failed at the first threshold read. The path had to stop being written that way too.
+
+**One consequence accepted knowingly:** a missing or malformed config file is now
+discovered at the first call needing a threshold rather than at start-up. This
+contradicts tech §2 and main §7.10, which say the config is validated at worker
+start. Journalled under `2026-09-02 — T-BOOT`; if start-up validation is wanted back
+it is a deliberate call in the start-up hook and a founder decision, not a bug.
+
+---
+
+### The original diagnosis, kept for the history
 
 **Every request answers 500, including the landing page and the health check.** This
 is true on `main` right now, it predates today's work, and `pnpm build` passes while
@@ -351,6 +385,32 @@ cheaper than three-way conflicts in the files that enforce every other rule.
 **One more thing the gate should gain either way:** a check that starts the built
 application and asks it for one page. Every command in the gate passed while the
 product served nothing but errors.
+
+## BLOCKER — the deployed start command would not find the build
+
+**Found by `T-BOOT`, deliberately not fixed by it, and confirmed by the integrator
+reading `railway.toml` line 37.** The start command runs the server from the
+repository root:
+
+```
+startCommand = "NEXT_MANUAL_SIG_HANDLE=1 node --max-old-space-size=384 \
+                apps/web/node_modules/next/dist/bin/next start -p $PORT"
+```
+
+`next start` looks for the build output in its working directory. The build output
+is in `apps/web/.next`. Run exactly as written from the repository root, the server
+exits with *"Could not find a production build in the '.next' directory"*.
+
+**`pnpm smoke:boot` does not catch this**, because it starts from the application
+directory — which is the right thing for a local smoke check and the wrong thing for
+proving the deploy. So the gate is green and the deploy would still fail.
+
+Two fixes, both one line: pass the application directory to `next start`, or set the
+service's working directory. Which is right depends on what working directory the
+platform actually gives the service, and the project has never been deployed, so
+nobody knows. **It is not in any card's scope.** It should be settled with the other
+deployment questions — the platform's config format is also deprecated and the
+project's old service was deleted.
 
 ## What `T3.3` added — the arithmetic every search signal reads
 
@@ -650,6 +710,18 @@ is best taken by the card that next touches that area — not as a sweep:
 | The caching argument on the vendor wrappers silently defaults to off, unlike the cost ledger beside it, which is required | `packages/providers` |
 
 Nothing has been acted on beyond recording it here.
+
+## The learning loop is out of v1
+
+**Founder decision, 2026-09-02: `M7` does not ship in the first deployment.** Both
+its cards (`T7.1`, `T7.2`) stay in the plan and stay unbuilt, and the build plan is
+marked accordingly. Nothing depends on them — the milestone-10 exit gates do not
+read outcomes — so deferring costs no other card.
+
+**What the product gives up until they are built:** it never learns from what it
+published. Every article is written from evidence, none from what worked last time.
+No verdict is ever attached to a published piece, and no pattern is ever drawn from
+the store's own results. The product still works; it simply does not improve itself.
 
 ## Lanes stopped, and the question that stopped them
 
