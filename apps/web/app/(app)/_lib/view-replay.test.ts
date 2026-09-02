@@ -128,4 +128,22 @@ describe('the authenticated shell is where reporting is switched on', () => {
     const layout = readFileSync(join(authenticatedDir, 'layout.tsx'), 'utf8')
     expect(layout).toContain('AnalyticsMount')
   })
+
+  it('is the only place that does, so the public funnel is not reported twice', () => {
+    // Every step of the public funnel is already recorded server-side as the
+    // work happens. A browser-side copy would leave the funnel's numbers
+    // depending on which of the two you counted, so the public pages load no
+    // analytics library at all.
+    const publicDir = join(appDir, '(public)')
+    const mounting = []
+    const files: string[] = []
+    walk(publicDir, files)
+    for (const file of files) {
+      const text = readFileSync(file, 'utf8')
+      if (text.includes('AnalyticsMount') || text.includes('AnalyticsProvider')) {
+        mounting.push(relative(appDir, file))
+      }
+    }
+    expect(mounting).toEqual([])
+  })
 })
