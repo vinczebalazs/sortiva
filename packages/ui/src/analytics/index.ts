@@ -1,2 +1,4 @@
 export * from './events'
 export * from './client'
+export * from './replay'
+export * from './browser'

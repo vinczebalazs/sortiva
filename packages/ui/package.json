@@ -18,15 +18,16 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
-    "msw": "^2.15.0",
-    "typescript": "^5.7.2",
-    "vitest": "^2.1.8",
-    "react-dom": "^19.0.0",
     "@types/react": "^19.0.2",
-    "@types/react-dom": "^19.0.2"
+    "@types/react-dom": "^19.0.2",
+    "msw": "^2.15.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
   },
   "dependencies": {
     "@sortiva/core": "workspace:*",
+    "posthog-js": "^1.425.1",
     "react": "^19.0.0"
   }
 }

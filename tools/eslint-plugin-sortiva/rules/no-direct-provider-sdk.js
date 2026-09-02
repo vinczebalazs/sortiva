@@ -11,6 +11,10 @@ const DEFAULT_SDKS = [
   { module: 'resend', allow: ['packages/providers/src/email/'], wrapper: 'EmailProvider (@sortiva/providers)' },
   { module: 'stripe', allow: ['packages/providers/src/stripe/'], wrapper: 'StripeProvider (@sortiva/providers)' },
   { module: 'posthog-node', allow: ['packages/providers/src/posthog/'], wrapper: 'PosthogCapture (@sortiva/providers)' },
+  // The browser half of the same rule. A screen reaching the vendor's browser
+  // library directly could capture anything at all, which is what the
+  // per-event property table exists to make impossible.
+  { module: 'posthog-js', allow: ['packages/ui/src/analytics/'], wrapper: 'UiAnalytics (@sortiva/ui)' },
   { module: '@shopify/shopify-api', allow: ['packages/providers/src/shopify/'], wrapper: 'ShopifyProvider (@sortiva/providers)' },
   { module: 'googleapis', allow: ['packages/providers/src/gsc/'], wrapper: 'GscProvider (@sortiva/providers)' },
 ]
