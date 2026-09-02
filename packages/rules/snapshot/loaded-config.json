@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "rules_version": "95d63d1a743be905182bfd9c863657bc289f83c777855acb0fea296d4b0f7000",
+  "rules_version": "67a690266a74633c5181235049fbd05a63cccce1d8c73104c311e1e0a0c802f5",
   "defaults": {
     "signals": {
       "striking_distance": {
@@ -8,7 +8,8 @@
         "needs_gsc": true,
         "position_min": 4,
         "position_max": 15,
-        "window_days": 28
+        "window_days": 28,
+        "impressions_store_median_multiple_min": 1
       },
       "low_ctr_at_strong_rank": {
         "priority": "P0",
@@ -25,7 +26,8 @@
         "comparison_window_offset_weeks": 12,
         "clicks_ratio_max": 0.6,
         "position_worsened_min": 3,
-        "consecutive_weekly_evaluations_min": 2
+        "consecutive_weekly_evaluations_min": 2,
+        "baseline_clicks_store_median_multiple_min": 1
       },
       "cannibalization": {
         "priority": "P0",
@@ -33,7 +35,10 @@
         "window_days": 28,
         "competing_urls_min": 2,
         "impression_share_min": 0.2,
-        "position_max": 30
+        "position_max": 30,
+        "leader_changes_min": 1,
+        "baseline_offset_weeks": 12,
+        "aggregate_loss_clicks_ratio_max": 1
       },
       "uncovered_commercial_query": {
         "priority": "P0",
@@ -312,7 +317,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -329,7 +335,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -337,7 +344,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -615,7 +625,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -632,7 +643,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -640,7 +652,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -918,7 +933,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -935,7 +951,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -943,7 +960,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -1221,7 +1241,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -1238,7 +1259,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -1246,7 +1268,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -1524,7 +1549,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -1541,7 +1567,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -1549,7 +1576,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -1827,7 +1857,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -1844,7 +1875,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -1852,7 +1884,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -2130,7 +2165,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -2147,7 +2183,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -2155,7 +2192,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -2433,7 +2473,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -2450,7 +2491,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -2458,7 +2500,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -2736,7 +2781,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -2753,7 +2799,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -2761,7 +2808,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -3039,7 +3089,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -3056,7 +3107,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -3064,7 +3116,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -3342,7 +3397,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -3359,7 +3415,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -3367,7 +3424,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -3645,7 +3705,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -3662,7 +3723,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -3670,7 +3732,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -3948,7 +4013,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -3965,7 +4031,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -3973,7 +4040,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -4251,7 +4321,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -4268,7 +4339,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -4276,7 +4348,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -4554,7 +4629,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -4571,7 +4647,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -4579,7 +4656,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -4857,7 +4937,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -4874,7 +4955,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -4882,7 +4964,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -5160,7 +5245,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -5177,7 +5263,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -5185,7 +5272,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -5463,7 +5553,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -5480,7 +5571,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -5488,7 +5580,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -5766,7 +5861,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -5783,7 +5879,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -5791,7 +5888,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -6069,7 +6169,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -6086,7 +6187,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -6094,7 +6196,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",
@@ -6372,7 +6477,8 @@
           "needs_gsc": true,
           "position_min": 4,
           "position_max": 15,
-          "window_days": 28
+          "window_days": 28,
+          "impressions_store_median_multiple_min": 1
         },
         "low_ctr_at_strong_rank": {
           "priority": "P0",
@@ -6389,7 +6495,8 @@
           "comparison_window_offset_weeks": 12,
           "clicks_ratio_max": 0.6,
           "position_worsened_min": 3,
-          "consecutive_weekly_evaluations_min": 2
+          "consecutive_weekly_evaluations_min": 2,
+          "baseline_clicks_store_median_multiple_min": 1
         },
         "cannibalization": {
           "priority": "P0",
@@ -6397,7 +6504,10 @@
           "window_days": 28,
           "competing_urls_min": 2,
           "impression_share_min": 0.2,
-          "position_max": 30
+          "position_max": 30,
+          "leader_changes_min": 1,
+          "baseline_offset_weeks": 12,
+          "aggregate_loss_clicks_ratio_max": 1
         },
         "uncovered_commercial_query": {
           "priority": "P0",

@@ -96,7 +96,8 @@
           "required": [
             "position_min",
             "position_max",
-            "window_days"
+            "window_days",
+            "impressions_store_median_multiple_min"
           ],
           "properties": {
             "priority": {},
@@ -110,6 +111,9 @@
             "window_days": {
               "type": "integer",
               "minimum": 1
+            },
+            "impressions_store_median_multiple_min": {
+              "$ref": "#/definitions/positiveNumber"
             }
           },
           "additionalProperties": false
@@ -156,7 +160,8 @@
             "comparison_window_offset_weeks",
             "clicks_ratio_max",
             "position_worsened_min",
-            "consecutive_weekly_evaluations_min"
+            "consecutive_weekly_evaluations_min",
+            "baseline_clicks_store_median_multiple_min"
           ],
           "properties": {
             "priority": {},
@@ -178,6 +183,9 @@
             "consecutive_weekly_evaluations_min": {
               "type": "integer",
               "minimum": 1
+            },
+            "baseline_clicks_store_median_multiple_min": {
+              "$ref": "#/definitions/positiveNumber"
             }
           },
           "additionalProperties": false
@@ -192,7 +200,10 @@
             "window_days",
             "competing_urls_min",
             "impression_share_min",
-            "position_max"
+            "position_max",
+            "leader_changes_min",
+            "baseline_offset_weeks",
+            "aggregate_loss_clicks_ratio_max"
           ],
           "properties": {
             "priority": {},
@@ -210,6 +221,17 @@
             },
             "position_max": {
               "$ref": "#/definitions/serpPosition"
+            },
+            "leader_changes_min": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "baseline_offset_weeks": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "aggregate_loss_clicks_ratio_max": {
+              "$ref": "#/definitions/ratio"
             }
           },
           "additionalProperties": false

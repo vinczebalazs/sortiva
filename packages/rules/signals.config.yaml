@@ -39,6 +39,13 @@ defaults:
       position_min: 4
       position_max: 15
       window_days: 28
+      # UNSIGNED. How much traffic a page must already carry before a ranking
+      # just off page one is worth acting on, as a multiple of what a typical
+      # page of *this* store is shown for in the window. At 1 the page has to
+      # be at least median. Raise it and only the store's busiest pages
+      # qualify; drop it below 1 and pages almost nobody sees start producing
+      # work for the merchant.
+      impressions_store_median_multiple_min: 1
 
     low_ctr_at_strong_rank:
       priority: P0
@@ -67,6 +74,11 @@ defaults:
       clicks_ratio_max: 0.6
       position_worsened_min: 3
       consecutive_weekly_evaluations_min: 2
+      # UNSIGNED. How well the page had to be doing before the decline counts,
+      # as a multiple of the clicks a typical page of this store earned in the
+      # same earlier window. At 1 the page has to have been at least median.
+      # It is what stops us "recovering" pages that never worked.
+      baseline_clicks_store_median_multiple_min: 1
 
     cannibalization:
       priority: P0
@@ -79,6 +91,22 @@ defaults:
       competing_urls_min: 2
       impression_share_min: 0.20
       position_max: 30
+      # Two pages sharing a search is only a problem once it is shown to be
+      # costing something. Either the page Google leads with keeps changing —
+      # a sign it cannot decide which of ours to trust — or the search is
+      # earning the store fewer clicks than it did before.
+      #
+      # UNSIGNED. How many times the leading page has to change across the
+      # weeks of the window. At 1 a single flip counts.
+      leader_changes_min: 1
+      # UNSIGNED. How far back the "before" comparison reaches. Same 12 weeks
+      # the decay signal uses, kept separate so the two can be tuned apart.
+      baseline_offset_weeks: 12
+      # UNSIGNED. What counts as the search having lost ground: this window's
+      # clicks as a fraction of the same window twelve weeks earlier. At 1.0
+      # any decline at all counts, which is the spec read literally — it names
+      # a loss and no size. Lower it to demand a real drop rather than drift.
+      aggregate_loss_clicks_ratio_max: 1.0
 
     uncovered_commercial_query:
       priority: P0

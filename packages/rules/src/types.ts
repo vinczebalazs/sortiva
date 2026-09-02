@@ -40,6 +40,7 @@ export interface SignalsConfig {
     position_min: number
     position_max: number
     window_days: number
+    impressions_store_median_multiple_min: number
   }
   low_ctr_at_strong_rank: SignalCommon & {
     position_max: number
@@ -53,12 +54,16 @@ export interface SignalsConfig {
     clicks_ratio_max: number
     position_worsened_min: number
     consecutive_weekly_evaluations_min: number
+    baseline_clicks_store_median_multiple_min: number
   }
   cannibalization: SignalCommon & {
     window_days: number
     competing_urls_min: number
     impression_share_min: number
     position_max: number
+    leader_changes_min: number
+    baseline_offset_weeks: number
+    aggregate_loss_clicks_ratio_max: number
   }
   uncovered_commercial_query: SignalCommon & { mapped_families_min: number }
   existing_page_intent_gap: SignalCommon & {
