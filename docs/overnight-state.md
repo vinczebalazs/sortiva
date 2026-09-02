@@ -74,12 +74,120 @@ made an unverified draft look like progress. It stayed in the worktree, which is
 killed session's work is supposed to sit, and its successor was told to audit it file by
 file before trusting any of it.
 
+## `T8.2` LANDED — Sortiva sends email, and decides which events deserve one
+
+**Merged as `0bf5897` into `main`, seven commits across two sessions, full gate green.**
+Tests **1,829**. This card was killed by the rate limit and resumed; the story of that is
+below and matters more than the feature.
+
+**One event, up to two places.** When any lane records something worth telling a merchant,
+it calls one function. That writes the bell entry it always wrote, and now also decides
+whether the same event becomes an email. **Three separate things can stop it and they mean
+different things**: the *kind* of event never emails; the *merchant* switched that kind
+off; or the *address* bounced. The last still writes a row marked "stopped", so "why did I
+never get that" has an answer. **No lane has to know whether its own event is emailed.**
+
+**Sending is two halves.** A sweep every minute turns each queued email into its own job;
+the job sends one, under that account's lock. **Per row rather than per batch, so one
+address the vendor keeps rejecting cannot hold up everyone else's mail**, and a send that
+runs out of attempts dead-letters alone. Three layers stop a duplicate: the row is only
+sent while it still says queued, the mark-as-sent is a guarded update, and the vendor is
+handed our own `(account, type, dedupe key)` triple as its idempotency key.
+
+**What an email says is looked up when it is sent**, never read from the stored row, which
+holds identifiers only. An article deleted in between produces "a draft is ready for your
+review" rather than the name of something that no longer exists.
+
+**Scheduled mail runs hourly, not on its nominal schedule** — the monthly summary must land
+at 08:00 in the store's own morning and a crontab is server time, so each hourly run asks
+per account whether it is locally the first at eight. The 24-hour and 7-day reminders sweep
+the same way. All three are safe to run repeatedly because the dedupe key is derived from
+the event.
+
+**Two hard rules held by tests.** The monthly summary states no count against a total — no
+slash, no "of", no target vocabulary — and **the check runs against the copy with
+placeholders still unfilled**, so it judges our sentences rather than a merchant's article
+title. And the canonical sentences are reproduced character for character from the
+catalogue.
+
+### The resumed session audited the inherited half and found six faults
+
+**This is the most valuable thing in the card.** The first session was killed before running
+a single check, so its five commits had never been verified by anything. The second
+session's first act was to read them against the card. All six are fixed:
+
+1. **A failure to queue an email could roll back the thing the email was about.** The
+   fan-out caught its own errors, reasoning that losing mail beats losing the state change
+   — but **in Postgres any failed statement aborts the whole transaction**, so the catch
+   left the caller's transaction poisoned and the gate decision or publish rolled back:
+   the exact outcome the catch existed to prevent. **Now wrapped in a savepoint**, proved
+   by a trigger that refuses every email insert — without it the transaction dies, with it
+   the bell rings and only the mail is lost. The integrator read this fix before merging.
+2. **Two declared gaps were invisible in the stub report that exists to declare them**,
+   because that script only names stubs whose module it imports. 7 → 9 on the branch.
+3. A type hole letting a caller assemble an email with a different database handle than the
+   one settling the row.
+4. The unsubscribe route held its own handler, which the route-import rule forbids.
+5. The vendor receiver held a raw database handle, banned outside `packages/db`. Fixed with
+   a new port rather than a lint exemption.
+6. The wordmark was typed into a template instead of the string catalogue.
+
+### The ruling on where email copy lives
+
+**In `packages/ui/strings/en.json`, like every other word a merchant reads.** Three reasons,
+journalled: a copy fix reaches mail queued *before* the fix, because the lookup happens at
+send time; a canonical sentence is held character-for-character in one place; and the
+denominator rule can be checked against catalogue entries with placeholders unfilled, which
+is the only form that does not fail on a topic called "A History of Wool".
+
+**Consequence for another lane:** `T-EMAIL`'s sign-in copy, parked beside the auth code
+explicitly pending this ruling, now belongs under `email.signIn.*` in the catalogue.
+**The lane correctly did not move it — those are lane C's files.** This is a small
+follow-up nobody owns yet.
+
+### Two things it surfaced for the founder rather than the audit
+
+- **A merchant who unsubscribes from the monthly summary silently loses the per-article
+  digest too.** There is only one preference column and no third to add without a schema
+  wave. **The fix is one boolean.** It is a silent, user-visible loss.
+- **`T8.3` cannot send a deletion-confirmation email at all.** The suppression bypass that
+  lets such mail through to a suppressed address is built and tested, but the type column
+  is the notification-type enum and **has no value for it**.
+
+### What the following audit should look at hardest
+
+The lane's own list, which the integrator endorses: whether **any other lane's emission
+point does the same swallow-inside-a-transaction without a savepoint**; that a missing
+configuration variable produces a **misleading error** — the monthly summary held for want
+of an unsubscribe link records the same last-error as "the article was deleted"; the single
+preference column above; that **`webhook_events` now has a third producer**, so `T8.3`'s
+retention sweep must prune by arrival time and shape rather than assuming one producer; one
+copy key outside the denominator check because it is chrome; and that two notification kinds
+**only ever exercise their generic wording in production**, because article titles resolve
+to nothing until schema wave 3.
+
+**Files outside Lane G's directories:** `apps/web/instrumentation.ts` and
+`packages/jobs/src/runtime/crontab.ts` (both integrator-resolved ordered files — the
+integrator confirmed the merge kept every registration), `packages/ui/strings/en.json` (92
+lines, one contiguous hunk at the end — **this produced the night's second hand-resolved
+conflict**), the stub report, core's banned-import list, three union-merged barrels, and
+`packages/providers` plus `packages/jobs` gaining React and JSX for the mail templates.
+**The lockfile changed.** No migration.
+
+**Real-vendor evidence outstanding:** no Resend credentials and **nothing has ever been
+sent**. Unproven end to end: a genuine send and its returned message id, a genuine signed
+webhook delivery, **and SPF/DKIM/DMARC on a dedicated sending subdomain, which tech §1.4
+requires before the first production send.** React Email's markup has never met a real mail
+client.
+
 ## Right now
 
-**Status at 2026-09-02, 22:05.** `main` is at `3473dac`, clean, and fully green.
-**Eight cards landed tonight**, each merged and gated separately: `T8.0`, `T-START`,
-`T-ANALYTICS`, `T3.4`, `T8.1`, `T-EMAIL`, `T9.3`, `T2.2`. Tests are at **1,748**, up from
-1,362 at the start of the night — **386 added**. Stubs are at **6**, down from 7.
+**Status at 2026-09-02, 22:35.** `main` is at `0bf5897`, clean, and fully green.
+**Nine cards landed tonight**, each merged and gated separately: `T8.0`, `T-START`,
+`T-ANALYTICS`, `T3.4`, `T8.1`, `T-EMAIL`, `T9.3`, `T2.2`, `T8.2`. Tests are at **1,829**,
+up from 1,362 at the start of the night — **467 added**. Stubs are at **8**, up from 6:
+`T8.2` declared two of its own that its predecessor had left invisible, which is the stub
+report working as intended, not a regression.
 
 **Three lanes are building.** The run was stopped by a rate limit between 20:25 and 21:59
 and has resumed — see the section above.
@@ -89,9 +197,18 @@ and has resumed — see the section above.
 | B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START` (`d34daa6`) and `T2.2` (`a870e0e`) merged and green; **`T2.2`'s scheduled audit has run and found a critical defect — see the audit section.** **`T2.3` building** |
 | C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4` (`fa7cff4`) and `T-EMAIL` (`0b84ffa`) merged and green. **Idle and clean, deliberately held** — `T3.5` needs `T2.4`–`T2.5`, and lane B stopped at `T2.2` as the plan asked, so it never became available |
 | F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS` (`42ddd50`) and `T9.3` (`b6945f9`) merged and green. **`T9.4` building**, taking over the non-compiling draft its killed predecessor left |
-| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | `T8.0` (`6400b62`) and `T8.1` (`44177e4`) merged and green. **`T8.2` building**, resumed from its own five commits. An audit is scheduled after it |
+| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | `T8.0` (`6400b62`), `T8.1` (`44177e4`) and **`T8.2` (`0bf5897`)** merged and green. **Idle; its scheduled audit is running.** The milestone's remaining cards are `T8.3` and `T8.4` |
 
-**Lane B reached `T2.2` and stopped there, which is what the plan asked for.** The one
+**Three audits have run tonight**, all read-only, all held for the morning: `T-EMAIL`'s
+(requested by its own lane), `T2.2`'s (**scheduled and required — it found the critical
+defect**), and `T8.2`'s (scheduled, running now). **None stopped a lane.**
+
+**Two hand-resolved conflicts, both in `packages/ui/strings/en.json`, both on merge.**
+That file is not union-merged and three cards appended to it tonight. Each time the
+integrator checked the two sides shared no key, kept both, added the comma the conflict
+boundary swallows, and verified the file parses with every block present. **It now holds
+409 keys.** **Expect a third when `T9.4` lands** — it is already modifying that file.
+
 **Lane B reached `T2.2` and stopped there, which is what the plan asked for.** The one
 mid-run decision the plan told the runner to watch for — whether lane B would reach `T2.5`
 and free lane C's `T3.5` — did not arise.
