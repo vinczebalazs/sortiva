@@ -1,0 +1,37 @@
+/*
+ * The design token set, lifted from the design canvas rather than re-derived
+ * by eye. Each line records the canvas variable it came from, so a value can be
+ * traced back to the design it belongs to.
+ *
+ * Generated shape, hand-maintained: `tokens.test.ts` asserts this file and
+ * `tokens.ts` still agree, so neither can be edited alone.
+ */
+:root {
+  --sortiva-ground: #e8e9f0; /* canvas --ground */
+  --sortiva-surface: #ffffff; /* canvas --card */
+  --sortiva-surface-sunken: #f5f6fa; /* canvas --soft */
+  --sortiva-text: #191b23; /* canvas --ink */
+  --sortiva-text-secondary: #454a5c; /* canvas --ink2 */
+  --sortiva-text-muted: #6f7488; /* canvas --mut */
+  --sortiva-text-faint: #878da0; /* canvas --faint */
+  --sortiva-line: #edeef3; /* canvas --line */
+  --sortiva-line-strong: #e2e4ec; /* canvas --line2 */
+  --sortiva-accent: #6470f3; /* canvas --pri */
+  --sortiva-accent-soft: #eeeffe; /* canvas --pri-s */
+  --sortiva-positive: #12a150; /* canvas --grn */
+  --sortiva-positive-soft: #e7f7ee; /* canvas --grn-s */
+  --sortiva-critical: #e5484d; /* canvas --red */
+  --sortiva-critical-soft: #fdecee; /* canvas --red-s */
+  --sortiva-warning: #e8890c; /* canvas --amb */
+  --sortiva-warning-soft: #fdf3e4; /* canvas --amb-s */
+  --sortiva-optimize: #0e9bb8; /* canvas --cy */
+  --sortiva-optimize-soft: #e5f6fa; /* canvas --cy-s */
+  --sortiva-refresh: #8b5cf6; /* canvas --pur */
+  --sortiva-refresh-soft: #f3eefe; /* canvas --pur-s */
+  --sortiva-radius: 18px; /* canvas --r */
+  --sortiva-radius-inner: 14px; /* canvas --r2 */
+  --sortiva-shadow: 0 1px 2px rgba(21,25,42,.04),0 8px 24px -6px rgba(21,25,42,.08); /* canvas --sh */
+  --sortiva-shadow-raised: 0 2px 4px rgba(21,25,42,.04),0 18px 40px -10px rgba(21,25,42,.14); /* canvas --shl */
+  --sortiva-font-heading: "Poppins", system-ui, sans-serif; /* canvas --fh */
+  --sortiva-font-body: "Plus Jakarta Sans", system-ui, sans-serif; /* canvas --fb */
+}
