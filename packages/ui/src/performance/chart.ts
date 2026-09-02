@@ -79,12 +79,20 @@ export const MARKER_KINDS: readonly MarkerKind[] = [
 ]
 
 /**
- * Marker labels are dropped rather than stacked when two land within this many
- * pixels of each other. A store publishing daily would otherwise turn the foot
- * of the chart into a wall of overlapping text; the rules themselves all stay,
- * so nothing is hidden — only the wording thins out.
+ * How wide a marker's label is, when nobody has measured it.
+ *
+ * Labels are dropped rather than stacked when two would overlap, and working
+ * out whether they overlap means knowing how wide each one is. There is no way
+ * to measure text without a browser, so the caller — which has the translated
+ * words — estimates from their length, and this is what a caller that does not
+ * bother gets. A store publishing daily would otherwise turn the foot of the
+ * chart into a wall of overlapping text; the rules themselves all stay and the
+ * key below the chart still names every kind, so nothing is hidden.
  */
-const LABEL_CLEARANCE_PX = 56
+const DEFAULT_LABEL_WIDTH = 120
+
+/** Clear space between two labels before they read as one run of words. */
+const LABEL_GUTTER_PX = 12
 
 function niceMax(value: number): number {
   if (value <= 0) return 1
@@ -161,8 +169,19 @@ function pathOf(points: readonly PlottedPoint[]): string {
 }
 
 /**
+ * How close two date labels may sit before the second is dropped. A date is
+ * about sixty pixels wide at the size these are set, and two overlapping dates
+ * are worse than one date and a gap.
+ */
+const DATE_CLEARANCE_PX = 84
+
+/**
  * Roughly five date labels along the bottom, whatever the range: enough to place
  * a marker in time, few enough that they never collide.
+ *
+ * The last day always gets a label — it is the one the merchant is looking at —
+ * and if the evenly spaced tick before it lands too close, that one goes rather
+ * than the last day.
  */
 function dateTicksFor(series: readonly PerformanceDay[], width: number) {
   if (series.length === 0) return []
@@ -173,10 +192,25 @@ function dateTicksFor(series: readonly PerformanceDay[], width: number) {
     ticks.push({ date: series[index]!.date, x: xOf(index, series.length, width) })
   }
   const lastIndex = series.length - 1
-  if (ticks[ticks.length - 1]?.date !== series[lastIndex]!.date) {
-    ticks.push({ date: series[lastIndex]!.date, x: xOf(lastIndex, series.length, width) })
+  const last = { date: series[lastIndex]!.date, x: xOf(lastIndex, series.length, width) }
+  if (ticks[ticks.length - 1]?.date !== last.date) {
+    while (ticks.length > 1 && last.x - ticks[ticks.length - 1]!.x < DATE_CLEARANCE_PX) ticks.pop()
+    ticks.push(last)
   }
   return ticks
+}
+
+/**
+ * How a label at this position has to be anchored to stay inside the drawing.
+ *
+ * A label centred on the first or last day would hang half of itself off the
+ * edge of the card, which in a chart that scales to its container means the
+ * date is simply cut in half.
+ */
+export function labelAnchor(x: number, width: number): 'start' | 'middle' | 'end' {
+  if (x <= width * 0.04) return 'start'
+  if (x >= width * 0.96) return 'end'
+  return 'middle'
 }
 
 /**
@@ -191,6 +225,7 @@ function plotMarkers(
   markers: readonly PerformanceMarker[],
   series: readonly PerformanceDay[],
   width: number,
+  labelWidthOf: (kind: MarkerKind) => number,
 ): readonly PlottedMarker[] {
   const index = new Map(series.map((day, position) => [day.date, position]))
   const placed = markers
@@ -202,18 +237,32 @@ function plotMarkers(
     .filter((marker): marker is PlottedMarker => marker !== null)
     .sort((left, right) => left.x - right.x)
 
-  let lastLabelX = Number.NEGATIVE_INFINITY
+  // The right edge of the last label that was kept. A label is kept only when
+  // its own left edge clears it — comparing the marker positions instead would
+  // let a long label run into a short one sitting just past the threshold.
+  let occupiedTo = Number.NEGATIVE_INFINITY
   return placed.map((marker) => {
-    const labelled = marker.x - lastLabelX >= LABEL_CLEARANCE_PX
-    if (labelled) lastLabelX = marker.x
+    const [left, right] = labelSpan(marker.x, width, labelWidthOf(marker.kind))
+    const labelled = left >= occupiedTo + LABEL_GUTTER_PX
+    if (labelled) occupiedTo = right
     return { ...marker, labelled }
   })
+}
+
+/** Where a label of this width actually sits, given how its position anchors it. */
+function labelSpan(x: number, width: number, labelWidth: number): [number, number] {
+  const anchor = labelAnchor(x, width)
+  if (anchor === 'start') return [x, x + labelWidth]
+  if (anchor === 'end') return [x - labelWidth, x]
+  return [x - labelWidth / 2, x + labelWidth / 2]
 }
 
 export function chartGeometry(
   series: readonly PerformanceDay[],
   markers: readonly PerformanceMarker[],
   box: ChartBox,
+  /** How wide each kind's label renders, so overlapping ones can be dropped. */
+  labelWidthOf: (kind: MarkerKind) => number = () => DEFAULT_LABEL_WIDTH,
 ): ChartGeometry {
   const ordered = [...series].sort((left, right) => left.date.localeCompare(right.date))
   return {
@@ -222,7 +271,7 @@ export function chartGeometry(
       buildPanel('clicks', ordered, box),
       buildPanel('impressions', ordered, box),
     ],
-    markers: plotMarkers(markers, ordered, box.width),
+    markers: plotMarkers(markers, ordered, box.width, labelWidthOf),
     dateTicks: dateTicksFor(ordered, box.width),
     hasData: ordered.some((day) => day.clicks !== null || day.impressions !== null),
   }

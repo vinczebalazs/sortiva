@@ -1,6 +1,6 @@
 import { t as defaultTranslate, type Translate } from '../strings'
 import { formatDate } from '../opportunities/list'
-import { chartGeometry, measureTotal, MARKER_KINDS, type ChartBox } from './chart'
+import { chartGeometry, labelAnchor, measureTotal, MARKER_KINDS, type ChartBox } from './chart'
 import { formatCount, markerLabel } from './performance'
 import type { PerformanceDay, PerformanceMarker } from './types'
 
@@ -32,6 +32,8 @@ const DEFAULT_BOX: ChartBox = { width: 880, height: 96 }
 /** Room under the two panels for the shared date row and the marker labels. */
 const AXIS_HEIGHT = 46
 const PANEL_GAP = 34
+/** Room above the first panel for its own title, which sits over the plot. */
+const TOP_PAD = 18
 
 export interface PerformanceChartProps {
   readonly series: readonly PerformanceDay[]
@@ -49,8 +51,15 @@ export function PerformanceChart({
   box = DEFAULT_BOX,
   compact = false,
 }: PerformanceChartProps) {
-  const geometry = chartGeometry(series, markers, box)
-  const totalHeight = box.height * 2 + PANEL_GAP + AXIS_HEIGHT
+  // Text cannot be measured without a browser, so the width of a label is
+  // estimated from its own words at the size they are set. It only has to be
+  // close: it decides whether two labels would collide, not where they sit.
+  const geometry = chartGeometry(series, markers, box, (kind) => markerLabel(kind, t).length * 5.6)
+  // The compact copy hides the panel titles and the marker labels, so it needs
+  // neither the room above nor the second row of text below.
+  const topPad = compact ? 4 : TOP_PAD
+  const axisHeight = compact ? 22 : AXIS_HEIGHT
+  const totalHeight = topPad + box.height * 2 + PANEL_GAP + axisHeight
   const missingDays = geometry.panels[0]?.missingDays ?? 0
 
   if (!geometry.hasData) {
@@ -68,10 +77,9 @@ export function PerformanceChart({
         role="img"
         aria-label={t('performance.chart.alt')}
         className="sortiva-perf__svg"
-        preserveAspectRatio="none"
       >
         {geometry.panels.map((panel, index) => {
-          const top = index * (box.height + PANEL_GAP)
+          const top = topPad + index * (box.height + PANEL_GAP)
           return (
             <g key={panel.measure} transform={`translate(0 ${top})`} data-perf-panel={panel.measure}>
               {panel.ticks.map((tick) => (
@@ -138,9 +146,15 @@ export function PerformanceChart({
           )
         })}
 
-        <g transform={`translate(0 ${box.height * 2 + PANEL_GAP})`}>
+        <g transform={`translate(0 ${topPad + box.height * 2 + PANEL_GAP})`}>
           {geometry.dateTicks.map((tick) => (
-            <text key={tick.date} x={tick.x} y={14} className="sortiva-perf__date" textAnchor="middle">
+            <text
+              key={tick.date}
+              x={tick.x}
+              y={14}
+              className="sortiva-perf__date"
+              textAnchor={labelAnchor(tick.x, box.width)}
+            >
               {formatDate(tick.date)}
             </text>
           ))}
@@ -153,7 +167,7 @@ export function PerformanceChart({
                     key={`${marker.kind}-${marker.date}`}
                     x={marker.x}
                     y={32}
-                    textAnchor="middle"
+                    textAnchor={labelAnchor(marker.x, box.width)}
                     className="sortiva-perf__marker-label"
                     data-perf-marker-label={marker.kind}
                   >
@@ -167,7 +181,7 @@ export function PerformanceChart({
 
       <figcaption className="sortiva-perf__note" data-perf-lag-note>
         {t('performance.chart.lagNote')}
-        {missingDays > 0 ? ` ${t('performance.chart.gapNote', { days: missingDays })}` : ''}
+        {missingDays > 0 ? ` ${t('performance.chart.gapNote')}` : ''}
       </figcaption>
 
       <ChartTable series={series} t={t} />

@@ -281,3 +281,31 @@
   background: var(--sortiva-positive-soft);
   color: var(--sortiva-positive);
 }
+
+/* ── The family list, borrowed whole from the confirmation screen ─────────── */
+
+/*
+ * ui §7 asks for the same read-only list and the same report modal that the
+ * confirmation screen has, so Products renders that component rather than a
+ * second copy of it. What it does not inherit is that screen's page layout —
+ * there, sections are stacked in a single-column grid, which stretches an
+ * inline badge across the full width. These three rules give the borrowed
+ * section this page's card treatment and let its badges sit inline again.
+ */
+
+.sortiva-products > .sortiva-confirm__section {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 18px 20px;
+}
+
+.sortiva-products > .sortiva-confirm__section > .sortiva-confirm__badge {
+  display: inline-block;
+  width: auto;
+  margin-top: 6px;
+}
+
+.sortiva-products > .sortiva-confirm__section .sortiva-confirm__family summary {
+  padding: 10px 0;
+}

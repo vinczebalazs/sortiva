@@ -155,7 +155,7 @@ function CondensedOpportunity({
       <p className="sortiva-dash__opp-title">{opportunity.entityRef.label}</p>
       <p className="sortiva-dash__opp-evidence">{evidenceLine(opportunity.evidence, t)}</p>
       <p className="sortiva-dash__opp-kind">{entityLabel(opportunity.entityRef.kind, t)}</p>
-      <a href={`/opportunities#${opportunity.id}`}>{t('dashboard.growth.viewAll')}</a>
+      <a href={`/opportunities#${opportunity.id}`}>{t('dashboard.growth.openOne')}</a>
     </li>
   )
 }
