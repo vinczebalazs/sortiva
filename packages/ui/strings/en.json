@@ -286,6 +286,7 @@
   "email.exportUrlReminder.body.generic": "You downloaded an article a week ago and we still do not know its address on your site. Tell us, and we can start measuring how it performs.",
   "email.exportUrlReminder.cta": "Add the address",
 
+  "email.layout.brand": "SORTIVA",
   "email.layout.footerReason": "You are receiving this because you have a Sortiva account.",
   "email.layout.unsubscribe": "Stop receiving these",
   "email.layout.summaryUnsubscribe": "Stop receiving the monthly summary",

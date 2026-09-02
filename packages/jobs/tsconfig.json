@@ -1,7 +1,12 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "src"
+    "rootDir": "src",
+    // No job renders anything. The email pipeline's test reaches into the React
+    // Email renderer that the composition root hands the send worker in
+    // production, so a TSX module is inside this package's type-check graph and
+    // the compiler has to be told how to read it.
+    "jsx": "react-jsx"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

@@ -1,4 +1,4 @@
-import { handleUnsubscribe } from './handler'
+import { handleUnsubscribe } from './_lib/handler'
 
 /**
  * The one-click unsubscribe endpoint. Unauthenticated because the bulk-sender

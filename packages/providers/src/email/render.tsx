@@ -36,6 +36,7 @@ export class ReactEmailRenderer implements EmailRenderer {
   async render(content: EmailContent) {
     const subject = this.say(content.subject)
     const paragraphs = content.blocks.map((block) => this.say(block))
+    const brand = this.t('email.layout.brand')
     const footerReason = this.t('email.layout.footerReason')
     const unsubscribe = content.unsubscribeUrl
       ? {
@@ -55,6 +56,7 @@ export class ReactEmailRenderer implements EmailRenderer {
       content.templateId === 'monthly-summary' ? (
         <MonthlySummaryEmail
           previewText={this.say(content.preview)}
+          brand={brand}
           heading={this.say(content.heading)}
           paragraphs={paragraphs}
           sections={(content.sections ?? []).map((section) => ({
@@ -68,6 +70,7 @@ export class ReactEmailRenderer implements EmailRenderer {
       ) : (
         <NoticeEmail
           previewText={this.say(content.preview)}
+          brand={brand}
           heading={this.say(content.heading)}
           paragraphs={paragraphs}
           footerReason={footerReason}

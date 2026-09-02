@@ -1,5 +1,4 @@
-import { systemScope, db as defaultDb, recordWebhookEvent, type Db } from '@sortiva/db'
-import { makeEmailStore } from '@sortiva/db'
+import { makeEmailStore, makeWebhookEventStore, type Db } from '@sortiva/db'
 import {
   WebhookVerificationError,
   parseResendEvent,
@@ -66,27 +65,26 @@ export async function handleResendWebhook(
     )
   }
 
-  const database = options.database ?? defaultDb()
+  // Both ports default to the process pool when no database is handed in, which
+  // is how this file holds no database handle of its own — every query it causes
+  // runs inside `packages/db`, where the account it is for has to be named.
+  const bind = options.database ? { database: options.database } : {}
   const event = parseResendEvent(payload)
   const webhookId = request.headers.get('svix-id') ?? request.headers.get('webhook-id') ?? ''
 
   // Insert-or-ignore by the vendor's own id, then act from what we stored, so a
   // redelivery costs one refused insert rather than a second suppression.
-  const stored = await recordWebhookEvent(
-    database,
-    systemScope('a webhook is verified and stored before we know which account it concerns'),
-    {
-      webhookId,
-      source: 'resend',
-      topic: event?.type ?? 'unknown',
-      payload: (payload ?? {}) as Record<string, unknown>,
-    },
-  )
+  const stored = await makeWebhookEventStore(bind).record({
+    webhookId,
+    source: 'resend',
+    topic: event?.type ?? 'unknown',
+    payload: (payload ?? {}) as Record<string, unknown>,
+  })
   if (!stored) return Response.json({ received: true, duplicate: true })
 
   const reason = event ? suppressionReasonFor(event.type) : undefined
   if (event && reason) {
-    const store = makeEmailStore({ database })
+    const store = makeEmailStore(bind)
     // Every recipient of the delivery, because the bounce is about the address
     // rather than about the message.
     for (const address of event.recipients) await store.suppress(address, reason)

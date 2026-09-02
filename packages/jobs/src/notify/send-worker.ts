@@ -47,7 +47,12 @@ export interface EmailWorkerDeps {
   readonly getPool: () => pg.Pool
   readonly provider: EmailProvider
   readonly renderer: EmailRenderer
-  readonly assembler?: AssemblerDeps
+  /**
+   * The database handle is deliberately not among these: it comes from `getDb`
+   * above, so a worker cannot end up assembling an email from one database and
+   * settling its row in another.
+   */
+  readonly assembler?: Omit<AssemblerDeps, 'getDb'>
   readonly logger?: Logger
   readonly now?: () => Date
   readonly random?: () => number

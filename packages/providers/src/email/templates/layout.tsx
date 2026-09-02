@@ -55,6 +55,8 @@ const FONT_STACK =
 
 export interface LayoutProps {
   readonly previewText: string
+  /** The wordmark. A prop like everything else: this file holds no word a merchant reads. */
+  readonly brand: string
   readonly heading: string
   readonly footerReason: string
   readonly unsubscribe?: { readonly label: string; readonly url: string }
@@ -69,7 +71,7 @@ export function Layout(props: LayoutProps) {
       <Preview>{props.previewText}</Preview>
       <Body style={{ ...styles.body, fontFamily: FONT_STACK }}>
         <Container style={styles.container}>
-          <Text style={styles.brand}>SORTIVA</Text>
+          <Text style={styles.brand}>{props.brand}</Text>
           <Text style={styles.heading}>{props.heading}</Text>
           {props.children}
           <Section>

@@ -18,6 +18,7 @@ export interface SummarySection {
 
 export interface MonthlySummaryEmailProps {
   readonly previewText: string
+  readonly brand: string
   readonly heading: string
   readonly paragraphs: readonly string[]
   readonly sections: readonly SummarySection[]
@@ -30,6 +31,7 @@ export function MonthlySummaryEmail(props: MonthlySummaryEmailProps) {
   return (
     <Layout
       previewText={props.previewText}
+      brand={props.brand}
       heading={props.heading}
       footerReason={props.footerReason}
       {...(props.unsubscribe ? { unsubscribe: props.unsubscribe } : {})}

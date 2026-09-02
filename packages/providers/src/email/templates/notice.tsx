@@ -11,6 +11,7 @@ import { Cta, Layout, Paragraph } from './layout'
 
 export interface NoticeEmailProps {
   readonly previewText: string
+  readonly brand: string
   readonly heading: string
   readonly paragraphs: readonly string[]
   readonly cta?: { readonly label: string; readonly url: string }
@@ -22,6 +23,7 @@ export function NoticeEmail(props: NoticeEmailProps) {
   return (
     <Layout
       previewText={props.previewText}
+      brand={props.brand}
       heading={props.heading}
       footerReason={props.footerReason}
       {...(props.unsubscribe ? { unsubscribe: props.unsubscribe } : {})}
