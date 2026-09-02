@@ -491,6 +491,58 @@ defaults:
       rate_max: 0.20
       window_hours: 1
 
+  # ── Keyword & competitor discovery ────────────────────────────────────────
+  # What onboarding buys from the search-data vendor, and how much of it we
+  # keep. Every number here is either a purchase decision or a rule about which
+  # domains a merchant is shown, so none of them belongs in the discovery code.
+  discovery:
+    seed_keywords:
+      # The most candidate search terms we will price, however many the model
+      # proposes. The range the prompt *asks* for lives in the prompt's own
+      # versioned text, because a prompt whose words change with configuration
+      # is a prompt whose stamped version no longer says what the model was
+      # asked. This is the ceiling we enforce on the answer, and it is a spend
+      # ceiling: every surviving term is priced.
+      candidates_max: 25
+      # How many of the enriched candidates survive as the draft keyword set,
+      # keeping the highest search volumes. A term dropped here is one the
+      # merchant never sees and nothing is ever written about; raise it and
+      # onboarding proposes long-tail terms nobody searches for.
+      keep_max: 15
+    competitors:
+      # How deep into the results page a domain still counts as ranking. Ten is
+      # the first page: below it a merchant would not recognise the domain as
+      # competing with them, and the vendor charges the same for the read
+      # either way.
+      serp_position_max: 10
+      # How many of the store's own confirmed search terms a domain has to
+      # appear for before we will name it. One shared result is a coincidence;
+      # this many is a pattern. Lower it and merchants are shown publishers and
+      # one-off blogs as rivals; raise it and a genuine competitor who happens
+      # to rank for a different slice of the market is never mentioned.
+      appears_in_keywords_min: 3
+      # The most competitors onboarding may propose. The hard ceiling of five
+      # per account is a product invariant enforced in the API and the
+      # database, not a number to tune here; this is how many of those five
+      # slots we fill on the merchant's behalf before they have looked.
+      auto_proposed_max: 5
+      # UNSIGNED. How many of the draft keywords we buy a results page for. Each
+      # one is a paid read, so this is the single biggest cost of onboarding a
+      # store. Lower it and competitor detection sees a narrower slice of the
+      # market; raise it and every new store costs proportionally more.
+      seed_serps_max: 10
+    cache:
+      # How long a keyword's search volume is trusted before we buy it again.
+      # Search volumes are monthly averages and do not move daily, and the
+      # vendor bills per request. This is the product's memory of what a term
+      # is worth; the 24-hour request cache underneath it exists only to make a
+      # retry free.
+      keyword_metrics_ttl_days: 30
+      # How long a stored results page is reused. Rankings move within a week,
+      # and a decision made on a stale results page is the one failure the
+      # degradation rules refuse outright — so this is short on purpose.
+      serp_snapshot_ttl_days: 7
+
   # ── Search Console sync ────────────────────────────────────────────────────
   # How much Search Console history we hold and how often we go back for it.
   # These decide what detection has to work with, so they belong with the other

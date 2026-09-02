@@ -22,6 +22,7 @@ export {
   type ClustersConfig,
   type CtrCurveConfig,
   type DeepPartial,
+  type DiscoveryConfig,
   type GatesConfig,
   type LearningConfig,
   type PatternDimension,

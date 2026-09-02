@@ -222,6 +222,29 @@ export interface LearningConfig {
  * The window a signal looks at is only as good as the data behind it, which is
  * why these sit with the detection numbers rather than inside the sync job.
  */
+/**
+ * What onboarding buys from the search-data vendor and how long we keep it:
+ * how many search terms the model proposes, how many survive enrichment, which
+ * domains count as ranking against the store, and how long a bought answer is
+ * trusted before it is bought again.
+ */
+export interface DiscoveryConfig {
+  seed_keywords: {
+    candidates_max: number
+    keep_max: number
+  }
+  competitors: {
+    serp_position_max: number
+    appears_in_keywords_min: number
+    auto_proposed_max: number
+    seed_serps_max: number
+  }
+  cache: {
+    keyword_metrics_ttl_days: number
+    serp_snapshot_ttl_days: number
+  }
+}
+
 export interface SearchConsoleConfig {
   backfill_months: number
   backfill_chunk_days: number
@@ -285,6 +308,7 @@ export interface RulesLayer {
   learning: LearningConfig
   budgets: BudgetsConfig
   auto_trips: AutoTripsConfig
+  discovery: DiscoveryConfig
   search_console: SearchConsoleConfig
   clusters: ClustersConfig
   ctr_curve: CtrCurveConfig

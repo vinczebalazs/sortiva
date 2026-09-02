@@ -6,6 +6,8 @@ import type {
   NotificationEmitter,
   PersonaPrompt,
   PosthogCapture,
+  SeedKeywordsPrompt,
+  SeoDataProvider,
   ShopifyOAuthProvider,
   StoreConnection,
   StoreDomainStore,
@@ -91,6 +93,15 @@ export interface IngestionDeps {
   readonly distillPrompt?: DistillPrompt
   /** The versioned persona prompt, loaded from `prompts/persona.v<N>.md` by the process. */
   readonly personaPrompt?: PersonaPrompt
+  /** The versioned seed-keyword prompt, loaded from `prompts/seeds.v<N>.md` by the process, already rendered with the candidate range. */
+  readonly seedsPrompt?: SeedKeywordsPrompt
+  /**
+   * The single wrapper around the paid search-data vendor. Optional only
+   * because most steps buy nothing; keyword discovery fails as a terminal error
+   * without it rather than quietly proposing a store no keywords and no
+   * competitors, which would look like a store with no market.
+   */
+  readonly seo?: SeoDataProvider
   readonly notifications?: NotificationEmitter
   /**
    * Server-side analytics. Optional so a step runs without telemetry: a missing

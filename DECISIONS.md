@@ -14,6 +14,86 @@ Class (filled by audit): a: fine as-is | b: promote to spec | c: contradicts spe
 
 ---
 
+## 2026-09-03 — T2.6 — Which search-data provider runs is decided by an explicit switch, never inferred from missing credentials
+Decision: `seoProvider()` returns the test double when `SEO_PROVIDER_MODE=mock` and the live provider otherwise. Missing credentials do not select the double; the live provider fails loudly instead.
+Why: the Shopify OAuth client in the same file *does* fall back on missing credentials, and copying that was the first version of this. The two failures are not alike. A Shopify client with no credentials cannot get past a consent screen, so the stand-in announces itself. A search vendor with no credentials would quietly report that every store has no search demand and no competitors — a plausible-looking answer that is wrong, and the merchant would confirm it. That is the failure invariant 22 exists to prevent. `.env.example` already carries `SEO_PROVIDER_MODE=mock` and the env sync check requires `.env` to declare it, so local and staging are covered by the switch rather than by an accident of configuration.
+Nearest spec: tech §5 (real vendor spend in production only); main §14.4 (degrade to pause, never to a worse answer).
+
+## 2026-09-03 — T2.6 — The search-data step is the first thing in the product to read the enrichment pause switch, and it stops rather than degrades
+Decision: `keywords_competitors` and the hand-typed-term enrichment job both check the global `pause_enrichment` switch before any vendor call, and treat it as a *retryable* failure — the store waits and continues rather than being abandoned.
+Why: invariant 17 requires spend caps enforced from our own counters at dequeue, and the sweep that raises this switch has existed since `T8.0` with **nothing reading it** — this is the first card that spends with that vendor, so it is the first that can. Retryable rather than terminal because the switch is an operator's or the sweep's judgement that today has cost enough, not a fact about this store; the merchant sees a delayed step. Degrading — a shallower results page, an older snapshot — was rejected outright: main §14.4 says pause, never lower quality. **Note the caps are dormant** because the sweep's schedule is off pending founder question 4; the enforcement point is built and tested, and switching the schedule on is all that is needed.
+Nearest spec: main §14.5 (the caps), §14.4 (degrade to pause); CLAUDE.md invariants 17 and 22.
+
+## 2026-09-03 — T2.6 — Three caching layers, deliberately separate, and only the innermost is about crashes
+Decision: a term's search volume is trusted for 30 days (`keywords.enriched_at`); a results page is reused for 7 days (`serp_snapshots.expires_at`, checked inside the query so a stale one cannot be read by accident); underneath both, the vendor wrapper's 24-hour request cache stores every raw response *before* anything parses it.
+Why: main §12.1 gives the 30-day and 7-day lifetimes and main §14.3.6 gives the 24-hour one and says it "sits under" them, which DECISIONS 2026-08-31 T0.5 read as three layers with different jobs — and this card is where that reading is cashed. The two outer ones are the product's memory of what a term is worth and who ranks; the inner one exists so a crash between the vendor answering and our writing the answer down does not pay twice. Proven separately: a re-execution of the finished step buys nothing because of the outer two, and a step killed part-way through the results pages resumes without re-buying what it had.
+Nearest spec: main §12.1, §14.3.6.
+
+## 2026-09-03 — T2.6 — A stored results page is keyed by our own canonical string, not by the vendor's request hash
+Decision: `serp_snapshots.cache_key` is `serp:<language>-<COUNTRY>:<depth>:<normalised query>`, computed in `packages/core`.
+Why: main §13 gives the column and not its contents. Reusing the vendor's request hash would tie the product's seven-day memory to one vendor's endpoint naming, and would mean swapping the vendor invalidated every stored page. Our own key also reads: a person looking at the table can see what a row is about. It carries no account, which is the point — two stores in the same market asking about one search share one purchase.
+Nearest spec: main §12.1 (the vendor is swappable behind an interface), §13 `serp_snapshots`.
+
+## 2026-09-03 — T2.6 — The range of terms the model is asked for lives in the prompt, and the ceiling we pay for lives in the config
+Decision: `seeds.v1.md` asks for 15–25 candidates in its own text. `discovery.seed_keywords.candidates_max` in `packages/rules` is the ceiling applied to the *answer* — the most terms we will price.
+Why: main §6.6 says "~15–25 candidate terms". Rendering those two numbers into the prompt from config was the first design and was wrong for the reason `packages/llm/prompts/README.md` already gives: a prompt whose words change with configuration is a prompt whose stamped `prompt_version` no longer says what the model was asked. So the ask is versioned with the prompt, and the only number that decides spending is in the config layer where invariant 9 requires it. Changing what is asked for is a new prompt version; changing what we pay for is a config edit.
+Nearest spec: main §6.6; main §14.2 / `packages/llm/prompts/README.md` (versions are never edited in place).
+
+## 2026-09-03 — T2.6 — The route handlers reach the database through a store port in `packages/db`, not by importing the handle
+Decision: `makeKeywordStore()` joins `makeFamilyStore()` and the other store factories; the profile handlers take it as a dependency.
+Why: the lint rule forbidding a raw database handle outside `packages/db` carries an explicit instruction not to extend its exemption list — "a new file that needs it belongs in packages/db in the first place". The port keeps the handle inside the package that owns it, keeps every method demanding an `AccountScope`, and lets the route tests run against an isolated database with no mocking. Its one account-less method, which reads stored results pages, takes a system scope with a written reason for the same purpose the existing ones do.
+Nearest spec: CLAUDE.md code-structure rules; DECISIONS 2026-08-31 R1/R3 (the exemption list and its end).
+
+## 2026-09-03 — T2.6 — The hand-typed-term lane is a job priority, not a synchronous call
+Decision: adding a keyword writes the row unpriced, queues `keyword_enrich` at Graphile Worker priority −10 (everything else in the product queues at the default 0, and lower runs first), and answers immediately. The job re-checks, under the account's lock, whether the term still needs pricing.
+Why: main §12.1 calls the confirmation screen's hand-added enrichment "the one latency-sensitive case" and says it "still goes through the job queue but with a high-priority lane, and the UI shows a per-chip loading state rather than blocking". Priority is what makes it feel immediate without putting a paid vendor call in a request path, where a double-click would pay twice. The re-check exists because the queue is at-least-once and the gap between the click and the job is exactly where the term gets priced by onboarding, or removed again.
+Nearest spec: main §12.1, §14.3 (at-least-once, effectively-once).
+
+## 2026-09-03 — T2.6 — The walk's end marker moves to `gsc_connect`
+Decision: `ingestion.test.ts` now asserts a resumed run executes through `keywords_competitors` and stops at `gsc_connect`, which has no handler until `T3.1`'s onboarding half.
+Why: each card in this lane has moved this one line to the next unbuilt step, and this is that move. `T2.7` moves it again — to `awaiting_confirmation` — noting that `awaiting_confirmation` deliberately does not depend on `gsc_connect`, so a store that skips Search Console is not stalled.
+Nearest spec: main §14.3.1 (the step list and its dependencies); DECISIONS 2026-09-02 T2.0 (the dependency graph).
+
+## 2026-09-03 — T2.6 — Onboarding proposes a draft competitor list, and the domains inside a stored results page still never become competitors on their own
+Decision: keyword discovery writes up to five `competitors` rows marked as ours (`source = 'auto'`) during onboarding, before the merchant has looked. The per-search cast of whoever occupies a results page stays in `serp_snapshots` and is never written anywhere else; what a merchant sees of it is a *count* ("ranks alongside you in 8 top searches") with an Add button that is their click.
+Why: main §6.6 asks for exactly this — "Take the top candidates as the draft competitor list", "Auto-detection proposes at most 5" — and main §6.8 tells the merchant to "remove any auto-detected entry", with auto and manual rows "visually distinguished (`source` badge)". The confirmation screen already built (`T9.3`) renders both: a list with auto/manual badges and, underneath it, suggestions with an Add button. CLAUDE.md invariant 5 reads more broadly than that ("SERP ranking domains … never enter `competitors`"), but main §7.2.1, which the invariant compresses, defines its terms: a **business competitor** is "auto-proposed at ingestion, hard cap 5", while a **SERP ranking domain** is the per-query, uncapped, non-editable set that lives in snapshots. Both readings were checked against the screens and only this one leaves `source = 'auto'` meaning anything. **Flagged for the integrator** because it is the one place this card could be read as bending an invariant: the structural guarantee actually implemented is that nothing reads a snapshot row into `competitors` — the only writer is `addCompetitor(db, scope, {domain, source})`, every caller of it passes a domain that has been through the blocklist, own-domain and cap filters, and the suggestion reader returns values and performs no writes at all.
+Nearest spec: main §6.6, §6.8, §7.2.1; CLAUDE.md invariant 5.
+
+## 2026-09-03 — T2.6 — A marketplace refusal answers 422, not 409, because the screen that consumes it was built that way
+Decision: adding a competitor that is on the marketplace blocklist without an override answers HTTP 422 with code `competitor_on_blocklist`. `CONFLICT_CODES` and the route contract's `conflicts` list are untouched.
+Why: `T9.3`'s add control treats a 409 as one of two specific messages (own domain, cap reached) and **anything else** as the blocklist, offering "Add anyway" back. A third 409 code would therefore have rendered as "you already have five", which is wrong and unhelpful; a non-409 renders correctly with no frontend change. It also avoids widening `CONFLICT_CODES`, which is a frozen contract enum the UI maps case by case and which is documented as the set of codes *a lost race* returns — a blocklist refusal is not a lost race. The code is still in the body, so a future client can be specific about it.
+Nearest spec: main §6.8 — "cannot be on the marketplace blocklist without an 'add anyway' override"; DECISIONS 2026-09-02 T9.3 (how the screen reads the refusal).
+
+## 2026-09-03 — T2.6 — The marketplace blocklist is a hand-maintained list in core, not a threshold in `packages/rules`
+Decision: `MARKETPLACE_BLOCKLIST` lives in `packages/core/src/keywords/blocklist.ts`. Adding an entry is a code change.
+Why: `packages/rules` holds the numbers that decide what the product writes about, and invariant 9 is about numeric thresholds. This is a list of names, and the same argument the vendor price map made (DECISIONS 2026-08-31 T0.5) applies: it is an external fact we record rather than a decision we tune. Matching is on a domain boundary — exactly, or as a subdomain — so `smile.amazon.com` is caught and `notamazon.com` is not. Amazon and eBay are listed under each national domain because those are separate registrable domains and a German store's results page is full of `amazon.de`.
+Nearest spec: main §6.6 — "filter out marketplaces/aggregators (Amazon, Etsy, eBay, Wikipedia, Pinterest, YouTube — maintain a blocklist)".
+
+## 2026-09-03 — T2.6 — The numbers behind keyword and competitor discovery go into `packages/rules`, which is another lane's package
+Decision: a new `discovery:` block in `signals.config.yaml` (plus its schema, its type and the committed snapshot) holds the seed candidate range, how many keywords survive, how deep a domain counts as ranking, how many searches it must appear for, how many competitors onboarding may propose, how many results pages onboarding buys, and the 30-day / 7-day cache lifetimes.
+Why: invariant 9 says no threshold literal lives outside `packages/rules`, and two of these are named as config by the spec itself — main §7.2.1 sends "top 10 for ≥ 3 keywords" to §7.10 explicitly. Comparing a position against a literal is also a lint error outside that package, so there was no other home for them. **For the integrator:** `packages/rules` is Lane C's after M0, and `rules_version` is a hash of the file's bytes — so this card changes `rules_version` for every lane, which is the intended behaviour of that mechanism (any config change does) but is worth knowing at merge time. One block was added and nothing existing was touched.
+Nearest spec: main §7.10 (the config layer), §7.2.1 (sends its own threshold there), §6.6, §12.1; build plan §3 (lane ownership).
+
+## 2026-09-03 — T2.6 — `seed_serps_max` is UNSIGNED and is the single largest cost of onboarding a store
+Decision: onboarding buys a results page for at most ten of the store's draft keywords.
+Why: main §6.6 says to "query DataForSEO SERPs for the top seed keywords" and names no number, and this is the one number on this card that is straight spend: ten paid reads per store onboarded, plus one priced keyword-metrics read. Ten is enough for a domain appearing for three of them to be a pattern rather than a coincidence, which is the threshold §7.2.1 sets. Marked UNSIGNED in the config with what raising and lowering it costs.
+Nearest spec: main §6.6, §12.1 (billing per request).
+
+## 2026-09-03 — T2.6 — Onboarding's draft competitors and the standing suggestions are computed by one function, not two
+Decision: `rankCompetitorCandidates` takes the ranked domains, the store's own domain, the domains already on the list, and the two thresholds, and returns candidates. Onboarding calls it to fill the draft list; the confirmation screen's suggestions call it against the merchant's *confirmed* terms. Neither can see a domain the other would hide.
+Why: the same discipline main §7.7 imposes on the existing-target check, for the same reason — two similar functions drift, and here the drift would be visible as a marketplace appearing in one place and not the other, or the store being offered itself. Concretely it means the blocklist, the own-domain exclusion (including subdomains) and the position ceiling are applied once.
+Nearest spec: main §6.6 (the draft list), §7.2.1 (the standing suggestions).
+
+## 2026-09-03 — T2.6 — Whether a hand-typed competitor domain resolves is checked where it can be, and never blocks the merchant when it cannot
+Decision: `validateCompetitorDomain` takes `resolves?: boolean`. `false` refuses the domain; `undefined` — nobody looked, or the lookup failed — proceeds. The DNS lookup itself is an optional dependency of the route, with a short timeout.
+Why: main §6.8 asks for a competitor to be "validated as a real resolving domain". The failure modes are not symmetric: refusing a typo saves a merchant a wasted slot, while refusing a real competitor because our resolver had a bad second is us breaking their form for a reason they cannot see or fix. A domain that resolves today can stop tomorrow anyway, so this is a courtesy against typos rather than a guarantee, and it is written to behave like one.
+Nearest spec: main §6.8.
+
+## 2026-09-03 — T2.6 — An unpriced search term is kept and sorted last, not discarded
+Decision: a candidate the vendor returns no search volume for stays in the draft keyword set, ordered below every priced term, and is cut only if better-evidenced terms fill the set first.
+Why: main §6.6 says "the strongest ~10–15 are kept" without saying what happens to a term with no reading. No volume usually means a phrase too specific for the vendor's panel rather than a phrase nobody searches — which is exactly the kind of term a niche store's customers actually type — and the merchant edits this list before it means anything. The draft set is also deliberately not filtered against the demand floor in `packages/rules`: that floor decides whether a topic is worth an article, a later and far more expensive question.
+Nearest spec: main §6.6; main §7.3 (the demand floor, which is a different decision).
+
 (entries below, newest first)
 
 ## 2026-09-02 — T8.4 — The two rate-based brakes are built, tested, and cannot see, and they say so rather than reading empty as healthy

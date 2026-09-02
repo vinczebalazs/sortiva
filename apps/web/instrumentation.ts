@@ -70,11 +70,16 @@ export async function register() {
   // job, not the entry point's.
   const { registerIngestionTasks } = await import('@sortiva/jobs/ingestion/dispatch')
   const { registerReminderTasks } = await import('@sortiva/jobs/ingestion/reminder')
+  // Pricing a search term the merchant typed. Its own task rather than part of
+  // onboarding, because it is queued from a form long after onboarding is over
+  // and runs ahead of the sweeps so the chip on their screen fills in.
+  const { registerKeywordEnrichTask } = await import('@sortiva/jobs/ingestion/enrich')
   const { adminClient, ingestionDeps, notificationEmitter } = await import(
     './app/api/shopify/_lib/config'
   )
   registerIngestionTasks(ingestionDeps)
   registerReminderTasks(db, notificationEmitter)
+  registerKeywordEnrichTask(ingestionDeps)
 
   // Search Console: the nightly pull of each connected store's clicks,
   // impressions and positions, and the one-time import of its history. Handed

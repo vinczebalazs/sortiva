@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://sortiva.local/schemas/signals.config.schema.json",
   "title": "signals.config.yaml",
-  "description": "main \u00a77.10 \u2014 one schema-validated document holding every threshold. Validation runs at load; an invalid document fails startup.",
+  "description": "main §7.10 — one schema-validated document holding every threshold. Validation runs at load; an invalid document fails startup.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -19,7 +19,7 @@
     },
     "locales": {
       "type": "object",
-      "description": "main \u00a77.10 \u2014 per-locale override layer. Keys are BCP-47 language subtags or full tags.",
+      "description": "main §7.10 — per-locale override layer. Keys are BCP-47 language subtags or full tags.",
       "propertyNames": {
         "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$"
       },
@@ -1080,6 +1080,7 @@
         "learning",
         "budgets",
         "auto_trips",
+        "discovery",
         "search_console",
         "clusters",
         "ctr_curve"
@@ -1102,6 +1103,9 @@
         },
         "auto_trips": {
           "$ref": "#/definitions/auto_trips"
+        },
+        "discovery": {
+          "$ref": "#/definitions/discovery"
         },
         "search_console": {
           "$ref": "#/definitions/search_console"
@@ -1267,6 +1271,89 @@
             "$ref": "#/definitions/ratio"
           },
           "minProperties": 2
+        }
+      }
+    },
+    "discovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "seed_keywords",
+        "competitors",
+        "cache"
+      ],
+      "properties": {
+        "seed_keywords": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "candidates_max",
+            "keep_max"
+          ],
+          "properties": {
+            "candidates_max": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Most candidate terms the model is asked for."
+            },
+            "keep_max": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "How many enriched candidates survive as the draft keyword set."
+            }
+          }
+        },
+        "competitors": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "serp_position_max",
+            "appears_in_keywords_min",
+            "auto_proposed_max",
+            "seed_serps_max"
+          ],
+          "properties": {
+            "serp_position_max": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "How deep into the results page a domain still counts as ranking."
+            },
+            "appears_in_keywords_min": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "How many of the store’s search terms a domain must appear for before it is named."
+            },
+            "auto_proposed_max": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "The most competitors onboarding may propose."
+            },
+            "seed_serps_max": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "How many draft keywords we buy a results page for."
+            }
+          }
+        },
+        "cache": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "keyword_metrics_ttl_days",
+            "serp_snapshot_ttl_days"
+          ],
+          "properties": {
+            "keyword_metrics_ttl_days": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "How long a keyword’s search volume is trusted before it is bought again."
+            },
+            "serp_snapshot_ttl_days": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "How long a stored results page is reused."
+            }
+          }
         }
       }
     }

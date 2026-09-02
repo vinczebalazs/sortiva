@@ -12,6 +12,7 @@ import { catalogSyncStep } from './catalog'
 import type { IngestionDeps } from './deps'
 import { distillStep } from './distill'
 import { familyGroupStep } from './families'
+import { keywordsCompetitorsStep } from './keywords'
 import { personaStep } from './persona'
 
 /**
@@ -161,6 +162,7 @@ export const INGESTION_STEPS: Partial<Record<JobStepName, StepDefinition>> = {
   distill: distillStep,
   family_group: familyGroupStep,
   persona: personaStep,
+  keywords_competitors: keywordsCompetitorsStep,
 }
 
 async function detect(deps: IngestionDeps, domain: string): Promise<PlatformDetection> {
