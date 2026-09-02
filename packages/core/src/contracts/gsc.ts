@@ -100,4 +100,12 @@ export interface GscProvider {
     accessToken: string,
     request: GscSearchAnalyticsRequest,
   ): Promise<GscSearchAnalyticsPage>
+  /**
+   * Hands the grant back to Google, so a deleted account leaves nothing listed
+   * on the merchant's own Google security page.
+   *
+   * A token Google has already forgotten is not an error, so this is safe to
+   * call twice.
+   */
+  revoke(token: string): Promise<void>
 }

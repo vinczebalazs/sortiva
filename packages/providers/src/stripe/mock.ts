@@ -37,6 +37,9 @@ export class MockStripeProvider implements StripeBillingProvider {
   private readonly prices = new Map<string, RemotePrice>()
   private nextFailure: Error | undefined
 
+  /** Every subscription id `cancelSubscription` was asked to end, in order. */
+  readonly cancelled: string[] = []
+
   constructor(readonly webhookSecret = 'whsec_mock') {}
 
   /** Seeds what `fetchSubscription` will return — the reconciliation's input. */
@@ -140,6 +143,16 @@ export class MockStripeProvider implements StripeBillingProvider {
   async fetchSubscription(subscriptionId: string): Promise<RemoteSubscription | null> {
     this.throwIfPrimed()
     return this.subscriptions.get(subscriptionId) ?? null
+  }
+
+  /**
+   * Records the cancellation and drops the subscription, so a second call is the
+   * no-op the real client's not-found branch makes it.
+   */
+  async cancelSubscription(subscriptionId: string): Promise<void> {
+    this.throwIfPrimed()
+    this.cancelled.push(subscriptionId)
+    this.subscriptions.delete(subscriptionId)
   }
 
   /**

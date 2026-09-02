@@ -113,6 +113,21 @@ export class StripeProvider implements StripeBillingProvider {
     return toRemoteSubscription(subscription)
   }
 
+  /**
+   * Ends the subscription now. A subscription Stripe has already cancelled — or
+   * has never heard of — is treated as done rather than as a failure, so the
+   * deletion job can be retried without a second attempt failing on the success
+   * of the first.
+   */
+  async cancelSubscription(subscriptionId: string): Promise<void> {
+    try {
+      await this.client.subscriptions.cancel(subscriptionId)
+    } catch (error) {
+      if (isNotFound(error)) return
+      throw new StripeCallFailed('subscription cancel', error)
+    }
+  }
+
   async fetchPrices(priceIds: readonly string[]): Promise<readonly RemotePrice[]> {
     const found = await Promise.all(
       priceIds.map(async (priceId) => {

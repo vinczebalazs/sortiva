@@ -171,3 +171,39 @@ describe('reading the report', () => {
     ])
   })
 })
+
+describe('handing the grant back', () => {
+  it('posts the token to Google’s revoke endpoint', async () => {
+    const calls: { url: string; body: string }[] = []
+    const provider = new GscOAuthProvider({
+      ...credentials,
+      fetchImpl: async (input, init) => {
+        calls.push({ url: String(input), body: String(init?.body ?? '') })
+        return new Response('', { status: 200 })
+      },
+    })
+    await provider.revoke('refresh-token')
+    expect(calls).toHaveLength(1)
+    expect(calls[0]!.url).toBe('https://oauth2.googleapis.com/revoke')
+    expect(new URLSearchParams(calls[0]!.body).get('token')).toBe('refresh-token')
+  })
+
+  it('treats a token Google has already forgotten as done', async () => {
+    // Google answers 400 for an unknown token. The grant is gone, which is the
+    // outcome asked for — and it is what makes the deletion job safe to retry.
+    const provider = new GscOAuthProvider({
+      ...credentials,
+      fetchImpl: async () => new Response('{"error":"invalid_token"}', { status: 400 }),
+    })
+    await expect(provider.revoke('already-gone')).resolves.toBeUndefined()
+  })
+
+  it('raises a retryable failure when Google is broken', async () => {
+    const provider = new GscOAuthProvider({
+      ...credentials,
+      fetchImpl: async () => new Response('', { status: 503 }),
+    })
+    await expect(provider.revoke('token')).rejects.toBeInstanceOf(GscRequestFailure)
+    await expect(provider.revoke('token')).rejects.toMatchObject({ retryable: true })
+  })
+})

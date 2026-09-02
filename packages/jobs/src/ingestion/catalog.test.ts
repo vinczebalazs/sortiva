@@ -146,7 +146,7 @@ function deps(admin: ShopifyListReader, today = '2026-06-20T03:00:00Z'): Ingesti
     db: harness.db,
     pool: harness.pool,
     fetcher: { async fetch() { throw new Error('the catalogue sync makes no page fetches') } },
-    shopify: { authorizeUrl: () => '', verifyCallbackSignature: () => true, exchangeCode: async () => ({ accessToken: '', grantedScopes: [] }) },
+    shopify: { authorizeUrl: () => '', verifyCallbackSignature: () => true, exchangeCode: async () => ({ accessToken: '', grantedScopes: [] }), revokeAccess: async () => {} },
     shop: { async getShop() { throw new Error('not used') } },
     admin,
     connections: new FakeConnections(accountId),

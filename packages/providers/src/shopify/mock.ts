@@ -18,6 +18,7 @@ import { ShopifyTokenInvalid } from './admin'
  */
 export class MockShopifyOAuthClient implements ShopifyOAuthProvider {
   readonly exchanges: { shop: string; code: string }[] = []
+  readonly revocations: { shop: string; accessToken: string }[] = []
   private grant: ShopifyAccessGrant = {
     accessToken: 'shpat_mock_token',
     grantedScopes: [...SHOPIFY_READ_SCOPES],
@@ -49,6 +50,12 @@ export class MockShopifyOAuthClient implements ShopifyOAuthProvider {
 
   verifyCallbackSignature(params: ShopifyCallbackParams): boolean {
     return verifyCallbackHmac(params.query, this.apiSecret)
+  }
+
+  /** Records the hand-back; a grant already gone is not an error. */
+  async revokeAccess(input: { shop: string; accessToken: string }): Promise<void> {
+    assertShop(input.shop)
+    this.revocations.push(input)
   }
 
   async exchangeCode(input: { shop: string; code: string }): Promise<ShopifyAccessGrant> {

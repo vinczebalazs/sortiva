@@ -93,6 +93,38 @@ export class ShopifyOAuthClient implements ShopifyOAuthProvider {
     return verifyCallbackHmac(params.query, this.apiSecret)
   }
 
+  /**
+   * Hands the grant back, which is the API equivalent of the merchant
+   * uninstalling the app themselves — the store stops sending us webhooks and
+   * the token stops working.
+   *
+   * A 401 means Shopify has already forgotten the token, which is the outcome
+   * asked for rather than a failure; treating it as success is what lets the
+   * deletion job be retried after a half-finished attempt.
+   */
+  async revokeAccess(input: { shop: string; accessToken: string }): Promise<void> {
+    assertShop(input.shop)
+    let response: Response
+    try {
+      response = await this.fetchImpl(
+        `${this.storeBaseUrl(input.shop)}/admin/api/${SHOPIFY_API_VERSION}/api_permissions/current.json`,
+        {
+          method: 'DELETE',
+          headers: { 'x-shopify-access-token': input.accessToken, accept: 'application/json' },
+        },
+      )
+    } catch (cause) {
+      throw new ShopifyOAuthFailure('Could not reach Shopify to hand the grant back.', {
+        retryable: true,
+        cause,
+      })
+    }
+    if (response.ok || response.status === 401 || response.status === 404) return
+    throw new ShopifyOAuthFailure(`Shopify refused to revoke the grant (${response.status}).`, {
+      retryable: response.status >= 500 || response.status === 429,
+    })
+  }
+
   async exchangeCode(input: { shop: string; code: string }): Promise<ShopifyAccessGrant> {
     assertShop(input.shop)
     let response: Response

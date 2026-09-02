@@ -87,6 +87,9 @@ class FakeProvider implements GscProvider {
   async searchAnalytics(): Promise<never> {
     throw new Error('not used here')
   }
+  async revoke(): Promise<void> {
+    throw new Error('not used here')
+  }
 }
 
 function setup(sites: readonly GscSite[] = []): {

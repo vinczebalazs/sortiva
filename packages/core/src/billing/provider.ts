@@ -77,6 +77,17 @@ export interface StripeBillingProvider {
   /** The nightly reconciliation's one call. Null when Stripe has no such subscription. */
   fetchSubscription(subscriptionId: string): Promise<RemoteSubscription | null>
   /**
+   * Ends the subscription now rather than at period end, for a merchant who has
+   * asked to be deleted: cancelling at period end would go on charging them for
+   * an account that no longer exists.
+   *
+   * Ordinary cancellation is not this — it happens in Stripe's own Customer
+   * Portal, runs to the end of the period already paid for, and never reaches
+   * our code. A subscription Stripe has already cancelled, or has never heard
+   * of, is not an error here, which is what lets the deletion job be retried.
+   */
+  cancelSubscription(subscriptionId: string): Promise<void>
+  /**
    * The amounts behind the two configured price ids, for the plan screen.
    *
    * Amounts live in Stripe only and the app never hardcodes one, so the only

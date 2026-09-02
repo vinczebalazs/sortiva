@@ -58,6 +58,15 @@ export interface ShopifyOAuthProvider {
    */
   verifyCallbackSignature(params: ShopifyCallbackParams): boolean
   exchangeCode(input: { shop: string; code: string }): Promise<ShopifyAccessGrant>
+  /**
+   * Hands the grant back — the API call that is the programmatic equivalent of
+   * the merchant uninstalling the app themselves.
+   *
+   * Used when an account is deleted. Shopify treats a token it has already
+   * forgotten as gone rather than as an error, so calling this twice is a
+   * no-op, which is what lets the deletion job be retried.
+   */
+  revokeAccess(input: { shop: string; accessToken: string }): Promise<void>
 }
 
 /** One store's connection as stored, with the token still encrypted. */

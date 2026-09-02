@@ -133,6 +133,7 @@ function chaosDeps(ctx: ChaosContext, store: ChaosShopify): IngestionDeps {
       authorizeUrl: () => '',
       verifyCallbackSignature: () => true,
       exchangeCode: async () => ({ accessToken: '', grantedScopes: [] }),
+      revokeAccess: async () => {},
     },
     shop: { async getShop() { throw new Error('not used') } },
     admin: store,

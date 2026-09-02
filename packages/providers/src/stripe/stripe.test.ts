@@ -97,3 +97,27 @@ describe('reading the plan prices', () => {
     await expect(stripe.fetchPrices(['price_monthly'])).rejects.toThrow('stripe unreachable')
   })
 })
+
+describe('ending a subscription because the account is being deleted', () => {
+  it('records the cancellation and forgets the subscription', async () => {
+    const stripe = new MockStripeProvider()
+    stripe.setSubscription({
+      subscriptionId: 'sub_1',
+      customerId: 'cus_1',
+      priceId: 'price_1',
+      status: 'active',
+      currentPeriodEnd: null,
+      cancelAtPeriodEnd: false,
+    })
+    await stripe.cancelSubscription('sub_1')
+    expect(stripe.cancelled).toEqual(['sub_1'])
+    expect(await stripe.fetchSubscription('sub_1')).toBeNull()
+  })
+
+  it('is a no-op the second time, so the deletion job can be retried', async () => {
+    const stripe = new MockStripeProvider()
+    await stripe.cancelSubscription('sub_gone')
+    await stripe.cancelSubscription('sub_gone')
+    expect(stripe.cancelled).toEqual(['sub_gone', 'sub_gone'])
+  })
+})

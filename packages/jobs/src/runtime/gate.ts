@@ -1,6 +1,19 @@
 import type { Db } from '@sortiva/db'
-import { isAccountFlagActive, isGlobalFlagActive, accountScope, systemScope } from '@sortiva/db'
-import { ACCOUNT_PAUSED_FLAG, ALL_WORK_PAUSED_FLAG, type Logger } from '@sortiva/core'
+import {
+  isAccountFlagActive,
+  isGlobalFlagActive,
+  accountScope,
+  readLifecycleState,
+  systemScope,
+} from '@sortiva/db'
+import {
+  ACCOUNT_PAUSED_FLAG,
+  ALL_WORK_PAUSED_FLAG,
+  billingGate,
+  lifecycleGate,
+  type LifecycleGate,
+  type Logger,
+} from '@sortiva/core'
 import { runtimeLogger } from './logging'
 
 /**
@@ -58,4 +71,37 @@ export async function mayAccountWorkRun(
     log.error('kill_switch_unreadable', { account_id: accountId, error_class: 'db_unavailable' })
     return { allowed: false, reason: 'unreadable', detail }
   }
+}
+
+/**
+ * The other half of "may this run": the three things about the *account* rather
+ * than about the product's brakes.
+ *
+ * Not paid up stops writing and never stops reading. Vacation mode stops
+ * writing while the store keeps being read and Search Console keeps reporting,
+ * so a merchant comes back to current data rather than a month-shaped hole.
+ * A requested deletion stops everything.
+ *
+ * Separate from `mayAccountWorkRun` because the two answer different questions
+ * and fail differently: a kill switch is an operator decision about the whole
+ * product, and an unreadable one means stop. This is the merchant's own state,
+ * and an account that has vanished between the dequeue and this read has
+ * nothing to run.
+ */
+export async function accountLifecycleGate(db: Db, accountId: string): Promise<LifecycleGate> {
+  const state = await readLifecycleState(db, accountScope(accountId))
+  if (!state) {
+    // No such account. Every gate closed, expressed the same way a deletion is,
+    // because to a dispatcher they are the same situation.
+    return lifecycleGate({
+      billing: billingGate(null),
+      vacationMode: false,
+      deletionRequestedAt: new Date(0),
+    })
+  }
+  return lifecycleGate({
+    billing: billingGate(state.subscription),
+    vacationMode: state.vacationMode,
+    deletionRequestedAt: state.deletedAt,
+  })
 }
