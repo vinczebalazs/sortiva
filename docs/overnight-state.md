@@ -19,9 +19,16 @@ lanes on one server cannot destroy each other's runs.
 
 | Lane | Card | Branch | Worktree | State |
 |---|---|---|---|---|
-| B — Store Intelligence | `T2.1` | `lane-b` | `../sortiva-lane-b` | building |
+| B — Store Intelligence | — | `lane-b` | `../sortiva-lane-b` | **held**; `T2.1` merged |
 | C — Search Intelligence | `T3.1` | `lane-c` | `../sortiva-lane-c` | building |
 | F — Frontend | `T9.2` | `lane-f` | `../sortiva-lane-f` | building; `T9.1` merged |
+
+**Lane B is deliberately held rather than moved to its next card.** `T2.1` is
+finished and merged, but the card it raised a question about — how a merchant's
+onboarding gets started at all — is the same question the operations card next in
+that lane depends on. `docs/overnight-run.md` says a lane that stops for a decision
+stays stopped until the founder answers. Starting the operations card first would
+build the diagnosis script and the replay action into machinery that cannot run.
 
 **`T8.0` was deliberately not launched**, though the order lists it as the fourth
 parallel card. Two reasons. It is schema wave 4, whose entire content is "the
@@ -66,6 +73,41 @@ recoverable, an uncommitted half is a guess.
 
 ## What is on `main`
 
+**`T2.1` landed on 2026-09-02** — a merchant's store can now actually be connected.
+Eleven commits, merged as `73ca6c9`. In plain terms:
+
+- We work out whether a site is a Shopify store from marks its storefront leaves —
+  a response header, theme files on Shopify's own network, the object every theme
+  defines — and only spend a second request on the product feed if none appear.
+  Anything else is parked with the agreed explanation, keeping its domain, and the
+  seven later onboarding steps are marked skipped so the progress screen stops
+  showing work that will never start.
+- **We ask for four read permissions and nothing else, and we check the answer.**
+  If Shopify hands back a grant carrying any write permission, the token is thrown
+  away rather than stored — because the app's permissions are configured in
+  Shopify's dashboard, outside this repository, so a misconfiguration there could
+  otherwise hand us the write access the screen promises we will never take.
+- The token is encrypted before it reaches the database. A test reads the raw
+  column and proves the token is not in it, and that a different key cannot read it.
+- Shopify rejecting our token and the merchant uninstalling are handled as one
+  event: the store moves to the reconnect screen, the merchant is told exactly once
+  however many times the event is processed, and everything already made for them
+  stays readable. Nothing goes to the failed-work queue, because no operator could
+  fix it — only the merchant can.
+
+**Not satisfied, and it must be before launch:** the card's dev-store handshake.
+There are no Shopify Partner credentials, so the whole exchange was run against a
+real local HTTP server standing in for Shopify instead. **This card needs re-running
+against a real dev store**, and it now joins Stripe, Turnstile, Anthropic and
+PostHog on that list.
+
+**Two things `T2.2` should inherit rather than rewrite:** the Shopify request
+signature check, which is written and tested here including that it verifies the
+exact bytes received rather than a re-serialisation; and the fact that
+`awaiting_shopify_auth` alone does not say which screen to draw — first-time
+connect versus reconnect-after-loss is decided by whether a connection row exists,
+and `shopifyConnectionState` answers it.
+
 **`T9.1` landed on 2026-09-02** — the app shell and, more consequentially, the
 string catalogue. Eight commits, merged as `6613241`.
 
@@ -88,16 +130,16 @@ What it changed that everyone inherits:
   `pnpm-lock.yaml` changed — `packages/ui` now depends on React. **That lockfile is
   the merge hazard for lanes B and C if they added a dependency.**
 
-**Gate on the merged tree**, each command run separately on 2026-09-02:
+**Gate on the merged tree** (`T9.1` + `T2.1`), each command run separately on 2026-09-02:
 
 | | |
 |---|---|
 | `pnpm lint` | clean |
 | `pnpm lint:prove` | **9** planted violations, all rejected (was 7; two are new) |
 | `pnpm typecheck` | 9 packages |
-| `pnpm test` | **1023 passing**, 65 files (was 914) |
+| `pnpm test` | **1108 passing**, 75 files (was 914 at wave 2 start) |
 | `pnpm contracts:check` | 56 routes; zod and OpenAPI agree |
-| `pnpm build` | **10 routes** (was 9 — the gallery page) |
+| `pnpm build` | compiles; the gallery page and both Shopify routes present |
 | `pnpm eval` · `pnpm chaos` | pass |
 | `pnpm env:check` | `.env` and `.env.example` both declare 36 variables |
 | `pnpm db:migrate` on an **empty** database | 41 tables, 3 guard triggers |
@@ -259,14 +301,28 @@ Lane C was told this when it was resumed.
 
 Neither blocks a lane today; both block something specific later.
 
-**1. Should scheduled jobs with working code start running now?** The worker turns
-its schedule on only when all twelve scheduled jobs have a handler, and eleven have
-none — so nothing scheduled runs at all, including the nightly billing repair and
-the five-minute spend-cap sweep, whose code is written and tested. `T2.1` writes
-the first of the eleven, so it is the first card that could change the rule. The
-integrator's recommendation put to the founder: run the entries that have handlers
-and log loudly at every start-up for the ones that do not, so a job that is not
-running says so. **Lane B will reach this.**
+**1. Nothing starts a merchant's onboarding, and there are two ways to fix it.**
+Claiming a domain writes down the nine steps of work to be done and pushes nothing
+onto the job queue — deliberately, because until `T2.1` no code existed that could
+run step one. That code exists now. What is missing is the thing that pokes it.
+
+- **(a) Switch the scheduled jobs on.** The worker refuses to run *any* recurring
+  job until *every* one of the fourteen has a handler, and eleven still do not, so
+  none run. Relaxing that to "run the ones that have handlers" is one line — and it
+  also switches on two other finished, tested, currently dormant machines: the
+  nightly billing repair, and the spend caps that pause the product before a runaway
+  bill. Wider blast radius: three things start moving, not one.
+- **(b) Have the domain claim push the job itself** the instant it commits. One
+  line, no schedule involved, nothing else changes — but that line lives in Lane A's
+  claim code, a directory `T2.1` does not own.
+
+A merchant who *does* connect their store moves forward fine; the connect flow
+resumes onboarding itself. It is only the very first step, detection immediately
+after the claim, that has nothing to trigger it.
+
+The integrator's recommendation, if (a) is chosen: run the entries that have
+handlers and log loudly at every start-up for the ones that do not, so a job that
+is not running says so. **Lane B is held until this is answered.**
 
 **2. How does a browser send an analytics event?** Raised by `T9.1`, which found the
 specs contradicting each other: the main spec says everything observable is emitted
