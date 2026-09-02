@@ -7,8 +7,19 @@ import {
   type RemoteSubscription,
 } from '@sortiva/core'
 import { stripeEventFixtures } from '@sortiva/core/billing/testing'
-import { databaseAvailable, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
+import {
+  TEST_DATABASE_URL,
+  databaseAvailable,
+  setupTestDb,
+  truncateAll,
+  type TestDb,
+} from '@sortiva/db/testing'
 import { dispatchableSteps } from '@sortiva/jobs/runtime/steps'
+import {
+  TRUNCATE_QUEUE_SQL,
+  installQueueSchema,
+  type WorkerUtils,
+} from '@sortiva/jobs/runtime/testing'
 import { MockPosthogCapture, MockStripeProvider } from '@sortiva/providers'
 import { makeAccountRouteHandler } from '../../account/_lib/handler'
 import { makeDbAccountStore } from '../../auth/_lib/provisioning'
@@ -42,17 +53,27 @@ describe.skipIf(!available)('M1 funnel: signup → plan → claim → progress',
   let harness: TestDb
   let capture: MockPosthogCapture
   let stripe: MockStripeProvider
+  let workerUtils: WorkerUtils
 
   beforeAll(async () => {
     harness = await setupTestDb('web_m1_funnel')
+    // Claiming a domain now asks the queue to start that store's onboarding,
+    // and the queue's tables are installed by the worker rather than by our
+    // migrations. In production the worker runs in the web server's own process
+    // and installs them at start-up; nothing starts one here.
+    const url = new URL(TEST_DATABASE_URL)
+    url.pathname = `/${harness.databaseName}`
+    workerUtils = await installQueueSchema(url.toString())
   })
 
   afterAll(async () => {
+    await workerUtils?.release()
     await harness.close()
   })
 
   beforeEach(async () => {
     await truncateAll(harness.pool)
+    await harness.pool.query(TRUNCATE_QUEUE_SQL)
     capture = new MockPosthogCapture()
     stripe = new MockStripeProvider()
     stripe.setSubscription({

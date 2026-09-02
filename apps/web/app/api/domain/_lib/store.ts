@@ -4,6 +4,9 @@ import { db, schema, type Database } from '@sortiva/db'
 // Graphile Worker runtime, which would drag the worker library into every
 // request bundle that touches this file. `steps.ts` imports only drizzle.
 import { createRun } from '@sortiva/jobs/runtime/steps'
+// Same reason again: `queue.ts` imports drizzle and nothing else, so asking for
+// the work does not pull the code that performs it into this request bundle.
+import { enqueueIngestionDispatch } from '@sortiva/jobs/ingestion/queue'
 import type { ClaimRequest, DomainClaimStore, StoreClaimResult } from '@sortiva/core'
 
 /**
@@ -43,12 +46,14 @@ export function makeDomainClaimStore(options: DomainClaimStoreOptions = {}): Dom
             .returning()
 
           if (inserted) {
-            // The claim and its ingestion run commit together, so a claim can
-            // never land without work behind it. Find-or-create rather than
-            // create: the run id is derived from the domain, so an account
-            // re-claiming a domain whose row was released after deletion would
-            // otherwise collide with its own old run.
-            const jobId = await findOrCreateRun(tx, request)
+            // The claim, its ingestion run and the request to start that run
+            // all commit together, so a claim can never land without work
+            // behind it and a nudge can never outlive a claim that rolled
+            // back. Find-or-create rather than create: the run id is derived
+            // from the domain, so an account re-claiming a domain whose row was
+            // released after deletion would otherwise collide with its own old
+            // run.
+            const jobId = await startRun(tx, request)
             return { kind: 'claimed', state: inserted.state, ingestionJobId: jobId }
           }
 
@@ -69,8 +74,10 @@ export function makeDomainClaimStore(options: DomainClaimStoreOptions = {}): Dom
             // Already this account's domain: a no-op, and the caller
             // redirects. The run is found rather than created; it is created
             // only if the claim somehow committed without one, which keeps the
-            // response's `ingestionJobId` answerable on every path.
-            const jobId = await findOrCreateRun(tx, request)
+            // response's `ingestionJobId` answerable on every path. It is asked
+            // to move again, which is how a merchant who re-submits the form
+            // after a stall gets going without anyone touching the database.
+            const jobId = await startRun(tx, request)
             return { kind: 'already_yours', state: byDomain.state, ingestionJobId: jobId }
           }
 
@@ -105,6 +112,25 @@ export class ClaimConflictVanished extends Error {
 }
 
 type Tx = Parameters<Parameters<Database['transaction']>[0]>[0]
+
+/**
+ * The store's onboarding run, and the request for a worker to start moving it.
+ *
+ * Both halves are needed. The run and its nine step rows are the durable record
+ * — what the progress screen draws and what a worker resumes from after a
+ * crash. The queued job is what makes anything happen at all: without it the
+ * steps sit untouched until a person does something else, which is the state
+ * the product was actually in.
+ *
+ * Queued inside the caller's transaction, deliberately: a job asking for a run
+ * that never committed would fail forever, and a claim that committed with no
+ * job leaves the merchant watching a progress screen nothing will advance.
+ */
+async function startRun(tx: Tx, request: ClaimRequest): Promise<string> {
+  const jobId = await findOrCreateRun(tx, request)
+  await enqueueIngestionDispatch(tx, { accountId: request.accountId, jobId })
+  return jobId
+}
 
 async function findOrCreateRun(tx: Tx, request: ClaimRequest): Promise<string> {
   const [existing] = await tx

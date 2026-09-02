@@ -234,10 +234,9 @@ export async function findStep(
 /**
  * The run a store's onboarding is being carried out by.
  *
- * The domain claim writes the run and its steps and pushes nothing onto the
- * queue, so this is how anything that arrives later — the OAuth callback, a
- * sweep — finds the work already waiting rather than starting a second
- * onboarding beside it.
+ * The domain claim writes the run and its steps, so everything that arrives
+ * afterwards — the queued dispatch, the OAuth callback, a sweep — finds the
+ * work already waiting here rather than starting a second onboarding beside it.
  */
 export async function findRunForAccount(
   db: Db,
