@@ -1,5 +1,6 @@
 export * from './email'
 export * from './fetch'
+export * from './gsc'
 export * from './turnstile'
 export * from './posthog'
 export * from './secrets'
