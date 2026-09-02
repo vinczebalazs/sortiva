@@ -1,4 +1,5 @@
 export * from './nav'
+export * from './account'
 export * from './banners'
 export * from './icons'
 export * from './NavRail'

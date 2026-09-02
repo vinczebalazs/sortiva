@@ -10,7 +10,8 @@
     ".": "./src/index.ts",
     "./*": "./src/*.ts",
     "./tokens.css": "./src/tokens/tokens.css",
-    "./styles/*.css": "./src/styles/*.css"
+    "./styles/*.css": "./src/styles/*.css",
+    "./shell/*": "./src/shell/*.tsx"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"

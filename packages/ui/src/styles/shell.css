@@ -282,3 +282,45 @@
     padding: 16px 16px 96px;
   }
 }
+
+/* ── The component gallery, which only exists outside production ─────────── */
+
+.sortiva-preview {
+  padding: 32px;
+  max-width: 900px;
+  font-family: var(--sortiva-font-body);
+  color: var(--sortiva-text);
+}
+
+.sortiva-preview h1,
+.sortiva-preview h2 {
+  font-family: var(--sortiva-font-heading);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.sortiva-preview h2 {
+  font-size: 15px;
+  margin: 0 0 4px;
+}
+
+.sortiva-preview__case {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 18px;
+  margin: 0 0 16px;
+}
+
+.sortiva-preview__note {
+  margin: 0 0 12px;
+  font-size: 12.5px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-preview__rails {
+  display: flex;
+  gap: 8px;
+  background: var(--sortiva-ground);
+  border-radius: var(--sortiva-radius-inner);
+}
