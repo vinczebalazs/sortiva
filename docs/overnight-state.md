@@ -36,7 +36,7 @@ placed where the build order puts it.
 | Lane | Card | Branch | Worktree | State |
 |---|---|---|---|---|
 | B — Store Intelligence | `T-OPS` | `lane-b` | `../sortiva-lane-b` | building; started clean from `main` |
-| C — Search Intelligence | `T3.2` | `lane-c` | `../sortiva-lane-c` | building; resumed from 2 commits + uncommitted work |
+| C — Search Intelligence | `T3.3` | `lane-c` | `../sortiva-lane-c` | building; `T3.2` merged |
 | F — Frontend | `T9.2` | `lane-f` | `../sortiva-lane-f` | building; resumed from 3 commits + uncommitted work |
 
 ## Picking this up again
@@ -200,14 +200,14 @@ What it changed that everyone inherits:
   `pnpm-lock.yaml` changed — `packages/ui` now depends on React. **That lockfile is
   the merge hazard for lanes B and C if they added a dependency.**
 
-**Gate on the merged tree** (`T9.1` + `T2.1` + `T3.1`, commit `521679e`), each command run separately on 2026-09-02:
+**Gate on the merged tree** (`T9.1` + `T2.1` + `T3.1` + `T3.2`), each command run separately on 2026-09-02:
 
 | | |
 |---|---|
 | `pnpm lint` | clean |
 | `pnpm lint:prove` | **9** planted violations, all rejected (was 7; two are new) |
 | `pnpm typecheck` | 9 packages |
-| `pnpm test` | **1177 passing**, 80 files (was 914 at wave 2 start) |
+| `pnpm test` | **1214 passing**, 85 files (was 914 at wave 2 start) |
 | `pnpm contracts:check` | 56 routes; zod and OpenAPI agree |
 | `pnpm build` | compiles; the gallery page and both Shopify routes present |
 | `pnpm eval` · `pnpm chaos` | pass |
@@ -223,6 +223,51 @@ write-once idempotency ledger, and append-only spend events.
 
 Earlier commits on `main`: `b0c1413` removed 1,007 spec references from the code;
 `f6775dd` added the spend caps that pause the product before the bill arrives.
+
+## What `T3.2` added, and the two things it left for someone to decide
+
+**`T3.2` landed on 2026-09-02**, merged as `1b3ee0a`, seven commits. The product
+can now answer "does this store already have a page about X?" — which it could not
+before, and which every later recommendation depends on.
+
+**One row per web address the store publishes, built without visiting a single
+page.** Everything comes from lists a merchant could open in their own Shopify
+admin: collections, products, static pages, blogs and their posts. Each row records
+what kind of page it is, its title, the two fields Google shows in search results,
+its headings in order, which of the store's own pages it links to, which product
+families it covers, and a **checksum** — a fingerprint of the page's words that
+moves the moment a merchant edits them and stays still when nothing changed. That
+fingerprint is what stops us re-running paid analysis on hundreds of unchanged
+pages every night.
+
+It stays current two ways: a nightly walk through the whole store, a hundred pages
+per run, handing a resume marker back to the queue when its budget runs out — a
+large store is a twenty-minute read at Shopify's one-request-a-second, and it must
+survive being killed halfway. And a reaction to changes the store reports, which
+re-reads only what changed. Price and stock changes are dropped: neither can move a
+page's words.
+
+**Two decisions it surfaced rather than took.**
+
+1. **The frozen change contract cannot say a blog post was edited.** The card
+   assumed it could. The contract has six change kinds and all six are about
+   products and collections, so a blog-post edit is picked up by the nightly walk
+   within a day instead of within minutes. Bounded and one-directional — staler
+   blog data, never wrong data. But **it is worth settling whether that contract
+   gains an "article edited" kind before `T2.2` is written**, because adding it
+   afterwards means changing a seam two lanes already consume. The lane correctly
+   did not touch the frozen contract.
+2. **A page the merchant deletes keeps its inventory row.** Deleting the row loses
+   the only evidence the address ever existed; marking it gone needs a column no
+   card may add outside a schema wave. Harmless today, because nothing reads the
+   inventory yet. **It stops being harmless at `T3.5`**, the existing-target check,
+   which would otherwise propose improving a page that no longer exists.
+
+**Two things it deliberately left unwired**, each for a good reason. Nothing
+schedules the nightly walk: the scheduled task whose description covers it belongs
+to the catalog lane, and the function is exported and ready for it to call. And the
+change-stream consumer is built but not registered with the worker, because its
+producer is `T2.2` and wiring a stand-in into production would be a false green.
 
 ## Where the order stands
 
