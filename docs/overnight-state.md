@@ -35,9 +35,9 @@ placed where the build order puts it.
 
 | Lane | Card | Branch | Worktree | State |
 |---|---|---|---|---|
-| B — Store Intelligence | `T-OPS` | `lane-b` | `../sortiva-lane-b` | building; started clean from `main` |
-| C — Search Intelligence | `T3.3` | `lane-c` | `../sortiva-lane-c` | building; `T3.2` merged |
-| F — Frontend | `T9.2` | `lane-f` | `../sortiva-lane-f` | building; resumed from 3 commits + uncommitted work |
+| B — Store Intelligence | — | `lane-b` | `../sortiva-lane-b` | free; `T-OPS` merged. Next in order: `T2.2` |
+| C — Search Intelligence | — | `lane-c` | `../sortiva-lane-c` | free; `T3.3` merged |
+| F — Frontend | — | `lane-f` | `../sortiva-lane-f` | free; `T9.2` merged. Next in order: `T9.3` |
 
 ## Picking this up again
 
@@ -200,14 +200,14 @@ What it changed that everyone inherits:
   `pnpm-lock.yaml` changed — `packages/ui` now depends on React. **That lockfile is
   the merge hazard for lanes B and C if they added a dependency.**
 
-**Gate on the merged tree** (`T9.1` + `T2.1` + `T3.1` + `T3.2`), each command run separately on 2026-09-02:
+**Gate on the merged tree** (`T9.1`, `T2.1`, `T3.1`, `T3.2`, `T9.2`, `T-OPS`, `T3.3`), each command run separately on 2026-09-02:
 
 | | |
 |---|---|
 | `pnpm lint` | clean |
 | `pnpm lint:prove` | **9** planted violations, all rejected (was 7; two are new) |
 | `pnpm typecheck` | 9 packages |
-| `pnpm test` | **1214 passing**, 85 files (was 914 at wave 2 start) |
+| `pnpm test` | **1357 passing**, 100 files (was 914 at wave 2 start) |
 | `pnpm contracts:check` | 56 routes; zod and OpenAPI agree |
 | `pnpm build` | compiles; the gallery page and both Shopify routes present |
 | `pnpm eval` · `pnpm chaos` | pass |
@@ -342,6 +342,56 @@ needs a card, and a founder decision on which of the three.**
 **One more thing the gate should gain either way:** a check that starts the built
 application and asks it for one page. Every command in the gate passed while the
 product served nothing but errors.
+
+## What `T3.3` added — the arithmetic every search signal reads
+
+**`T3.3` landed on 2026-09-02**, six commits. Nothing here is visible to a merchant;
+each piece is something a later signal reads.
+
+**A cluster is one search intent.** A store is not shown for "waterproof hiking
+boots" — it is shown for that, and "hiking boots waterproof", and "best waterproof
+hiking boots", each with a handful of impressions. One spelling at a time, none is
+worth acting on, and two of the store's own pages splitting the same intent is
+invisible. Pooled, both become obvious. The row keeps the head search and every
+phrasing folded into it, which is the **lineage** an article written from it points
+back at a year later.
+
+**A curve is how often this store's listings actually get clicked at each Google
+position.** It answers "this page ranks well — is it getting the clicks it should?".
+Comparing against a published industry table would be close to meaningless for one
+store: the rate at any position swings with the device mix, with how much traffic is
+people typing the brand name, and with whatever else Google puts on the page. So the
+comparison is against the store itself. Searches for the store's own name are left
+out — someone searching the brand was going to click whatever the listing said, and
+leaving them in flatters the curve until every ordinary page looks under-clicked
+beside it.
+
+**A share is how much of one intent a single page holds.** One page holding almost
+all of an intent while sitting just off the first page is worth improving. Two pages
+each holding a large slice of the *same* intent is the store competing with itself,
+with Google splitting its confidence between two of the merchant's own URLs so
+neither wins.
+
+**Thirteen numbers went into `packages/rules`, and one deserves the founder's eye:**
+the twenty-row fallback click-rate table. It is what every store with too little
+history of its own is judged against, so its shape decides how often the
+low-click signal fires for a new store.
+
+**Two decisions in it worth knowing.** What makes two searches the same intent is
+word containment — chosen because it fails in the safe direction: it can leave a
+variant on its own, but it cannot merge two unrelated searches and have us tell a
+merchant to consolidate pages that should stay apart. And the related-search
+expansion comes from the store's own search history rather than the SEO vendor,
+because the frozen vendor interface has no related-keywords call and widening a
+frozen seam is not a feature card's to do.
+
+**Two gaps it recorded rather than hid.** The filler-word list used for pooling is
+English only, so a Danish or Hungarian store's searches pool slightly less tightly —
+it costs recall, never correctness, and it is the same shape as the banned-language
+gap `content-pointers.md` §6 records. And it did **not** take the open audit finding
+that the threshold rule can be defeated by naming a constant instead of writing the
+literal, though it touched `packages/rules`: that is a change to the shared lint
+plugin, and two other lanes were building at the time.
 
 ## Where the order stands
 
