@@ -47,6 +47,24 @@ The stale branches `night-b`, `night-c`, `night-f` still exist, all pointing at 
 ancestor of `main`, and hold nothing. The founder has not said whether to delete
 them.
 
+## The thing that keeps killing lanes
+
+**This machine sleeps mid-response and it kills whatever session is running.**
+Confirmed on 2026-09-02: three lanes died at once with no progress, were resumed,
+and two died again with the explicit error "your computer went to sleep
+mid-response". The idle-sleep timer is set to **one minute**, and a `caffeinate`
+was already running without holding it — a bare `caffeinate` does not assert
+display or system sleep, and a closed lid sleeps regardless.
+
+A stronger hold (`caffeinate -dimsu`) was started at 06:20 with a six-hour
+expiry. **If lanes start dying again, check that first** (`pgrep -fl caffeinate`,
+`pmset -g | grep sleep`) before suspecting the work.
+
+Nothing is lost when it happens — the worktree survives — but an interrupted
+session may have written half a file. Every lane has been told to commit early
+and often, by explicit path, for exactly this reason: a committed half is
+recoverable, an uncommitted half is a guess.
+
 ## What is on `main`
 
 Wave 2 has not started. The last four commits are the wave-1 close-out plus two
