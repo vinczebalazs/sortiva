@@ -1,0 +1,284 @@
+/*
+ * The app frame, built from the design canvas: a grey-lavender ground, a 96px
+ * pill icon rail, and white cards floating on soft shadows.
+ *
+ * Colours and shape come from `tokens.css` — nothing here hardcodes a value the
+ * token set already names.
+ */
+
+.sortiva-shell {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--sortiva-ground);
+  font-family: var(--sortiva-font-body);
+  color: var(--sortiva-text);
+}
+
+.sortiva-shell__skip {
+  position: absolute;
+  left: -9999px;
+}
+.sortiva-shell__skip:focus {
+  left: 12px;
+  top: 12px;
+  z-index: 10;
+  background: var(--sortiva-surface);
+  border-radius: 999px;
+  padding: 10px 18px;
+  box-shadow: var(--sortiva-shadow);
+}
+
+.sortiva-shell__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 22px 34px 40px 10px;
+}
+
+.sortiva-shell__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sortiva-shell__main {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+
+/* ── Navigation rail ─────────────────────────────────────────────────────── */
+
+.sortiva-nav {
+  padding: 26px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.sortiva-nav__list {
+  list-style: none;
+  margin: 22px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.sortiva-nav__brand,
+.sortiva-nav__item {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  position: relative;
+  background: var(--sortiva-surface);
+  box-shadow: var(--sortiva-shadow);
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-nav__brand {
+  background: var(--sortiva-text);
+  color: var(--sortiva-surface);
+}
+
+.sortiva-nav__item--current {
+  background: var(--sortiva-accent);
+  color: var(--sortiva-surface);
+  box-shadow: 0 8px 20px -4px rgba(100, 112, 243, 0.6);
+}
+
+/* A locked destination drops to an outline and takes the pointer with it, so
+   the treatment and the behaviour cannot come apart. */
+.sortiva-nav__item--locked {
+  background: transparent;
+  box-shadow: none;
+  color: var(--sortiva-text-faint);
+  cursor: not-allowed;
+}
+
+.sortiva-nav__lock {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  color: var(--sortiva-text-faint);
+}
+
+.sortiva-nav__lock-note {
+  margin-top: auto;
+  color: var(--sortiva-text-faint);
+}
+
+.sortiva-nav__spinner {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--sortiva-accent);
+  border-top-color: transparent;
+  animation: sortiva-spin 900ms linear infinite;
+}
+
+@keyframes sortiva-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sortiva-nav__spinner {
+    animation: none;
+  }
+}
+
+/* ── Banner stack ────────────────────────────────────────────────────────── */
+
+.sortiva-banner-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sortiva-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: var(--sortiva-radius);
+  padding: 13px 18px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.sortiva-banner__message {
+  margin: 0;
+}
+
+.sortiva-banner__action {
+  margin-left: auto;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-weight: 600;
+  font-size: 12.5px;
+  background: var(--sortiva-surface);
+  color: var(--sortiva-text);
+}
+
+.sortiva-banner__dismiss {
+  background: none;
+  border: 0;
+  padding: 4px;
+  color: var(--sortiva-text-faint);
+  cursor: pointer;
+}
+
+.sortiva-banner--critical {
+  background: var(--sortiva-critical-soft);
+  color: #8e2a2e;
+}
+.sortiva-banner--critical .sortiva-banner__icon {
+  color: var(--sortiva-critical);
+}
+.sortiva-banner--critical .sortiva-banner__action {
+  background: var(--sortiva-critical);
+  color: var(--sortiva-surface);
+}
+
+.sortiva-banner--warning {
+  background: var(--sortiva-warning-soft);
+  color: #8a5a10;
+}
+.sortiva-banner--warning .sortiva-banner__icon {
+  color: var(--sortiva-warning);
+}
+
+.sortiva-banner--neutral {
+  background: var(--sortiva-surface-sunken);
+  color: var(--sortiva-text-secondary);
+}
+.sortiva-banner--neutral .sortiva-banner__icon {
+  color: var(--sortiva-text-muted);
+}
+.sortiva-banner--neutral .sortiva-banner__action {
+  border: 1px solid var(--sortiva-line-strong);
+}
+
+.sortiva-banner-stack__overflow {
+  align-self: flex-start;
+  font-size: 12px;
+  color: var(--sortiva-text-muted);
+}
+
+/* ── Limited Intelligence ────────────────────────────────────────────────── */
+
+.sortiva-limited {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sortiva-limited__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  border-radius: 999px;
+  padding: 5px 11px;
+  background: var(--sortiva-surface-sunken);
+  color: var(--sortiva-text-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.sortiva-limited__message {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--sortiva-text-secondary);
+}
+
+.sortiva-limited__signals {
+  font-size: 12.5px;
+  color: var(--sortiva-text-muted);
+}
+
+/* ── Phone: the rail becomes a bottom bar and the last two fold away ─────── */
+
+@media (max-width: 720px) {
+  .sortiva-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sortiva-nav {
+    position: fixed;
+    inset: auto 0 0 0;
+    flex-direction: row;
+    justify-content: center;
+    padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+    background: var(--sortiva-surface);
+    box-shadow: var(--sortiva-shadow-raised);
+    z-index: 5;
+  }
+
+  .sortiva-nav__list {
+    flex-direction: row;
+    margin: 0;
+  }
+
+  .sortiva-nav__brand,
+  .sortiva-nav__lock-note {
+    display: none;
+  }
+
+  .sortiva-shell__body {
+    padding: 16px 16px 96px;
+  }
+}
