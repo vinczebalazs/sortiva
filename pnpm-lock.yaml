@@ -234,10 +234,22 @@ importers:
       '@sortiva/core':
         specifier: workspace:*
         version: link:../core
+      react:
+        specifier: ^19.0.0
+        version: 19.2.8
     devDependencies:
+      '@types/react':
+        specifier: ^19.0.2
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: ^19.0.2
+        version: 19.2.5(@types/react@19.2.18)
       msw:
         specifier: ^2.15.0
         version: 2.15.0(@types/node@22.20.1)(typescript@5.9.3)
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.8(react@19.2.8)
       typescript:
         specifier: ^5.7.2
         version: 5.9.3

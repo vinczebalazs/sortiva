@@ -172,6 +172,21 @@ export default tseslint.config(
   {
     files: ['**/*.{jsx,tsx}'],
     languageOptions: { globals: { ...globals.browser } },
+    rules: {
+      // Every sentence the merchant reads lives in packages/ui/strings, so it
+      // can be reviewed, translated, and — for the ones the product may not
+      // reword — held exact by a snapshot.
+      'sortiva/no-literal-jsx-text': 'error',
+    },
+  },
+
+  // A gallery that exists to render one component in each of its states. The
+  // labels naming those states are scaffolding for whoever is looking at the
+  // page, not product copy — externalising them would put words in the
+  // catalogue that no merchant will ever see.
+  {
+    files: ['**/*.preview.tsx'],
+    rules: { 'sortiva/no-literal-jsx-text': 'off' },
   },
 
   {

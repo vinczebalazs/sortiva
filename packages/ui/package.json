@@ -8,7 +8,10 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./*": "./src/*.ts"
+    "./*": "./src/*.ts",
+    "./tokens.css": "./src/tokens/tokens.css",
+    "./styles/*.css": "./src/styles/*.css",
+    "./shell/*": "./src/shell/*.tsx"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"
@@ -16,9 +19,13 @@
   "devDependencies": {
     "msw": "^2.15.0",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "react-dom": "^19.0.0",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2"
   },
   "dependencies": {
-    "@sortiva/core": "workspace:*"
+    "@sortiva/core": "workspace:*",
+    "react": "^19.0.0"
   }
 }
