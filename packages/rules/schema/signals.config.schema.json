@@ -1058,7 +1058,9 @@
         "learning",
         "budgets",
         "auto_trips",
-        "search_console"
+        "search_console",
+        "clusters",
+        "ctr_curve"
       ],
       "properties": {
         "signals": {
@@ -1081,6 +1083,12 @@
         },
         "search_console": {
           "$ref": "#/definitions/search_console"
+        },
+        "clusters": {
+          "$ref": "#/definitions/clusters"
+        },
+        "ctr_curve": {
+          "$ref": "#/definitions/ctr_curve"
         }
       }
     },
@@ -1108,6 +1116,12 @@
           "type": "object"
         },
         "search_console": {
+          "type": "object"
+        },
+        "clusters": {
+          "type": "object"
+        },
+        "ctr_curve": {
           "type": "object"
         }
       }
@@ -1141,6 +1155,96 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 30
+        }
+      }
+    },
+    "clusters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "window_days",
+        "min_query_impressions",
+        "head_min_tokens",
+        "head_min_impressions",
+        "max_member_queries",
+        "max_clusters"
+      ],
+      "properties": {
+        "window_days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 365
+        },
+        "min_query_impressions": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "head_min_tokens": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "head_min_impressions": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_member_queries": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_clusters": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "ctr_curve": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "window_days",
+        "max_position",
+        "min_sample_impressions",
+        "min_position_buckets",
+        "fitted_ctr_min",
+        "fitted_ctr_max",
+        "standard_curve"
+      ],
+      "properties": {
+        "window_days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 730
+        },
+        "max_position": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 100
+        },
+        "min_sample_impressions": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "min_position_buckets": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "fitted_ctr_min": {
+          "$ref": "#/definitions/ratio"
+        },
+        "fitted_ctr_max": {
+          "$ref": "#/definitions/ratio"
+        },
+        "standard_curve": {
+          "description": "Click rate by Google position, keyed by the position as a string. Every position from 1 to `max_position` must be present, which the loader checks after validation.",
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[1-9][0-9]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/definitions/ratio"
+          },
+          "minProperties": 2
         }
       }
     }

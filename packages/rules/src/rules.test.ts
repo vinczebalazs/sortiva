@@ -83,6 +83,21 @@ const NAMED_THRESHOLDS: ReadonlyArray<readonly [path: string, spec: string]> = [
   ['gates.draft_grading.other_criteria_min', 'main §8.4 — the rest ≥ 3'],
   ['gates.draft_grading.repair_loops_max', 'main §8.4 — one repair loop, max'],
 
+  // ── Query clusters & the store's own click curve ───────────────────────────
+  ['clusters.window_days', 'main §7.3 — clusters are read over the same trailing 28d as the signals'],
+  ['clusters.min_query_impressions', 'main §7.3 — a cluster is built from queries; the noise floor is unstated'],
+  ['clusters.head_min_tokens', 'main §9.6.3 — head query plus its expansion; how broad a head may be is unstated'],
+  ['clusters.head_min_impressions', 'main §9.6.3 — when a narrower search is its own intent is unstated'],
+  ['clusters.max_member_queries', 'main §13 query_clusters.member_queries — unbounded in the spec'],
+  ['clusters.max_clusters', 'main §13 query_clusters — unbounded in the spec'],
+  ['ctr_curve.window_days', 'main §7.3 — the store\'s own fitted curve; the fit window is unstated'],
+  ['ctr_curve.max_position', 'main §13 ctr_curve.curve_json — position → expected CTR, range unstated'],
+  ['ctr_curve.min_sample_impressions', 'main §13 ctr_curve.sample_n — the fallback trigger, value unstated'],
+  ['ctr_curve.min_position_buckets', 'main §7.3 — "fallback: standard curve", conditions unstated'],
+  ['ctr_curve.fitted_ctr_min', 'main §7.3 — the fitted curve is the comparison; no clamp is stated'],
+  ['ctr_curve.fitted_ctr_max', 'main §7.3 — the fitted curve is the comparison; no clamp is stated'],
+  ['ctr_curve.standard_curve', 'main §7.3 — "fallback: standard curve", never given'],
+
   // ── Learning loop ──────────────────────────────────────────────────────────
   ['learning.replenishment_horizon_days', 'main §9.6.1 — planned horizon below ~60 days'],
   ['learning.labels.maturity_days', 'main §9.6.2 — no judgment before 28 days'],
@@ -231,6 +246,24 @@ describe('startup validation', () => {
     const raw = readFileSync(CONFIG_PATH, 'utf8')
     const mutated = raw.replace('      position_max: 15\n', '      position_max: 15\n      postion_min: 4\n')
     expect(() => loadRulesConfig({ source: mutated })).toThrow(/failed schema validation/)
+  })
+
+  it('rejects a standard click curve with a hole in it', () => {
+    // A missing position would read as "nobody ever clicks here", and a store
+    // with no history of its own would then have every page called
+    // under-clicked. Proved by removing a row rather than by trusting the shape.
+    const raw = readFileSync(CONFIG_PATH, 'utf8')
+    const mutated = raw.replace('      "7": 0.0330\n', '')
+    expect(() => loadRulesConfig({ source: mutated })).toThrow(/standard_curve is missing positions/)
+  })
+
+  it('rejects a locale override that puts a hole in the standard click curve', () => {
+    const raw = readFileSync(CONFIG_PATH, 'utf8')
+    const mutated = raw.replace(
+      'locales:\n  en:\n    gates:',
+      'locales:\n  en:\n    ctr_curve:\n      max_position: 30\n    gates:',
+    )
+    expect(() => loadRulesConfig({ source: mutated })).toThrow(/locale "en".*standard_curve is missing/s)
   })
 
   it('rejects a locale override whose merged layer is invalid', () => {

@@ -5,6 +5,27 @@ import Ajv, { type ErrorObject } from 'ajv'
 import { parse as parseYaml } from 'yaml'
 import type { DeepPartial, RulesDocument, RulesLayer } from './types'
 
+/**
+ * The fallback click curve is read by position, so a missing position would be
+ * read as "nobody ever clicks here" rather than as a hole in the table — and a
+ * store with no history of its own would then be told every one of its pages is
+ * under-clicked. Checked here so the document is rejected at start-up instead.
+ */
+function assertStandardCurveComplete(layer: RulesLayer, label: string): void {
+  const missing: string[] = []
+  for (let position = 1; position <= layer.ctr_curve.max_position; position += 1) {
+    if (typeof layer.ctr_curve.standard_curve[String(position)] !== 'number') {
+      missing.push(String(position))
+    }
+  }
+  if (missing.length > 0) {
+    throw new RulesConfigError(
+      `signals.config.yaml ${label} ctr_curve.standard_curve is missing positions`,
+      missing,
+    )
+  }
+}
+
 const packageRoot = new URL('../', import.meta.url)
 
 export const CONFIG_PATH = fileURLToPath(new URL('signals.config.yaml', packageRoot))
@@ -109,8 +130,11 @@ export function loadRulesConfig(options: LoadOptions = {}): RulesConfig {
         formatErrors(layerValidate.errors, `locales.${key}`),
       )
     }
+    assertStandardCurveComplete(merged, `locale "${key}"`)
     resolved.set(key, merged)
   }
+
+  assertStandardCurveComplete(doc.defaults, 'defaults')
 
   const rulesVersion = createHash('sha256').update(raw, 'utf8').digest('hex')
 

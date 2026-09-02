@@ -19,6 +19,8 @@ export {
   SIGNAL_TYPES,
   type AutoTripsConfig,
   type BudgetsConfig,
+  type ClustersConfig,
+  type CtrCurveConfig,
   type DeepPartial,
   type GatesConfig,
   type LearningConfig,
