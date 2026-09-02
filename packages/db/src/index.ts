@@ -6,6 +6,7 @@ export { accountScope, systemScope, type AccountScope, type SystemScope } from '
 export * from './schema'
 export * from './repositories'
 export { makeGscConnectStore, type GscConnectStoreOptions } from './stores/gsc'
+export { makeNotificationStore, type NotificationStoreOptions } from './stores/notifications'
 
 // The integration-test harness is deliberately NOT re-exported here: it pulls in
 // the migrator and resolves ../migrations from disk, which has no business in an
