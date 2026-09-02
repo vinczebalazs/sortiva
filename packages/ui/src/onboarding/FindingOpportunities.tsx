@@ -51,6 +51,20 @@ interface ScanProgress {
   readonly lastScanAt: string | null
 }
 
+/**
+ * Whether the scan has produced something to look at.
+ *
+ * The scan timestamp is the fact, and it is the same one the navigation rail
+ * reads to stop calling Opportunities "still filling" — so the wait and the
+ * rail cannot disagree about whether onboarding is over. It must not be
+ * written when the scan *starts*, or this sends the merchant to an empty list.
+ */
+export function scanProduced(body: unknown): boolean {
+  if (body === null || typeof body !== 'object') return false
+  const lastScanAt = (body as ScanProgress).lastScanAt
+  return typeof lastScanAt === 'string' && lastScanAt.length > 0
+}
+
 export function FindingOpportunities({
   t = defaultTranslate,
   stageStates,
@@ -68,11 +82,7 @@ export function FindingOpportunities({
       try {
         const response = await fetch(opportunitiesEndpoint, { cache: 'no-store' })
         if (!response.ok) return
-        const body = (await response.json()) as ScanProgress
-        // The scan timestamp is what says the run produced something. It is the
-        // same fact the navigation rail reads to stop calling Opportunities
-        // "still filling", so the two cannot disagree.
-        if (body.lastScanAt !== null && !stopped) {
+        if (scanProduced(await response.json()) && !stopped) {
           setDone(true)
           onComplete?.()
         }

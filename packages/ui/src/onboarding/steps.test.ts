@@ -10,6 +10,7 @@ import {
   type JobStepName,
   type JobStepState,
 } from './steps'
+import { followIngestion, type FollowDependencies, type StreamSource } from './follow'
 import { resolveOnboardingSurface } from './surface'
 import type { ShellAccount } from '../shell'
 
@@ -242,5 +243,96 @@ describe('the dashboard picks its stage from the account, not from navigation', 
         account: { ...confirmed, connections: { ...confirmed.connections, lastScanAt: AT } },
       }),
     ).toBe('complete')
+  })
+})
+
+// ── Keeping up with a run that is still going ────────────────────────────────
+
+describe('the progress list follows a stream, and falls back when there is none', () => {
+  const URLS = { streamUrl: '/api/ingestion/stream', statusUrl: '/api/ingestion/status', pollMs: 5_000 }
+  const body = run([step('persona', 'running')])
+
+  function harness(openStream: FollowDependencies['openStream']) {
+    const reads: string[] = []
+    const timers: { run: () => void; everyMs: number }[] = []
+    const seen: IngestionStatus[] = []
+    const deps: FollowDependencies = {
+      openStream,
+      readStatus: async (url) => {
+        reads.push(url)
+        return body
+      },
+      schedule: (run, everyMs) => {
+        timers.push({ run, everyMs })
+        return () => timers.splice(timers.indexOf(timers[timers.length - 1]!), 1)
+      },
+    }
+    return { reads, timers, seen, deps }
+  }
+
+  /** A stream that hands its handlers back so a test can fire them. */
+  function fakeStream() {
+    const handlers: { message?: (s: IngestionStatus) => void; error?: () => void } = {}
+    let closed = false
+    const source: StreamSource = {
+      onMessage: (handler) => {
+        handlers.message = handler
+      },
+      onError: (handler) => {
+        handlers.error = handler
+      },
+      close: () => {
+        closed = true
+      },
+    }
+    return { source, handlers, isClosed: () => closed }
+  }
+
+  it('reports what the stream sends, and asks for nothing while it works', () => {
+    const stream = fakeStream()
+    const { reads, seen, deps } = harness(() => stream.source)
+    followIngestion(URLS, (status) => seen.push(status), deps)
+
+    stream.handlers.message?.(body)
+    expect(seen).toEqual([body])
+    expect(reads).toEqual([])
+  })
+
+  it('starts asking every few seconds once the stream fails', () => {
+    const stream = fakeStream()
+    const { reads, timers, deps } = harness(() => stream.source)
+    followIngestion(URLS, () => {}, deps)
+
+    stream.handlers.error?.()
+    expect(reads).toEqual(['/api/ingestion/status'])
+    expect(timers[0]?.everyMs).toBe(5_000)
+  })
+
+  it('asks straight away where the browser has no streams at all', () => {
+    const { reads, timers, deps } = harness(() => null)
+    followIngestion(URLS, () => {}, deps)
+    expect(reads).toEqual(['/api/ingestion/status'])
+    expect(timers).toHaveLength(1)
+  })
+
+  it('does not start a second poll when the stream fails twice', () => {
+    const stream = fakeStream()
+    const { timers, deps } = harness(() => stream.source)
+    followIngestion(URLS, () => {}, deps)
+
+    stream.handlers.error?.()
+    stream.handlers.error?.()
+    expect(timers).toHaveLength(1)
+  })
+
+  it('closes the stream and stops the timer when the screen goes away', () => {
+    const stream = fakeStream()
+    const { timers, deps } = harness(() => stream.source)
+    const stop = followIngestion(URLS, () => {}, deps)
+
+    stream.handlers.error?.()
+    stop()
+    expect(stream.isClosed()).toBe(true)
+    expect(timers).toHaveLength(0)
   })
 })

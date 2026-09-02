@@ -1,23 +1,20 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { followIngestion, type FollowDependencies, type StreamSource } from './follow'
 import type { IngestionStatus } from './steps'
 
 /**
  * Follows the setup run as it happens.
  *
- * The server pushes each step transition down a stream, which is what makes the
- * progress list move without the merchant reloading. Streams are the first
- * thing a corporate proxy breaks, though, and a progress screen that silently
- * freezes is worse than a slow one — so a failed stream falls back to asking
- * every few seconds, and the merchant sees no difference beyond the update
- * arriving a moment later.
- *
- * The first value comes from the page's own server-side fetch, so the list is
- * correct in the very first frame rather than empty until a connection opens.
+ * The first value comes from the page's own server-side read, so the progress
+ * list is correct in the very first frame rather than empty until a connection
+ * opens. Everything about how the following works — the stream, and the poll
+ * that takes over when the stream is refused — is in `follow.ts`, which is
+ * where it can be tested; this is only the browser's half of it.
  */
 
-/** How often the fallback asks, matching what the status endpoint is sized for. */
+/** How often the fallback asks, matching what the status route is sized for. */
 export const STATUS_POLL_MS = 5_000
 
 export interface IngestionStatusOptions {
@@ -26,6 +23,45 @@ export interface IngestionStatusOptions {
   readonly statusUrl?: string
   /** Stops both the stream and the polling once there is nothing left to watch. */
   readonly enabled?: boolean
+}
+
+/** The browser's half: a real event stream, a real fetch, a real timer. */
+export function browserFollowDependencies(): FollowDependencies {
+  return {
+    openStream: (url) => {
+      if (typeof EventSource === 'undefined') return null
+      const source = new EventSource(url)
+      const wrapper: StreamSource = {
+        onMessage: (handler) => {
+          source.onmessage = (event) => {
+            try {
+              handler(JSON.parse(event.data) as IngestionStatus)
+            } catch {
+              // A malformed frame leaves the last good state on screen.
+            }
+          }
+        },
+        onError: (handler) => {
+          source.onerror = () => handler()
+        },
+        close: () => source.close(),
+      }
+      return wrapper
+    },
+    readStatus: async (url) => {
+      try {
+        const response = await fetch(url, { cache: 'no-store' })
+        if (!response.ok) return null
+        return (await response.json()) as IngestionStatus
+      } catch {
+        return null
+      }
+    },
+    schedule: (run, everyMs) => {
+      const timer = setInterval(run, everyMs)
+      return () => clearInterval(timer)
+    },
+  }
 }
 
 export function useIngestionStatus({
@@ -37,56 +73,12 @@ export function useIngestionStatus({
   const [status, setStatus] = useState<IngestionStatus | null>(initial)
 
   useEffect(() => {
-    if (!enabled) return
-    if (typeof window === 'undefined') return
-
-    let stopped = false
-    let source: EventSource | null = null
-    let timer: ReturnType<typeof setInterval> | null = null
-
-    const poll = async () => {
-      try {
-        const response = await fetch(statusUrl, { cache: 'no-store' })
-        if (!response.ok) return
-        const body = (await response.json()) as IngestionStatus
-        if (!stopped) setStatus(body)
-      } catch {
-        // A single missed poll is not worth telling the merchant about; the
-        // next one is five seconds away.
-      }
-    }
-
-    const startPolling = () => {
-      if (timer !== null) return
-      void poll()
-      timer = setInterval(() => void poll(), STATUS_POLL_MS)
-    }
-
-    if (typeof EventSource === 'undefined') {
-      startPolling()
-    } else {
-      source = new EventSource(streamUrl)
-      source.onmessage = (event) => {
-        try {
-          const body = JSON.parse(event.data) as IngestionStatus
-          if (!stopped) setStatus(body)
-        } catch {
-          // A malformed frame leaves the last good state on screen.
-        }
-      }
-      source.onerror = () => {
-        // The browser retries a dropped stream on its own, but it cannot tell
-        // us apart from a proxy that will never allow one. Polling alongside
-        // costs one request every five seconds and removes the difference.
-        startPolling()
-      }
-    }
-
-    return () => {
-      stopped = true
-      source?.close()
-      if (timer !== null) clearInterval(timer)
-    }
+    if (!enabled || typeof window === 'undefined') return
+    return followIngestion(
+      { streamUrl, statusUrl, pollMs: STATUS_POLL_MS },
+      setStatus,
+      browserFollowDependencies(),
+    )
   }, [enabled, statusUrl, streamUrl])
 
   return status
