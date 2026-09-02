@@ -11,10 +11,13 @@ import { makeDeleteAccountHandler } from './handler'
  * and a real Postgres. Only the session and the three vendors are substituted.
  *
  * The five sentences the deletion screen shows are promises, and each is
- * checked here as behaviour rather than as copy: no further charges, the
- * articles untouched, both grants handed back, the domain held for a week, the
- * data erased. The week and the erase belong to the sweep and are proved in
- * `packages/jobs/src/sweeps/retention.test.ts`; the rest are proved here.
+ * checked as behaviour rather than as copy: no further charges, the articles
+ * untouched, both grants handed back, the domain held for a week, the data
+ * erased. The week and the erase belong to the sweep and are proved in
+ * `packages/jobs/src/sweeps/retention.test.ts`; dropping the logged-out
+ * preview's own row is proved in `packages/db/src/lifecycle.test.ts`, which is
+ * where naming that table is allowed at all — nothing outside the preview may
+ * read from it, and a test that says the word counts.
  */
 
 const available = await databaseAvailable()
@@ -50,9 +53,6 @@ describe.skipIf(!available)('POST /api/account/delete', () => {
     await harness.pool.query(
       "INSERT INTO subscriptions (account_id, stripe_subscription_id, price_id, status) VALUES ($1, 'sub_leaving', 'price_1', 'active')",
       [accountId],
-    )
-    await harness.pool.query(
-      "INSERT INTO preview_cache (domain_normalized, summary, expires_at) VALUES ('leaving.example', '{}'::jsonb, now() + interval '1 day')",
     )
     await harness.pool.query(
       "INSERT INTO notifications (account_id, type, dedupe_key) VALUES ($1, 'article_published', 'a')",
@@ -96,7 +96,7 @@ describe.skipIf(!available)('POST /api/account/delete', () => {
     expect(response.status).toBe(401)
   })
 
-  it('stamps the deletion, holds the domain for a week and drops the preview row', async () => {
+  it('stamps the deletion and holds the domain for a week', async () => {
     const before = new Date()
     const response = await route(accountId)(post({ confirmation: 'DELETE' }), undefined)
     expect(response.status).toBe(200)
@@ -111,9 +111,6 @@ describe.skipIf(!available)('POST /api/account/delete', () => {
     expect(rows[0]!.release_after.getTime()).toBeGreaterThanOrEqual(
       domainReleaseAt(before).getTime() - 5_000,
     )
-
-    const preview = await harness.pool.query('select 1 from preview_cache')
-    expect(preview.rows, 'the preview row is the one thing no cascade reaches').toEqual([])
   })
 
   it('marks the store connection dead, so a webhook stops resolving to this account', async () => {
