@@ -43,3 +43,25 @@ export async function enqueueIngestionDispatch(
     sql`select graphile_worker.add_job(${task}, payload := ${body}::json, job_key := ${key}, job_key_mode := 'preserve_run_at')`,
   )
 }
+
+export const SHOPIFY_WEBHOOK_DRAIN_TASK = 'shopify_webhook_drain'
+
+/**
+ * Asks for the deliveries Shopify has made to be acted on.
+ *
+ * Queued by the receiver the moment it has written a delivery down and is about
+ * to answer. The job key is the store, so a merchant editing forty products in a
+ * burst produces one pass over the table rather than forty jobs racing each
+ * other for the same rows.
+ */
+export async function enqueueShopifyWebhookDrain(
+  database: Db,
+  payload: { shopHandle: string },
+): Promise<void> {
+  const task = SHOPIFY_WEBHOOK_DRAIN_TASK
+  const body = JSON.stringify(payload)
+  const key = `${SHOPIFY_WEBHOOK_DRAIN_TASK}:${payload.shopHandle}`
+  await database.execute(
+    sql`select graphile_worker.add_job(${task}, payload := ${body}::json, job_key := ${key}, job_key_mode := 'preserve_run_at')`,
+  )
+}
