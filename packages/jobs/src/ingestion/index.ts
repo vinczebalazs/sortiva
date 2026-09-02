@@ -1,4 +1,5 @@
 export * from './deps'
 export * from './dispatch'
+export * from './queue'
 export * from './reminder'
 export * from './steps'

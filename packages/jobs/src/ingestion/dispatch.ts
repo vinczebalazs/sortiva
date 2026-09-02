@@ -10,24 +10,21 @@ import {
 } from '../runtime/steps'
 import { registerTask } from '../runtime/tasks'
 import type { IngestionDeps } from './deps'
+import { INGESTION_DISPATCH_TASK } from './queue'
 import { INGESTION_STEPS, type DetectOutput } from './steps'
 
 /**
  * What actually moves a store through onboarding.
  *
- * The domain claim writes the run and its steps and pushes nothing onto the
- * queue — deliberately, because queueing work for a handler nobody had written
- * would have created a permanently failing job. **So this dispatches from those
- * rows and never creates a run of its own.** A second run would mean a second
- * onboarding for every merchant.
+ * The domain claim writes the run and its steps and, in the same commit, asks
+ * for this. **It dispatches from those rows and never creates a run of its
+ * own** — a second run would mean a second onboarding for every merchant.
  *
  * It runs the steps one at a time, in dependency order, and stops the moment one
  * does not succeed. Stopping is the normal case rather than an error: onboarding
  * pauses at the connect screen and waits for a person, and the run resumes when
  * something calls this again — the OAuth callback, a retry, a sweep.
  */
-
-export const INGESTION_DISPATCH_TASK = 'ingestion_dispatch'
 
 export type DispatchStopReason =
   /** Every step with a handler is done; the next one belongs to a later card. */
