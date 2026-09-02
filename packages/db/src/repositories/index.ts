@@ -1,4 +1,6 @@
 export * from './accounts'
+export * from './catalog'
+export * from './catalog-events'
 export * from './connections'
 export * from './domains'
 export * from './inventory'
