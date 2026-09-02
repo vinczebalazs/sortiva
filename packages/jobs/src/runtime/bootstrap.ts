@@ -1,4 +1,9 @@
 import type { PosthogCapture } from '@sortiva/core'
+import {
+  markWorkerNotExpected,
+  markWorkerRunning,
+  markWorkerStopped,
+} from '@sortiva/core/observability/health'
 import { CRON_ENTRIES } from './crontab'
 import { registeredTaskNames, taskList } from './tasks'
 import { installSignalHandlers, startWorker, type StartedWorker } from './worker'
@@ -52,6 +57,11 @@ export async function bootstrapWorker(
 
   if (process.env.WORKER_ENABLED === 'false') {
     logger.log('[worker] WORKER_ENABLED=false — not starting the in-process worker')
+    // Said out loud rather than left as silence, because the health check reads
+    // this: silence is "the worker should be here and is not", which fails the
+    // check and gets the container restarted. A worker nobody asked for must
+    // not look like a worker that died.
+    markWorkerNotExpected('WORKER_ENABLED=false')
     return undefined
   }
   if (started) return started
@@ -66,11 +76,31 @@ export async function bootstrapWorker(
     )
   }
 
-  started = await startWorker({
-    ...(options.connectionString ? { connectionString: options.connectionString } : {}),
-    taskList: taskList(),
-    enableCron,
-  })
+  try {
+    started = await startWorker({
+      ...(options.connectionString ? { connectionString: options.connectionString } : {}),
+      taskList: taskList(),
+      enableCron,
+    })
+  } catch (error) {
+    // A worker that never came up is exactly the state the health check exists
+    // to expose: the web server will happily serve pages while no merchant's
+    // pipeline moves.
+    markWorkerStopped(`failed to start: ${error instanceof Error ? error.message : String(error)}`)
+    throw error
+  }
+
+  markWorkerRunning()
+
+  // The runner's promise settles when it stops for any reason — a drain, or the
+  // pool dying under it. Either way the worker is no longer running, and the
+  // health check has to be able to say so; a process whose worker died silently
+  // is the failure this whole card is about.
+  const stopped = (reason: string) => markWorkerStopped(reason)
+  void started.runner.promise.then(
+    () => stopped('the runner stopped'),
+    (error: unknown) => stopped(`the runner exited: ${error instanceof Error ? error.message : String(error)}`),
+  )
 
   installSignalHandlers(started, {
     logger,
