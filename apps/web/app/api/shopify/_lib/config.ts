@@ -6,7 +6,12 @@ import {
   ShopifyOAuthClient,
   TokenCipher,
 } from '@sortiva/providers'
-import type { DistillPrompt, NotificationEmitter, ShopifyOAuthProvider } from '@sortiva/core'
+import type {
+  DistillPrompt,
+  NotificationEmitter,
+  PersonaPrompt,
+  ShopifyOAuthProvider,
+} from '@sortiva/core'
 import { db, dbPool, PostgresCostLedger, PostgresRequestCache } from '@sortiva/db'
 // Deep imports for the same reason as the jobs imports below: the `@sortiva/llm`
 // barrel is small, but this file is loaded by the server's start-up hook, and
@@ -45,6 +50,7 @@ let admin: ShopifyAdminClient | undefined
 let llm: AnthropicLlmClient | undefined
 let capture: PosthogServerCapture | undefined
 let distillPromptCache: DistillPrompt | undefined
+let personaPromptCache: PersonaPrompt | undefined
 
 /**
  * One Admin client per process, because the pacing lives inside it.
@@ -157,6 +163,21 @@ export function distillPrompt(): DistillPrompt {
   return distillPromptCache
 }
 
+/**
+ * The persona prompt, by version, from `packages/llm/prompts`.
+ *
+ * Stamped on the stored profile beside the model that produced it, so the
+ * words we later write in a merchant's name can be traced back to the exact
+ * instructions that decided who we thought they were.
+ */
+export function personaPrompt(): PersonaPrompt {
+  if (!personaPromptCache) {
+    const prompt = loadPrompt('persona', 1)
+    personaPromptCache = { version: prompt.version, text: prompt.text }
+  }
+  return personaPromptCache
+}
+
 export function ingestionDeps(): IngestionDeps {
   return {
     db: db(),
@@ -173,6 +194,7 @@ export function ingestionDeps(): IngestionDeps {
     domains: makeDomainStore(db()),
     llm: ingestionLlm(),
     distillPrompt: distillPrompt(),
+    personaPrompt: personaPrompt(),
     notifications: notificationEmitter(),
     capture: ingestionCapture(),
   }

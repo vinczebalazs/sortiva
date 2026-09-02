@@ -1,0 +1,68 @@
+{
+  "note": "The shop's own Shopify settings answer both. Everything else in the page disagrees, and must lose.",
+  "domain": "bergpfad.de",
+  "shop": {
+    "primaryLocale": "de-DE",
+    "countryCode": "DE",
+    "currency": "EUR"
+  },
+  "homepageHtml": "<!doctype html><html lang=\"en-US\"><head><title>Bergpfad</title></head><body></body></html>",
+  "productCount": 74,
+  "families": [
+    {
+      "name": "Wanderschuhe",
+      "memberCount": 22,
+      "differentiationAxes": [
+        "Schafthöhe",
+        "Sohle",
+        "Weite"
+      ],
+      "facts": {
+        "material": "Nubukleder",
+        "origin": "Made in Italy"
+      }
+    },
+    {
+      "name": "Trekkingstöcke",
+      "memberCount": 9,
+      "differentiationAxes": [
+        "Länge",
+        "Material"
+      ],
+      "facts": {
+        "material": "Aluminium",
+        "weight": "480 g"
+      }
+    },
+    {
+      "name": "Wandersocken",
+      "memberCount": 14,
+      "differentiationAxes": [
+        "Polsterung"
+      ],
+      "facts": {
+        "material": "Merinowolle"
+      }
+    }
+  ],
+  "topSellers": [
+    {
+      "title": "Alpin GTX Wanderschuh",
+      "rank": 1
+    },
+    {
+      "title": "Trekkingstock Carbon 130",
+      "rank": 2
+    }
+  ],
+  "pages": [
+    {
+      "kind": "homepage",
+      "text": "Ausrüstung für Bergwanderungen. Seit 1998 in Garmisch."
+    },
+    {
+      "kind": "about",
+      "text": "Wir sind ein Familienbetrieb am Fuß der Zugspitze und statten Wanderer aus, die lange unterwegs sind."
+    }
+  ]
+}

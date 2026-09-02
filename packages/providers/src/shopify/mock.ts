@@ -89,6 +89,7 @@ export class MockShopifyAdminClient {
     countryCode: 'GB',
     currency: 'GBP',
     ianaTimezone: 'Europe/London',
+    primaryLocale: 'en-GB',
   }
   private rejecting = false
   readonly calls: string[] = []

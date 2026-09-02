@@ -1,0 +1,7 @@
+{
+  "name": "persona.smoke",
+  "metric": "exact_match",
+  "runner": "persona",
+  "promptVersion": "persona.v1",
+  "description": "Ten known stores in seven languages. Passes only when the language, the country and the publish clock come back exactly right for every one, and when every description is substantive rather than degenerate. Language and country are exact because they are spent — they are the parameters every paid search lookup is made with, so an approximate answer buys another market's numbers. The description cannot be matched against a gold paragraph, so it is graded on whether it describes this shop at all: empty, a label, the brief handed back, or a sentence that would be true of any shop each fail. Between them the ten cases exercise every link of the evidence chain — shop settings, a lang attribute, agreeing hreflang tags, a single-country currency, a country suffix — and two of the countries whose clock is a choice rather than a fact. Append-only: a production failure gets minimised and added here."
+}

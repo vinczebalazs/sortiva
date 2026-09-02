@@ -229,8 +229,12 @@ export function productKey(accountId: string, product: DistillableProductRecord)
  * `packages/rules` — the same floor the Opportunity Engine later applies when
  * deciding whether there is enough to write about. One judgement, one pair of
  * numbers.
+ *
+ * Exported because the persona step stamps this number on the stored profile,
+ * where the confirmation screen reads it. Recomputing it there from the same
+ * sheets is the only way the two can never disagree.
  */
-async function storeRichness(
+export async function storeRichness(
   deps: IngestionDeps,
   scope: ReturnType<typeof accountScope>,
 ): Promise<StoreRichness> {

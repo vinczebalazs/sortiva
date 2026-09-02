@@ -4,6 +4,7 @@ import type {
   DistillPrompt,
   LlmClient,
   NotificationEmitter,
+  PersonaPrompt,
   PosthogCapture,
   ShopifyOAuthProvider,
   StoreConnection,
@@ -25,9 +26,17 @@ export interface ShopSnapshot {
   readonly id: number
   readonly name: string
   readonly myshopifyDomain: string
+  /**
+   * The shop owner's own working clock. Deliberately *not* what we publish
+   * against: articles go out on the audience's clock, which comes from the
+   * persona's country, so a German store run from Bali still publishes at nine
+   * in Berlin.
+   */
   readonly ianaTimezone: string | null
   readonly countryCode: string | null
   readonly currency: string | null
+  /** The language the merchant configured the storefront in, e.g. `de-DE`. */
+  readonly primaryLocale: string | null
 }
 
 export interface ShopReader {
@@ -80,6 +89,8 @@ export interface IngestionDeps {
   readonly llm?: LlmClient
   /** The versioned distillation prompt, loaded from `prompts/distill.v<N>.md` by the process. */
   readonly distillPrompt?: DistillPrompt
+  /** The versioned persona prompt, loaded from `prompts/persona.v<N>.md` by the process. */
+  readonly personaPrompt?: PersonaPrompt
   readonly notifications?: NotificationEmitter
   /**
    * Server-side analytics. Optional so a step runs without telemetry: a missing
