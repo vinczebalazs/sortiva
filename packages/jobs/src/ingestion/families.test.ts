@@ -69,6 +69,7 @@ function deps(captured: CapturedEvent[] = []): IngestionDeps {
       authorizeUrl: () => '',
       verifyCallbackSignature: () => true,
       exchangeCode: async () => ({ accessToken: '', grantedScopes: [] }),
+      revokeAccess: async () => {},
     },
     shop: {
       async getShop() {
