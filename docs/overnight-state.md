@@ -35,9 +35,9 @@ placed where the build order puts it.
 
 | Lane | Card | Branch | Worktree | State |
 |---|---|---|---|---|
-| B — Store Intelligence | — | `lane-b` | `../sortiva-lane-b` | free; `T-OPS` merged. Next in order: `T2.2` |
-| C — Search Intelligence | — | `lane-c` | `../sortiva-lane-c` | free; `T3.3` merged |
-| F — Frontend | — | `lane-f` | `../sortiva-lane-f` | free; `T9.2` merged. Next in order: `T9.3` |
+| B — Store Intelligence | — | `lane-b` | `../sortiva-lane-b` | **held deliberately**; `T2.2` ready to start once `T-BOOT` lands |
+| C — Search Intelligence | `T-BOOT` | `lane-c` | `../sortiva-lane-c` | building the blocker fix, alone |
+| F — Frontend | — | `lane-f` | `../sortiva-lane-f` | **held deliberately**; `T9.3` ready to start once `T-BOOT` lands |
 
 ## Picking this up again
 
@@ -335,9 +335,18 @@ repaired.**
    a discipline nothing enforces, so a future import in the wrong place brings this
    straight back.
 
-**Nobody owns this.** `packages/rules` belongs to lane C, which is mid-card. It is
-not in any card's scope, and the lane that found it correctly did not take it. **It
-needs a card, and a founder decision on which of the three.**
+**RESOLVED as of 17:30 on 2026-09-02.** The founder chose the third option — load on
+first use — **together with a lint rule**, because the weakness of that option is
+that it is only a discipline, and a discipline nothing enforces is how this defect
+returns. It is carded as `T-BOOT` in build plan §6 and journalled in full in
+`DECISIONS.md` (`2026-09-02 — T-BOOT`), including the two rejected alternatives and
+why each was rejected, so nobody re-opens it from memory.
+
+**Lane C is building it alone, and lanes B and F are idle on purpose.** The card
+edits the shared lint configuration, the proof registry, the root `package.json` and
+the CI workflow — the exact files the `T3.3` session declined to touch while other
+lanes were building, for exactly this reason. Two idle lanes for one small card is
+cheaper than three-way conflicts in the files that enforce every other rule.
 
 **One more thing the gate should gain either way:** a check that starts the built
 application and asks it for one page. Every command in the gate passed while the
