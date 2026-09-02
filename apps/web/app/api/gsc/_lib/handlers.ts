@@ -1,6 +1,11 @@
 import {
+  GSC_NOT_GRANTED_MESSAGE,
+  GSC_NO_DOMAIN_MESSAGE,
+  GSC_PROPERTY_REQUIRED_MESSAGE,
   chooseGscProperty,
   completeGscGrant,
+  gscPropertyMismatchHint,
+  gscPropertyMismatchMessage,
   listGscProperties,
   selectGscPropertyRequestSchema,
   skipGscConnect,
@@ -81,9 +86,9 @@ export function makeGscPropertiesHandler(options: GscHandlerOptions = {}): Accou
       case 'properties':
         return Response.json({ properties: result.properties }, { status: 200 })
       case 'not_granted':
-        return error(409, 'gsc_not_granted', 'Connect Search Console before choosing a property.')
+        return error(409, 'gsc_not_granted', GSC_NOT_GRANTED_MESSAGE)
       case 'no_domain':
-        return error(409, 'domain_not_claimed', 'Connect your store before choosing a property.')
+        return error(409, 'domain_not_claimed', GSC_NO_DOMAIN_MESSAGE)
     }
   }
 }
@@ -100,7 +105,7 @@ export function makeGscSelectPropertyHandler(options: GscHandlerOptions = {}): A
 
     const parsed = selectGscPropertyRequestSchema.safeParse(body)
     if (!parsed.success) {
-      return error(422, 'invalid_body', 'Choose a Search Console property.')
+      return error(422, 'invalid_body', GSC_PROPERTY_REQUIRED_MESSAGE)
     }
 
     const result = await chooseGscProperty(deps(options), {
@@ -119,16 +124,16 @@ export function makeGscSelectPropertyHandler(options: GscHandlerOptions = {}): A
           {
             error: {
               code: 'gsc_property_mismatch',
-              message: `That Search Console property is not for ${result.claimedDomain}.`,
-              details: [{ path: 'siteUrl', message: `Choose a property for ${result.claimedDomain}.` }],
+              message: gscPropertyMismatchMessage(result.claimedDomain),
+              details: [{ path: 'siteUrl', message: gscPropertyMismatchHint(result.claimedDomain) }],
             },
           },
           { status: 422 },
         )
       case 'not_granted':
-        return error(409, 'gsc_not_granted', 'Connect Search Console before choosing a property.')
+        return error(409, 'gsc_not_granted', GSC_NOT_GRANTED_MESSAGE)
       case 'no_domain':
-        return error(409, 'domain_not_claimed', 'Connect your store before choosing a property.')
+        return error(409, 'domain_not_claimed', GSC_NO_DOMAIN_MESSAGE)
     }
   }
 }

@@ -173,7 +173,7 @@ describe('choosing a property', () => {
   })
 
   it('accepts a property under the claimed domain, and starts the history import', async () => {
-    const { deps, store, capture } = setup()
+    const { deps, store } = setup()
     store.conn = { property: '', tokens: encodeGscTokens(codec, tokens()), invalidatedAt: null }
 
     const result = await chooseGscProperty(deps, {

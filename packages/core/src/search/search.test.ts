@@ -3,6 +3,13 @@ import { annotateProperties, parseGscProperty, propertyMatchesClaimedDomain } fr
 import { isLimitedIntelligence, searchConsoleConnectionState } from './connection'
 import { backfillRanges, dailySyncRange, nextRange, rangeKey } from './windows'
 import { toPageDailyRows, toQueryDailyRows } from './rows'
+import {
+  GSC_NOT_GRANTED_MESSAGE,
+  GSC_NO_DOMAIN_MESSAGE,
+  GSC_PROPERTY_REQUIRED_MESSAGE,
+  gscPropertyMismatchHint,
+  gscPropertyMismatchMessage,
+} from './copy'
 import type { GscSearchAnalyticsRow } from '../contracts/gsc'
 
 describe('reading a Search Console property', () => {
@@ -193,5 +200,25 @@ describe('turning Google’s report into our two tables', () => {
   it('leaves position empty when nothing was ever shown, rather than recording first place', () => {
     const pages = toPageDailyRows(toQueryDailyRows([row({ clicks: 0, impressions: 0, position: 0 })]))
     expect(pages[0]!.position).toBeNull()
+  })
+})
+
+describe('the words a merchant sees', () => {
+  it('are held to word for word, so a rewrite is a deliberate change', () => {
+    expect({
+      mismatch: gscPropertyMismatchMessage('example.com'),
+      mismatchHint: gscPropertyMismatchHint('example.com'),
+      notGranted: GSC_NOT_GRANTED_MESSAGE,
+      noDomain: GSC_NO_DOMAIN_MESSAGE,
+      propertyRequired: GSC_PROPERTY_REQUIRED_MESSAGE,
+    }).toMatchInlineSnapshot(`
+      {
+        "mismatch": "That Search Console property is not for example.com.",
+        "mismatchHint": "Choose a property for example.com.",
+        "noDomain": "Connect your store before choosing a property.",
+        "notGranted": "Connect Search Console before choosing a property.",
+        "propertyRequired": "Choose a Search Console property.",
+      }
+    `)
   })
 })

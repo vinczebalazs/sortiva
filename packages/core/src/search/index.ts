@@ -27,6 +27,14 @@ export {
 } from './windows'
 
 export {
+  GSC_NOT_GRANTED_MESSAGE,
+  GSC_NO_DOMAIN_MESSAGE,
+  GSC_PROPERTY_REQUIRED_MESSAGE,
+  gscPropertyMismatchHint,
+  gscPropertyMismatchMessage,
+} from './copy'
+
+export {
   GSC_CONNECTED_EVENT,
   chooseGscProperty,
   completeGscGrant,
