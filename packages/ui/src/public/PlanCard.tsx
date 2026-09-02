@@ -123,3 +123,36 @@ export function PlanCard({
     </section>
   )
 }
+
+/**
+ * The plan block when Stripe could not be read.
+ *
+ * The price is the only part that is genuinely missing, so the block still
+ * renders: the cap line is the sentence the plan is sold on and it is true
+ * whatever the amount turns out to be, and a screen that quietly drops it would
+ * be the one place in the product where that promise is not stated. There is no
+ * fallback amount because no amount is written down anywhere in this codebase —
+ * inventing one on a purchase screen is worse than saying we cannot show it.
+ */
+export interface PlanUnavailableProps {
+  readonly t?: Translate
+  readonly label?: string
+  /** The onward call to action, where there is one to offer. */
+  readonly action?: ReactNode
+}
+
+export function PlanUnavailable({ t = defaultTranslate, label, action }: PlanUnavailableProps) {
+  return (
+    <section className="sortiva-plan" data-testid="plan-card-unavailable">
+      <p className="sortiva-plan__label">{label ?? t('landing.pricing.planLabel')}</p>
+      <p className="sortiva-plan__price-missing" data-testid="plan-price-unavailable">
+        {t('plan.priceUnavailable')}
+      </p>
+      <p className="sortiva-plan__cap" data-testid="plan-cap-line">
+        {t('appendixA.pricingCap')}
+      </p>
+      {action ? <div className="sortiva-plan__action">{action}</div> : null}
+      <p className="sortiva-plan__cancel">{t('billing.cancelAnytime')}</p>
+    </section>
+  )
+}

@@ -1,4 +1,8 @@
+'use client'
+
+import { useEffect } from 'react'
 import { t as defaultTranslate, type Translate } from '../strings'
+import { rememberPreviewedDomain } from './previewed-domain'
 
 /**
  * Sign-in and sign-up are the same screen: an account is created the first time
@@ -8,7 +12,9 @@ import { t as defaultTranslate, type Translate } from '../strings'
  * with them. It is carried forward as a **suggestion** for the connect step and
  * nothing more — a domain is never claimed on somebody's behalf, because a
  * claim is exclusive and one made by mistake locks a business out of its own
- * address.
+ * address. It is put into the tab's own storage on arrival, because the rest of
+ * the journey leaves our site twice — the identity provider, then Stripe — and
+ * a link parameter survives neither hop.
  *
  * Only Google is offered today. Email sign-in is specified and unbuilt: the
  * sign-in library will not run a magic-link provider without somewhere to store
@@ -31,6 +37,10 @@ export function SignIn({
   next = '/plan',
   action = '/api/auth/signin/google',
 }: SignInProps) {
+  useEffect(() => {
+    rememberPreviewedDomain(previewedDomain)
+  }, [previewedDomain])
+
   return (
     <section className="sortiva-signin" data-testid="signin">
       <h1 className="sortiva-signin__heading">{t('signin.heading')}</h1>

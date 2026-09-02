@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { t as defaultTranslate, type Translate } from '../strings'
-import { PlanCard } from './PlanCard'
+import { PlanCard, PlanUnavailable } from './PlanCard'
 import type { PlanResponse } from './plan'
 
 /**
@@ -167,16 +167,7 @@ export function LandingPricing({ plan, action, t = defaultTranslate }: LandingPr
             t={t}
           />
         ) : (
-          <section className="sortiva-plan" data-testid="plan-card-unavailable">
-            <p className="sortiva-plan__label">{t('landing.pricing.planLabel')}</p>
-            <p className="sortiva-plan__price-missing">{t('plan.priceUnavailable')}</p>
-            {/* The cap line is the sentence this block exists to state, so it
-                survives Stripe being unreadable. */}
-            <p className="sortiva-plan__cap" data-testid="plan-cap-line">
-              {t('appendixA.pricingCap')}
-            </p>
-            <div className="sortiva-plan__action">{action}</div>
-          </section>
+          <PlanUnavailable label={t('landing.pricing.planLabel')} action={action} t={t} />
         )}
 
         <div className="sortiva-landing__pricing-aside">

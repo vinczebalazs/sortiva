@@ -1,4 +1,5 @@
 export * from './preview-state'
+export * from './previewed-domain'
 export * from './PreviewCard'
 export * from './PreviewForm'
 export * from './Turnstile'

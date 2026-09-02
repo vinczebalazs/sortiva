@@ -5,6 +5,7 @@ import {
   CheckoutCanceled,
   CheckoutSettlingUp,
   PlanPurchase,
+  PlanUnavailable,
   checkoutOutcomeOf,
   t,
   type CheckoutOutcome,
@@ -65,11 +66,7 @@ export function PlanScreen({ plan, returned, onEntitledHref = '/dashboard' }: Pl
 
           <h1 className="sortiva-landing__heading">{t('plan.heading')}</h1>
 
-          {plan ? (
-            <PlanPurchase plan={plan} />
-          ) : (
-            <p className="sortiva-plan__price-missing">{t('plan.priceUnavailable')}</p>
-          )}
+          {plan ? <PlanPurchase plan={plan} /> : <PlanUnavailable />}
         </div>
 
         <div>
