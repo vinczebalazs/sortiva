@@ -140,6 +140,22 @@ describe('the quarantine on raw product descriptions', () => {
     expect(mentionsQuarantined(namesIn(content))).toBe(false)
   })
 
+  it('leaves the persona on the far side of the boundary', () => {
+    // The persona is the step most tempted by a raw description — "read their
+    // copy so we can match their voice" is a reasonable-sounding sentence and a
+    // direct violation. It reasons about families, best sellers and the store's
+    // own pages instead, and none of those is the column.
+    for (const file of sourceFiles(join(repoRoot, 'packages/core/src/persona'))) {
+      expect(mentionsQuarantined(namesIn(file))).toBe(false)
+    }
+    for (const file of sourceFiles(join(repoRoot, 'packages/jobs/src/ingestion'))) {
+      if (relative(repoRoot, file) === join('packages', 'jobs', 'src', 'ingestion', 'distill.test.ts')) {
+        continue
+      }
+      expect(mentionsQuarantined(namesIn(file))).toBe(false)
+    }
+  })
+
   it('leaves distillation itself on the far side of the boundary', () => {
     // The step that needs a description does not read the column: it is handed
     // plain text by the catalogue repository, which is the only decompressor.
