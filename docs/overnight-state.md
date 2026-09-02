@@ -269,6 +269,80 @@ to the catalog lane, and the function is exported and ready for it to call. And 
 change-stream consumer is built but not registered with the worker, because its
 producer is `T2.2` and wiring a stand-in into production would be a false green.
 
+## BLOCKER — the application does not start, and nothing owns the fix
+
+**Every request answers 500, including the landing page and the health check.** This
+is true on `main` right now, it predates today's work, and `pnpm build` passes while
+it is true.
+
+Two lanes found it independently on 2026-09-02 — `T9.2` and `T-OPS` — each by the
+same method: temporarily patching the cause, watching the app boot cleanly, and
+reverting. **The integrator then confirmed it a third time by starting the built
+app** at commit `894c1dc`:
+
+```
+Ready in 214ms
+Failed to prepare server TypeError: An error occurred while loading
+  instrumentation hook: Invalid URL
+  code: 'ERR_INVALID_URL',
+  input: 'signals.config.yaml',
+  base: '/_next/static/media/index.ab74d0d8.ts'
+
+GET /api/health -> 500
+GET /           -> 500
+```
+
+**What is happening, in plain terms.** All the product's tunable numbers — the
+thresholds that decide when a page counts as decaying, when a position is worth
+chasing — live in one configuration file, `signals.config.yaml`, deliberately kept
+out of the code so they can be changed without a deploy. The code that loads it
+works out where that file sits on disk **from its own module address, at the moment
+the module is first loaded** (`packages/rules/src/load.ts`, lines 8-11, both paths
+computed at the top level). When the web application is bundled for production, a
+module's address is no longer a place on disk, so the calculation produces nonsense
+and throws.
+
+It throws during the start-up hook, and Next treats a failed start-up hook as a
+failed server, so **nothing** is served. The chain is
+`apps/web/instrumentation.ts` -> the `@sortiva/jobs` barrel -> its Search Console
+job -> `@sortiva/rules`. Nothing catches it: the build compiles, and all 1,285 tests
+pass, because tests run in Node where module addresses really are file paths.
+
+**Why the gate did not catch it.** `pnpm build` proves the code compiles, not that
+the server starts. Nothing in the gate starts the built application. That gap is the
+reason this survived six cards.
+
+**What has already been tried around it.** `T3.1` hit the same loader from a route
+that queued background work, and split the queue call into its own near-empty module
+to keep the loader out of that bundle. That was a local dodge, not a fix - the
+start-up hook reaches the same loader by a different path. `T1.3` wrote up the
+identical problem for the prompt loader some time ago and named the shape of the
+fix. **This is the third time the same defect has been worked around rather than
+repaired.**
+
+**Three ways to fix it, and they are genuinely different choices.**
+
+1. **Read the configuration through an import the bundler can see**, so the file
+   becomes part of the bundle rather than something looked up at runtime. Numbers
+   would then change only with a deploy, which contradicts the reason the file
+   exists.
+2. **Mark `@sortiva/rules` external to the server bundle**, so at runtime it is a
+   real file on a real disk again. Keeps deploy-free tuning; costs a build setting
+   that has to stay correct and is invisible when it rots.
+3. **Move the loader off the start-up path.** The hook only registers jobs; the jobs
+   need thresholds when they run, not when they are registered. Loading on first use
+   rather than on import keeps both properties and is the smallest change, but it is
+   a discipline nothing enforces, so a future import in the wrong place brings this
+   straight back.
+
+**Nobody owns this.** `packages/rules` belongs to lane C, which is mid-card. It is
+not in any card's scope, and the lane that found it correctly did not take it. **It
+needs a card, and a founder decision on which of the three.**
+
+**One more thing the gate should gain either way:** a check that starts the built
+application and asks it for one page. Every command in the gate passed while the
+product served nothing but errors.
+
 ## Where the order stands
 
 From `docs/handoff-wave2.md` §"The order":
