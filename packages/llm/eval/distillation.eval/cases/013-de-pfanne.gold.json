@@ -1,0 +1,16 @@
+{
+  "material": "Eisen",
+  "dimensions": "28 cm Durchmesser",
+  "weight": "1,9 kg",
+  "capacity": null,
+  "compatibility": [
+    "Induktion",
+    "Gas",
+    "Ceran"
+  ],
+  "use_cases_stated": [],
+  "care": "Nicht spuelmaschinenfest",
+  "certifications": [],
+  "origin": "Hergestellt in Deutschland",
+  "verifiable_claims": []
+}

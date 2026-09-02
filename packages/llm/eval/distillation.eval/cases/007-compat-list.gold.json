@@ -1,0 +1,18 @@
+{
+  "material": "aluminium",
+  "dimensions": null,
+  "weight": null,
+  "capacity": null,
+  "compatibility": [
+    "MacBook Pro 2021 and later",
+    "iPad Pro",
+    "Dell XPS 13"
+  ],
+  "use_cases_stated": [],
+  "care": null,
+  "certifications": [],
+  "origin": null,
+  "verifiable_claims": [
+    "Supports 4K at 60Hz output"
+  ]
+}

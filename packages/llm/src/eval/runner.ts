@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
+import { distillEvalRunner } from './distill-runner'
 import { fieldF1, meanAbsoluteError, type F1Score, type MaeScore } from './metrics'
 
 /**
@@ -237,8 +238,14 @@ export async function runEvalSet(
 
 /**
  * The registry the eval suite runs against. Cards that add a prompt register its
- * runner here: `distill` (T2.3), `persona` (T2.5), `judge` (T4.4). Empty through
- * M0, which is why the suite currently has nothing to run rather than something
- * it quietly skips.
+ * runner here: `distill` (T2.3), `persona` (T2.5), `judge` (T4.4). A set whose
+ * runner is missing fails rather than skips, so a suite that is not running
+ * cannot look like a suite that is passing.
+ *
+ * `distillEvalRunner()` builds the real Anthropic client on first use, inside
+ * the runner call — the registry is a module constant, and constructing a
+ * client here would need a key merely to import this file.
  */
-export const EVAL_RUNNERS: EvalRunnerRegistry = {}
+export const EVAL_RUNNERS: EvalRunnerRegistry = {
+  distill: (input, config) => distillEvalRunner()(input, config),
+}
