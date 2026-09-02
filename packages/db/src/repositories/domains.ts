@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, inArray } from 'drizzle-orm'
 import type { Db } from '../client'
 import { domains } from '../schema'
 import type { AccountScope } from '../scope'
@@ -55,13 +55,14 @@ export async function findDomainForAccount(
 export async function transitionDomainState(
   db: Db,
   scope: AccountScope,
-  from: DomainRow['state'],
+  from: DomainRow['state'] | readonly DomainRow['state'][],
   to: DomainRow['state'],
 ): Promise<DomainRow | undefined> {
+  const expected = Array.isArray(from) ? [...from] : [from as DomainRow['state']]
   const [row] = await db
     .update(domains)
     .set({ state: to, updatedAt: new Date() })
-    .where(and(eq(domains.accountId, scope.accountId), eq(domains.state, from)))
+    .where(and(eq(domains.accountId, scope.accountId), inArray(domains.state, expected)))
     .returning()
   return row
 }
