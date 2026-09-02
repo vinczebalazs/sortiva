@@ -9,6 +9,7 @@ import {
 import { MockShopifyOAuthClient, ShopifyTokenInvalid } from '@sortiva/providers'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
 import { MockLlmClient } from '@sortiva/llm'
+import { MockSeoDataProvider } from '@sortiva/providers'
 import { createRun } from '../runtime/steps'
 import { dispatchIngestion } from './dispatch'
 import type { ConnectionStore, IngestionDeps, ShopReader, ShopSnapshot } from './deps'
@@ -165,6 +166,9 @@ function world(domain: string): World {
       brand_tone: 'warm and plain',
     }),
   )
+  // Seed keywords, from the profile the step before produced. The store has no
+  // families, so this is the smallest honest answer a model could give.
+  llm.setDefault('seeds', () => JSON.stringify({ keywords: ['scented candles'] }))
 
   const deps: IngestionDeps = {
     db: harness.db,
@@ -177,6 +181,15 @@ function world(domain: string): World {
     llm,
     distillPrompt: { version: 'distill.v1', text: 'extract only' },
     personaPrompt: { version: 'persona.v1', text: 'describe the shop' },
+    seedsPrompt: { version: 'seeds.v1', text: 'propose search terms' },
+    seo: new MockSeoDataProvider({
+      keywordMetrics: { 'scented candles': { monthlySearchVolume: 4400, competition: 0.3 } },
+      serp: {
+        'scented candles': [
+          { position: 1, url: 'https://rival-candles.com/', domain: 'rival-candles.com', title: null },
+        ],
+      },
+    }),
     notifications,
     domains: {
       async findAccountByShopHandle() {
@@ -299,18 +312,22 @@ describe('a Shopify store being onboarded', () => {
     const resumed = await dispatchIngestion(w.deps, { accountId })
 
     // Permission granted, so the run carries straight on: it reads the store,
-    // distils what it found, groups those products into families, and builds
-    // the store's business profile from them. Keywords and competitors are the
-    // next step and belong to a later card, so the run correctly stops there.
+    // distils what it found, groups those products into families, builds the
+    // store's business profile from them, and works out what its customers
+    // search for and who else ranks for those searches. Connecting Search
+    // Console is the next step and belongs to a later card, so the run
+    // correctly stops there — and confirmation, which deliberately does not
+    // wait for it, has no handler either.
     expect(resumed?.executed).toEqual([
       'oauth_wait',
       'catalog_sync',
       'distill',
       'family_group',
       'persona',
+      'keywords_competitors',
     ])
     expect(resumed?.stoppedBecause).toBe('no_handler')
-    expect(resumed?.stoppedAt).toBe('keywords_competitors')
+    expect(resumed?.stoppedAt).toBe('gsc_connect')
     expect(await domainState()).toBe('ingesting')
 
     const states = await stepStates(jobId)
@@ -320,7 +337,9 @@ describe('a Shopify store being onboarded', () => {
     expect(states['distill']).toBe('succeeded')
     expect(states['family_group']).toBe('succeeded')
     expect(states['persona']).toBe('succeeded')
-    expect(states['keywords_competitors']).toBe('pending')
+    expect(states['keywords_competitors']).toBe('succeeded')
+    // `T2.7` moves this marker on again, to `awaiting_confirmation`.
+    expect(states['gsc_connect']).toBe('pending')
   })
 
   it('recognises work already done rather than paying for it twice', async () => {

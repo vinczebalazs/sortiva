@@ -230,7 +230,6 @@ export interface LearningConfig {
  */
 export interface DiscoveryConfig {
   seed_keywords: {
-    candidates_min: number
     candidates_max: number
     keep_max: number
   }

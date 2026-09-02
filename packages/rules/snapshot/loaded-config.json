@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "rules_version": "501917f3b306aecc619c412534b39ad6f56ee3f752f0700154d84201e965140e",
+  "rules_version": "9fb26ae9bc2eec0cf191512346e24d61c5d231691f85e29cd7acb5b253713760",
   "defaults": {
     "signals": {
       "striking_distance": {
@@ -266,7 +266,6 @@
     },
     "discovery": {
       "seed_keywords": {
-        "candidates_min": 15,
         "candidates_max": 25,
         "keep_max": 15
       },
@@ -592,7 +591,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -917,7 +915,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -1242,7 +1239,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -1567,7 +1563,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -1892,7 +1887,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -2217,7 +2211,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -2542,7 +2535,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -2867,7 +2859,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -3192,7 +3183,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -3517,7 +3507,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -3842,7 +3831,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -4167,7 +4155,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -4492,7 +4479,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -4817,7 +4803,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -5142,7 +5127,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -5467,7 +5451,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -5792,7 +5775,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -6117,7 +6099,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -6442,7 +6423,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -6767,7 +6747,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },
@@ -7092,7 +7071,6 @@
       },
       "discovery": {
         "seed_keywords": {
-          "candidates_min": 15,
           "candidates_max": 25,
           "keep_max": 15
         },

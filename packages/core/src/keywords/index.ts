@@ -23,6 +23,11 @@ export {
   type SeedKeywordsDraft,
 } from './schema'
 export {
+  serpLocaleTag,
+  serpSnapshotKey,
+  type SerpLocaleKey,
+} from './snapshot'
+export {
   KEYWORD_MAX_LENGTH,
   validateCompetitorDomain,
   validateKeywordTerm,

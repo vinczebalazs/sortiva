@@ -148,8 +148,7 @@ const NAMED_THRESHOLDS: ReadonlyArray<readonly [path: string, spec: string]> = [
   ['auto_trips.publish_error_rate.window_hours', 'main §14.5 — over 1h'],
 
   // ── Keyword & competitor discovery ────────────────────────────────────────
-  ['discovery.seed_keywords.candidates_min', 'main §6.6 — ~15–25 candidate terms'],
-  ['discovery.seed_keywords.candidates_max', 'main §6.6 — ~15–25 candidate terms'],
+  ['discovery.seed_keywords.candidates_max', 'main §6.6 — ~15–25 candidate terms; the ceiling we price'],
   ['discovery.seed_keywords.keep_max', 'main §6.6 — the strongest ~10–15 are kept'],
   ['discovery.competitors.serp_position_max', 'main §7.2.1 — ranks in the top 10'],
   ['discovery.competitors.appears_in_keywords_min', 'main §7.2.1 — for ≥ 3 of the confirmed keywords (config, §7.10)'],

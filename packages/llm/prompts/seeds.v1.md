@@ -11,8 +11,8 @@ Return a single JSON object with exactly these keys:
 }
 ```
 
-`keywords` is a list of between {{candidates_min}} and {{candidates_max}} search
-terms. Each entry is one lower-case phrase.
+`keywords` is a list of between 15 and 25 search terms. Each entry is one
+lower-case phrase.
 
 The rules, in order of importance:
 

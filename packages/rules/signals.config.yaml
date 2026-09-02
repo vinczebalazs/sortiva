@@ -497,12 +497,12 @@ defaults:
   # domains a merchant is shown, so none of them belongs in the discovery code.
   discovery:
     seed_keywords:
-      # How many candidate search terms the model is asked to propose from the
-      # store's product families. Below the floor a store gets too few terms to
-      # find a market in; above the ceiling we pay to enrich phrasings of the
-      # same idea. These two are rendered into the prompt, so changing them
-      # changes what is asked for, not what is filtered afterwards.
-      candidates_min: 15
+      # The most candidate search terms we will price, however many the model
+      # proposes. The range the prompt *asks* for lives in the prompt's own
+      # versioned text, because a prompt whose words change with configuration
+      # is a prompt whose stamped version no longer says what the model was
+      # asked. This is the ceiling we enforce on the answer, and it is a spend
+      # ceiling: every surviving term is priced.
       candidates_max: 25
       # How many of the enriched candidates survive as the draft keyword set,
       # keeping the highest search volumes. A term dropped here is one the

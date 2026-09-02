@@ -121,6 +121,40 @@ export async function pruneExpiredSerpSnapshots(
   return removed.length
 }
 
+/** One domain seen ranking for one search: the shape the candidate ranking reads. */
+export interface RankedDomainRow {
+  readonly keyword: string
+  readonly domain: string
+  readonly position: number
+}
+
+/**
+ * Who ranks for each of a set of searches, read out of whatever fresh snapshots
+ * we hold.
+ *
+ * This is the whole of the read path from stored results pages to anything a
+ * merchant sees, and note what it returns: flat rows, no identity, no way to
+ * write. What the caller does with them is count how many of the store's own
+ * searches each domain turns up for, which is the only claim we make about a
+ * ranking domain. Searches we hold no fresh page for simply contribute nothing
+ * — a suggestion computed from stale rankings would be worse than no
+ * suggestion.
+ */
+export async function rankedDomainsForQueries(
+  db: Db,
+  scope: SystemScope,
+  input: { cacheKeys: readonly string[]; now: Date },
+): Promise<RankedDomainRow[]> {
+  const rows = await findFreshSerpSnapshots(db, scope, input.cacheKeys, input.now)
+  return rows.flatMap((row) =>
+    resultsOf(row).map((result) => ({
+      keyword: row.query,
+      domain: result.domain,
+      position: result.position,
+    })),
+  )
+}
+
 /** The results as stored, typed. The column is JSON, so this is where the shape is re-asserted. */
 export function resultsOf(row: SerpSnapshotRow): SerpSnapshotResult[] {
   const raw = row.resultsJson

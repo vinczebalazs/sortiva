@@ -1,5 +1,7 @@
 import {
+  DataForSeoProvider,
   GuardedPageFetcher,
+  MockSeoDataProvider,
   MockShopifyOAuthClient,
   PosthogServerCapture,
   ShopifyAdminClient,
@@ -10,6 +12,8 @@ import type {
   DistillPrompt,
   NotificationEmitter,
   PersonaPrompt,
+  SeedKeywordsPrompt,
+  SeoDataProvider,
   ShopifyOAuthProvider,
 } from '@sortiva/core'
 import { db, dbPool, PostgresCostLedger, PostgresRequestCache } from '@sortiva/db'
@@ -51,6 +55,8 @@ let llm: AnthropicLlmClient | undefined
 let capture: PosthogServerCapture | undefined
 let distillPromptCache: DistillPrompt | undefined
 let personaPromptCache: PersonaPrompt | undefined
+let seedsPromptCache: SeedKeywordsPrompt | undefined
+let seo: SeoDataProvider | undefined
 
 /**
  * One Admin client per process, because the pacing lives inside it.
@@ -178,6 +184,52 @@ export function personaPrompt(): PersonaPrompt {
   return personaPromptCache
 }
 
+/**
+ * The seed-keyword prompt, by version, from `packages/llm/prompts`.
+ *
+ * Stamped on every spend record the seed call produces, so what a store's whole
+ * search strategy descended from is traceable to the exact instructions.
+ */
+export function seedsPrompt(): SeedKeywordsPrompt {
+  if (!seedsPromptCache) {
+    const prompt = loadPrompt('seeds', 1)
+    seedsPromptCache = { version: prompt.version, text: prompt.text }
+  }
+  return seedsPromptCache
+}
+
+/**
+ * The one wrapper around the paid search-data vendor.
+ *
+ * Invariant 25, the same rule the model client is held to: every request to
+ * that vendor goes through this, and importing its HTTP endpoint anywhere else
+ * is a lint error. It is handed the request cache, the analytics capture and
+ * the spend ledger here because those three are what make a retried step not
+ * pay twice, what records every call that reached the vendor, and what the
+ * daily spend ceiling is computed from.
+ *
+ * Without credentials — every environment but production, per the cost
+ * discipline — it is the vendor's own test double, which prices from the same
+ * map and de-duplicates on the same canonical key. Falling back to the double
+ * rather than to a live call is deliberate: a missing credential must never be
+ * the reason a staging run starts spending.
+ */
+export function seoProvider(): SeoDataProvider {
+  if (seo) return seo
+  const mocked =
+    process.env.SEO_PROVIDER_MODE === 'mock' ||
+    !process.env.DATAFORSEO_LOGIN ||
+    !process.env.DATAFORSEO_PASSWORD
+  seo = mocked
+    ? new MockSeoDataProvider({}, ingestionCapture())
+    : new DataForSeoProvider({
+        cache: new PostgresRequestCache(db()),
+        capture: ingestionCapture(),
+        ledger: new PostgresCostLedger(db()),
+      })
+  return seo
+}
+
 export function ingestionDeps(): IngestionDeps {
   return {
     db: db(),
@@ -195,6 +247,8 @@ export function ingestionDeps(): IngestionDeps {
     llm: ingestionLlm(),
     distillPrompt: distillPrompt(),
     personaPrompt: personaPrompt(),
+    seedsPrompt: seedsPrompt(),
+    seo: seoProvider(),
     notifications: notificationEmitter(),
     capture: ingestionCapture(),
   }
