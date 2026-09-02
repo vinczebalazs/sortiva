@@ -270,31 +270,149 @@ undo — **reuse the existing dismiss-with-undo mechanism rather than rebuilding
 toast strip is already styled. **Pagination is not built**: the list renders whatever one
 response returns.
 
+## `T2.3` LANDED — a product's words become facts, and the marketing dies on the way
+
+**Merged into `main`, five commits.** Tests **1,948**. **Nine of the ten gate commands are
+green and `pnpm eval` is red by design — read the section below on what that changes.**
+
+**Onboarding's fourth step now runs.** After a store's catalogue is read, every product
+description is turned into a fact sheet — what it is made of, how big it is, what it works
+with, what the page actually claims — and the marketing is thrown away. *"Premium quality
+Italian leather"* becomes `leather`. *"Perfect for any occasion"* becomes nothing. Each
+store also gets a **richness score**: how much its own product pages actually state, which
+is the difference between a store we can write honestly about and one we cannot.
+
+**Three things it deliberately refuses:** it never infers — an unsupported field stays
+empty, and **empty is an answer**; it never asks the model for a price or variant data we
+already hold exactly; and **it never lets the model count its own facts.**
+
+**Onboarding now carries a store from domain claim through detect → connect → catalogue
+read → distillation, and stops at family grouping (`T2.4`).**
+
+### The quarantine on raw descriptions, and how a reader checks it
+
+Invariant 3 says the raw product description is never an input to persona, topics, evidence
+or recommendations — only distilled fact sheets flow downstream. **This is the card that
+makes that true, so it is the card most able to break it.**
+
+The test scans every TypeScript file in `packages` and `apps` **with the TypeScript
+scanner, so comments are exempt and only code paths count**, and fails on any file outside
+an explicit six-file allowlist that names the raw column. **Proved to bite by mutation:**
+adding a stray reference to an unrelated file turned it red, and the file was restored. Two
+further cases prove it is not vacuous — the allowed files really do mention it, and the
+distillation module itself, which is the one place that *needs* descriptions, never names
+the column.
+
+**One decompressor exists**, and its read for distillation returns text with markup
+stripped, entities resolved and a length cap — no field a caller could get raw bytes from.
+
+### Caching (invariant 20), proved by simulating the crash it exists for
+
+The wrapper writes the cache row **before** processing the answer. The test distils two
+products, **deletes every ledger row** — a crash after the vendor answered but before
+anything recorded it — and re-runs. Both products go to the client again, every one of
+those calls reports a cache hit, and **the total cost is unchanged.** Production is wired
+with the same two components.
+
+### `pnpm eval` is now red without a real key, and that is deliberate
+
+**The card's third done-when is not met and the lane refused to score itself against a
+lower bar.** `distillation.eval` exists — 50 cases, 7 languages, graded at F1 ≥ 0.85 with
+zero fabricated field values — and its runner builds the **real** client. With no key,
+`pnpm eval` fails by name rather than passing against a stand-in, because *"a stand-in
+would report a pass that means nothing."*
+
+**This is the standing no-vendor-credentials gap surfacing in a new place, not a new
+decision.** The integrator checked `.github/workflows/ci.yml` before merging:
+
+- The eval job is **pull-request only** (`if: github.event_name == 'pull_request'`), so
+  **merging does not make CI red on `main`**.
+- It is **path-gated** — it runs only when a prompt file, a model id or an eval set changed.
+- It takes `ANTHROPIC_API_KEY` **from repository secrets**. The design always assumed a real
+  key; the repo simply has none, which is the gap already recorded against eight cards.
+
+**What this changes for the rest of the run: `pnpm eval` can no longer pass locally.** The
+integrator's gate is now **nine of ten commands green plus one that is red for a documented
+reason**, and every subsequent card inherits that. **A gate report that says "eval passes"
+from here on is wrong.**
+
+**The three ways out, none of which the integrator chose:** supply a key; make the eval skip
+loudly rather than fail when no key is present; or leave it failing as the honest signal
+that the model side has never been tested. **This is founder question 7.**
+
+Everything *around* the model call is proved in `pnpm test` — the set loads, every case has
+an expected sheet, the prompt renders and is stamped with its version and model, the schema
+contract refuses a bad completion after exactly one repair attempt, the threshold bites, and
+one invented material fails its own case while the set's aggregate score stays high.
+
+### Two decisions worth reading, of twelve journalled
+
+- **The model is never asked for a price, a variant axis, or its own fact count** — a
+  departure from the spec's literal object shape, flagged rather than hidden.
+- **Metafields are still not fetched**, journalled as the integrator instructed after the
+  `T2.2` audit raised it. **It caps richness for exactly the best-organised stores** — the
+  ones that keep real attributes there.
+
+**No migration.** Two places wanted a column and did without: which checksum a sheet was
+made from (the ledger answers it), and the populated-field count (recomputed from the sheet).
+
+### What `T2.4` must know
+
+- Fact sheets are one row per product, stamped with prompt version and model id, with the
+  timestamp that becomes `T2.4`'s idempotency key.
+- **`variant_axes` is always empty, and family axes are `T2.4`'s subject.** Shopify's
+  `options` field — which *names* the axes — **is not requested by the catalogue sync and is
+  stored nowhere.** If `T2.4` needs axis names, that field list has to change first. Axis
+  *values* can be split positionally out of variant titles; **the names cannot.**
+- Products whose page says nothing have a real row with a zero fact count and no model id —
+  rows, not absences. That is the sparse-product guardrail's input.
+- The richness roll-up is computed, not stored: the only column for it belongs to a row that
+  does not exist until `T2.5`.
+- **`pnpm chaos` still has no "kill during distillation" scenario** — the plan gives that to
+  `T2.7`, and the step is built for it.
+
+**Files outside Lane B's directories:** the prompt file and eval set in `packages/llm`
+(allocated to this card by name in that package's own README), the eval runner registry
+entry (whose comment names this card), two `packages/db` repository files plus union-merged
+barrels, and **`packages/jobs/package.json` with the lockfile** — a dev dependency so the
+step's test can drive the wrapper's own double. `apps/web/instrumentation.ts` was **not**
+touched.
+
+**Real-vendor evidence outstanding: the whole model side.** The eval has never run against a
+real model, the prompt has never been tested against one, no real completion has ever been
+schema-validated, and the wrapper's caching, cost figures and retry behaviour are proved only
+against its double. Everything else — the ledger, the checkpointing, the quarantine, the
+roll-up, the repository writes — ran against real Postgres.
+
 ## Right now
 
-**Status at 2026-09-02, 23:05.** `main` is at `930a5b2`, clean, and fully green.
-**Ten cards landed tonight**, each merged and gated separately: `T8.0`, `T-START`,
-`T-ANALYTICS`, `T3.4`, `T8.1`, `T-EMAIL`, `T9.3`, `T2.2`, `T8.2`, `T9.4`. Tests are at
-**1,909**, up from 1,362 at the start of the night — **547 added**. Stubs are at 8.
+**Status at 2026-09-02, 23:20.** `main` is at `064fd36`, clean. **Eleven cards landed
+tonight**, each merged and gated separately: `T8.0`, `T-START`, `T-ANALYTICS`, `T3.4`,
+`T8.1`, `T-EMAIL`, `T9.3`, `T2.2`, `T8.2`, `T9.4`, `T2.3`. Tests are at **1,948**, up from
+1,362 at the start of the night — **586 added**. Stubs are at 8.
+
+**`pnpm eval` is red and will stay red** until the founder decides — see the gate section.
+Every other gate command is green. **Do not describe this tree as fully green.**
 
 | Lane | Branch | Worktree | Where it is |
 |---|---|---|---|
-| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START` and `T2.2` merged and green; **`T2.2`'s audit found a critical defect — see the audit section.** **`T2.3` building** |
-| C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4` and `T-EMAIL` merged and green. **Idle and clean, deliberately held** — `T3.5` needs `T2.4`–`T2.5`, and lane B stopped at `T2.2` as the plan asked |
-| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS`, `T9.3` and **`T9.4` (`930a5b2`)** merged and green. Next is `T9.5`, the last card in its milestone |
-| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | `T8.0`, `T8.1` and `T8.2` (`0bf5897`) merged and green. **Idle; its scheduled audit is running.** Remaining in the milestone: `T8.3`, `T8.4` |
+| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START`, `T2.2` and **`T2.3`** merged. **Idle.** `T2.4` is next and **needs a decision first**: Shopify's `options` field, which *names* a product's variant axes, is not requested by the catalogue sync and stored nowhere — and axes are `T2.4`'s subject |
+| C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4` and `T-EMAIL` merged. **Idle and clean, deliberately held** — `T3.5` needs `T2.4`–`T2.5` |
+| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS`, `T9.3` and `T9.4` merged. **`T9.5` building** — the last card in its milestone |
+| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | `T8.0`, `T8.1` and `T8.2` merged. **Idle; its scheduled audit has run** and found two high defects. Remaining: `T8.3`, `T8.4` |
 
-**Three audits have run**, all read-only, all held for the morning: `T-EMAIL`'s
-(lane-requested), `T2.2`'s (**scheduled and required — it found the critical defect**), and
-`T8.2`'s (scheduled). **None stopped a lane.**
+**Four audits have run, all read-only, all held for the morning, none stopped a lane:**
+`T-EMAIL`'s (lane-requested), `T2.2`'s (**scheduled — found the critical privacy defect**),
+`T8.2`'s (**scheduled — found two high defects**), and none is outstanding. **Every audit
+scheduled for a card that landed tonight has run.**
 
-**Three hand-resolved conflicts, all in `packages/ui/strings/en.json`, all on merge.** That
-file is not union-merged and four cards appended to it tonight. Each time the integrator
-checked the two sides shared no key, kept both, restored the comma the conflict boundary
-swallows, and verified the file parses with every block present afterwards. **It now holds
-586 keys**, against 331 at the start of the night. **The next card touching copy will
-conflict too — this is now the predictable cost of that file's merge setting, and it is
-worth raising with whoever owns `.gitattributes`.**
+**Three hand-resolved conflicts, all in `packages/ui/strings/en.json`.** That file is not
+union-merged and four cards appended to it tonight. Each time the integrator checked the
+sides shared no key, kept both, restored the comma the conflict boundary swallows, and
+verified every block was present afterwards. **586 keys**, from 331. **Both the `T8.2`
+auditor and the integrator independently reached the same conclusion: the fix is the
+`.gitattributes` setting on that file, and moving `T-EMAIL`'s email copy into it — which
+`T8.2`'s ruling now requires — makes a fourth.**
 
 **Lane B reached `T2.2` and stopped there, which is what the plan asked for.** The one
 mid-run decision the plan told the runner to watch for — whether lane B would reach `T2.5`
@@ -1047,24 +1165,37 @@ What it changed that everyone inherits:
   `pnpm-lock.yaml` changed — `packages/ui` now depends on React. **That lockfile is
   the merge hazard for lanes B and C if they added a dependency.**
 
-**Gate on the merged tree, after eight cards tonight** (`T9.1`, `T2.1`, `T3.1`, `T3.2`,
-`T9.2`, `T-OPS`, `T3.3`, plus `T8.0`, `T-START`, `T-ANALYTICS`, `T3.4`, `T8.1`, `T-EMAIL`,
-`T9.3`, `T2.2`), each command run separately on 2026-09-02 at 20:28–20:34, never chained:
+**Gate on the merged tree, after eleven cards tonight**, each command run separately on
+2026-09-02 at 22:45–23:15, never chained:
 
 | | |
 |---|---|
 | `pnpm lint` | clean |
 | `pnpm lint:prove` | **11** planted violations, all rejected |
 | `pnpm typecheck` | 9 packages |
-| `pnpm test` | **1748 passing**, 129 files |
+| `pnpm test` | **1948 passing**, 145 files |
 | `pnpm contracts:check` | 56 routes; zod and OpenAPI agree |
-| `pnpm build` | compiles; the Shopify webhook receiver, `/dashboard` and `/opportunities` all present |
-| `pnpm smoke:boot` | `GET / -> 200`, `GET /api/health -> 200`, in 0.6s |
-| `pnpm eval` | 2 tests, pass |
-| `pnpm chaos` | **3** tests, pass (was 2; `T2.2` added the catalogue-sync kill scenario) |
+| `pnpm build` | compiles |
+| `pnpm smoke:boot` | `GET / -> 200`, `GET /api/health -> 200`, in 0.7s |
+| `pnpm chaos` | 3 tests, pass |
 | `pnpm env:check` | `.env` and `.env.example` both declare **37** variables |
-| `pnpm stubs:report` | **6** wired stubs (was 7; `T2.2` filled the change stream) |
+| `pnpm stubs:report` | **8** wired stubs |
 | `pnpm db:migrate` on an **empty** database | 41 tables, 3 guard triggers (run after `T8.0`, the only card tonight touching migrations) |
+| **`pnpm eval`** | **RED, by design, since `T2.3`** — see below |
+
+### `pnpm eval` is red and that is not a regression
+
+**Do not report this gate as fully green, and do not "fix" the eval by making it pass.**
+`T2.3` added the first evaluation set that grades what a real model produces, and its
+author made it **refuse to run against a stand-in** rather than report a pass that means
+nothing. There is no Anthropic key, so the command fails by name.
+
+**CI on `main` is unaffected** — the integrator checked `.github/workflows/ci.yml` before
+merging: that job is pull-request-only, path-gated to prompt/model/eval changes, and takes
+its key from repository secrets. The design always assumed a real key.
+
+**What it changes is this local gate**, permanently, until a key exists or someone decides
+otherwise. **It is founder question 6.**
 
 **Every test count reconciles, card by card.** 1,362 on `main` at the start of the night
 → `T8.0` +7 (1,369) → `T-START` +4 (1,373) → `T-ANALYTICS` +31 (1,404) → `T3.4` +61
@@ -1549,10 +1680,10 @@ Lane C was told this when it was resumed.
 
 ## Questions waiting on the founder
 
-**Six are open. None blocks a lane; each blocks something specific later.** Questions 1
-and 2 came from `T8.0`, question 3 from `T-EMAIL`, question 5 from `T9.4`; questions 4 and
-6 are the two the run inherited. The question that used to be here about *what starts a
-merchant's onboarding* is **answered and built** — `T-START`.
+**Seven are open. None blocks a lane; each blocks something specific later.** Questions 1
+and 2 came from `T8.0`, question 3 from `T-EMAIL`, question 5 from `T9.4`, question 6 from
+`T2.3`; questions 4 and 7 are the two the run inherited. The question that used to be here
+about *what starts a merchant's onboarding* is **answered and built** — `T-START`.
 
 **1. When a merchant deletes a page from their store, how should we record that it is
 gone?** The product keeps one row per web address the store publishes — its inventory.
@@ -1646,7 +1777,28 @@ can change it.**
 
 *What is blocked:* nothing. It is a sentence that can contradict the line above it.
 
-**6. The deployed start command would not find the build.** `railway.toml` runs the
+**6. `pnpm eval` now fails without an Anthropic key. Leave it failing, make it skip, or
+supply a key?** `T2.3` added the first evaluation set that grades what a real model
+actually produces — 50 products in 7 languages, marked against hand-written answers. Its
+author made it **refuse to run against a stand-in**, on the grounds that a stand-in would
+report a pass meaning nothing. There is no key, so the command now fails by name.
+
+**Nothing is broken by this and CI on `main` is unaffected** — the eval job is
+pull-request-only and path-gated, and takes its key from repository secrets, so the design
+always assumed a real key. **What it changes is the local gate**, which is now nine of ten
+commands green plus one red for a documented reason. Every card from here inherits that,
+and a report claiming "eval passes" would be false.
+
+*The three ways out.* **Supply a key** — the eval then does what it exists for, and costs
+real money each time a prompt changes. **Make it skip loudly** when no key is present —
+the gate goes green again, at the price that "the model side has never been tested" stops
+being visible every time anyone runs it. **Leave it failing** — the most honest signal, and
+the most likely to be tuned out.
+
+*What is blocked:* nothing, but this is the only part of the product whose quality nothing
+has ever measured, and it is the part the whole content engine rests on.
+
+**7. The deployed start command would not find the build.** `railway.toml` runs the
 server from the repository root while the build output is in `apps/web`, so the server
 would exit with "Could not find a production build". Two one-line fixes; which is right
 depends on what working directory the platform gives the service, and the project has
@@ -1710,6 +1862,101 @@ Small, real, and each belongs to a named next card rather than to a sweep.
 stopping a lane on a finding and nothing else. **The `T-EMAIL` auditor was asked
 directly whether any finding should block the next card in any lane and answered no**, so
 no lane was stopped.
+### `T8.2` — the scheduled audit, run 2026-09-02, read-only
+
+Build plan §7 schedules an audit after `T8.2`. It has run. **Two high findings, neither
+blocking any lane**, and the auditor answered the three questions it was asked.
+
+#### HIGH — a permanently failing email retries for ever and never gives up
+
+The spec wants three retries at widening intervals and then a dead letter. **The attempt
+count lives only in the queued job's payload**, because the table has no column for it —
+journalled at the time. But **the drain runs every minute and re-files every still-queued
+row under the same job key with the attempt reset to 1.** The queue library's conflict
+behaviour overwrites the payload and preserves only the run time, so the counter never
+advances.
+
+**Consequence:** a send the vendor keeps rejecting loops at roughly one-minute intervals
+indefinitely. The row never reaches failed, **no dead letter is ever written, so the alert
+that watches dead-letter depth never fires**, and the vendor is called once a minute per
+stuck row. The dead-letter test passes a high attempt number by hand, so nothing catches
+it. **Latent only because there are no credentials and the double never fails unprompted.**
+
+#### HIGH — a monthly summary that cannot be assembled is lost, not delayed
+
+When there is no signing secret the assembler deliberately declines to build the summary,
+because without it there is no unsubscribe link and the mail would be unlawful. **But the
+sender treats every decline as "the subject is gone" and marks the row failed.** The row
+leaves the queue for ever, the unique triple refuses a replacement, and the hourly sweep
+re-emits into a no-op.
+
+**So a deploy briefly missing one secret silently destroys that month's summary for every
+account** — and records the cause with the same sentence used for a deleted article. The
+finishing session flagged that misleading message; the auditor found the damage behind it
+is worse than the message.
+
+#### The mediums, in one line each
+
+- **Email sends take a *blocking* account lock and can starve the worker.** Emails are
+  queued inside pipeline runs that hold the same lock, and a catalogue sync holds it for
+  about eight minutes. Four such jobs and the process does no generation, no publishing and
+  no sweeps until they clear. **The lock buys nothing the guarded update does not already
+  buy.**
+- **A link scanner can silently unsubscribe a merchant.** The unsubscribe performs the
+  change on a plain GET, and the same address is both the header target and the visible
+  link in the body. Corporate mail-security products follow body links. **This is the one
+  finding that can change a merchant's settings without them acting.**
+- **The no-denominator rule reaches only the copy keys one test fixture happens to
+  produce**; three summary keys in the catalogue are checked by nothing. And the function
+  written to enforce it at send time **has no caller anywhere**, while a comment claims it
+  is called by the render. *The auditor agrees with where the check was placed* — judging
+  our sentences with placeholders unfilled, rather than rendered text, is the only version
+  that survives a merchant's article being called "A History of Wool".
+- **The preference default written to the database contradicts the spec's default**, and
+  the journalled contradiction describes the wrong harm. Every merchant who saves any
+  setting is recorded as opted into a weekly digest. Nothing reads that column yet, so no
+  mail goes out — **the real cost is deferred: the day the digest is built, a population is
+  already subscribed without having asked.**
+
+#### The answers to the three questions
+
+**(a) Nothing blocks `T8.3` or any other lane.** Three things `T8.3` must be told: the
+**deletion-confirmation email has nowhere to be recorded** (the suppression bypass is built
+and tested, but the type column is an enum with no value for it); retention must prune
+`webhook_events` by arrival time and tolerate **three** row shapes; and email sends are
+12-month retention and cascade on account delete.
+
+**(b) Five things before the first real email**, in the auditor's order: **the pipeline is
+inert in production**, because the bell is still not plugged in — the one-line swap this
+integrator deliberately left; **sending identity** (SPF, DKIM and DMARC on a dedicated
+subdomain, plus the fact that a deploy losing either mail variable mails nobody and says so
+only in a warning); the preference-column ruling; whether a GET may unsubscribe; and the
+retry defect above, because **the first vendor outage otherwise becomes an unbounded call
+loop with no alert.**
+
+**(c) All six of the resumed session's fixes are real, and none introduced a new defect.**
+On the specific question this integrator asked it to check — whether the
+swallow-inside-a-transaction shape exists uncaught anywhere else — **it does not.** There
+are exactly two other emission points and neither wraps the call in a catch; both go
+through the same emitter, so the savepoint covers them.
+
+**One caveat the auditor added, and it is worth knowing:** the transactional variant of the
+emit **has no production caller** — only tests use it. So the tech spec's "written inside
+the same transaction as the state change" **is not honoured at any live emission point
+today**. That is a `T8.1`-era gap rather than this card's, and it is why the savepoint fix
+is currently proved rather than exercised.
+
+**On the copy ruling, the auditor agrees** — and adds the cost: moving `T-EMAIL`'s copy
+into the catalogue makes a **fourth** hand-resolved conflict in a file that is not
+union-merged. **"The ruling is right; the `.gitattributes` setting on that file is what
+should change."**
+
+**On whether the test double hides a real failure:** it enforces the idempotency contract,
+which is the property that matters. **Two shapes it cannot show:** the path where the
+vendor accepted a key and our own recording then failed, and the vendor rejecting a reused
+key with a changed body — **which is reachable here, because copy is resolved at send time,
+so a copy edit between two attempts changes the payload under an unchanged key.**
+
 ### `T2.2` — the scheduled audit, run 2026-09-02, read-only. **THIS IS THE ONE TO READ FIRST.**
 
 Build plan §7 requires this audit before `T2.3` starts. It has run. **It found one
