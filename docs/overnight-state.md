@@ -11,98 +11,87 @@ plan for the run is `docs/nightly-plan.md`** — read it after this file.
 
 ---
 
-## THE RUN STOPPED ON A RATE LIMIT — two lanes were killed mid-card
+## The run stopped on a rate limit at 20:25, and RESUMED at 21:59
 
-**At about 20:25 on 2026-09-02 both remaining lane sessions died at the same instant**
-with "You've hit your session limit · resets 9:50pm (Europe/Budapest)". This is an
-account-level limit on the model, not a fault in the work and not the machine sleeping.
-**No new lane session can be launched before 21:50.** The integrator's own commands still
-work.
+**What happened.** At about 20:25 on 2026-09-02 both then-running lane sessions died at the
+same instant with "You've hit your session limit · resets 9:50pm (Europe/Budapest)". An
+account-level limit on the model — not a fault in the work, and not the machine sleeping.
+The integrator's own commands kept working throughout, so `main` was never at risk.
 
-**Nothing was lost that had been committed, and `main` is untouched and green.** `main` is
-at `71b7514`, clean, 1,748 tests. All eight merged cards are unaffected. The two killed
-sessions were building on their own branches, as designed.
+**What the integrator did during the stop:** checked both worktrees before touching
+anything, recorded exactly what was in each, confirmed `main` was clean and green, wrote
+this file up as a complete handoff, and waited. **It did not commit lane F's uncommitted
+work, did not merge lane G's incomplete card, and did not relaunch anything early.**
 
-### Lane G — `T8.2`, five commits, worktree clean. **Resume, do not restart.**
+**Resumed at 21:59**, once the window reopened. The sleep hold was extended at the same
+time (a fresh `caffeinate -dimsu -t 21600`; the earlier one would have lapsed around
+00:46).
 
-**It committed in halves exactly as instructed, and that is why its work is safe.** Five
-commits on `lane-g`, nothing uncommitted:
+### The one lesson worth keeping from it
 
-```
-0820770 T8.2: bounces stop the mail, and one click stops the rest
-ed947e0 T8.2: one event now reaches the inbox as well as the bell, and the mail goes out
-6779d7d T8.2: the emails themselves, and the proof that a webhook came from Resend
-0509295 T8.2: what an email says, who gets it, and why a count is never a fraction
-24a8844 T8.2: the email package can render React templates
-```
+**Two lanes hit the identical crash and came out in completely different shape, and the
+only difference was whether they had been committing in halves.**
 
-**What it had left to do, in its own last words: "Now the wiring in the composition root,
-and the route tests."** So the card is **incomplete and must not be merged as it stands** —
-it has not run a gate, and its own done-when checks have not been run.
+- **Lane G had committed five times. Its worktree was clean and nothing was lost.** It
+  resumed from its own commits, needing only to finish the composition-root wiring and the
+  route tests.
+- **Lane F had committed nothing.** Its work survived only as uncommitted changes — a
+  modified copy file and four new untracked files — and **it did not compile**, having been
+  stopped part-way through fixing type errors. Its successor had to audit an unverified
+  draft before it could build, which is exactly the cost the `T9.2` session paid earlier
+  today for the same reason.
 
-From its last commit message, what already exists: a bounce or spam complaint stops mail to
-that address immediately, with the receiver proving the request came from Resend before
-touching the body and storing it by the vendor's own id so a redelivery costs one refused
-insert; and one-click unsubscribe works with no session, because the bulk-sender rules
-require it, with the link's signature standing in for one.
+**The instruction to commit in halves is not hygiene. It is the difference between
+resuming and re-auditing.** Every lane brief should keep saying so, with this night as the
+evidence.
 
-**How to resume it:** re-read the card, then `git log -p main..lane-g` to see what is
-already built, then finish the composition-root wiring and the route tests, then run every
-done-when and the full gate. **An audit is scheduled after `T8.2`** (build plan §7).
+### What was relaunched at 21:59
 
-### Lane F — `T9.4`, no commits, uncommitted work that does not compile. **Audit it before trusting it.**
+| Lane | Card | Resumed how |
+|---|---|---|
+| B | `T2.3` — product distillation | **Fresh card.** Its predecessor `T2.2` is merged, green, and audited; the audit explicitly answered that nothing blocks `T2.3`. Told the two things the audit said it must be told rather than discover: the checksum covers words but not price or stock, and **metafields are not being fetched**, which caps the fact-sheet richness this card is graded on |
+| F | `T9.4` — the opportunities list | **Taking over an unverified draft**, with instructions to audit all five inherited files against the card first, keep what is right, replace what is not, and say which was which. `why.ts` flagged for particular attention against invariant 8 (every user-facing "why" renders from templates, never from a language model) |
+| G | `T8.2` — the email pipeline | **Resuming its own five commits**, told to treat them as plausible but unverified since no gate has been run on them, and that it now owns the whole card rather than the remainder |
 
-**It did not commit in halves, and that is the whole difference between the two lanes.**
-Nothing is committed on `lane-f` beyond `main`. Uncommitted in the worktree:
+**Lane C stays held** — `T3.5` needs `T2.4`–`T2.5`, and lane B stopped at `T2.2` as planned.
 
-- **Modified `packages/ui/strings/en.json`** — 490 keys against `main`'s 331, so roughly
-  159 lines of new copy. **It still parses** (the integrator checked). This is the file
-  that is *not* union-merged and that already produced one hand-resolved conflict tonight.
-- **A new untracked directory `packages/ui/src/opportunities/`** with four files:
-  `OpportunityCard.tsx`, `list.ts`, `types.ts`, `why.ts`.
+### For the record, what each killed lane actually had on disk at the stop
 
-**It does not compile.** Its last words were "Now fixing the remaining type errors in
-`list.ts`" — so it was stopped part-way through making the code typecheck. **Assume
-nothing in it works.**
+**Lane G — five commits, worktree clean.** Listed above. Its own last words on what
+remained: "Now the wiring in the composition root, and the route tests." No gate had been
+run on any of it and none of the card's done-when checks had been run, so its successor
+was told to treat the five commits as plausible but unverified and to own the whole card.
 
-**The integrator deliberately did not commit this work.** Committing another session's
-half-finished code is exactly what caused the damage of 2026-09-01, and a commit would also
-make an unverified draft look like progress. It sits in the worktree, which is where a
-killed session's work is supposed to sit.
+**Lane F — nothing committed.** Its work existed only as uncommitted changes: a modified
+`packages/ui/strings/en.json` (490 keys against `main`'s 331, so roughly 159 lines of new
+copy, and it still parsed), and an untracked `packages/ui/src/opportunities/` holding
+`OpportunityCard.tsx`, `list.ts`, `types.ts` and `why.ts`. Its last words were "Now fixing
+the remaining type errors in `list.ts`" — **so it did not compile.**
 
-**How to resume it:** read `git status` first, then read every one of those five files
-against the card before writing anything — keep what is right, replace what is not, and say
-which was which. This is the same position the `T9.2` session was put in, and it cost that
-session real time. **`why.ts` deserves particular attention: invariant 8 says every
-user-facing "why" renders from template strings over the scoring record and never from a
-language model.**
-
-### What the integrator did and did not do at the stop
-
-- **Did:** check both worktrees before touching anything, record exactly what is in each,
-  and confirm `main` is clean and green.
-- **Did not:** commit lane F's uncommitted work, merge lane G's incomplete card, or
-  relaunch anything. **The rate limit makes relaunching impossible before 21:50 in any
-  case.**
+**The integrator deliberately did not commit lane F's work.** Committing another session's
+half-finished code is what caused the damage of 2026-09-01, and a commit would also have
+made an unverified draft look like progress. It stayed in the worktree, which is where a
+killed session's work is supposed to sit, and its successor was told to audit it file by
+file before trusting any of it.
 
 ## Right now
 
-**Status at 2026-09-02, 20:30.** `main` is at `71b7514`, clean, and fully green.
+**Status at 2026-09-02, 22:05.** `main` is at `3473dac`, clean, and fully green.
 **Eight cards landed tonight**, each merged and gated separately: `T8.0`, `T-START`,
 `T-ANALYTICS`, `T3.4`, `T8.1`, `T-EMAIL`, `T9.3`, `T2.2`. Tests are at **1,748**, up from
 1,362 at the start of the night — **386 added**. Stubs are at **6**, down from 7.
 
-**The run is stopped.** Two lanes were killed mid-card by an account rate limit at about
-20:25; nothing can be relaunched before **21:50**. The section above this one has the
-detail and tells whoever picks up how to resume each.
+**Three lanes are building.** The run was stopped by a rate limit between 20:25 and 21:59
+and has resumed — see the section above.
 
 | Lane | Branch | Worktree | Where it is |
 |---|---|---|---|
-| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START` (`d34daa6`) and **`T2.2` (`a870e0e`)** merged and green. **Idle and clean.** Its scheduled audit **has run** — see the audit section, it found one critical defect. `T2.3` is unblocked by that audit, and the two things `T2.3` must be told are recorded there |
+| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START` (`d34daa6`) and `T2.2` (`a870e0e`) merged and green; **`T2.2`'s scheduled audit has run and found a critical defect — see the audit section.** **`T2.3` building** |
 | C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4` (`fa7cff4`) and `T-EMAIL` (`0b84ffa`) merged and green. **Idle and clean, deliberately held** — `T3.5` needs `T2.4`–`T2.5`, and lane B stopped at `T2.2` as the plan asked, so it never became available |
-| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS` (`42ddd50`) and `T9.3` (`b6945f9`) merged and green. **`T9.4` was killed mid-card with NO commits and uncommitted work that does not compile** — read the stop section before touching it |
-| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | `T8.0` (`6400b62`) and `T8.1` (`44177e4`) merged and green. **`T8.2` was killed mid-card with five commits and a clean worktree** — resume it, do not restart it. An audit is scheduled after it |
+| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS` (`42ddd50`) and `T9.3` (`b6945f9`) merged and green. **`T9.4` building**, taking over the non-compiling draft its killed predecessor left |
+| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | `T8.0` (`6400b62`) and `T8.1` (`44177e4`) merged and green. **`T8.2` building**, resumed from its own five commits. An audit is scheduled after it |
 
+**Lane B reached `T2.2` and stopped there, which is what the plan asked for.** The one
 **Lane B reached `T2.2` and stopped there, which is what the plan asked for.** The one
 mid-run decision the plan told the runner to watch for — whether lane B would reach `T2.5`
 and free lane C's `T3.5` — did not arise.
