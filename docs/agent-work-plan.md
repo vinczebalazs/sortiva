@@ -514,6 +514,13 @@ Read first: build plan §4 (the `CatalogEvents` contract); main §12.3, §14.1; 
 Done when: either the consumer is registered in the composition root and the sweep enqueues a drain per store, **or** the stub-report line is restored until someone does — and in both cases a test proves the report tells the truth about whether the seam is wired.
 Note: the ownership is genuinely open — the producer is Lane B's, the consumer is Lane C's, and the report is nobody's. That is why this is the integrator's to assign rather than a lane's to take.
 
+**R-DEV — `next dev` cannot start, so nobody can run the app locally** · integrator to assign
+Scope: `pnpm dev` fails outright. The server's start-up hook imports `@sortiva/jobs`, whose runtime imports `graphile-worker`, which imports `cosmiconfig`, which requires `fs/promises` — and Next cannot resolve that for the dev bundle. The error is `Module not found: Can't resolve 'fs/promises'` while compiling `/instrumentation`. **The production build is unaffected and `pnpm smoke:boot` is green**, which is exactly why no gate catches it: `smoke:boot` starts the *built* app. Found by `T9.5` while trying to run browser flows, and reproduced by the integrator directly.
+Read first: `DECISIONS.md` `2026-09-02 — T-BOOT` (all four entries) and the "FIXED — the application would not start" section of `docs/overnight-state.md`; tech §2.
+Done when: `pnpm dev` starts and serves `/` and `/api/health`; a gate step proves it, so this cannot regress unnoticed the way it has; and the two Playwright projects still pointing at `pnpm dev` can run locally again.
+**Why this is not a lane's to take.** It is the same family as the defect `T-BOOT` repaired — a module resolved one way at build time and another at run time — and the founder ruled on that one deliberately, choosing "load on first use, plus a lint rule" and **explicitly rejecting** "mark the package external to the server bundle". The obvious fix here (declaring the job library external, or keeping it out of the dev bundle) is that rejected option wearing different clothes, so it should be settled by the same person rather than picked at night by an integrator.
+Note: **this is pre-existing, not a regression from the 2026-09-02 run.** The start-up hook has imported the jobs package since well before it. Its cost is that every developer runs against `next start` or not at all, and that two browser-flow suites are dead locally.
+
 ### M8 — Notifications, email, lifecycle, ops · Lane G
 
 **T8.0 — Schema wave 4**

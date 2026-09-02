@@ -472,23 +472,121 @@ richness column that has had nowhere to be written since `T2.3`, the walk's end 
 move, the analytics port already bound, and the rule that a family's name is its identity
 across runs.
 
+## `T9.5` LANDED — the calendar, the library, and one article
+
+**Merged as `c4b853f`, three commits.** Tests **2,157**. Three screens under Content, the
+module where the plan gets executed: a month grid of everything scheduled, the articles
+library with its export affordances, and one article shown exactly as it would publish
+alongside the judge's report and the decisions left.
+
+### How it makes invariant 14 *visible* rather than merely not violating it
+
+The invariant says at most one topic dequeues per account per day, gaps stay gaps, and
+missed days are never back-filled as bursts. A calendar is the one screen that could quietly
+contradict that by implying a shortfall. It does not:
+
+- **A day that has passed with nothing on it renders literally nothing** — no marker, no
+  ghost, no tally, nothing to click. The cell keeps its height so the month still looks like
+  a month.
+- **A day still ahead shows a faint `+`** and, on hover, says it will be filled at the next
+  replenishment.
+- **Today shows neither, and accepts nothing** — the day's job may already have run, and
+  offering to fill it is exactly the catch-up the product refuses. **That was a judgement
+  call and is journalled.**
+
+Under the legend sits one sentence saying empty days are normal and a quiet day is never
+made up for later. **Three tests and a browser flow assert the absence**, including that the
+grid contains no "missed" and no "x of y".
+
+### It repaired a harness defect that would have silently broken every future browser flow
+
+**A page rendered on the server has no browser, so it works out where to call itself from
+the `Host` header it was asked on.** The fixture site rewrites that header so the app's own
+reads land on fixtures — but `Host` is a header the fetch standard **forbids setting**, so
+the assignment was being dropped in silence. Every authenticated page rendered as though the
+merchant had no data, and the navigation locked itself, **with nothing failing loudly**.
+
+It went unnoticed because the only flows through that server were public pages, which
+answered acceptably either way. **Every future Lane F browser flow on an authenticated
+screen depended on this being found.**
+
+### Six fixture requirements, and two are subtle enough to be worth restating
+
+- **A performance figure must stay null until the 28 days are up.** Null is what makes a row
+  read "too new"; a zero would look like a failure. Same shape for a published address on an
+  exported article: null raises "waiting for your URL", and a guess would silence it.
+- **The topic's opportunity id must be the opportunity that actually produced it**, because
+  vetoing dismisses that opportunity — **a wrong id silently removes work the merchant never
+  asked to lose.**
+- The quality report **does not say which criteria failed**, so the screen infers it from
+  which criteria the judge wrote a justification for. The floors live in `packages/rules` and
+  **the screen deliberately never re-derives them**. A `failedCriteria` field would close it
+  properly.
+
+### What the whole lane leaves the backend cards
+
+**Everything runs on mocks** — no calendar, article, opportunity or profile endpoint exists.
+The screen contract is the specification those cards inherit. Known gaps, all recorded
+rather than hidden: **no pagination anywhere** (the cursor is read and ignored, so a store
+with hundreds of articles shows one page); **dragging has no keyboard equivalent**, which is
+a genuine accessibility gap the popover could close with a date control; "today" is the
+server's day rather than the store audience's; a swap is two requests and can half-apply;
+and the FIX and HOLD drawers stay generic because the response carries neither per-URL
+impression shares nor per-product deep links.
+
+**Files outside Lane F's directories:** the copy file — **209 keys in one contiguous block at
+the tail**, taking it to 804 — plus the browser-flow server and Playwright config that this
+lane created itself. **Nothing in `packages/core`, `packages/db`, `packages/rules`, the lint
+config, the start-up hook, or any migration.**
+
+**The copy file did not conflict on this merge**, and that is worth noting: `T8.3` inserted
+its ten keys **next to the related block rather than appending**, precisely because this file
+had already produced three hand-resolved conflicts. That care is why the fourth did not
+happen.
+
 ## Right now
 
-**Status at 2026-09-02, 23:20.** `main` is at `f1614a1`, clean. **Twelve cards landed
+**Status at 2026-09-02, 23:50.** `main` is at `c4b853f`, clean. **Fifteen cards landed
 tonight**: `T8.0`, `T-START`, `T-ANALYTICS`, `T3.4`, `T8.1`, `T-EMAIL`, `T9.3`, `T2.2`,
-`T8.2`, `T9.4`, `T2.3`, `T2.4`. Tests **1,994**, up from 1,362 — **632 added**. Stubs down
-to **7**.
+`T8.2`, `T9.4`, `T2.3`, `T2.4`, `T8.3`, `T9.5` — plus the bell wiring. Tests **2,157**, up
+from 1,362 — **795 added**. Stubs **7**. Copy file **804 keys**, from 331.
 
-**`pnpm eval` is red and stays red** until the founder decides — see the gate section.
-Every other command is green. **Do not describe this tree as fully green.**
+**`pnpm eval` is red and stays red** until the founder decides. Every other command is
+green. **Do not describe this tree as fully green.**
 
 | Lane | Branch | Where it is |
 |---|---|---|
-| B — Store Intelligence | `lane-b` | `T-START`, `T2.2`, `T2.3`, `T2.4` merged. **`T2.5` building — the biggest unblock left in the build.** Two milestones wait behind it |
-| C — Search Intelligence | `lane-c` | `T3.4`, `T-EMAIL` merged. **Idle, held** — `T3.5` needs `T2.5`, which is building now. **This lane becomes available the moment `T2.5` lands** |
-| F — Frontend | `lane-f` | `T-ANALYTICS`, `T9.3`, `T9.4` merged. **`T9.5` building** — last card of its milestone |
-| G — Ops & notifications | `lane-g` | `T8.0`, `T8.1`, `T8.2` merged. **`T8.3` building.** Then `T8.4` |
+| B — Store Intelligence | `lane-b` | `T-START`, `T2.2`, `T2.3`, `T2.4` merged. **`T2.5` building — the biggest unblock left.** Lane C and the whole content engine wait behind it |
+| C — Search Intelligence | `lane-c` | `T3.4`, `T-EMAIL` merged. **Idle, held** — becomes available the moment `T2.5` lands |
+| F — Frontend | `lane-f` | `T-ANALYTICS`, `T9.3`, `T9.4`, `T9.5` merged. **`T9.6` building.** Then `T9.7`, `T9.8` |
+| G — Ops & notifications | `lane-g` | `T8.0`, `T8.1`, `T8.2`, `T8.3` merged. **`T8.4` building — its milestone's exit gate** |
 
+### Three remediation cards now exist in the build plan
+
+Build plan §7 says findings become cards. **None is fixed** — acting on a finding still needs
+the founder — but each is now a card with a done-when rather than prose in a report.
+
+- **`R-PRIVACY`** (Lane B) — the webhook receiver stores shoppers' email and phone while we
+  answer Shopify "no customer data held". **Should land before any Shopify Partner
+  credential exists.**
+- **`R-STREAM`** (integrator to assign) — the change stream has a producer, no consumer, and
+  the check that would have said so was switched off.
+- **`R-DEV`** (integrator to assign) — **`next dev` cannot start at all.** Found by `T9.5`,
+  reproduced directly by the integrator: the start-up hook pulls the job library and, through
+  it, a config loader Next cannot bundle for dev. **The production build is fine and
+  `smoke:boot` is green, which is exactly why no gate catches it.** Pre-existing, not a
+  regression from tonight. Its cost is that every developer runs against `next start` or not
+  at all, and two browser-flow suites are dead locally. **It is deliberately not fixed
+  tonight**: the obvious fix is the same option the founder explicitly rejected when ruling
+  on `T-BOOT`, so it belongs to the same person rather than to an integrator at midnight.
+
+### A merge broke and was repaired, which is what merging concurrent lanes costs
+
+Typecheck went red on the merged tree after `T8.3`: it had added a revocation method to the
+Shopify provider interface and updated every inline test double that existed **when it
+started**, and `T2.4` landed an hour later carrying a new test file with its own double.
+Neither card could have seen the other. Fixed mechanically, matched to sibling doubles.
+**This is the argument for gating the merged tree rather than trusting green branches.**
 ### The founder widened the integrator's authority at 23:10
 
 **"Carry on with whatever you can without my supervision; wait till the morning only with
