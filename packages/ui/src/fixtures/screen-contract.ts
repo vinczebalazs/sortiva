@@ -100,6 +100,24 @@ export const SCREEN_FIXTURE_DEPENDENCIES: readonly ScreenFixtureDependency[] = [
     fields: ['counts.open', 'limitedIntelligence', 'lastScanAt'],
     note: '`counts.open` is the number in the headline, so it must be the count of open opportunities rather than of everything ever found. `lastScanAt` non-null is what ends the wait and moves the merchant here, so it must not be written before the scan has produced something. `limitedIntelligence` decides whether the headline carries the badge and whether the explainer strip ends with the Search Console nudge.',
   },
+  {
+    screen: 'Opportunities — the list',
+    route: 'GET /api/opportunities',
+    fields: ['opportunities', 'counts.byAction', 'lastScanAt', 'nextScanAt', 'limitedIntelligence'],
+    note: 'Every card needs `recommendedAction`, `impact`, `confidence`, `signalType`, `entityRef.label`, `evidence` and `why`. Three of those decide whether the screen is worth anything. **`why.templateKey` must be a key the string catalogue holds** — the sentence is rendered from `packages/ui/strings/en.json` and never sent as text, so an unknown key renders "the reasoning for this one isn\'t available yet" in place of the product\'s explanation; the existing-page case must use `existing_target.prefer_optimize`, which is aliased to the canonical Appendix A sentence. **Each `evidence` fact must carry `source`, and `window` wherever the measurement has one** — the card\'s number line ends with both, and a fact with neither reads as a number from nowhere. **`entityRef.label` must be the humanised name** ("Collection: Trail running shoes", or the head term in quotes) rather than a URL or an id: it is the card\'s title and the only thing on it a merchant recognises at a glance. `nextScanAt` is rendered as a date in the header, so it must be the next run for this account rather than a global cadence; `counts.byAction` are bare counts on the filter chips and must never arrive paired with a target.',
+  },
+  {
+    screen: 'Opportunities — the detail drawer',
+    route: 'GET /api/opportunities/{opportunityId}',
+    fields: ['opportunity', 'tasks', 'serpSnapshot', 'recommendation', 'history', 'outcome'],
+    note: 'The drawer renders `recommendation.fields` as current-versus-suggested for OPTIMIZE and as the numbered instruction list for FIX, so `field` should stay within the set the pipeline produces (`title_tag`, `meta_description`, `headings`, `sections`, `faq`); an unrecognised name is spelled out from the code and reads badly. `recommendation.state` is what separates "not asked for yet" from "working on it" from "we could not do this safely", and `failed_validation` must arrive with no fields at all, because the screen shows no partial output. `outcome` stays null until the 28 days are up. **Two gaps the backend will have to close:** the HOLD view has no per-product Shopify admin links, because nothing in this response carries product ids, so it renders the task labels and sends the merchant to Products; and the FIX view has no impression-share numbers, so it renders whatever `recommendation.fields` holds rather than the design\'s comparison of the competing URLs.',
+  },
+  {
+    screen: 'Opportunities — acting on one',
+    route: 'POST /api/opportunities/{opportunityId}/schedule',
+    fields: ['scheduledFor'],
+    note: "The date in the confirmation toast is the server's answer rather than the one asked for: at most one topic occupies a day, so a request for a taken day comes back with a different date and the merchant has to be told which. A 409 on this or on dismiss / restore / recommendations / tasks ends in a re-read of the list and a toast, and the screen reads `error.code` — `opportunity_not_open` is worded differently from the rest — so the code must be the machine-readable one rather than a sentence.",
+  },
 ]
 
 /** Reads `a.b.c` out of a fixture body, treating a missing key as undefined. */

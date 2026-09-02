@@ -1,0 +1,547 @@
+/*
+ * The Growth Opportunities list and its detail drawer.
+ *
+ * The card is the unit the whole screen is built from, and its order is the
+ * design's argument: the action badge first because it answers "what do I do",
+ * then the neutral impact and confidence pills so the badge's colour keeps
+ * meaning something, then the numbers, then one sentence, then one button.
+ *
+ * Colours and shape come from `tokens.css`; nothing here hardcodes a value the
+ * token set already names. The four action colours are the ones the canvas
+ * assigns: primary for Create, cyan for Optimize, purple for Refresh, red for
+ * Fix and amber for Hold.
+ */
+
+.sortiva-opps {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 980px;
+}
+
+.sortiva-opps__scan {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-opps__limited {
+  background: var(--sortiva-warning-soft);
+  border-radius: var(--sortiva-radius-inner);
+  padding: 12px 16px;
+  font-size: 12.5px;
+  color: var(--sortiva-text-secondary);
+}
+
+.sortiva-opps__limited summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.sortiva-opps__limited ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  line-height: 1.7;
+}
+
+.sortiva-opps__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 16px 18px;
+}
+
+.sortiva-opps__facet {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sortiva-opps__facet-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sortiva-text-muted);
+  min-width: 84px;
+}
+
+.sortiva-opps__chip {
+  border: 1px solid var(--sortiva-line-strong);
+  background: var(--sortiva-surface);
+  color: var(--sortiva-text-secondary);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sortiva-opps__chip[aria-pressed='true'] {
+  background: var(--sortiva-accent-soft);
+  border-color: var(--sortiva-accent);
+  color: var(--sortiva-accent);
+}
+
+.sortiva-opps__chip-count {
+  color: var(--sortiva-text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.sortiva-opps__tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 6px;
+  border-top: 1px solid var(--sortiva-line);
+}
+
+.sortiva-opps__sort {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-opps__group-toggle {
+  margin-left: auto;
+  border: 1px solid var(--sortiva-line-strong);
+  background: var(--sortiva-surface);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.sortiva-opps__group-toggle[aria-pressed='true'] {
+  background: var(--sortiva-accent-soft);
+  border-color: var(--sortiva-accent);
+  color: var(--sortiva-accent);
+}
+
+.sortiva-opps__cards,
+.sortiva-opps__group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sortiva-opps__group-heading {
+  font-family: var(--sortiva-font-heading);
+  font-size: 15px;
+  font-weight: 600;
+  margin: 10px 0 0;
+  color: var(--sortiva-text-secondary);
+}
+
+.sortiva-opps__empty {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 40px 30px;
+  text-align: center;
+}
+
+.sortiva-opps__empty-headline {
+  font-family: var(--sortiva-font-heading);
+  font-size: 17px;
+  margin: 0 0 8px;
+  color: var(--sortiva-text);
+}
+
+.sortiva-opps__empty-note {
+  margin: 0;
+  color: var(--sortiva-text-muted);
+  font-size: 13px;
+}
+
+/* ── The card ─────────────────────────────────────────────────────────────── */
+
+.sortiva-opp {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sortiva-opp__pills {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.sortiva-opp__badge {
+  border-radius: 999px;
+  padding: 4px 11px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: var(--sortiva-accent-soft);
+  color: var(--sortiva-accent);
+}
+
+.sortiva-opp__badge[data-opp-badge='OPTIMIZE'] {
+  background: var(--sortiva-optimize-soft);
+  color: var(--sortiva-optimize);
+}
+
+.sortiva-opp__badge[data-opp-badge='REFRESH'] {
+  background: var(--sortiva-refresh-soft);
+  color: var(--sortiva-refresh);
+}
+
+.sortiva-opp__badge[data-opp-badge='FIX'] {
+  background: var(--sortiva-critical-soft);
+  color: var(--sortiva-critical);
+}
+
+.sortiva-opp__badge[data-opp-badge='HOLD'] {
+  background: var(--sortiva-warning-soft);
+  color: var(--sortiva-warning);
+}
+
+.sortiva-opp__pill,
+.sortiva-opp__tag,
+.sortiva-opp__chip {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  background: var(--sortiva-surface-sunken);
+  color: var(--sortiva-text-secondary);
+}
+
+.sortiva-opp__tag {
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-opp__chip {
+  margin-left: auto;
+  background: var(--sortiva-accent-soft);
+  color: var(--sortiva-accent);
+}
+
+.sortiva-opp__title {
+  font-family: var(--sortiva-font-heading);
+  font-size: 17px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.sortiva-opp__title-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--sortiva-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.sortiva-opp__evidence {
+  margin: 0;
+  font-size: 13px;
+  color: var(--sortiva-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.sortiva-opp__why {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--sortiva-text-secondary);
+}
+
+.sortiva-opp__ribbon {
+  margin: 0;
+  background: var(--sortiva-warning-soft);
+  color: #8a5a10;
+  border-radius: var(--sortiva-radius-inner);
+  padding: 10px 14px;
+  font-size: 12.5px;
+}
+
+.sortiva-opp__proxy {
+  margin: 0;
+  font-size: 12px;
+  color: var(--sortiva-text-faint);
+}
+
+.sortiva-opp__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sortiva-opp__primary {
+  background: var(--sortiva-accent);
+  color: #fff;
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 18px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.sortiva-opp__primary[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.sortiva-opp__secondary {
+  background: none;
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: 999px;
+  padding: 7px 16px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--sortiva-text-secondary);
+  cursor: pointer;
+}
+
+.sortiva-opp__note {
+  font-size: 12px;
+  color: var(--sortiva-text-faint);
+}
+
+.sortiva-opp__confidence {
+  font-size: 12.5px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-opp__confidence summary {
+  cursor: pointer;
+}
+
+.sortiva-opp__confidence ul {
+  margin: 8px 0;
+  padding-left: 18px;
+  line-height: 1.7;
+}
+
+/* ── The drawer ───────────────────────────────────────────────────────────── */
+
+.sortiva-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(720px, 100%);
+  overflow-y: auto;
+  background: var(--sortiva-surface);
+  box-shadow: var(--sortiva-shadow-raised);
+  padding: 26px 30px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  z-index: 40;
+}
+
+.sortiva-drawer__close {
+  align-self: flex-end;
+  background: none;
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.sortiva-drawer__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--sortiva-line);
+  padding-top: 16px;
+}
+
+.sortiva-drawer__heading {
+  font-family: var(--sortiva-font-heading);
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.sortiva-drawer__note {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-drawer__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.sortiva-drawer__table th {
+  text-align: left;
+  color: var(--sortiva-text-muted);
+  font-weight: 600;
+  padding: 6px 8px 6px 0;
+  border-bottom: 1px solid var(--sortiva-line);
+}
+
+.sortiva-drawer__table td {
+  padding: 7px 8px 7px 0;
+  border-bottom: 1px solid var(--sortiva-line);
+  color: var(--sortiva-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.sortiva-drawer__tasks,
+.sortiva-drawer__history,
+.sortiva-drawer__links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.sortiva-drawer__task {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sortiva-drawer__task-state {
+  margin-left: auto;
+  color: var(--sortiva-text-faint);
+}
+
+.sortiva-rec__field {
+  border: 1px solid var(--sortiva-line);
+  border-radius: var(--sortiva-radius-inner);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sortiva-rec__field-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.sortiva-rec__field-name {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.sortiva-rec__evidence {
+  font-size: 11.5px;
+  color: var(--sortiva-text-faint);
+}
+
+.sortiva-rec__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.sortiva-rec__side {
+  background: var(--sortiva-surface-sunken);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.sortiva-rec__side-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sortiva-text-muted);
+  margin-bottom: 4px;
+}
+
+.sortiva-rec__copy {
+  align-self: flex-start;
+  background: none;
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: 999px;
+  padding: 5px 13px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.sortiva-rec__footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sortiva-drawer__failed {
+  background: var(--sortiva-critical-soft);
+  color: var(--sortiva-critical);
+  border-radius: var(--sortiva-radius-inner);
+  padding: 14px 16px;
+  font-size: 13px;
+}
+
+/* ── Toasts ───────────────────────────────────────────────────────────────── */
+
+.sortiva-opps__toasts {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 60;
+}
+
+.sortiva-toast {
+  background: var(--sortiva-text);
+  color: #fff;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--sortiva-shadow-raised);
+}
+
+.sortiva-toast__action {
+  background: none;
+  border: 0;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.sortiva-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
