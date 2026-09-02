@@ -77,8 +77,8 @@ const CASES: readonly { title: string; note: string; context: BannerContext }[] 
     },
   },
   {
-    title: 'Everything at once, two dismissed',
-    note: 'Dismissing a notice promotes the next one into the free slot.',
+    title: 'Everything at once, the two dismissible ones dismissed',
+    note: 'The count drops from three to two. The visible pair does not change, because neither of the top two can be dismissed at all.',
     context: {
       subscriptionStatus: 'past_due',
       shopifyConnection: 'broken',
