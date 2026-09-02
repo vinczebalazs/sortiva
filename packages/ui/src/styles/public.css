@@ -1,0 +1,601 @@
+/*
+ * The three surfaces a visitor sees before they have an account: the landing
+ * page, sign-in, and the plan.
+ *
+ * Shape and colour come from `tokens.css`, which was lifted from the design
+ * canvas — nothing here hardcodes a value the token set already names. The one
+ * exception is layout measurement (widths, gaps, breakpoints), which the token
+ * set does not cover.
+ */
+
+.sortiva-public {
+  min-height: 100vh;
+  background: var(--sortiva-ground);
+  font-family: var(--sortiva-font-body);
+  color: var(--sortiva-text);
+}
+
+.sortiva-public__width {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── Landing chrome ──────────────────────────────────────────────────────── */
+
+.sortiva-landing__header,
+.sortiva-landing__footer {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 22px 0;
+}
+
+.sortiva-landing__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.sortiva-landing__brand {
+  font-family: var(--sortiva-font-heading);
+  font-weight: 700;
+  font-size: 19px;
+}
+
+.sortiva-landing__nav,
+.sortiva-landing__footer nav {
+  display: flex;
+  gap: 20px;
+}
+
+.sortiva-landing__nav a,
+.sortiva-landing__footer nav a {
+  color: var(--sortiva-text-muted);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.sortiva-landing__footer {
+  border-top: 1px solid var(--sortiva-line-strong);
+  margin-top: 40px;
+  color: var(--sortiva-text-muted);
+  font-size: 14px;
+}
+
+.sortiva-landing__primary,
+.sortiva-plan__subscribe,
+.sortiva-preview-form__submit,
+.sortiva-signin__provider {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 999px;
+  padding: 11px 20px;
+  background: var(--sortiva-accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.sortiva-plan__subscribe:disabled,
+.sortiva-preview-form__submit:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.sortiva-landing__secondary {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 11px 18px;
+  border: 1px solid var(--sortiva-line-strong);
+  background: var(--sortiva-surface);
+  color: var(--sortiva-text);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* ── Hero ────────────────────────────────────────────────────────────────── */
+
+.sortiva-landing__hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 40px;
+  align-items: start;
+  padding: 46px 0 64px;
+}
+
+.sortiva-landing__eyebrow,
+.sortiva-landing__tag {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-landing__tag {
+  background: var(--sortiva-accent-soft);
+  color: var(--sortiva-accent);
+  border-radius: 999px;
+  padding: 4px 10px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.sortiva-landing__title {
+  font-family: var(--sortiva-font-heading);
+  font-size: 46px;
+  line-height: 1.08;
+  margin: 14px 0 18px;
+  max-width: 15ch;
+}
+
+.sortiva-landing__lead {
+  color: var(--sortiva-text-secondary);
+  font-size: 17px;
+  line-height: 1.55;
+  max-width: 54ch;
+}
+
+.sortiva-landing__stats {
+  display: flex;
+  gap: 34px;
+  list-style: none;
+  margin: 30px 0 0;
+  padding: 0;
+}
+
+.sortiva-landing__stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.sortiva-landing__stat-value {
+  font-family: var(--sortiva-font-heading);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.sortiva-landing__stat-note {
+  color: var(--sortiva-text-muted);
+  font-size: 13px;
+}
+
+/* ── Preview form and its card ───────────────────────────────────────────── */
+
+.sortiva-preview-form__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--sortiva-surface);
+  border-radius: 999px;
+  box-shadow: var(--sortiva-shadow);
+  padding: 8px 8px 8px 20px;
+  margin-top: 26px;
+}
+
+.sortiva-preview-form__label {
+  position: absolute;
+  left: -9999px;
+}
+
+.sortiva-preview-form__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline-offset: 4px;
+  background: transparent;
+  font: inherit;
+  padding: 10px 0;
+}
+
+.sortiva-preview-form__note,
+.sortiva-preview-form__hint {
+  color: var(--sortiva-text-muted);
+  font-size: 13px;
+  margin: 10px 2px 0;
+}
+
+.sortiva-preview-form__hint {
+  color: var(--sortiva-critical);
+}
+
+.sortiva-preview {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 24px;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sortiva-preview__label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sortiva-text-faint);
+  margin: 0;
+}
+
+.sortiva-preview__heading {
+  font-family: var(--sortiva-font-heading);
+  font-size: 20px;
+  margin: 0;
+}
+
+.sortiva-preview__body,
+.sortiva-preview__status {
+  color: var(--sortiva-text-secondary);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.sortiva-preview__teaser {
+  color: var(--sortiva-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.sortiva-preview__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.sortiva-preview__skeleton span {
+  display: block;
+  height: 11px;
+  border-radius: 6px;
+  background: var(--sortiva-surface-sunken);
+}
+
+.sortiva-preview__skeleton span:nth-child(2) {
+  width: 88%;
+}
+.sortiva-preview__skeleton span:nth-child(3) {
+  width: 64%;
+}
+
+/* ── Marketing sections ──────────────────────────────────────────────────── */
+
+.sortiva-landing__section {
+  padding: 48px 0;
+  border-top: 1px solid var(--sortiva-line-strong);
+}
+
+.sortiva-landing__heading {
+  font-family: var(--sortiva-font-heading);
+  font-size: 30px;
+  margin: 10px 0 26px;
+}
+
+.sortiva-landing__grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.sortiva-landing__card {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 22px;
+}
+
+.sortiva-landing__ordinal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--sortiva-radius-inner);
+  background: var(--sortiva-accent-soft);
+  color: var(--sortiva-accent);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.sortiva-landing__card-title {
+  font-family: var(--sortiva-font-heading);
+  font-size: 18px;
+  margin: 14px 0 8px;
+}
+
+.sortiva-landing__card-body {
+  color: var(--sortiva-text-secondary);
+  line-height: 1.55;
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+
+.sortiva-landing__actions {
+  margin-top: 18px;
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 20px 22px;
+}
+
+.sortiva-landing__action-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 12px 0 0;
+}
+
+.sortiva-landing__action dt {
+  font-weight: 700;
+}
+
+.sortiva-landing__action dd {
+  margin: 4px 0 0;
+  color: var(--sortiva-text-muted);
+  font-size: 14px;
+}
+
+.sortiva-landing__faq {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.sortiva-landing__pricing {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 34px;
+  align-items: start;
+}
+
+.sortiva-landing__closing {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow-raised);
+  padding: 34px;
+  margin: 34px 0;
+  text-align: center;
+}
+
+.sortiva-landing__closing-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* ── Plan card ───────────────────────────────────────────────────────────── */
+
+.sortiva-plan {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sortiva-plan__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.sortiva-plan__label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sortiva-text-faint);
+  margin: 0;
+}
+
+.sortiva-plan__price {
+  margin: 6px 0 0;
+}
+
+.sortiva-plan__amount {
+  font-family: var(--sortiva-font-heading);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+.sortiva-plan__period,
+.sortiva-plan__cancel,
+.sortiva-plan__safety {
+  color: var(--sortiva-text-muted);
+  font-size: 14px;
+}
+
+.sortiva-plan__price-missing {
+  color: var(--sortiva-warning);
+  margin: 6px 0 0;
+}
+
+.sortiva-plan__intervals {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--sortiva-surface-sunken);
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.sortiva-plan__interval {
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--sortiva-text-muted);
+  cursor: pointer;
+}
+
+.sortiva-plan__interval[aria-pressed='true'] {
+  background: var(--sortiva-surface);
+  color: var(--sortiva-text);
+  box-shadow: var(--sortiva-shadow);
+}
+
+.sortiva-plan__rule {
+  border: none;
+  border-top: 1px solid var(--sortiva-line);
+  margin: 4px 0;
+}
+
+.sortiva-plan__cap {
+  font-weight: 600;
+  margin: 0;
+}
+
+.sortiva-plan__inclusions,
+.sortiva-plan__facts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--sortiva-text-secondary);
+  font-size: 15px;
+}
+
+.sortiva-plan__facts {
+  color: var(--sortiva-text-muted);
+  font-size: 13px;
+}
+
+.sortiva-plan__inclusions li::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 10px;
+  background: var(--sortiva-positive);
+}
+
+.sortiva-plan__error {
+  color: var(--sortiva-critical);
+  margin-top: 12px;
+}
+
+/* ── Sign-in and the return from Stripe ──────────────────────────────────── */
+
+.sortiva-signin,
+.sortiva-checkout-return {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sortiva-signin__heading,
+.sortiva-checkout-return__title {
+  font-family: var(--sortiva-font-heading);
+  font-size: 24px;
+  margin: 0;
+}
+
+.sortiva-signin__body,
+.sortiva-signin__previewed,
+.sortiva-checkout-return__body,
+.sortiva-checkout-return__lead {
+  color: var(--sortiva-text-secondary);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.sortiva-signin__previewed {
+  color: var(--sortiva-text-muted);
+  font-size: 14px;
+}
+
+.sortiva-checkout-return__back {
+  align-self: flex-start;
+  color: var(--sortiva-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.sortiva-checkout-return__bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--sortiva-surface-sunken);
+  overflow: hidden;
+}
+
+.sortiva-checkout-return__bar span {
+  display: block;
+  height: 100%;
+  width: 40%;
+  border-radius: 999px;
+  background: var(--sortiva-accent);
+}
+
+/* ── The plan screen ─────────────────────────────────────────────────────── */
+
+.sortiva-plan-screen {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+  gap: 30px;
+  align-items: start;
+  padding: 40px 0;
+}
+
+.sortiva-plan-screen__steps {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.sortiva-plan-screen__step {
+  border-radius: 999px;
+  background: var(--sortiva-surface-sunken);
+  color: var(--sortiva-text-muted);
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sortiva-plan-screen__step[aria-current='step'] {
+  background: var(--sortiva-accent-soft);
+  color: var(--sortiva-accent);
+}
+
+.sortiva-narrow {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 60px 24px;
+}
+
+@media (max-width: 900px) {
+  .sortiva-landing__hero,
+  .sortiva-landing__pricing,
+  .sortiva-landing__grid3,
+  .sortiva-landing__faq,
+  .sortiva-landing__action-list,
+  .sortiva-plan-screen {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sortiva-landing__nav {
+    display: none;
+  }
+  .sortiva-landing__title {
+    font-size: 34px;
+  }
+}
