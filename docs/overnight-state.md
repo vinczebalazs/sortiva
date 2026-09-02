@@ -544,23 +544,144 @@ its ten keys **next to the related block rather than appending**, precisely beca
 had already produced three hand-resolved conflicts. That care is why the fourth did not
 happen.
 
+## `T8.4` LANDED — a job can no longer escape the kill switches. **M8 is closed.**
+
+**Merged as `634f420`, three commits.** Tests **2,270**. This is M8's exit gate.
+
+### The finding inside it is larger than the card
+
+**The gate that reads the kill-switch table existed but had no production caller at all** —
+only tests. **Raising `global.pause_all` genuinely changed nothing, anywhere.** The
+mechanism the whole safety story rests on was decorative.
+
+Every task handler is now wrapped **at the moment it is registered**, so the switches are
+read from the database when a job starts and **no lane can ship a job that forgets to
+ask**. That placement matters: it went into the shared registration path rather than into
+any lane's dispatcher, partly because the lane's directory was not this card's to touch —
+and it turned out to be the stronger design anyway. **A paused job returns having done
+nothing and does not throw**, so an operator's pause does not become a backlog of
+dead-lettered work.
+
+**Six jobs keep running while everything else is paused**, each named with its reason: the
+spend-cap sweep (**pausing the product must not switch off the brake that catches the next
+runaway**), the retention sweep and account close (deletion deadlines are legal, with a
+clock), billing reconciliation, the payment drain, and the mail queue. **Anything not on
+that list is gated** — the safe direction. The worker now refuses to start if nothing
+installed a way to read the switches.
+
+**Four eyes, and an operator command.** Lowering a global switch takes two different named
+people and records both; nothing automatic may lower anything. `pnpm switch` makes the
+manual half reachable — **without it an operator writes SQL by hand, which is how a flip
+gets recorded with no reason and the four-eyes rule gets bypassed.**
+
+**Invariant 17 proved properly.** The test's analytics double **throws on every call**
+rather than silently dropping — which would have proved nothing — asserts it was actually
+called, and then reads all three switches back as active **from our own database**.
+
+**The dashboards are files now**, and the provisioner writes them: applied twice, the
+second run creates nothing; a hand-edited dashboard makes check mode fail by name and
+re-applying puts it back.
+
+### The dormant list is now exact, and this card made it worse
+
+**Founder question 4 is the single most expensive open question in the build.** Cron is off
+because some crontab entries still have no handler, so **none of this runs in production,
+however correct it is:**
+
+| Dormant | What silently never happens |
+|---|---|
+| the spend-cap sweep | **nothing ever reads the money meter — spend is unbounded** |
+| per-account model runaway trip | one store can bill us without limit |
+| global search-data cap | that invoice has no ceiling |
+| preview spend cap | **the one paid path a stranger can trigger has no brake** |
+| judge fail-rate trip *(new)* | a prompt regression mass-produces rejects, or mass-publishes garbage |
+| publish error-rate trip *(new)* | a platform outage keeps being hammered |
+| per-account intent-gap caps *(new)* | a merchant can click these without limit |
+| retention sweep | nothing pruned; **no deleted account ever erased**; store-erasure requests never honoured |
+| the scheduled mail | no summary, no reminders, nothing goes out |
+| billing reconciliation | a missed payment webhook is never repaired |
+
+**The manual switches do work today** — the gate runs at dequeue whether or not cron is on,
+so anything queued by a request or a webhook is gated. **It is the automatic trips that
+never fire, because nothing evaluates them.**
+
+**And the number changed in a way that changes the answer.** The card counted **four**
+handlerless entries, not the eight its predecessor recorded — other lanes have landed
+handlers since. All four belong to Lanes C and D. **So the answer to question 4 may now be
+"wait for two more cards" rather than "relax the rule".** The lane did not relax it.
+
+### Two mechanisms that are built and cannot see
+
+The judge fail-rate and publish error-rate trips are complete — arithmetic, thresholds,
+switches, fixtures — but **nothing records a draft's gate decision or a publish attempt
+yet.** Each reads through a declared port whose stand-in returns **"not measurable" rather
+than a healthy zero**, both are in the stub registry, and the sweep logs that it could not
+measure on every run. That distinction is the whole point: a healthy zero would have read
+as "nothing is failing".
+
+**Stubs went 7 → 9** for this reason, which is the registry working as intended.
+
+### What M8's exit gate actually proves, and what it does not
+
+It proves the ops layer's **mechanisms**. It does not prove they run. Beyond the dormant
+table: a merchant who deletes their account **still gets no email** (the type column has no
+value for it — one enum value, so a mini-wave); three of the attention list's five
+conditions and both article-shaped email facts are stubs awaiting the articles table; there
+is **zero real-vendor evidence for email** — the pipeline runs end to end with an empty
+outbox, and a production deploy that loses the mail key mails nobody and says so only in a
+log line; **the analytics project has never been touched**, all 32 definitions proved
+against a stand-in; four eyes is a policy rather than a workflow, since one operator who
+knows a colleague's name can type it; and there is no incidents table, so there is nowhere
+to record what an operator *found* when they investigated a trip — only what raised it.
+
+**An invariant test caught the card mid-build and it fixed its own side rather than the
+test:** importing a flag's name from the preview module violated invariant 2's blanket ban
+on importing preview code into the rest of the product. The catalogue now carries its own
+copy of that one string, **pinned by a test that reads the preview module as text** — a pin
+with no dependency. That is the right instinct, and the same one `T2.4` showed when it
+fixed its test rather than widening the quarantine allowlist.
+
+**Files outside Lane G:** the start-up hook and the crontab — **both integrator-resolved
+ordered files** — plus unowned runtime files and append-only repository additions. **The
+copy file was untouched**, because the user-facing side of an outage is already a canonical
+string and everything this card added is operator-facing. **`.env.example` gained one
+variable**, and the integrator added it to `main`'s gitignored `.env` to keep the gate green.
+
 ## Right now
 
-**Status at 2026-09-02, 23:50.** `main` is at `c4b853f`, clean. **Fifteen cards landed
-tonight**: `T8.0`, `T-START`, `T-ANALYTICS`, `T3.4`, `T8.1`, `T-EMAIL`, `T9.3`, `T2.2`,
-`T8.2`, `T9.4`, `T2.3`, `T2.4`, `T8.3`, `T9.5` — plus the bell wiring. Tests **2,157**, up
-from 1,362 — **795 added**. Stubs **7**. Copy file **804 keys**, from 331.
+**Status at 2026-09-03, 00:15.** `main` is at `634f420`, clean. **Seventeen cards landed
+overnight**, plus the bell wiring: `T8.0`, `T-START`, `T-ANALYTICS`, `T3.4`, `T8.1`,
+`T-EMAIL`, `T9.3`, `T2.2`, `T8.2`, `T9.4`, `T2.3`, `T2.4`, `T8.3`, `T9.5`, `T2.5`, `T8.4`.
+Tests **2,270**, up from 1,362 — **908 added**. Stubs **9** (up from 7 — `T8.4` declared two
+of its own that cannot see yet, which is the registry working). Copy file **804 keys**, from
+331. `.env` now **38** variables.
 
 **`pnpm eval` is red and stays red** until the founder decides. Every other command is
 green. **Do not describe this tree as fully green.**
 
+**`M8` is closed** — its exit gate landed. **`M2` is one card from closing** and **`M9` is
+two.**
+
 | Lane | Branch | Where it is |
 |---|---|---|
-| B — Store Intelligence | `lane-b` | `T-START`, `T2.2`, `T2.3`, `T2.4` merged. **`T2.5` building — the biggest unblock left.** Lane C and the whole content engine wait behind it |
-| C — Search Intelligence | `lane-c` | `T3.4`, `T-EMAIL` merged. **Idle, held** — becomes available the moment `T2.5` lands |
-| F — Frontend | `lane-f` | `T-ANALYTICS`, `T9.3`, `T9.4`, `T9.5` merged. **`T9.6` building.** Then `T9.7`, `T9.8` |
-| G — Ops & notifications | `lane-g` | `T8.0`, `T8.1`, `T8.2`, `T8.3` merged. **`T8.4` building — its milestone's exit gate** |
+| B — Store Intelligence | `lane-b` | `T-START`, `T2.2`–`T2.5` merged. **`T2.6` building** — first card to spend with the search vendor. Then `T2.7` closes the milestone |
+| C — Search Intelligence | `lane-c` | `T3.4`, `T-EMAIL` merged. **`T3.5` building — held all night, freed by `T2.5`.** It is the card invariant 6 rests on, and **an audit is scheduled after it** |
+| F — Frontend | `lane-f` | `T-ANALYTICS`, `T9.3`–`T9.5` merged. **`T9.6` building.** Then `T9.7`, `T9.8` |
+| G — Ops & notifications | `lane-g` | `T8.0`–`T8.4` all merged. **Idle — its milestone is complete.** `T8.2`'s audit ran; **no audit is scheduled after `T8.4`** |
 
+**Lane G has nothing left in its milestone.** The remaining unstarted work belongs to Lanes
+C and D and the exit gates. **Lane G is the obvious home for `R-PRIVACY`, `R-STREAM` or
+`R-DEV`** if the founder wants one taken — but all three are held pending a ruling, and
+`R-PRIVACY` sits in Lane B's directory besides.
+
+**Four audits have run, all read-only, all held, none stopped a lane.** A fifth is scheduled
+after `T3.5`, which is building now.
+
+**Three `.env` incidents, one lesson.** `.env` is gitignored and per-worktree, so every time
+a card adds a variable the integrator must add it to `main`'s copy by hand, and to a lane's
+copy **only once that lane's branch also carries the matching `.env.example`**. Refreshing a
+worktree ahead of its branch is what made `env:check` fail with 37 against 36 earlier, and
+cost lane G report space.
 ### Three remediation cards now exist in the build plan
 
 Build plan §7 says findings become cards. **None is fixed** — acting on a finding still needs
@@ -1950,24 +2071,34 @@ short *because* revocation is impossible, so the reason for the number goes away
 *What is blocked:* nothing tonight. It is a security property the product does not have,
 not a broken feature.
 
-**4. Should the recurring job schedule be switched on?** The worker refuses to run
-*any* recurring job until *every* one of the fourteen has a handler, and ten still do
-not — so **none of them runs**. Two of the dormant ones are finished, tested and
-merged: the nightly billing repair, and **the spend caps that pause the product before
-a runaway bill arrives**. Relaxing the rule to "run the ones that have handlers" is one
-line.
+**4. Should the recurring job schedule be switched on — or is the answer now just "wait"?**
+**This is the most expensive open question in the build, and the night changed both its cost
+and its likely answer.**
 
-This used to be bundled with "what starts a merchant's onboarding". That is now
-answered and built (`T-START`, which has the claim queue its own first step), so this
-stands alone as its own question.
+The worker refuses to run *any* recurring job until *every* crontab entry has a handler.
+**The count was ten handlerless when the run started. `T8.3` took it to eight. `T8.4`
+counted it again and found four** — other lanes landed handlers in between. **All four
+belong to Lanes C and D** (`generation_cycle_daily`, `signal_scan_weekly`,
+`replenishment_monthly`, `publish_intent_recovery_sweep`).
 
-*Why it is worth answering during the run rather than after it:* `T2.2` is the first
-card that spends real money at scale, and it is the next card in lane B. The spend caps
-are among the jobs that do not currently run.
+**So the answer may now be "wait for two more cards" rather than "relax the rule"** — which
+is a much cheaper answer, and it was not available this morning.
 
-The integrator's recommendation if you switch it on: run the entries that have handlers
-and log loudly at every start-up naming the ones that do not, so a job that is not
-running says so rather than being silently absent.
+*What is dormant until then, exactly.* The list is in the `T8.4` section above and it is
+worth reading in full, because it is longer than it sounds. The headline: **nothing ever
+reads the money meter, so spend is unbounded**; the preview cap — **the one paid path a
+stranger can trigger** — has no brake; **no deleted account is ever actually erased and
+nothing is ever pruned**; and no scheduled mail goes out at all.
+
+*What does work today:* the **manual** kill switches. `T8.4` put the check at the moment a
+job is dequeued, whether or not cron is running, so anything queued by a request or a
+webhook is gated and an operator can stop it. **It is only the automatic trips that never
+fire, because nothing evaluates them.**
+
+*The integrator's recommendation, unchanged in shape but cheaper now:* if you do switch it
+on, run the entries that have handlers and **log loudly at every start-up naming the ones
+that do not**, so a job that is not running says so rather than being silently absent. But
+given the count is four and falling, waiting is now a real option rather than a stall.
 
 **5. Can the weekly scan ever fall on a day other than Monday?** A canonical sentence the
 product may not reword tells a merchant with no open opportunities that *"the next scan
