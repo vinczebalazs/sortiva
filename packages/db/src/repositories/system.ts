@@ -173,3 +173,65 @@ export async function tripGlobalFlag(
     .returning()
   return row
 }
+
+/**
+ * Lowering a switch. The caller has already had the decision reviewed
+ * (`reviewReset` in `packages/core`) and passes the name — or names — that
+ * review produced; this only writes it.
+ *
+ * Guarded on `reset_at IS NULL`, so two operators racing to lower the same
+ * switch produce one lowering and one "already down" rather than overwriting
+ * each other's record of who agreed. Returns undefined when the switch was not
+ * up.
+ */
+export async function resetGlobalFlag(
+  db: Db,
+  _scope: SystemScope,
+  input: { flag: string; resetBy: string },
+): Promise<OpsFlagRow | undefined> {
+  const [row] = await db
+    .update(opsFlags)
+    .set({ resetAt: sql`now()`, resetBy: input.resetBy })
+    .where(
+      and(eq(opsFlags.scope, 'global'), eq(opsFlags.flag, input.flag), isNull(opsFlags.resetAt)),
+    )
+    .returning()
+  return row
+}
+
+/** The same, for a switch raised about one store. */
+export async function resetAccountFlag(
+  db: Db,
+  scope: AccountScope,
+  input: { flag: string; resetBy: string },
+): Promise<OpsFlagRow | undefined> {
+  const [row] = await db
+    .update(opsFlags)
+    .set({ resetAt: sql`now()`, resetBy: input.resetBy })
+    .where(
+      and(
+        eq(opsFlags.scope, 'account'),
+        eq(opsFlags.accountId, scope.accountId),
+        eq(opsFlags.flag, input.flag),
+        isNull(opsFlags.resetAt),
+      ),
+    )
+    .returning()
+  return row
+}
+
+/**
+ * Every switch that is currently up, newest first — the open-incident list.
+ *
+ * There is no incidents table: an automatic trip never lowers itself, so an
+ * open incident *is* an active flag whose `tripped_by` is `auto`. Manual flags
+ * come back in the same list because an operator wants one answer to "what is
+ * stopped right now", not two.
+ */
+export async function listActiveFlags(db: Db, _scope: SystemScope): Promise<OpsFlagRow[]> {
+  return db
+    .select()
+    .from(opsFlags)
+    .where(isNull(opsFlags.resetAt))
+    .orderBy(sql`${opsFlags.createdAt} DESC`)
+}

@@ -201,3 +201,36 @@ export async function accountsWithVendorSpend(
     )
   return rows.flatMap((r) => (r.accountId === null ? [] : [r.accountId]))
 }
+
+/**
+ * How many paid calls of one kind this account has made inside the window.
+ *
+ * The per-account daily ceilings on intent-gap analysis and OPTIMIZE
+ * generation are counts, not dollars: each one is a fixed bundle of a paid
+ * search read and a model call, and the merchant triggers them by clicking. So
+ * the counter is rows, and it is the same ledger the dollar caps read — one
+ * meter, not two that can disagree.
+ *
+ * Cache replays are excluded. A recommendation served back out of
+ * `request_cache` cost nothing and bought nothing new, so counting it would
+ * spend the merchant's daily allowance on work we did not do.
+ */
+export async function countAccountCalls(
+  db: Db,
+  scope: AccountScope,
+  callType: string,
+  window: SpendWindow,
+): Promise<number> {
+  const [row] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(spendEvents)
+    .where(
+      and(
+        eq(spendEvents.accountId, scope.accountId),
+        eq(spendEvents.callType, callType),
+        eq(spendEvents.cacheHit, false),
+        windowFilter(window),
+      ),
+    )
+  return row?.n ?? 0
+}

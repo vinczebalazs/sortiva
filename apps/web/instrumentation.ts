@@ -45,8 +45,15 @@ export async function register() {
   // out of our own ledger and pauses whatever crossed a ceiling. Handed the
   // database factory rather than a handle, so registering it here opens no
   // connection — the pool appears the first time the sweep actually runs.
-  const { registerOpsTasks } = await import('@sortiva/jobs')
+  const { registerOpsTasks, installKillSwitchReader } = await import('@sortiva/jobs')
   const { db } = await import('@sortiva/db')
+  // Registering a task is what puts it behind the kill switches; this is how
+  // the wrapper that reads them reaches the database. The reader is consulted
+  // when a job runs, not when it is registered, so this may sit anywhere above
+  // the worker start — but the worker refuses to start if it was never called,
+  // because a process whose jobs consult no switches looks exactly like a
+  // healthy one.
+  installKillSwitchReader(db)
   registerOpsTasks(db)
 
   // Onboarding. This is what makes a claimed domain actually start moving: the

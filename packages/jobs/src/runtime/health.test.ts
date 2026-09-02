@@ -3,6 +3,7 @@ import { UnrecordedCapture } from '@sortiva/providers'
 import { TEST_DATABASE_URL, databaseAvailable, setupTestDb, type TestDb } from '@sortiva/db/testing'
 import { resetWorkerLiveness, workerLiveness } from '@sortiva/core/observability/health'
 import { bootstrapWorker } from './bootstrap'
+import { installKillSwitchReader } from './gate'
 
 /**
  * T-OPS: the health check fails when the worker is not running, and this is the
@@ -16,6 +17,11 @@ import { bootstrapWorker } from './bootstrap'
 
 const quiet = { log: () => {}, error: () => {} }
 const available = await databaseAvailable()
+
+// Registering a task is what puts it behind the kill switches, and the worker
+// refuses to start without a way to read them. These cases are about liveness,
+// not about the switches, so they install a reader that is never consulted.
+installKillSwitchReader(() => undefined as never)
 
 describe('WORKER_ENABLED=false', () => {
   it('records that no worker belongs here, which the health check reads as well', async () => {
