@@ -4,40 +4,44 @@ Rewritten after **every** card lands or stops, and re-read before any card is
 launched and before any merge. Its test: a completely fresh session, with none of
 the conversation that produced it, could take over from this file alone.
 
-**Last rewritten:** 2026-09-02, 07:10, by the integrator session. `T9.1` landed
-and merged; the full gate is green on the merged tree. Lane F has moved to `T9.2`.
+**Last rewritten:** 2026-09-02, 18:45, by the integrator session, **as a handoff to
+the session that will run the night**. Eight cards landed today; `main` is green
+(1,362 tests) and the built application starts and serves pages. No lane is running
+and every lane worktree is clean and level with `main`. **The plan for the run is
+`docs/nightly-plan.md`** — read it after this file.
+
 ---
 
 ## Right now
 
-**Three lanes are running.** Work was stopped by the founder at 08:10 and
-restarted at 16:30 on 2026-09-02. `main` has a clean tree and every card that
-landed is merged and gated.
+**Nothing is running.** `main` is at `522aceb` with a clean tree. All three lane
+worktrees exist, are clean, and are level with `main`:
 
-The two resumed sessions were told the same thing: the work they inherited is
-unverified and ungated, so read it against the card and verify it rather than
-assuming it compiles.
+| Lane | Branch | Worktree | First cards of the run |
+|---|---|---|---|
+| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START`, then `T2.2` — **the critical path** |
+| C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4`, then `T-EMAIL` |
+| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS`, then `T9.3` |
+| G — Ops & notifications | — | **does not exist; create it** | `T8.0`, which needs integrator preparation first |
 
-**Lane B was released at 16:40 on the founder's instruction**, and the reason it
-had been held turned out not to survive checking. It was held because the next
-thing in that lane — the operations card — was believed to depend on the
-unanswered question about what starts a merchant's onboarding. It does not: the
-replay pushes work back onto a queue that already runs, the diagnosis script only
-reads, and the health check and crash reporter touch neither. What the handoff
-actually said was that those tools would have nothing to diagnose until steps ran
-at all, and `T2.1` fixed that.
+**Four decisions were taken on 2026-09-02 and all four are journalled with the
+alternative that was rejected and why.** Do not re-argue any of them from memory —
+read the entries. Three became cards (`T-START`, `T-ANALYTICS`, `T-EMAIL`); the
+fourth is already built and merged (the change contract can now describe a blog post
+or a static page being edited or deleted).
 
-**That card did not exist in the plan until 16:38.** It had been accepted as `D8`
-in `docs/audits/remediation.md` and acknowledged in build plan §5, but never
-written as a card — and a lane session may not be handed a card that exists only
-in conversation. It is now `T-OPS` in §6, in the same format as every other card,
-placed where the build order puts it.
+**Two questions are still open and neither blocks the run:** whether to switch the
+recurring job schedule on, and the deployed start command that would not find the
+build. Both are described in their own sections below.
 
-| Lane | Card | Branch | Worktree | State |
-|---|---|---|---|---|
-| B — Store Intelligence | — | `lane-b` | `../sortiva-lane-b` | free. Next: `T2.2` — the critical path |
-| C — Search Intelligence | — | `lane-c` | `../sortiva-lane-c` | free; `T-BOOT` merged. Next: `T3.4` |
-| F — Frontend | — | `lane-f` | `../sortiva-lane-f` | free. Next: `T9.3` |
+**The learning loop is out of v1** on the founder's instruction.
+
+**A warning about editing this file.** Two separate scripted edits have damaged it.
+One replaced a span between two headings and swallowed five sections, including both
+founder decisions; it was restored from git. Another used a pattern that matched
+nothing, so the timestamp silently stayed eight hours stale while the body updates
+landed. **Edit it by hand or by line position, verify the section list afterwards
+(`grep -n '^## '`), and re-read the result.**
 
 ## Picking this up again
 
