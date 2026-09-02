@@ -10,6 +10,8 @@ import {
 import '@sortiva/ui/tokens.css'
 import '@sortiva/ui/styles/shell.css'
 import { loadShellState } from './_lib/shell-state'
+import { browserAnalyticsConfig } from './_lib/analytics'
+import { AnalyticsMount } from './_lib/AnalyticsMount'
 
 /**
  * Every authenticated screen renders inside this. It fetches the two facts the
@@ -17,10 +19,17 @@ import { loadShellState } from './_lib/shell-state'
  * them to the shell, which decides what the rail locks and which notices are
  * raised.
  *
+ * It is also where reporting is switched on, because this is the outermost
+ * thing every authenticated screen has in common. The public pages are outside
+ * it deliberately: everything their funnel needs is already recorded by the
+ * server as the work happens, so putting a second copy in the browser would
+ * only make the two disagree.
+ *
  * Screens themselves know nothing about any of it.
  */
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const { account, settings, acceptLanguage } = await loadShellState()
+  const analytics = browserAnalyticsConfig()
 
   const t = createTranslate(
     resolveLanguage({
@@ -30,14 +39,21 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   )
 
   return (
-    <AppShell
-      t={t}
-      nav={navContextFromAccount(account as ShellAccount)}
-      banners={bannerContextFromAccount(account as ShellAccount, {
-        vacationMode: settings?.vacationMode ?? false,
-      })}
+    <AnalyticsMount
+      accountId={account.accountId ?? null}
+      domain={account.domain?.normalized ?? null}
+      projectKey={analytics.projectKey}
+      host={analytics.host}
     >
-      {children}
-    </AppShell>
+      <AppShell
+        t={t}
+        nav={navContextFromAccount(account as ShellAccount)}
+        banners={bannerContextFromAccount(account as ShellAccount, {
+          vacationMode: settings?.vacationMode ?? false,
+        })}
+      >
+        {children}
+      </AppShell>
+    </AnalyticsMount>
   )
 }

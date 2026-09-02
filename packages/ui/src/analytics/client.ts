@@ -1,12 +1,18 @@
-import type { UiEventName, UiEventShapes } from './events'
+import {
+  checkEventProperties,
+  type PropertyValue,
+  type RejectedProperty,
+  type UiEventName,
+  type UiEventShapes,
+} from './events'
 
 /**
  * How a screen reports what the merchant did.
  *
- * Screens call this and nothing else. What carries the event to the analytics
- * vendor is deliberately not decided here — see the note in `DECISIONS.md` for
- * T9.1 — so every screen can be built and tested now, and the transport is
- * bound in one place later without touching a single call site.
+ * Screens call this and nothing else. Which vendor carries the event, and how,
+ * is decided in `browser.ts` — the only file in the product that knows the
+ * vendor exists — so a screen is testable with no vendor and no network, and
+ * the vendor can change without touching a call site.
  */
 export interface UiAnalytics {
   capture<E extends UiEventName>(event: E, properties: UiEventShapes[E]): void
@@ -21,19 +27,33 @@ export const noopUiAnalytics: UiAnalytics = { capture: () => {} }
 
 export interface RecordedUiEvent {
   readonly event: UiEventName
-  readonly properties: Record<string, unknown>
+  readonly properties: Record<string, PropertyValue>
+  /** What the property table refused, if anything. Empty on every ordinary call. */
+  readonly rejected: readonly RejectedProperty[]
 }
 
-/** The test double: remembers what a screen reported, so a test can assert on it. */
+/**
+ * The test double: remembers what a screen reported, so a test can assert on it.
+ *
+ * It runs the *same* property check as the live transport, so a test asserting
+ * "an article title cannot reach analytics" is asserting production behaviour
+ * rather than the double's.
+ */
 export class RecordingUiAnalytics implements UiAnalytics {
   readonly events: RecordedUiEvent[] = []
 
   capture<E extends UiEventName>(event: E, properties: UiEventShapes[E]): void {
-    this.events.push({ event, properties: { ...properties } })
+    const checked = checkEventProperties(event, properties)
+    this.events.push({ event, properties: checked.properties, rejected: checked.rejected })
   }
 
   named(event: UiEventName): readonly RecordedUiEvent[] {
     return this.events.filter((recorded) => recorded.event === event)
+  }
+
+  /** Everything the property table refused across every event recorded so far. */
+  get rejected(): readonly RejectedProperty[] {
+    return this.events.flatMap((recorded) => recorded.rejected)
   }
 
   clear(): void {
