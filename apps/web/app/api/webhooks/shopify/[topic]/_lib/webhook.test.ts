@@ -48,7 +48,7 @@ describe.skipIf(!available)('the Shopify webhook receiver', () => {
     await harness.pool.query('truncate webhook_events')
   })
 
-  const options = () => ({ secret: SECRET, database: harness.db, enqueue: false })
+  const options = () => ({ secret: SECRET, getDatabase: () => harness.db, enqueue: false })
 
   it('accepts a genuine delivery and writes it down', async () => {
     const body = '{"id":700,"title":"Shoe","updated_at":"2026-06-14T10:00:00Z"}'
@@ -140,7 +140,7 @@ describe.skipIf(!available)('the Shopify webhook receiver', () => {
   it('refuses everything when no secret is configured', async () => {
     const response = await handleShopifyWebhook(signed('{"id":1}'), 'products/update', {
       secret: '',
-      database: harness.db,
+      getDatabase: () => harness.db,
       enqueue: false,
     })
     // The safe direction: with no secret every signature would verify.

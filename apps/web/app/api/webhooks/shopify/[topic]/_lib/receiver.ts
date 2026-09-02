@@ -1,5 +1,5 @@
 import { isKnownTopic } from '@sortiva/core'
-import { db, recordWebhookEvent, systemScope, type Database } from '@sortiva/db'
+import { recordWebhookEvent, systemScope, type Database } from '@sortiva/db'
 import { shopHandleFrom, verifyWebhookHmac } from '@sortiva/providers'
 // A deep import, not the package barrel: the barrel re-exports the spend-cap
 // sweep, which pulls the threshold config's file loader into a bundle with no
@@ -23,7 +23,13 @@ import { enqueueShopifyWebhookDrain } from '@sortiva/jobs/ingestion/queue'
 export interface ShopifyReceiverOptions {
   /** The app secret Shopify signs with. Read from the environment in production. */
   secret?: string
-  database?: Database
+  /**
+   * Where the database comes from. A factory rather than a handle: this module
+   * is imported when the route file is loaded, and opening a connection at that
+   * moment would open one during the build. The concrete choice is made in the
+   * Shopify composition root, which is the one file allowed to name it.
+   */
+  getDatabase: () => Database
   /** Off in tests that assert on the response alone. */
   enqueue?: boolean
 }
@@ -33,7 +39,7 @@ const ACK = { received: true } as const
 export async function handleShopifyWebhook(
   request: Request,
   topicFromPath: string,
-  options: ShopifyReceiverOptions = {},
+  options: ShopifyReceiverOptions,
 ): Promise<Response> {
   const secret = options.secret ?? process.env.SHOPIFY_API_SECRET
   if (!secret) {
@@ -74,7 +80,7 @@ export async function handleShopifyWebhook(
     return problem(400, 'invalid_body', 'The delivery body was not JSON.')
   }
 
-  const database = options.database ?? db()
+  const database = options.getDatabase()
   const system = systemScope('a webhook is verified and stored before it is routed to an account')
 
   // Insert-or-ignore on Shopify's own delivery id: a redelivery writes nothing
@@ -104,7 +110,7 @@ function problem(status: number, code: string, message: string): Response {
   return Response.json({ error: { code, message } }, { status })
 }
 
-export function makeShopifyWebhookRoute(options: ShopifyReceiverOptions = {}) {
+export function makeShopifyWebhookRoute(options: ShopifyReceiverOptions) {
   return async (request: Request, context: { params: Promise<{ topic: string }> }) => {
     const { topic } = await context.params
     return handleShopifyWebhook(request, decodeURIComponent(topic), options)

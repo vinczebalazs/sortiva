@@ -125,6 +125,19 @@ export function ingestionDeps(): IngestionDeps {
   }
 }
 
+/**
+ * What the Shopify webhook receiver runs against.
+ *
+ * The database arrives as a factory rather than a handle: the receiver module is
+ * loaded when its route file is, and opening a connection then would open one
+ * during the build. Naming the concrete database is this file's job — it is the
+ * composition root for everything Shopify — and the receiver itself runs no
+ * query that does not go through a repository.
+ */
+export function shopifyWebhookOptions(): { getDatabase: typeof db } {
+  return { getDatabase: db }
+}
+
 export function shopifyOauthDeps(): ShopifyOauthDeps {
   const store = connections()
   return {
