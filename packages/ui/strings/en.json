@@ -46,6 +46,16 @@
   "billing.cancelAnytime": "Cancel anytime.",
   "billing.checkoutCanceled": "No charge was made.",
 
+  "settings.deleteAccount.heading": "Delete your account",
+  "settings.deleteAccount.confirmLabel": "Type DELETE to confirm",
+  "settings.deleteAccount.confirmWord": "DELETE",
+  "settings.deleteAccount.submit": "Delete my account",
+  "settings.deleteAccount.fact.noFurtherCharges": "Your subscription is cancelled immediately — there will be no further charges.",
+  "settings.deleteAccount.fact.articlesStay": "Your published articles stay on your store. We never touch them.",
+  "settings.deleteAccount.fact.grantsReturned": "We hand back access to your Shopify store and your Search Console.",
+  "settings.deleteAccount.fact.domainReserved": "Your domain stays reserved for 7 days, in case this was a mistake.",
+  "settings.deleteAccount.fact.dataErased": "Everything we hold about your store is erased within 30 days.",
+
   "shell.skipToContent": "Skip to content",
   "shell.notifications": "Notifications",
   "shell.notificationsUnread": "Notifications, unread",

@@ -1,6 +1,7 @@
 import { and, eq, inArray, isNotNull, isNull, lt, sql } from 'drizzle-orm'
 import type { Db } from '../client'
 import {
+  accountSettings,
   accounts,
   competitors,
   domains,
@@ -73,6 +74,56 @@ export async function loadAccountLifecycle(
     .where(eq(accounts.id, scope.accountId))
     .limit(1)
   return row
+}
+
+export interface LifecycleStateRow {
+  deletedAt: Date | null
+  vacationMode: boolean
+  subscription: {
+    status: 'active' | 'past_due' | 'canceled' | 'incomplete' | 'incomplete_expired'
+    cancelAtPeriodEnd: boolean
+    currentPeriodEnd: Date | null
+  } | null
+}
+
+/**
+ * The three facts that decide what an account may do right now, in one read.
+ *
+ * Read together because they are answered together: a dispatcher asking "may
+ * this run" would otherwise make three round trips and could see them from
+ * three different moments.
+ */
+export async function readLifecycleState(
+  db: Db,
+  scope: AccountScope,
+): Promise<LifecycleStateRow | undefined> {
+  const [row] = await db
+    .select({
+      deletedAt: accounts.deletedAt,
+      vacationMode: accountSettings.vacationMode,
+      status: subscriptions.status,
+      cancelAtPeriodEnd: subscriptions.cancelAtPeriodEnd,
+      currentPeriodEnd: subscriptions.currentPeriodEnd,
+    })
+    .from(accounts)
+    .leftJoin(accountSettings, eq(accountSettings.accountId, accounts.id))
+    .leftJoin(subscriptions, eq(subscriptions.accountId, accounts.id))
+    .where(eq(accounts.id, scope.accountId))
+    .limit(1)
+  if (!row) return undefined
+  return {
+    deletedAt: row.deletedAt,
+    // No settings row yet means nothing has been switched on, and vacation mode
+    // is something a merchant switches on.
+    vacationMode: row.vacationMode ?? false,
+    subscription: row.status
+      ? {
+          status: row.status,
+          cancelAtPeriodEnd: row.cancelAtPeriodEnd ?? false,
+          currentPeriodEnd: row.currentPeriodEnd,
+        }
+      : null,
+  }
 }
 
 /**

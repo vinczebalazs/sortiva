@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
+  ACCOUNT_DELETION_CONFIRM_WORD,
+  ACCOUNT_DELETION_FACTS,
   CANCELLATION_FACTS,
   PLAN_CANCEL_ANYTIME,
   PLAN_CAP_LINE,
@@ -65,6 +67,23 @@ describe('the copy an earlier card had to park in packages/core', () => {
       t('appendixA.cancellationFact.generationStops'),
       t('appendixA.cancellationFact.readAccessKept'),
     ]).toEqual([...CANCELLATION_FACTS])
+  })
+
+  /**
+   * The delete-account screen's five sentences. Each is a promise the deletion
+   * code then has to keep, so they live beside that code as well as here and
+   * the two are pinned together — a copy edit that quietly weakened one of them
+   * would otherwise be invisible.
+   */
+  it('agrees with the deletion facts the code keeps', () => {
+    expect([
+      t('settings.deleteAccount.fact.noFurtherCharges'),
+      t('settings.deleteAccount.fact.articlesStay'),
+      t('settings.deleteAccount.fact.grantsReturned'),
+      t('settings.deleteAccount.fact.domainReserved'),
+      t('settings.deleteAccount.fact.dataErased'),
+    ]).toEqual([...ACCOUNT_DELETION_FACTS])
+    expect(t('settings.deleteAccount.confirmWord')).toBe(ACCOUNT_DELETION_CONFIRM_WORD)
   })
 })
 
