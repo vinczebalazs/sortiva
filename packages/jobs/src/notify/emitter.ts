@@ -91,6 +91,13 @@ export class DbNotificationEmitter implements NotificationEmitter {
    * A failure here is logged and swallowed. The notification is already written
    * and the state change it reports is committing with it; losing the mail is
    * bad, losing the decision because the mail could not be queued is worse.
+   *
+   * Swallowing it is only *possible* because the whole fan-out runs inside a
+   * savepoint. Postgres aborts an entire transaction on any failed statement, so
+   * catching the error here without one would leave the caller's transaction
+   * poisoned: every statement after it fails, and the state change this
+   * notification reports rolls back — the exact outcome the catch exists to
+   * prevent. The savepoint is what confines the damage to the email.
    */
   private async fanOutToEmail(
     db: Db,
@@ -102,42 +109,44 @@ export class DbNotificationEmitter implements NotificationEmitter {
     if (row.email === 'none' || row.email === 'monthly_summary_only') return
 
     try {
-      const scope = accountScope(accountId)
-      const [address, prefs] = await Promise.all([
-        accountEmailAddress(db, scope),
-        readNotificationPrefs(db, scope),
-      ])
-      if (!address) return
+      await db.transaction(async (tx) => {
+        const scope = accountScope(accountId)
+        const [address, prefs] = await Promise.all([
+          accountEmailAddress(tx, scope),
+          readNotificationPrefs(tx, scope),
+        ])
+        if (!address) return
 
-      const suppressed = await isEmailSuppressed(
-        db,
-        systemScope('a suppressed address stays suppressed whichever account is mailing it'),
-        address,
-      )
-      const decision = emailFanOut(type, {
-        suppressed,
-        ...(prefs
-          ? {
-              preferences: {
-                emailArticlePublished: prefs.emailArticlePublished,
-                emailDigestFrequency: prefs.emailDigestFrequency,
-              },
-            }
-          : {}),
-      })
-      if (!decision.send) return
+        const suppressed = await isEmailSuppressed(
+          tx,
+          systemScope('a suppressed address stays suppressed whichever account is mailing it'),
+          address,
+        )
+        const decision = emailFanOut(type, {
+          suppressed,
+          ...(prefs
+            ? {
+                preferences: {
+                  emailArticlePublished: prefs.emailArticlePublished,
+                  emailDigestFrequency: prefs.emailDigestFrequency,
+                },
+              }
+            : {}),
+        })
+        if (!decision.send) return
 
-      await queueEmail(db, scope, {
-        type,
-        // The same key as the notification, so the two channels deduplicate
-        // together and a retried job produces neither a second bell nor a
-        // second email.
-        dedupeKey,
-        templateVersion:
-          type === 'monthly_summary_ready'
-            ? TEMPLATE_VERSIONS['monthly-summary']
-            : TEMPLATE_VERSIONS.notice,
-        state: decision.state,
+        await queueEmail(tx, scope, {
+          type,
+          // The same key as the notification, so the two channels deduplicate
+          // together and a retried job produces neither a second bell nor a
+          // second email.
+          dedupeKey,
+          templateVersion:
+            type === 'monthly_summary_ready'
+              ? TEMPLATE_VERSIONS['monthly-summary']
+              : TEMPLATE_VERSIONS.notice,
+          state: decision.state,
+        })
       })
     } catch (error) {
       runtimeLogger().error('notification.email_fanout_failed', {

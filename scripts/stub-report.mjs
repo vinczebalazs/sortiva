@@ -32,6 +32,15 @@ new doubles.StubNotificationEmitter()
 // importing it is what wires them.
 await import('../packages/core/src/notifications/ports.ts')
 
+// The two halves of the email pipeline that cannot see articles yet: the
+// monthly summary cannot report what went live or what the quality bar held
+// back, and the seven-day "where did you publish this" reminder can find nothing
+// to remind anyone about. Both register on import, and both are the reason this
+// report exists — a summary reporting an empty month looks exactly like a store
+// that had a quiet one.
+await import('../packages/jobs/src/notify/assembler.ts')
+await import('../packages/jobs/src/notify/export-url-reminder.ts')
+
 const stubs = wiredStubs()
 
 console.log(`${stubs.length} stub(s) wired:\n`)

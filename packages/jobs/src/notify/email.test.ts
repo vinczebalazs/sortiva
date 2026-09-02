@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { sql } from 'drizzle-orm'
 import type pg from 'pg'
 import { accountAttribution, EmailSendFailure } from '@sortiva/core'
 import { makeEmailStore } from '@sortiva/db'
@@ -164,6 +165,43 @@ describe.skipIf(!available)('the email pipeline', () => {
 
       // And the drain never touches it, because it only reads `queued`.
       expect((await drainEmailQueue(deps)).queued).toBe(0)
+    })
+
+    it('cannot roll back the decision it was reporting when the mail fails to queue', async () => {
+      // Postgres aborts a whole transaction on any failed statement, so a
+      // caught error is only survivable inside a savepoint. Without one, the
+      // gate decision or publish this notification reports would be rolled back
+      // by a failure to write an email row — the opposite of what catching it is
+      // for. A trigger is the only reliable way to make that insert fail.
+      await pool.query(`
+        CREATE FUNCTION refuse_email() RETURNS trigger AS $$
+          BEGIN RAISE EXCEPTION 'the mail could not be queued'; END;
+        $$ LANGUAGE plpgsql;
+        CREATE TRIGGER refuse_email BEFORE INSERT ON email_sends
+          FOR EACH ROW EXECUTE FUNCTION refuse_email();
+      `)
+
+      try {
+        await ctx.db.transaction(async (tx) => {
+          await emitter
+            .inTransaction(tx)
+            .emit('payment_failed', {}, 'sub-1', accountAttribution(accountId))
+          // Stands in for the state change the notification reports, written
+          // after it. In an aborted transaction every statement fails, so this
+          // succeeding is the proof.
+          await tx.execute(sql`select 1`)
+        })
+      } finally {
+        await pool.query('DROP TRIGGER refuse_email ON email_sends')
+        await pool.query('DROP FUNCTION refuse_email()')
+      }
+
+      const { rows: bell } = await pool.query<{ n: number }>(
+        'SELECT count(*)::int AS n FROM notifications WHERE account_id = $1',
+        [accountId],
+      )
+      expect(bell[0]!.n).toBe(1)
+      expect(await emailRows()).toHaveLength(0)
     })
   })
 
