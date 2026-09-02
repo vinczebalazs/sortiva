@@ -288,5 +288,8 @@
 
   "email.layout.footerReason": "You are receiving this because you have a Sortiva account.",
   "email.layout.unsubscribe": "Stop receiving these",
-  "email.layout.summaryUnsubscribe": "Stop receiving the monthly summary"
+  "email.layout.summaryUnsubscribe": "Stop receiving the monthly summary",
+
+  "unsubscribe.title": "You are unsubscribed",
+  "unsubscribe.body": "We will not send you that kind of email again. Anything that needs your attention still reaches you in the app, and you can turn this back on in Settings whenever you like."
 }
