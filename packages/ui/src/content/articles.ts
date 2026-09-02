@@ -139,6 +139,18 @@ export function criterionLabel(criterion: string, t: Translate = defaultTranslat
   }
 }
 
+/** What happened to an article, in words. Unknown events read as themselves. */
+export function articleEventLabel(event: string, t: Translate = defaultTranslate): string {
+  try {
+    return t(`content.article.event.${event}` as StringKey)
+  } catch {
+    return event
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/[_-]+/g, ' ')
+      .replace(/^./, (char) => char.toUpperCase())
+  }
+}
+
 /**
  * The criteria the override dialog has to restate.
  *

@@ -854,5 +854,14 @@
   "content.override.excluded": "Its results are shown to you but kept out of our quality tuning.",
   "content.override.confirm": "Publish anyway",
   "content.override.cancel": "Keep it unpublished",
-  "content.override.published": "Published against recommendation."
+  "content.override.published": "Published against recommendation.",
+
+  "content.article.event.generated": "Written",
+  "content.article.event.published": "Published",
+  "content.article.event.approved": "Approved by you",
+  "content.article.event.discarded": "Discarded by you",
+  "content.article.event.rejected": "Held back",
+  "content.article.event.repaired": "Repaired",
+  "content.article.event.refreshed": "Refreshed",
+  "content.article.event.overridden": "Published against recommendation"
 }
