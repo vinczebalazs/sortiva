@@ -121,6 +121,7 @@ class FakeShopReader implements ShopReader {
       ianaTimezone: 'Europe/London',
       countryCode: 'GB',
       currency: 'GBP',
+      primaryLocale: 'en-GB',
     }
   }
 }
@@ -149,6 +150,21 @@ function world(domain: string): World {
   llm.setDefault('distill', () => {
     throw new Error('an empty store has nothing to distil')
   })
+  // The persona is the one model call a store with no products still makes: it
+  // is a judgement about the business, and a shop with an empty catalogue is
+  // still a shop. The answer names a language and a country the store's own
+  // settings contradict, so the test can see which one is kept.
+  llm.setDefault('persona', () =>
+    JSON.stringify({
+      business_description:
+        'Acme Candles sells hand-poured scented candles for the home. The range is small and made in batches.',
+      product_categories: ['scented candles'],
+      main_language: 'fr',
+      country: 'FR',
+      audience: 'People furnishing a home',
+      brand_tone: 'warm and plain',
+    }),
+  )
 
   const deps: IngestionDeps = {
     db: harness.db,
@@ -160,6 +176,7 @@ function world(domain: string): World {
     connections,
     llm,
     distillPrompt: { version: 'distill.v1', text: 'extract only' },
+    personaPrompt: { version: 'persona.v1', text: 'describe the shop' },
     notifications,
     domains: {
       async findAccountByShopHandle() {
@@ -282,12 +299,18 @@ describe('a Shopify store being onboarded', () => {
     const resumed = await dispatchIngestion(w.deps, { accountId })
 
     // Permission granted, so the run carries straight on: it reads the store,
-    // distils what it found, and groups those products into families. Building
-    // the store's business profile is the next step and belongs to a later card,
-    // so the run correctly stops there.
-    expect(resumed?.executed).toEqual(['oauth_wait', 'catalog_sync', 'distill', 'family_group'])
+    // distils what it found, groups those products into families, and builds
+    // the store's business profile from them. Keywords and competitors are the
+    // next step and belong to a later card, so the run correctly stops there.
+    expect(resumed?.executed).toEqual([
+      'oauth_wait',
+      'catalog_sync',
+      'distill',
+      'family_group',
+      'persona',
+    ])
     expect(resumed?.stoppedBecause).toBe('no_handler')
-    expect(resumed?.stoppedAt).toBe('persona')
+    expect(resumed?.stoppedAt).toBe('keywords_competitors')
     expect(await domainState()).toBe('ingesting')
 
     const states = await stepStates(jobId)
@@ -296,7 +319,8 @@ describe('a Shopify store being onboarded', () => {
     expect(states['catalog_sync']).toBe('succeeded')
     expect(states['distill']).toBe('succeeded')
     expect(states['family_group']).toBe('succeeded')
-    expect(states['persona']).toBe('pending')
+    expect(states['persona']).toBe('succeeded')
+    expect(states['keywords_competitors']).toBe('pending')
   })
 
   it('recognises work already done rather than paying for it twice', async () => {

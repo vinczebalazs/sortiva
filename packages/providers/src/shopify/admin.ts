@@ -52,6 +52,12 @@ export interface ShopProfile {
   readonly countryCode: string | null
   readonly currency: string | null
   readonly ianaTimezone: string | null
+  /**
+   * The language the merchant configured the storefront in, e.g. `de` or
+   * `de-DE`. The strongest evidence there is for what language we should write
+   * in: it is a statement the merchant made rather than anything we inferred.
+   */
+  readonly primaryLocale: string | null
 }
 
 export interface ShopifyAdminClientOptions {
@@ -99,6 +105,7 @@ export class ShopifyAdminClient {
       countryCode: asStringOrNull(shop['country_code']),
       currency: asStringOrNull(shop['currency']),
       ianaTimezone: asStringOrNull(shop['iana_timezone']),
+      primaryLocale: asStringOrNull(shop['primary_locale']),
     }
   }
 

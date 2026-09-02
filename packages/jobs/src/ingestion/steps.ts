@@ -12,6 +12,7 @@ import { catalogSyncStep } from './catalog'
 import type { IngestionDeps } from './deps'
 import { distillStep } from './distill'
 import { familyGroupStep } from './families'
+import { personaStep } from './persona'
 
 /**
  * The first two steps of onboarding: work out what the merchant's site runs on,
@@ -159,6 +160,7 @@ export const INGESTION_STEPS: Partial<Record<JobStepName, StepDefinition>> = {
   catalog_sync: catalogSyncStep,
   distill: distillStep,
   family_group: familyGroupStep,
+  persona: personaStep,
 }
 
 async function detect(deps: IngestionDeps, domain: string): Promise<PlatformDetection> {
