@@ -1,5 +1,4 @@
 export * from './connection'
-export * from './copy'
 export * from './detect'
 export * from './ports'
 export * from './scopes'
