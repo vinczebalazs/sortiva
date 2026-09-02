@@ -143,6 +143,14 @@ export default tseslint.config(
       // job cannot be given its database by a request, so somebody at the top
       // has to name it.
       'apps/web/instrumentation.ts',
+      // Same shape again: the file that decides which Shopify, which page
+      // fetcher, which database and which token cipher the store-connection
+      // routes and the onboarding steps run against. It runs no query — every
+      // query it enables goes through a repository that takes an account scope,
+      // in `_lib/bindings.ts`, which takes its handles as arguments and is not
+      // exempt. A route handler and a queue task are both called by their
+      // framework, so neither has a caller of ours to be passed these by.
+      'apps/web/app/api/shopify/_lib/config.ts',
     ],
     rules: { 'sortiva/no-raw-db-access': 'off' },
   },

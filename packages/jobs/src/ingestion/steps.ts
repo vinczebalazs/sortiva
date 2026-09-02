@@ -3,10 +3,11 @@ import {
   detectPlatform,
   type PlatformDetection,
 } from '@sortiva/core'
+import type { Db } from '@sortiva/db'
 import { RetryableFailure, TerminalFailure, TokenInvalidFailure } from '../runtime/errors'
 import { inputVersion } from '../runtime/idempotency'
 import type { StepContext } from '../runtime/runStep'
-import type { JobStepName } from '../runtime/steps'
+import { findRunForAccount, findStep, type JobStepName } from '../runtime/steps'
 import type { IngestionDeps } from './deps'
 
 /**
@@ -198,4 +199,23 @@ async function requireDomain(deps: IngestionDeps, accountId: string): Promise<st
     throw new TerminalFailure('no_domain', 'This account has not claimed a domain.')
   }
   return domain
+}
+
+/**
+ * The store name detection found, read back off the step that found it.
+ *
+ * It lives in the step's recorded output rather than in a column of its own,
+ * because the columns of this schema wave were fixed before this card and a
+ * feature card does not add migrations. The step output is durable, is already
+ * the record of what that step decided, and is exactly one row away.
+ */
+export async function readDetectedShopHandle(
+  db: Db,
+  accountId: string,
+): Promise<string | undefined> {
+  const run = await findRunForAccount(db, accountId)
+  if (!run) return undefined
+  const step = await findStep(db, run.jobId, 'detect')
+  const output = step?.outputRef as DetectOutput | null | undefined
+  return output?.shopHandle
 }
