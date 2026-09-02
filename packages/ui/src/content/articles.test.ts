@@ -149,12 +149,18 @@ describe('the address of an exported article', () => {
   })
 
   it('refuses a lookalike domain that merely ends in the claimed one', () => {
-    expect(checkPublishedUrl('https://notexample-outdoor.com/a', domain).problem).toBe('off_domain')
+    expect(checkPublishedUrl('https://notexample-outdoor.com/a', domain)).toEqual({
+      ok: false,
+      problem: 'off_domain',
+    })
   })
 
   it('refuses something that is not a web address at all', () => {
-    expect(checkPublishedUrl('blogs/a', domain).problem).toBe('malformed')
-    expect(checkPublishedUrl('javascript:alert(1)', domain).problem).toBe('malformed')
+    expect(checkPublishedUrl('blogs/a', domain)).toEqual({ ok: false, problem: 'malformed' })
+    expect(checkPublishedUrl('javascript:alert(1)', domain)).toEqual({
+      ok: false,
+      problem: 'malformed',
+    })
   })
 })
 

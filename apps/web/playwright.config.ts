@@ -49,6 +49,14 @@ function repoEnv(): Record<string, string> {
 
 const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:3000'
 const PUBLIC_FUNNEL = '**/public-funnel.e2e.spec.ts'
+/**
+ * The Content screens run against the same fixture-backed site as the public
+ * funnel, because their flows need a calendar that remembers what was done to
+ * it and dates anchored to the day the run happens on — neither of which a
+ * seeded database gives without also giving a scheduler that would move things
+ * mid-test.
+ */
+const CONTENT = '**/content.e2e.spec.ts'
 const mockedSiteURL = 'http://localhost:3100'
 const deployed = Boolean(process.env.E2E_BASE_URL)
 
@@ -66,7 +74,11 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: PUBLIC_FUNNEL },
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+      testIgnore: [PUBLIC_FUNNEL, CONTENT],
+    },
     // Skipped against a deployed environment, where the fixture server is not
     // running and the real endpoints answer for themselves.
     ...(deployed
@@ -75,6 +87,11 @@ export default defineConfig({
           {
             name: 'public-funnel',
             testMatch: PUBLIC_FUNNEL,
+            use: { ...devices['Desktop Chrome'], baseURL: mockedSiteURL },
+          },
+          {
+            name: 'content',
+            testMatch: CONTENT,
             use: { ...devices['Desktop Chrome'], baseURL: mockedSiteURL },
           },
         ]),
