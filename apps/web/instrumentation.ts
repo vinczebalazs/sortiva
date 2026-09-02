@@ -49,6 +49,17 @@ export async function register() {
   const { db } = await import('@sortiva/db')
   registerOpsTasks(db)
 
+  // Onboarding. This is what makes a claimed domain actually start moving: the
+  // claim writes the run and its steps and queues nothing, so until a handler
+  // exists here the steps sit untouched. The dependencies are built by the
+  // Shopify composition root rather than here, because deciding which Shopify —
+  // the real one or the in-memory stand-in used without credentials — is its
+  // job, not the entry point's.
+  const { registerIngestionTasks, registerReminderTasks } = await import('@sortiva/jobs')
+  const { ingestionDeps, notificationEmitter } = await import('./app/api/shopify/_lib/config')
+  registerIngestionTasks(ingestionDeps)
+  registerReminderTasks(db, notificationEmitter)
+
   const { bootstrapWorker, flushAnalytics } = await import('@sortiva/jobs')
   const worker = await bootstrapWorker({ analytics })
 

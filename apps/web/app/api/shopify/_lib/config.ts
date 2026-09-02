@@ -6,7 +6,7 @@ import {
   TokenCipher,
 } from '@sortiva/providers'
 import { StubNotificationEmitter } from '@sortiva/core'
-import type { ShopifyOAuthProvider } from '@sortiva/core'
+import type { NotificationEmitter, ShopifyOAuthProvider } from '@sortiva/core'
 import { db, dbPool } from '@sortiva/db'
 import {
   dispatchIngestion,
@@ -81,6 +81,15 @@ export function stateSecret(): string {
   return process.env.SHOPIFY_API_SECRET ?? process.env.AUTH_SECRET ?? 'development-only-secret'
 }
 
+/**
+ * Where a notification would go. The real emitter belongs to another lane; until
+ * it lands the stub records the emission and says loudly that it is a stub,
+ * rather than the call site quietly having none.
+ */
+export function notificationEmitter(): NotificationEmitter {
+  return new StubNotificationEmitter()
+}
+
 export function ingestionDeps(): IngestionDeps {
   return {
     db: db(),
@@ -90,9 +99,7 @@ export function ingestionDeps(): IngestionDeps {
     shop: new ShopifyAdminClient(),
     connections: connections(),
     domains: makeDomainStore(db()),
-    // The real emitter is another lane's; until it lands the stub records the
-    // emission and says so, rather than the call site quietly having none.
-    notifications: new StubNotificationEmitter(),
+    notifications: notificationEmitter(),
   }
 }
 
