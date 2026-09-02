@@ -4,25 +4,29 @@ Rewritten after **every** card lands or stops, and re-read before any card is
 launched and before any merge. Its test: a completely fresh session, with none of
 the conversation that produced it, could take over from this file alone.
 
-**Last rewritten:** 2026-09-02, 18:45, by the integrator session, **as a handoff to
-the session that will run the night**. Eight cards landed today; `main` is green
-(1,362 tests) and the built application starts and serves pages. No lane is running
-and every lane worktree is clean and level with `main`. **The plan for the run is
-`docs/nightly-plan.md`** — read it after this file.
+**Last rewritten:** 2026-09-02, 18:55, by the integrator session running the night.
+`main` is at `c9e787b` with a clean tree. Eight cards landed earlier today; `main`
+was green at 1,362 tests and the built application starts and serves pages. **The
+plan for the run is `docs/nightly-plan.md`** — read it after this file.
 
 ---
 
 ## Right now
 
-**Nothing is running.** `main` is at `522aceb` with a clean tree. All three lane
-worktrees exist, are clean, and are level with `main`:
+**Four lane worktrees now exist, all clean and all level with `main` at `c9e787b`.**
+The three older lane branches were 7 to 44 commits behind and were fast-forwarded to
+`main` before anything was launched; lane G's worktree was created for this run,
+`.env` copied into it, and `pnpm install` run there (exit 0).
 
-| Lane | Branch | Worktree | First cards of the run |
+| Lane | Branch | Worktree | Cards this run |
 |---|---|---|---|
 | B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START`, then `T2.2` — **the critical path** |
 | C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4`, then `T-EMAIL` |
-| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS`, then `T9.3` |
-| G — Ops & notifications | — | **does not exist; create it** | `T8.0`, which needs integrator preparation first |
+| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS`, then `T9.3` → `T9.4` → `T9.5` |
+| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | `T8.0`, then `T8.1` → `T8.2` |
+
+**`T8.0`'s deferred-column list has been collected** and is written out in full in its
+own section below, so lane G inherits a list rather than a search.
 
 **Four decisions were taken on 2026-09-02 and all four are journalled with the
 alternative that was rejected and why.** Do not re-argue any of them from memory —
@@ -557,39 +561,103 @@ holds it.
 
 ## `T8.0` — what schema wave 4 actually contains
 
-The card says "any columns deferred via DECISIONS entries from waves 1–3
-(integrator-collected)". Collected, on 2026-09-02, by reading every `DECISIONS.md`
-entry that mentions a migration or a column. **It is thin — an hour of work, not a
-lane's worth**, which is the other half of why it was not launched alongside the
-three building cards.
+**Collected by the integrator on 2026-09-02 at 18:50, by reading every `DECISIONS.md`
+entry that mentions a migration, a column, an index or a table, and checking each
+claim against the migrations and the schema files rather than against the journal
+alone. This is the list the lane inherits; it should not have to search.**
 
-**Genuinely deferred and still wanted — two partial unique indexes**, both
-requested by the `T1.4` entry of 2026-09-01 as "defence in depth":
+A schema wave is a card that is allowed to change the database. Every other card is
+forbidden from adding a migration, so anything a card needed and could not have was
+written down instead and waits here. `T8.0`'s own scope line also says "retention
+bookkeeping".
 
-- on `domains.release_after`, `WHERE release_after IS NULL`. Today a domain is
-  released for someone else to claim only because a sweep job deletes the row; the
-  index would make the release a fact in the database rather than a consequence of
-  a job running. If that sweep never runs, the domain stays blocked forever — safe
-  (nobody is handed someone else's domain) but not what was promised.
-- the matching one on `shopify_conns.invalidated_at`, for the same reason.
+**It is thin — an hour of work, not a lane's worth.** Three items are genuinely
+wanted; everything else that looked outstanding turned out to be built already,
+declined on a substantive ground, or conditional on a card nobody has written.
 
-**Asked about and deliberately declined** — do not revive these without a reason:
+### Wanted — build these
 
-- `spend_events.price_unknown`. `R2` names the gap and says it is not requested: a
-  call we could not price is already identifiable as zero cost with no cache hit,
-  and the check that would produce one now runs at start-up instead, so the row
-  cannot occur.
-- `idempotency_ledger.account_id`. `T2.0b` and `R3` both declined it, and `R3`
-  gives the strong reason: an account column would hand a future data-deletion path
-  a way to erase the record of paid work by account, which is the one thing that
-  table exists to prevent.
+1. **A partial unique index on `domains.release_after`, `WHERE release_after IS NULL`.**
+   Requested by the `T1.4` entry of 2026-09-01 as "defence in depth", in those words.
+   Today a domain is freed for another account to claim only because a sweep job
+   deletes its row. The index would make that release a fact the database enforces
+   rather than a consequence of a job having run. If the sweep never runs, the domain
+   stays blocked forever — which is safe (nobody is handed someone else's domain) but
+   is not the seven-day release the spec promises.
+2. **The matching partial unique index on `shopify_conns.invalidated_at`**, same
+   entry, same reasoning.
+3. **A way to mark an inventory page as deleted.** The inventory is the one row per
+   web address the store publishes. When a merchant deletes a page, the row stays and
+   nothing says the page is gone — `T3.2` chose that deliberately, because deleting
+   the row destroys the only evidence the address ever existed, and marking it needed
+   a column it was not allowed to add. Its entry ends: "This needs the founder or the
+   integrator to settle before the existing-target check ships in `T3.5`." **`T3.5` is
+   the card that breaks without it** — it would recommend improving a page that no
+   longer exists. This is the one item in the wave with a card waiting on it.
 
-**Already built, so no longer outstanding:** `verification_tokens` (the table email
-sign-in was blocked on) exists as of mini-wave 2b.
+**A shape question the lane must not decide alone.** Item 3 can be a nullable
+`deleted_at` timestamp or a state column, and the choice leaks into what `T3.5` reads.
+It is an interface another lane consumes, so under `CLAUDE.md` prime directive 3 the
+lane journals its reasoning and **stops and asks** rather than picking. If that stops
+lane G, it stops cleanly after items 1 and 2.
 
-**Not a migration and therefore not this card:** `R1`'s durable fix — stopping
-`@sortiva/db` from exporting raw tables and giving the job tables scoped helpers.
-That is a `packages/db` refactor and needs its own card.
+### Already built — no longer outstanding, do not re-add
+
+- **`verification_tokens`**, the table email sign-in was blocked on (`T1.1`, 2026-08-31).
+  It exists — `packages/db/migrations/0004_wave2b.sql`.
+- **The durable completed-work ledger.** `docs/audits/remediation.md` lines 103–109
+  still lists "the idempotency ledger's home" under **Still open** and says "Not yet
+  decided". **That page is stale.** The table exists as `idempotency_ledger` in
+  `0004_wave2b.sql`, with a write-once trigger in `0005_wave2b_guards.sql`. Verified
+  by reading the migrations. `docs/nightly-plan.md` inherits the same stale claim and
+  is wrong on that bullet too.
+- **Every table `T8.1` and `T8.2` need.** Checked against the schema files, not
+  assumed: `notifications`, `email_sends`, `email_suppressions` and
+  `notification_prefs` all exist. Lane G's next two cards are not waiting on this wave
+  for anything. Tech §1.7's retention rules (notifications pruned at 90 days,
+  `email_sends` kept 12 months) are sweep behaviour that `T8.3` implements; they need
+  no new column, so "retention bookkeeping" in the card's scope line has no
+  outstanding item behind it that this collection could find.
+
+### Asked about and deliberately declined — do not revive without a new reason
+
+- **`spend_events.price_unknown`.** `docs/nightly-plan.md` lists this as one of the
+  four known deferrals. **It is wrong, and the state file is right.** The `R2` entry
+  names the gap and says in terms it is "Not requested as a schema change", because a
+  vendor call whose price nobody configured now fails when the pricing module loads,
+  which makes the request-time path that would write such a row unreachable. **Checked
+  rather than taken on trust:** `assertEndpointsPriced()` still runs at module load
+  (`packages/providers/src/seo/pricing.ts:103`), so the reasoning still holds after
+  `T-BOOT` moved two other loaders off module load. A call we could not price is
+  already identifiable as zero cost with no cache hit.
+- **`idempotency_ledger.account_id`.** `T2.0b` flagged it rather than taking it, and
+  `R3` gave the strong reason: an account column would hand a future data-deletion
+  path a way to erase the record of paid work account by account, which is the one
+  thing that table exists to prevent.
+
+### Looked outstanding and is not — conditional on a card nobody has written
+
+Each of these appears in `DECISIONS.md` as "that would be a column in the next schema
+wave". None is requested, because the card that would want it does not exist.
+
+- **The detected Shopify store name, queryable before a connection exists** (`T2.1`).
+  It lives in the step's recorded output, which is durable and one indexed row away.
+  Only a card wanting it across accounts would need the column.
+- **A column on `ctr_curve` saying whether its numbers were measured or defaulted**
+  (`T3.3`). Deliberately answered by the absence of a row instead, which is
+  unambiguous where a stored fallback would not be.
+- **Stored cluster share tables** (`T3.3`). Deliberately computed on demand: they are
+  a pure restatement of data already stored, so a stored copy is a second source of
+  truth that goes stale.
+- **A per-episode marker for the Shopify connect reminder** (`T2.1`). The product
+  sends one reminder per account ever, by decision, so nothing needs the marker.
+
+### One thing the card text asks for that does not exist
+
+The card says "Read first: `DECISIONS.md` (class-b entries tagged `schema`)". **There
+is no such tagging.** Entries carry a `Class (filled by audit):` line and it is empty
+almost everywhere. The lane should read this section instead of hunting for a tag,
+and the card text should be corrected.
 
 ## A trap waiting inside `T3.1`, found before the lane hit it
 
