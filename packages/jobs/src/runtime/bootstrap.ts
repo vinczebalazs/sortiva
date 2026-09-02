@@ -5,6 +5,7 @@ import {
   markWorkerStopped,
 } from '@sortiva/core/observability/health'
 import { CRON_ENTRIES } from './crontab'
+import { killSwitchReaderInstalled } from './gate'
 import { registeredTaskNames, taskList } from './tasks'
 import { installSignalHandlers, startWorker, type StartedWorker } from './worker'
 
@@ -65,6 +66,17 @@ export async function bootstrapWorker(
     return undefined
   }
   if (started) return started
+
+  // Every registered handler is wrapped in the kill-switch check, and that
+  // wrapper needs a way to reach the database. Without it, no job would consult
+  // the switches and the process would look exactly like a healthy worker.
+  // Refusing to start is the loud version of that.
+  if (!killSwitchReaderInstalled()) {
+    const detail =
+      'installKillSwitchReader() was never called, so no job would consult the kill switches'
+    markWorkerStopped(`refused to start: ${detail}`)
+    throw new Error(`[worker] ${detail}`)
+  }
 
   const registered = new Set(registeredTaskNames())
   const missing = CRON_ENTRIES.map((e) => e.task).filter((task) => !registered.has(task))

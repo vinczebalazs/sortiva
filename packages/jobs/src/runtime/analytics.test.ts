@@ -7,6 +7,11 @@ import { accountAttribution, captureStubUsed, silentLogger } from '@sortiva/core
 import { appServices, initAppServices, resetAppServices } from '@sortiva/core/runtime/services'
 import { TEST_DATABASE_URL, databaseAvailable, setupTestDb, type TestDb } from '@sortiva/db/testing'
 import { bootstrapWorker, flushAnalytics } from './bootstrap'
+import { installKillSwitchReader } from './gate'
+
+// The worker refuses to start without a way to read the kill switches. This
+// case is about the analytics drain, so the reader is installed and never used.
+installKillSwitchReader(() => undefined as never)
 
 /**
  * Card R5. PostHog had received nothing since the project began, because no

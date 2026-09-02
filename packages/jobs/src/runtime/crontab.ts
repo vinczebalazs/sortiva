@@ -84,10 +84,12 @@ export const CRON_ENTRIES: readonly CronEntry[] = [
     task: 'spend_cap_sweep',
     schedule: '*/5 * * * *',
     why:
-      'Sums the day\'s vendor spending out of our own ledger and pauses whatever crossed a ceiling — ' +
-      'one account, enrichment everywhere, or the logged-out preview. ' +
+      'Reads our own counters and pauses whatever crossed a ceiling. The money ceilings first — ' +
+      'one account, enrichment everywhere, or the logged-out preview — then the ceilings that are ' +
+      'not about money: the quality judge rejecting most of what it sees, publishing failing at the ' +
+      'far end, and a store using up its daily allowance of a paid analysis it triggers by clicking. ' +
       'The interval is what bounds the overspend: nothing else looks at the meter, so between two ' +
-      'runs a runaway is unbounded. Cheap to run — three sums over an indexed window.',
+      'runs a runaway is unbounded. Cheap to run — a handful of sums and counts over indexed windows.',
   },
   {
     task: 'oauth_reminder_sweep',

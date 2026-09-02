@@ -1,0 +1,55 @@
+[
+  {
+    "kind": "insight",
+    "key": "calibration-gate-outcomes",
+    "name": "Gate outcomes by week and vertical",
+    "description": "What each quality gate passed, rejected or held, broken down by the kind of store. The weekly calibration review is this chart; changing a threshold because of it is a code change that goes through the eval suite, never a click here.",
+    "query": {
+      "kind": "TrendsQuery",
+      "series": [{ "kind": "EventsNode", "event": "gate_decision" }],
+      "breakdownFilter": { "breakdown_type": "event", "breakdown": "outcome" },
+      "interval": "week",
+      "dateRange": { "date_from": "-90d" }
+    }
+  },
+  {
+    "kind": "insight",
+    "key": "calibration-judge-fail-rate",
+    "name": "Judge fail rate",
+    "description": "The share of drafts the quality judge rejects. A sustained rise almost always means a prompt version or a model changed under us rather than that the writing got worse — which is why our own code pauses generation on it.",
+    "query": {
+      "kind": "TrendsQuery",
+      "series": [{ "kind": "EventsNode", "event": "gate_decision", "properties": [{ "key": "gate", "value": "3", "operator": "exact", "type": "event" }] }],
+      "breakdownFilter": { "breakdown_type": "event", "breakdown": "outcome" },
+      "dateRange": { "date_from": "-30d" }
+    }
+  },
+  {
+    "kind": "insight",
+    "key": "calibration-by-rules-version",
+    "name": "Gate outcomes by rules version",
+    "description": "Every decision is stamped with the hash of the threshold file that made it, so the effect of changing a number is visible as a break in this chart rather than as a rumour.",
+    "query": {
+      "kind": "TrendsQuery",
+      "series": [{ "kind": "EventsNode", "event": "gate_decision" }],
+      "breakdownFilter": { "breakdown_type": "event", "breakdown": "rules_version" },
+      "dateRange": { "date_from": "-90d" }
+    }
+  },
+  {
+    "kind": "dashboard",
+    "key": "calibration",
+    "name": "Calibration report",
+    "description": "Whether the quality bar is set where we think it is: gate outcomes by week and vertical, the judge's fail rate, and the same broken down by which version of the thresholds decided.",
+    "tiles": ["calibration-gate-outcomes", "calibration-judge-fail-rate", "calibration-by-rules-version"]
+  },
+  {
+    "kind": "alert",
+    "key": "alert-judge-fail-rate",
+    "name": "Judge fail rate over its ceiling",
+    "description": "Mirrors the trip that pauses all generation, so a human sees what the code already did. Telemetry only: the pause comes from our own counters.",
+    "insight": "calibration-judge-fail-rate",
+    "threshold": { "type": "percentage", "bounds": { "upper": 0.6 } },
+    "calculation_interval": "hourly"
+  }
+]

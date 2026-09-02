@@ -1,0 +1,87 @@
+[
+  {
+    "kind": "insight",
+    "key": "reliability-publish-abandoned",
+    "name": "Publish attempts abandoned",
+    "description": "A publish attempt that was started and never confirmed. Any of these is worth looking at: it is the shape of a crash mid-publish, which the recovery sweep is supposed to adopt or retry.",
+    "query": {
+      "kind": "TrendsQuery",
+      "series": [{ "kind": "EventsNode", "event": "publish_intent_abandoned" }],
+      "dateRange": { "date_from": "-7d" }
+    }
+  },
+  {
+    "kind": "insight",
+    "key": "reliability-dlq-entries",
+    "name": "Work nobody can retry",
+    "description": "Jobs that ran out of retries and now need a person. A sustained trickle is a bug; a spike is an outage.",
+    "query": {
+      "kind": "TrendsQuery",
+      "series": [{ "kind": "EventsNode", "event": "dlq_entry_created" }],
+      "breakdownFilter": { "breakdown_type": "event", "breakdown": "error_class" },
+      "dateRange": { "date_from": "-7d" }
+    }
+  },
+  {
+    "kind": "insight",
+    "key": "reliability-webhook-lag",
+    "name": "Webhook processing lag",
+    "description": "How far behind we are on what merchants changed in their stores. Lag here means the catalogue we are writing from is stale.",
+    "query": {
+      "kind": "TrendsQuery",
+      "series": [{ "kind": "EventsNode", "event": "webhook_processed", "math": "p95", "math_property": "lag_ms" }],
+      "dateRange": { "date_from": "-7d" }
+    }
+  },
+  {
+    "kind": "insight",
+    "key": "reliability-kill-switches",
+    "name": "Kill switches tripped",
+    "description": "Every automatic pause, as it happened. This is the record after the fact — the pause itself is a row in our own database, decided by our own code.",
+    "query": {
+      "kind": "TrendsQuery",
+      "series": [{ "kind": "EventsNode", "event": "kill_switch_tripped" }],
+      "breakdownFilter": { "breakdown_type": "event", "breakdown": "flag" },
+      "dateRange": { "date_from": "-30d" }
+    }
+  },
+  {
+    "kind": "dashboard",
+    "key": "reliability",
+    "name": "Reliability",
+    "description": "Publishing that never confirmed, work nobody can retry, how far behind the store change feed is, and every switch that went up.",
+    "tiles": [
+      "reliability-publish-abandoned",
+      "reliability-dlq-entries",
+      "reliability-webhook-lag",
+      "reliability-kill-switches"
+    ]
+  },
+  {
+    "kind": "alert",
+    "key": "alert-publish-abandoned",
+    "name": "A publish attempt was abandoned",
+    "description": "Fires on any occurrence. A half-made post on a merchant's store is the failure two-phase publishing exists to prevent.",
+    "insight": "reliability-publish-abandoned",
+    "threshold": { "type": "absolute", "bounds": { "upper": 0 } },
+    "calculation_interval": "hourly"
+  },
+  {
+    "kind": "alert",
+    "key": "alert-dlq-sustained",
+    "name": "Work has been stuck in the dead-letter queue for an hour",
+    "description": "One dead-lettered job is a bug report; an hour of them is an outage nobody has noticed.",
+    "insight": "reliability-dlq-entries",
+    "threshold": { "type": "absolute", "bounds": { "upper": 0 } },
+    "calculation_interval": "hourly"
+  },
+  {
+    "kind": "alert",
+    "key": "alert-webhook-lag",
+    "name": "Store changes are more than an hour behind",
+    "description": "At this lag the catalogue we are writing from is stale, and the drift sweep has not caught up.",
+    "insight": "reliability-webhook-lag",
+    "threshold": { "type": "absolute", "bounds": { "upper": 3600000 } },
+    "calculation_interval": "hourly"
+  }
+]
