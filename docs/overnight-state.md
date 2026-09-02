@@ -384,36 +384,144 @@ schema-validated, and the wrapper's caching, cost figures and retry behaviour ar
 against its double. Everything else — the ledger, the checkpointing, the quarantine, the
 roll-up, the repository writes — ran against real Postgres.
 
+## `T2.4` LANDED — a catalogue stops being a list and becomes a handful of subjects
+
+**Merged as `f1614a1`, three commits.** Tests **1,994**. Onboarding now carries a store from
+domain claim through detect → connect → catalogue read → distillation → **family grouping**,
+and stops at the business profile (`T2.5`).
+
+**Forty similar shoes cannot support forty shoe articles.** Products are now grouped into
+families, and everything after this point reasons about families rather than rows. Four
+signals run, cheapest and most trustworthy first: what the merchant filed the product as;
+rows that are one product published several times ("Trailblazer — Red" and "— Blue");
+products whose facts match except along a few attributes; and, only for a store where none
+of that found anything, a guess **flagged as one**. Every family records which signal
+produced it and how far to trust it.
+
+**A merchant can now say we got it wrong** — families are read-only in v1, so the report
+endpoint is the whole of their recourse. It keeps what they typed in our own record and
+sends **ids and counts** to analytics, never their words.
+
+### The axis-name question was better answered than the integrator asked it
+
+The integrator handed this card a flagged blocker: Shopify's `options` field, which names a
+product's variant axes, is not fetched and is stored nowhere, and axes are this card's
+subject. **The lane found the premise wrong and did not change the field list.**
+
+**`options` names the wrong axes.** It names what *one product's variants* differ along —
+"Size", "Colour". The spec asks what a *family's members* differ along — "terrain, drop,
+width". Those are different questions over different sets of products, and the spec derives
+the second from attribute sets that match except along one or more axes — **that is, from
+fact sheets, not from variant metadata**. `T2.3` was right that axis names cannot come from
+variant titles; what this card found is that they were never going to come from `options`
+either. And there is nowhere to put it: the field-list change would have bought a value we
+could not store, to answer a question it does not answer.
+
+**So axis names come from three places we already hold:** a tag the merchant wrote as
+`terrain:technical` — their own word for the axis, present today on every synced store with
+**no backfill needed**; a fact-sheet field name; and the variant word a split-variant title
+carried. **Nothing is inferred.** A store that names no attributes gets fewer axes, which is
+true rather than convenient.
+
+**What it costs, and it is real:** a store keeping its attributes in Shopify metafields or
+option names yields fewer axes. The family is still correct; it simply says less about what
+distinguishes its members. **The lane calls a `products.options` / `products.metafields`
+column plus two words of field list the single highest-value schema-wave addition here** —
+and it would work only from each store's next full sync, which is another reason it belongs
+in a wave rather than a feature card.
+
+### Two decisions it took that depart from the spec, both journalled
+
+- **Collections are not a grouping signal**, though the spec calls them the primary
+  candidate — **nothing in this build stores which products are in a collection.** The
+  catalogue sync does not fetch them, and the content inventory reads a collection's members
+  but keeps their *families*, which would be circular. The product type carries the taxonomy
+  signal instead, with the promotional-name blocklist the spec asks for.
+- **The messy-store fallback compares title words, not embeddings.** There is no embeddings
+  vendor in this build and adding one is a provider decision with a bill attached. Left
+  unbuilt, a messy store gets two hundred families of one. Its families record the method
+  used **so no reader is misled**, and swapping in a real embedder replaces one function.
+
+### A real bug its own tests caught
+
+The colour word that distinguishes "Trailblazer — Red" from "— Blue" was being counted as
+*disagreement* in the very check that decides whether the two rows are one product — **so
+the merge rejected exactly the case it exists to recognise.** Found by the split-variant
+test and fixed.
+
+**The quarantine guard also fired on the card's own test file**, because seeding a product
+through the repository meant naming every field of one. **The lane fixed the test rather
+than adding a seventh file to the allowlist** — grouping genuinely never touches a
+description, and that is worth keeping provable. The integrator agrees, and it is the right
+instinct: an allowlist that grows to accommodate tests stops being a guard.
+
+**A contradiction it surfaced:** the frozen route contract names three grouping sources
+where the spec and the database have four. Journalled, not resolved.
+
+**Files outside Lane B's directories:** two `packages/db` files plus union-merged barrels,
+one assertion in a shared ingestion test that `T2.3` wrote naming this card, and
+`apps/web/app/api/products/**` — **a directory no lane owns in the ownership table**, though
+the card's scope names the endpoint and the route is in the frozen contract. Worth the
+integrator's eye. `apps/web/instrumentation.ts` was **not** touched.
+
+**No new real-vendor evidence outstanding** — this step makes no network call and pays
+nobody, and ran against real Postgres throughout.
+
+**What `T2.5` inherits** is written into its brief: merged fact sheets per family, the
+richness column that has had nowhere to be written since `T2.3`, the walk's end marker to
+move, the analytics port already bound, and the rule that a family's name is its identity
+across runs.
+
 ## Right now
 
-**Status at 2026-09-02, 23:20.** `main` is at `064fd36`, clean. **Eleven cards landed
-tonight**, each merged and gated separately: `T8.0`, `T-START`, `T-ANALYTICS`, `T3.4`,
-`T8.1`, `T-EMAIL`, `T9.3`, `T2.2`, `T8.2`, `T9.4`, `T2.3`. Tests are at **1,948**, up from
-1,362 at the start of the night — **586 added**. Stubs are at 8.
+**Status at 2026-09-02, 23:20.** `main` is at `f1614a1`, clean. **Twelve cards landed
+tonight**: `T8.0`, `T-START`, `T-ANALYTICS`, `T3.4`, `T8.1`, `T-EMAIL`, `T9.3`, `T2.2`,
+`T8.2`, `T9.4`, `T2.3`, `T2.4`. Tests **1,994**, up from 1,362 — **632 added**. Stubs down
+to **7**.
 
-**`pnpm eval` is red and will stay red** until the founder decides — see the gate section.
-Every other gate command is green. **Do not describe this tree as fully green.**
+**`pnpm eval` is red and stays red** until the founder decides — see the gate section.
+Every other command is green. **Do not describe this tree as fully green.**
 
-| Lane | Branch | Worktree | Where it is |
-|---|---|---|---|
-| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START`, `T2.2` and **`T2.3`** merged. **Idle.** `T2.4` is next and **needs a decision first**: Shopify's `options` field, which *names* a product's variant axes, is not requested by the catalogue sync and stored nowhere — and axes are `T2.4`'s subject |
-| C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4` and `T-EMAIL` merged. **Idle and clean, deliberately held** — `T3.5` needs `T2.4`–`T2.5` |
-| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS`, `T9.3` and `T9.4` merged. **`T9.5` building** — the last card in its milestone |
-| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | `T8.0`, `T8.1` and `T8.2` merged. **Idle; its scheduled audit has run** and found two high defects. Remaining: `T8.3`, `T8.4` |
+| Lane | Branch | Where it is |
+|---|---|---|
+| B — Store Intelligence | `lane-b` | `T-START`, `T2.2`, `T2.3`, `T2.4` merged. **`T2.5` building — the biggest unblock left in the build.** Two milestones wait behind it |
+| C — Search Intelligence | `lane-c` | `T3.4`, `T-EMAIL` merged. **Idle, held** — `T3.5` needs `T2.5`, which is building now. **This lane becomes available the moment `T2.5` lands** |
+| F — Frontend | `lane-f` | `T-ANALYTICS`, `T9.3`, `T9.4` merged. **`T9.5` building** — last card of its milestone |
+| G — Ops & notifications | `lane-g` | `T8.0`, `T8.1`, `T8.2` merged. **`T8.3` building.** Then `T8.4` |
 
-**Four audits have run, all read-only, all held for the morning, none stopped a lane:**
-`T-EMAIL`'s (lane-requested), `T2.2`'s (**scheduled — found the critical privacy defect**),
-`T8.2`'s (**scheduled — found two high defects**), and none is outstanding. **Every audit
-scheduled for a card that landed tonight has run.**
+### The founder widened the integrator's authority at 23:10
 
-**Three hand-resolved conflicts, all in `packages/ui/strings/en.json`.** That file is not
-union-merged and four cards appended to it tonight. Each time the integrator checked the
-sides shared no key, kept both, restored the comma the conflict boundary swallows, and
-verified every block was present afterwards. **586 keys**, from 331. **Both the `T8.2`
-auditor and the integrator independently reached the same conclusion: the fix is the
-`.gitattributes` setting on that file, and moving `T-EMAIL`'s email copy into it — which
-`T8.2`'s ruling now requires — makes a fourth.**
+**"Carry on with whatever you can without my supervision; wait till the morning only with
+what's absolutely necessary."** Two things followed from it, both done and both gated:
 
+1. **The bell is plugged in.** The Shopify composition root now hands out the real
+   notification emitter instead of the in-memory stub, so a notification reaches an actual
+   row and — for the kinds that are emailed — a real queued send. **Deep-imported**, because
+   that file's barrel drags the threshold config into a bundle with no disk, which is the
+   defect `T-BOOT` repaired. The stub report stops listing the seam, following the precedent
+   already in that file — **but unlike the catalogue-events case, whose line was removed
+   while its consumer was still unwired, this one was verified end to end first**: the
+   emitter is constructed in the composition root, not merely exported.
+2. **The two `T2.2` audit findings became cards**, which is what build plan §7 says findings
+   become — `R-PRIVACY` and `R-STREAM`, both in the build plan under M8. **Neither is
+   fixed.** Acting on an audit finding still needs the founder; carding one is the process.
+
+**What is still deliberately held**, because it needs judgement rather than permission: the
+seven founder questions, and the `R-PRIVACY` fix itself — which sits in territory lane G is
+building in **right now**, making a quiet fix exactly the wrong move.
+
+### Honest scope: "all cards by morning" is not reachable, and why
+
+63 cards are defined; **31 were done before tonight's last three began**, 2 are deferred by
+founder decision (the learning loop). **The constraint is not speed — it is that what
+remains is mostly one chain.** The content engine cannot start until `T2.5` lands;
+publishing needs the content engine; the exit gates need everything. That chain alone is
+about thirteen strictly serial cards, several with audits scheduled between them, and it is
+longer than the night.
+
+**What is realistically reachable:** finishing store intelligence (`T2.5`–`T2.7`), the rest
+of search intelligence (`T3.5`–`T3.7`), the remaining screens (`T9.5`–`T9.8`), lifecycle and
+kill switches (`T8.3`, `T8.4`), and a real start on the content engine — roughly 45 of 63.
 **Lane B reached `T2.2` and stopped there, which is what the plan asked for.** The one
 mid-run decision the plan told the runner to watch for — whether lane B would reach `T2.5`
 and free lane C's `T3.5` — did not arise.
