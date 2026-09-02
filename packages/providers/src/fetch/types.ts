@@ -19,6 +19,16 @@ export interface PageFetchRequest {
   readonly url: string
   /** Overrides for a caller with a different budget; the guard itself is never overridable. */
   readonly budget?: Partial<FetchBudget>
+  /**
+   * MIME types this caller can read on top of the page types the fetcher
+   * accepts by default. Store detection probes a JSON product feed; the preview
+   * and the persona read markup and would throw JSON away. Widening it per
+   * request rather than globally keeps every other caller's diet unchanged.
+   *
+   * This is not a hole in the guard: what may be *read* is a different question
+   * from what may be *reached*, and the address checks are untouched by it.
+   */
+  readonly contentTypes?: readonly string[]
 }
 
 export interface PageFetchResult {
@@ -30,6 +40,12 @@ export interface PageFetchResult {
   readonly bytes: number
   /** Every URL in the redirect chain, the requested one first. */
   readonly chain: readonly string[]
+  /**
+   * The final hop's response headers, names lower-cased. Store detection reads
+   * them: the strongest evidence that a site is a Shopify store is a header
+   * their edge sets, which is invisible in the markup.
+   */
+  readonly headers: Readonly<Record<string, string>>
 }
 
 /**

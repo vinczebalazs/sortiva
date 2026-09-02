@@ -230,3 +230,45 @@ export async function findStep(
     .limit(1)
   return row
 }
+
+/**
+ * The run a store's onboarding is being carried out by.
+ *
+ * The domain claim writes the run and its steps and pushes nothing onto the
+ * queue, so this is how anything that arrives later — the OAuth callback, a
+ * sweep — finds the work already waiting rather than starting a second
+ * onboarding beside it.
+ */
+export async function findRunForAccount(
+  db: Db,
+  accountId: string,
+): Promise<{ jobId: string; runId: string } | undefined> {
+  const [row] = await db
+    .select({ id: ingestionJobs.id, runId: ingestionJobs.runId })
+    .from(ingestionJobs)
+    .where(and(eq(ingestionJobs.accountId, accountId), eq(ingestionJobs.status, 'running')))
+    .orderBy(ingestionJobs.startedAt)
+    .limit(1)
+  return row ? { jobId: row.id, runId: row.runId } : undefined
+}
+
+/**
+ * Ends a run that has nothing left to do — a store we cannot serve.
+ *
+ * The remaining steps become `skipped` rather than staying `pending`, because
+ * the progress screen renders these rows directly and a merchant parked on an
+ * unsupported platform should not be left watching seven steps that will never
+ * start.
+ */
+export async function closeRunAsSkipped(db: Db, jobId: string): Promise<number> {
+  const rows = await db
+    .update(jobSteps)
+    .set({ state: 'skipped', updatedAt: new Date() })
+    .where(and(eq(jobSteps.jobId, jobId), inArray(jobSteps.state, ['pending'])))
+    .returning({ id: jobSteps.id })
+  await db
+    .update(ingestionJobs)
+    .set({ status: 'succeeded', finishedAt: new Date() })
+    .where(and(eq(ingestionJobs.id, jobId), eq(ingestionJobs.status, 'running')))
+  return rows.length
+}

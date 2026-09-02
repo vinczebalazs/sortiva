@@ -1,4 +1,5 @@
 export * from './accounts'
+export * from './connections'
 export * from './domains'
 export * from './notifications'
 export * from './spend'
