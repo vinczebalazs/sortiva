@@ -157,6 +157,60 @@ someone who reads that language. Noted in `content-pointers.md` §6.
 `T7.2`, which is far enough out that it was left alone. `content-pointers.md` §9
 holds it.
 
+## `T8.0` — what schema wave 4 actually contains
+
+The card says "any columns deferred via DECISIONS entries from waves 1–3
+(integrator-collected)". Collected, on 2026-09-02, by reading every `DECISIONS.md`
+entry that mentions a migration or a column. **It is thin — an hour of work, not a
+lane's worth**, which is the other half of why it was not launched alongside the
+three building cards.
+
+**Genuinely deferred and still wanted — two partial unique indexes**, both
+requested by the `T1.4` entry of 2026-09-01 as "defence in depth":
+
+- on `domains.release_after`, `WHERE release_after IS NULL`. Today a domain is
+  released for someone else to claim only because a sweep job deletes the row; the
+  index would make the release a fact in the database rather than a consequence of
+  a job running. If that sweep never runs, the domain stays blocked forever — safe
+  (nobody is handed someone else's domain) but not what was promised.
+- the matching one on `shopify_conns.invalidated_at`, for the same reason.
+
+**Asked about and deliberately declined** — do not revive these without a reason:
+
+- `spend_events.price_unknown`. `R2` names the gap and says it is not requested: a
+  call we could not price is already identifiable as zero cost with no cache hit,
+  and the check that would produce one now runs at start-up instead, so the row
+  cannot occur.
+- `idempotency_ledger.account_id`. `T2.0b` and `R3` both declined it, and `R3`
+  gives the strong reason: an account column would hand a future data-deletion path
+  a way to erase the record of paid work by account, which is the one thing that
+  table exists to prevent.
+
+**Already built, so no longer outstanding:** `verification_tokens` (the table email
+sign-in was blocked on) exists as of mini-wave 2b.
+
+**Not a migration and therefore not this card:** `R1`'s durable fix — stopping
+`@sortiva/db` from exporting raw tables and giving the job tables scoped helpers.
+That is a `packages/db` refactor and needs its own card.
+
+## A trap waiting inside `T3.1`, found before the lane hit it
+
+`T3.1`'s last done-when says the skip path "sets `limited_intelligence = true`" on
+`account_settings`. **That column does not exist and was deliberately not created.**
+Mini-wave `T2.0b` was asked to add it, read the spec, and declined: main §7.11 and
+§6.7 describe Limited Intelligence as a *state an account is in while it has no
+Search Console connection*, not a flag somebody writes — and a stored copy of a
+derived fact is a second source of truth that drifts. The column that does exist is
+`opportunities.limited_intelligence`, which is a different thing: a stamp on each
+opportunity recording that it was found without Search Console data.
+
+So the card's done-when cannot be met literally, and the resolution is dictated
+rather than open: the specs are law and they say derived. `T3.1` implements it as
+derived and reports the card text as wrong — it never adds the column, because
+migrations belong to schema waves and because the spec does not want one.
+
+Lane C was told this when it was resumed.
+
 ## Audit findings, unactioned
 
 Six investigations ran during wave 1; all reports are in `docs/audits/`, and
