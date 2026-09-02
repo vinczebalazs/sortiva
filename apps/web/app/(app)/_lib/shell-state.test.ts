@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { navContextFromAccount, bannerContextFromAccount, resolveLanguage } from '@sortiva/ui'
-import { RESPONSE_FIXTURES } from '@sortiva/ui'
+import { RESPONSE_FIXTURES } from '@sortiva/ui/msw'
 import { buildShellState, parseAcceptLanguage, type ShellRequest } from './shell-state'
 
 const REQUEST: ShellRequest = {
