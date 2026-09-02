@@ -59,8 +59,21 @@ export const CRON_ENTRIES: readonly CronEntry[] = [
   },
   {
     task: 'monthly_summary',
-    schedule: '0 8 1 * *',
-    why: 'The monthly summary email, assembled per account at 08:00 in the persona country\'s time.',
+    schedule: '0 * * * *',
+    why:
+      'The monthly summary email, which has to land at 08:00 in the store\'s own morning — a crontab ' +
+      'cannot say that, so the sweep runs hourly and each run asks per account whether it is locally ' +
+      'the first at eight. Running it 24 times a day costs nothing: the bell entry and the email both ' +
+      'key on the month covered, so every run after the one that matched inserts nothing.',
+  },
+  {
+    task: 'email_send_drain',
+    schedule: '* * * * *',
+    why:
+      'Turns each queued email into its own job. Per-row rather than one batch so that one address ' +
+      'the vendor keeps rejecting cannot hold up everybody else\'s mail behind it. Every minute, ' +
+      'because a payment-failed or connection-lost email an hour late has already cost the merchant ' +
+      'an hour of stopped pipeline.',
   },
   {
     task: 'publish_intent_recovery_sweep',

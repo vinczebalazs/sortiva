@@ -7,6 +7,12 @@ export * from './schema'
 export * from './repositories'
 export { makeGscConnectStore, type GscConnectStoreOptions } from './stores/gsc'
 export { makeNotificationStore, type NotificationStoreOptions } from './stores/notifications'
+export { makeEmailStore, type EmailStoreOptions } from './stores/email'
+export {
+  makeWebhookEventStore,
+  type WebhookEventStore,
+  type WebhookEventStoreOptions,
+} from './stores/webhook-events'
 
 // The integration-test harness is deliberately NOT re-exported here: it pulls in
 // the migrator and resolves ../migrations from disk, which has no business in an

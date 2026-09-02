@@ -1,3 +1,5 @@
+export * from './webhook'
+
 import { Resend } from 'resend'
 import {
   EmailSendFailure,

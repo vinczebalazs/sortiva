@@ -29,7 +29,18 @@ const BANNED_EXACT = new Set([
   'pg',
 ])
 
-const BANNED_PREFIXES = ['next/', 'react/', 'react-dom/', '@shopify/', '@anthropic-ai/', 'googleapis/']
+const BANNED_PREFIXES = [
+  'next/',
+  'react/',
+  'react-dom/',
+  '@shopify/',
+  '@anthropic-ai/',
+  'googleapis/',
+  // The email templates are React Email components and live in
+  // `packages/providers`. This package decides what an email says, as copy keys;
+  // it must not learn how one is drawn.
+  '@react-email/',
+]
 
 function isBanned(specifier: string): boolean {
   if (BANNED_EXACT.has(specifier)) return true

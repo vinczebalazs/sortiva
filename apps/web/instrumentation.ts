@@ -142,6 +142,27 @@ export async function register() {
   const { registerScanTasks } = await import('@sortiva/jobs')
   registerScanTasks({ getDb: db, getPool: dbPool })
 
+  // Email: the minute-by-minute drain that turns each queued row into a job,
+  // the job that sends one, and the two sweeps that schedule mail on a clock —
+  // the monthly summary and the seven-day "where did you publish this" reminder.
+  //
+  // The renderer is built here and nowhere else. It is the one thing in the
+  // process that pulls React and the string catalogue together, and keeping it
+  // out of the jobs package is what stops a background worker importing a
+  // component tree it has no other use for.
+  const { registerEmailTasks, registerMonthlySummaryTask, registerExportUrlReminderTask } =
+    await import('@sortiva/jobs')
+  const { ReactEmailRenderer } = await import('@sortiva/providers/email/render')
+  const { emailProvider } = await import('./app/api/webhooks/resend/_lib/config')
+  registerEmailTasks({
+    getDb: db,
+    getPool: dbPool,
+    provider: emailProvider(),
+    renderer: new ReactEmailRenderer(),
+  })
+  registerMonthlySummaryTask({ getDb: db, notifications: notificationEmitter() })
+  registerExportUrlReminderTask({ getDb: db, notifications: notificationEmitter() })
+
   const { bootstrapWorker, flushAnalytics } = await import('@sortiva/jobs')
   const worker = await bootstrapWorker({ analytics })
 
