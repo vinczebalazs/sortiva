@@ -32,6 +32,11 @@ export type ViewContent = 'store_data' | 'no_store_data'
  */
 export const VIEW_CONTENT: Readonly<Record<string, ViewContent>> = {
   '/': 'store_data',
+  // Onboarding happens on the dashboard, and every stage of it puts the
+  // merchant's own store on screen: the address of their shop, the products
+  // read out of it, their best sellers with revenue against them, and the
+  // keywords and competitors drawn from all of it.
+  '/dashboard': 'store_data',
   '/plan': 'no_store_data',
   '/signin': 'no_store_data',
   '/ui-gallery/banner-stack': 'no_store_data',

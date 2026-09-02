@@ -1,0 +1,303 @@
+/*
+ * Setting a store up: the address field, the progress list, the two connection
+ * cards, the parked states, the confirmation review and the first scan.
+ *
+ * All of it is one column of white cards on the shell's grey-lavender ground,
+ * which is what the design canvas draws for every screen in this stretch —
+ * there is no second layout here, only cards of different lengths.
+ *
+ * Colours and shape come from `tokens.css`; nothing below hardcodes a value the
+ * token set already names.
+ */
+
+.sortiva-onboarding {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 860px;
+}
+
+.sortiva-onboarding-card {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 28px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sortiva-onboarding-card__heading {
+  font-family: var(--sortiva-font-heading);
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--sortiva-text);
+}
+
+.sortiva-onboarding-card__body {
+  margin: 0;
+  color: var(--sortiva-text-secondary);
+  line-height: 1.55;
+}
+
+.sortiva-onboarding-card__primary {
+  align-self: flex-start;
+  background: var(--sortiva-accent);
+  color: #fff;
+  border: 0;
+  border-radius: 999px;
+  padding: 11px 22px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+.sortiva-onboarding-card__primary:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.sortiva-onboarding-card__error {
+  margin: 0;
+  color: var(--sortiva-critical);
+}
+
+/* ── Connect domain ───────────────────────────────────────────────────────── */
+
+.sortiva-connect__form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.sortiva-connect__label {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-connect__input {
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: 999px;
+  padding: 12px 18px;
+  font: inherit;
+  min-width: 0;
+}
+
+.sortiva-connect__submit {
+  background: var(--sortiva-accent);
+  color: #fff;
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 22px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sortiva-connect__note,
+.sortiva-parked__note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-connect__error {
+  margin: 0;
+  color: var(--sortiva-critical);
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── The seven-row progress list ──────────────────────────────────────────── */
+
+.sortiva-stepper {
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow);
+  padding: 26px 30px;
+}
+
+.sortiva-stepper__heading {
+  font-family: var(--sortiva-font-heading);
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 18px;
+}
+
+.sortiva-stepper__rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sortiva-stepper__row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--sortiva-line);
+}
+.sortiva-stepper__row:last-child {
+  border-bottom: 0;
+}
+
+.sortiva-stepper__marker {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  background: var(--sortiva-surface-sunken);
+  color: var(--sortiva-text-muted);
+}
+.sortiva-stepper__row--done .sortiva-stepper__marker {
+  background: var(--sortiva-positive-soft);
+  color: var(--sortiva-positive);
+}
+.sortiva-stepper__row--active .sortiva-stepper__marker {
+  background: var(--sortiva-accent-soft);
+  color: var(--sortiva-accent);
+}
+.sortiva-stepper__row--failed .sortiva-stepper__marker {
+  background: var(--sortiva-warning-soft);
+  color: var(--sortiva-warning);
+}
+
+.sortiva-stepper__label {
+  color: var(--sortiva-text);
+  font-weight: 500;
+}
+.sortiva-stepper__row--pending .sortiva-stepper__label,
+.sortiva-stepper__row--skipped .sortiva-stepper__label {
+  color: var(--sortiva-text-faint);
+  font-weight: 400;
+}
+
+.sortiva-stepper__state,
+.sortiva-stepper__hint,
+.sortiva-stepper__elapsed {
+  font-size: 13px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-stepper__failure {
+  grid-column: 2 / -1;
+  background: var(--sortiva-warning-soft);
+  border-radius: var(--sortiva-radius-inner);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sortiva-stepper__failure p {
+  margin: 0;
+  color: var(--sortiva-text-secondary);
+}
+
+/* ── Shopify and Search Console cards ─────────────────────────────────────── */
+
+.sortiva-shopify__trust {
+  background: var(--sortiva-surface-sunken);
+  border-radius: var(--sortiva-radius-inner);
+  padding: 14px 16px;
+}
+
+.sortiva-shopify__scopes ul,
+.sortiva-gsc__benefits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sortiva-shopify__scopes ul {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sortiva-shopify__scopes code,
+.sortiva-gsc__picker code {
+  background: var(--sortiva-surface-sunken);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+.sortiva-shopify__scopes-heading,
+.sortiva-gsc__picker-heading {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sortiva-text-muted);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sortiva-shopify__scopes-note,
+.sortiva-gsc__consequence,
+.sortiva-gsc__picker-note,
+.sortiva-gsc__backfill,
+.sortiva-gsc__skipped {
+  margin: 0;
+  font-size: 13px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-gsc__picker ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sortiva-gsc__picker li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: var(--sortiva-radius-inner);
+}
+.sortiva-gsc__picker li[data-property-selectable='false'] {
+  opacity: 0.65;
+}
+
+.sortiva-gsc__picker-kind,
+.sortiva-gsc__picker-mismatch {
+  font-size: 12px;
+  color: var(--sortiva-text-muted);
+}
+.sortiva-gsc__picker-mismatch {
+  color: var(--sortiva-warning);
+}
+
+/*
+ * Skipping is offered in words of equal weight and colour of lesser weight:
+ * the merchant should never have to hunt for it, and should never mistake it
+ * for what we recommend.
+ */
+.sortiva-gsc__skip {
+  align-self: flex-start;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--sortiva-text-secondary);
+  text-decoration: underline;
+  cursor: pointer;
+}
