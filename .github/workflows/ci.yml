@@ -1,6 +1,8 @@
-# What gates every merge: typecheck, unit and integration tests, lint, and the
+# What gates every merge: typecheck, unit and integration tests, lint, the
 # analytics provisioning script in check mode, so drift between the definitions
-# in this repo and the live project fails the build.
+# in this repo and the live project fails the build — and, last, actually
+# starting the built application and asking it for a page, because every other
+# step here passed for days while the product served nothing but errors.
 #
 # Two suites run on their own cadence rather than per-merge, because both cost
 # real money or real time: `pnpm eval`, the frozen evaluation sets, gated on
@@ -81,6 +83,14 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      # Every step above this line passed, every day, while the deployed product
+      # answered 500 to every request — the landing page and the health check
+      # included. They all read the code; none of them ever started it. This one
+      # runs the built server the way the platform runs it and asks it for the
+      # landing page and the health check.
+      - name: The built application starts and serves a page
+        run: pnpm smoke:boot
 
   # Runs on any change to a prompt file or a model id, and a failure blocks the
   # deploy. Gated on the paths that can change a model's behaviour.

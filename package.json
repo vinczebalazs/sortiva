@@ -15,6 +15,7 @@
     "chaos": "vitest run --config vitest.chaos.config.ts",
     "e2e": "pnpm --filter @sortiva/web exec playwright test",
     "build": "pnpm --filter @sortiva/web run build",
+    "smoke:boot": "node scripts/smoke-boot.mjs",
     "dev": "pnpm --filter @sortiva/web run dev",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",

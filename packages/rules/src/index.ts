@@ -1,6 +1,6 @@
 export {
-  CONFIG_PATH,
   RulesConfigError,
+  configPath,
   loadRulesConfig,
   resetRulesCache,
   rules,

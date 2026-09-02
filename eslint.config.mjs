@@ -72,6 +72,30 @@ export default tseslint.config(
     rules: { 'sortiva/no-threshold-literals': 'off' },
   },
 
+  // The two packages that read a file off disk to do their job — the thresholds
+  // and the prompts. Both are reached from the web server's start-up hook, and
+  // both used to work out where their file was while the module was loading. A
+  // module address is not a path on disk in the production build, so that threw
+  // on import, and a start-up hook that throws makes Next answer every request
+  // with a 500 — which is what the product did, for days, with a green build and
+  // a green test suite. The rule holds the repair in place: locate the file when
+  // something asks for it, not when the module loads.
+  //
+  // Scoped to these two rather than the whole repository because these are where
+  // the file reads are; a third package that starts reading a file off disk
+  // belongs on this list on the day it does.
+  {
+    files: ['packages/rules/**/*.{ts,tsx,js,mjs}', 'packages/llm/**/*.{ts,tsx,js,mjs}'],
+    rules: { 'sortiva/no-module-load-path-resolution': 'error' },
+  },
+
+  // A test is never bundled and never imported by the running server, and
+  // finding a fixture relative to itself is a reasonable thing for one to do.
+  {
+    files: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'],
+    rules: { 'sortiva/no-module-load-path-resolution': 'off' },
+  },
+
   // Tests and fixtures assert against concrete numbers by definition; the rule
   // exists to stop *production* code carrying thresholds, not to stop tests
   // proving that packages/rules serves the right ones.

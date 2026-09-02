@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { readFileSync } from 'node:fs'
-import { CONFIG_PATH, RulesConfigError, loadRulesConfig } from './load'
+import { existsSync, readFileSync } from 'node:fs'
+import { RulesConfigError, configPath, loadRulesConfig } from './load'
 import { SIGNAL_TYPES } from './types'
 
 /**
@@ -210,12 +210,12 @@ describe('signals.config.yaml', () => {
 describe('rules_version', () => {
   it('is the sha256 of the config file bytes', async () => {
     const { createHash } = await import('node:crypto')
-    const expected = createHash('sha256').update(readFileSync(CONFIG_PATH, 'utf8'), 'utf8').digest('hex')
+    const expected = createHash('sha256').update(readFileSync(configPath(), 'utf8'), 'utf8').digest('hex')
     expect(loadRulesConfig().rulesVersion).toBe(expected)
   })
 
   it('changes when any value changes', () => {
-    const raw = readFileSync(CONFIG_PATH, 'utf8')
+    const raw = readFileSync(configPath(), 'utf8')
     const before = loadRulesConfig({ source: raw }).rulesVersion
     const mutated = raw.replace('      position_max: 15\n', '      position_max: 14\n')
     expect(mutated).not.toBe(raw)
@@ -224,7 +224,33 @@ describe('rules_version', () => {
   })
 })
 
-describe('startup validation', () => {
+/**
+ * The document is read by the first caller that needs a number, not when this
+ * package is imported — importing it at start-up is what used to stop the whole
+ * server from starting. Moving the read later moves the failure later too, so
+ * the error it raises is the only warning anyone gets that the configuration is
+ * wrong: it has to say which file, and where it looked.
+ */
+describe('a config file that cannot be read', () => {
+  it('names the file and the path it looked in', () => {
+    expect(() => loadRulesConfig({ configPath: '/nowhere/at/all/signals.config.yaml' })).toThrow(
+      /signals\.config\.yaml could not be read at \/nowhere\/at\/all\/signals\.config\.yaml/,
+    )
+  })
+
+  it('is a RulesConfigError, so a caller can tell it from any other filesystem failure', () => {
+    expect(() => loadRulesConfig({ configPath: '/nowhere/at/all/signals.config.yaml' })).toThrow(
+      RulesConfigError,
+    )
+  })
+
+  it('resolves the real file relative to this package, whoever is running', () => {
+    expect(configPath()).toMatch(/packages[/\\]rules[/\\]signals\.config\.yaml$/)
+    expect(existsSync(configPath())).toBe(true)
+  })
+})
+
+describe('document validation', () => {
   it('rejects YAML that does not parse', () => {
     expect(() => loadRulesConfig({ source: 'version: 1\n  defaults: [\n bad' })).toThrow(RulesConfigError)
   })
@@ -234,7 +260,7 @@ describe('startup validation', () => {
   })
 
   it('rejects an out-of-range value', () => {
-    const raw = readFileSync(CONFIG_PATH, 'utf8')
+    const raw = readFileSync(configPath(), 'utf8')
     const mutated = raw.replace(
       '      observed_vs_predicted_ctr_ratio_max: 0.6',
       '      observed_vs_predicted_ctr_ratio_max: 1.6',
@@ -243,7 +269,7 @@ describe('startup validation', () => {
   })
 
   it('rejects an unknown key, so a typo cannot become a silently-ignored threshold', () => {
-    const raw = readFileSync(CONFIG_PATH, 'utf8')
+    const raw = readFileSync(configPath(), 'utf8')
     const mutated = raw.replace('      position_max: 15\n', '      position_max: 15\n      postion_min: 4\n')
     expect(() => loadRulesConfig({ source: mutated })).toThrow(/failed schema validation/)
   })
@@ -252,13 +278,13 @@ describe('startup validation', () => {
     // A missing position would read as "nobody ever clicks here", and a store
     // with no history of its own would then have every page called
     // under-clicked. Proved by removing a row rather than by trusting the shape.
-    const raw = readFileSync(CONFIG_PATH, 'utf8')
+    const raw = readFileSync(configPath(), 'utf8')
     const mutated = raw.replace('      "7": 0.0330\n', '')
     expect(() => loadRulesConfig({ source: mutated })).toThrow(/standard_curve is missing positions/)
   })
 
   it('rejects a locale override that puts a hole in the standard click curve', () => {
-    const raw = readFileSync(CONFIG_PATH, 'utf8')
+    const raw = readFileSync(configPath(), 'utf8')
     const mutated = raw.replace(
       'locales:\n  en:\n    gates:',
       'locales:\n  en:\n    ctr_curve:\n      max_position: 30\n    gates:',
@@ -267,7 +293,7 @@ describe('startup validation', () => {
   })
 
   it('rejects a locale override whose merged layer is invalid', () => {
-    const raw = readFileSync(CONFIG_PATH, 'utf8')
+    const raw = readFileSync(configPath(), 'utf8')
     const mutated = raw.replace(
       'locales:\n  en:\n    gates:\n      demand_floor:\n        monthly_search_volume_min: 100',
       'locales:\n  en:\n    gates:\n      demand_floor:\n        monthly_search_volume_typo: 100',
