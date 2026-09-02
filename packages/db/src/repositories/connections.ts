@@ -94,11 +94,18 @@ export async function markShopifyConnectionInvalid(
 }
 
 /**
- * Which account holds a given store, if any.
+ * Which account holds a given store *right now*, if any.
  *
  * Deliberately unscoped: a webhook from Shopify names the store and nothing
- * else, so answering "whose is this" is the whole question. The unique index on
- * the shop handle is what makes the answer single.
+ * else, so answering "whose is this" is the whole question.
+ *
+ * Only live connections are considered, and that is what keeps the answer
+ * single: since wave 4 the handle is unique among live rows only, so a store
+ * that was connected, lost, and connected again by someone else has two rows.
+ * Answering with the abandoned one would route an uninstall — or any other
+ * store-addressed event — to an account that no longer has that store, silently
+ * doing nothing to the account that does. A store whose only row is dead
+ * answers "nobody", which is right: the connection is already recorded as lost.
  */
 export async function findAccountByShopHandle(
   db: Db,
@@ -108,7 +115,7 @@ export async function findAccountByShopHandle(
   const [row] = await db
     .select({ accountId: shopifyConns.accountId })
     .from(shopifyConns)
-    .where(eq(shopifyConns.shopHandle, shopHandle))
+    .where(and(eq(shopifyConns.shopHandle, shopHandle), isNull(shopifyConns.invalidatedAt)))
     .limit(1)
   return row?.accountId
 }

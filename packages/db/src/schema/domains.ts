@@ -84,5 +84,23 @@ export const shopifyConns = pgTable(
     // awaiting_shopify_auth and the merchant is asked to reconnect.
     invalidatedAt: timestamp('invalidated_at', { withTimezone: true }),
   },
-  (t) => [uniqueIndex('shopify_conns_shop_handle_key').on(t.shopHandle)],
+  (t) => [
+    /**
+     * One *live* connection per store, rather than one row per store ever.
+     *
+     * A store whose token we lost — the merchant uninstalled us, or revoked the
+     * grant — should not go on holding the handle against a fresh connection.
+     * Under an unconditional unique index it did: a merchant who deleted their
+     * account and signed up again could never reconnect the same store, because
+     * the abandoned row still owned the handle and nothing in the product could
+     * clear it. Narrowing the index to live rows makes losing a connection an
+     * actual release rather than a permanent lock.
+     *
+     * Two rows may now carry the same handle, so any lookup by handle must say
+     * which one it wants; `findAccountByShopHandle` asks for the live one.
+     */
+    uniqueIndex('shopify_conns_shop_handle_key')
+      .on(t.shopHandle)
+      .where(sql`${t.invalidatedAt} IS NULL`),
+  ],
 )
