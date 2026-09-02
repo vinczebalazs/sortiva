@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { deleteAccount } from './deletion'
+import { closeAccount, requestAccountDeletion } from './deletion'
 import type { AccessRevoker, AccountLifecycleRecord, AccountLifecycleStore } from './ports'
 
 const AT = new Date('2026-09-02T12:00:00.000Z')
@@ -50,6 +50,9 @@ function world(
         calls.push('preview')
         previewPurged.push(domain)
       },
+      async clearGrants() {
+        calls.push('clear-grants')
+      },
     },
     billing: {
       async cancelNow(id) {
@@ -70,57 +73,121 @@ function world(
   }
 }
 
-describe('deleting an account', () => {
-  it('cancels the subscription once, revokes both grants, then writes the deletion', async () => {
+describe('the half a merchant waits for', () => {
+  it('writes the deletion and drops the preview row, touching no vendor', async () => {
     const w = world(record())
-    const result = await deleteAccount(
-      { store: w.store, billing: w.billing, revoker: w.revoker, now: () => AT },
-      { accountId: 'acc-1' },
-    )
+    const result = await requestAccountDeletion({ store: w.store, now: () => AT }, {
+      accountId: 'acc-1',
+    })
 
-    expect(w.calls).toEqual(['cancel:sub_123', 'revoke:shopify', 'revoke:google', 'mark', 'preview'])
+    expect(w.calls).toEqual(['mark', 'preview'])
     expect(result).toEqual({
       kind: 'deleted',
       deletedAt: AT,
       domainFreeAt: new Date('2026-09-09T12:00:00.000Z'),
-      subscriptionCancelled: true,
-      revoked: { shopify: true, google: true },
     })
     expect(w.previewPurged).toEqual(['example.com'])
   })
 
   it('holds the domain for seven days rather than releasing it now', async () => {
     const w = world(record())
-    await deleteAccount(
-      { store: w.store, billing: w.billing, revoker: w.revoker, now: () => AT },
-      { accountId: 'acc-1' },
-    )
+    await requestAccountDeletion({ store: w.store, now: () => AT }, { accountId: 'acc-1' })
     expect(w.marked[0]!.domainReleaseAt).toEqual(new Date('2026-09-09T12:00:00.000Z'))
   })
 
-  it('refuses to delete anything when the subscription will not cancel', async () => {
-    // A deleted account whose card is still being charged is the worst outcome
-    // available here, so the whole request fails and nothing else has run.
-    const w = world(record(), { stripe: new Error('stripe is down') })
-    await expect(
-      deleteAccount(
-        { store: w.store, billing: w.billing, revoker: w.revoker, now: () => AT },
-        { accountId: 'acc-1' },
-      ),
-    ).rejects.toThrow('stripe is down')
-    expect(w.calls).toEqual(['cancel:sub_123'])
-    expect(w.marked).toEqual([])
+  it('leaves no preview row behind for an account with no domain', async () => {
+    const w = world(record({ domainNormalized: null }))
+    const result = await requestAccountDeletion({ store: w.store, now: () => AT }, {
+      accountId: 'acc-1',
+    })
+    expect(w.previewPurged).toEqual([])
+    expect(result).toMatchObject({ domainFreeAt: null })
   })
 
-  it('still deletes when a vendor refuses to take its grant back, and says which', async () => {
-    const w = world(record(), { google: new Error('invalid_grant') })
+  it('is a no-op the second time', async () => {
+    const w = world(record({ deletedAt: new Date('2026-09-01T00:00:00Z') }))
+    const result = await requestAccountDeletion({ store: w.store, now: () => AT }, {
+      accountId: 'acc-1',
+    })
+    expect(result).toEqual({ kind: 'already_deleted' })
+    expect(w.calls).toEqual([])
+  })
+
+  it('stands down when another request won the guarded write', async () => {
+    const w = world(record(), { markReturns: false })
+    const result = await requestAccountDeletion({ store: w.store, now: () => AT }, {
+      accountId: 'acc-1',
+    })
+    expect(result).toEqual({ kind: 'already_deleted' })
+    expect(w.previewPurged).toEqual([])
+  })
+
+  it('answers not_found rather than throwing for an account that is gone', async () => {
+    const w = world(undefined)
+    expect(
+      await requestAccountDeletion({ store: w.store, now: () => AT }, { accountId: 'missing' }),
+    ).toEqual({ kind: 'not_found' })
+  })
+
+  it('reports the deletion with identifiers only, never an address', async () => {
+    const w = world(record())
+    const events: unknown[] = []
+    await requestAccountDeletion(
+      { store: w.store, now: () => AT, capture: { capture: (e) => events.push(e) } },
+      { accountId: 'acc-1' },
+    )
+    expect(events).toEqual([
+      {
+        event: 'account_deleted',
+        attribution: { kind: 'account', accountId: 'acc-1', domain: 'example.com' },
+        properties: { had_subscription: true },
+      },
+    ])
+    expect(JSON.stringify(events)).not.toContain('merchant@example.com')
+  })
+})
+
+const deleted = { deletedAt: new Date('2026-09-02T12:00:00.000Z') }
+
+describe('the half that talks to vendors', () => {
+  it('cancels the subscription once, hands both grants back, then destroys the tokens', async () => {
+    const w = world(record(deleted))
+    const result = await closeAccount(
+      { store: w.store, billing: w.billing, revoker: w.revoker },
+      { accountId: 'acc-1' },
+    )
+    expect(w.calls).toEqual([
+      'cancel:sub_123',
+      'revoke:shopify',
+      'revoke:google',
+      'clear-grants',
+    ])
+    expect(result).toEqual({
+      kind: 'closed',
+      subscriptionCancelled: true,
+      revoked: { shopify: true, google: true },
+    })
+  })
+
+  it('fails the job rather than proceeding when the subscription will not cancel', async () => {
+    // Retried, and dead-lettered if it keeps failing. A deleted account whose
+    // card is still being charged has to be somebody's alert, not a silent log
+    // line.
+    const w = world(record(deleted), { stripe: new Error('stripe is down') })
+    await expect(
+      closeAccount({ store: w.store, billing: w.billing, revoker: w.revoker }, { accountId: 'acc-1' }),
+    ).rejects.toThrow('stripe is down')
+    expect(w.calls).toEqual(['cancel:sub_123'])
+  })
+
+  it('finishes when a vendor refuses to take its grant back, and says which', async () => {
+    const w = world(record(deleted), { google: new Error('invalid_grant') })
     const warnings: string[] = []
-    const result = await deleteAccount(
+    const result = await closeAccount(
       {
         store: w.store,
         billing: w.billing,
         revoker: w.revoker,
-        now: () => AT,
         log: {
           debug() {},
           info() {},
@@ -133,91 +200,46 @@ describe('deleting an account', () => {
       },
       { accountId: 'acc-1' },
     )
-    expect(result).toMatchObject({ kind: 'deleted', revoked: { shopify: true, google: false } })
+    expect(result).toMatchObject({ revoked: { shopify: true, google: false } })
     expect(warnings).toEqual(['token_revocation_failed'])
-    // The token is destroyed locally regardless; a vendor being down is not a
-    // reason to refuse somebody's deletion.
-    expect(w.calls).toContain('mark')
+    // The token is destroyed regardless; a vendor being down is not a reason to
+    // leave a deleted merchant's credential in our database.
+    expect(w.calls).toContain('clear-grants')
   })
 
   it('calls no vendor for an account that never connected anything', async () => {
     const w = world(
-      record({ stripeSubscriptionId: null, shopifyToken: null, googleRefreshToken: null }),
+      record({ ...deleted, stripeSubscriptionId: null, shopifyToken: null, googleRefreshToken: null }),
     )
-    const result = await deleteAccount(
-      { store: w.store, billing: w.billing, revoker: w.revoker, now: () => AT },
+    const result = await closeAccount(
+      { store: w.store, billing: w.billing, revoker: w.revoker },
       { accountId: 'acc-1' },
     )
-    expect(w.calls).toEqual(['mark', 'preview'])
+    expect(w.calls).toEqual(['clear-grants'])
     expect(result).toMatchObject({
       subscriptionCancelled: false,
       revoked: { shopify: null, google: null },
     })
   })
 
-  it('leaves no preview row behind for an account with no domain', async () => {
-    const w = world(record({ domainNormalized: null }))
-    const result = await deleteAccount(
-      { store: w.store, billing: w.billing, revoker: w.revoker, now: () => AT },
-      { accountId: 'acc-1' },
-    )
-    expect(w.previewPurged).toEqual([])
-    expect(result).toMatchObject({ domainFreeAt: null })
-  })
-
-  it('is a no-op the second time, rather than cancelling a cancelled subscription', async () => {
-    const w = world(record({ deletedAt: new Date('2026-09-01T00:00:00Z') }))
-    const result = await deleteAccount(
-      { store: w.store, billing: w.billing, revoker: w.revoker, now: () => AT },
-      { accountId: 'acc-1' },
-    )
-    expect(result).toEqual({ kind: 'already_deleted' })
+  it('refuses to touch the grants of an account whose deletion was never requested', async () => {
+    const w = world(record())
+    expect(
+      await closeAccount(
+        { store: w.store, billing: w.billing, revoker: w.revoker },
+        { accountId: 'acc-1' },
+      ),
+    ).toEqual({ kind: 'skipped', why: 'not_deleted' })
     expect(w.calls).toEqual([])
   })
 
-  it('stands down when another request won the guarded write', async () => {
-    const w = world(record(), { markReturns: false })
-    const result = await deleteAccount(
-      { store: w.store, billing: w.billing, revoker: w.revoker, now: () => AT },
-      { accountId: 'acc-1' },
-    )
-    expect(result).toEqual({ kind: 'already_deleted' })
-    expect(w.previewPurged).toEqual([])
-  })
-
-  it('answers not_found rather than throwing for an account that is gone', async () => {
+  it('does nothing for an account already erased by the sweep', async () => {
     const w = world(undefined)
-    const result = await deleteAccount(
-      { store: w.store, billing: w.billing, revoker: w.revoker, now: () => AT },
-      { accountId: 'missing' },
-    )
-    expect(result).toEqual({ kind: 'not_found' })
-  })
-
-  it('reports the deletion with identifiers and outcomes, never an address', async () => {
-    const w = world(record())
-    const events: unknown[] = []
-    await deleteAccount(
-      {
-        store: w.store,
-        billing: w.billing,
-        revoker: w.revoker,
-        now: () => AT,
-        capture: { capture: (e) => events.push(e) },
-      },
-      { accountId: 'acc-1' },
-    )
-    expect(events).toEqual([
-      {
-        event: 'account_deleted',
-        attribution: { kind: 'account', accountId: 'acc-1', domain: 'example.com' },
-        properties: {
-          subscription_cancelled: true,
-          shopify_grant: 'revoked',
-          google_grant: 'revoked',
-        },
-      },
-    ])
-    expect(JSON.stringify(events)).not.toContain('merchant@example.com')
+    expect(
+      await closeAccount(
+        { store: w.store, billing: w.billing, revoker: w.revoker },
+        { accountId: 'gone' },
+      ),
+    ).toEqual({ kind: 'skipped', why: 'not_found' })
   })
 })

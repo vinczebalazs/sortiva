@@ -1,6 +1,7 @@
 import type { AccountLifecycleStore } from '@sortiva/core'
 import { db, type Db } from '../client'
 import {
+  clearAccountGrants,
   loadAccountLifecycle,
   markAccountDeleted,
   purgePreviewCacheRow,
@@ -57,6 +58,10 @@ export function makeAccountLifecycleStore(
         at: input.at,
         domainReleaseAt: input.domainReleaseAt,
       })
+    },
+
+    clearGrants(accountId) {
+      return clearAccountGrants(database(), accountScope(accountId))
     },
 
     purgePreviewCache(domainNormalized) {

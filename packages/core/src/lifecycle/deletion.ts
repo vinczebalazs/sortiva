@@ -1,92 +1,59 @@
 import { accountAttribution, type PosthogCapture } from '../contracts/analytics'
 import type { Logger } from '../observability/logger'
-import type {
-  AccessRevoker,
-  AccountLifecycleStore,
-  SubscriptionCanceller,
-} from './ports'
+import type { AccessRevoker, AccountLifecycleStore, SubscriptionCanceller } from './ports'
 import { domainReleaseAt } from './retention'
 
 /**
- * A merchant asking to be deleted, done in the order that makes each step safe
- * to lose.
+ * A merchant asking to be deleted, in two halves.
  *
- * The order is the whole design:
+ * **The half that runs while they are waiting** touches nothing outside our own
+ * database: the deletion stamp, the domain's release deadline, both connections
+ * marked dead, and the preview row dropped. It is one guarded transaction, so a
+ * second click changes nothing and a crash half way leaves the account exactly
+ * as it was.
  *
- * 1. **Stop the money first.** Cancelling the subscription is the one step
- *    whose failure a merchant would rightly be angry about, so it happens
- *    before anything else and, if it throws, nothing else happens either — the
- *    account stays live and the request fails loudly. A deletion that silently
- *    left a card being charged is the worst outcome available here.
- * 2. **Hand the grants back**, best-effort. A vendor being down is not a reason
- *    to refuse someone's deletion, and the tokens are destroyed locally in the
- *    next step regardless, so the worst case is a grant that stays listed on
- *    the merchant's side until they remove it themselves. Recorded, not raised.
- * 3. **Write the deletion down** — the stamp, the domain's release deadline and
- *    the removal of both stored tokens, in one transaction. This is the point
- *    of no return: from here the account reads as deleted everywhere.
- * 4. **Drop the preview row**, which is keyed by domain rather than by account
- *    and so is the one thing no cascade reaches.
+ * **The half that talks to vendors runs as a job**: cancel the subscription,
+ * hand back the Shopify grant, hand back the Google grant, then delete the
+ * stored tokens. It is out of the request for two reasons. The rule is that no
+ * Stripe call ever sits in a request path — a rule written so that a Stripe
+ * outage can never become a product outage. And it is genuinely better here: a
+ * queued step is retried and, if it runs out of retries, dead-letters where
+ * somebody is alerted, whereas a call inside the request gets one attempt and a
+ * merchant who has to guess whether their subscription was cancelled.
  *
- * What deliberately does not happen here: erasing the account's rows. That waits
- * for the sweep, because the domain row is a child of the account row and
- * erasing the parent now would free the domain the same hour — the exact thing
- * the seven-day window exists to prevent.
+ * **What deliberately happens in neither half is erasing the rows.** The domain
+ * row is a child of the account row, so erasing the account now would free the
+ * domain the same hour — the exact thing the seven-day hold exists to prevent.
+ * The sweep does it on the day the hold ends.
  */
 
 export const ACCOUNT_DELETED_EVENT = 'account_deleted'
 
-export interface DeleteAccountDeps {
+export interface RequestDeletionDeps {
   readonly store: AccountLifecycleStore
-  readonly billing: SubscriptionCanceller
-  readonly revoker: AccessRevoker
   readonly capture?: Pick<PosthogCapture, 'capture'>
-  readonly log?: Logger
   readonly now?: () => Date
 }
 
-export type DeleteAccountResult =
+export type RequestDeletionResult =
   | {
       readonly kind: 'deleted'
       readonly deletedAt: Date
       /** When the domain becomes claimable again. Null when none was claimed. */
       readonly domainFreeAt: Date | null
-      readonly subscriptionCancelled: boolean
-      /** Which grants we managed to hand back. A false here is recorded, never fatal. */
-      readonly revoked: { shopify: boolean | null; google: boolean | null }
     }
   | { readonly kind: 'not_found' }
   /** Already deleted, or another request won the guarded update. Answered as success. */
   | { readonly kind: 'already_deleted' }
 
-export async function deleteAccount(
-  deps: DeleteAccountDeps,
+export async function requestAccountDeletion(
+  deps: RequestDeletionDeps,
   input: { accountId: string },
-): Promise<DeleteAccountResult> {
+): Promise<RequestDeletionResult> {
   const now = deps.now?.() ?? new Date()
   const record = await deps.store.load(input.accountId)
   if (!record) return { kind: 'not_found' }
   if (record.deletedAt) return { kind: 'already_deleted' }
-
-  let subscriptionCancelled = false
-  if (record.stripeSubscriptionId) {
-    // Deliberately unguarded: if this throws, the whole request fails and the
-    // account is untouched. Better a merchant who has to try again than a
-    // merchant whose account is gone and whose card is still being charged.
-    await deps.billing.cancelNow(record.stripeSubscriptionId)
-    subscriptionCancelled = true
-  }
-
-  const revoked = {
-    shopify: record.shopifyToken
-      ? await bestEffort(deps, 'shopify', () => deps.revoker.revokeShopify(record.shopifyToken!))
-      : null,
-    google: record.googleRefreshToken
-      ? await bestEffort(deps, 'google', () =>
-          deps.revoker.revokeGoogle(record.googleRefreshToken!),
-        )
-      : null,
-  }
 
   const releaseAt = domainReleaseAt(now)
   const written = await deps.store.markDeleted({
@@ -103,27 +70,82 @@ export async function deleteAccount(
   deps.capture?.capture({
     event: ACCOUNT_DELETED_EVENT,
     attribution: accountAttribution(input.accountId, record.domainNormalized ?? undefined),
-    properties: {
-      subscription_cancelled: subscriptionCancelled,
-      // Words rather than a nullable boolean: "we had no connection to hand
-      // back" and "we tried and the vendor refused" are different facts, and an
-      // analytics property may not be null.
-      shopify_grant: grantOutcome(revoked.shopify),
-      google_grant: grantOutcome(revoked.google),
-    },
+    properties: { had_subscription: record.stripeSubscriptionId !== null },
   })
 
   return {
     kind: 'deleted',
     deletedAt: now,
     domainFreeAt: record.domainNormalized ? releaseAt : null,
-    subscriptionCancelled,
-    revoked,
   }
 }
 
+export interface CloseAccountDeps {
+  readonly store: AccountLifecycleStore
+  readonly billing: SubscriptionCanceller
+  readonly revoker: AccessRevoker
+  readonly log?: Logger
+}
+
+export type CloseAccountResult =
+  | {
+      readonly kind: 'closed'
+      readonly subscriptionCancelled: boolean
+      /**
+       * Which grants we managed to hand back. Null means there was nothing to
+       * hand back; false means the vendor refused and we destroyed the token
+       * anyway.
+       */
+      readonly revoked: { shopify: boolean | null; google: boolean | null }
+    }
+  /** Nothing to do: no such account, or its deletion was never requested. */
+  | { readonly kind: 'skipped'; readonly why: 'not_found' | 'not_deleted' }
+
+/**
+ * The vendor half, run as a job and safe to run again.
+ *
+ * Safe to repeat because each step is: cancelling an already-cancelled
+ * subscription is a no-op at Stripe, revoking an already-revoked grant is a
+ * no-op at the vendor, and the token delete is a delete. A retry after a
+ * half-finished attempt therefore finishes the job rather than repeating its
+ * effects.
+ */
+export async function closeAccount(
+  deps: CloseAccountDeps,
+  input: { accountId: string },
+): Promise<CloseAccountResult> {
+  const record = await deps.store.load(input.accountId)
+  if (!record) return { kind: 'skipped', why: 'not_found' }
+  // The guard that stops this job erasing a live account's grants if it is ever
+  // enqueued by mistake.
+  if (!record.deletedAt) return { kind: 'skipped', why: 'not_deleted' }
+
+  let subscriptionCancelled = false
+  if (record.stripeSubscriptionId) {
+    // Deliberately unguarded. A deleted account whose card is still being
+    // charged is the worst outcome available here, so a refusal fails the job
+    // and it is retried; the tokens below are handed back on the next attempt.
+    await deps.billing.cancelNow(record.stripeSubscriptionId)
+    subscriptionCancelled = true
+  }
+
+  const revoked = {
+    shopify: record.shopifyToken
+      ? await bestEffort(deps, 'shopify', () => deps.revoker.revokeShopify(record.shopifyToken!))
+      : null,
+    google: record.googleRefreshToken
+      ? await bestEffort(deps, 'google', () =>
+          deps.revoker.revokeGoogle(record.googleRefreshToken!),
+        )
+      : null,
+  }
+
+  await deps.store.clearGrants(input.accountId)
+  return { kind: 'closed', subscriptionCancelled, revoked }
+}
+
 async function bestEffort(
-  deps: DeleteAccountDeps,
+  deps: CloseAccountDeps,
   vendor: 'shopify' | 'google',
   call: () => Promise<void>,
 ): Promise<boolean> {
@@ -137,9 +159,4 @@ async function bestEffort(
     })
     return false
   }
-}
-
-function grantOutcome(result: boolean | null): 'none' | 'revoked' | 'failed' {
-  if (result === null) return 'none'
-  return result ? 'revoked' : 'failed'
 }

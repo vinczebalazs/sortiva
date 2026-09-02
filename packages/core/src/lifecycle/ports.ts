@@ -25,13 +25,17 @@ export interface AccountLifecycleRecord {
 export interface AccountLifecycleStore {
   load(accountId: string): Promise<AccountLifecycleRecord | undefined>
   /**
-   * Stamps the deletion, sets the domain's release deadline, and clears both
-   * stored tokens — in one transaction, because a token we have told the vendor
-   * to forget must not still be sitting in our database if the rest fails.
+   * Stamps the deletion, sets the domain's release deadline, and marks both
+   * connections dead — in one transaction, so an account that reads as deleted
+   * can never still look connected to anything.
    *
-   * Guarded on the account not already being deleted: false means somebody
-   * else got there first and this request should stop rather than re-run the
-   * vendor calls.
+   * The stored tokens survive this write, because something still has to hand
+   * them back to the vendors that issued them. They are ciphertext at rest, they
+   * are unusable by the product from this moment, and the closing step below
+   * deletes them.
+   *
+   * Guarded on the account not already being deleted: false means somebody else
+   * got there first and this request should stop.
    */
   markDeleted(input: {
     accountId: string
@@ -40,6 +44,8 @@ export interface AccountLifecycleStore {
   }): Promise<boolean>
   /** The logged-out preview's row for this domain, which §14.6 says goes too. */
   purgePreviewCache(domainNormalized: string): Promise<void>
+  /** Removes the two stored grants, once the vendors have been told. */
+  clearGrants(accountId: string): Promise<void>
 }
 
 /** Cancelling now, not at period end: a deleted account is not billed again. */
@@ -51,10 +57,9 @@ export interface SubscriptionCanceller {
  * Handing an access grant back to the vendor that issued it.
  *
  * Both revocations are best-effort by design. A vendor that is down, or a grant
- * the merchant already removed from their own side, must not stop us deleting
- * the account — the merchant asked to leave. What must not happen is keeping
- * the token, so the local clear-down runs either way and the failure is
- * recorded rather than raised.
+ * the merchant already removed from their own side, must not stop us finishing
+ * a deletion — and the tokens are destroyed either way, both by the closing step
+ * and by the erase a week later.
  */
 export interface AccessRevoker {
   revokeShopify(input: { shopHandle: string; accessToken: string }): Promise<void>

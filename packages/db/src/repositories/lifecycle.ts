@@ -76,13 +76,19 @@ export async function loadAccountLifecycle(
 }
 
 /**
- * Writes the deletion down: the stamp, the domain's release deadline, and the
- * removal of both stored grants — in one transaction, because a token we have
- * just asked a vendor to forget must not still be sitting in our database if
- * something after it fails.
+ * Writes the deletion down: the stamp, the domain's release deadline, and both
+ * connections marked dead — in one transaction, so an account that reads as
+ * deleted can never still look connected to anything.
+ *
+ * The two stored tokens survive this write on purpose. Something still has to
+ * hand them back to the vendors that issued them, and that runs as a job rather
+ * than inside the request; a job cannot be handed a credential through a queue
+ * payload, so it re-reads it here. Both are ciphertext at rest, both stop being
+ * usable by the product the moment the connection is marked dead, and
+ * `clearAccountGrants` deletes them once the vendors have been told.
  *
  * Guarded on the account not already being deleted. False means another request
- * got there first, and the caller must stop rather than repeat the vendor calls.
+ * got there first, and the caller must stop.
  */
 export async function markAccountDeleted(
   db: Db,
@@ -102,12 +108,26 @@ export async function markAccountDeleted(
       .set({ releaseAfter: input.domainReleaseAt, updatedAt: input.at })
       .where(eq(domains.accountId, scope.accountId))
 
-    // Deleted rather than blanked. A row holding an empty token would still
-    // hold the shop handle against a future reconnection, and the merchant has
-    // asked to be gone.
+    // Marked dead rather than deleted, so the store handle stops answering
+    // "whose is this" for any incoming webhook while the token is still here to
+    // be handed back.
+    await tx
+      .update(shopifyConns)
+      .set({ invalidatedAt: input.at })
+      .where(and(eq(shopifyConns.accountId, scope.accountId), isNull(shopifyConns.invalidatedAt)))
+    await tx
+      .update(gscConns)
+      .set({ invalidatedAt: input.at })
+      .where(and(eq(gscConns.accountId, scope.accountId), isNull(gscConns.invalidatedAt)))
+    return true
+  })
+}
+
+/** Destroys the two stored grants, once the vendors that issued them have been told. */
+export async function clearAccountGrants(db: Db, scope: AccountScope): Promise<void> {
+  await db.transaction(async (tx) => {
     await tx.delete(shopifyConns).where(eq(shopifyConns.accountId, scope.accountId))
     await tx.delete(gscConns).where(eq(gscConns.accountId, scope.accountId))
-    return true
   })
 }
 
