@@ -92,6 +92,7 @@ function deps(llm?: MockLlmClient): IngestionDeps {
       authorizeUrl: () => '',
       verifyCallbackSignature: () => true,
       exchangeCode: async () => ({ accessToken: '', grantedScopes: [] }),
+      revokeAccess: async () => {},
     },
     shop: { async getShop() { throw new Error('not used') } },
     connections: new FakeConnections(accountId),

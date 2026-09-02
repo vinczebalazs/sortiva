@@ -55,6 +55,9 @@ class FakeProvider implements GscProvider {
   async refresh(): Promise<GscTokens> {
     return tokens()
   }
+  async revoke(): Promise<void> {
+    throw new Error('not used here')
+  }
   async listSites(): Promise<readonly GscSite[]> {
     return this.sites
   }

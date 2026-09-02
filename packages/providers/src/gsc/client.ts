@@ -35,6 +35,7 @@ import {
 const AUTH_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth'
 const TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token'
 const API_BASE = 'https://www.googleapis.com/webmasters/v3'
+const REVOKE_ENDPOINT = 'https://oauth2.googleapis.com/revoke'
 
 /**
  * Google's own ceiling on one Search Analytics response. Not a policy number:
@@ -53,6 +54,7 @@ export interface GscOAuthProviderOptions {
   now?: () => number
   authEndpoint?: string
   tokenEndpoint?: string
+  revokeEndpoint?: string
   apiBase?: string
 }
 
@@ -76,6 +78,7 @@ export class GscOAuthProvider implements GscProvider {
   private readonly now: () => number
   private readonly authEndpoint: string
   private readonly tokenEndpoint: string
+  private readonly revokeEndpoint: string
   private readonly apiBase: string
 
   constructor(options: GscOAuthProviderOptions = {}) {
@@ -85,6 +88,7 @@ export class GscOAuthProvider implements GscProvider {
     this.now = options.now ?? (() => Date.now())
     this.authEndpoint = options.authEndpoint ?? AUTH_ENDPOINT
     this.tokenEndpoint = options.tokenEndpoint ?? TOKEN_ENDPOINT
+    this.revokeEndpoint = options.revokeEndpoint ?? REVOKE_ENDPOINT
     this.apiBase = options.apiBase ?? API_BASE
   }
 
@@ -104,6 +108,40 @@ export class GscOAuthProvider implements GscProvider {
     url.searchParams.set('prompt', 'consent')
     url.searchParams.set('include_granted_scopes', 'false')
     return url.toString()
+  }
+
+  /**
+   * Hands the grant back, so a deleted account stops appearing on the merchant's
+   * own Google security page.
+   *
+   * Google answers 400 for a token it has already forgotten, and that is a
+   * success as far as we are concerned: the grant is gone, which is the outcome
+   * asked for. Only a Google-side fault is worth raising, so the deletion job
+   * that calls this can be retried without a second attempt failing on the
+   * success of the first.
+   */
+  async revoke(token: string): Promise<void> {
+    let response: Response
+    try {
+      response = await this.fetchImpl(this.revokeEndpoint, {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ token }).toString(),
+      })
+    } catch (error) {
+      throw new GscRequestFailure(
+        true,
+        'gsc_transport',
+        'Could not reach Google to hand the grant back.',
+        { cause: error },
+      )
+    }
+    if (response.ok || response.status === 400) return
+    throw new GscRequestFailure(
+      response.status >= 500 || response.status === 429,
+      `gsc_revoke_${response.status}`,
+      `Google refused to revoke the grant (${response.status}).`,
+    )
   }
 
   async exchangeCode(input: { code: string; redirectUri: string }): Promise<GscTokens> {

@@ -36,6 +36,7 @@ export class InMemoryGscProvider implements GscProvider {
   readonly authorizationUrls: string[] = []
   readonly analyticsRequests: GscSearchAnalyticsRequest[] = []
   refreshCalls = 0
+  readonly revoked: string[] = []
 
   private readonly options: InMemoryGscOptions
   private callCount = 0
@@ -55,6 +56,11 @@ export class InMemoryGscProvider implements GscProvider {
       throw new GscGrantRevoked('the double was asked to fail the exchange')
     }
     return this.tokens(`access-for-${input.code}`)
+  }
+
+  /** Records what was handed back; a token it has already forgotten is not an error. */
+  async revoke(token: string): Promise<void> {
+    this.revoked.push(token)
   }
 
   async refresh(refreshToken: string): Promise<GscTokens> {

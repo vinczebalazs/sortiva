@@ -240,3 +240,58 @@ describe('the in-memory Shopify used by tests and local development', () => {
     expect(mock.verifyCallbackSignature({ query: { ...signed, code: 'tampered' } })).toBe(false)
   })
 })
+
+describe('handing the store grant back', () => {
+  function revoking(respond: () => Response): {
+    client: ShopifyOAuthClient
+    calls: { url: string; method: string; token: string | null }[]
+  } {
+    const calls: { url: string; method: string; token: string | null }[] = []
+    const client = new ShopifyOAuthClient({
+      apiKey: API_KEY,
+      apiSecret: API_SECRET,
+      storeBaseUrl: (shop) => `https://${shop}.myshopify.test`,
+      fetchImpl: async (input, init) => {
+        const headers = new Headers(init?.headers)
+        calls.push({
+          url: String(input),
+          method: init?.method ?? 'GET',
+          token: headers.get('x-shopify-access-token'),
+        })
+        return respond()
+      },
+    })
+    return { client, calls }
+  }
+
+  it('deletes the current permissions, which is what an uninstall does', async () => {
+    const { client, calls } = revoking(() => new Response('{}', { status: 200 }))
+    await client.revokeAccess({ shop: 'acme', accessToken: 'shpat_real' })
+    expect(calls).toHaveLength(1)
+    expect(calls[0]!.method).toBe('DELETE')
+    expect(calls[0]!.url).toContain('/api_permissions/current.json')
+    expect(calls[0]!.token).toBe('shpat_real')
+  })
+
+  it('treats a token Shopify has already forgotten as done', async () => {
+    // A 401 means the grant is gone, which is the outcome asked for. Anything
+    // else would make a retried deletion job fail on the success of its first
+    // attempt.
+    const { client } = revoking(() => new Response('{}', { status: 401 }))
+    await expect(
+      client.revokeAccess({ shop: 'acme', accessToken: 'stale' }),
+    ).resolves.toBeUndefined()
+  })
+
+  it('asks to be retried when Shopify is broken, and not when it refuses', async () => {
+    const broken = revoking(() => new Response('{}', { status: 503 }))
+    await expect(
+      broken.client.revokeAccess({ shop: 'acme', accessToken: 't' }),
+    ).rejects.toMatchObject({ retryable: true })
+
+    const refused = revoking(() => new Response('{}', { status: 422 }))
+    await expect(
+      refused.client.revokeAccess({ shop: 'acme', accessToken: 't' }),
+    ).rejects.toMatchObject({ retryable: false })
+  })
+})
