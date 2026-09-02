@@ -19,6 +19,7 @@ import {
   ACCOUNT_OPTIMIZE_PAUSED_FLAG,
   ALL_WORK_PAUSED_FLAG,
   PUBLISHING_PAUSED_FLAG,
+  createLogger,
   silentLogger,
   type AnalyticsEvent,
   type FailureCount,
@@ -129,14 +130,28 @@ const sweep = (deps: Parameters<typeof evaluateAutoTrips>[1] = {}) =>
   evaluateAutoTrips(db, { now: () => NOW, log: silentLogger, ...deps })
 
 describe('the quality judge rejecting most of what it sees', () => {
-  it('stops all generation and says how bad it got', async () => {
+  it('stops all generation, says how bad it got, and pages', async () => {
     const rejected = Math.ceil(CAPS.judge_fail_rate.trailing_drafts * 0.7)
-    const report = await sweep({ judge: judgeSaw(rejected, CAPS.judge_fail_rate.trailing_drafts) })
+    const paged: string[] = []
+    const analytics = new RecordingCapture()
+
+    const report = await sweep({
+      judge: judgeSaw(rejected, CAPS.judge_fail_rate.trailing_drafts),
+      analytics,
+      log: createLogger({ sink: (line) => paged.push(line), minLevel: 'error' }),
+    })
 
     expect(report.trips).toHaveLength(1)
     expect(report.trips[0]?.flag).toBe(ALL_WORK_PAUSED_FLAG)
     expect(report.trips[0]?.reason).toContain('70%')
     expect(await isGlobalFlagActive(db, SYSTEM, ALL_WORK_PAUSED_FLAG)).toBe(true)
+
+    // Paging is two things and both have to happen: a line at error level,
+    // which is what the crash reporter and the log alert see, and the event the
+    // analytics alert watches. Neither of them causes the pause.
+    expect(paged.filter((line) => line.includes('"msg":"kill_switch_tripped"'))).toHaveLength(1)
+    expect(paged[0]).toContain('"level":"error"')
+    expect(analytics.events.map((e) => e.event)).toEqual(['kill_switch_tripped'])
   })
 
   it('leaves a rate under the ceiling alone', async () => {
