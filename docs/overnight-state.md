@@ -13,16 +13,20 @@ plan for the run is `docs/nightly-plan.md`** — read it after this file.
 
 ## Right now
 
-**Status at 2026-09-02, 19:10.** `main` is at `6400b62`, clean, and fully green — see
-the gate table below. `T8.0` has landed. Four lanes are running; four worktrees exist,
-one per lane.
+**Status at 2026-09-02, 19:13.** `main` is at `d34daa6`, clean, and fully green — see
+the gate table below. **Two cards have landed tonight: `T8.0` and `T-START`.** Four
+lanes are running; four worktrees exist, one per lane.
 
 | Lane | Branch | Worktree | Where it is |
 |---|---|---|---|
-| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | **`T-START` reported complete, awaiting integrator merge**; then `T2.2` — the critical path |
+| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | **`T-START` merged as `d34daa6`**; now on `T2.2` — the critical path, and the most consequential card of the run |
 | C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4` building; then `T-EMAIL` |
 | F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS` building; then `T9.3` → `T9.4` → `T9.5` |
-| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | **`T8.0` merged as `6400b62`**; next is `T8.1` → `T8.2` |
+| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | **`T8.0` merged as `6400b62`**; now on `T8.1`; then `T8.2`, after which an audit is scheduled |
+
+**An audit is scheduled after `T2.2`** (build plan §7) and must run before `T2.3`
+starts. Audits are read-only and their findings are held for the morning unless one
+blocks the next card in that lane.
 
 **Setup done at the start of this run, and one thing the previous state file got
 wrong.** It recorded all lane worktrees as "clean and level with `main`". They were
@@ -114,6 +118,83 @@ Nothing is lost when it happens — the worktree survives — but an interrupted
 session may have written half a file. Every lane has been told to commit early
 and often, by explicit path, for exactly this reason: a committed half is
 recoverable, an uncommitted half is a guess.
+
+## `T-START` LANDED — a claimed domain now starts moving by itself
+
+**Merged into `main` as `d34daa6` on 2026-09-02 at 19:12, three commits, full gate
+green.** This closes the founder question that had been open since `T2.1`.
+
+**What was actually wrong.** Claiming a domain wrote the *record* of a store's
+onboarding — the run and its nine step rows — and asked nobody to do any of it. A
+merchant who connected their Shopify store moved forward, because the OAuth callback
+resumes onboarding itself; but the very first step, reading their storefront to see
+what it is built on, had nothing to trigger it. Nothing in the running product started
+a merchant's onboarding.
+
+**What changed.** The claim now puts "move this store along" on the job queue **inside
+the same transaction that writes the run**. Both halves commit together, so a claim can
+never land without work behind it, and a queued nudge can never outlive a claim that
+rolled back. Two files carry it: a new `packages/jobs/src/ingestion/queue.ts`, which
+imports drizzle and nothing else, and three lines in the claim path.
+
+**Why the queue call is its own near-empty file.** The dispatcher it names pulls in the
+Shopify steps, the LLM wrapper and the threshold config. A route importing that to
+queue one job would drag a file-reading config loader into a bundle with no filesystem
+— the exact failure `T-BOOT` repaired, where the build passes and every test passes and
+the server serves nothing. The Search Console and inventory queues are split the same
+way; this follows them. **Any lane whose route enqueues background work should copy this
+shape.**
+
+**Repeat claims get one job, not two.** The job key is derived from the account, so a
+merchant who pastes their address again after nothing seemed to happen nudges the
+existing job rather than stacking work behind it. Derived from the input, never random —
+which is what makes it hold across separate requests as well as within one.
+
+**Proved by mutation, not just by passing.** With the enqueue line removed, all four new
+tests fail and all nine pre-existing claim tests still pass. The transactional property
+is shown by rolling back: inside the transaction there is 1 domain, 1 run, 9 steps and
+1 queued job; after rollback, zero of each.
+
+### The one consequence worth a second pair of eyes
+
+**A database no worker has ever started against now *fails* a claim, where before it
+would quietly claim and start nothing.** The claim writes into the queue's own tables,
+and those are created by the worker at start-up rather than by our migrations. In
+production this is satisfied — the worker runs inside the web server's own process — and
+a route already queued work this way before this card. But running with the worker
+disabled against a fresh database, which is how someone might work on screens locally,
+now breaks the claim. It fails in the safe direction and it is journalled, but it is a
+real change to a developer's experience. Closing it properly means putting the queue's
+tables into our own migrations, which is a schema wave, not this card.
+
+### What `T2.2` inherits
+
+- **The claim is no longer inert.** `T2.2`'s catalog sync sits behind `detect` and
+  `oauth_wait` in the same run, and that run now actually starts when a domain is
+  claimed. Anything tested end to end will have a worker trying to move it.
+- **Any test that claims a domain now needs the queue's tables.** Call
+  `installQueueSchema(url)` from `@sortiva/jobs/runtime/testing` in `beforeAll`, and
+  `TRUNCATE_QUEUE_SQL` in `beforeEach`. That file is new and lives in
+  `packages/jobs/runtime`, which no lane owns; it exists so the two Lane A test suites
+  could install the queue without `apps/web` taking a dependency on `graphile-worker`,
+  which would have changed `pnpm-lock.yaml` — the known merge hazard.
+
+### Files touched outside Lane B's directories
+
+Authorised by the `T-START` journal entry, which is the founder decision itself:
+`apps/web/app/api/domain/_lib/store.ts` and its two test files (**Lane A** — three lines
+of production code plus comments), `packages/jobs/src/runtime/steps.ts` (one comment
+that had come to say the opposite of the truth), and the new
+`packages/jobs/src/runtime/testing.ts`. No migration. No lockfile change. `DECISIONS.md`
+is union-merged.
+
+**The integrator verified before merging** that the claim path's only behavioural change
+is the enqueue, that the new queue file imports drizzle alone, and that the dispatcher's
+task-name constant moved to that file rather than being duplicated.
+
+**No audit is scheduled after this card** (build plan §7). The lane judged one
+unnecessary and the integrator agrees; the item deserving scrutiny is the queue-tables
+consequence above, which is recorded rather than resolved.
 
 ## What is on `main`
 
@@ -217,21 +298,27 @@ What it changed that everyone inherits:
   `pnpm-lock.yaml` changed — `packages/ui` now depends on React. **That lockfile is
   the merge hazard for lanes B and C if they added a dependency.**
 
-**Gate on the merged tree, after `T8.0`** (`T9.1`, `T2.1`, `T3.1`, `T3.2`, `T9.2`,
-`T-OPS`, `T3.3`, `T8.0`), each command run separately on 2026-09-02 at 19:04–19:07,
-never chained:
+**Gate on the merged tree, after `T8.0` and `T-START`** (`T9.1`, `T2.1`, `T3.1`,
+`T3.2`, `T9.2`, `T-OPS`, `T3.3`, `T8.0`, `T-START`), each command run separately on
+2026-09-02 at 19:10–19:11, never chained:
 
 | | |
 |---|---|
 | `pnpm lint` | clean |
 | `pnpm lint:prove` | **10** planted violations, all rejected |
 | `pnpm typecheck` | 9 packages |
-| `pnpm test` | **1369 passing**, 101 files (was 1357 / 100 before `T8.0`) |
+| `pnpm test` | **1373 passing**, 101 files |
 | `pnpm contracts:check` | 56 routes; zod and OpenAPI agree |
 | `pnpm build` | compiles |
-| `pnpm smoke:boot` | `GET / -> 200`, `GET /api/health -> 200`, in 0.7s |
+| `pnpm smoke:boot` | `GET / -> 200`, `GET /api/health -> 200`, in 0.6s |
 | `pnpm eval` · `pnpm chaos` | pass |
-| `pnpm db:migrate` on an **empty** database | 41 tables, 3 guard triggers |
+| `pnpm db:migrate` on an **empty** database | 41 tables, 3 guard triggers (run after `T8.0`; `T-START` adds no migration) |
+
+**The test count reconciles, and a discrepancy the previous state file carried is now
+explained.** That file's header said 1,362 tests while its gate table said 1,357; lane B
+noticed the five-test gap and correctly declined to chase it. The header was right and
+the table was five stale. From 1,362: `T8.0` added 7 (1,369) and `T-START` added 4
+(1,373). Every number now agrees.
 
 The migration row was run against a database created for the purpose and dropped
 afterwards, never against the dev database. Wave 4 adds no table, so 41 is unchanged;
