@@ -164,7 +164,7 @@ Then:     T2.2 → T2.3 → T2.4 → T2.5 → T2.6 → T2.7   (B, serial — the
           T8.1 → T8.2 → T8.3                        (G, parallel throughout)
 After T2.5:   M4 (D) ║ T3.5 → T3.6 → T3.7 (C)
 After T4.4:   M5 (D) ║ M6 (E)
-After T5.1 + T3.7:   M7 (C+D)
+After T5.1 + T3.7:   M7 (C+D)  — DEFERRED, not in v1 (founder, 2026-09-02)
 Finally:  M10 exit gates, serial
 ```
 
@@ -172,8 +172,8 @@ Finally:  M10 exit gates, serial
 
 A card cannot start before these are merged. `M2` needs `T1.4` ✅. `M3` needs
 `T2.0` ✅ and `T0.7` ✅; `T3.5` onward additionally needs `T2.4`–`T2.5`. `M4`
-needs `T2.4`–`T2.5`. `M5` needs `T4.4`. `M6` needs `T3.6` and `T4.4`. `M7` needs
-`T5.1` and `T3.7`. Frontend integration cards need their backend cards; frontend
+needs `T2.4`–`T2.5`. `M5` needs `T4.4`. `M6` needs `T3.6` and `T4.4`. `M7` is **deferred out of v1** and no longer
+scheduled; nothing depends on it. Frontend integration cards need their backend cards; frontend
 build cards need only `T0.7`.
 
 ### One card to pull forward
@@ -454,7 +454,15 @@ Scope: cannibalization consolidation recommendation (primary URL choice with rea
 Read first: main §11, §7.9 (technical blockers), §10.5, §7.8 example 5.
 Done when: example 5 produces a FIX with the three task kinds; a blocking FIX on a collection blocks an OPTIMIZE on it; grep proves no redirect/canonical write path exists.
 
-### M7 — Learning & outcomes · Lanes C + D
+### M7 — Learning & outcomes · Lanes C + D · **DEFERRED — not in the first deployment**
+
+> **Founder decision, 2026-09-02: the learning loop does not ship in v1.** Both cards
+> below stay in the plan and stay unbuilt. Nothing else depends on them — `M10`'s exit
+> gates do not read outcomes — so deferring costs no other card. What the product gives
+> up until they are built: it never learns from what it published. Every article is
+> written from evidence, none from what worked last time; no verdict is ever attached to
+> a published piece, and no pattern is ever extracted from the store's own results. The
+> plan's dependency line `After T5.1 + T3.7: M7 (C+D)` is suspended, not deleted.
 
 **T7.1 — Labels, patterns, per-opportunity outcomes**
 Scope: weekly label recompute (28-day maturity, relative thresholds, winner/neutral/underperformer/unrated), `pattern_stats` over intent_class / family / keyword_cluster / **action_type** with n ≥ 3 activation, multipliers clamped [0.5, 2.0] over 90 days, exclusions (override, young, pending repair, unconfirmed export), OPTIMIZE/REFRESH/FIX outcomes written to `opportunities.outcome_json`, `article_labeled` and `opportunity_outcome_measured` events; replaces T4.6's stub patterns.
