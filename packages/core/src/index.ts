@@ -1,6 +1,7 @@
 export * from './account'
 export * from './api'
 export * from './billing'
+export * from './catalog'
 export * from './contracts'
 export * from './domain'
 export * from './fixtures'
