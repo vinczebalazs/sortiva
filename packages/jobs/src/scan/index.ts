@@ -1,4 +1,10 @@
 export {
+  DbExistingTargetCheck,
+  existingTargetInputFor,
+  type ExistingTargetDeps,
+} from './existing-target'
+
+export {
   refitCtrCurveForAccount,
   type CtrCurveRefitDeps,
   type CtrCurveRefitOutcome,

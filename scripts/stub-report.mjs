@@ -20,7 +20,17 @@ const doubles = await import('../packages/core/src/contracts/doubles.ts')
 
 // Constructing each double is what registers it; the registry is otherwise
 // empty in a fresh process.
-new doubles.StubExistingTargetCheck()
+//
+// `StubExistingTargetCheck` is deliberately not constructed, from 2026-09-03:
+// `T3.5` filled that seam. The rule lives in `@sortiva/core`
+// (`findExistingTarget`) and the store's real data is gathered behind it by
+// `DbExistingTargetCheck` in `@sortiva/jobs`. **Stated plainly, because the
+// note above about the notifications seam sets a higher bar than this one
+// meets:** no production code calls the check yet, because both its consumers
+// are cards nobody has written — `T3.6` (opportunity creation) and `T4.1`
+// (Lane D's topic gate). What has changed is that a caller can no longer get a
+// silent "no match": the stand-in is gone, and a new page cannot be proposed
+// without the clearance only the real check mints.
 new doubles.StubOpportunitySource()
 new doubles.StubTopicScheduler()
 new doubles.StubJudgeLite()
