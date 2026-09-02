@@ -8,11 +8,14 @@ import {
 import { StubNotificationEmitter } from '@sortiva/core'
 import type { NotificationEmitter, ShopifyOAuthProvider } from '@sortiva/core'
 import { db, dbPool } from '@sortiva/db'
-import {
-  dispatchIngestion,
-  readDetectedShopHandle,
-  type IngestionDeps,
-} from '@sortiva/jobs'
+// Deep imports, not the package barrel: `@sortiva/jobs`'s index re-exports the
+// spend-cap sweep, which pulls `packages/rules` — and that reads its config file
+// through a `new URL()` webpack resolves at build time and cannot find. The
+// domain claim's store deep-imports for the same reason. See DECISIONS
+// 2026-09-01 T1.3.
+import { dispatchIngestion } from '@sortiva/jobs/ingestion/dispatch'
+import { readDetectedShopHandle } from '@sortiva/jobs/ingestion/steps'
+import type { IngestionDeps } from '@sortiva/jobs/ingestion/deps'
 import { makeConnectionStore, makeDomainStore, type ConnectionStoreWithSave } from './bindings'
 import type { ShopifyOauthDeps } from './handlers'
 

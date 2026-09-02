@@ -70,7 +70,7 @@ function context(accountId = ACCOUNT) {
 describe('starting the install', () => {
   it('sends the merchant to a consent screen asking for read permission only', async () => {
     const h = harness()
-    const response = await makeStartHandler(h.deps)(
+    const response = await makeStartHandler(() => h.deps)(
       new Request('https://app.example/api/shopify/oauth/start', { method: 'POST' }),
       context(),
     )
@@ -85,7 +85,7 @@ describe('starting the install', () => {
 
   it('waits rather than guessing when we do not yet know the store', async () => {
     const h = harness({ readShopHandle: async () => undefined })
-    const response = await makeStartHandler(h.deps)(
+    const response = await makeStartHandler(() => h.deps)(
       new Request('https://app.example/api/shopify/oauth/start', { method: 'POST' }),
       context(),
     )
@@ -110,7 +110,7 @@ describe('coming back from Shopify', () => {
 
   it('stores the connection and picks onboarding back up', async () => {
     const h = harness()
-    const response = await makeCallbackHandler(h.deps)(callbackRequest(goodQuery(h)), context())
+    const response = await makeCallbackHandler(() => h.deps)(callbackRequest(goodQuery(h)), context())
 
     expect(response.status).toBe(302)
     expect(response.headers.get('location')).toBe('https://app.example/dashboard?connected=shopify')
@@ -123,7 +123,7 @@ describe('coming back from Shopify', () => {
     const h = harness()
     const query = { ...goodQuery(h), hmac: 'deadbeef' }
 
-    const response = await makeCallbackHandler(h.deps)(callbackRequest(query), context())
+    const response = await makeCallbackHandler(() => h.deps)(callbackRequest(query), context())
 
     expect(response.headers.get('location')).toContain(CALLBACK_CODES.badSignature)
     expect(h.saved).toHaveLength(0)
@@ -133,7 +133,7 @@ describe('coming back from Shopify', () => {
     const h = harness()
     const query = goodQuery(h, OTHER_ACCOUNT)
 
-    const response = await makeCallbackHandler(h.deps)(callbackRequest(query), context(ACCOUNT))
+    const response = await makeCallbackHandler(() => h.deps)(callbackRequest(query), context(ACCOUNT))
 
     expect(response.headers.get('location')).toContain(CALLBACK_CODES.badState)
     expect(h.saved).toHaveLength(0)
@@ -144,7 +144,7 @@ describe('coming back from Shopify', () => {
     const state = signOauthState({ accountId: ACCOUNT, shop: 'acme', issuedAt: Date.now() }, SECRET)
     const query = h.oauth.signCallback({ shop: 'someone-else.myshopify.com', code: 'c', state })
 
-    const response = await makeCallbackHandler(h.deps)(callbackRequest(query), context())
+    const response = await makeCallbackHandler(() => h.deps)(callbackRequest(query), context())
 
     expect(response.headers.get('location')).toContain(CALLBACK_CODES.wrongStore)
     expect(h.saved).toHaveLength(0)
@@ -154,7 +154,7 @@ describe('coming back from Shopify', () => {
     const h = harness()
     h.oauth.grants({ grantedScopes: ['read_products', 'write_content'] })
 
-    const response = await makeCallbackHandler(h.deps)(callbackRequest(goodQuery(h)), context())
+    const response = await makeCallbackHandler(() => h.deps)(callbackRequest(goodQuery(h)), context())
 
     expect(response.headers.get('location')).toContain(CALLBACK_CODES.writeScope)
     // The screen said this permission cannot change anything in their store.
@@ -165,7 +165,7 @@ describe('coming back from Shopify', () => {
     const h = harness()
     h.oauth.failsWith(new Error('shopify is down'))
 
-    const response = await makeCallbackHandler(h.deps)(callbackRequest(goodQuery(h)), context())
+    const response = await makeCallbackHandler(() => h.deps)(callbackRequest(goodQuery(h)), context())
 
     expect(response.headers.get('location')).toContain(CALLBACK_CODES.exchangeFailed)
     expect(h.saved).toHaveLength(0)
@@ -178,7 +178,7 @@ describe('coming back from Shopify', () => {
       },
     })
 
-    const response = await makeCallbackHandler(h.deps)(callbackRequest(goodQuery(h)), context())
+    const response = await makeCallbackHandler(() => h.deps)(callbackRequest(goodQuery(h)), context())
 
     expect(response.headers.get('location')).toContain('connected=shopify')
     expect(h.saved).toHaveLength(1)
@@ -186,7 +186,7 @@ describe('coming back from Shopify', () => {
 
   it('refuses a callback missing the parameters it needs', async () => {
     const h = harness()
-    const response = await makeCallbackHandler(h.deps)(
+    const response = await makeCallbackHandler(() => h.deps)(
       callbackRequest({ shop: 'acme.myshopify.com' }),
       context(),
     )

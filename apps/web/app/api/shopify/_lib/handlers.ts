@@ -14,6 +14,11 @@ import { signOauthState, verifyOauthState } from './state'
  * Both are parse → call out → serialise. What we ask Shopify for, and what we
  * refuse to accept back, is decided in `packages/core`; what a valid return trip
  * looks like is decided by Shopify's signature and by our own state value.
+ *
+ * Each takes a factory rather than the dependencies themselves. Building them
+ * opens a database connection, and a route module is evaluated at build time as
+ * well as at request time — so constructing them eagerly makes `next build` try
+ * to connect to a database that is not there.
  */
 
 export interface ShopifyOauthDeps {
@@ -58,8 +63,9 @@ export const CALLBACK_CODES = {
  * letting a caller name the store would let a signed-in merchant be walked into
  * installing us on a store that is not theirs.
  */
-export function makeStartHandler(deps: ShopifyOauthDeps): AccountHandler {
+export function makeStartHandler(getDeps: () => ShopifyOauthDeps): AccountHandler {
   return async (_request, { scope }) => {
+    const deps = getDeps()
     const shop = await deps.readShopHandle(scope.accountId)
     if (!shop) {
       return errorResponse(
@@ -91,8 +97,9 @@ export function makeStartHandler(deps: ShopifyOauthDeps): AccountHandler {
  * The reply is a redirect either way, because a browser is what arrives — the
  * outcome travels as a query parameter the dashboard reads.
  */
-export function makeCallbackHandler(deps: ShopifyOauthDeps): AccountHandler {
+export function makeCallbackHandler(getDeps: () => ShopifyOauthDeps): AccountHandler {
   return async (request, { scope }) => {
+    const deps = getDeps()
     const query = queryOf(request)
     const shopParam = query['shop']
     const code = query['code']

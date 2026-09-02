@@ -12,7 +12,7 @@ import {
   type Database,
 } from '@sortiva/db'
 import type { DomainState, StoreConnection, StoreDomainStore } from '@sortiva/core'
-import type { ConnectionStore } from '@sortiva/jobs'
+import type { ConnectionStore } from '@sortiva/jobs/ingestion/deps'
 import type { TokenCipher } from '@sortiva/providers'
 
 /**

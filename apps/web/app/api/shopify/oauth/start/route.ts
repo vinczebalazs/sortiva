@@ -10,4 +10,4 @@ import { makeStartHandler } from '../../_lib/handlers'
  */
 export const dynamic = 'force-dynamic'
 
-export const POST = withAccount(makeStartHandler(shopifyOauthDeps()))
+export const POST = withAccount(makeStartHandler(shopifyOauthDeps))

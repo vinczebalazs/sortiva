@@ -55,7 +55,8 @@ export async function register() {
   // Shopify composition root rather than here, because deciding which Shopify —
   // the real one or the in-memory stand-in used without credentials — is its
   // job, not the entry point's.
-  const { registerIngestionTasks, registerReminderTasks } = await import('@sortiva/jobs')
+  const { registerIngestionTasks } = await import('@sortiva/jobs/ingestion/dispatch')
+  const { registerReminderTasks } = await import('@sortiva/jobs/ingestion/reminder')
   const { ingestionDeps, notificationEmitter } = await import('./app/api/shopify/_lib/config')
   registerIngestionTasks(ingestionDeps)
   registerReminderTasks(db, notificationEmitter)

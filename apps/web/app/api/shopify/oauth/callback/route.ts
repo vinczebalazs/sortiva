@@ -12,4 +12,4 @@ import { makeCallbackHandler } from '../../_lib/handlers'
  */
 export const dynamic = 'force-dynamic'
 
-export const GET = withAccount(makeCallbackHandler(shopifyOauthDeps()))
+export const GET = withAccount(makeCallbackHandler(shopifyOauthDeps))
