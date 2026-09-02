@@ -1,0 +1,21 @@
+-- Schema wave 4 (card T8.0). One change: losing a Shopify connection now
+-- actually releases the store, instead of holding it forever.
+--
+-- Before this, one row per store existed for all time. A merchant whose token
+-- we lost — they uninstalled us, or deleted their account and started again —
+-- left behind a row that still owned the store handle, and nothing in the
+-- product could clear it. The next attempt to connect that same store, from any
+-- account, hit a unique-violation the merchant could do nothing about.
+--
+-- Narrowing the index to live connections makes the loss a release: a row with
+-- an invalidation stamp stops holding the handle, while two *live* connections
+-- to one store remain impossible. Whoever reconnects still has to pass Shopify's
+-- own install, so the store is never handed to someone the merchant did not let
+-- in.
+--
+-- The cost, and it is real: two rows may now carry the same handle — one dead,
+-- one live. A lookup by handle is no longer single on its own, so it must ask
+-- for the live row. `findAccountByShopHandle` does; anything new that queries by
+-- handle must too.
+DROP INDEX "shopify_conns_shop_handle_key";--> statement-breakpoint
+CREATE UNIQUE INDEX "shopify_conns_shop_handle_key" ON "shopify_conns" USING btree ("shop_handle") WHERE "shopify_conns"."invalidated_at" IS NULL;
