@@ -13,20 +13,38 @@ plan for the run is `docs/nightly-plan.md`** — read it after this file.
 
 ## Right now
 
-**Status at 2026-09-02, 19:13.** `main` is at `d34daa6`, clean, and fully green — see
-the gate table below. **Two cards have landed tonight: `T8.0` and `T-START`.** Four
-lanes are running; four worktrees exist, one per lane.
+**Status at 2026-09-02, 19:24.** `main` is at `fa7cff4`, clean, and fully green — see
+the gate table below. **Four cards have landed tonight**, each merged and gated
+separately: `T8.0`, `T-START`, `T-ANALYTICS`, `T3.4`. Tests are at **1,465**, up from
+1,362 at the start of the night.
 
 | Lane | Branch | Worktree | Where it is |
 |---|---|---|---|
-| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | **`T-START` merged as `d34daa6`**; now on `T2.2` — the critical path, and the most consequential card of the run |
-| C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4` building; then `T-EMAIL` |
-| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS` building; then `T9.3` → `T9.4` → `T9.5` |
-| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | **`T8.0` merged as `6400b62`**; now on `T8.1`; then `T8.2`, after which an audit is scheduled |
+| B — Store Intelligence | `lane-b` | `../sortiva-lane-b` | `T-START` merged (`d34daa6`); **`T2.2` building** — the critical path, and the most consequential card of the run |
+| C — Search Intelligence | `lane-c` | `../sortiva-lane-c` | `T3.4` merged (`fa7cff4`); **next is `T-EMAIL`**, then the lane is held for `T2.5` |
+| F — Frontend | `lane-f` | `../sortiva-lane-f` | `T-ANALYTICS` merged (`42ddd50`); **next is `T9.3`** → `T9.4` → `T9.5` |
+| G — Ops & notifications | `lane-g` | `../sortiva-lane-g` | `T8.0` merged (`6400b62`); **`T8.1` building**; then `T8.2`, after which an audit is scheduled |
 
 **An audit is scheduled after `T2.2`** (build plan §7) and must run before `T2.3`
-starts. Audits are read-only and their findings are held for the morning unless one
-blocks the next card in that lane.
+starts. Another is scheduled after `T8.2`. Audits are read-only and their findings are
+held for the morning unless one blocks the next card in that lane.
+
+**Every lane obeyed the one-card rule tonight**, including lane F, which broke it
+earlier in the day. All four reported, stopped, and left clean worktrees.
+
+**The gate flakes under concurrent lane load — re-run before believing a red.** It
+happened twice tonight, in two different shapes, and both times an immediate re-run was
+clean:
+
+- **Every test passing and a non-zero exit**, on one Postgres `57P01` error
+  ("terminating connection due to administrator command") from a test file's teardown.
+  The cause is in `packages/db/src/testing.ts`, which force-drops each suite's own
+  database and so kills a connection a suite forgot to close.
+- **Two test *files* failing on 10-second hook timeouts** while all 1,404 tests passed.
+
+Neither is a product failure and neither was caused by the card being merged. **The rule
+to apply: if a gate goes red with every test passing, re-run once before investigating.**
+Unactioned; it belongs to whoever next touches the test harness.
 
 **Setup done at the start of this run, and one thing the previous state file got
 wrong.** It recorded all lane worktrees as "clean and level with `main`". They were
@@ -118,6 +136,122 @@ Nothing is lost when it happens — the worktree survives — but an interrupted
 session may have written half a file. Every lane has been told to commit early
 and often, by explicit path, for exactly this reason: a committed half is
 recoverable, an uncommitted half is a guess.
+
+## `T-ANALYTICS` LANDED — the browser reports, and what it may say is enforced
+
+**Merged as `42ddd50` into `main`, four commits, full gate green.** This closes
+the second founder question the run inherited. The browser now reports to PostHog
+directly, binding the seam `T9.1` shipped deliberately unbound.
+
+**The interesting part is not the transport — it is that the guard became structural.**
+There is a standing audit finding that nothing stops product content reaching an
+analytics event: secrets are redacted, article text is not. The card's answer:
+
+- **Each of the ten browser events already listed its properties as types, which a cast
+  defeats.** Every property now also declares *what kind of thing it may hold* — an
+  identifier, a name from a fixed list we chose, a count, or a yes/no. That table exists
+  at run time and everything a screen reports is filtered through it. **There is
+  deliberately no kind for text**, so an article title, a body or a prompt is not
+  expressible under any property name.
+- **A vendor access token is identifier-shaped and would have slipped through**, so the
+  same secret matcher the server-side wrapper uses rejects it — rejected, not redacted,
+  because an id that is really a token is a bug and `[redacted]` in its place is a worse
+  record than none.
+- **The vendor library's own autocapture is off.** It records the text of whatever was
+  clicked; on a product list that text is the merchant's catalogue, and leaving it on
+  would have made every guard above beside the point.
+
+**Session replay is off everywhere, held by three things**, because each alone is weak:
+start-up options, a per-view answer, and a test that keeps the view list complete.
+**Adding a new page under `apps/web/app` now fails until it is classified** in
+`VIEW_CONTENT`, and the failure names the route and says what to do. The landing page
+`/` is classified as store data despite being public, because its preview card renders a
+shop's products.
+
+**A lint rule makes `packages/ui/src/analytics` the only place allowed to import
+`posthog-js`**, with a planted violation proving it bites. The gate's proof count is now
+11.
+
+**Two judgement calls the lane flagged rather than hid**, and the integrator agrees they
+are worth a look rather than a nod. The shell's account object gained two *optional*
+fields — optional keeps every existing construction valid and nothing rendered needs
+them, but it means a backend that forgets them reports nothing and no test fails. And
+the test that rejects content-shaped property *names* is a heuristic, not a proof: a
+future card could add a one-word enum property that passes. The real protection is that
+adding a property is a visible edit to one table.
+
+**Files outside Lane F's directories:** `pnpm-lock.yaml` and `packages/ui/package.json`
+(`posthog-js`), one entry in the shared lint plugin's SDK list (not `eslint.config.mjs`),
+a new lint-proof file, and `.env.example`. **The integrator ran `pnpm install` and added
+the new key to every worktree's `.env`** — see the gate note above.
+
+**`T9.3` inherits:** call `useUiAnalytics()` and `capture(name, props)`; a new event
+means a new row in the definitions table, and there is no autocapture safety net by
+design; a new page must be classified or the build fails.
+
+**Real-vendor evidence outstanding:** there are no PostHog credentials, so this is proved
+against a fake vendor client. That is a **sixth** item on the list of work needing a
+re-run against real keys.
+
+## `T3.4` LANDED — the first four things the product actually notices
+
+**Merged as `fa7cff4` into `main`, four commits, full gate green.** Everything Lane C
+built before this was arithmetic; this is where it becomes signals. Four pure functions
+over search history the product already stores — no database, no clock, no network. Each
+answers "what is true"; **none says what to do about it**, which is constitution
+invariant 7 (signal and action are never mapped 1:1) and is held by a named test.
+
+- **Striking Distance** — pages Google already puts just off the first page, where the
+  gap is an editing job rather than a new page. A traffic floor stops it listing
+  everything: the page must already be shown at least as often as this store's middle
+  page.
+- **Low click-through at strong rank** — pages that rank well and are not clicked, so the
+  title and description are what is losing the click. Compared only against *this
+  store's own* curve, with searches for the shop's own name dropped first.
+- **Content decay** — pages that used to work and no longer do, against the same four
+  weeks a quarter earlier, needing clicks to have fallen *and* position to have slipped,
+  on a page that was earning something before.
+- **Cannibalization** — several of the store's own pages splitting one search.
+
+**Five new thresholds, all in `packages/rules`, each with a plain-language note saying
+what it decides and what changing it would do.** All five are marked UNSIGNED. The
+done-when is held by a test that loads the real config file, edits a band in the text,
+and shows the same page detected before and not after.
+
+### Two signals are inert on a real store today, and neither is this card's fault
+
+**Read this before planning `T3.5` or `T3.7`.**
+
+1. **Cannibalization cannot validate.** The spec makes "both pages are doing the same
+   job" a mandatory half of the test, and that comes from a column that exists in the
+   schema and **nothing in the codebase writes**. Unknown fails closed — candidates come
+   back held, with the reason, never dropped and never waved through — because the work
+   this signal leads to is merging pages, and merging two that answer different people
+   destroys something that works. **No card in the plan claims that column.** The natural
+   producers are the inventory sync or the persona work. This is an unowned gap and
+   somebody should own it.
+2. **Decay cannot confirm.** "The decline must hold across two consecutive weekly runs"
+   is history across runs, and nothing stores it. The detector takes it as an input and
+   returns unconfirmed sightings as provisional, so with no history supplied it reports
+   nothing — the safe direction. `T3.7` owns the fix and has two options: put the count
+   in the open opportunity's evidence (no migration, but writes a row before
+   confirmation), or ask for a small table (a schema wave).
+
+**A shared fixture is wrong and no lane may fix it.** Worked example 5 states an
+alternation its data does not contain — the 28-day window spreads every total evenly
+across the days, so the leading page never changes. The lane worked around it by
+re-arranging the same totals into weeks and asserting they still sum to the fixture's
+figures, and deliberately did not touch `packages/core/src/fixtures/scenarios.ts`
+because three lanes read it. **Whoever next owns that file should put weekly variation
+into the 28-day window.**
+
+**A trap that cost this lane time and can cost anyone's:** a stray control character got
+into a test-support file and made git treat it as binary — no diff shown, and a merge
+would have been resolved by wholesale replacement rather than by combining. The lane
+caught and fixed it, and the integrator confirmed before merging that no file on the
+branch is binary and that the file is clean UTF-8. Worth knowing it can happen.
+
+**Files outside Lane C's directories: none.**
 
 ## `T-START` LANDED — a claimed domain now starts moving by itself
 
@@ -298,27 +432,35 @@ What it changed that everyone inherits:
   `pnpm-lock.yaml` changed — `packages/ui` now depends on React. **That lockfile is
   the merge hazard for lanes B and C if they added a dependency.**
 
-**Gate on the merged tree, after `T8.0` and `T-START`** (`T9.1`, `T2.1`, `T3.1`,
-`T3.2`, `T9.2`, `T-OPS`, `T3.3`, `T8.0`, `T-START`), each command run separately on
-2026-09-02 at 19:10–19:11, never chained:
+**Gate on the merged tree, after four cards** (`T9.1`, `T2.1`, `T3.1`, `T3.2`, `T9.2`,
+`T-OPS`, `T3.3`, plus tonight's `T8.0`, `T-START`, `T-ANALYTICS`, `T3.4`), each command
+run separately on 2026-09-02 at 19:19–19:21, never chained:
 
 | | |
 |---|---|
 | `pnpm lint` | clean |
-| `pnpm lint:prove` | **10** planted violations, all rejected |
+| `pnpm lint:prove` | **11** planted violations, all rejected |
 | `pnpm typecheck` | 9 packages |
-| `pnpm test` | **1373 passing**, 101 files |
+| `pnpm test` | **1465 passing**, 108 files |
 | `pnpm contracts:check` | 56 routes; zod and OpenAPI agree |
 | `pnpm build` | compiles |
-| `pnpm smoke:boot` | `GET / -> 200`, `GET /api/health -> 200`, in 0.6s |
+| `pnpm smoke:boot` | `GET / -> 200`, `GET /api/health -> 200`, in 0.7s |
 | `pnpm eval` · `pnpm chaos` | pass |
-| `pnpm db:migrate` on an **empty** database | 41 tables, 3 guard triggers (run after `T8.0`; `T-START` adds no migration) |
+| `pnpm env:check` | `.env` and `.env.example` both declare **37** variables |
+| `pnpm db:migrate` on an **empty** database | 41 tables, 3 guard triggers (run after `T8.0`, the only card tonight touching migrations) |
 
-**The test count reconciles, and a discrepancy the previous state file carried is now
-explained.** That file's header said 1,362 tests while its gate table said 1,357; lane B
-noticed the five-test gap and correctly declined to chase it. The header was right and
-the table was five stale. From 1,362: `T8.0` added 7 (1,369) and `T-START` added 4
-(1,373). Every number now agrees.
+**Every test count reconciles.** 1,362 on `main` at the start of the night → `T8.0` +7
+(1,369) → `T-START` +4 (1,373) → `T-ANALYTICS` +31 (1,404) → `T3.4` +61 (1,465). A
+discrepancy the previous state file carried is also settled: its header said 1,362 and
+its gate table said 1,357; lane B noticed the five-test gap and correctly declined to
+chase it. The header was right, the table was five stale.
+
+**One integrator action was needed to keep the gate green and it is worth knowing.**
+`T-ANALYTICS` added `NEXT_PUBLIC_POSTHOG_KEY` to `.env.example`. `.env` is per-worktree
+and gitignored, so the integrator had to add the key to the main folder's `.env` by hand
+before `pnpm env:check` would pass. **Any lane worktree created before tonight has the
+36-variable `.env` and will fail `env:check` until the key is added there too.** Lane G's
+`.env` was copied at 18:46 and is also short of it.
 
 The migration row was run against a database created for the purpose and dropped
 afterwards, never against the dev database. Wave 4 adds no table, so 41 is unchanged;
