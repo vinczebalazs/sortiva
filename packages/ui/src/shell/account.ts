@@ -12,7 +12,13 @@ import type { NavContext } from './nav'
  */
 
 export interface ShellAccount {
-  readonly domain: { readonly state: string } | null
+  /**
+   * Who the analytics vendor is told is using the product. Optional because
+   * nothing the shell *renders* needs it: an account response without it still
+   * draws a correct screen, it simply reports nothing.
+   */
+  readonly accountId?: string
+  readonly domain: { readonly state: string; readonly normalized?: string } | null
   readonly subscription: { readonly status: string }
   readonly limitedIntelligence: boolean
   readonly connections: {

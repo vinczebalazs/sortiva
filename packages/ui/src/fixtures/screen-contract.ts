@@ -44,6 +44,12 @@ export const SCREEN_FIXTURE_DEPENDENCIES: readonly ScreenFixtureDependency[] = [
     note: '`past_due` raises the payment banner; `broken` on either connection raises its reconnect banner. `limitedIntelligence` must be false whenever Search Console is `broken`, or the merchant is told the same thing twice.',
   },
   {
+    screen: 'App shell — browser analytics',
+    route: 'GET /api/account',
+    fields: ['accountId', 'domain.normalized'],
+    note: 'The account id is who the analytics vendor is told is using the product; the normalised domain is the group every cost and usage question is asked by. They are the same two the server-side events already carry, so a click in a screen and a job on a queue land on one story rather than two. Neither is rendered — an account response missing them draws exactly the same screen and simply reports nothing. `domain.normalized` must be the *claimed* domain and never a host a visitor typed into the preview, or a stranger’s browsing would be attributed to a real store.',
+  },
+  {
     screen: 'App shell — banner stack',
     route: 'GET /api/settings',
     fields: ['vacationMode'],
