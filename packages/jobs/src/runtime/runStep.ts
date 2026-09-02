@@ -1,6 +1,8 @@
 import type pg from 'pg'
 import type { Db } from '@sortiva/db'
 import type { Logger } from '@sortiva/core'
+import { accountAttribution } from '@sortiva/core'
+import { reportCrash } from '@sortiva/core/observability/crash'
 import { deadLetter } from './dlq'
 import { classify, StepOwnershipLost, TokenInvalidFailure } from './errors'
 import { leaseExpiryFor } from './lease'
@@ -342,5 +344,29 @@ async function settleFailure<C>(
     firstFailedAt: now(),
   })
   log.error('step.dead_lettered', { error_class: errorClass, attempts: claimed.attempts })
+
+  // A step that has run out of retries is an error nobody is going to handle:
+  // the queue is finished with it and only an operator can move it. That is the
+  // moment it belongs in the crash reporter, where two hundred copies of one
+  // fault group into one issue that alerts. Failures still being retried are
+  // deliberately not reported — most of them succeed on the next attempt, and
+  // reporting those would bury the ones that never will.
+  reportCrash(error, {
+    attribution: accountAttribution(accountId),
+    // The step's own logger, already stamped with the account, job, step and
+    // attempt — so the crash line says which store it belongs to, and honours
+    // whatever sink the process configured.
+    logger: log,
+    properties: {
+      source: 'job_step',
+      step: claimed.step,
+      error_class: errorClass,
+      attempts: claimed.attempts,
+      job_id: jobId,
+      step_id: stepId,
+      idempotency_key: idempotencyKey,
+    },
+  })
+
   return { status: 'dead_lettered', errorClass }
 }
