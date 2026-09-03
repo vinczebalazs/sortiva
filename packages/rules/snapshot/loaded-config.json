@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "rules_version": "e6c037de202e90d5c2306939355ad50a7b8c0beaa69f24c4650c3e634209b095",
+  "rules_version": "b58283943f51b002bbbbd1ff99586e57f168bf80c3bf3309246e615a0abd1e8e",
   "defaults": {
     "signals": {
       "striking_distance": {
@@ -199,7 +199,8 @@
         "meta_description_max_chars": 155,
         "duplicate_paragraph_similarity_max": 0.5,
         "duplicate_paragraph_shingle_words": 5,
-        "keyword_density_max": 0.05
+        "keyword_density_max": 0.05,
+        "internal_link_candidates_max": 10
       }
     },
     "learning": {
@@ -561,7 +562,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -922,7 +924,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -1283,7 +1286,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -1644,7 +1648,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -2005,7 +2010,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -2366,7 +2372,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -2727,7 +2734,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -3088,7 +3096,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -3449,7 +3458,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -3810,7 +3820,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -4171,7 +4182,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -4532,7 +4544,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -4893,7 +4906,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -5254,7 +5268,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -5615,7 +5630,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -5976,7 +5992,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -6337,7 +6354,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -6698,7 +6716,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -7059,7 +7078,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -7420,7 +7440,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {
@@ -7781,7 +7802,8 @@
           "meta_description_max_chars": 155,
           "duplicate_paragraph_similarity_max": 0.5,
           "duplicate_paragraph_shingle_words": 5,
-          "keyword_density_max": 0.05
+          "keyword_density_max": 0.05,
+          "internal_link_candidates_max": 10
         }
       },
       "learning": {

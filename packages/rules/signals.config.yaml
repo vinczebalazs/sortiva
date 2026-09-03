@@ -447,6 +447,14 @@ defaults:
       # larger share of a few hundred words than of a whole article.
       # UNSIGNED — main §10.3 says "no keyword stuffing" and names no figure.
       keyword_density_max: 0.05
+      # How many of the store's other pages are offered as internal-link
+      # candidates. A store with three thousand pages cannot show them all, and
+      # a longer list is a more expensive prompt for the same handful of
+      # suggestions. Pages sharing a product family come first, so raising this
+      # mostly adds pages that are further from the subject.
+      # UNSIGNED — main §10.3 asks for "the store's other pages mapped to
+      # adjacent intents" and names no number.
+      internal_link_candidates_max: 10
 
   # ── Learning: measuring what happened after publish ────────────────────────
   learning:

@@ -189,6 +189,7 @@ export interface GatesConfig {
     duplicate_paragraph_similarity_max: number
     duplicate_paragraph_shingle_words: number
     keyword_density_max: number
+    internal_link_candidates_max: number
   }
 }
 

@@ -777,7 +777,7 @@
   "opportunities.blocked": "Blocked: {precondition} — {whatToDo}",
   "opportunities.blockedPlain": "Blocked — {whatToDo}",
 
-  "optimize.download.title": "Recommendations for {page}",
+  "optimize.download.title": "Page recommendations",
   "optimize.download.page": "Page",
   "optimize.download.search": "Search",
   "optimize.download.intentNote": "What this page leaves unanswered",

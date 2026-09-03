@@ -19,7 +19,8 @@ import type { SubtopicCoverage } from './coverage'
 export interface OptimizePackPage {
   readonly url: string
   readonly pageType: StorePageType
-  readonly title: string
+  /** Null on a page the store never titled — rare, and not a reason to refuse to help with it. */
+  readonly title: string | null
   /** What the search result shows, when the merchant set it; the page title otherwise. */
   readonly seoTitle: string | null
   readonly seoDescription: string | null
@@ -68,7 +69,7 @@ export interface OptimizePackFamily {
 /** Another page of the store's that could link to this one, or be linked from it. */
 export interface OptimizePackLinkCandidate {
   readonly url: string
-  readonly title: string
+  readonly title: string | null
   readonly pageType: StorePageType
 }
 

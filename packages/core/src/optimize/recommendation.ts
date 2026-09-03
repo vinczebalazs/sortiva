@@ -181,7 +181,7 @@ function pageBlock(pack: OptimizeEvidencePack): string {
   const { page } = pack
   return [
     `Address: ${page.url}`,
-    `Page title: ${page.title}`,
+    `Page title: ${page.title ?? '(none)'}`,
     `Search-result title: ${page.seoTitle ?? '(none set)'}`,
     `Search-result description: ${page.seoDescription ?? '(none set)'}`,
     `Headings: ${page.headings.join(' | ') || '(none)'}`,
@@ -230,7 +230,7 @@ function linksBlock(pack: OptimizeEvidencePack): string {
   if (pack.linkCandidates.length === 0) return 'No other pages of this store are available to link.'
   return [
     'Other pages of this store, for internal-link suggestions. Use these addresses exactly:',
-    ...pack.linkCandidates.map((c) => `- ${c.url} (${c.pageType}) — ${c.title}`),
+    ...pack.linkCandidates.map((c) => `- ${c.url} (${c.pageType}) — ${c.title ?? '(untitled)'}`),
     `Already linked from this page: ${pack.page.outboundInternalLinks.join(', ') || '(nothing)'}`,
   ].join('\n')
 }

@@ -1,4 +1,4 @@
-import { packFacts, type OptimizeEvidencePack } from './pack'
+import type { PackFact } from './pack'
 import type { OptimizeRecommendation } from './recommendation'
 
 /**
@@ -36,27 +36,44 @@ export interface RecommendationLabels {
 
 export interface RenderRecommendationInput {
   readonly recommendation: OptimizeRecommendation
-  readonly pack: OptimizeEvidencePack
+  /** What the document is about. */
+  readonly page: { readonly url: string; readonly targetQuery: string }
+  /**
+   * The evidence addresses in plain language. Passed in rather than taken from
+   * the evidence pack, because a download happens days after the generation and
+   * the pack is not kept: what a merchant needs to read is the label, and the
+   * labels can be rebuilt from the store's own data without buying anything.
+   */
+  readonly facts: readonly PackFact[]
   readonly labels: RecommendationLabels
 }
 
-/** Addresses back to the plain-language labels the pack recorded for them. */
-function factLabels(pack: OptimizeEvidencePack): Map<string, string> {
-  return new Map(packFacts(pack).map((fact) => [fact.address, fact.label]))
+function factLabels(facts: readonly PackFact[]): Map<string, string> {
+  return new Map(facts.map((fact) => [fact.address, fact.label]))
 }
 
+/**
+ * An address with no label left is shown as what it names rather than as an
+ * address: a subtopic still reads as a phrase, and anything else is at least
+ * traceable. Never dropped — a citation the merchant cannot see is a claim with
+ * nothing behind it.
+ */
 function citations(labels: Map<string, string>, addresses: readonly string[]): string[] {
-  return addresses.map((address) => labels.get(address) ?? address)
+  return addresses.map((address) => {
+    const label = labels.get(address)
+    if (label !== undefined) return label
+    return address.startsWith('subtopic:') ? address.slice('subtopic:'.length) : address
+  })
 }
 
 export function renderRecommendationMarkdown(input: RenderRecommendationInput): string {
-  const { recommendation: rec, pack, labels } = input
-  const facts = factLabels(pack)
+  const { recommendation: rec, labels } = input
+  const facts = factLabels(input.facts)
   const lines: string[] = []
 
   lines.push(`# ${labels.documentTitle}`, '')
-  lines.push(`**${labels.page}:** ${pack.page.url}`)
-  lines.push(`**${labels.search}:** ${pack.targetQuery}`, '')
+  lines.push(`**${labels.page}:** ${input.page.url}`)
+  lines.push(`**${labels.search}:** ${input.page.targetQuery}`, '')
   lines.push(`## ${labels.intentNote}`, '', rec.intent_note, '')
 
   lines.push(`## ${labels.titleTag}`, '')
@@ -142,14 +159,14 @@ function paragraphs(text: string): string {
 }
 
 export function renderRecommendationHtml(input: RenderRecommendationInput): string {
-  const { recommendation: rec, pack, labels } = input
-  const facts = factLabels(pack)
+  const { recommendation: rec, labels } = input
+  const facts = factLabels(input.facts)
   const body: string[] = []
 
   body.push(`<h1>${escape(labels.documentTitle)}</h1>`)
   body.push(
-    `<p><strong>${escape(labels.page)}:</strong> ${escape(pack.page.url)}<br />` +
-      `<strong>${escape(labels.search)}:</strong> ${escape(pack.targetQuery)}</p>`,
+    `<p><strong>${escape(labels.page)}:</strong> ${escape(input.page.url)}<br />` +
+      `<strong>${escape(labels.search)}:</strong> ${escape(input.page.targetQuery)}</p>`,
   )
   body.push(`<h2>${escape(labels.intentNote)}</h2>`, paragraphs(rec.intent_note))
 

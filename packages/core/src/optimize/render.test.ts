@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { packFacts } from './pack'
 import { renderRecommendationHtml, renderRecommendationMarkdown, type RecommendationLabels } from './render'
 import { fixturePack, fixtureRecommendation } from './testing/fixture'
 
@@ -29,7 +30,13 @@ const labels: RecommendationLabels = {
   trustLine: 'TRUST_LINE',
 }
 
-const input = { recommendation: fixtureRecommendation(), pack: fixturePack(), labels }
+const pack = fixturePack()
+const input = {
+  recommendation: fixtureRecommendation(),
+  page: { url: pack.page.url, targetQuery: pack.targetQuery },
+  facts: packFacts(pack),
+  labels,
+}
 
 describe('recommendation download', () => {
   it('renders every part of the recommendation as Markdown', () => {
@@ -51,15 +58,19 @@ describe('recommendation download', () => {
     expect(markdown).not.toContain('product:prod-ridge/material')
   })
 
-  it('falls back to the address when the pack no longer holds that fact', () => {
+  it('still shows a citation whose label has since gone', () => {
     const markdown = renderRecommendationMarkdown({
       ...input,
       recommendation: fixtureRecommendation({
-        faq: [{ q: 'Q', a: 'A', facts_used: ['product:gone/material'] }],
+        faq: [
+          { q: 'Q', a: 'A', facts_used: ['product:gone/material', 'subtopic:lacing for a wide instep'] },
+        ],
       }),
     })
 
     expect(markdown).toContain('product:gone/material')
+    // A subtopic reads as the phrase it names rather than as an address.
+    expect(markdown).toContain('BASED_ON: product:gone/material · lacing for a wide instep')
   })
 
   it('escapes page text and suggestions in the HTML download', () => {

@@ -192,6 +192,11 @@ export default tseslint.config(
       // enables runs in `packages/jobs/src/generation/review-article.ts`
       // behind an `AccountScope`; no query runs here.
       'apps/web/app/api/articles/_lib/config.ts',
+      // T6.2's, the same shape once more: hands a raw `db()` handle through as
+      // `RecommendationsDeps.db`, alongside the download's labels read from the
+      // string catalogue. Every query it enables goes through
+      // `packages/db/src/repositories/optimize.ts` behind an `AccountScope`.
+      'apps/web/app/api/recommendations/_lib/config.ts',
     ],
     rules: { 'sortiva/no-raw-db-access': 'off' },
   },

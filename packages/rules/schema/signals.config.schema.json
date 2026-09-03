@@ -782,7 +782,8 @@
             "meta_description_max_chars",
             "duplicate_paragraph_similarity_max",
             "duplicate_paragraph_shingle_words",
-            "keyword_density_max"
+            "keyword_density_max",
+            "internal_link_candidates_max"
           ],
           "properties": {
             "grounding_min": {
@@ -821,6 +822,10 @@
               "type": "number",
               "exclusiveMinimum": 0,
               "maximum": 1
+            },
+            "internal_link_candidates_max": {
+              "type": "integer",
+              "minimum": 1
             }
           }
         }
