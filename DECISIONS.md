@@ -3602,3 +3602,49 @@ Why: three reasons, in order of weight. The two flows end in different places �
 What this needs from outside the repository: `https://<APP_URL>/api/publish/grant/callback` must be registered as an allowed redirect URI on the Shopify app, and the app's configured scopes must include `write_content`. Both live in the Shopify Partner dashboard. Until they are, the second grant cannot complete against a real store; it is proven here against a fake shop.
 Nearest spec: main §9.5; CLAUDE.md invariant 21; build plan §3; DECISIONS 2026-09-03 T9.7 (which flagged this gap and declined to guess at it).
 Class (filled by audit):
+
+## 2026-09-04 — T5.2 — NOT DONE, and the exact line it needs: the recovery sweep is registered and nothing schedules it
+Decision: **none taken, deliberately.** The five-minute sweep that settles a publication a crash left unanswered is built, tested and registered as the task `publish_recovery_sweep` — and `packages/jobs/src/runtime/crontab.ts`, which is integrator-resolved and which this session was told not to edit, has no entry for it. Nothing in production will ever run it.
+The line, verbatim, for whoever adds it — one more object in `CRON_ENTRIES`:
+
+    {
+      task: 'publish_recovery_sweep',
+      schedule: '*/5 * * * *',
+      why:
+        'Settles publications a crash left unanswered. Between putting an article on a merchant\'s ' +
+        'shop and recording that we did there is an instant where the post exists and nothing of ' +
+        'ours knows it; a worker that dies there leaves a claim with no answer, and the naive ' +
+        'repair — try again — is how a merchant ends up with the same article posted twice. Every ' +
+        'five minutes, because the window it closes is minutes wide: the app believes the article ' +
+        'never went out for as long as it stays open. A claim younger than ten minutes is left ' +
+        'alone in case a worker still holds it, and each pass asks the shop whether our marker is ' +
+        'already there before it ever considers sending again.',
+    },
+
+No registration is needed in `apps/web/instrumentation-node.ts`: `registerPublishTasks(publishTaskDeps())` is already called there from `T5.1`, and this task registers inside it. A registered task with no crontab entry is not caught by `assertCrontabTasksExist`, which only fails the other way round — so nothing goes red; the sweep simply never runs.
+Consequence until the entry lands: a publish interrupted between posting and recording leaves the article showing as unpublished in the app for ever, with the post live on the merchant's shop. The next day's run tries the same article, collides with the claim, and stops — so it never double-posts, but it also never recovers.
+Nearest spec: main §14.3.7 step 4; build plan §3 ("Files no lane owns").
+Class (filled by audit):
+
+## 2026-09-04 — T5.2 — Every publishing behaviour in this card is proven against a fake shop, not a Shopify store
+Decision: `FakeShopifyPublishClient` (`packages/providers/src/shopify/publish-double.ts`) stands in for Shopify everywhere this card is tested, including the chaos case. No test in this card has ever talked to a Shopify store.
+Why: there is no Shopify development store credential in this environment, and the card's first done-when — "dev-store smoke publishes once" — cannot be run. What the fake buys is something a real store could not: it counts creates, so "exactly one article after a kill" is a measurement rather than an inspection, and it survives repeated worker deaths reproducibly.
+What is therefore **not** proven: that Shopify accepts the article payload as written — the metafield shape, `summary_html`, `published: false` for a draft post, the `handle` collision behaviour when a slug is already taken on that blog, and whether the article URL this card builds (`https://<shop>.myshopify.com/blogs/<blogId>/<handle>`) is the address a reader actually gets, since Shopify's own blog URLs use the blog *handle* rather than its id. That last one is the most likely thing to be wrong on first contact with a real store.
+What it needs: a development-store credential and one live publish, before this is relied on. Recorded rather than worked around.
+Nearest spec: main §9.5, §14.3.9; build plan T5.2 done-when 1.
+Class (filled by audit):
+
+## 2026-09-04 — T5.2 — The republish path is built and nothing in production calls it
+Decision: `republishArticleToShopify` (`packages/jobs/src/publish/republish.ts`) implements main §14.3.7 step 5 in full — an update per revision, conditional on the stored remote id, that never falls back to create — and no code path in the running product reaches it.
+Why: the card's scope names the update protocol, and the thing that *causes* an update is a repair or a refresh, which is `T5.3`. Building the protocol now and leaving the trigger to `T5.3` is what the card asks for; building a trigger would be building another card.
+Consequence, stated: an article whose product data drifts after publication is not updated on the merchant's shop today. The recovery sweep reaches this function only for a revision claim, and no revision claim can exist until something opens one.
+What closes it: `T5.3`'s repair queue calling it with the next revision number.
+Nearest spec: main §14.3.7 step 5, §14.1; build plan T5.3.
+Class (filled by audit):
+
+## 2026-09-04 — T5.2 — One integrator-resolved file was edited: the lint exemption list
+Decision: `eslint.config.mjs` gains one entry, `'apps/web/app/api/publish/_lib/config.ts'`, appended to the existing composition-root list that exempts a file from `sortiva/no-raw-db-access`.
+Why: that rule stops any code outside `packages/db` importing the raw database handle, so no query can reach a table without naming whose account it belongs to. A composition root does not query — it hands `db()` to something that later scopes it — and the rule cannot tell the two apart. Six previous cards from four lanes have appended to this exact array for the identical reason, each with its own note. Without it `pnpm lint` is red, which is a gate this card has to pass.
+The file is integrator-resolved rather than union-merged, so a merge touches it. Flagged here and in the session report so that is expected rather than discovered.
+Nearest spec: build plan §3 ("Ordered code … stays integrator-resolved. If a lane needs to change one, say so in the session report").
+Class (filled by audit):
