@@ -19,8 +19,4 @@ export {
   type MovePlan,
   type PinPlan,
 } from './placement'
-export {
-  OPPORTUNITY_STATUS_CHANGED_EVENT,
-  type OpportunityStatusChangedProperties,
-} from './events'
 export { excludeNotInterested } from './replenishment-guard'

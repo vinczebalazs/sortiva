@@ -1,5 +1,12 @@
 import { calendarQuerySchema, calendarResponseSchema, type LifecycleGate } from '@sortiva/core'
-import { accountLifecycleGate, mayAccountWorkRun, type WorkGateDecision } from '@sortiva/jobs'
+// Deep import, not the `@sortiva/jobs` barrel: the barrel's `./runtime`
+// export drags in `worker.ts` and, through it, `graphile-worker` — the same
+// bundle-breaking chain `apps/web/app/api/shopify/_lib/config.ts` and
+// `apps/web/app/api/calendar/topics/_lib/config.ts` already avoid by deep
+// importing. This route hit it for real: `pnpm build` failed collecting page
+// data for the calendar routes with "DATABASE_URL is not set", raised deep
+// inside `graphile-worker`'s own config loader, not this file.
+import { accountLifecycleGate, mayAccountWorkRun, type WorkGateDecision } from '@sortiva/jobs/runtime/gate'
 import {
   findArticlesByTopics,
   findOpportunitiesByIds,

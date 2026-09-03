@@ -10,4 +10,8 @@ import { makeAddTopicHandler } from './_lib/add'
  */
 export const dynamic = 'force-dynamic'
 
-export const POST = withAccount(makeAddTopicHandler(addTopicDeps()))
+// `addTopicDeps()` deferred to request time, not called at module scope —
+// see the identical note in `apps/web/app/api/calendar/route.ts`. It resolves
+// `db()` (and the LLM client), which broke `pnpm build`'s page-data
+// collection when called eagerly here.
+export const POST = withAccount((request, context) => makeAddTopicHandler(addTopicDeps())(request, context))

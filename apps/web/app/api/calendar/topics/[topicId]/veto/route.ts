@@ -1,6 +1,6 @@
-import { withAccount } from '../../../../auth/_lib/session'
+import { withAccount, type AccountContext } from '../../../../auth/_lib/session'
 import { topicMutationDeps } from '../../_lib/config'
-import { makeVetoTopicHandler } from '../../_lib/mutations'
+import { makeVetoTopicHandler, type RouteCtx } from '../../_lib/mutations'
 
 /**
  * `POST /api/calendar/topics/{topicId}/veto` — free and instant on a
@@ -9,4 +9,8 @@ import { makeVetoTopicHandler } from '../../_lib/mutations'
  */
 export const dynamic = 'force-dynamic'
 
-export const POST = withAccount(makeVetoTopicHandler(topicMutationDeps()))
+// `topicMutationDeps()` deferred to request time — see the identical note in
+// `apps/web/app/api/calendar/route.ts`.
+export const POST = withAccount((request, context: AccountContext<RouteCtx>) =>
+  makeVetoTopicHandler(topicMutationDeps())(request, context),
+)

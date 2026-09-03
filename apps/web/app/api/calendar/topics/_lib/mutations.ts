@@ -5,7 +5,12 @@ import {
   type ConflictCode,
 } from '@sortiva/core'
 import { findTopic, type Db } from '@sortiva/db'
-import { moveTopic, pinTopic, vetoTopic } from '@sortiva/jobs'
+// Deep imports, not the `@sortiva/jobs` barrel — see the identical note in
+// `apps/web/app/api/calendar/_lib/handlers.ts`, which hit the build failure
+// this avoids.
+import { moveTopic } from '@sortiva/jobs/generation/move-topic'
+import { pinTopic } from '@sortiva/jobs/generation/pin-topic'
+import { vetoTopic } from '@sortiva/jobs/generation/veto-topic'
 import type { AccountHandler } from '../../../auth/_lib/session'
 
 /**
@@ -20,7 +25,7 @@ export interface TopicMutationDeps {
   readonly now?: () => Date
 }
 
-type RouteCtx = { readonly params: Promise<{ topicId: string }> }
+export type RouteCtx = { readonly params: Promise<{ topicId: string }> }
 
 const CONFLICT_MESSAGES: Partial<Record<ConflictCode, string>> = {
   topic_already_published: 'This topic has already resolved and can no longer be changed.',

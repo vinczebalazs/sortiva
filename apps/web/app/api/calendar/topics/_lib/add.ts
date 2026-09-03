@@ -10,7 +10,10 @@ import {
   type PosthogCapture,
 } from '@sortiva/core'
 import { findTopicOnDate, readLifecycleState, type Db, type TopicRow } from '@sortiva/db'
-import { addManualTopic, type AddManualTopicResult } from '@sortiva/jobs'
+// Deep import, not the `@sortiva/jobs` barrel — see the identical note in
+// `apps/web/app/api/calendar/_lib/handlers.ts`, which hit the build failure
+// this avoids.
+import { addManualTopic, type AddManualTopicResult } from '@sortiva/jobs/generation/add-manual-topic'
 import type { AccountHandler } from '../../../auth/_lib/session'
 
 /**
