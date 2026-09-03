@@ -9,6 +9,7 @@ import { inputVersion } from '../runtime/idempotency'
 import type { StepContext } from '../runtime/runStep'
 import { findRunForAccount, findStep, type JobStepName } from '../runtime/steps'
 import { catalogSyncStep } from './catalog'
+import { confirmationGateStep } from './confirmation'
 import type { IngestionDeps } from './deps'
 import { distillStep } from './distill'
 import { familyGroupStep } from './families'
@@ -163,6 +164,7 @@ export const INGESTION_STEPS: Partial<Record<JobStepName, StepDefinition>> = {
   family_group: familyGroupStep,
   persona: personaStep,
   keywords_competitors: keywordsCompetitorsStep,
+  awaiting_confirmation: confirmationGateStep,
 }
 
 async function detect(deps: IngestionDeps, domain: string): Promise<PlatformDetection> {
