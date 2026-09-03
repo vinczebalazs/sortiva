@@ -308,6 +308,10 @@ export interface GenerationConfig {
   internal_links: {
     min_count: number
   }
+  /** When the day's article is written, relative to the store's own publish hour — main §9.1/§9.4. */
+  cycle: {
+    lead_hours_before_publish_hour: number
+  }
 }
 
 export interface BudgetsConfig {

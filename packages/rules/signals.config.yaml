@@ -524,6 +524,20 @@ defaults:
       # pages and at least one related earlier article once any exist."
       min_count: 1
 
+    cycle:
+      # How many hours before a store's own publish hour the day's article
+      # starts being written. It decides how much room the writer, the free
+      # checks, the judge and the single repair attempt have before the article
+      # is due out: lowering it risks the publish hour arriving while the judge
+      # is still running, and raising it means the article is written further
+      # from the moment its evidence was read. Six is the gap the schedule
+      # already assumed (03:00 against the default 09:00 publish hour), now
+      # stated as a number rather than as a fixed UTC time that could never be
+      # six hours before every store's own morning.
+      # UNSIGNED — "early enough ahead of the publish hour" was specified, not
+      # a figure.
+      lead_hours_before_publish_hour: 6
+
   # ── Caps, kill switches and auto-trips ─────────────────────────────────────
   # These are the money and blast-radius limits. Every one of them is enforced
   # from our own database counters at job dequeue; analytics never gates

@@ -50,6 +50,27 @@ export async function insertArticleClaims(
     .returning()
 }
 
+/**
+ * Clears an article's claim plan so a resumed run can write its own.
+ *
+ * Only ever called on an article whose draft was never finished. A retry after
+ * a crash re-plans, and appending the second plan beside the first would leave
+ * the article claiming everything twice over. Replacing is safe precisely
+ * because the draft those claims were approved for does not exist — nothing
+ * downstream has read them.
+ */
+export async function deleteArticleClaims(
+  db: Db,
+  _scope: AccountScope,
+  articleId: string,
+): Promise<number> {
+  const rows = await db
+    .delete(articleClaims)
+    .where(eq(articleClaims.articleId, articleId))
+    .returning({ id: articleClaims.id })
+  return rows.length
+}
+
 export async function findArticleClaims(
   db: Db,
   _scope: AccountScope,

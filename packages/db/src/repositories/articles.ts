@@ -1,6 +1,6 @@
 import { and, desc, eq, inArray, isNotNull } from 'drizzle-orm'
 import type { Db } from '../client'
-import { articles } from '../schema'
+import { articles, gateDecisions } from '../schema'
 import type { AccountScope } from '../scope'
 
 export type ArticleRow = typeof articles.$inferSelect
@@ -126,6 +126,101 @@ export async function markArticleOverridden(
     .where(and(eq(articles.accountId, scope.accountId), eq(articles.id, articleId), eq(articles.state, 'rejected')))
     .returning()
   return row
+}
+
+/**
+ * A passing draft on an account that asked to see drafts first — main §9.3.
+ * Guarded to `draft`, the state it was written in; a zero-row result means a
+ * veto or a discard reached it while it was being graded.
+ */
+export async function markArticleInReview(
+  db: Db,
+  scope: AccountScope,
+  articleId: string,
+  now: Date = new Date(),
+): Promise<ArticleRow | undefined> {
+  const [row] = await db
+    .update(articles)
+    .set({ state: 'in_review', updatedAt: now })
+    .where(and(eq(articles.accountId, scope.accountId), eq(articles.id, articleId), eq(articles.state, 'draft')))
+    .returning()
+  return row
+}
+
+/**
+ * The merchant kept it. Back to `draft`, which here means "delivery may take
+ * this" — the same landing an override uses, and for the same reason: they
+ * have already given their answer, and asking again at the publish hour would
+ * be asking twice. Guarded to `in_review`, so approving twice does nothing the
+ * second time and approving something nobody was asked about is refused.
+ */
+export async function approveArticleGuarded(
+  db: Db,
+  scope: AccountScope,
+  articleId: string,
+  now: Date = new Date(),
+): Promise<ArticleRow | undefined> {
+  const [row] = await db
+    .update(articles)
+    .set({ state: 'draft', updatedAt: now })
+    .where(and(eq(articles.accountId, scope.accountId), eq(articles.id, articleId), eq(articles.state, 'in_review')))
+    .returning()
+  return row
+}
+
+/** The merchant threw it away. Guarded to `in_review` for the same reasons as approval. */
+export async function discardArticleGuarded(
+  db: Db,
+  scope: AccountScope,
+  articleId: string,
+  now: Date = new Date(),
+): Promise<ArticleRow | undefined> {
+  const [row] = await db
+    .update(articles)
+    .set({ state: 'discarded', updatedAt: now })
+    .where(and(eq(articles.accountId, scope.accountId), eq(articles.id, articleId), eq(articles.state, 'in_review')))
+    .returning()
+  return row
+}
+
+/**
+ * Articles that are actually ready to go out.
+ *
+ * `state = 'draft'` alone does not mean that: the row is created before the
+ * writer runs, so a crash between the writer and the judge leaves a `draft`
+ * that has never been graded, indistinguishable by state from one that passed.
+ * The Gate 3 decision on its topic is what tells them apart, so this asks both
+ * questions at once. Anything that publishes, exports or counts finished
+ * articles must come through here rather than reading the state alone.
+ */
+export async function articlesReadyForDelivery(
+  db: Db,
+  scope: AccountScope,
+  limit = 50,
+): Promise<ArticleRow[]> {
+  const passed = db
+    .select({ topicId: gateDecisions.topicId })
+    .from(gateDecisions)
+    .where(
+      and(
+        eq(gateDecisions.accountId, scope.accountId),
+        eq(gateDecisions.gate, 3),
+        eq(gateDecisions.outcome, 'passed'),
+      ),
+    )
+
+  return db
+    .select()
+    .from(articles)
+    .where(
+      and(
+        eq(articles.accountId, scope.accountId),
+        eq(articles.state, 'draft'),
+        inArray(articles.topicId, passed),
+      ),
+    )
+    .orderBy(desc(articles.updatedAt))
+    .limit(limit)
 }
 
 export async function findArticleById(

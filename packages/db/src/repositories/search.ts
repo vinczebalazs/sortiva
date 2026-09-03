@@ -404,6 +404,24 @@ export async function listQueryClusters(
     .orderBy(queryClusters.headQuery)
 }
 
+/**
+ * One cluster by its durable id — the lineage an article is written from. A
+ * topic stores the id rather than the terms, so the generation cycle reads the
+ * head search and its members back through here.
+ */
+export async function findQueryClusterById(
+  db: Db,
+  scope: AccountScope,
+  clusterId: string,
+): Promise<QueryClusterRow | undefined> {
+  const [row] = await db
+    .select()
+    .from(queryClusters)
+    .where(and(eq(queryClusters.accountId, scope.accountId), eq(queryClusters.clusterId, clusterId)))
+    .limit(1)
+  return row
+}
+
 export type CtrCurveRow = typeof ctrCurve.$inferSelect
 
 export interface CtrCurveInput {
