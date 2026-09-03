@@ -152,6 +152,25 @@ export async function confirmAllKeywords(db: Db, scope: AccountScope): Promise<v
   await db.update(keywords).set({ confirmed: true }).where(eq(keywords.accountId, scope.accountId))
 }
 
+/**
+ * What we already know about one term, case-insensitively — the manual-add
+ * gate's demand-floor input. A merchant typing a topic by hand is not
+ * expected to match a stored term's exact casing, and a search volume that
+ * cannot be found this way is genuinely unknown, not zero.
+ */
+export async function findKeywordByTerm(
+  db: Db,
+  scope: AccountScope,
+  term: string,
+): Promise<KeywordRow | undefined> {
+  const [row] = await db
+    .select()
+    .from(keywords)
+    .where(and(eq(keywords.accountId, scope.accountId), sql`lower(${keywords.term}) = lower(${term})`))
+    .limit(1)
+  return row
+}
+
 export async function listKeywords(db: Db, scope: AccountScope): Promise<KeywordRow[]> {
   return db
     .select()
