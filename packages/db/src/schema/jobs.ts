@@ -151,6 +151,35 @@ export const opsFlags = pgTable(
 )
 
 /**
+ * What an operator found when they looked into a trip.
+ *
+ * `ops_flags` already answers "what raised this and when" — an open incident
+ * *is* an active flag row (DECISIONS 2026-09-02 T8.4a). What it cannot hold is
+ * the other half: what a human learned after going and looking, which may
+ * arrive well after the trip and may be more than one note as the
+ * investigation continues. Added by schema wave 3 (T4.0), collected from the
+ * gap `T8.4` recorded when it declined to build a separate incidents table on
+ * its own authority. Not append-only like `spend_events` or
+ * `idempotency_ledger`: a note correcting a typo in an operator's own finding
+ * is not the same hazard as revising a financial record or a completed job's
+ * output.
+ */
+export const incidentFindings = pgTable(
+  'incident_findings',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    opsFlagId: uuid('ops_flag_id')
+      .notNull()
+      .references(() => opsFlags.id, { onDelete: 'cascade' }),
+    /** Who looked into it — an operator identity, not a system actor. */
+    author: text('author').notNull(),
+    finding: text('finding').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('incident_findings_ops_flag_idx').on(t.opsFlagId, t.createdAt)],
+)
+
+/**
  * Every webhook we have received, before anything is done about it.
  *
  * `webhook_id` is the primary key and receipt is insert-or-ignore, so a

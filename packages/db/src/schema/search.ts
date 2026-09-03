@@ -98,6 +98,63 @@ export const gscQueryDaily = pgTable(
 )
 
 /**
+ * The monthly roll-up `gsc_daily` retires into once a row passes sixteen
+ * months, so Search Console history compacts instead of being deleted
+ * outright. Added by schema wave 3 (T4.0) — see DECISIONS 2026-09-03 T4.0 and
+ * DECISIONS 2026-09-02 T8.3, which pruned to sixteen months with nowhere to
+ * roll into and named this table as what the next wave owed it. Google itself
+ * only serves sixteen months, so this is the only place a store's older
+ * search history survives at all.
+ */
+export const gscMonthly = pgTable(
+  'gsc_monthly',
+  {
+    accountId: uuid('account_id')
+      .notNull()
+      .references(() => accounts.id, { onDelete: 'cascade' }),
+    /** The first day of the month this row summarises, e.g. `2026-09-01`. */
+    month: date('month').notNull(),
+    page: text('page').notNull(),
+    clicks: integer('clicks').notNull().default(0),
+    impressions: integer('impressions').notNull().default(0),
+    position: numeric('position', { precision: 6, scale: 2 }),
+  },
+  (t) => [
+    primaryKey({ name: 'gsc_monthly_pk', columns: [t.accountId, t.month, t.page] }),
+    index('gsc_monthly_account_month_idx').on(t.accountId, t.month),
+  ],
+)
+
+/**
+ * `gsc_query_daily`'s roll-up, on the same terms as `gsc_monthly` above.
+ *
+ * Rolled up by `(page, query)` only — `device` and `country` are summed away.
+ * Keeping all four dimensions at monthly grain forever would defeat the reason
+ * this table exists (tech §2.1's "Postgres stays small"), and nothing
+ * downstream reasons about device/country beyond the daily window: detection
+ * (main §7.3) reads `gsc_query_daily`, and the CTR curve (`ctr_curve`) is
+ * refit weekly from there too. See DECISIONS 2026-09-03 T4.0.
+ */
+export const gscQueryMonthly = pgTable(
+  'gsc_query_monthly',
+  {
+    accountId: uuid('account_id')
+      .notNull()
+      .references(() => accounts.id, { onDelete: 'cascade' }),
+    month: date('month').notNull(),
+    page: text('page').notNull(),
+    query: text('query').notNull(),
+    clicks: integer('clicks').notNull().default(0),
+    impressions: integer('impressions').notNull().default(0),
+    position: numeric('position', { precision: 6, scale: 2 }),
+  },
+  (t) => [
+    primaryKey({ name: 'gsc_query_monthly_pk', columns: [t.accountId, t.month, t.page, t.query] }),
+    index('gsc_query_monthly_account_month_idx').on(t.accountId, t.month),
+  ],
+)
+
+/**
  * A head query plus the related keywords it expands to — the unit almost
  * everything downstream reasons about, rather than individual keywords. A
  * candidate is resolved to one of these before we look for an existing target,

@@ -57,6 +57,8 @@ const ALLOWED: Record<string, string> = {
   'accounts.email': "the merchant's own login address — our customer, not theirs",
   'accounts.stripe_customer_id': "Stripe's id for the merchant's billing account",
   'email_suppressions.email': 'an address that bounced, so we stop mailing it',
+  'deletion_confirmation_emails.email':
+    "the merchant's own address — captured at send time because the account row it would otherwise be read from is erased about a week later",
   'notification_prefs.email_article_published': 'a preference flag; "email" is the channel',
   'notification_prefs.email_digest_frequency': 'a preference flag; "email" is the channel',
   'product_families.name': "a product family's name, e.g. 'trail running shoes'",

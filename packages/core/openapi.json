@@ -5629,7 +5629,8 @@
                               "payment_failed",
                               "monthly_summary_ready",
                               "export_url_reminder",
-                              "oauth_reminder"
+                              "oauth_reminder",
+                              "account_deletion_confirmed"
                             ]
                           },
                           "refs": {

@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm'
 import {
+  type AnyPgColumn,
   boolean,
   index,
   integer,
@@ -11,6 +12,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core'
 import { accounts } from './accounts'
+import { articles, topics } from './content-engine'
 import {
   impactBandEnum,
   opportunityEntityTypeEnum,
@@ -79,11 +81,17 @@ export const opportunities = pgTable(
      */
     limitedIntelligence: boolean('limited_intelligence').notNull().default(false),
     /**
-     * `topics` and `articles` arrive in schema wave 3 (T4.0), which adds the
-     * foreign keys. Until then these are unconstrained ids.
+     * Added by schema wave 3 (T4.0), which brought `topics` and `articles`
+     * into being. The explicit `AnyPgColumn` return type on each callback is
+     * required, not decorative: `topics` and `articles` (in `content-engine.ts`)
+     * reference `opportunities` back, and TypeScript cannot infer a type for
+     * either table through that cycle without an explicit annotation on at
+     * least one side of it.
      */
-    topicId: uuid('topic_id'),
-    articleId: uuid('article_id'),
+    topicId: uuid('topic_id').references((): AnyPgColumn => topics.id, { onDelete: 'set null' }),
+    articleId: uuid('article_id').references((): AnyPgColumn => articles.id, {
+      onDelete: 'set null',
+    }),
     /** Invariant 9 — the hash of `signals.config.yaml` that produced this row. */
     rulesVersion: text('rules_version').notNull(),
     detectedAt: timestamp('detected_at', { withTimezone: true }).notNull().defaultNow(),

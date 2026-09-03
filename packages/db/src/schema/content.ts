@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm'
 import { index, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
 import { accounts } from './accounts'
 import { bytea } from './columns'
+import { articles } from './content-engine'
 import { intentClassEnum, storePageTypeEnum } from './enums'
 
 /**
@@ -44,11 +45,8 @@ export const storePages = pgTable(
     intentClass: intentClassEnum('intent_class'),
     checksum: text('checksum'),
     lastSyncedAt: timestamp('last_synced_at', { withTimezone: true }).notNull().defaultNow(),
-    /**
-     * Set on `article_ours` rows. `articles` arrives in schema wave 3 (T4.0),
-     * so this carries no foreign key yet — T4.0 adds it.
-     */
-    articleId: uuid('article_id'),
+    /** Set on `article_ours` rows. Added by schema wave 3 (T4.0), which brought `articles` into being. */
+    articleId: uuid('article_id').references(() => articles.id, { onDelete: 'set null' }),
   },
   (t) => [
     // T2.0 done-when: "store_pages unique url" — one row per URL per account.

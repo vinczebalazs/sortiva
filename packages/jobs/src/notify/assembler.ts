@@ -80,6 +80,12 @@ const LANDING: Record<EmailableType, string> = {
   connection_lost_gsc: '/settings',
   payment_failed: '/settings',
   export_url_reminder: '/content',
+  // No screen to land on — the account is gone and read access was revoked
+  // the moment deletion was requested (DECISIONS 2026-09-02 T8.3). This type
+  // has no `SPECS` entry in `email/notice.ts` and no caller assembles it
+  // through this job; the entry exists only because `LANDING` is total over
+  // `EmailableType`.
+  account_deletion_confirmed: '/',
 }
 
 export function makeEmailAssembler(deps: AssemblerDeps): EmailAssembler {

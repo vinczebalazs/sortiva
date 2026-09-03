@@ -75,6 +75,18 @@ export const products = pgTable(
     tags: text('tags').array().notNull().default(sql`'{}'::text[]`),
     variants: jsonb('variants').notNull().default(sql`'[]'::jsonb`),
     priceRange: jsonb('price_range'),
+    /**
+     * Shopify's own variant option definitions (e.g. `[{name: "Size", values:
+     * [...]}, ...]`) and the product's metafields, as Shopify returns them.
+     * Added by schema wave 3 (T4.0) — see DECISIONS 2026-09-03 T4.0. A store
+     * that keeps its attributes here rather than in tags or descriptions
+     * yields fewer differentiation axes without this; `T2.4` called it "the
+     * single highest-value schema-wave addition" and it was deferred for lack
+     * of a wave. Works only from each store's next full sync — existing rows
+     * carry it only after they are re-synced.
+     */
+    options: jsonb('options').notNull().default(sql`'[]'::jsonb`),
+    metafields: jsonb('metafields').notNull().default(sql`'[]'::jsonb`),
     /** Shopify's `updated_at`. Distillation re-runs only when this moves, so an unchanged product costs nothing. */
     updatedAt: timestamp('updated_at', { withTimezone: true }),
     /**

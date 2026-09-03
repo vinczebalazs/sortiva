@@ -85,6 +85,10 @@ const LINES: Record<NotificationType, LineSpec> = {
     required: [resolvedFrom('article_id', 'title')],
   },
   oauth_reminder: { key: 'notification.oauthReminder', required: [] },
+  account_deletion_confirmed: {
+    key: 'notification.accountDeletionConfirmed',
+    required: [],
+  },
 }
 
 /**
