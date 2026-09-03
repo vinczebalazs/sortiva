@@ -126,6 +126,19 @@ describe.skipIf(!available)('the generation-cycle sweep', () => {
     expect(await queuedKeys()).toEqual([`generation_cycle_account:${store}:2026-09-03`])
   })
 
+  /**
+   * The day an article belongs to is the day it appears, not the day it was
+   * written. A store publishing at 02:00 starts writing at 20:00 the evening
+   * before, and the job it is queued for is the *next* date — the one the
+   * merchant will see the article on, and the one the calendar planned it for.
+   */
+  it('queues an after-midnight store against the day its article will appear', async () => {
+    const store = await seedStore('night@example.com', 'Europe/Berlin', 2)
+    // 18:00 UTC is 20:00 in Berlin on the 2nd: six hours before 02:00 on the 3rd.
+    await sweepGenerationCycles(deps(new Date('2026-09-02T18:00:00.000Z')))
+    expect(await queuedKeys()).toEqual([`generation_cycle_account:${store}:2026-09-03`])
+  })
+
   it('queues one job for a store even if the same hour is swept twice', async () => {
     const store = await seedStore('utc@example.com', 'UTC')
     const at = new Date('2026-09-03T03:00:00.000Z')

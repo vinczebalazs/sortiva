@@ -3,6 +3,7 @@ import type pg from 'pg'
 import {
   generationHourFor,
   localClock,
+  publishDayFor,
   type Logger,
   type NotificationEmitter,
   type PosthogCapture,
@@ -40,7 +41,12 @@ export const GENERATION_CYCLE_ACCOUNT_TASK = 'generation_cycle_account'
 
 export interface GenerationCycleAccountPayload {
   readonly accountId: string
-  /** The store's own calendar date this job is for. Part of the job key, so two sweeps in one local day queue one job. */
+  /**
+   * The date the article this job writes is due to *appear* on the store —
+   * which for a store publishing after midnight is the day after the writing
+   * starts. Part of the job key, so two sweeps aimed at one publication queue
+   * one job.
+   */
   readonly date: string
 }
 
@@ -97,7 +103,10 @@ export async function sweepGenerationCycles(
   for (const clock of clocks) {
     const local = localClock(now, clock.timezone)
     if (local.hour !== generationHourFor(clock.publishHour, lead)) continue
-    await enqueueGenerationCycle(db, { accountId: clock.accountId, date: local.date })
+    await enqueueGenerationCycle(db, {
+      accountId: clock.accountId,
+      date: publishDayFor(now, clock.timezone, lead),
+    })
     queued += 1
   }
 
@@ -120,11 +129,12 @@ export function registerGenerationTasks(deps: GenerationTaskDeps): void {
     if (typeof accountId !== 'string' || accountId === '') {
       throw new Error('generation_cycle_account was queued without an accountId')
     }
-    // The payload's date is deliberately not passed down: the run reads the
-    // store's own clock again. A job that sat in the queue past midnight
-    // belongs to the day it actually runs on, not the day it was asked for —
-    // the alternative is generating yesterday's topic today, which is exactly
-    // the back-filled burst the calendar's gap rule forbids.
+    // The payload's date is deliberately not passed down: the run works out
+    // the day its article is due out from the store's own clock again. A job
+    // that sat in the queue past midnight belongs to the publication it is
+    // still in time for, not the one it was asked for — the alternative is
+    // generating yesterday's topic today, which is exactly the back-filled
+    // burst the calendar's gap rule forbids.
     await runDailyGenerationForAccount({ ...deps, db: deps.getDb(), pool: deps.getPool() }, accountId)
   })
 }

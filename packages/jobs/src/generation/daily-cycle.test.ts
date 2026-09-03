@@ -317,6 +317,45 @@ describe.skipIf(!available)('the daily generation cycle', () => {
     expect(articles).toHaveLength(0)
   })
 
+  /**
+   * The day an article belongs to is the day it appears on the shop, not the
+   * day it was written. A Berlin store publishing at 02:00 starts writing at
+   * 20:00 the evening before; the topic it must take is the *next* day's,
+   * because that is the day a reader sees the article. Taking the evening's own
+   * date would leave the calendar and the shop permanently one day apart.
+   */
+  it('takes the topic for the day the article will appear on, not the evening it is written', async () => {
+    await db
+      .update(schema.accountSettings)
+      .set({ timezone: 'Europe/Berlin', publishHour: 2 })
+      .where(eq(schema.accountSettings.accountId, accountId))
+
+    const { familyId, productIds } = await seedFamily()
+    await seedTopic(familyId, '2026-09-02', 'The evening we are writing on')
+    await seedTopic(familyId, '2026-09-03', 'The day it appears on')
+
+    const llm = new MockLlmClient()
+    enqueueWholeRun(llm, productIds[0]!)
+    // 18:00 UTC on the 2nd is 20:00 in Berlin — six hours before 02:00 on the 3rd.
+    const evening = new Date('2026-09-02T18:00:00.000Z')
+    const result = await runDailyGenerationForAccount({ ...deps(llm), now: () => evening }, accountId)
+
+    expect(result.status).toBe('generated')
+    const states = await topicStates()
+    expect(states['2026-09-02']).toBe('planned')
+    expect(states['2026-09-03']).not.toBe('planned')
+
+    const [article] = await db
+      .select()
+      .from(schema.articles)
+      .where(eq(schema.articles.accountId, accountId))
+    const [taken] = await db
+      .select()
+      .from(schema.topics)
+      .where(eq(schema.topics.id, article!.topicId))
+    expect(taken!.scheduledDate).toBe('2026-09-03')
+  })
+
   it('stops before spending anything when the payment failed', async () => {
     const { familyId } = await seedFamily()
     await seedTopic(familyId, TODAY)

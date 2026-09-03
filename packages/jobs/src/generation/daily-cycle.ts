@@ -3,7 +3,7 @@ import {
   accountAttribution,
   decideDequeue,
   landingForPass,
-  localClock,
+  publishDayFor,
   type DequeueBlockReason,
   type IntentClass,
   type Logger,
@@ -28,6 +28,7 @@ import {
   type Db,
   type TopicRow,
 } from '@sortiva/db'
+import { rules } from '@sortiva/rules'
 import { withAccountLock } from '../runtime/lock'
 import { lookupCompletedWork, recordCompletedWork } from '../runtime/ledger'
 import { deriveIdempotencyKey, inputVersion } from '../runtime/idempotency'
@@ -42,10 +43,12 @@ import { generateArticle, type GenerateArticleDeps } from './generate-article'
  * it is enforced by three separate things rather than one, because each covers
  * a case the others cannot:
  *
- *  1. **Only today's topic is offered.** The calendar is asked for a topic on
- *     this exact date. Tomorrow's topic is never pulled forward, and a day that
- *     was skipped stays skipped rather than coming back later as two articles
- *     at once.
+ *  1. **Only the topic for the day being published is offered.** The calendar
+ *     is asked for a topic on that exact date — the date the article will
+ *     appear on, which for a store publishing after midnight is the day after
+ *     the writing starts. The next day's topic is never pulled forward, and a
+ *     day that was skipped stays skipped rather than coming back later as two
+ *     articles at once.
  *  2. **The dequeue is a guarded update.** `planned → generating` matches zero
  *     rows for anyone who arrives second, and whoever loses stops rather than
  *     retrying.
@@ -129,7 +132,15 @@ export async function runDailyGenerationForAccount(
 
   const outcome = await withAccountLock(deps.pool, accountId, async () => {
     const settings = await readAccountSettings(deps.db, scope)
-    const today = localClock(now, settings.timezone).date
+    // The day the article is due to *appear*, not the day it is being written.
+    // For a store publishing after midnight those are different dates, and the
+    // calendar means the first of them: Tuesday's slot is what a reader sees on
+    // Tuesday, whatever hour the writing started.
+    const publishDate = publishDayFor(
+      now,
+      settings.timezone,
+      rules().defaults.generation.cycle.lead_hours_before_publish_hour,
+    )
 
     // The four reasons to stop, read in the order main §14.5 puts them in: the
     // operator's brakes, then whether the merchant is paid up, then whether
@@ -143,12 +154,12 @@ export async function runDailyGenerationForAccount(
       shopifyConnectionState(deps.db, scope),
     ])
 
-    // Only a `planned` topic is a dequeue. A topic left `generating` on today's
+    // Only a `planned` topic is a dequeue. A topic left `generating` on this
     // date is a previous attempt that died: it is finished rather than left
     // stranded, but it is not a second dequeue and does not consume a second
     // day.
-    const planned = await findPlannedTopicOnDate(deps.db, scope, today)
-    const stranded = planned ? undefined : await strandedTopicOn(deps.db, scope, today)
+    const planned = await findPlannedTopicOnDate(deps.db, scope, publishDate)
+    const stranded = planned ? undefined : await strandedTopicOn(deps.db, scope, publishDate)
 
     const decision = decideDequeue({
       switches,
@@ -160,7 +171,7 @@ export async function runDailyGenerationForAccount(
     if (!decision.allowed) {
       log.info('generation_cycle_skipped', {
         account_id: accountId,
-        date: today,
+        date: publishDate,
         reason: decision.reason,
         ...(decision.flag ? { flag: decision.flag } : {}),
       })
@@ -174,12 +185,12 @@ export async function runDailyGenerationForAccount(
     const key = deriveIdempotencyKey(
       accountId,
       DAILY_GENERATION_STEP,
-      inputVersion({ topicId: topic.id, date: today }),
+      inputVersion({ topicId: topic.id, date: publishDate }),
     )
     const done = await lookupCompletedWork(deps.db, key)
     if (done) {
       const record = (done.outputRef ?? { articleId: null, outcome: 'unknown' }) as DayRecord
-      log.info('generation_cycle_already_done', { account_id: accountId, date: today, topic_id: topic.id })
+      log.info('generation_cycle_already_done', { account_id: accountId, date: publishDate, topic_id: topic.id })
       return { status: 'already_done', articleId: record.articleId, outcome: record.outcome } as const
     }
 
@@ -193,7 +204,7 @@ export async function runDailyGenerationForAccount(
         return { status: 'skipped', reason: 'lost_race' } as const
       }
     } else {
-      log.info('generation_cycle_resuming', { account_id: accountId, topic_id: topic.id, date: today })
+      log.info('generation_cycle_resuming', { account_id: accountId, topic_id: topic.id, date: publishDate })
     }
 
     const result = await generateArticle(deps, await generationInputFor(deps.db, scope, accountId, topic))
@@ -217,7 +228,7 @@ export async function runDailyGenerationForAccount(
 
     log.info('generation_cycle_complete', {
       account_id: accountId,
-      date: today,
+      date: publishDate,
       topic_id: topic.id,
       outcome: result.outcome,
       awaits_review: awaitsReview,
@@ -289,8 +300,8 @@ async function announceDraftForReview(
 }
 
 /**
- * A topic left in `generating` on today's date — a run that started and never
- * finished. Picking it up is what stops a crash parking a store's day forever:
+ * A topic left in `generating` on the day being published — a run that started
+ * and never finished. Picking it up is what stops a crash parking a store's day forever:
  * nothing else would ever look at it again, because the dequeue only offers
  * `planned` rows.
  *

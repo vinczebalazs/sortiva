@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { billingGate } from '../billing/entitlement'
 import { lifecycleGate, type LifecycleGate } from '../lifecycle/gate'
-import { decideDequeue, generationHourFor, localClock, type DequeueInput } from './cycle'
+import {
+  decideDequeue,
+  generationHourFor,
+  localClock,
+  publishDayFor,
+  type DequeueInput,
+} from './cycle'
 import { landingForPass } from './review'
 
 /**
@@ -157,6 +163,44 @@ describe('generationHourFor', () => {
   it('wraps to the evening before rather than losing the runway', () => {
     expect(generationHourFor(2, 6)).toBe(20)
     expect(generationHourFor(0, 1)).toBe(23)
+  })
+})
+
+describe('publishDayFor', () => {
+  /**
+   * The lead the running product uses. Named here rather than read from
+   * `packages/rules` so the arithmetic under test does not move when the
+   * number does.
+   */
+  const LEAD = 6
+
+  it('gives the same day for a store publishing in its own morning', () => {
+    // 03:00 in Berlin on the 3rd: writing starts, the article is due at 09:00
+    // the same morning.
+    expect(publishDayFor(new Date('2026-09-03T01:00:00.000Z'), 'Europe/Berlin', LEAD)).toBe('2026-09-03')
+  })
+
+  it('gives tomorrow to a store publishing after midnight, so the calendar and the shop agree', () => {
+    // A Berlin store with a 02:00 publish hour starts writing at 20:00 on the
+    // 2nd. The article appears on the 3rd, so the 3rd's topic is the one it
+    // must take — reading the clock at the writing moment would take the 2nd's
+    // and publish it a day late, for ever.
+    expect(publishDayFor(new Date('2026-09-02T18:00:00.000Z'), 'Europe/Berlin', LEAD)).toBe('2026-09-03')
+  })
+
+  it('reads the date where the audience is, not where the server is', () => {
+    // 20:00 on the 2nd in Los Angeles is already the 3rd in UTC. A store
+    // publishing at 02:00 local takes the 3rd's topic — its own 3rd.
+    expect(publishDayFor(new Date('2026-09-03T03:00:00.000Z'), 'America/Los_Angeles', LEAD)).toBe(
+      '2026-09-03',
+    )
+    // The same instant for a Tokyo store, whose day has already turned twice
+    // over: 12:00 on the 3rd, publishing at 18:00 the same afternoon.
+    expect(publishDayFor(new Date('2026-09-03T03:00:00.000Z'), 'Asia/Tokyo', LEAD)).toBe('2026-09-03')
+  })
+
+  it('falls back to UTC for a zone it cannot parse rather than skipping the store', () => {
+    expect(publishDayFor(new Date('2026-09-03T01:00:00.000Z'), 'Mars/Olympus', LEAD)).toBe('2026-09-03')
   })
 })
 
