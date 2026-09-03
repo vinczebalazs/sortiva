@@ -3796,3 +3796,79 @@ repositories` (not lane-exclusive), `packages/rules` (new Gate 2 thresholds, `UN
 `rules_version` changed — same pattern every signal-threshold card has followed),
 `packages/llm/prompts` (two new versioned prompt files, following `T4.2`'s own
 precedent). No migration.
+
+## `T3.7` LANDED — signal runs and Limited Intelligence. **`M3` is closed.**
+
+**Merged as `474eab8` into `main`, seven commits plus one merge-time fix (`6be916e`),
+full gate green.** Tests **2,885**, up from 2,780. This is the
+last Lane C card the plan schedules — **the Search Intelligence & Opportunity Engine
+milestone is complete**: every signal `T3.4`/`T3.5` detect now flows through `T3.6`'s
+scoring into a real, running engine with three cadences (onboarding activation, weekly
+scan, event-driven), `/api/opportunities` wired for real, and the calendar seeded via
+`T4.2`'s real `TopicScheduler` rather than a fixture pool.
+
+**One merge-time fix, needed because this branch predates a guard that landed while it
+was building.** `T3.7` correctly removed `StubOpportunitySource` from `pnpm
+stubs:report` — verified independently before merging: `DbOpportunitySource` really is
+constructed in the onboarding scan's calendar-seeding step, which really is registered
+as the `signal_scan_onboarding_sweep` crontab task in `apps/web/instrumentation.ts` —
+but it branched before `R-STREAM` added `seams-wired.test.ts`'s requirement that every
+such removal name a `REAL_IMPLEMENTATION` entry. Added one, verified the test goes from
+6/7 to 7/7. Not a defect in `T3.7`'s own work — a timing gap between two branches, the
+same shape as `T4.2`'s `OPPORTUNITY_STATUS_CHANGED_EVENT` collision with `T3.6`.
+
+### Both flagged gaps from earlier cards were closed, not inherited silently
+
+**`T3.6`'s audit HIGH finding — closed.** A technical blocker discovered after an
+opportunity auto-accepts now actually re-blocks it: a new pure function,
+`reconcileStatusWithPreconditions`, runs on every re-detection and moves a `new`/
+`accepted` row to `blocked` the instant fresh preconditions are non-empty — and moves a
+`blocked` row back out the instant they clear, completing the "re-evaluated
+automatically" promise main §7.9 makes and `T3.6` had explicitly left undone. Proven
+both by a unit-test table and a real-Postgres test that plants a blocking opportunity,
+re-scans, and asserts the block, then the unblock. Deliberately scoped to `new`/
+`accepted`/`blocked` only — once scheduled, it's Lane D's calendar state machine's
+concern, not a signal-detection pass's.
+
+**`T4.2`'s `TopicScheduler` intent-class/family-id gap — worked around, not solved, and
+said so plainly.** Traced one level further than expected: `keywords` has no intent or
+family column at all, and nothing derives either from free text — the same fact `T4.2`
+already found for the sibling manual-add problem. Main §7.5 forbids an LLM call at
+detection time (unlike manual-add's one-off, per-click call), so persisting real
+lineage needs a schema-wave migration outside this card's reach. **Built a free,
+deterministic heuristic** (`packages/core/src/signals/keyword-classify.ts`) and
+stamped `intent_class`/`family_id` evidence facts onto all three CREATE-producing
+signals — two of which had no such facts at all before this card, which would have made
+the onboarding run's first real `TopicScheduler.schedule()` call throw immediately.
+**Flagged prominently as a stopgap**: persisting the real lineage at keyword-enrichment
+time is named as the strictly better fix, for a founder/integrator to schedule.
+
+### A real bug the integration test itself found, before any merge
+
+**All four GSC-dependent signals would have silently detected nothing on every real
+store, forever.** `assembleGscInputs` never rebuilt query clusters before reading them
+— found by `T3.7`'s own real-Postgres integration test, fixed in the same commit,
+documented rather than silently patched.
+
+### What was deliberately not built, and why
+
+**The opportunity detail-drawer route (`GET /api/opportunities/{id}`) — not built.**
+Its `recommendation`/`history`/`outcome` sections belong to `T6.2`/`T7.1`, neither
+built (and `T7.x` is deferred out of v1 entirely). Shipping a drawer silently missing
+three of six sections was judged worse than not offering the route at all. Three
+secondary fields in the list response (`scheduledFor`, `expiresAt`, `nextScanAt`) and
+cursor pagination are also honestly absent, documented rather than faked.
+
+**Files outside Lane C's strict directories, all precedented**: `packages/db/src/
+repositories` (not lane-exclusive), `eslint.config.mjs` (one new composition-root
+exemption, identical shape to existing entries), `apps/web/instrumentation.ts` and
+`packages/jobs/src/runtime/crontab.ts` (both integrator-resolved ordered files —
+reviewed directly, both changes are additive registrations following exact existing
+patterns), `scripts/stub-report.mjs` (the seam it closed). No migration.
+
+### `M3` is closed. What's now unblocked and what still isn't
+
+**Nothing further is scheduled for Lane C** in the build plan (`M7` stays deferred).
+**`T6.x` (OPTIMIZE & FIX, Lane E) can now start in principle** — it needs `T3.6` (done)
+and `T4.4` (not started, itself blocked on `T4.3`'s schema gap above). **`M6` overall
+still needs both `T3.6` and `T4.4`.**
