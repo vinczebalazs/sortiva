@@ -2,6 +2,7 @@ import { accountAttribution, type PosthogCapture } from '../contracts/analytics'
 import type { NotificationType } from '../contracts/opportunities'
 import { captureStubUsed, registerStub } from '../contracts/stubs'
 import {
+  EXPORT_URL_UNCONFIRMED_DAYS,
   OPTIMIZE_UNAPPLIED_DAYS,
   cutoffDaysBefore,
   type AttentionCandidate,
@@ -31,6 +32,13 @@ export interface NotificationStore {
   markSeen(accountId: string): Promise<number>
   /** False when the id belongs to nobody, or to somebody else. */
   markRead(accountId: string, notificationId: string): Promise<boolean>
+  /** Drafts the merchant asked to see before publication — main §9.3. */
+  draftsAwaitingReview(accountId: string): Promise<readonly AttentionCandidate[]>
+  /** Exported articles live for longer than the window with no address told to us. */
+  unconfirmedExportUrls(
+    accountId: string,
+    publishedBefore: Date,
+  ): Promise<readonly AttentionCandidate[]>
   openMerchantTasks(accountId: string): Promise<readonly AttentionCandidate[]>
   unappliedOptimizeRecommendations(
     accountId: string,
@@ -61,25 +69,25 @@ export async function notificationFeed(
 }
 
 /**
- * Two of the attention list's five conditions can be read today. The other
- * three — a draft waiting for review, an article needing a repair, an exported
- * article whose published address we were never told — all sit on the
- * `articles` table, which schema wave 3 creates and which does not exist yet.
+ * Four of the attention list's five conditions are real reads. The fifth — an
+ * article needing a repair after the catalogue moved underneath it — has no
+ * table to read: there is no repairs table anywhere in the schema, and `T5.3`
+ * is the card that introduces one.
  *
- * They return nothing, but they say so: registered as a wired stub, so
- * `pnpm stubs:report` names them and any call that reaches one shows up as
+ * It returns nothing, and it says so: registered as a wired stub, so
+ * `pnpm stubs:report` names it and any call that reaches it shows up as
  * `stub_used` rather than as an empty list nobody thinks to question. An
- * attention list that silently cannot see drafts would look exactly like an
- * account with no drafts.
+ * attention list that silently cannot see repairs would look exactly like an
+ * account with nothing broken.
  */
 export const ARTICLE_ATTENTION_STUB = 'AttentionSources.articles'
 
 registerStub({
   contract: ARTICLE_ATTENTION_STUB,
-  filledBy: 'D — T4.0 (schema wave 3: articles and repairs)',
+  filledBy: 'D — T5.3 (the repair queue and the table behind it)',
   behaviour:
-    'drafts awaiting review, pending repairs and unconfirmed export URLs return nothing; the articles table does not exist yet',
-  mustBeGoneBy: 'M4',
+    'pending repairs return nothing; no repairs table exists in the schema yet, so nothing can be read',
+  mustBeGoneBy: 'M5',
 })
 
 export function attentionSourcesFor(
@@ -89,15 +97,19 @@ export function attentionSourcesFor(
 ): AttentionSources {
   const attribution = accountAttribution(accountId)
 
-  const pendingOnArticles = async (condition: string): Promise<readonly AttentionCandidate[]> => {
-    captureStubUsed(capture, ARTICLE_ATTENTION_STUB, attribution, { condition })
-    return []
-  }
-
   return {
-    draftsAwaitingReview: () => pendingOnArticles('draft_awaiting_review'),
-    pendingRepairs: () => pendingOnArticles('repair_pending'),
-    unconfirmedExportUrls: () => pendingOnArticles('export_url_unconfirmed'),
+    draftsAwaitingReview: () => store.draftsAwaitingReview(accountId),
+    pendingRepairs: async () => {
+      captureStubUsed(capture, ARTICLE_ATTENTION_STUB, attribution, {
+        condition: 'repair_pending',
+      })
+      return []
+    },
+    unconfirmedExportUrls: (now) =>
+      store.unconfirmedExportUrls(
+        accountId,
+        cutoffDaysBefore(now, EXPORT_URL_UNCONFIRMED_DAYS),
+      ),
     openMerchantTasks: () => store.openMerchantTasks(accountId),
     unappliedOptimizeRecommendations: (now) =>
       store.unappliedOptimizeRecommendations(

@@ -279,4 +279,126 @@ describe.skipIf(!available)('notifications and the attention list', () => {
       expect(await buildAttentionList(attentionSourcesFor(store, other))).toEqual([])
     })
   })
+
+  describe('the two conditions that live on articles', () => {
+    /** An article and the topic and opportunity it hangs off — the real chain, not a bare row. */
+    const anArticle = async (
+      slug: string,
+      article: Record<string, string | null>,
+      forAccount = accountId,
+    ): Promise<string> => {
+      const { rows: opportunity } = await pool.query<{ id: string }>(
+        `INSERT INTO opportunities
+           (account_id, signal_type, entity_type, entity_ref, evidence_json, impact,
+            impact_score, confidence, reason_template_key, recommended_action, rules_version)
+         VALUES ($1,'uncovered_commercial_query','query_cluster',$2,'[]'::jsonb,'high',
+            80, 70, 'uncovered_commercial_query.default', 'create', 'abc123')
+         RETURNING id`,
+        [forAccount, `cluster:${slug}`],
+      )
+      const { rows: topic } = await pool.query<{ id: string }>(
+        `INSERT INTO topics (account_id, opportunity_id, title, intent_class, source, scheduled_date)
+         VALUES ($1,$2,$3,'buying_guide','auto','2026-10-01')
+         RETURNING id`,
+        [forAccount, opportunity[0]!.id, slug],
+      )
+      const { rows } = await pool.query<{ id: string }>(
+        `INSERT INTO articles
+           (account_id, topic_id, title, slug, state, delivery, published_url, published_at)
+         VALUES ($1,$2,$3,$3,$4,$5,$6,$7)
+         RETURNING id`,
+        [
+          forAccount,
+          topic[0]!.id,
+          slug,
+          article.state ?? 'draft',
+          article.delivery ?? 'export',
+          article.publishedUrl ?? null,
+          article.publishedAt ?? null,
+        ],
+      )
+      return rows[0]!.id
+    }
+
+    const list = (forAccount = accountId) =>
+      buildAttentionList(attentionSourcesFor(store, forAccount))
+
+    it('shows a draft waiting to be read, and no article in any other state', async () => {
+      const waiting = await anArticle('waiting-for-review', { state: 'in_review' })
+      for (const state of ['draft', 'published', 'rejected', 'discarded']) {
+        await anArticle(`article-${state}`, { state })
+      }
+
+      const items = await list()
+      expect(items.map((item) => item.kind)).toEqual(['draft_awaiting_review'])
+      expect(items[0]!.refs.article_id).toBe(waiting)
+    })
+
+    it('drops the draft the moment it is approved, writing nothing of ours', async () => {
+      await anArticle('approve-me', { state: 'in_review' })
+      expect(await list()).toHaveLength(1)
+
+      await pool.query(`UPDATE articles SET state = 'draft'`)
+
+      expect(await list()).toEqual([])
+      const { rows } = await pool.query<{ n: number }>(
+        'SELECT count(*)::int AS n FROM notifications',
+      )
+      expect(rows[0]!.n).toBe(0)
+    })
+
+    const daysAgo = (days: number) =>
+      new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
+
+    it('waits out the window before asking where an exported article went', async () => {
+      const id = await anArticle('exported-yesterday', {
+        state: 'published',
+        delivery: 'export',
+        publishedAt: daysAgo(1),
+      })
+      expect(await list()).toEqual([])
+
+      await pool.query('UPDATE articles SET published_at = $1 WHERE id = $2', [daysAgo(9), id])
+      const items = await list()
+      expect(items.map((item) => item.kind)).toEqual(['export_url_unconfirmed'])
+      expect(items[0]!.refs.article_id).toBe(id)
+    })
+
+    it('stops asking once the merchant pastes the address back', async () => {
+      await anArticle('exported-long-ago', {
+        state: 'published',
+        delivery: 'export',
+        publishedAt: daysAgo(9),
+      })
+      expect(await list()).toHaveLength(1)
+
+      await pool.query(`UPDATE articles SET published_url = 'https://shop.example/blog/a'`)
+      expect(await list()).toEqual([])
+    })
+
+    it('never asks an auto-publishing store, whose address comes back from Shopify', async () => {
+      await anArticle('auto-published', {
+        state: 'published',
+        delivery: 'auto',
+        publishedAt: daysAgo(9),
+      })
+      expect(await list()).toEqual([])
+    })
+
+    it("cannot see another account's draft or unconfirmed export", async () => {
+      const other = await insertAccount(pool, 'neighbour@example.com')
+      await anArticle('their-draft', { state: 'in_review' }, other)
+      await anArticle(
+        'their-export',
+        { state: 'published', delivery: 'export', publishedAt: daysAgo(9) },
+        other,
+      )
+
+      expect(await list()).toEqual([])
+      expect((await list(other)).map((item) => item.kind)).toEqual([
+        'draft_awaiting_review',
+        'export_url_unconfirmed',
+      ])
+    })
+  })
 })
