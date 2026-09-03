@@ -34,12 +34,19 @@ const doubles = await import('../packages/core/src/contracts/doubles.ts')
 new doubles.StubOpportunitySource()
 new doubles.StubTopicScheduler()
 new doubles.StubJudgeLite()
-// `StubCatalogEvents` is deliberately not constructed. `T2.2` filled that seam:
-// the change stream is served in production by `DatabaseCatalogEvents`, reading
-// what merchants actually changed. The double still exists and is still used by
-// tests, which is fine — this report is about seams the *product* is running on
-// a stand-in, and listing a filled one would make the M2 gate fail for a gap
-// that no longer exists.
+// `StubCatalogEvents` is listed again, from 2026-09-03, and the note that used
+// to sit here was wrong. It said the change stream "is served in production by
+// `DatabaseCatalogEvents`". It is not: that class is constructed nowhere outside
+// its own test, and the job that would drain the stream is registered nowhere.
+// What merchants change **is** recorded — that half works — and then nothing
+// ever reads it.
+//
+// So the seam is not filled, and this line stays until something in production
+// constructs a reader and drains it. `seams-wired.test.ts` now enforces the rule
+// this line was removed in breach of: a seam may only be dropped from this
+// report when its real implementation is actually constructed somewhere that is
+// not a test.
+new doubles.StubCatalogEvents()
 // `StubNotificationEmitter` is deliberately not constructed either, for the same
 // reason and from 2026-09-02: the Shopify composition root now hands out
 // `DbNotificationEmitter`, so a notification written in production reaches a real
