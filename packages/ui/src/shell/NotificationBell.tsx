@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { t as defaultTranslate, type Translate } from '../strings'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { createTranslate, DEFAULT_LANGUAGE, type UiLanguage } from '../strings'
 import { BellIcon, CloseIcon } from './icons'
 import {
   bellAriaLabelKey,
@@ -22,10 +22,18 @@ import {
  * clicking one row marks that row specifically (`read`), which is what a
  * returning merchant would use to tell "already looked at this" from "already
  * dealt with this" apart.
+ *
+ * `language` rather than a `t` function: the shell that renders this reads the
+ * merchant's language on the server, and a translate function is a closure
+ * React refuses to serialise across the server/client boundary — passing one
+ * from the layout down to this component 500s in a production build (found by
+ * `T9.8`, driving this screen against one for the first time). A language code
+ * survives that boundary; the translator is built here instead, on the client
+ * this component already runs on.
  */
 
 export interface NotificationBellProps {
-  readonly t?: Translate
+  readonly language?: UiLanguage
   readonly feedEndpoint?: string
   readonly seenEndpoint?: string
   readonly readEndpoint?: (id: string) => string
@@ -33,12 +41,13 @@ export interface NotificationBellProps {
 }
 
 export function NotificationBell({
-  t = defaultTranslate,
+  language = DEFAULT_LANGUAGE,
   feedEndpoint = '/api/notifications',
   seenEndpoint = '/api/notifications/seen',
   readEndpoint = (id) => `/api/notifications/${id}/read`,
   pollMs = NOTIFICATIONS_POLL_MS,
 }: NotificationBellProps) {
+  const t = useMemo(() => createTranslate(language), [language])
   const [items, setItems] = useState<readonly NotificationItem[]>([])
   const [unseenCount, setUnseenCount] = useState(0)
   const [open, setOpen] = useState(false)

@@ -32,12 +32,11 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const { account, settings, acceptLanguage } = await loadShellState()
   const analytics = browserAnalyticsConfig()
 
-  const t = createTranslate(
-    resolveLanguage({
-      saved: settings?.uiLanguage ?? null,
-      browser: acceptLanguage,
-    }),
-  )
+  const language = resolveLanguage({
+    saved: settings?.uiLanguage ?? null,
+    browser: acceptLanguage,
+  })
+  const t = createTranslate(language)
 
   return (
     <AnalyticsMount
@@ -52,7 +51,11 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         banners={bannerContextFromAccount(account as ShellAccount, {
           vacationMode: settings?.vacationMode ?? false,
         })}
-        toolbar={account.accountId ? <NotificationBell t={t} /> : null}
+        // `NotificationBell` is a Client Component; it takes the language
+        // code and builds its own translator rather than receiving this
+        // Server Component's `t` closure, which React cannot serialise
+        // across that boundary (see the component's own comment).
+        toolbar={account.accountId ? <NotificationBell language={language} /> : null}
       >
         {children}
       </AppShell>
