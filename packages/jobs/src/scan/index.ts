@@ -4,6 +4,8 @@ export {
   type ExistingTargetDeps,
 } from './existing-target'
 
+export { DbOpportunitySource } from './opportunity-source'
+
 export {
   refitCtrCurveForAccount,
   type CtrCurveRefitDeps,
