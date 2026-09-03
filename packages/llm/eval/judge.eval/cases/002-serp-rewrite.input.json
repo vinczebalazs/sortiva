@@ -1,0 +1,140 @@
+{
+  "targetKeyword": "best trail running shoes for wide feet",
+  "draft": {
+    "title": "Best trail running shoes for wide feet",
+    "metaDescription": "The best trail running shoes for wide feet in 2026.",
+    "intro": "In today's fast-paced world, finding the best trail running shoes for wide feet can be a challenge. Whether you're a beginner or a seasoned pro, this guide will help you unlock the perfect fit. Let's dive in.",
+    "sections": [
+      {
+        "heading": "Why fit matters",
+        "body": "It's important to note that fit matters when it comes to trail running. At the end of the day, a shoe that doesn't fit will cause problems on the trail. That being said, everyone's feet are different."
+      },
+      {
+        "heading": "How we tested",
+        "body": "We tested a range of shoes over several months on mixed terrain to bring you this list."
+      },
+      {
+        "heading": "Conclusion",
+        "body": "There's no one-size-fits-all answer, and results will differ. Choose the shoe that feels right for you."
+      }
+    ],
+    "faq": [],
+    "productMentions": []
+  },
+  "pack": {
+    "accountId": "judge-eval",
+    "topicId": "judge-eval",
+    "intentClass": "buying_guide",
+    "targetKeyword": "best trail running shoes for wide feet",
+    "families": [
+      {
+        "familyId": "f1",
+        "name": "Trail shoes",
+        "differentiationAxes": [
+          "last width",
+          "drop",
+          "outsole"
+        ]
+      }
+    ],
+    "products": [
+      {
+        "productId": "p1",
+        "title": "Ridge Wide",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "engineered mesh with TPU overlays",
+          "dimensions": null,
+          "weight": "290 g",
+          "capacity": null,
+          "compatibility": [],
+          "use_cases_stated": [
+            "technical trail",
+            "wet rock"
+          ],
+          "care": null,
+          "certifications": [],
+          "origin": "Vietnam",
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 5
+        }
+      },
+      {
+        "productId": "p2",
+        "title": "Ridge Standard",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "engineered mesh",
+          "dimensions": null,
+          "weight": "265 g",
+          "capacity": null,
+          "compatibility": [],
+          "use_cases_stated": [
+            "hard-packed trail"
+          ],
+          "care": null,
+          "certifications": [],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 3
+        }
+      },
+      {
+        "productId": "p3",
+        "title": "Fell Wide",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "ripstop nylon",
+          "dimensions": null,
+          "weight": "310 g",
+          "capacity": null,
+          "compatibility": [
+            "gaiter attachment"
+          ],
+          "use_cases_stated": [
+            "boggy ground"
+          ],
+          "care": null,
+          "certifications": [],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 4
+        }
+      }
+    ],
+    "serp": {
+      "keyword": "best trail running shoes for wide feet",
+      "locale": "en-US",
+      "topResultCount": 1,
+      "averageWordCount": 900,
+      "competitorAngles": [
+        {
+          "url": "https://rival.example/trail-shoes",
+          "domain": "rival.example",
+          "position": 1,
+          "headings": [
+            "Best trail shoes 2026",
+            "How we tested",
+            "The winners"
+          ],
+          "excerpt": "We tested twelve shoes over six months on mixed terrain."
+        }
+      ]
+    },
+    "linkTasks": [],
+    "assembledAt": "2026-09-03T07:00:00.000Z"
+  },
+  "note": "Adds nothing the ranking page does not already say, and says it in stock phrases."
+}

@@ -1,0 +1,107 @@
+{
+  "targetKeyword": "bedste sengetøj til sommer",
+  "draft": {
+    "title": "Hør eller bomuld til sommeren",
+    "metaDescription": "Hvad hør og bomuld hver især gør ved en varm nat.",
+    "intro": "Hør, hvis du sveder om natten. Hør 200 vejer 200 g/m² og leder fugt væk hurtigere end bomuld, mens Bomuld 140 er lettere at holde ren og tåler 60 graders vask.",
+    "sections": [
+      {
+        "heading": "Hvad materialet ændrer",
+        "body": "Hør 200 er hørlærred på 200 g/m². Det føles køligere mod huden, fordi hør leder fugt væk i stedet for at holde på den. Bomuld 140 er langstablet bomuld på 140 g/m² — lettere, blødere fra første vask, men den bliver klam, hvis natten er varm."
+      },
+      {
+        "heading": "Vask og vedligeholdelse",
+        "body": "Hør 200 vaskes ved 40 grader, Bomuld 140 ved 60. Skal sengetøjet kunne koges rent, er valget truffet der. Begge er OEKO-TEX Standard 100-certificerede."
+      }
+    ],
+    "faq": [],
+    "productMentions": []
+  },
+  "pack": {
+    "accountId": "judge-eval",
+    "topicId": "judge-eval",
+    "intentClass": "buying_guide",
+    "targetKeyword": "bedste sengetøj til sommer",
+    "families": [
+      {
+        "familyId": "f1",
+        "name": "Sengetøj",
+        "differentiationAxes": [
+          "materiale",
+          "vægt"
+        ]
+      }
+    ],
+    "products": [
+      {
+        "productId": "p1",
+        "title": "Hør 200",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "hørlærred",
+          "dimensions": null,
+          "weight": "200 g/m²",
+          "capacity": null,
+          "compatibility": [],
+          "use_cases_stated": [],
+          "care": "maskinvask 40 grader",
+          "certifications": [
+            "OEKO-TEX Standard 100"
+          ],
+          "origin": "Portugal",
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 5
+        }
+      },
+      {
+        "productId": "p2",
+        "title": "Bomuld 140",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "langstablet bomuld",
+          "dimensions": null,
+          "weight": "140 g/m²",
+          "capacity": null,
+          "compatibility": [],
+          "use_cases_stated": [],
+          "care": "maskinvask 60 grader",
+          "certifications": [
+            "OEKO-TEX Standard 100"
+          ],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 4
+        }
+      }
+    ],
+    "serp": {
+      "keyword": "bedste sengetøj til sommer",
+      "locale": "da-DK",
+      "topResultCount": 1,
+      "averageWordCount": 900,
+      "competitorAngles": [
+        {
+          "url": "https://rival.example/sengetoj",
+          "domain": "rival.example",
+          "position": 1,
+          "headings": [
+            "Sengetøj til sommer",
+            "Materialer"
+          ],
+          "excerpt": "Hør og bomuld er de mest brugte sommermaterialer."
+        }
+      ]
+    },
+    "linkTasks": [],
+    "assembledAt": "2026-09-03T07:00:00.000Z"
+  },
+  "note": "A well-made Danish comparison — the language criterion has to be graded in Danish, not in translation."
+}

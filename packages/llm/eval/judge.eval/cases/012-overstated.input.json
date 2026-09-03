@@ -1,0 +1,107 @@
+{
+  "targetKeyword": "how to season a cast iron pan",
+  "draft": {
+    "title": "How to season a cast iron pan",
+    "metaDescription": "Seasoning cast iron, step by step.",
+    "intro": "Heat the pan to 260°C and apply flaxseed oil in six thin coats, each baked for two hours. Cast iron must never touch soap, and a single wash with detergent will strip a seasoning built over years.",
+    "sections": [
+      {
+        "heading": "The method",
+        "body": "Six coats at 260°C is the standard used by professional kitchens. Anything less will always flake within a month."
+      },
+      {
+        "heading": "Care",
+        "body": "Never use soap. Never use a metal utensil. A cast iron pan cannot be soaked, cannot be washed in a dishwasher and must be dried immediately."
+      }
+    ],
+    "faq": [],
+    "productMentions": []
+  },
+  "pack": {
+    "accountId": "judge-eval",
+    "topicId": "judge-eval",
+    "intentClass": "buying_guide",
+    "targetKeyword": "how to season a cast iron pan",
+    "families": [
+      {
+        "familyId": "f1",
+        "name": "Cast iron cookware",
+        "differentiationAxes": [
+          "diameter",
+          "handle"
+        ]
+      }
+    ],
+    "products": [
+      {
+        "productId": "p1",
+        "title": "Skillet 26",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "cast iron",
+          "dimensions": "26 cm diameter",
+          "weight": "2.1 kg",
+          "capacity": null,
+          "compatibility": [],
+          "use_cases_stated": [
+            "hob",
+            "oven",
+            "open fire"
+          ],
+          "care": "hand wash, dry on the hob, wipe with oil",
+          "certifications": [],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 7
+        }
+      },
+      {
+        "productId": "p2",
+        "title": "Skillet 30",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "cast iron",
+          "dimensions": "30 cm diameter",
+          "weight": "2.9 kg",
+          "capacity": null,
+          "compatibility": [],
+          "use_cases_stated": [],
+          "care": "hand wash, dry on the hob, wipe with oil",
+          "certifications": [],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 4
+        }
+      }
+    ],
+    "serp": {
+      "keyword": "how to season a cast iron pan",
+      "locale": "en-US",
+      "topResultCount": 1,
+      "averageWordCount": 900,
+      "competitorAngles": [
+        {
+          "url": "https://rival.example/seasoning",
+          "domain": "rival.example",
+          "position": 1,
+          "headings": [
+            "What seasoning is",
+            "Step by step"
+          ],
+          "excerpt": "Seasoning is polymerised oil bonded to the iron."
+        }
+      ]
+    },
+    "linkTasks": [],
+    "assembledAt": "2026-09-03T07:00:00.000Z"
+  },
+  "note": "Plausible technique stated in absolutes the evidence does not support, and it contradicts the store's own care instructions."
+}

@@ -1,0 +1,107 @@
+{
+  "targetKeyword": "bedste sengetøj til sommer",
+  "draft": {
+    "title": "Sengetøj til sommer",
+    "metaDescription": "Det bedste sengetøj til sommeren.",
+    "intro": "I dagens hurtige verden er det vigtigt at vælge det rigtige sengetøj. Uanset om du er nybegynder eller erfaren, vil denne guide hjælpe dig.",
+    "sections": [
+      {
+        "heading": "Materialer",
+        "body": "Hør og bomuld er de mest brugte sommermaterialer. Begge har fordele og ulemper."
+      },
+      {
+        "heading": "Konklusion",
+        "body": "Det afhænger af dine behov. Vælg det, der føles rigtigt for dig."
+      }
+    ],
+    "faq": [],
+    "productMentions": []
+  },
+  "pack": {
+    "accountId": "judge-eval",
+    "topicId": "judge-eval",
+    "intentClass": "buying_guide",
+    "targetKeyword": "bedste sengetøj til sommer",
+    "families": [
+      {
+        "familyId": "f1",
+        "name": "Sengetøj",
+        "differentiationAxes": [
+          "materiale",
+          "vægt"
+        ]
+      }
+    ],
+    "products": [
+      {
+        "productId": "p1",
+        "title": "Hør 200",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "hørlærred",
+          "dimensions": null,
+          "weight": "200 g/m²",
+          "capacity": null,
+          "compatibility": [],
+          "use_cases_stated": [],
+          "care": "maskinvask 40 grader",
+          "certifications": [
+            "OEKO-TEX Standard 100"
+          ],
+          "origin": "Portugal",
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 5
+        }
+      },
+      {
+        "productId": "p2",
+        "title": "Bomuld 140",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "langstablet bomuld",
+          "dimensions": null,
+          "weight": "140 g/m²",
+          "capacity": null,
+          "compatibility": [],
+          "use_cases_stated": [],
+          "care": "maskinvask 60 grader",
+          "certifications": [
+            "OEKO-TEX Standard 100"
+          ],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 4
+        }
+      }
+    ],
+    "serp": {
+      "keyword": "bedste sengetøj til sommer",
+      "locale": "da-DK",
+      "topResultCount": 1,
+      "averageWordCount": 900,
+      "competitorAngles": [
+        {
+          "url": "https://rival.example/sengetoj",
+          "domain": "rival.example",
+          "position": 1,
+          "headings": [
+            "Sengetøj til sommer",
+            "Materialer"
+          ],
+          "excerpt": "Hør og bomuld er de mest brugte sommermaterialer."
+        }
+      ]
+    },
+    "linkTasks": [],
+    "assembledAt": "2026-09-03T07:00:00.000Z"
+  },
+  "note": "The same stock openings and empty claims, in Danish — the tells differ by language and still have to be caught."
+}

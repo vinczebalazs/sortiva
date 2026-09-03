@@ -1,0 +1,9 @@
+{
+  "informationGain": 3,
+  "factualGrounding": 1,
+  "searchIntentMatch": 4,
+  "actionability": 3,
+  "languageQuality": 4,
+  "ecommerceUsefulness": 2,
+  "passed": false
+}

@@ -1,0 +1,125 @@
+{
+  "targetKeyword": "stainless steel vs glass water bottle",
+  "draft": {
+    "title": "Steel or glass water bottle",
+    "metaDescription": "How to choose between a steel and a glass bottle.",
+    "intro": "Steel for a bag, glass for a desk. The Summit Steel holds 750 ml at 340 g; the Clear 500 holds 500 ml at 410 g.",
+    "sections": [
+      {
+        "heading": "The trade",
+        "body": "Glass is heavier per millilitre and will break if dropped on a hard floor. Steel will dent instead. Neither of those matters on a desk, which is why the answer changes with where the bottle lives."
+      },
+      {
+        "heading": "Washing",
+        "body": "The Summit Steel is hand wash only; the Clear 500 goes on the dishwasher's top rack."
+      }
+    ],
+    "faq": [],
+    "productMentions": []
+  },
+  "pack": {
+    "accountId": "judge-eval",
+    "topicId": "judge-eval",
+    "intentClass": "buying_guide",
+    "targetKeyword": "stainless steel vs glass water bottle",
+    "families": [
+      {
+        "familyId": "f1",
+        "name": "Water bottles",
+        "differentiationAxes": [
+          "material",
+          "capacity"
+        ]
+      }
+    ],
+    "products": [
+      {
+        "productId": "p1",
+        "title": "Summit Steel",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "18/8 stainless steel",
+          "dimensions": null,
+          "weight": "340 g",
+          "capacity": "750 ml",
+          "compatibility": [],
+          "use_cases_stated": [],
+          "care": "hand wash only",
+          "certifications": [],
+          "origin": "Portugal",
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 5
+        }
+      },
+      {
+        "productId": "p2",
+        "title": "Clear 500",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "borosilicate glass",
+          "dimensions": null,
+          "weight": "410 g",
+          "capacity": "500 ml",
+          "compatibility": [],
+          "use_cases_stated": [],
+          "care": "dishwasher safe on the top rack",
+          "certifications": [],
+          "origin": "Germany",
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 5
+        }
+      },
+      {
+        "productId": "p3",
+        "title": "Trail Light",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "tritan copolyester",
+          "dimensions": null,
+          "weight": "120 g",
+          "capacity": "750 ml",
+          "compatibility": [],
+          "use_cases_stated": [],
+          "care": "dishwasher safe",
+          "certifications": [],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 4
+        }
+      }
+    ],
+    "serp": {
+      "keyword": "stainless steel vs glass water bottle",
+      "locale": "en-US",
+      "topResultCount": 1,
+      "averageWordCount": 900,
+      "competitorAngles": [
+        {
+          "url": "https://rival.example/bottles",
+          "domain": "rival.example",
+          "position": 1,
+          "headings": [
+            "Steel vs glass",
+            "Which is better"
+          ],
+          "excerpt": "Steel keeps drinks cold longer; glass tastes cleaner."
+        }
+      ]
+    },
+    "linkTasks": [],
+    "assembledAt": "2026-09-03T07:00:00.000Z"
+  },
+  "note": "Correct and well grounded, but shorter and shallower than the query deserves."
+}

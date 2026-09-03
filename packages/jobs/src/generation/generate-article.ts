@@ -1,12 +1,15 @@
 import {
   GATE_DECISION_EVENT,
   accountAttribution,
+  articleBodyOf,
+  buildRepairRequest,
   checkGrounding,
   checkShape,
   internalLinkTargetsFor,
   lengthTargetFor,
   planClaims,
   runGate2,
+  runGate3,
   selectShape,
   stableSlug,
   writeDraft,
@@ -14,12 +17,16 @@ import {
   type ClaimPlan,
   type ClaimPlanPrompt,
   type CitableProduct,
+  type ComparisonText,
+  type ContradictionPrompt,
   type Draft,
   type DraftPrompt,
   type EvidencePack,
   type Gate2Result,
+  type Gate3Result,
   type GroundingResult,
   type IntentClass,
+  type JudgePrompt,
   type LlmClient,
   type Logger,
   type PlannedClaim,
@@ -35,8 +42,11 @@ import {
   insertArticleProductRefs,
   insertArticleStub,
   insertGateDecision,
+  markArticleRejectedByGate,
   publishedArticlesForAccount,
+  recentArticleBodiesForAccount,
   rejectTopicByGateGuarded,
+  saveDraftBody,
   slugsForAccount,
   type Db,
 } from '@sortiva/db'
@@ -46,14 +56,18 @@ import { assembleEvidencePack } from './assemble-evidence-pack'
 import { runtimeLogger } from '../runtime/logging'
 
 /**
- * The T4.3 pipeline: evidence pack → Gate 2 → claim plan → draft. Ends where
- * this card ends — a graded, Gate-3-checked, published article is `T4.4`'s
- * and `T4.5`'s job, not this one's.
+ * The pipeline: evidence pack → Gate 2 → claim plan → draft → Gate 3. What
+ * happens to a graded article afterwards — review, publish, export — is
+ * `T4.5`'s and `T5.x`'s, not this one's.
  *
  * **The claim plan is written to `article_claims` before the draft's own
  * model call is made** — this is what makes "the writer only ever sees the
  * approved claims" a fact about the running system rather than a comment;
  * see `generate-article.test.ts`'s call-order assertion.
+ *
+ * **The draft is stored before it is graded**, for the same kind of reason: a
+ * crash between the writer and the judge must not lose an article we already
+ * paid to write.
  */
 
 export interface GenerateArticleDeps {
@@ -63,6 +77,10 @@ export interface GenerateArticleDeps {
   readonly seo: SeoDataProvider
   readonly claimPlanPrompt: ClaimPlanPrompt
   readonly draftPrompt: DraftPrompt
+  readonly judgePrompt: JudgePrompt
+  readonly contradictionPrompt: ContradictionPrompt
+  /** The writer's prompt for a revision — the single repair attempt Gate 3 allows. */
+  readonly revisePrompt: DraftPrompt
   readonly capture?: Pick<PosthogCapture, 'capture'>
   readonly now?: () => Date
   readonly logger?: Logger
@@ -89,8 +107,9 @@ export type GenerateArticleResult =
       readonly claimPlan: null
     }
   | {
-      readonly outcome: 'drafted'
+      readonly outcome: 'graded' | 'rejected_by_gate3'
       readonly gate2: Gate2Result
+      readonly gate3: Gate3Result
       readonly articleId: string
       readonly shape: ArticleShape
       readonly claimPlan: ClaimPlan
@@ -195,20 +214,19 @@ export async function generateArticle(
   const internalLinks = internalLinkTargetsFor(pack, relatedArticles)
   const length = lengthTargetFor(pack.serp, generation.length)
 
-  const writeResult = await writeDraft(
-    { llm: deps.llm },
-    {
-      prompt: deps.draftPrompt,
-      accountId: input.accountId,
-      targetKeyword: input.targetKeyword,
-      shape,
-      axes,
-      claims: planResult.plan.claims,
-      citableProducts,
-      length,
-      internalLinks,
-    },
-  )
+  const draftInput = {
+    prompt: deps.draftPrompt,
+    accountId: input.accountId,
+    targetKeyword: input.targetKeyword,
+    shape,
+    axes,
+    claims: planResult.plan.claims,
+    citableProducts,
+    length,
+    internalLinks,
+  }
+
+  const writeResult = await writeDraft({ llm: deps.llm }, draftInput)
 
   const draft = writeResult.draft
   const citableById = new Map(citableProducts.map((p) => [p.id, p]))
@@ -231,14 +249,149 @@ export async function generateArticle(
     await insertArticleProductRefs(deps.db, scope, article.id, productMentionRefs, now)
   }
 
+  // Stored before grading: a crash between the writer and the judge must not
+  // throw away an article we have already paid to write.
+  await saveDraftBody(
+    deps.db,
+    scope,
+    article.id,
+    { title: draft.title, metaDescription: draft.metaDescription, body: articleBodyOf(draft) },
+    now,
+  )
+
+  // ---- Gate 3. ----
+  const gate3 = await runGate3(
+    {
+      llm: deps.llm,
+      judgePrompt: deps.judgePrompt,
+      contradictionPrompt: deps.contradictionPrompt,
+      repairWriter: async ({ previousDraft, instructions }) => {
+        const repaired = await deps.llm.complete<Draft>(
+          buildRepairRequest({
+            draftInput,
+            revisePrompt: deps.revisePrompt,
+            previousDraft,
+            instructions,
+          }),
+        )
+        return repaired.output
+      },
+    },
+    {
+      accountId: input.accountId,
+      draft,
+      plan: planResult.plan,
+      pack,
+      targetKeyword: input.targetKeyword,
+      length,
+      internalLinks,
+      comparisons: await comparisonTextsFor(deps.db, scope, article.id, pack),
+      languageCode: input.locale.languageCode,
+      gates,
+      generation,
+    },
+  )
+
+  // The graded draft is the one that gets stored: after a repair, the article
+  // a merchant would read is the revision, not the attempt that failed.
+  if (gate3.repaired) {
+    await saveDraftBody(
+      deps.db,
+      scope,
+      article.id,
+      {
+        title: gate3.draft.title,
+        metaDescription: gate3.draft.metaDescription,
+        body: articleBodyOf(gate3.draft),
+      },
+      now,
+    )
+  }
+
+  await insertGateDecision(
+    deps.db,
+    scope,
+    {
+      topicId: input.topicId,
+      gate: 3,
+      outcome: gate3.outcome,
+      scoresJson: { ...gate3.audit, reason_params: gate3.reasonParams, model_calls: gate3.calls },
+      reasonUserFacing: gate3.reasonTemplateKey,
+      promptVersion: gate3.verdict?.promptVersion ?? null,
+      modelId: gate3.verdict?.modelId ?? null,
+    },
+    now,
+  )
+
+  deps.capture?.capture({
+    event: GATE_DECISION_EVENT,
+    attribution: accountAttribution(input.accountId),
+    properties: {
+      gate: 3,
+      outcome: gate3.outcome,
+      prompt_version: gate3.verdict?.promptVersion ?? null,
+      model_id: gate3.verdict?.modelId ?? null,
+      ...(gate3.verdict?.scores ?? {}),
+    },
+  })
+
+  if (!gate3.passed) {
+    await markArticleRejectedByGate(deps.db, scope, article.id, now)
+    await rejectTopicByGateGuarded(deps.db, scope, input.topicId, now)
+    log.info('gate3_rejected', {
+      account_id: input.accountId,
+      topic_id: input.topicId,
+      outcome: gate3.outcome,
+      judge_calls: gate3.calls.judge,
+    })
+  }
+
   return {
-    outcome: 'drafted',
+    outcome: gate3.passed ? 'graded' : 'rejected_by_gate3',
     gate2,
+    gate3,
     articleId: article.id,
     shape,
     claimPlan: planResult.plan,
-    draft,
-    grounding: checkGrounding(draft, planResult.plan, citableProducts),
-    shapeCheck: checkShape(shape, draft),
+    draft: gate3.draft,
+    grounding: checkGrounding(gate3.draft, planResult.plan, citableProducts),
+    shapeCheck: checkShape(shape, gate3.draft),
   }
+}
+
+/**
+ * What the near-duplicate check compares against: the store's own earlier
+ * articles (article #40 sounding like article #12) and the pages currently
+ * ranking (rewriting the SERP back at itself). The article being graded is
+ * excluded — it was stored a moment ago and would otherwise match itself
+ * perfectly.
+ */
+async function comparisonTextsFor(
+  db: Db,
+  scope: ReturnType<typeof accountScope>,
+  currentArticleId: string,
+  pack: EvidencePack,
+): Promise<ComparisonText[]> {
+  const own = await recentArticleBodiesForAccount(db, scope, 25)
+  const comparisons: ComparisonText[] = []
+
+  for (const row of own) {
+    if (row.id === currentArticleId) continue
+    const body = row.bodyJson as { intro?: string; sections?: { body?: string }[]; faq?: { answer?: string }[] } | null
+    if (!body) continue
+    const text = [
+      body.intro ?? '',
+      ...(body.sections ?? []).map((s) => s.body ?? ''),
+      ...(body.faq ?? []).map((f) => f.answer ?? ''),
+    ].join('\n\n')
+    if (text.trim() === '') continue
+    comparisons.push({ label: row.title, kind: 'own_article', text })
+  }
+
+  for (const angle of pack.serp.competitorAngles) {
+    if (angle.excerpt.trim() === '') continue
+    comparisons.push({ label: `${angle.domain} (#${angle.position})`, kind: 'ranking_page', text: angle.excerpt })
+  }
+
+  return comparisons
 }
