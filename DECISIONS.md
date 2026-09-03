@@ -3544,3 +3544,24 @@ What it needs: the articles screen's `download` callback re-pointed at `/api/art
 Consequence until then: the export bundle is reachable and correct at its own address and **no screen calls it**.
 Nearest spec: ui §6.2; main §9.4, §9.5; build plan §3 (lane ownership).
 Class (filled by audit):
+
+## 2026-09-04 — T5.2 — The marker we write onto a merchant's shop names the article, not the revision
+Decision: every post Sortiva makes carries `sortiva-<article id>` in a Shopify metafield **and** as a tag, and that string never changes when the article is later revised. Our own claim rows (`publish_intents.article_external_id`) do carry a revision suffix — `sortiva-<id>#r2` — and that suffix never leaves the database.
+Why: the marker exists so that a worker which died mid-publish can ask the shop "is my post already there?" instead of guessing. That question is about the *article*, so a marker that changed per revision would make the shop unsearchable for exactly the thing we needed to find. The revision still needs a name of its own, because the table's unique index is what stops two workers publishing the same thing and a confirmed first claim would otherwise block every later repair — so the revision lives in the claim's name, where only we read it. The tag duplicates the metafield because a tag travels inside the ordinary article-list response, and finding the same value in a metafield would cost one extra request per article on a blog that may hold hundreds; it is also the fallback for a store where the metafield write is refused.
+Consequence: the tag is visible to the merchant in Shopify's admin, on every article we post.
+Nearest spec: main §14.3.7 steps 2 and 5; CLAUDE.md invariant 19.
+Class (filled by audit):
+
+## 2026-09-04 — T5.2 — How many times recovery has been tried is counted from the claim's age, not from a column
+Decision: `recoveryDecision` in `packages/core/src/publish/intent.ts` decides "wait / adopt / re-send / give up" from two facts only — how old the unconfirmed claim is, and whether the shop already carries our marker. Giving up happens at 25 minutes.
+Why: main §14.3.7 says the sweep runs every 5 minutes, first looks at a claim 10 minutes old, and abandons after 3 failed recoveries. Under that cadence "three failures" and "twenty-five minutes old" are the same moment, and `publish_intents` has no column for an attempt counter — a feature card may not add a migration. Deriving it also has a property a counter does not: it cannot drift, because there is no write to lose.
+What it costs: if the sweep's cadence is ever changed, the number of attempts before giving up changes with it. The three constants are named together in one file so that is visible rather than buried.
+What would close it: an `attempts` column on `publish_intents`, in a schema wave.
+Nearest spec: main §14.3.7 step 4; main §13 `publish_intents`.
+Class (filled by audit):
+
+## 2026-09-04 — T5.2 — Auto-publish is refused in the database, not only in the API
+Decision: `setDeliveryMode(db, scope, 'auto')` is an `INSERT … SELECT` whose `WHERE` requires the store to have granted `write_content` **and** to have named a target blog. With neither, no row is inserted and no conflict update runs, so the switch does not move. Switching back to export is never guarded.
+Why: main §9.5 says auto-publish cannot be enabled without a target blog resolved, and invariant 21 makes read and write two separate consents. A store left in auto-publish with nothing to post to would fail silently every morning at its publish hour with nothing the merchant could do about it, so this is a property worth holding in the data rather than in one code path — the same shape invariant 5 uses for the competitor cap. Turning it *off* is unguarded because withdrawing consent has to work under every condition, including a connection that is already broken.
+Nearest spec: main §9.5; CLAUDE.md invariant 21.
+Class (filled by audit):
