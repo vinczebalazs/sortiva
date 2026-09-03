@@ -120,4 +120,97 @@ describe.skipIf(!available)('Shopify’s customer-privacy webhooks', () => {
     // Not "ignored", which is what an unknown store gets for every other topic.
     expect(result.processed).toBe(1)
   })
+
+  /**
+   * The answer is only true if the row we keep about the request does not
+   * itself hold the shopper. This plants the body Shopify really sends —
+   * through the receiver, not through the reducing function — and then reads
+   * the row back out of the database.
+   */
+  describe('the row we keep about the request holds no shopper', () => {
+    const REALISTIC_REDACT = JSON.stringify({
+      shop_id: 954889,
+      shop_domain: 'acme.myshopify.com',
+      customer: { id: 191167, email: 'shopper@example.com', phone: '555-625-1199' },
+      orders_to_redact: [299938, 280263, 220458],
+    })
+    const SHOPPER_VALUES = ['shopper@example.com', '555-625-1199', '191167']
+
+    async function storedPayload(webhookId: string): Promise<unknown> {
+      const { rows } = await harness.pool.query<{ payload: unknown }>(
+        'select payload from webhook_events where webhook_id = $1',
+        [webhookId],
+      )
+      expect(rows, 'the receiver stored no row at all').toHaveLength(1)
+      return rows[0]!.payload
+    }
+
+    it('stores none of the shopper values a real redact request carries', async () => {
+      await handleShopifyWebhook(
+        signed('customers/redact', REALISTIC_REDACT, 'd-realistic'),
+        'customers/redact',
+        options(),
+      )
+
+      // The whole stored row, serialised: a shopper value anywhere in here is a
+      // value we could be made to produce.
+      const serialised = JSON.stringify(await storedPayload('d-realistic'))
+      for (const value of SHOPPER_VALUES) {
+        expect(serialised, `"${value}" reached storage`).not.toContain(value)
+      }
+      expect(serialised).not.toContain('customer')
+    })
+
+    it('is not vacuous: the body we sent really carried them', () => {
+      for (const value of SHOPPER_VALUES) {
+        expect(REALISTIC_REDACT, `the fixture does not contain "${value}"`).toContain(value)
+      }
+    })
+
+    it('keeps enough to show what was asked, and of which store', async () => {
+      // Reduced, not discarded: the row is the record that they asked, about
+      // these orders, and that we answered.
+      await handleShopifyWebhook(
+        signed('customers/redact', REALISTIC_REDACT, 'd-envelope'),
+        'customers/redact',
+        options(),
+      )
+      expect(await storedPayload('d-envelope')).toEqual({
+        shop_handle: 'acme',
+        body: {
+          shop_id: 954889,
+          shop_domain: 'acme.myshopify.com',
+          orders_to_redact: [299938, 280263, 220458],
+        },
+      })
+    })
+
+    it('still answers "no customer data held" from the reduced row', async () => {
+      // The drain reads the stored row, so reducing it must not cost the answer.
+      await handleShopifyWebhook(
+        signed('customers/redact', REALISTIC_REDACT, 'd-answer'),
+        'customers/redact',
+        options(),
+      )
+      const lines: { msg: string; fields: Record<string, unknown> }[] = []
+      await drainShopifyWebhooks({
+        ingestion: () => ({ db: harness.db, pool: harness.pool }) as never,
+        logger: recordingLogger(lines),
+      })
+      const answered = lines.find((line) => line.msg === 'shopify_privacy_request')
+      expect(answered!.fields['answer']).toBe(NO_CUSTOMER_DATA_HELD)
+    })
+
+    it('leaves a product webhook body whole, so the catalogue still syncs', async () => {
+      await handleShopifyWebhook(
+        signed('products/update', JSON.stringify({ id: 700, title: 'Ridgeline Trail Shoe' }), 'd-product'),
+        'products/update',
+        options(),
+      )
+      expect(await storedPayload('d-product')).toEqual({
+        shop_handle: 'acme',
+        body: { id: 700, title: 'Ridgeline Trail Shoe' },
+      })
+    })
+  })
 })
