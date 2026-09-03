@@ -206,6 +206,7 @@
   "notification.exportUrlReminder": "Tell us where you published {title}.",
   "notification.exportUrlReminder.generic": "Tell us where you published your article.",
   "notification.oauthReminder": "Finish connecting your Shopify store to get started.",
+  "notification.accountDeletionConfirmed": "Your account has been deleted, as you asked.",
 
   "attention.draftAwaitingReview": "A draft is waiting for your review.",
   "attention.repairPending": "An article needs a small fix.",

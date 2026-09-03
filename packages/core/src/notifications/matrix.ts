@@ -205,6 +205,19 @@ const ROWS: readonly NotificationChannelRow[] = [
     toggleable: false,
     dedupeKey: { kind: 'ref', ref: 'article_id' },
   },
+  {
+    // Account-security mail (tech §1.5) — always sent, never toggleable, and
+    // exempt from suppression (`EmailAudience.securityEmail`). The bell entry
+    // is nominal: read access is revoked the moment deletion is requested
+    // (DECISIONS 2026-09-02 T8.3), so nobody sees it there. The send record
+    // itself does not go through `email_sends` — see `deletion_confirmation_emails`.
+    type: 'account_deletion_confirmed',
+    surface: 'bell',
+    email: 'always',
+    emailDefaultOn: true,
+    toggleable: false,
+    dedupeKey: { kind: 'ref', ref: 'deleted_at' },
+  },
 ]
 
 const BY_TYPE = new Map<NotificationType, NotificationChannelRow>(ROWS.map((row) => [row.type, row]))

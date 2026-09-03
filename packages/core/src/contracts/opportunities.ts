@@ -238,6 +238,15 @@ export const NOTIFICATION_TYPES = [
   'monthly_summary_ready',
   'export_url_reminder',
   'oauth_reminder',
+  /**
+   * Added by schema wave 3 (T4.0) — see DECISIONS 2026-09-03 T4.0. This one
+   * is emitted for the bell/matrix registry's own sake; the actual send
+   * record lives in `deletion_confirmation_emails`, not `email_sends`, so it
+   * survives the account row it confirms (see that table's comment). No card
+   * yet calls this — the deletion flow (`packages/core/src/lifecycle`) does
+   * not send it. See the session report for T4.0.
+   */
+  'account_deletion_confirmed',
 ] as const
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number]
