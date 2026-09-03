@@ -3,7 +3,7 @@ import { index, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizz
 import { accounts } from './accounts'
 import { bytea } from './columns'
 import { articles } from './content-engine'
-import { intentClassEnum, storePageTypeEnum } from './enums'
+import { intentClassEnum, storePageStatusEnum, storePageTypeEnum } from './enums'
 
 /**
  * What the store already has: one row per URL, built from the Shopify Admin API
@@ -26,6 +26,13 @@ export const storePages = pgTable(
       .references(() => accounts.id, { onDelete: 'cascade' }),
     url: text('url').notNull(),
     pageType: storePageTypeEnum('page_type').notNull(),
+    /**
+     * Whether the store still serves this URL. Added by T4.0a, migration
+     * only: nothing sets this to 'gone' yet and nothing reads it — the
+     * producer and the existing-target check (§7.7) that will consume it
+     * are separate follow-up cards.
+     */
+    status: storePageStatusEnum('status').notNull().default('live'),
     handle: text('handle'),
     /** Shopify's own id for the collection / product / page / article. */
     shopifyId: text('shopify_id'),

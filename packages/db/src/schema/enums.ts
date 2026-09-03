@@ -250,6 +250,15 @@ export const storePageTypeEnum = pgEnum('store_page_type', [
   'other',
 ])
 
+/**
+ * Which condition a `store_pages` row is in. `gone` records that the store no
+ * longer has this URL, without deleting the row — the row is the only record
+ * that the address ever existed. Two values today; the shape leaves room for
+ * `moved` or `unreachable` later (T4.0a — nothing writes or reads this value
+ * yet, it is a mini schema wave ahead of the code that will).
+ */
+export const storePageStatusEnum = pgEnum('store_page_status', ['live', 'gone'])
+
 /** What the searcher is trying to do, which is what picks the page type we write. */
 export const intentClassEnum = pgEnum('intent_class', [
   'buying_guide',
