@@ -1,4 +1,5 @@
 import {
+  OPPORTUNITY_ACTIONS,
   listOpportunitiesQuerySchema,
   listOpportunitiesResponseSchema,
   opportunitySchema,
@@ -164,9 +165,18 @@ export function makeListOpportunitiesHandler(deps: OpportunitiesDeps): AccountHa
       return b.opportunity.impactScore - a.opportunity.impactScore
     })
 
-    const byAction: Record<string, number> = {}
+    // `opportunitySchema.counts.byAction` is a `z.record` over the closed
+    // action enum, which Zod validates as exhaustive — every key must be
+    // present, not just the ones this store happens to have open right now.
+    // A store with (say) no open FIX opportunities is the common case, not
+    // an edge case, so this starts at zero for all five rather than only
+    // the actions actually seen.
+    const byAction = Object.fromEntries(OPPORTUNITY_ACTIONS.map((action) => [action, 0])) as Record<
+      (typeof OPPORTUNITY_ACTIONS)[number],
+      number
+    >
     for (const { opportunity } of opportunities) {
-      byAction[opportunity.recommendedAction] = (byAction[opportunity.recommendedAction] ?? 0) + 1
+      byAction[opportunity.recommendedAction] += 1
     }
 
     const runs = await listSignalRuns(deps.db, scope)
@@ -174,7 +184,7 @@ export function makeListOpportunitiesHandler(deps: OpportunitiesDeps): AccountHa
 
     const body = {
       opportunities: sorted.map(({ row, opportunity }) => serialise(row, opportunity)),
-      counts: { open: opportunities.length, byAction: byAction as never },
+      counts: { open: opportunities.length, byAction },
       lastScanAt: lastFinished?.finishedAt ? lastFinished.finishedAt.toISOString() : null,
       // Nothing schedules a next-scan prediction anywhere in this codebase;
       // null is the honest answer rather than a guessed cadence string.
