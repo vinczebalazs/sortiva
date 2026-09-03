@@ -85,6 +85,13 @@
   "settings.publishing.blogPicker.createPlaceholder": "Blog name",
   "settings.publishing.blogPicker.createButton": "Create and use",
   "settings.publishing.blogPicker.failed": "That didn't work. Try again.",
+  "settings.publishing.errors.notConnected": "Connect your Shopify store before turning on auto-publish.",
+  "settings.publishing.errors.unavailable": "Publishing to Shopify isn't available right now. Nothing has changed.",
+  "settings.publishing.errors.writeScopeRequired": "Sortiva needs permission to post to your store first.",
+  "settings.publishing.errors.targetBlogUnresolved": "Choose a blog for Sortiva to post to first.",
+  "settings.publishing.errors.blogNotFound": "That blog isn't on your store any more. Pick another one.",
+  "settings.publishing.errors.blogNotNamed": "Choose an existing blog or give a name for a new one.",
+  "settings.publishing.errors.deliveryInvalid": "Delivery mode is either Export or Auto-publish.",
 
   "settings.profile.heading": "Store profile",
   "settings.profile.intro": "What we know about your business. Keyword and competitor edits run their own enrichment — nothing here re-triggers a full re-scan.",

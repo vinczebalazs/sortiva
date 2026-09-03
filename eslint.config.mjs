@@ -197,6 +197,13 @@ export default tseslint.config(
       // string catalogue. Every query it enables goes through
       // `packages/db/src/repositories/optimize.ts` behind an `AccountScope`.
       'apps/web/app/api/recommendations/_lib/config.ts',
+      // T5.2's, the same shape again: decides which Shopify write client, which
+      // token cipher and which database the auto-publish grant, blog picker and
+      // delivery-mode routes run against, and hands the raw `db()` handle
+      // through as `PublishGrantDeps.db`. No query runs here — every one goes
+      // through `packages/db/src/repositories/publishing.ts` behind an
+      // `AccountScope`.
+      'apps/web/app/api/publish/_lib/config.ts',
     ],
     rules: { 'sortiva/no-raw-db-access': 'off' },
   },
