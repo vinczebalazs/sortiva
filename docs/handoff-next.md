@@ -149,6 +149,32 @@ fuse, because something is being built on top of them:
 - **Question 16** — for a store publishing at 02:00, which day's article is it? `T5.1` needs this.
 - **Question 17** — leave `pnpm chaos` red on the midnight scenario, or resolve it?
 
+### Question 6 (the Anthropic key) is costed and ready to act on — the founder chose to do it
+
+The founder picked "make the writing quality measurable" as the next thing worth doing, and
+the only blocker is a key. **Everything needed to decide is already worked out, so do not
+re-derive it:**
+
+- **It costs about 40 cents a run.** 60 cases in two sets: 50 product descriptions on Haiku
+  4.5 (about $0.25) and 10 brand-personality cases on Sonnet 5 (about $0.15). Checked against
+  current published prices, which `packages/llm/src/models.ts` already matches exactly.
+- **It runs on its own gate, not on every commit** — only when a prompt or a model id
+  changes. CI takes its key from repository secrets, so `.env` is a local-only concern.
+- **What it measures is the foundation everything else stands on**: whether the model reading
+  a real product description keeps the facts and drops the marketing. It passes only at
+  accuracy ≥ 0.85 across the set **and** zero invented field values in any single case — no
+  aggregate may absorb a fabrication, because an invented material is a lie with a product
+  page behind it. Every article is written from these fact sheets.
+- **The action is the founder's alone**: put a real key on the blank `ANTHROPIC_API_KEY=`
+  line in `.env` (line 33). Never ask them to paste it into a session, and never write one
+  into `.env.example`.
+
+**Once the key exists, run `pnpm eval` and report what it says in plain terms** — the accuracy
+figure, whether anything was fabricated, and which of the seven languages are weakest. A
+failure is the more useful outcome: it fails before a merchant sees it. **Note that the judge's
+own eval set does not exist yet** and lands with its card, so this is the first of two
+measurements, not the last.
+
 ## In the morning, report
 
 What landed with test counts. What each audit found, unactioned. Which lanes stopped and
