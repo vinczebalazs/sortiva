@@ -2177,9 +2177,9 @@ Lane C was told this when it was resumed.
 ## Questions waiting on the founder
 
 **Twelve questions now exist. Three are answered — 1, 4 and 8 — by the founder directly,
-at 12:40 this run, in a second session (`sortiva-85`) running alongside this one. Nine
-remain open: 2, 3, 5, 6, 7, and 9–12, the last four raised by `T4.4`'s audit and listed
-at the end of this section. `R-PRIVACY`, `R-STREAM` and `R-DEV` have all since been
+at 12:40 this run, in a second session (`sortiva-85`) running alongside this one. Thirteen
+remain open: 2, 3, 5, 6, 7, and 9–16 — the last eight raised by the `T4.4` and `T4.5`
+audits and listed at the end of this section. `R-PRIVACY`, `R-STREAM` and `R-DEV` have all since been
 authorised and fixed.** Verified
 independently before recording: `git log` shows the three commits
 (`d3758c7`/`ec2f213`/`5a6b46d`) actually on `main`, authored by the founder's own git
@@ -2419,6 +2419,34 @@ code nor CI would notice — **and the spend would be misreported, since the exp
 list is kept.** Invariant 11 says never substitute a smaller model for the judge; the code
 honours that everywhere except this one configuration route.
 
+**13. Does draft review ship without any way to be told a draft is waiting?** The toggle
+exists, defaults to off, and switching it on today makes articles disappear: nothing emits
+the notification, the dashboard's attention list is a live stub returning empty, and the
+screens that would list the draft are not built. *Options:* build the emission first (the
+smallest — the type, the copy and the email template are all already written, only the
+sending is missing); hide the toggle in Settings until it exists; or ship it and accept
+that anyone who finds it gets a broken experience. **The auditor's recommendation and
+this session's: build the emission — it is the smallest of the three and the only one that
+leaves the product honest.**
+
+**14. Should throwing away a draft also mean "stop suggesting this subject"?** Today it
+does not: discarding closes the calendar day but leaves the subject available for future
+planning, on the reasoning that rejecting one weak article about a subject is not
+rejecting the subject. **The auditor agrees and so does this session** — but it is an
+undictated product choice that changes what merchants get, journalled rather than asked.
+
+**15. Six hours of runway before publication — is that the right number?** New, specified
+by nobody. It decides how much room the writer, the checks, the judge and the one repair
+attempt have before the article is due out. A reasonable first guess; **never measured
+against a real run.**
+
+**16. For a store that publishes at 02:00, which day's article is it?** The one written
+the evening before, or the one dated the morning it appears? The code answers "the evening
+before", which leaves the calendar and the store **permanently one day apart** for any
+store publishing before 06:00. Whichever answer is chosen, the MEDIUM day-skew finding
+needs it. **This is `T5.1`'s subject matter and the fix belongs in that card rather than
+as a patch afterwards.**
+
 ## A lane broke the one-card rule, and it cost something
 
 **Lane F did not stop after `T9.1`.** Its brief said "do not start another card"
@@ -2468,6 +2496,127 @@ Small, real, and each belongs to a named next card rather than to a sweep.
   independently pointed three separate places at the same path. They agree.
 
 ## Audit findings, unactioned
+
+### `T4.5` — the scheduled audit, run 2026-09-03, read-only. **Two HIGH findings; one blocks `T5.1`/`T5.2`. It also corrects a claim this file made.**
+
+Required by build plan §7 before `T4.6`. **Cleared `T4.6` to start**, ran 151 tests across
+26 files against real Postgres, and verified every load-bearing claim independently.
+
+**[HIGH] An override-published article can never be delivered — and this blocks the
+publishing cards.** When a merchant overrules a quality rejection, the article returns to
+`draft` with the override flag set, exactly as `T4.4` and `T4.5` both intended. But
+`articlesReadyForDelivery` — **the read `T5.1`/`T5.2` are explicitly told to build on** —
+returns an article only if its topic has a Gate 3 decision whose outcome is literally
+`passed`. **An overridden article's only decision is a rejection.** So the article is
+excluded, and the "publish anyway" path would be built, tested against a passing draft,
+and silently do nothing for the one case it exists to serve. Nothing is broken in
+production today (the override route is not built yet). **Fix is one clause plus a test,
+in `packages/db`, and should land before `T5.1` starts.**
+
+**[HIGH] A run interrupted late in the day is abandoned silently, and the retry reports
+success.** The cycle resumes a dead attempt by looking for a topic left `generating` **on
+today's date only**, and deliberately re-reads the store's clock rather than trusting the
+queued date (right, for avoiding back-filled bursts). The unstated consequence: **once the
+retry lands after local midnight, yesterday's half-finished topic is unreachable forever**
+— nothing else ever looks at a `generating` topic (grepped: no such sweep exists). And it
+does not fail loudly: the retry finds nothing planned for the new today, returns "skipped",
+and **the queue marks the job green**. No dead letter, no alert, no user-visible error —
+just a calendar slot stuck on "generating", a draft paid for and never delivered, and a
+lost article-day. **Ordinary rather than exotic** for a store whose writing starts in the
+evening (see the day-skew finding). *Also:* `T4.6`'s own chaos done-when ("kill
+mid-generation converges") **will pass without exercising this** unless it advances the
+clock past midnight.
+
+**[MEDIUM] A store that publishes before 06:00 gets the wrong calendar day's article.**
+Writing starts six hours before the publish hour, wrapping backwards over midnight
+(deliberate and tested). But the *day whose topic is taken* is the local date when writing
+starts. For a 02:00 publisher, Tuesday's topic is written Tuesday evening and appears
+**Wednesday** — permanently one day out between calendar and reality. The publish hour is
+merchant-settable with no lower bound, so this is configuration, not a corner case. One
+line: derive the day from the clock at the *publish* moment.
+
+**[MEDIUM] The reused draft is matched to the new plan by position, not content — and the
+claim made about it, including in this file, is not accurate.** Claim ids are purely
+positional (`c1`, `c2`…). The reuse check only asks whether each cited id *exists* in the
+new plan, so **a re-planned set of the same length — different facts, same count — passes,
+and the stored draft is graded with its citations silently re-pointed at different
+facts.** It catches only a plan that got *shorter*. Partly mitigated downstream: Gate 3
+verifies any *number* in a sentence appears in the claims it cites, so numeric
+mis-binding is caught; a superlative, an attributed statement or a qualitative product
+fact is not. **This section previously repeated the landing session's stronger claim; that
+was wrong and is corrected here.**
+
+**[MEDIUM] "One topic per day" has no database constraint behind it.** The ledger key is
+derived from **topic plus date**, not **account plus date**, so the guarantee rests
+entirely on there never being two `planned` topics on one date — which rests on a
+check-then-insert in the manual-add route with **no unique index on `(account_id,
+scheduled_date)`**. Two simultaneous adds both pass the check and both insert; that day
+could then dequeue twice. **This is the exact shape invariant 1 rejects for domain
+claims** ("insert-with-conflict, never check-then-insert"). Fix: derive the key from
+account plus local date; separately, a partial unique index in the next schema wave.
+
+**[MEDIUM] Daylight saving can skip a store's day.** On spring-forward one local hour does
+not exist; a store whose writing hour is that hour is never matched and gets no article,
+silently, with no log line saying why. (Autumn's repeated hour is safe — the ledger key
+stops the second pass. Traced specifically.) One lost day per year per affected store.
+
+**[MEDIUM] Two guarded updates ignore their zero-row result.** If the merchant vetoes a
+topic while its article is being written — the race main §8.7 explicitly describes — both
+updates match zero rows, the draft is already discarded, and the cycle **nevertheless
+reports that the merchant was asked to review it** and emits an analytics event saying so.
+Nothing is corrupted; the outcome recorded is false. It matters more once something emits
+the "your draft is waiting" notification from that branch.
+
+**[MEDIUM] Draft review is unusable, and the M4 stub gate now fails.** The landing
+session's flag is **accurate and if anything understated**, verified independently:
+nothing emits `draft_ready_for_review` (only tests reference it); the dashboard's
+attention list is a *live* stub returning empty and recording "stub was used"; and
+`GET /api/articles` and `/api/articles/{id}` are in the frozen contract but do not exist
+as files. **New fact the landing report did not have: `pnpm stubs:report --milestone=M4`
+FAILS**, listing seven stubs overdue at M4 — one (`TopicScheduler`) is stale bookkeeping
+since production uses the real implementation, but the attention stub is genuine. **The
+auditor's verdict: a launch blocker, but a narrow one** — review defaults to off, so it
+blocks nothing for a merchant who never touches it, "but shipping a settings toggle whose
+only effect is to make articles vanish is worse than not shipping the toggle."
+
+**Four LOW findings:** a missing store profile strands the day *after* the dequeue (check
+belongs above it); nothing structurally prevents two article rows for one topic
+(unreachable today, but the constraint would make the adoption checkpoint provably rather
+than inspectably safe); the no-editor guarantee is genuinely strong on bodies (one writer
+in the whole repository) but its route scan covers only one folder; and "stops before
+spending anything" is proven for model calls only — true by structure for search calls
+too, but not asserted.
+
+**The residual re-spend, quantified — and a correction to `DECISIONS.md`.** A full run is
+three model calls (plan, writer, judge), plus a fourth if the document has candidate
+contradictions and a fifth for the repair, plus one billable search request. **Inside 24
+hours with byte-identical inputs it is genuinely free.** Outside that, or once the
+catalogue or the search results move, a crash costs **roughly four fifths of a second
+article** — everything except the writer's call. That is a real improvement on the "whole
+second article" the `T4.4` audit found, but the journal's word "free" is doing more work
+than the mechanism supports: the prompt is built from a pack containing live search
+results, so a same-day retry after the search cache expired is not free.
+
+**The three questions:** (a) **`T4.6` is not blocked** — but two of its own exit criteria
+are at risk: its chaos case passes without exercising the HIGH resume finding unless the
+clock crosses midnight, and the M4 stub gate does not pass today. It is also the natural
+card to ask the integrator for the missing one-topic-per-day index. (b) **`T5.1`/`T5.2`
+are blocked by the override finding** — fix it in `packages/db` first. They also inherit
+the day-skew (squarely their subject) and a verified-sound approve path. (c) **Four
+founder decisions — see questions 13–16 below.**
+
+**What it verified sound, since it is load-bearing:** all five dequeue checks present, in
+order, each stopping before the pipeline is entered at all — before the evidence pack, the
+search request and the page fetches, not merely before the model call; entitlement read
+only from the local subscription row with no Stripe call anywhere in the path; the spend
+cap reaching dequeue as an operator flag written by our own sweep over our own counters,
+no analytics service in the path; the idempotency key genuinely derived and never random;
+a completed key returning stored output without running anything; the ledger refusing
+updates at database level so a replay cannot get a different answer; the whole run
+genuinely inside the per-account lock; future topics unreachable by construction; and no
+editor — two routes, no change-shaped methods, one writer of an article body in the
+entire repository.
+
 
 ### `T4.4` — the scheduled audit, run 2026-09-03, read-only. **Two HIGH findings, and four decisions for the founder.**
 
@@ -4196,9 +4345,13 @@ under the account lock.
 the topic already has. A `draft` one is **adopted** — same row, same slug, so no
 `keyword-2` — its claims and references replaced rather than appended, and **the stored
 draft is reused rather than re-written**, reconstructed from `articles.title`/
-`meta_description`/`body_json` plus `article_product_refs`. It is validated before use: if
-the re-run's plan came back different, the stored draft's citations no longer resolve and
-it is rewritten rather than graded against a plan it was never written from. **A topic
+`meta_description`/`body_json` plus `article_product_refs`. It is validated before use — **but that validation is weaker than
+this section originally claimed, and than the landing session claimed. Corrected after
+`T4.5`'s audit: claim ids are positional, and the check only asks whether each cited id
+still exists, so a re-planned set of the same length — different facts, same count —
+passes, and the stored draft is graded with its citations silently re-pointed at
+different facts.** It catches only a plan that got shorter. Gate 3 catches a numeric
+mis-binding downstream; a superlative or an attributed statement it does not. **A topic
 left `generating` by a dead run is now finished on the next pass instead of stranded
 forever.** Proven: after a crash, the retry adopts the same article id and slug and makes
 no second writer call.
