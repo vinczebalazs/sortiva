@@ -24,8 +24,17 @@ export interface CronEntry {
 export const CRON_ENTRIES: readonly CronEntry[] = [
   {
     task: 'generation_cycle_daily',
-    schedule: '0 3 * * *',
-    why: 'The daily generation cycle. Runs early enough that grading and the one repair loop finish before any account\'s publish hour.',
+    schedule: '0 * * * *',
+    why:
+      'The daily generation cycle. Hourly, not daily: the cycle has to start a fixed number of ' +
+      'hours before each store\'s own publish hour so that writing, grading and the one repair ' +
+      'attempt all finish before the article is due out — and 03:00 UTC is a different time of ' +
+      'day in every country, so one fixed moment cannot be early enough for a German store and ' +
+      'an Australian one at once. This entry\'s schedule was that fixed moment before the task ' +
+      'had an implementation behind it; see DECISIONS 2026-09-03 T4.5. Each run matches only the ' +
+      'stores whose local clock has just reached their generation hour and queues one job each, ' +
+      'the same per-account-clock pattern the weekly signal scan and the monthly summary use. ' +
+      'The 23 runs that do not match a given store cost two indexed reads.',
   },
   {
     task: 'reconciliation_sweep_daily',

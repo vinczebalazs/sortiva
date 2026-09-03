@@ -173,6 +173,19 @@ export async function startServerRuntime() {
     capture: analytics,
   })
 
+  // The day's article. Two jobs: an hourly sweep that finds the stores whose
+  // own clock has just reached their generation hour, and the per-store run
+  // that writes and grades one article. Until now `generation_cycle_daily` was
+  // a name in the schedule with nothing behind it, so no store ever generated
+  // anything on its own.
+  //
+  // Which model client, which search vendor, which page fetcher and which
+  // prompts is decided by the content engine's own composition root rather
+  // than here, the same way the Shopify one decides its own.
+  const { registerGenerationTasks } = await import('@sortiva/jobs')
+  const { generationTaskDeps } = await import('./app/api/articles/_lib/config')
+  registerGenerationTasks(generationTaskDeps())
+
   // Email: the minute-by-minute drain that turns each queued row into a job,
   // the job that sends one, and the two sweeps that schedule mail on a clock —
   // the monthly summary and the seven-day "where did you publish this" reminder.

@@ -38,6 +38,10 @@ import {
 } from '@sortiva/core'
 import {
   accountScope,
+  deleteArticleClaims,
+  deleteArticleProductRefs,
+  findArticleByTopic,
+  findArticleProductRefs,
   insertArticleClaims,
   insertArticleProductRefs,
   insertArticleStub,
@@ -48,6 +52,7 @@ import {
   rejectTopicByGateGuarded,
   saveDraftBody,
   slugsForAccount,
+  type ArticleRow,
   type Db,
 } from '@sortiva/db'
 import { rules } from '@sortiva/rules'
@@ -68,6 +73,17 @@ import { runtimeLogger } from '../runtime/logging'
  * **The draft is stored before it is graded**, for the same kind of reason: a
  * crash between the writer and the judge must not lose an article we already
  * paid to write.
+ *
+ * **A second attempt at the same topic resumes; it never starts a second
+ * article.** The queue delivers at least once, so this function has to assume
+ * it may be entered again after a crash. It therefore adopts the article row
+ * the previous attempt left behind — same id, same slug, so no store ends up
+ * with a stray `…-2` — replaces that attempt's claims and product mentions
+ * rather than adding a second set beside them, and **reuses the stored draft
+ * when it still stands up against the freshly-approved claims**, which skips
+ * the single most expensive call in the pipeline. Where a re-planned set of
+ * claims no longer supports the stored draft, the draft is rewritten rather
+ * than graded against claims it was not written from.
  */
 
 export interface GenerateArticleDeps {
@@ -183,20 +199,46 @@ export async function generateArticle(
     return { outcome: 'held_thin_pack', gate2, articleId: null, draft: null, claimPlan: null }
   }
 
+  // ---- The article row: adopted if a previous attempt left one behind. ----
+  //
+  // A crashed attempt leaves a `draft` row for this topic. Adopting it is what
+  // stops a retry writing a second article and burning a second slug; anything
+  // in a later state (in review, published, discarded) is not this pipeline's
+  // to touch, so those start nothing and the guarded topic transition below
+  // is what actually stops the run.
+  const previous = await findArticleByTopic(deps.db, scope, input.topicId)
+  const resumed = previous && previous.state === 'draft' ? previous : undefined
+
+  // The stored draft from a crashed attempt, if there is one. Kept only if it
+  // still stands up against the claims this run approves — see below.
+  const carried = resumed ? await storedDraftFor(deps.db, scope, resumed) : undefined
+
+  if (resumed) {
+    // Whatever the previous attempt planned is replaced, not added to: two
+    // plans on one article would have it claiming everything twice over.
+    await deleteArticleClaims(deps.db, scope, resumed.id)
+    await deleteArticleProductRefs(deps.db, scope, resumed.id)
+  }
+
   // ---- Claim plan: written and persisted before the draft's own model call. ----
   const planResult = await planClaims({ llm: deps.llm, prompt: deps.claimPlanPrompt }, pack)
 
-  const existingSlugs = await slugsForAccount(deps.db, scope)
-  const slug = stableSlug(input.targetKeyword, existingSlugs)
-  // Titled from the target keyword until the draft names something better —
-  // `articles.title` is `NOT NULL` and the row must exist before claims can
-  // reference it by `article_id`.
-  const article = await insertArticleStub(
-    deps.db,
-    scope,
-    { topicId: input.topicId, title: input.targetKeyword, slug, targetKeyword: input.targetKeyword, state: 'draft' },
-    now,
-  )
+  let article: ArticleRow
+  if (resumed) {
+    article = resumed
+  } else {
+    const existingSlugs = await slugsForAccount(deps.db, scope)
+    const slug = stableSlug(input.targetKeyword, existingSlugs)
+    // Titled from the target keyword until the draft names something better —
+    // `articles.title` is `NOT NULL` and the row must exist before claims can
+    // reference it by `article_id`.
+    article = await insertArticleStub(
+      deps.db,
+      scope,
+      { topicId: input.topicId, title: input.targetKeyword, slug, targetKeyword: input.targetKeyword, state: 'draft' },
+      now,
+    )
+  }
 
   await insertArticleClaims(
     deps.db,
@@ -226,9 +268,24 @@ export async function generateArticle(
     internalLinks,
   }
 
-  const writeResult = await writeDraft({ llm: deps.llm }, draftInput)
+  // The checkpoint that makes a retry cheap. A draft the previous attempt
+  // already paid for is reused, but only after it is checked against the
+  // claims *this* run approved: if the evidence moved and the plan came back
+  // different, the old draft's citations point at claims that no longer exist,
+  // and grading it would be grading it against something it was not written
+  // from. So it is either still good, or it is rewritten.
+  const carriedIsUsable =
+    carried !== undefined && checkGrounding(carried, planResult.plan, citableProducts).grounded
 
-  const draft = writeResult.draft
+  if (carried && !carriedIsUsable) {
+    log.info('generation_stored_draft_rejected', {
+      account_id: input.accountId,
+      topic_id: input.topicId,
+      article_id: article.id,
+    })
+  }
+
+  const draft = carriedIsUsable ? carried : (await writeDraft({ llm: deps.llm }, draftInput)).draft
   const citableById = new Map(citableProducts.map((p) => [p.id, p]))
   const productMentionRefs = draft.productMentions.flatMap((mention) => {
     const citable = citableById.get(mention.id)
@@ -356,6 +413,55 @@ export async function generateArticle(
     draft: gate3.draft,
     grounding: checkGrounding(gate3.draft, planResult.plan, citableProducts),
     shapeCheck: checkShape(shape, gate3.draft),
+  }
+}
+
+/**
+ * Rebuilds the writer's own `Draft` from the rows a previous attempt left
+ * behind — the title and meta description from their columns, the prose from
+ * `body_json`, the product mentions from `article_product_refs`.
+ *
+ * This is the checkpoint the pipeline resumes from. It exists because the
+ * writer's call is by far the most expensive step here and it has already been
+ * paid for; nothing is invented, every field comes from a row.
+ *
+ * Answers `undefined` for a row that was created but never written to, which
+ * is a crash between the stub insert and the writer — there is nothing to
+ * resume from and the run simply writes the draft.
+ */
+async function storedDraftFor(
+  db: Db,
+  scope: ReturnType<typeof accountScope>,
+  article: ArticleRow,
+): Promise<Draft | undefined> {
+  const body = article.bodyJson as
+    | { intro?: unknown; sections?: unknown; faq?: unknown }
+    | null
+    | undefined
+  if (!body || typeof body.intro !== 'string' || !Array.isArray(body.sections) || !Array.isArray(body.faq)) {
+    return undefined
+  }
+  if (article.metaDescription === null) return undefined
+
+  const refs = await findArticleProductRefs(db, scope, article.id)
+  return {
+    title: article.title,
+    metaDescription: article.metaDescription,
+    intro: body.intro,
+    sections: body.sections as Draft['sections'],
+    faq: body.faq as Draft['faq'],
+    productMentions: refs.flatMap((ref) =>
+      ref.productId === null
+        ? []
+        : [
+            {
+              id: ref.placeholderKey,
+              productId: ref.productId,
+              refType: ref.refType,
+              fields: ref.fieldsRendered,
+            },
+          ],
+    ),
   }
 }
 

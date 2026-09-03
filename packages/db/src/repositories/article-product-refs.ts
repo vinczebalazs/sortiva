@@ -45,6 +45,24 @@ export async function insertArticleProductRefs(
     .returning()
 }
 
+/**
+ * Clears an article's product mentions so a resumed run can write its own —
+ * the same replace-don't-append reasoning as `deleteArticleClaims`. A second
+ * set beside the first would leave two rows claiming the same `{{p1}}` token,
+ * and the publish-time resolver has no way to choose between them.
+ */
+export async function deleteArticleProductRefs(
+  db: Db,
+  _scope: AccountScope,
+  articleId: string,
+): Promise<number> {
+  const rows = await db
+    .delete(articleProductRefs)
+    .where(eq(articleProductRefs.articleId, articleId))
+    .returning({ id: articleProductRefs.id })
+  return rows.length
+}
+
 export async function findArticleProductRefs(
   db: Db,
   _scope: AccountScope,

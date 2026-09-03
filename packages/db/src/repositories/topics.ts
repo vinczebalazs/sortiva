@@ -122,6 +122,58 @@ export async function findTopicOnDate(
 }
 
 /**
+ * The one topic the daily generation cycle may take: still `planned`, and
+ * scheduled for **this exact date**.
+ *
+ * The equality on the date is the whole of the "keep the gap" rule. A `<=`
+ * here would let an empty day reach back and take yesterday's missed topic, or
+ * — worse, once the calendar is ahead of itself — let a quiet week come out as
+ * a burst. An empty day returns nothing and nothing is written, which is the
+ * intended outcome rather than a failure.
+ *
+ * `planned` is the only state offered, so a second pass on the same day finds
+ * nothing: the first pass already moved the topic to `generating`.
+ */
+export async function findPlannedTopicOnDate(
+  db: Db,
+  scope: AccountScope,
+  date: string,
+): Promise<TopicRow | undefined> {
+  const [row] = await db
+    .select()
+    .from(topics)
+    .where(
+      and(
+        eq(topics.accountId, scope.accountId),
+        eq(topics.scheduledDate, date),
+        eq(topics.state, 'planned'),
+      ),
+    )
+    .limit(1)
+  return row
+}
+
+/**
+ * The calendar entry follows its article into review — main §8.7's state
+ * machine, `generating → in_review (if draft review enabled)`. Guarded on
+ * `generating` so a veto that arrived while the article was being written
+ * (§8.7's lock semantics) is not overwritten by a result already in flight.
+ */
+export async function markTopicInReviewGuarded(
+  db: Db,
+  scope: AccountScope,
+  topicId: string,
+  now: Date = new Date(),
+): Promise<TopicRow | undefined> {
+  const [row] = await db
+    .update(topics)
+    .set({ state: 'in_review', updatedAt: now })
+    .where(and(eq(topics.accountId, scope.accountId), eq(topics.id, topicId), eq(topics.state, 'generating')))
+    .returning()
+  return row
+}
+
+/**
  * The daily job's dequeue flip, main §8.7/§14.3.1: `planned → generating`,
  * guarded so a redelivered dispatch or a second scheduler pass affects
  * nothing the first already claimed. `undefined` means the guard's zero-row

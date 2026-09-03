@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "rules_version": "7f78a3c1474ef89803d0f3f69cebfe05f1297b22f8a51d51b02c101ae97b105f",
+  "rules_version": "ef9f0f6ce2b4a503ba47c09cbd38084f04ea634bb5501010c29bdf168a9835ce",
   "defaults": {
     "signals": {
       "striking_distance": {
@@ -255,6 +255,9 @@
       },
       "internal_links": {
         "min_count": 1
+      },
+      "cycle": {
+        "lead_hours_before_publish_hour": 6
       }
     },
     "budgets": {
@@ -603,6 +606,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -950,6 +956,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -1297,6 +1306,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -1644,6 +1656,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -1991,6 +2006,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -2338,6 +2356,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -2685,6 +2706,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -3032,6 +3056,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -3379,6 +3406,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -3726,6 +3756,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -4073,6 +4106,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -4420,6 +4456,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -4767,6 +4806,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -5114,6 +5156,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -5461,6 +5506,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -5808,6 +5856,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -6155,6 +6206,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -6502,6 +6556,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -6849,6 +6906,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -7196,6 +7256,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
@@ -7543,6 +7606,9 @@
         },
         "internal_links": {
           "min_count": 1
+        },
+        "cycle": {
+          "lead_hours_before_publish_hour": 6
         }
       },
       "budgets": {
