@@ -540,6 +540,24 @@ Done when: the migration applies forward from empty, an article row can exist wi
 Note: **LANDED 2026-09-03.** `jsonb`, not gzipped `bytea` — see the journal entry for why, and for what it would cost to change.
 
 
+### Stub-filling card, created 2026-09-03 by the integrator
+
+Three stand-ins were written before the `articles` table existed. It has existed since
+`T4.0` landed on 2026-09-03, so all three are now buildable and none needs a migration.
+They are grouped into one card because they are the same change made in three places, in
+one lane's directories, and splitting them would mean three merges of the same shape.
+
+**R-ARTICLES — the three article-shaped stubs, now that articles exist** · Lane G
+Scope: three registered stand-ins in `packages/core/notifications` and `packages/jobs/notify` return nothing, each with a `registerStub` entry saying so. Fill them from the real tables.
+(a) **`AttentionSources.articles`** (`packages/core/src/notifications/ports.ts`) — the dashboard's "needs you" list. `draftsAwaitingReview` reads articles in state `in_review`; `unconfirmedExportUrls` reads articles with `delivery = 'export'` that are published, have a null `published_url`, and passed the reminder window. **`pendingRepairs` cannot be filled and must stay a registered stub** — there is no repairs table anywhere in the schema (grep it; the word appears only as `accounts.auto_repair` and two enum values), and it arrives with `T5.3`. Re-register that one condition alone with an accurate `filledBy` and a `mustBeGoneBy` of `M5`, rather than deleting the entry or leaving it claiming schema wave 3 will fill it.
+(b) **`EmailFacts.articles`** (`packages/jobs/src/notify/assembler.ts`) — the monthly summary. Count what actually went live in the month and what the quality gate held back, from `articles` and `gate_decisions`, instead of reporting an empty month. A productive month currently reads as a quiet one, which is worse than sending nothing.
+(c) **`ExportUrlReminder.articles`** (`packages/jobs/src/notify/export-url-reminder.ts`) — the sweep already takes an `UnconfirmedExportSource` and already emits one deduped notification per article; only the source is missing. Supply it and pass it in the composition root, where the task is already registered.
+Read first: each stub's own `registerStub` block, which states what it is standing in for; `packages/db/src/schema/content-engine.ts` (the `articles` and `gate_decisions` tables) and `packages/db/src/schema/enums.ts` (`article_state`, `delivery_mode`); tech §1 (notifications are append-only, unique on `(account_id, type, dedupe_key)`; attention items are live queries, never stored); main §9.3 (draft review), §9.5 (export and the published-URL confirm), ui §10.
+Done when: `pnpm stubs:report` no longer lists `EmailFacts.articles` or `ExportUrlReminder.articles`, and lists `AttentionSources.articles` for `pendingRepairs` only, with `mustBeGoneBy: M5`; a planted `in_review` article appears in the attention list and one in every other state does not; a planted exported article with no `published_url`, older than the window, produces exactly one `export_url_reminder` notification and a second sweep produces none; a month with a published article and a gate-rejected topic renders a summary naming both, and the same month with neither renders the quiet-month wording; every new read is account-scoped and a test proves another account's article is invisible.
+Note: **the `draft_ready_for_review` notification is deliberately not in this card.** The type, the copy and the email template all exist and only the sending is missing — but the place to send it from is the moment an article becomes `in_review`, which is `packages/jobs/src/generation/daily-cycle.ts`, **Lane D's directory**, and whether draft review ships with a way to be told at all is founder question 13. This card makes the *dashboard* able to show a waiting draft, which needs no decision and no other lane's files. The push notification waits for the founder.
+Note: `unconfirmedExportUrls` and the reminder sweep will correctly find nothing until `T5.1` starts marking exported articles published — an empty result from a correct query, not a stub. Build and test them against planted rows regardless; that is the seam `T5.1` lands into.
+
+
 ### M8 — Notifications, email, lifecycle, ops · Lane G
 
 **T8.0 — Schema wave 4**
