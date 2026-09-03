@@ -313,11 +313,13 @@ describe('a Shopify store being onboarded', () => {
 
     // Permission granted, so the run carries straight on: it reads the store,
     // distils what it found, groups those products into families, builds the
-    // store's business profile from them, and works out what its customers
-    // search for and who else ranks for those searches. Connecting Search
-    // Console is the next step and belongs to a later card, so the run
-    // correctly stops there — and confirmation, which deliberately does not
-    // wait for it, has no handler either.
+    // store's business profile from them, works out what its customers search
+    // for and who else ranks for those searches, and moves the store onto the
+    // review screen. Connecting Search Console is a sibling of that last step,
+    // not something it waits for — `T3.1` drives it separately from the
+    // merchant's own action, not from this dispatcher — and it belongs to
+    // a card whose handler this dispatcher does not run, so the walk
+    // correctly stops there.
     expect(resumed?.executed).toEqual([
       'oauth_wait',
       'catalog_sync',
@@ -325,10 +327,11 @@ describe('a Shopify store being onboarded', () => {
       'family_group',
       'persona',
       'keywords_competitors',
+      'awaiting_confirmation',
     ])
     expect(resumed?.stoppedBecause).toBe('no_handler')
     expect(resumed?.stoppedAt).toBe('gsc_connect')
-    expect(await domainState()).toBe('ingesting')
+    expect(await domainState()).toBe('needs_confirmation')
 
     const states = await stepStates(jobId)
     expect(states['detect']).toBe('succeeded')
@@ -338,7 +341,7 @@ describe('a Shopify store being onboarded', () => {
     expect(states['family_group']).toBe('succeeded')
     expect(states['persona']).toBe('succeeded')
     expect(states['keywords_competitors']).toBe('succeeded')
-    // `T2.7` moves this marker on again, to `awaiting_confirmation`.
+    expect(states['awaiting_confirmation']).toBe('succeeded')
     expect(states['gsc_connect']).toBe('pending')
   })
 

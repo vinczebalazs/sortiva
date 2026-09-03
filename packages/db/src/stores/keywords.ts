@@ -5,6 +5,7 @@ import {
   addManualKeyword,
   confirmedKeywords,
   listCompetitors,
+  listKeywords,
   removeCompetitor,
   removeKeyword,
   type CompetitorRow,
@@ -47,6 +48,8 @@ export interface KeywordStore {
     input: { term: string; language: string; country: string },
   ): Promise<KeywordRow>
   removeKeyword(scope: AccountScope, keywordId: string): Promise<boolean>
+  /** Every term the account currently holds, priced or not — the confirmation screen's whole chip list. */
+  listKeywords(scope: AccountScope): Promise<KeywordRow[]>
   confirmedKeywords(scope: AccountScope): Promise<KeywordRow[]>
   listCompetitors(scope: AccountScope): Promise<CompetitorRow[]>
   addCompetitor(
@@ -71,6 +74,7 @@ export function makeKeywordStore(options: KeywordStoreOptions = {}): KeywordStor
     },
     addKeyword: (scope, input) => addManualKeyword(database(), scope, input),
     removeKeyword: (scope, keywordId) => removeKeyword(database(), scope, keywordId),
+    listKeywords: (scope) => listKeywords(database(), scope),
     confirmedKeywords: (scope) => confirmedKeywords(database(), scope),
     listCompetitors: (scope) => listCompetitors(database(), scope),
     addCompetitor: (scope, input) => addCompetitor(database(), scope, input),

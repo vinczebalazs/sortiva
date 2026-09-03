@@ -141,6 +141,17 @@ export async function addManualKeyword(
   return row
 }
 
+/**
+ * Marks every term this account currently holds as the merchant's own — the
+ * decision `T3.3` reads back as "the confirmed keyword each topic descended
+ * from" (main §9.6.3). Fired once, from "Confirm profile": there is no
+ * per-chip confirm step, only remove, so whatever survived to that moment is
+ * what is confirmed.
+ */
+export async function confirmAllKeywords(db: Db, scope: AccountScope): Promise<void> {
+  await db.update(keywords).set({ confirmed: true }).where(eq(keywords.accountId, scope.accountId))
+}
+
 export async function listKeywords(db: Db, scope: AccountScope): Promise<KeywordRow[]> {
   return db
     .select()

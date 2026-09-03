@@ -32,6 +32,37 @@ export async function findActiveIngestionRun(
 }
 
 /**
+ * The run the progress screen (ui §3.2) reads, whatever its status.
+ *
+ * Unlike `findActiveIngestionRun`, this does not stop at `running`: the
+ * stepper stays on screen for a moment after the last step succeeds, and a
+ * merchant re-opening the tab after it finished should see the finished
+ * stepper, not a missing run.
+ */
+export async function findLatestIngestionRun(
+  db: Db,
+  scope: AccountScope,
+): Promise<IngestionJobRow | undefined> {
+  const [row] = await db
+    .select()
+    .from(ingestionJobs)
+    .where(eq(ingestionJobs.accountId, scope.accountId))
+    .orderBy(desc(ingestionJobs.startedAt))
+    .limit(1)
+  return row
+}
+
+/**
+ * Every step of one run. The `jobId` itself has to come from an
+ * account-scoped read first (`findLatestIngestionRun` above) — this does not
+ * check ownership on its own, the same trade `dispatchableSteps` in
+ * `packages/jobs` already makes for the same table.
+ */
+export async function listJobStepsForRun(db: Db, jobId: string): Promise<JobStepRow[]> {
+  return db.select().from(jobSteps).where(eq(jobSteps.jobId, jobId))
+}
+
+/**
  * One named step of one of this account's runs. Joined back through
  * `ingestion_jobs` rather than trusted from the caller, because `job_steps` has
  * no account column of its own — without the join, a step id from anywhere would

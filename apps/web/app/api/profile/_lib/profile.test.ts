@@ -3,6 +3,7 @@ import { createLogger, serpSnapshotKey } from '@sortiva/core'
 import {
   accountScope,
   makeKeywordStore,
+  makeProfileStore,
   systemScope,
   upsertPersona,
   upsertSerpSnapshot,
@@ -20,6 +21,8 @@ import {
   competitorSuggestions,
   makeAddCompetitorHandler,
   makeAddKeywordHandler,
+  makeConfirmProfileHandler,
+  makeGetProfileHandler,
   makeRemoveCompetitorHandler,
   type ProfileDeps,
 } from './handlers'
@@ -94,6 +97,7 @@ describe.skipIf(!available)('the store profile’s keyword and competitor lists'
 
     deps = {
       store: makeKeywordStore({ database: harness.db }),
+      profileStore: makeProfileStore({ database: harness.db }),
       log: createLogger({ base: { component: 'profile-test' } }),
     }
   })
@@ -351,6 +355,129 @@ describe.skipIf(!available)('the store profile’s keyword and competitor lists'
       expect(
         await competitorSuggestions(deps, scope, new Date('2026-09-03T00:00:00Z')),
       ).toEqual([])
+    })
+  })
+
+  describe('reading the confirmation screen', () => {
+    it('answers with every editable section, unconfirmed until the merchant says so', async () => {
+      const response = await withAccount(
+        makeGetProfileHandler(deps),
+        session(mine),
+      )(new Request('http://localhost/api/profile'), {})
+
+      expect(response.status).toBe(200)
+      const body = await response.json()
+      expect(body.description).toBe('A shop.')
+      expect(body.language).toBe('en')
+      expect(body.confirmed).toBe(false)
+      expect(body.richness).toEqual({ band: 'sparse', productsMissingDetails: 0 })
+      expect(body.searchConsole).toEqual({ connected: false, property: null })
+    })
+  })
+
+  describe('confirming the profile', () => {
+    function confirmBody(overrides: Record<string, unknown> = {}) {
+      return {
+        description: 'Acme sells trail running shoes.',
+        language: 'en',
+        country: 'GB',
+        audience: 'trail runners',
+        tone: 'plain and direct',
+        topProductIds: [],
+        ...overrides,
+      }
+    }
+
+    async function confirm(body: unknown, accountId = mine): Promise<Response> {
+      return withAccount(
+        makeConfirmProfileHandler(deps),
+        session(accountId),
+      )(
+        new Request('http://localhost/api/profile/confirm', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(body),
+        }),
+        {},
+      )
+    }
+
+    it('moves the account past the gate, writes the edits, and confirms the keywords sitting beside them', async () => {
+      await harness.pool.query(
+        `insert into keywords (account_id, term, language, country, source, confirmed)
+         values ($1, 'trail shoes', 'en', 'GB', 'auto', false)`,
+        [mine],
+      )
+
+      const response = await confirm(confirmBody())
+      expect(response.status).toBe(200)
+      expect(await response.json()).toEqual({ ok: true })
+
+      const { rows: domainRows } = await harness.pool.query<{ state: string }>(
+        'select state from domains where account_id = $1',
+        [mine],
+      )
+      expect(domainRows[0]?.state).toBe('ready_for_planning')
+
+      const { rows: personaRows } = await harness.pool.query<{
+        description: string
+        confirmed_at: Date | null
+      }>('select description, confirmed_at from personas where account_id = $1', [mine])
+      expect(personaRows[0]?.description).toBe('Acme sells trail running shoes.')
+      expect(personaRows[0]?.confirmed_at).not.toBeNull()
+
+      const { rows: keywordRows } = await harness.pool.query<{ confirmed: boolean }>(
+        'select confirmed from keywords where account_id = $1',
+        [mine],
+      )
+      expect(keywordRows.every((row) => row.confirmed)).toBe(true)
+    })
+
+    it('refuses a second confirmation with the code the contract names', async () => {
+      await confirm(confirmBody())
+      const second = await confirm(confirmBody())
+      expect(second.status).toBe(409)
+      expect((await second.json()).error.code).toBe('profile_already_confirmed')
+    })
+
+    it('refuses a confirm that arrives before ingestion reaches the review step', async () => {
+      await harness.pool.query(
+        `update domains set state = 'ingesting' where account_id = $1`,
+        [mine],
+      )
+      const response = await confirm(confirmBody())
+      expect(response.status).toBe(409)
+      expect((await response.json()).error.code).toBe('profile_not_ready')
+    })
+
+    it('leaves editing a keyword afterwards to its own route: one enrichment job, zero ingestion steps', async () => {
+      expect((await confirm(confirmBody())).status).toBe(200)
+
+      const added = await withAccount(
+        makeAddKeywordHandler(deps),
+        session(mine),
+      )(
+        new Request('http://localhost/api/profile/keywords', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ term: 'zero drop trail shoes' }),
+        }),
+        {},
+      )
+      expect(added.status).toBe(200)
+
+      const { rows: jobs } = await harness.pool.query<{ task_identifier: string }>(
+        'select task_identifier from graphile_worker.jobs',
+      )
+      expect(jobs.map((row) => row.task_identifier)).toEqual(['keyword_enrich'])
+
+      const { rows: steps } = await harness.pool.query<{ n: number }>(
+        `select count(*)::int as n from job_steps s
+           join ingestion_jobs j on j.id = s.job_id
+          where j.account_id = $1`,
+        [mine],
+      )
+      expect(steps[0]?.n).toBe(0)
     })
   })
 })

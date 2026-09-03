@@ -1,21 +1,30 @@
 import {
   addCompetitorRequestSchema,
   addKeywordRequestSchema,
+  confirmProfile,
+  confirmProfileRequestSchema,
   createLogger,
   rankCompetitorCandidates,
+  rollUpRichness,
   serpSnapshotKey,
   validateCompetitorDomain,
   validateKeywordTerm,
   type Logger,
+  type PosthogCapture,
 } from '@sortiva/core'
 import {
   BUSINESS_COMPETITOR_CAP,
   CompetitorCapReached,
   makeKeywordStore,
+  makeProfileStore,
   type AccountScope,
   type KeywordStore,
+  type ProfileFamily,
+  type ProfileStore,
+  type TopProductRow,
 } from '@sortiva/db'
 import { enqueueKeywordEnrichment } from '@sortiva/jobs/ingestion/enrich'
+import { PosthogServerCapture } from '@sortiva/providers'
 import { rules } from '@sortiva/rules'
 import type { AccountHandler } from '../../auth/_lib/session'
 
@@ -46,6 +55,7 @@ export interface DomainResolver {
 
 export interface ProfileDeps {
   readonly store: KeywordStore
+  readonly profileStore: ProfileStore
   readonly log: Logger
   /**
    * Optional. When absent, a typed domain is accepted on its spelling alone —
@@ -53,10 +63,137 @@ export interface ProfileDeps {
    * own competitor list.
    */
   readonly resolver?: DomainResolver
+  /** The `profile_confirmed` funnel step. Optional so the route runs without telemetry. */
+  readonly capture?: Pick<PosthogCapture, 'capture'>
+}
+
+let capture: PosthogServerCapture | undefined
+
+/** One process-wide capture client, the same instance every route in this file shares. */
+function profileCapture(): PosthogServerCapture {
+  capture ??= new PosthogServerCapture()
+  return capture
 }
 
 export function profileDeps(): ProfileDeps {
-  return { store: makeKeywordStore(), log: createLogger({ base: { component: 'profile' } }) }
+  return {
+    store: makeKeywordStore(),
+    profileStore: makeProfileStore(),
+    log: createLogger({ base: { component: 'profile' } }),
+    capture: profileCapture(),
+  }
+}
+
+// ── The confirmation screen itself ───────────────────────────────────────────
+
+/**
+ * `GET /api/profile` — every section of the confirmation screen, and, once
+ * confirmed, the identical Settings → Store profile screen (main §6.8; ui
+ * §3.7, §9.2).
+ *
+ * A store with no persona yet has not reached the review step: `profile_not_ready`
+ * is the same refusal the keyword and competitor routes already give a store
+ * in that position, so the screen reads one error shape everywhere it can hit
+ * one.
+ */
+export function makeGetProfileHandler(deps: ProfileDeps): AccountHandler {
+  return async (_request, { scope }) => {
+    const persona = await deps.profileStore.persona(scope)
+    if (!persona) return conflict('profile_not_ready', 'Your store profile is still being built.')
+
+    const [topProducts, keywords, competitors, suggestions, families, richnessInputs, searchConsole] =
+      await Promise.all([
+        deps.profileStore.topProducts(scope),
+        deps.store.listKeywords(scope),
+        deps.store.listCompetitors(scope),
+        competitorSuggestions(deps, scope),
+        deps.profileStore.families(scope),
+        deps.profileStore.richnessInputs(scope),
+        deps.profileStore.searchConsole(scope),
+      ])
+
+    // The same judgement, and the same two config numbers, distillation
+    // stamps on the persona and the Opportunity Engine's substance check reads
+    // later (main §6.3) — recomputed here rather than trusted from a column so
+    // it can never say something different from what a fresh count would.
+    const floor = rules().defaults.gates.substance_floor
+    const richness = rollUpRichness(richnessInputs, {
+      populatedFieldsPerProductMin: floor.populated_fields_per_product_min,
+      marginMultiple: floor.margin_multiple,
+    })
+
+    return Response.json({
+      description: persona.description,
+      language: persona.language,
+      country: persona.country,
+      audience: persona.audience,
+      tone: persona.tone,
+      topProducts: topProducts.map(serialiseTopProduct),
+      keywords: keywords.map(serialiseKeyword),
+      competitors: competitors.map((row) => ({
+        id: row.id,
+        domain: row.domainNormalized,
+        source: row.source,
+      })),
+      competitorSuggestions: suggestions,
+      families: families.map(serialiseFamily),
+      richness: { band: richness.band, productsMissingDetails: richness.productsMissingDetails },
+      searchConsole,
+      confirmed: persona.confirmedAt !== null,
+    })
+  }
+}
+
+/**
+ * `POST /api/profile/confirm` — the one action that ends onboarding.
+ *
+ * `packages/core`'s `confirmProfile` does the actual work (the guarded
+ * transition, the edits, the funnel capture); this only parses the body and
+ * turns its three outcomes into the shapes the screen reads: success, the
+ * `profile_already_confirmed` conflict the route contract names, and
+ * `profile_not_ready` for a confirm that arrives before ingestion has reached
+ * the review step at all.
+ */
+export function makeConfirmProfileHandler(deps: ProfileDeps): AccountHandler {
+  return async (request, { scope }) => {
+    const body = await readJson(request)
+    if (body === undefined) {
+      return badRequest('invalid_body', 'Send the profile you want confirmed.')
+    }
+
+    const parsed = confirmProfileRequestSchema.safeParse(body)
+    if (!parsed.success) {
+      return badRequest('invalid_body', 'That profile is missing something required.')
+    }
+
+    const domain = await deps.store.ownDomain(scope)
+
+    const result = await confirmProfile(
+      { store: deps.profileStore, ...(deps.capture ? { capture: deps.capture } : {}) },
+      {
+        accountId: scope.accountId,
+        domain: domain ?? '',
+        edits: {
+          description: parsed.data.description,
+          language: parsed.data.language,
+          country: parsed.data.country,
+          audience: parsed.data.audience,
+          tone: parsed.data.tone,
+          topProductIds: parsed.data.topProductIds,
+        },
+      },
+    )
+
+    switch (result.kind) {
+      case 'confirmed':
+        deps.log.info('profile.confirmed', { account_id: scope.accountId })
+        return Response.json({ ok: true })
+      case 'already_confirmed':
+        return conflict('profile_already_confirmed', 'This profile is already confirmed.')
+      case 'not_ready':
+        return conflict('profile_not_ready', 'Your store profile is still being built.')
+    }
+  }
 }
 
 // ── Keywords ────────────────────────────────────────────────────────────────
@@ -297,6 +434,43 @@ function serialiseKeyword(row: {
     difficulty: row.difficulty,
     source: row.source,
     enrichmentState: row.enrichedAt === null ? ('pending' as const) : ('enriched' as const),
+  }
+}
+
+/**
+ * The best-seller list, in the shape `topProductSchema` names.
+ *
+ * Two of its fields are honestly empty rather than invented: `imageUrl`,
+ * because no column stores one (the catalogue sync reads Shopify's `images`
+ * field, main §6.2, but nothing here persists it yet), and `pinned`, because
+ * `top_products` has no column recording a pin distinct from plain rank —
+ * "pin to top" is, today, indistinguishable from a merchant simply dragging a
+ * row to position one. Both are flagged in `DECISIONS.md` for the next schema
+ * wave rather than guessed at here. `revenueBand` is the same kind of gap:
+ * ui §3.7 item 2 asks for a band, not an amount, and no band boundaries are
+ * defined anywhere in the specs or `packages/rules` — inventing cutoffs here
+ * would be inventing a product decision, so it stays `null`.
+ */
+function serialiseTopProduct(row: TopProductRow) {
+  return {
+    id: row.productId,
+    title: row.title,
+    imageUrl: null,
+    source: row.source,
+    pinned: false,
+    revenueBand: null,
+  }
+}
+
+/** A family's screen row. `familyGroupingSourceForScreen` carries the note on why four database values become three. */
+function serialiseFamily(family: ProfileFamily) {
+  return {
+    id: family.id,
+    label: family.name,
+    memberCount: family.memberCount,
+    axes: family.differentiationAxes,
+    groupingSource: family.groupingSource,
+    lowConfidence: family.lowConfidence,
   }
 }
 

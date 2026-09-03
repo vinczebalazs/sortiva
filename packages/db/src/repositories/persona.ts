@@ -150,6 +150,36 @@ export async function readPersona(
 }
 
 /**
+ * The merchant's edit to the four free-text fields on the confirmation screen,
+ * stamped with the moment they confirmed.
+ *
+ * An `UPDATE`, not the ingestion pipeline's `upsertPersona` replace: this runs
+ * only once a row already exists — confirming is impossible before ingestion
+ * has produced a profile to confirm — and it must leave `richness_score`,
+ * `product_categories`, `prompt_version` and `model_id` exactly as ingestion
+ * wrote them. `confirmed_at` is the one column ingestion never touches (see
+ * `upsertPersona` above); this is where it is finally set.
+ */
+export async function confirmPersonaEdits(
+  db: Db,
+  scope: AccountScope,
+  edits: { description: string; language: string; country: string; audience: string; tone: string },
+  now: Date,
+): Promise<void> {
+  await db
+    .update(personas)
+    .set({
+      description: edits.description,
+      language: edits.language,
+      country: edits.country,
+      audience: edits.audience,
+      tone: edits.tone,
+      confirmedAt: now,
+    })
+    .where(eq(personas.accountId, scope.accountId))
+}
+
+/**
  * Gives a store its publish clock, if it does not already have one.
  *
  * Insert-if-absent rather than an upsert, and that is the whole point of the
