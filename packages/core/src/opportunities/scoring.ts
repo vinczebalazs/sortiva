@@ -32,6 +32,8 @@ export interface CreateScoreInput {
   readonly winnability: number
   /** The (≤3) active pattern multipliers this candidate matches — main §9.6.3. Empty when nothing is active yet, which is every store's first scan. */
   readonly patternMultipliers: readonly number[]
+  /** Main §9.6.3's clamp on the stacked pattern effect (`learning.patterns.multiplier_clamp_min`/`_max` in `packages/rules`) — taken as a parameter rather than a literal here, so this module holds no threshold of its own (invariant 9). */
+  readonly patternMultiplierClamp: { readonly min: number; readonly max: number }
   /** Competitor-gap candidates carry proof that ranking is achievable in this niche — main §9.6.4. */
   readonly isCompetitorGapSourced: boolean
   /** A family-coverage-gap candidate's revenue share, rescaled to `[business_weight_min, business_weight_max]`. `1.0` (no effect) for every other signal. */
@@ -56,24 +58,10 @@ export function createOpportunityScore(
 ): number {
   const volume = Math.max(input.monthlySearchVolume ?? 0, 0)
   const opportunity = Math.log(volume + 1) * input.winnability
-  const patternMultiplier = clampedProduct(
-    input.patternMultipliers,
-    // The clamp is stated once, on the stacked pattern effect (main §9.6.3);
-    // scoring takes the two numbers rather than the whole learning config so
-    // it stays a function of exactly what it uses.
-    { min: PATTERN_CLAMP.min, max: PATTERN_CLAMP.max },
-  )
+  const patternMultiplier = clampedProduct(input.patternMultipliers, input.patternMultiplierClamp)
   const sourceBonus = input.isCompetitorGapSourced ? scoring.create.competitor_gap_source_bonus : 1
   return opportunity * patternMultiplier * sourceBonus * input.businessWeight
 }
-
-/**
- * Main §9.6.3's clamp (`[0.5, 2.0]`) is a property of the learning config, not
- * the scoring config — passed by the caller where it matters (build.ts);
- * defaulted here only so `createOpportunityScore` has a sane clamp when a
- * caller has not resolved any patterns yet (the product of an empty list).
- */
-const PATTERN_CLAMP = { min: 0.5, max: 2.0 }
 
 function clampedProduct(values: readonly number[], bounds: { min: number; max: number }): number {
   const raw = values.reduce((product, value) => product * value, 1)

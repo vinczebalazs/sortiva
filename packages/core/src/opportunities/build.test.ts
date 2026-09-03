@@ -14,6 +14,10 @@ function context(overrides: Partial<OpportunityBuildContext> = {}): OpportunityB
     limitedIntelligence: false,
     rulesVersion: 'test-rules-version',
     winnability: 0.5,
+    patternMultiplierClamp: {
+      min: layer.learning.patterns.multiplier_clamp_min,
+      max: layer.learning.patterns.multiplier_clamp_max,
+    },
     detectedAt: '2026-01-29T06:00:00.000Z',
     ...overrides,
   }

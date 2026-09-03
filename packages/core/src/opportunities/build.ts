@@ -49,6 +49,8 @@ export interface OpportunityBuildContext {
   readonly ctrCurve?: CtrCurve
   /** The (≤3) active pattern multipliers this candidate matches — main §9.6.3. Resolving which patterns are active is a database lookup outside this module; empty is every store's first scan. */
   readonly patternMultipliers?: readonly number[]
+  /** Main §9.6.3's clamp on the stacked pattern effect — `learning.patterns.multiplier_clamp_min`/`_max` in `packages/rules`. Required rather than defaulted here so this module holds no threshold of its own (invariant 9). */
+  readonly patternMultiplierClamp: { readonly min: number; readonly max: number }
   /** Passed in, never read from the clock, so building a draft is a function of its inputs. */
   readonly detectedAt: string
   readonly technicalBlocker?: ActionSelectionContext['openTechnicalBlocker']
@@ -108,7 +110,11 @@ function createFamilyScore(
   ctx: OpportunityBuildContext,
   scoring: ScoringConfig,
 ): number {
-  const shared = { winnability: ctx.winnability, patternMultipliers: ctx.patternMultipliers ?? [] }
+  const shared = {
+    winnability: ctx.winnability,
+    patternMultipliers: ctx.patternMultipliers ?? [],
+    patternMultiplierClamp: ctx.patternMultiplierClamp,
+  }
   switch (signal.signalType) {
     case 'uncovered_commercial_query':
       return createOpportunityScore(

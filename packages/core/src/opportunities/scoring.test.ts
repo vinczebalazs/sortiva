@@ -10,6 +10,10 @@ import {
 } from './scoring'
 
 const layer = rulesLayer()
+const PATTERN_CLAMP = {
+  min: layer.learning.patterns.multiplier_clamp_min,
+  max: layer.learning.patterns.multiplier_clamp_max,
+}
 
 describe('createOpportunityScore', () => {
   it('is log(volume) × winnability, times the pattern and source multipliers', () => {
@@ -18,6 +22,7 @@ describe('createOpportunityScore', () => {
         monthlySearchVolume: 1000,
         winnability: 0.5,
         patternMultipliers: [],
+        patternMultiplierClamp: PATTERN_CLAMP,
         isCompetitorGapSourced: false,
         businessWeight: 1,
       },
@@ -28,11 +33,25 @@ describe('createOpportunityScore', () => {
 
   it('applies the competitor-gap source bonus only when asked', () => {
     const withoutBonus = createOpportunityScore(
-      { monthlySearchVolume: 1000, winnability: 0.5, patternMultipliers: [], isCompetitorGapSourced: false, businessWeight: 1 },
+      {
+        monthlySearchVolume: 1000,
+        winnability: 0.5,
+        patternMultipliers: [],
+        patternMultiplierClamp: PATTERN_CLAMP,
+        isCompetitorGapSourced: false,
+        businessWeight: 1,
+      },
       layer.scoring,
     )
     const withBonus = createOpportunityScore(
-      { monthlySearchVolume: 1000, winnability: 0.5, patternMultipliers: [], isCompetitorGapSourced: true, businessWeight: 1 },
+      {
+        monthlySearchVolume: 1000,
+        winnability: 0.5,
+        patternMultipliers: [],
+        patternMultiplierClamp: PATTERN_CLAMP,
+        isCompetitorGapSourced: true,
+        businessWeight: 1,
+      },
       layer.scoring,
     )
     expect(withBonus).toBeCloseTo(withoutBonus * layer.scoring.create.competitor_gap_source_bonus, 10)
@@ -40,7 +59,14 @@ describe('createOpportunityScore', () => {
 
   it('never produces -Infinity or NaN for a pinned zero-volume topic', () => {
     const score = createOpportunityScore(
-      { monthlySearchVolume: 0, winnability: 0.5, patternMultipliers: [], isCompetitorGapSourced: false, businessWeight: 1 },
+      {
+        monthlySearchVolume: 0,
+        winnability: 0.5,
+        patternMultipliers: [],
+        patternMultiplierClamp: PATTERN_CLAMP,
+        isCompetitorGapSourced: false,
+        businessWeight: 1,
+      },
       layer.scoring,
     )
     expect(Number.isFinite(score)).toBe(true)
@@ -49,22 +75,43 @@ describe('createOpportunityScore', () => {
 
   it('never produces -Infinity or NaN for a null volume', () => {
     const score = createOpportunityScore(
-      { monthlySearchVolume: null, winnability: 0.5, patternMultipliers: [], isCompetitorGapSourced: false, businessWeight: 1 },
+      {
+        monthlySearchVolume: null,
+        winnability: 0.5,
+        patternMultipliers: [],
+        patternMultiplierClamp: PATTERN_CLAMP,
+        isCompetitorGapSourced: false,
+        businessWeight: 1,
+      },
       layer.scoring,
     )
     expect(Number.isFinite(score)).toBe(true)
   })
 
-  it('clamps the stacked pattern multiplier to [0.5, 2.0]', () => {
+  it('clamps the stacked pattern multiplier to the configured range', () => {
     const soaring = createOpportunityScore(
-      { monthlySearchVolume: 1000, winnability: 1, patternMultipliers: [2, 2, 2], isCompetitorGapSourced: false, businessWeight: 1 },
+      {
+        monthlySearchVolume: 1000,
+        winnability: 1,
+        patternMultipliers: [2, 2, 2],
+        patternMultiplierClamp: PATTERN_CLAMP,
+        isCompetitorGapSourced: false,
+        businessWeight: 1,
+      },
       layer.scoring,
     )
     const atClamp = createOpportunityScore(
-      { monthlySearchVolume: 1000, winnability: 1, patternMultipliers: [2], isCompetitorGapSourced: false, businessWeight: 1 },
+      {
+        monthlySearchVolume: 1000,
+        winnability: 1,
+        patternMultipliers: [2],
+        patternMultiplierClamp: PATTERN_CLAMP,
+        isCompetitorGapSourced: false,
+        businessWeight: 1,
+      },
       layer.scoring,
     )
-    // Three stacked ×2s would be ×8 unclamped; both land at the same ×2.0 ceiling.
+    // Three stacked ×2s would be ×8 unclamped; both land at the same ceiling.
     expect(soaring).toBeCloseTo(atClamp, 10)
   })
 })
