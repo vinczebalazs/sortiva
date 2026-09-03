@@ -196,6 +196,79 @@ export const SCREEN_FIXTURE_DEPENDENCIES: readonly ScreenFixtureDependency[] = [
     fields: ['topics', 'nextReplenishmentAt'],
     note: 'The dashboard reads three weeks either side of today and picks the earliest `planned` topic dated strictly after today as "next up", and the topic dated today — whatever state it reached — as today\'s outcome. **`why.templateKey` must be a key the string catalogue holds**, because the dashboard renders the sentence rather than showing anything sent as text. `articleId` on a published topic is what links the day to what it produced; without it the card names the article and cannot open it. `nextReplenishmentAt` is rendered as a date on the month strip.',
   },
+  {
+    screen: 'Settings — Publishing',
+    route: 'GET /api/settings',
+    fields: [
+      'delivery',
+      'shopifyPublishAs',
+      'publishHour',
+      'timezone',
+      'draftReview',
+      'autoRepair',
+    ],
+    note: '`delivery` is the one field this screen writes back through a conflict-aware flow rather than a plain PATCH: setting it to `auto` can come back `write_scope_required` or `target_blog_unresolved` before it actually takes, and the screen must treat both as steps in turning the toggle on rather than as failures. **The response carries no field naming the current target blog** — `GET /api/settings/blogs` lists what a merchant could choose, never which one is chosen — so the screen can offer to change the target but cannot state it; a `targetBlogId` (or the blog embedded inline) on this response would close that.',
+  },
+  {
+    screen: 'Settings — Publishing, granting write access',
+    route: 'POST /api/shopify/oauth/start',
+    fields: ['url'],
+    note: '**This is the only Shopify OAuth-start route the contract has, and it is built to request read scopes only** (`packages/core/src/catalog/scopes.ts` hardcodes `SHOPIFY_READ_SCOPES` into the authorize URL, and the callback calls `assertReadOnlyGrant` and throws away the token if Shopify ever hands back a write scope). Main §9.5\'s second, `write_content`-adding pass has no route of its own anywhere in the contract or the provider. This screen calls the one route that exists as the "grant posting access" trigger, because it is the only thing available to build the click-through against on the mock server — but until a write-scope-aware start route and a callback that keeps rather than drops a write grant exist, clicking this button in the real product cannot actually enable auto-publish. Recorded in `DECISIONS.md` 2026-09-03 T9.7.',
+  },
+  {
+    screen: 'Settings — Publishing, choosing a target blog',
+    route: 'GET /api/settings/blogs',
+    fields: ['blogs'],
+    note: 'Offered once `PATCH /api/settings` has answered `target_blog_unresolved`. Each row needs `id`, `title` and `handle`; the picker sends `id` back as `blogId`. An empty list still renders — the "create a blog named ___" control does not depend on it.',
+  },
+  {
+    screen: 'Settings — Store profile',
+    route: 'GET /api/profile',
+    fields: ['description', 'language', 'country', 'audience', 'tone', 'topProducts'],
+    note: 'The same response the confirmation screen reads (see the onboarding entry above for what every field must carry). **This screen can only display these six fields, not save an edit to them**: the sole write route, `POST /api/profile/confirm`, answers `profile_already_confirmed` once the store has been confirmed, and no other route accepts a change to the business description, language, country, audience, tone or the top-product order. Keywords, competitors and the family report keep working here exactly as they do in onboarding, because those three have their own standing routes. Recorded in `DECISIONS.md` 2026-09-03 T9.7.',
+  },
+  {
+    screen: 'Settings — Connections',
+    route: 'GET /api/account',
+    fields: [
+      'domain.normalized',
+      'connections.shopify',
+      'connections.searchConsole',
+      'connections.lastScanAt',
+      'limitedIntelligence',
+    ],
+    note: '`connections.shopify` decides which of four rows this screen shows (`none` / `read` / `read_write` / `broken`) and whether Reconnect is offered. **The response carries no Shopify store handle** — `domain.normalized` (the claimed website, not the `*.myshopify.com` handle) is what the screen names as "connected store" for want of a field that actually is one. `limitedIntelligence` decides whether the Search Console row also renders the unavailable-signals explainer.',
+  },
+  {
+    screen: 'Settings — Account',
+    route: 'GET /api/settings',
+    fields: ['vacationMode', 'uiLanguage', 'emailArticlePublished', 'emailDigestFrequency'],
+    note: 'Every field here is a plain `PATCH /api/settings` with no conflict of its own — unlike `delivery`, none of these has a precondition that can refuse it.',
+  },
+  {
+    screen: 'Settings — Account, the billing card',
+    route: 'GET /api/billing/plan',
+    fields: ['capLine', 'cancellationFacts', 'inclusions'],
+    note: 'The three cancellation facts render on the card itself, word for word, per main §14.6 — never paraphrased. Status and the next billing date come from `GET /api/account`\'s `subscription`, not from this route, because this route is public and carries no account-specific date.',
+  },
+  {
+    screen: 'Settings — Account, deleting the account',
+    route: 'POST /api/account/delete',
+    fields: ['ok'],
+    note: 'The five facts the type-to-confirm modal states are `ACCOUNT_DELETION_FACTS` from `@sortiva/core`, already mirrored word for word into `settings.deleteAccount.fact.*` and held there by `packages/ui/src/strings/strings.test.ts` — this screen renders the copy keys and never the constant directly. A 400 (wrong or missing confirmation word) re-shows the modal; the route answers `ok` even on a second call, so a slow double-click is never a second error.',
+  },
+  {
+    screen: 'Shell — notification bell',
+    route: 'GET /api/notifications',
+    fields: ['notifications', 'unseenCount'],
+    note: 'Polled every 30s per tech §1.6. Each row needs `type`, `refs`, `createdAt`, `seenAt`, `readAt`. **The line shown for a row is `renderNotification(type, refs)` from `@sortiva/core` with no `resolved` argument**, because resolving a `refs` id (an article id, an opportunity id) into the display text it names — the title, the page — has no caller anywhere in the codebase and no route answers it; every type whose line needs a resolved value therefore always renders its `.generic` sibling rather than the specific sentence main §9.6.8-style copy implies. This is the renderer\'s own designed degrade path (a deleted thing already falls back the same way), not a shortcut taken here, but it means the bell is honest about not naming anything until a resolution lookup exists. Recorded in `DECISIONS.md` 2026-09-03 T9.7.',
+  },
+  {
+    screen: 'Shell — notification bell, opening and reading',
+    route: 'POST /api/notifications/seen',
+    fields: ['ok'],
+    note: 'Fired once, the moment the bell opens — never on every poll — because it is what clears the unseen badge; a caller that fired it on every 30s poll would never let the badge show anything.',
+  },
 ]
 
 /** Reads `a.b.c` out of a fixture body, treating a missing key as undefined. */

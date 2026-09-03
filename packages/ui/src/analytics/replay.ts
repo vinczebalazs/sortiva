@@ -55,6 +55,18 @@ export const VIEW_CONTENT: Readonly<Record<string, ViewContent>> = {
   '/plan': 'no_store_data',
   '/signin': 'no_store_data',
   '/ui-gallery/banner-stack': 'no_store_data',
+  // Redirects straight to `/settings/publishing`; renders nothing of its own.
+  '/settings': 'no_store_data',
+  // The blog picker lists the store's own Shopify blogs by name, and the
+  // business-profile section shown here is the confirmation screen's data —
+  // description, top sellers, keywords, competitors — all the merchant's own.
+  '/settings/publishing': 'store_data',
+  '/settings/profile': 'store_data',
+  // Names the merchant's own claimed domain and its connection state.
+  '/settings/connections': 'store_data',
+  // Billing status, vacation mode, email preferences and interface language —
+  // account configuration, not catalogue, calendar or search content.
+  '/settings/account': 'no_store_data',
 }
 
 /**
