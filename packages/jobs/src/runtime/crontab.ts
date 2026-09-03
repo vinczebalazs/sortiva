@@ -103,6 +103,16 @@ export const CRON_ENTRIES: readonly CronEntry[] = [
       'an hour of stopped pipeline.',
   },
   {
+    task: 'publish_delivery_sweep',
+    schedule: '0 * * * *',
+    why:
+      'Hands each store its finished article at its own publish hour. Hourly, not daily, for the same ' +
+      'reason the generation cycle is: the hour is nine in the morning where the store\'s audience is, ' +
+      'and no single UTC moment is nine in the morning everywhere. Each run matches only the stores ' +
+      'whose local clock has just struck their publish hour. Safe to run repeatedly — the delivery is ' +
+      'keyed on the store\'s own date, so a second run in the same local day hands over nothing more.',
+  },
+  {
     task: 'publish_intent_recovery_sweep',
     schedule: '*/5 * * * *',
     why: 'Finds publish attempts that never confirmed, checks the remote for our marker, and adopts or retries them — so a crash mid-publish cannot leave a post half-made or make two.',
