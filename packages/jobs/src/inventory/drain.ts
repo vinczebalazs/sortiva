@@ -8,6 +8,8 @@ import {
 } from './queue'
 import { registerTask } from '../runtime/tasks'
 import { runtimeLogger } from '../runtime/logging'
+import { runEventDrivenScan } from '../scan/event'
+import type { RunSignalScanDeps } from '../scan/run'
 import type { Logger } from '@sortiva/core'
 
 /**
@@ -26,6 +28,17 @@ export interface CatalogEventDrainDeps {
   readonly getDb: () => Db
   readonly catalogEvents: CatalogEvents
   readonly logger?: Logger
+  /**
+   * Wired the event-driven signal-scan cadence (main §7.5's cadence table,
+   * `T3.7`) to this reading half's own real trigger — a product/catalogue
+   * change actually drained. Optional because the writing half (Lane B's
+   * webhook producer for `CatalogEvents`) does not exist yet, so this whole
+   * task has no live caller in production either way (the same gap `T2.2`'s
+   * audit already flagged); a test double or a future composition root
+   * supplies it, and its absence here changes nothing that currently runs.
+   * See DECISIONS 2026-09-03 T3.7.
+   */
+  readonly signalScan?: RunSignalScanDeps
 }
 
 export interface CatalogEventDrainResult {
@@ -62,6 +75,19 @@ export async function drainCatalogEvents(
       accountId: payload.accountId,
       targets: fanout.resync,
     })
+
+    // Fires alongside the queued resync, not strictly after it lands — the
+    // resync is a separate queued job (`INVENTORY_SYNC_TASK`) this function
+    // has no handle on waiting for, and threading that through would mean
+    // reaching into `packages/jobs/src/inventory/tasks.ts`'s own task
+    // registration for a precision this seam does not need yet: nothing
+    // produces a real `CatalogEvent` in production today (Lane B's webhook
+    // stream, unbuilt), so this is provisioning the consumer side correctly
+    // for when it exists, not shipping a live guarantee now. The weekly
+    // scan is the backstop either way. See DECISIONS 2026-09-03 T3.7.
+    if (deps.signalScan) {
+      await runEventDrivenScan(deps.signalScan, payload.accountId, { cursor })
+    }
   }
 
   log.info('inventory_catalog_events_drained', {

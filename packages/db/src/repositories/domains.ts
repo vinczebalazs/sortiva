@@ -1,7 +1,7 @@
 import { and, eq, inArray } from 'drizzle-orm'
 import type { Db } from '../client'
 import { domains } from '../schema'
-import type { AccountScope } from '../scope'
+import type { AccountScope, SystemScope } from '../scope'
 
 export type DomainRow = typeof domains.$inferSelect
 
@@ -65,4 +65,30 @@ export async function transitionDomainState(
     .where(and(eq(domains.accountId, scope.accountId), inArray(domains.state, expected)))
     .returning()
   return row
+}
+
+/**
+ * Every confirmed account, for the onboarding-run sweep to poll.
+ *
+ * `confirmProfile` (main §6.8) moves a domain to `ready_for_planning` and
+ * ends onboarding; the Opportunity Engine's own onboarding run (main §6.9) is
+ * a separate, later card's trigger point — `T2.1`'s and `T2.7`'s own
+ * DECISIONS entries (2026-09-02/-03) named this exact seam as unwired and
+ * left it for whoever builds `T3.7` to close. Reaching into
+ * `confirmProfile` itself (`packages/core/src/persona/confirm.ts`) or its
+ * route (`apps/web/app/api/profile/confirm`) would mean touching Lane
+ * A/B's directories for a callback port that does not exist; a sweep that
+ * polls this state, the same shape every other "start the next thing" wiring
+ * in this codebase already uses (the monthly-summary sweep, the OAuth and
+ * export-URL reminders), stays inside Lane C's own directories instead. No
+ * domain ever leaves `ready_for_planning` (the enum has no later state), so
+ * the caller tells a first sighting from a repeat one by checking
+ * `signal_runs` for an already-finished `onboarding` row, not from this list.
+ */
+export async function accountsReadyForPlanning(db: Db, _scope: SystemScope): Promise<string[]> {
+  const rows = await db
+    .select({ accountId: domains.accountId })
+    .from(domains)
+    .where(eq(domains.state, 'ready_for_planning'))
+  return rows.map((row) => row.accountId)
 }

@@ -10,6 +10,7 @@ import {
   dismissedOpportunities,
   opportunities,
   opportunityTasks,
+  signalRuns,
 } from '../schema'
 import type { AccountScope } from '../scope'
 
@@ -131,6 +132,87 @@ export async function upsertOpportunity(
 
   const { created, ...rest } = row as OpportunityRow & { created: boolean }
   return { row: rest, created }
+}
+
+export type SignalRunRow = typeof signalRuns.$inferSelect
+
+export interface SignalRunWrite {
+  readonly runId: string
+  readonly kind: SignalRunRow['kind']
+  readonly rulesVersion: string
+  readonly signalsEvaluated: number
+  readonly opportunitiesCreated: number
+  readonly opportunitiesUpdated: number
+  readonly opportunitiesExpired: number
+  readonly startedAt: Date
+  readonly finishedAt: Date
+}
+
+/**
+ * Records one detection pass, main §14.7's `signal_run_completed` numbers
+ * made durable. Written exactly once, at the very end of a pass — never
+ * incrementally — so a kill mid-scan simply leaves no finished row (or an
+ * older one, from a prior finished attempt of a *different* `run_id`) rather
+ * than a partial, misleading count. `(account_id, run_id)` is unique
+ * (schema wave 2), so a redelivered run overwrites its own row with the same
+ * final numbers instead of doubling them — the idempotency this table's own
+ * comment describes.
+ */
+export async function writeSignalRun(
+  db: Db,
+  scope: AccountScope,
+  input: SignalRunWrite,
+): Promise<SignalRunRow> {
+  const values = {
+    accountId: scope.accountId,
+    runId: input.runId,
+    kind: input.kind,
+    rulesVersion: input.rulesVersion,
+    signalsEvaluated: input.signalsEvaluated,
+    opportunitiesCreated: input.opportunitiesCreated,
+    opportunitiesUpdated: input.opportunitiesUpdated,
+    opportunitiesExpired: input.opportunitiesExpired,
+    startedAt: input.startedAt,
+    finishedAt: input.finishedAt,
+  }
+  const [row] = await db
+    .insert(signalRuns)
+    .values(values)
+    .onConflictDoUpdate({ target: [signalRuns.accountId, signalRuns.runId], set: values })
+    .returning()
+  if (!row) throw new Error('failed to record the signal run')
+  return row
+}
+
+/** The run-level idempotency read: a caller checks `finishedAt` before redoing a pass it may have already completed under this exact `run_id`. */
+export async function findSignalRun(
+  db: Db,
+  scope: AccountScope,
+  runId: string,
+): Promise<SignalRunRow | undefined> {
+  const [row] = await db
+    .select()
+    .from(signalRuns)
+    .where(and(eq(signalRuns.accountId, scope.accountId), eq(signalRuns.runId, runId)))
+    .limit(1)
+  return row
+}
+
+/** Every finished run for this account, newest first — the sweep's own "has onboarding already run" and "which week did we last scan" reads. */
+export async function listSignalRuns(
+  db: Db,
+  scope: AccountScope,
+  kind?: SignalRunRow['kind'],
+): Promise<SignalRunRow[]> {
+  return db
+    .select()
+    .from(signalRuns)
+    .where(
+      kind
+        ? and(eq(signalRuns.accountId, scope.accountId), eq(signalRuns.kind, kind))
+        : eq(signalRuns.accountId, scope.accountId),
+    )
+    .orderBy(desc(signalRuns.startedAt))
 }
 
 export async function insertOpportunityTasks(
