@@ -178,30 +178,13 @@ export function runGate1(input: Gate1Input): Gate1Result {
     )
   }
 
-  // Substance inventory. A HOLD, not a flat no: main §7.8 treats this as
-  // resumable merchant work, so the outcome name says "held" rather than
-  // "rejected".
-  if (!input.substance.passes) {
-    return rejected(
-      'held_insufficient_substance',
-      reasonCard(
-        'gate1.held_insufficient_substance',
-        {
-          keyword: input.cluster.head,
-          distinct_facts: input.substance.distinctFacts,
-          distinct_facts_required: input.gates.substance_floor.distinct_facts_min,
-          products_needing_detail: input.substance.shortfalls.length,
-        },
-        'on_catalog_update',
-      ),
-      evidence,
-    )
-  }
-
   // Existing-target / cannibalization check — main §7.7, literally the same
-  // function as the Opportunity Engine's own admission. A strong match takes
-  // the work over; nothing past this point runs, because there is no CREATE
-  // left to admit.
+  // function as the Opportunity Engine's own admission. Checked before
+  // substance on purpose: a strong match means no CREATE happens at all, so
+  // whether the catalogue says enough to write a *new* article is moot — a
+  // store whose products are too thin to cover a topic, but which already
+  // ranks for it, should be sent to improve the page it has, not told to add
+  // product details for an article it was never going to get anyway.
   const conversion = conversionFor(input.existingTarget)
   if (conversion) {
     const via = conversion.via
@@ -223,6 +206,26 @@ export function runGate1(input: Gate1Input): Gate1Result {
   }
 
   const linkTask = linkTaskFor(input.existingTarget)
+
+  // Substance inventory. A HOLD, not a flat no: main §7.8 treats this as
+  // resumable merchant work, so the outcome name says "held" rather than
+  // "rejected".
+  if (!input.substance.passes) {
+    return rejected(
+      'held_insufficient_substance',
+      reasonCard(
+        'gate1.held_insufficient_substance',
+        {
+          keyword: input.cluster.head,
+          distinct_facts: input.substance.distinctFacts,
+          distinct_facts_required: input.gates.substance_floor.distinct_facts_min,
+          products_needing_detail: input.substance.shortfalls.length,
+        },
+        'on_catalog_update',
+      ),
+      evidence,
+    )
+  }
 
   if (pendingWarning) {
     return {

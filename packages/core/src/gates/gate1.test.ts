@@ -155,6 +155,15 @@ describe('Gate 1 — substance inventory', () => {
     expect(result.reasonCard?.retryCondition).toBe('on_catalog_update')
     expect(result.reasonCard?.params.products_needing_detail).toBe(1)
   })
+
+  it('is never reached when a strong existing-target match already converted the candidate', () => {
+    // A store whose products are too thin for a new article, but which
+    // already ranks for the search, is sent to improve what it has rather
+    // than told to add product details for an article it was never going to
+    // get anyway.
+    const result = runGate1(input({ substance: failingSubstance, existingTarget: strongOptimizeMatch }))
+    expect(result.outcome).toBe('converted_to_optimize')
+  })
 })
 
 describe('Gate 1 — existing-target / cannibalization check (main §7.7, same function)', () => {

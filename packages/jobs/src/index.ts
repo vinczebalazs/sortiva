@@ -1,4 +1,5 @@
 export * from './ingestion'
+export * from './generation'
 export * from './gsc'
 export * from './inventory'
 export * from './scan'
