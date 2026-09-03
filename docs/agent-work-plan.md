@@ -540,6 +540,31 @@ Done when: the migration applies forward from empty, an article row can exist wi
 Note: **LANDED 2026-09-03.** `jsonb`, not gzipped `bytea` — see the journal entry for why, and for what it would cost to change.
 
 
+### Intent-gap wiring, authorised 2026-09-03 by the founder
+
+`T6.1` built the paid page comparison and deliberately wired it to nothing, because the
+place its own card names — the weekly signal scan — is another lane's file. The founder
+chose the shape: **the comparison runs as its own scheduled pass, and the scan reads what
+that pass already produced rather than buying anything itself.** Reasoning and the two
+rejected alternatives are in `DECISIONS.md`, `2026-09-03 — FOUNDER — The intent-gap
+comparison runs as its own job`.
+
+Two cards because the two halves are in two lanes. **The job must land before the read**,
+or the read has nothing to find.
+
+**R-INTENTGAP-JOB — the page comparison actually runs** · Lane E, after `T6.2`
+Scope: `scanIntentGaps` in `packages/jobs/src/optimize/scan.ts` exists, is tested, and is called by nothing outside its own test — verified by grep, not taken from a report. Register it as a scheduled task of its own, in the same shape as the other jobs in `packages/jobs`: a derived idempotency key, the per-account advisory lock, and the existing daily allowance and pause flag it already honours. It walks the shortlist, buys what the allowance permits, and stops. It writes no new table — `analyseIntentGap` already stores the model's raw answer in `request_cache`.
+Read first: `DECISIONS.md`, the five entries dated `2026-09-03 — T6.1` (especially the cache-key entry, which explains why the results page's fetch time is part of the key) and the founder entry above; main §10.3, §14.3.1–14.3.4 (effectively-once), §14.5 (per-type cap); `packages/jobs/src/generation/tasks.ts` for the registration shape this should match.
+Done when: the task is registered in the composition root and a test proves the registered handler is the real function, not a stand-in; a run with the allowance exhausted buys nothing and does not fail; a re-run over the same shortlist with nothing changed makes no second model call; a killed run resumes without paying twice.
+Note: **do not add it to the crontab as a running entry without saying so in the report.** The recurring schedule is switched off by founder decision (open question 4) until the last handlerless entries land, and this card must not be the thing that quietly turns paid work on.
+
+**R-INTENTGAP-SCAN — the weekly scan reads the comparison it did not pay for** · Lane C, after the job lands
+Scope: `runSignalScanLocked` in `packages/jobs/src/scan/run.ts` hard-codes its detector list and every detector in it is a pure function over data already assembled. Add `existing_page_intent_gap` to `GSC_SIGNAL_TYPES` and derive it inside the same limited-intelligence guard as the other Search Console detectors — **from the cached analysis only.** For each shortlisted page, recompute the cache key and read it; if there is a fresh answer, turn it into a signal with `buildIntentGapSignal`; if there is not, skip that page. **The scan must never fetch a page and never make a model call.** That is the whole point of the split: a slow fetch or a model outage must not delay or fail any other signal.
+Read first: the founder entry above and the `T6.1` cache-key entry in `DECISIONS.md`; `packages/core/src/optimize/intent-gap.ts` (`shortlistIntentGapPages`, `buildIntentGapSignal`); main §7.3 (the Intent Gap row), §7.11 (Limited Intelligence).
+Done when: a shortlisted page with a fresh cached analysis produces the signal, and `buildOpportunityDraft` turns it into an `OPTIMIZE` on the existing URL; a shortlisted page with no cached analysis is skipped and the scan still completes with every other signal; a test proves the scan makes no page fetch and no model call on either path; a limited-intelligence account evaluates none of it.
+Note: if recomputing the cache key inside the scan turns out not to be possible — the results page's fetch time is part of the key and the scan may not have it to hand — **stop and report rather than reaching for a new table.** A table is a schema wave, and the alternative shapes are the integrator's to weigh.
+
+
 ### Founder-authorised fix card, created 2026-09-03 by the integrator
 
 Two small changes the founder authorised directly, grouped because both are in Lane D's
