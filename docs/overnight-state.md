@@ -3449,3 +3449,64 @@ candidate shape, not a mandate — the card's call).
 piece — redirected mid-build (11 minutes in) to build the real wiring instead, with
 this reasoning relayed in full. If it had gone further before the redirect landed, its
 own report will say so.
+
+## `T3.6` LANDED — opportunity object, scoring, action selection, lifecycle. **The signal detectors `T3.4`/`T3.5` built now become merchant-facing cards.**
+
+**Merged as `6215835` into `main`, four commits (one real add/add conflict, resolved —
+see below), full gate green.** Tests **2,713**, up from 2,644 — reconciles against
+`T3.6`'s own reported delta. **This card is scheduled for audit before `T3.7` starts
+(build plan §7) — dispatching that audit next, findings held per the standing rule.**
+
+This is the Opportunity Engine's decision core: every signal `T3.4`/`T3.5` detect now
+scores (both formula families — the CREATE log-volume formula and the existing-page
+gain formula), gets an action (a standalone function, separate from detection per
+invariant 7), gets deterministic tasks, and gets a template-key reason (never rendered
+prose, invariant 8). **All 8 worked examples pass individually, plus the founder's
+unblocked #18 competitor-gap fixture** (CREATE with no URL, OPTIMIZE with one at #18).
+Re-running detection updates the open row rather than duplicating it; expiry keeps the
+row; the why-line renderer has no LLM import — all proven against real Postgres, not
+asserted.
+
+**A real add/add merge conflict, resolved by combining rather than picking a side:**
+`packages/db/src/repositories/opportunities.ts` existed on both `T4.1`'s branch (a
+deliberately minimal placeholder — `insertMinimalOpportunity`/`findOpenOpportunity`/
+`setOpportunityTopicId`, built explicitly "ahead of the Opportunity Engine's own... not
+yet built") and `T3.6`'s (the real thing: dedupe-on-conflict upsert against the actual
+partial unique index, guarded transitions, expiry, dismiss/undo). **Kept both** — `T4.1`'s
+`admit-manual-topic.ts` calls all three of the minimal functions by name and still needs
+them; `T3.6`'s exports are a strict superset otherwise, with no naming collision beyond
+one identical `OpportunityRow` type declaration (deduplicated). Adjusted the minimal
+block's own comment, which said "blocked on a founder question, not yet built" about a
+card that had just landed above it in the same file. **Verified before committing**:
+`packages/db` and `packages/jobs` (the consumer) both typecheck clean against the
+combined file, and the full gate confirms it.
+
+**A real spec gap `T3.6` filled rather than left broken, worth restating because it's
+exactly the kind of thing an audit should stress-test:** main §9.6.4/§9.6.5 give exact
+scoring formulas for only five of the signal shapes and are silent on the rest
+(cannibalization, missing/weak metadata, a competitor-gap OPTIMIZE, and the two P1
+signal shapes below). Every unscored signal falls back to a traffic-magnitude proxy —
+the largest impressions-shaped number already in its own evidence — so `impact_score`
+stays meaningful without asserting a formula the spec never stated. Flagged, not hidden.
+
+**Two P0 signals in the taxonomy have no detector anywhere yet** (`existing_page_intent_gap`
+— Lane E's `T6.2` territory; `indexing_issue` — needs the URL Inspection API, no card
+owns it) — given thin, type-only shapes so worked examples 4 and 8 are real tests and
+the engine can still score a signal once one exists, without guessing at its detection.
+
+**One judgment call worth a second look in the audit:** cannibalization resolves to
+FIX, not OPTIMIZE, though main §7.8's own row allows either — reasoned as: every task
+the row names (primary-page designation, canonical recommendation) is structural work
+on which page should be authoritative, not new copy, which is what OPTIMIZE means
+elsewhere in the spec.
+
+**Files outside Lane C's directories:** none beyond the same `packages/db/src/repositories`
+precedent every other lane already established. No migration. New `reason_template_key`
+values have no copy yet in `packages/ui/strings` (Lane F's directory) — the renderer's
+existing graceful fallback (`opportunities.whyUnavailable`) covers the gap visibly
+rather than crashing, until Lane F writes the sentences.
+
+**`DbOpportunitySource` fills the `OpportunitySource` seam for real** (mirroring `T3.5`'s
+`DbExistingTargetCheck` pattern) but isn't wired into any job yet — nothing consumes it
+before Lane D's `T4.2`/`T4.6`, which is exactly where this run's `T4.2` build is headed
+next.
