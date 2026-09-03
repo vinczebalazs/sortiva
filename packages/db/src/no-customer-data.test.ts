@@ -120,6 +120,95 @@ describe.skipIf(!available)('invariant 4 — no customer field reaches storage',
     )
     expect(caught).toEqual(planted)
   })
+
+  /**
+   * A column scan cannot see inside a JSONB blob, and that is exactly where the
+   * first real breach of this invariant happened: the Shopify receiver wrote
+   * every incoming webhook down whole, and the two customer-privacy messages
+   * carry a shopper's email and phone inside a `customer` object, in a column
+   * honestly named `payload`. No column name was wrong, so nothing was caught.
+   *
+   * This walks the contents of every JSONB column and applies the same
+   * word rule to the keys it finds. Keys, not values — a value test would flag
+   * a product description containing an "@" and earn itself an allowlist.
+   */
+  async function jsonbColumns(): Promise<{ table: string; column: string }[]> {
+    const { rows } = await ctx.pool.query<{ table_name: string; column_name: string }>(
+      `select table_name, column_name
+         from information_schema.columns
+        where table_schema = 'public' and data_type = 'jsonb'
+        order by table_name, column_name`,
+    )
+    return rows.map((r) => ({ table: r.table_name, column: r.column_name }))
+  }
+
+  /** Every key anywhere inside a JSON value, however deeply nested. */
+  function keysWithin(value: unknown, into: Set<string> = new Set()): Set<string> {
+    if (Array.isArray(value)) {
+      for (const entry of value) keysWithin(entry, into)
+    } else if (value !== null && typeof value === 'object') {
+      for (const [key, nested] of Object.entries(value)) {
+        into.add(key)
+        keysWithin(nested, into)
+      }
+    }
+    return into
+  }
+
+  async function shopperKeysInJsonb(): Promise<string[]> {
+    const found: string[] = []
+    for (const { table, column } of await jsonbColumns()) {
+      const { rows } = await ctx.pool.query<{ value: unknown }>(
+        `select "${column}" as value from "${table}" where "${column}" is not null limit 500`,
+      )
+      for (const row of rows) {
+        for (const key of keysWithin(row.value)) {
+          if (looksLikeCustomerField(key)) found.push(`${table}.${column}:${key}`)
+        }
+      }
+    }
+    return [...new Set(found)].sort()
+  }
+
+  it('finds JSONB columns to scan at all', async () => {
+    // The scan below passes by doing nothing if this is empty.
+    expect((await jsonbColumns()).length).toBeGreaterThan(3)
+  })
+
+  it('catches a shopper hiding inside a JSONB blob, then confirms none is there', async () => {
+    // The real `customers/redact` body, as Shopify sends it — the exact shape
+    // the receiver used to store whole.
+    await ctx.pool.query(
+      `insert into webhook_events (webhook_id, source, topic, payload)
+       values ('invariant4-planted', 'shopify', 'customers/redact', $1::jsonb)`,
+      [
+        JSON.stringify({
+          shop_handle: 'acme',
+          body: {
+            shop_id: 954889,
+            shop_domain: 'acme.myshopify.com',
+            customer: { id: 191167, email: 'shopper@example.com', phone: '555-625-1199' },
+            orders_to_redact: [299938],
+          },
+        }),
+      ],
+    )
+
+    const caught = await shopperKeysInJsonb()
+    expect(
+      caught,
+      'the JSONB scan did not catch a planted shopper, so it proves nothing',
+    ).toContain('webhook_events.payload:customer')
+    expect(caught).toContain('webhook_events.payload:email')
+    expect(caught).toContain('webhook_events.payload:phone')
+
+    await ctx.pool.query(`delete from webhook_events where webhook_id = 'invariant4-planted'`)
+
+    expect(
+      await shopperKeysInJsonb(),
+      'a shopper key is sitting inside a JSONB column',
+    ).toEqual([])
+  })
 })
 
 describe('database availability (invariant 4 suite)', () => {
