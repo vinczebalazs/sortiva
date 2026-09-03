@@ -2434,7 +2434,71 @@ stopping a lane on a finding and nothing else. **The `T-EMAIL` auditor was asked
 directly whether any finding should block the next card in any lane and answered no**, so
 no lane was stopped.
 
-### `T3.5` — the scheduled audit, run 2026-09-03, read-only. **This is the one blocking `T3.6` — read it first.**
+### `T3.6` — the scheduled audit, run 2026-09-03, read-only.
+
+Build plan §7 requires this audit before `T3.7` starts. It has run, changed nothing, and
+found one real gap worth a founder's attention before real data flows through it.
+
+**[HIGH] A technical blocker discovered *after* an opportunity is already auto-accepted
+never actually blocks it.** Plain terms: main §7.9 says a CREATE/OPTIMIZE opportunity
+touching the same page as an open, blocking technical problem must sit at `blocked`
+until that problem clears. The auditor traced a concrete, reachable case: a REFRESH
+opportunity (one of our own articles) auto-accepts on first detection with no known
+problem. If a later weekly scan finds a technical issue on that same URL, the write
+that updates the row's evidence and its `preconditions` list **deliberately never
+touches `status`** — a design choice made to protect a merchant's in-progress work from
+being silently reset backward (the one case this *is* documented and tested for). But
+the same mechanism also means the opposite, unsafe direction is silent: the row stays
+`accepted`, and Lane D's calendar reads only `status` to decide what to auto-schedule —
+so a now-blocked opportunity can still be picked up and generated. **`T3.6`'s own
+`DECISIONS.md` entry names this exact trade-off but only defends the safe half of it**;
+the auditor found no entry addressing the unsafe half. Verified independently, not
+taken from the landing report — traced through `upsertOpportunity` and
+`acceptedContentOpportunities` directly.
+
+**[MEDIUM] Cannibalization always resolves to FIX, though main §7.8's own row allows
+either FIX or OPTIMIZE.** Already flagged by the landing session as worth a second
+look; the auditor confirms it's real, deliberate, and well-reasoned — not a defect —
+but notes it changes which pipeline handles the opportunity (FIX/technical vs. the
+OPTIMIZE recommendation flow) and is exactly the shape of choice the constitution asks
+to be escalated rather than logged alone.
+
+**[MEDIUM] The fallback score for `missing_or_weak_metadata` is a dead tie across
+every candidate of that type.** The traffic-magnitude fallback (`T3.6`'s own documented
+workaround for signals main §9.6.4/§9.6.5 give no formula for) reads the largest
+impressions-shaped number in a signal's evidence — but `missing_or_weak_metadata`'s
+evidence never carries one (only page type and field-name lists), so every metadata
+opportunity a store has scores an identical raw `1`. Cannibalization's fallback, by
+contrast, does vary meaningfully — its evidence does carry impressions. **Consequence:**
+a merchant looking at ranked metadata opportunities has no signal for which page's
+missing title tag actually matters more; they'll all land at the same low tier. Real
+gap, not theoretical — traced against the actual evidence shape `metadata.ts` produces.
+
+**[LOW] No stale-task cleanup on re-detection.** `insertOpportunityTasks` has no
+"clear the old set first" step; nothing calls it outside tests yet, so this is latent —
+whoever wires a re-detection loop to call it repeatedly (likely `T3.7`) needs to either
+insert only on first sighting or replace the set, or task rows accumulate unboundedly.
+
+**Two things the auditor verified sound, not just read:** the `entity_type` (`url`) vs.
+the frozen contract's `EntityRef.kind` (`page`) mapping — confirmed correct, covers all
+five values, 5 passing tests, not merely asserted; and the merge-conflict resolution in
+`packages/db/src/repositories/opportunities.ts` — confirmed both halves genuinely kept,
+`packages/db`/`packages/jobs` typecheck clean against the combined file, the real
+Postgres-backed suite passes.
+
+**The three questions, answered:** (a) **Blocks `T3.7`?** No — everything `T3.7` needs
+exists, typechecks, and passes its tests. But `T3.7`'s own done-when ("running the
+weekly scan twice converges") should consciously address the HIGH finding rather than
+let it surface as a silent bug or slip through untested. (b) **Blocks another lane?**
+No hard block; whoever builds the FIX/technical execution layer (main §11) should know
+cannibalization only ever arrives as FIX; Lane F still owes copy for the new
+`reason_template_key` values (already known, not new). (c) **Founder decision needed
+before real data?** Two: whether the HIGH finding needs fixing before touching a real
+store, given it's a genuine "never auto-publish past an unresolved technical problem"
+gap; and whether cannibalization-always-FIX is acceptable as a permanent product
+decision, since the spec deliberately left it open.
+
+### `T3.5` — the scheduled audit, run 2026-09-03, read-only. **Its HIGH finding is resolved — the founder answered founder question 8, see above — kept for the rest of its findings.**
 
 Build plan §7 requires this audit before `T3.6` starts. It has run, changed nothing, and
 confirms rather than contradicts what `T3.5`'s own landing session had already found and
@@ -2596,7 +2660,7 @@ vendor accepted a key and our own recording then failed, and the vendor rejectin
 key with a changed body — **which is reachable here, because copy is resolved at send time,
 so a copy edit between two attempts changes the payload under an unchanged key.**
 
-### `T2.2` — the scheduled audit, run 2026-09-02, read-only. **THIS IS THE ONE TO READ FIRST.**
+### `T2.2` — the scheduled audit, run 2026-09-02, read-only. **Its CRITICAL finding is fixed — `R-PRIVACY`, see above — kept for the rest of its findings.**
 
 Build plan §7 requires this audit before `T2.3` starts. It has run. **It found one
 critical defect, and the integrator verified that finding independently before recording
