@@ -78,7 +78,18 @@ async function get(url) {
 const port = process.env.SMOKE_PORT ? Number(process.env.SMOKE_PORT) : await freePort()
 const base = `http://127.0.0.1:${port}`
 
-if (!existsSync(join(webDir, '.next', 'BUILD_ID'))) {
+/**
+ * `--dev` runs the same two checks against `next dev` instead of the built
+ * application. It exists because the two builds are not the same build: Next
+ * compiles the start-up hook for the Edge runtime as well as Node, and Edge has
+ * no filesystem — so a Node-only import reachable from that hook breaks `next
+ * dev` while `pnpm build` stays green. That is exactly what happened, it made
+ * every page in development answer 500, and nothing in the gate could see it
+ * because the gate only ever started the built app.
+ */
+const dev = process.argv.includes('--dev')
+
+if (!dev && !existsSync(join(webDir, '.next', 'BUILD_ID'))) {
   console.error('No production build found in apps/web/.next. Run `pnpm build` first.')
   process.exit(1)
 }
@@ -100,7 +111,7 @@ const env = {
 const started = Date.now()
 const server = spawn(
   process.execPath,
-  [join(webDir, 'node_modules', 'next', 'dist', 'bin', 'next'), 'start', '-p', String(port)],
+  [join(webDir, 'node_modules', 'next', 'dist', 'bin', 'next'), dev ? 'dev' : 'start', '-p', String(port)],
   { cwd: webDir, env, stdio: ['ignore', 'pipe', 'pipe'] },
 )
 
@@ -145,7 +156,7 @@ if (!answered) fail(`the server did not answer within ${READY_TIMEOUT_MS / 1000}
 // Phase 2: the health check has to go green. The worker connects to the database
 // after the server starts listening, so "up" and "ready" are seconds apart on a
 // cold database — a grace window here, not a retry that hides a real failure.
-const healthyBy = Date.now() + HEALTHY_TIMEOUT_MS
+const healthyBy = Date.now() + (dev ? HEALTHY_TIMEOUT_MS * 4 : HEALTHY_TIMEOUT_MS)
 let health = await get(`${base}/api/health`)
 while (health.status !== 200 && Date.now() < healthyBy) {
   await sleep(500)
@@ -165,11 +176,11 @@ for (const [path, result] of results) {
 const broken = results.filter(([, result]) => result.status !== 200)
 if (broken.length > 0) {
   fail(
-    `the built application does not serve ${broken.map(([path]) => path).join(' or ')}`,
+    `the ${dev ? 'development' : 'built'} application does not serve ${broken.map(([path]) => path).join(' or ')}`,
     broken.map(([path, result]) => `  GET ${path} -> ${result.status}\n  ${result.body}`).join('\n'),
   )
 }
 
-console.log(`\nThe built application started and served both pages in ${((Date.now() - started) / 1000).toFixed(1)}s.`)
+console.log(`\nThe ${dev ? 'development' : 'built'} application started and served both pages in ${((Date.now() - started) / 1000).toFixed(1)}s.`)
 stopServer()
 process.exit(0)
