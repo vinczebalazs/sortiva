@@ -8,6 +8,8 @@ import { DataForSeoProvider } from '@sortiva/providers'
 import { AnthropicLlmClient } from '@sortiva/llm/client'
 import { loadPrompt } from '@sortiva/llm/prompts'
 import type { GenerationTaskDeps } from '@sortiva/jobs/generation/tasks'
+import type { ReplenishmentTaskDeps } from '@sortiva/jobs/generation/replenish-tasks'
+import { DbOpportunitySource } from '@sortiva/jobs/scan/opportunity-source'
 import type { ReviewDeps } from './review'
 
 /**
@@ -58,6 +60,25 @@ function generationSeoProvider(): SeoDataProvider {
 
 export function reviewDeps(): ReviewDeps {
   return { db: db() }
+}
+
+/**
+ * What tops the calendar back up when its runway runs short.
+ *
+ * The opportunities it plans from are read through the frozen
+ * `OpportunitySource` seam's real implementation rather than a hand-rolled
+ * query, so this and the onboarding scan that seeded the first calendar see
+ * exactly the same accepted pool. No model client and no search vendor: the
+ * whole of replenishment is arithmetic over rows we already hold, and giving
+ * it either would make it possible for a planning pass to start spending.
+ */
+export function replenishmentTaskDeps(): ReplenishmentTaskDeps {
+  return {
+    getDb: db,
+    getPool: dbPool,
+    opportunities: new DbOpportunitySource(db()),
+    capture: generationCapture(),
+  }
 }
 
 export function generationTaskDeps(): GenerationTaskDeps {

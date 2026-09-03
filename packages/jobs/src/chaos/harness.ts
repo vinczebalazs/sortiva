@@ -15,6 +15,7 @@ import { runStep } from '../runtime/runStep'
 import { catalogSyncKilledMidWalk } from './catalog-sync.scenario'
 import { distillKilledMidBatch } from './distill.scenario'
 import { familyGroupKilledAfterCommit } from './family-group.scenario'
+import { generationCycleKilledAcrossMidnight, generationCycleKilledSameDay } from './generation-cycle.scenario'
 import { signalScanKilledMidPass } from './signal-scan.scenario'
 
 /**
@@ -430,4 +431,12 @@ export const CHAOS_SCENARIOS: readonly ChaosScenario[] = [
   // convergence proof: no duplicate opportunity rows, and a finished
   // `signal_runs` row whose own counts account for every page.
   signalScanKilledMidPass,
+  // T4.6: the day's article, killed while it is being written. Two halves,
+  // and the pair is the point: the same kill converges when the retry arrives
+  // the same local day, and does not when it arrives the next one. The second
+  // is the `T4.5` audit's HIGH finding reproduced rather than described, and
+  // it is expected to fail until someone decides what a store's half-written
+  // yesterday should become. See DECISIONS 2026-09-03 T4.6.
+  generationCycleKilledSameDay,
+  generationCycleKilledAcrossMidnight,
 ]

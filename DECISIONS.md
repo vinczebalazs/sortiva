@@ -3192,3 +3192,85 @@ Decision: a day that actually ran captures `generation_cycle_completed` with the
 Why: not asked for by the card, and small enough to state rather than assume. Main §14.7 wants the pipeline observable, and this is the one job in the product that can spend several dollars in a run; a skipped day emits nothing because the skips are frequent, uninteresting individually, and already in the structured logs. No article text, no prompt and no token count crosses the boundary — invariant 26. Nothing in `ops/posthog` charts it yet; that is the ops lane's to add if it wants to.
 Nearest spec: main §14.7; CLAUDE.md invariant 26.
 Class (filled by audit):
+
+## 2026-09-03 — T4.6 — Replenishment fills the calendar to 90 days, and that number is new
+Decision: a new threshold, `learning.replenishment_target_horizon_days: 90`, marked UNSIGNED in `packages/rules/signals.config.yaml`. Replenishment fires when the planned horizon falls under `replenishment_horizon_days` (60, already there) and fills every open day from tomorrow to 90 days out.
+Why: the specs give the trigger and never the target. Main §9.6.1 says "runs when the calendar's planned horizon drops below ~60 days"; main §8.7 describes "a ~3-month backlog built at onboarding, replenished monthly". 90 is that three months as a number. It has to be above the trigger or every run would leave the calendar back on the edge it had just crossed. The consequence worth naming: on an empty calendar one run offers 90 days, so a store with a deep candidate pool commits three months of topics in one pass, against evidence that will be up to three months old when the last of them is written.
+Nearest spec: main §8.7 ("~3-month backlog"); main §9.6.1 (the trigger only).
+Class (filled by audit):
+
+## 2026-09-03 — T4.6 — The refresh cap is a share of the days on offer, not of the days actually filled
+Decision: at most `floor(open_days × 0.40)` of a replenishment batch may be refreshes. When there are fewer new-coverage candidates than remaining days, the realised proportion of *filled* days can exceed 40% — and is allowed to.
+Why: main §9.6.5 says "refreshes fill at most 40% of any replenishment batch, **so new coverage never stalls**". The purpose clause decides the ambiguity. Read the other way — the cap as a share of what actually gets placed — the rule turns destructive at the edges: a store with 30 refresh candidates and no new-coverage candidates at all would be allowed zero topics, and its calendar would go empty while work was waiting. Under the reading taken here, the realised share only goes above 40% when nothing was displaced, i.e. when every new-coverage candidate already has a day and the refreshes are using days that would otherwise be empty. Nothing stalls, which is what the cap is for.
+Nearest spec: main §9.6.5 — the word "batch" is not defined.
+Class (filled by audit):
+
+## 2026-09-03 — T4.6 — The exploration reservation is filled by promotion after scoring, not reserved before it
+Decision: the score picks the batch first. Unexplored candidates — ones whose intent class, family, keyword cluster and action type all carry no active pattern — are pulled in afterwards, displacing the weakest *explored* picks, only until the reservation (`max(2, ceil(slots × 0.15))`) is met. Only the candidates promoted this way are stored as `source: 'exploration'` and carry the "trying something new" why-line.
+Why: main §9.6.6 reserves the slots and says "these are marked `source: exploration` internally, so their performance can later be compared against exploited picks". The comparison is the point, and a reserve-first rule destroys it under the conditions the product actually ships in: nothing writes `pattern_stats` (that is `T7.1`, and M7 is deferred out of v1), so today **every** candidate is unexplored and a reserve-first algorithm would label an entire batch "trying something new" with no exploited arm to compare against. Promotion-after-scoring degrades correctly: with no patterns at all the score pass already satisfies the floor, nothing is promoted, and nothing is mislabelled.
+Nearest spec: main §9.6.6.
+Class (filled by audit):
+
+## 2026-09-03 — T4.6 — A candidate is ranked on the opportunity's own stored score, not on a re-derived volume × winnability
+Decision: the "opportunity" term of main §9.6.4's `score = opportunity × pattern_multipliers × source_bonus` is the `opportunities.impact_score` the engine already computed at detection. The two multipliers are applied fresh at planning time.
+Why: §9.6.4 defines the opportunity term as `log(volume) × winnability`, and the engine already computes exactly that (`createOpportunityScore`, `packages/core/src/opportunities/scoring.ts`) when it creates the row. Re-deriving it here would be worse, not merely redundant: **winnability is not stored on the opportunity at all** — only Gate 1 and one signal write it as evidence — so a re-derivation would have to substitute the pessimistic Limited-Intelligence constant for every account, including accounts with Search Console connected. Reusing the stored number keeps whatever real calibration the engine had. The multipliers are deliberately *not* reused, because re-ranking by what the store has learned since detection is the entire purpose of scoring at replenishment rather than at detection.
+One consequence: `impact_score` is a percentile within its own action family (§7.6, "never across actions"), so a CREATE score and a REFRESH score are not strictly on one scale. The batch never has to compare them directly — refreshes compete against the cap, not against creates — but a tie between the two families is resolved arbitrarily rather than meaningfully.
+Nearest spec: main §9.6.4; main §7.6.
+Class (filled by audit):
+
+## 2026-09-03 — T4.6 — Replenishment claims an opportunity before it writes the topic, not after
+Decision: for each pick, the guarded `accepted → scheduled` transition runs first; only a pass that wins it writes a calendar topic. A placement that then fails puts the opportunity back to `accepted`.
+Why: this is the opposite order to the onboarding seed (`packages/jobs/src/scan/onboarding.ts`, DECISIONS 2026-09-03 T3.7), deliberately, and the difference is which way a crash can go wrong. Place-then-claim means a run that dies between the two comes back, finds the opportunity still waiting, and gives it a second calendar day — two articles on one subject, on two days, which is what the calendar exists to prevent. Claim-then-place can only lose a candidate: a crash leaves an opportunity marked `scheduled` with no topic, which costs one candidate and nothing a merchant sees. A duplicated article-day is worse than a missed one. Caught by this card's own test, which reproduced the duplicate before the order was changed.
+Nearest spec: main §7.9 (`accepted → scheduled`); CLAUDE.md invariant 15 (guarded transitions).
+Class (filled by audit):
+
+## 2026-09-03 — T4.6 — `DbTopicScheduler.schedule` takes an optional third argument the frozen contract does not name
+Decision: `schedule(opportunity, date?, placement?)`, where `placement` carries the score, the source (`auto` or `exploration`) and the why-line key. The frozen `TopicScheduler` interface is untouched; extra optional parameters still satisfy it.
+Why: replenishment needs to stamp three things on a topic that the opportunity alone cannot supply, and the alternatives were worse. Re-opening the frozen contract is an integrator decision and would touch Lane C. A second insert path in the replenishment job would mean two pieces of code writing `topics` rows, which is how the two drift. The onboarding seed passes nothing and keeps exactly the behaviour it had.
+Nearest spec: build plan §4 (frozen seams); main §9.6.8.
+Class (filled by audit):
+
+## 2026-09-03 — T4.6 — The scheduler now reads `family_id` evidence facts onto the topic, which it previously dropped
+Decision: `DbTopicScheduler` collects every `family_id` evidence fact into `topics.family_ids` (de-duplicated, non-uuid values discarded). An opportunity carrying none still schedules and still writes `[]`.
+Why: **this was a live defect, not a refinement, and it is why the M4 end-to-end flow did not run.** `T4.2` wrote `familyIds` as `[]` unconditionally because the frozen `Opportunity` type has no array-valued field, and flagged it for whoever built the first real caller. Meanwhile `T3.7` established exactly the convention needed — a repeated `family_id` fact, one per family, with the encoding explained in the detectors' own comments — and every new-coverage detector already emits it. The scheduler simply never read the other half. The observable consequence: every automatically scheduled topic reached the pipeline with no families, so its evidence pack had no product facts, so Gate 2 held it as a thin pack. **The product could not write a single article on its own.** Found by this card's own end-to-end test, which returned `held_thin_pack` before the fix and a graded article after. This is the application of a documented convention, not a new one, so it is journalled rather than escalated.
+Nearest spec: main §8.2 (substance inventory); DECISIONS 2026-09-03 T4.2 and T3.7.
+Class (filled by audit):
+
+## 2026-09-03 — T4.6 — REQUEST TO THE INTEGRATOR: a unique index on `(account_id, scheduled_date)` for `topics`
+Decision: **not taken, and no migration written.** Recording the request for the next schema wave.
+Why: "at most one article a day" rests on there never being two non-vetoed topics on one calendar date, and nothing at database level enforces that. The manual-add route checks the day is free and then inserts, with no account lock around the pair — the exact check-then-insert shape invariant 1 rejects for domain claims ("insert-with-conflict, never check-then-insert"). Two simultaneous adds both pass the check and both land, and that day can then dequeue twice. Replenishment is the reason this is worth raising now: it inserts in bulk, and although it holds the per-account advisory lock — so it cannot race itself or the daily cycle — the manual-add route does not take that lock, so a merchant adding a topic while a top-up is running is unprotected. Also flagged as MEDIUM by the `T4.5` audit. What is needed: a partial unique index on `(account_id, scheduled_date)` where `state <> 'vetoed'`, plus turning the manual-add check into an insert-with-conflict. A feature card may not add a migration (CLAUDE.md), so this waits.
+Nearest spec: main §8.7 ("at most 1 article per day"); CLAUDE.md invariant 1 (the shape), invariant 14.
+Class (filled by audit):
+
+## 2026-09-03 — T4.6 — `pnpm stubs:report --milestone=<M>` compared milestone labels as strings
+Decision: fixed, in `scripts/stub-report.mjs`: milestone labels are parsed to numbers before comparison. A label the script cannot parse now sorts last, so it can never fail a gate by accident.
+Why: `'M10' <= 'M4'` is `true` in JavaScript, because "1" sorts before "4". Every milestone gate from M2 onwards was therefore reporting the two M10-due counters (`JudgeOutcomeCounter`, `PublishOutcomeCounter`) as overdue, and any reader had to know to discount them. The M4 gate said seven; four are real. Not a design change — the gate's own arithmetic was wrong, and this card's deliverable is a truthful report from it. Nothing became green: M4 still fails on four genuine entries, and M3 still fails on one.
+Nearest spec: build plan §4 ("a CI check fails if any stub is still wired at M3 exit").
+Class (filled by audit):
+
+## 2026-09-03 — T4.6 — The stale `TopicScheduler` stub registration is cleared
+Decision: `scripts/stub-report.mjs` no longer constructs `StubTopicScheduler`, and `seams-wired.test.ts` gains the `REAL_IMPLEMENTATION` entry that guard requires.
+Why: `T4.2` filled the seam and the line was never removed, so the M4 gate has been failing partly on bookkeeping. Verified to the bar `seams-wired.test.ts` enforces rather than taken from a report: `DbTopicScheduler` is constructed in three places that are not tests — the onboarding scan's calendar-seeding step (registered as the `signal_scan_onboarding_sweep` crontab task), the schedule action behind `POST /api/opportunities/{id}`, and this card's replenishment job (registered as `replenishment_monthly`).
+Nearest spec: build plan §4; DECISIONS 2026-09-03 R-STREAM.
+Class (filled by audit):
+
+## 2026-09-03 — T4.6 — FLAGGED, NOT DECIDED: a run killed before local midnight is never finished, and `pnpm chaos` is now red because of it
+Decision: **none taken.** A new chaos scenario reproduces the `T4.5` audit's HIGH finding instead of describing it, and it fails. Nothing in the product was changed to make it pass.
+Why: the daily cycle resumes a dead attempt by looking for a topic left `generating` **on today's local date only**. A retry that lands after the store's local midnight looks at the new day, finds nothing planned, reports "skipped", and the queue marks the job green — while yesterday's half-written article sits in `generating` with nothing in the product that will ever look at it again. Reproduced: `generation_cycle_killed_same_day` converges (one article, one Gate 3 decision); `generation_cycle_killed_across_midnight`, identical except that the retry runs a day later, ends with one article written, none graded, and the topic stuck. Ordinary rather than exotic for a store whose writing starts in the evening.
+Why it is not fixed here: every way of converging is a product decision. Finishing yesterday's draft today means an article appears on a day the calendar did not schedule; abandoning it means deciding what the merchant is told about a day that silently produced nothing; a separate sweeper is a third shape with its own cadence. It also interacts with invariant 14 (gaps stay gaps, missed days are never back-filled). And today the resume is only consulted when the current day has *no* planned topic at all, so any real fix is more than one clause. Recommendation: a sweeper that finds topics left `generating` past their own day, finishes the one that is furthest along, and raises a dead letter for the rest — but that is the founder's or integrator's call.
+Consequence to accept knowingly: `pnpm chaos` fails on exactly this one scenario until the decision is made. That is the M4 exit gate reporting a hole rather than hiding one.
+Nearest spec: main §14.3.1–14.3.4 (effectively-once), main §9.1, main §8.7 (the gap rule); `docs/overnight-state.md`, `T4.5` audit, second HIGH finding.
+Class (filled by audit):
+
+## 2026-09-03 — T4.6 — FLAGGED, NOT DECIDED: nothing runs Gate 1 on a replenished topic after scoring
+Decision: **none taken.** Replenishment schedules its picks without a Gate 1 pass.
+Why it matters: main §9.6.4 ends with "Gate 1 runs *after* scoring, on the top-ranked candidates only (cheapest ordering: score with data already on hand, spend DataForSEO/SERP checks only on likely picks)." Nothing does that. What *is* checked, and where: the demand floor, the substance backing and the existing-target check are all applied when the opportunity is detected, weeks earlier — so the checks are made, but never re-made against the store as it is when the topic is actually scheduled. A family that has lost substance since detection, or a page the merchant has since published covering the same intent, would not be noticed. The visible symptom is small today (a stale candidate is held by Gate 2 at generation time, with a reason card) and the audit trail is the honest tell: an automatically scheduled topic has **no `gate_decisions` row for gate 1 at all**, while a manually added one does.
+Why it is not built here: it is not in this card's scope line, and the design has real content — does a re-check that now fails reject the topic, convert it to OPTIMIZE, or just skip it and free the day; and does it spend a SERP request per pick, which is the cost §9.6.4's ordering exists to control. Recommendation: a small `admitScheduledTopic` mirroring `admitManualTopic`, run on the batch's picks before placement, with a failing re-check freeing the day rather than writing a rejected topic.
+Nearest spec: main §9.6.4 (last line); main §8.2; main §8.7 ("filtered by Gate 1").
+Class (filled by audit):
+
+## 2026-09-03 — T4.6 — Gate 2 records only its refusals, so a passing pack leaves no audit row
+Decision: unchanged; recorded because this card's end-to-end test asserts the absence and a reader would otherwise assume the row is there.
+Why: `generateArticle` writes a `gate_decisions` row for gate 2 only on `held_thin_pack`. Gate 3 writes one either way. So the audit trail for a successful article shows Gate 3 and nothing else, and "was the evidence pack checked" can only be answered by the absence of a hold. Defensible — the merchant needs a reason card for a refusal, not for a pass — but it makes gate coverage un-auditable after the fact, which is what `gate_decisions` is for. Not this card's to change.
+Nearest spec: main §8.3, §8.6; main §13 `gate_decisions`.
+Class (filled by audit):

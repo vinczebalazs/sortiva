@@ -42,6 +42,10 @@ const REAL_IMPLEMENTATION: Record<string, { symbol: string; why: string }> = {
     symbol: 'DbOpportunitySource',
     why: 'the onboarding scan’s calendar-seeding step (packages/jobs/src/scan/onboarding.ts) builds it and calls acceptedContentOpportunities(), and that step is registered as the signal_scan_onboarding_sweep crontab task, so a confirmed account really reaches this seam in production',
   },
+  StubTopicScheduler: {
+    symbol: 'DbTopicScheduler',
+    why: 'three production callers build it — the onboarding scan’s calendar-seeding step, the monthly replenishment job (packages/jobs/src/generation/replenish.ts, registered as the replenishment_monthly crontab task) and the schedule action behind POST /api/opportunities/{id} — so a topic really does reach a calendar in production',
+  },
 }
 
 function sourceFiles(dir: string, out: string[] = []): string[] {

@@ -17,6 +17,16 @@ beforeAll(async () => {
   }
   harness = await setupTestDb('chaos')
   accountId = await insertAccount(harness.pool, 'chaos@example.com')
+  // The shared synthetic account is a paying one, because the generation-cycle
+  // scenarios cannot reach the pipeline at all without entitlement. Seeded here
+  // rather than in a scenario's own setup: `subscriptions` has exactly one
+  // writer in the product (invariant 16), enforced against every non-test file,
+  // and a scenario file is not a test file.
+  await harness.pool.query(
+    `INSERT INTO subscriptions (account_id, stripe_subscription_id, price_id, status)
+     VALUES ($1, 'sub_chaos', 'price_chaos', 'active') ON CONFLICT (account_id) DO NOTHING`,
+    [accountId],
+  )
 }, 60_000)
 
 afterAll(async () => {
