@@ -22,3 +22,61 @@ export {
   type IntentGapCandidate,
   type ShortlistIntentGapInput,
 } from './intent-gap'
+export {
+  detectApplied,
+  type AppliedDetection,
+  type AppliedSignal,
+  type CurrentPageState,
+} from './applied'
+export {
+  OPTIMIZE_JUDGE_CRITERIA,
+  evaluateOptimizeFloors,
+  gradeRecommendation,
+  gradingEvidence,
+  type OptimizeCriterionOutcome,
+  type OptimizeGradeResult,
+  type OptimizeJudgeCriterion,
+} from './grading'
+export {
+  lintMessages,
+  lintRecommendation,
+  type OptimizeLintCheck,
+  type OptimizeLintIssue,
+  type OptimizeLintResult,
+} from './lints'
+export {
+  packFactAddresses,
+  packFacts,
+  packLinkAddresses,
+  type CitableField,
+  type OptimizeEvidencePack,
+  type OptimizePackFamily,
+  type OptimizePackLinkCandidate,
+  type OptimizePackPage,
+  type OptimizePackPersona,
+  type OptimizePackProduct,
+  type OptimizePackQuery,
+  type OptimizePackRankingPage,
+  type PackFact,
+} from './pack'
+export {
+  RECOMMENDATION_RESPONSE_SCHEMA,
+  buildRecommendationRequest,
+  generateRecommendation,
+  type BuildRecommendationInput,
+  type GenerateRecommendationDeps,
+  type GeneratedRecommendation,
+  type OptimizeRecommendation,
+  type RecommendationFaq,
+  type RecommendationField,
+  type RecommendationHeading,
+  type RecommendationInternalLinks,
+  type RecommendationPrompt,
+  type RecommendationSection,
+} from './recommendation'
+export {
+  renderRecommendationHtml,
+  renderRecommendationMarkdown,
+  type RecommendationLabels,
+  type RenderRecommendationInput,
+} from './render'
