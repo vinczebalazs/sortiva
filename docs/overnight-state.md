@@ -4,10 +4,12 @@ Rewritten after **every** card lands or stops, and re-read before any card is
 launched and before any merge. Its test: a completely fresh session, with none of
 the conversation that produced it, could take over from this file alone.
 
-**Last rewritten:** 2026-09-02, 18:55, by the integrator session running the night.
-`main` is at `c9e787b` with a clean tree. Eight cards landed earlier today; `main`
-was green at 1,362 tests and the built application starts and serves pages. **The
-plan for the run is `docs/nightly-plan.md`** — read it after this file.
+**Last rewritten:** 2026-09-03, 12:05, by the integrator session running this run,
+after the `T3.5` audit landed (read-only, findings recorded, nothing merged). `main`
+is still at `e698033`, unchanged since this run started — three build sessions
+(`T2.7`, `T9.7`, `T4.0`) are still running. **Everything from here down to "Picking
+this up again" is the previous run's report and is kept as history; read "Right now"
+first for what has actually changed since.**
 
 ---
 
@@ -765,6 +767,28 @@ because the schedule is off.
 behaviour of that mechanism, but worth knowing at merge time.
 
 ## Right now
+
+**Status at 2026-09-03, 12:46 — a new run is in progress.** `main` is at `49506ea`,
+clean. Landed so far this run, in order: the `T3.5` audit (read-only, findings held —
+see the founder-question-8 section and the dedicated audit entry, both below),
+`T9.7` (lane F), `T4.0` (schema wave 3, lane D — **M4 unblocked**), `T2.7` (lane B —
+**M2 closed**). Tests **2,599**, up from 2,513 at this run's start. Full gate green
+throughout (nine of ten commands; `pnpm eval` red by design, unchanged all run).
+
+**Running now:** `T9.8` (lane F, the M9 exit gate) and `T4.1` (lane D, topic model &
+Gate 1). **Idle, correctly, with no invented work:** lane B (M2 is complete and the
+plan gives it nothing further) and lane G (M8 is complete; its only remaining work is
+the three held remediation cards, and `R-PRIVACY` sits in Lane B's own directory
+regardless). **Held, not idle:** lane C — `T3.6` cannot be built as its own done-when
+is written until founder question 8 (the position-20/#18 contradiction) is answered;
+see the `T3.5` audit section for detail.
+
+**Everything from `## Picking this up again` down to `## This run resumed 2026-09-03`
+describes the *previous* run's end state (2026-09-03, 08:10) and is kept as history.**
+Read the sections below this one, in order, for this run's own record: the `T4.0`
+preparation list, then each card's own `LANDED` section in the order above.
+
+### The previous run's end state, kept as history
 
 **Status at 2026-09-03, 08:10 — the run has ended.** `main` is at `a3b8d4b`, clean, and
 every worktree is clean with nothing unmerged. **Twenty cards landed overnight**, plus the
@@ -2145,13 +2169,38 @@ Lane C was told this when it was resumed.
 
 ## Questions waiting on the founder
 
-**Seven are open. None blocks a lane; each blocks something specific later.** Questions 1
-and 2 came from `T8.0`, question 3 from `T-EMAIL`, question 5 from `T9.4`, question 6 from
-`T2.3`; questions 4 and 7 are the two the run inherited. The question that used to be here
-about *what starts a merchant's onboarding* is **answered and built** — `T-START`.
+**Three of eight are now answered — 1, 4 and 8 — by the founder directly, at 12:40 this
+run, in a second session (`sortiva-85`) running alongside this one.** Verified
+independently before recording: `git log` shows the three commits
+(`d3758c7`/`ec2f213`/`5a6b46d`) actually on `main`, authored by the founder's own git
+identity, each with a `DECISIONS.md` entry read in full. **Five remain open — 2, 3, 5,
+6, 7** — and none of them blocks a card today. Questions 1 and 2 came from `T8.0`,
+question 3 from `T-EMAIL`, question 5 from `T9.4`, question 6 from `T2.3`, question 8
+from `T3.5`'s audit; questions 4 and 7 are the two the run inherited. The question that
+used to be here about *what starts a merchant's onboarding* is **answered and built** —
+`T-START`.
 
-**1. When a merchant deletes a page from their store, how should we record that it is
-gone?** The product keeps one row per web address the store publishes — its inventory.
+**A fourth thing was decided in the same batch, not one of the original eight:**
+`R-PRIVACY` (the critical privacy finding from `T2.2`'s audit — shoppers' email and
+phone stored while telling Shopify we hold none) is **authorised, now**, rather than
+held until Shopify credentials exist. `sortiva-85` has claimed it in lane B, dispatched
+the moment `T2.7` merged (its only stated blocker — Lane B being mid-card in the same
+directories — expired at that merge). **`R-STREAM` and `R-DEV` remain un-authorised**
+and stay untouched by this session.
+
+**1. ANSWERED 2026-09-03, 12:40 — a status field, not a date. Carded as `T4.0a`, a
+schema mini-wave, unbuilt.** The founder chose the status field over a single
+deleted-at date (costs nothing extra today, avoids a second migration if a third
+condition appears) and rejected inferring deletion from "not seen by the last
+completed walk" (only safe once something also records that a walk *completed*).
+`T4.0a` is migration-only — nothing writes the new value or reads it yet; the producer
+and teaching `T3.5`'s existing-target check to use it are explicit follow-ups, neither
+a founder question. Full detail: `DECISIONS.md` `2026-09-03 — FOUNDER — A deleted
+store page gets a status field`. **Original question kept below for context.**
+
+*Original question: when a merchant deletes a page from their store, how should we
+record that it is gone?* The product keeps one row per web address the store publishes
+— its inventory.
 When a merchant deletes a page, the row stays and nothing says the page is gone.
 `T3.2` chose that deliberately: deleting the row destroys the only evidence the address
 ever existed, and marking it needed a column no card outside a schema wave may add.
@@ -2209,7 +2258,19 @@ short *because* revocation is impossible, so the reason for the number goes away
 *What is blocked:* nothing tonight. It is a security property the product does not have,
 not a broken feature.
 
-**4. Should the recurring job schedule be switched on — or is the answer now just "wait"?**
+**4. ANSWERED 2026-09-03, 12:40 — wait. Nothing changed.** The crontab stays off and the
+worker's all-handlers-present rule is not relaxed. The four remaining handlerless
+entries (`generation_cycle_daily`, `signal_scan_weekly`, `replenishment_monthly`,
+`publish_intent_recovery_sweep`) belong to Lanes C and D, whose cards are next in line
+anyway, which is what made waiting a real option rather than a stall. What stays
+dormant is unchanged from the table below — nothing reads the spend meter, the preview
+cap has no brake, no deleted account is erased, no scheduled mail goes out. The manual
+kill switches still work at dequeue regardless. Full detail: `DECISIONS.md`
+`2026-09-03 — FOUNDER — The recurring job schedule stays off until the four missing
+handlers land`. **Original question kept below for context.**
+
+*Original question: should the recurring job schedule be switched on — or is the
+answer now just "wait"?*
 **This is the most expensive open question in the build, and the night changed both its cost
 and its likely answer.**
 
@@ -2283,6 +2344,37 @@ is in no card's scope and should be settled with the other deployment questions 
 platform's config format is also deprecated and the project's old service was deleted.
 Full detail is in the "BLOCKER — the deployed start command" section above.
 
+**8. ANSWERED 2026-09-03, 12:40 — the threshold moves to 10, opening positions 11–30.
+Changed, gated, committed as `d3758c7`.** `our_absent_position_max` in
+`signals.config.yaml` moves from 20 to 10; the detector already read the number, so no
+code changed. `rules_version` moved with it (`9fb26ae9…` → `2bd23161…`), the committed
+config snapshot was regenerated, and `packages/rules` plus the signals suite are green.
+**`T3.6` is unblocked and its done-when stands exactly as written** — the #18 fixture
+it names is now producible. Full detail: `DECISIONS.md` `2026-09-03 — FOUNDER — The
+competitor-gap signal fires unless we already rank in the top 10, not the top 20`.
+**Original question kept below for context.**
+
+*Original question: should the competitor-gap signal fire at position 18, or only
+below 10?* The spec
+says one thing in its rule (main §7.3: fire only when we hold **no position 20 or better**)
+and another in its own worked example and action column (main §7.8 and the same row: a page
+of ours at **#18** should be improved). Both can't be true — #18 is inside "20 or better."
+`T3.5` shipped the literal rule, which means a store sitting at position 11–20 for a
+competitor-covered search produces **no signal at all today**, confirmed by running the
+detector against a live position-18 input. `T3.5`'s scheduled audit re-derived the same
+contradiction independently before reading the card's own journal entry.
+
+*Two one-line fixes, genuinely different in effect.* Move the config threshold
+(`our_absent_position_max` in `signals.config.yaml`) from 20 to 10, matching the
+competitor's own threshold — this opens the whole 11–30 band to the signal, which is more
+detections than the spec's rule as literally written allows. Or leave the threshold and
+rewrite `T3.6`'s stated done-when to name a position in 21–30 instead of #18 — cheaper,
+and it accepts that positions 11–20 simply produce nothing.
+
+*What is blocked:* `T3.6` cannot be built as its own done-when is currently written —
+that done-when names exactly the #18 fixture the shipped code can never produce. Lane C
+stops after the `T3.5` audit and does not start `T3.6` until this is answered.
+
 ## A lane broke the one-card rule, and it cost something
 
 **Lane F did not stop after `T9.1`.** Its brief said "do not start another card"
@@ -2337,6 +2429,74 @@ Small, real, and each belongs to a named next card rather than to a sweep.
 stopping a lane on a finding and nothing else. **The `T-EMAIL` auditor was asked
 directly whether any finding should block the next card in any lane and answered no**, so
 no lane was stopped.
+
+### `T3.5` — the scheduled audit, run 2026-09-03, read-only. **This is the one blocking `T3.6` — read it first.**
+
+Build plan §7 requires this audit before `T3.6` starts. It has run, changed nothing, and
+confirms rather than contradicts what `T3.5`'s own landing session had already found and
+journalled — the auditor re-derived it independently, including by running the detector
+against a live position-18 input, before reading `T3.5`'s own journal entry.
+
+**[HIGH] The competitor-gap rule contradicts its own worked example, and `T3.6` cannot be
+built as written until this is settled.** Plain terms: one signal — "a competitor ranks for
+a search and we don't" — is defined by main §7.3 to fire only when **we hold no position 20
+or better**. The same spec's own worked example, and the action the spec says that signal
+should trigger, both describe a store that *does* hold a position — #18 — being told to
+*improve* that existing page. Both cannot be true; #18 is inside "20 or better." **The code
+followed the literal rule** (a config number, `our_absent_position_max: 20`), so a store
+sitting at position 11–20 for a competitor-covered search produces **no signal at all** —
+confirmed by actually running it, not just reading it. `T3.6`'s own done-when, already
+written into the build plan, names exactly this scenario ("competitor-gap fixture yields
+... OPTIMIZE with a URL at #18") — a fixture the shipped code can never produce. **Two
+one-line fixes, and picking one is the founder's or the integrator's call, not a lane's**:
+move the config number to 10 (matching the competitor side's own threshold, which opens the
+whole 11–30 band), or rewrite `T3.6`'s done-when to name a position in 21–30 instead of #18.
+
+**[MEDIUM] The empty `store_pages.intent_class` column caps the existing-target check at
+"weak," never "strong," on every real store — confirmed independently, third card to report
+it.** One half of the check that decides "does the store already have a page for this" reads
+the *purpose* Shopify's own admin never asked the merchant to state explicitly. The database
+column for it exists and nothing writes it — traced directly to the line that reads it
+(`packages/jobs/src/scan/existing-target.ts:131`) and confirmed always null. The code's own
+handling is sound (an unknown purpose reads as "weak," not a false yes or no, which is the
+safe direction), but the practical ceiling is real: this lookup can currently never answer
+"strong" on a real store. Same open gap `T3.4` and `T3.5`'s own session already named — this
+is the third independent confirmation.
+
+**[LOW] Deleted-page detection still reads every page as "still there."** Already an open
+founder question from `T3.2`/`T8.0` (see below) — the auditor confirms the current handling
+is the safer of the two possible mistakes and flags it only for visibility, not as new.
+
+**[LOW] A shared test fixture contradicts one of its own worked examples' premises.** Worked
+example 3 assumes "no suitable existing URL," but the shared synthetic-store fixture (used by
+three lanes) auto-generates a collection page for every product family, including the one
+example 3 uses — so the fixture's own generated page list actually contradicts the example's
+setup. `T3.5` built its own test input by hand rather than from the fixture's generated list,
+so its own tests are unaffected — but if `T3.6` or `T3.7` ever feeds that fixture's generated
+pages straight into the check for this example, it will silently get OPTIMIZE instead of the
+intended CREATE. Worth telling whoever picks up `T3.6` rather than letting them discover it.
+
+**What the audit verified sound, not just read:** all of `T3.5`'s own test suites pass (826
+tests in `packages/core` plus the scan package), including the specific cases the card's
+done-when names; the contract stub report no longer lists `existingTargetCheck`; the check's
+return shape matches the frozen cross-lane interface exactly; `T3.5` touched only its own
+lane's directories; and the structural guarantee that nothing can create a page without
+running the check first (a value only the check itself can produce) holds up under a
+dedicated test.
+
+**The three questions, answered:**
+(a) **Blocks `T3.6`?** Yes — the HIGH finding. Everything else `T3.6` needs from this card
+(the check itself, the other four signal detectors, evidence shapes) is sound and ready.
+(b) **Blocks another lane?** No. `T4.1` (Lane D, the other consumer of the check) is not due
+to start yet by the plan's own sequencing.
+(c) **Needs a founder decision before real data?** Two: the position-20/#18 contradiction
+above, and whether/how `store_pages.intent_class` gets populated — no card in the plan claims
+it, and this is now the third card to say so (see the `T4.0` preparation section at the end
+of this file, item 8, which records the same gap as needing an owner rather than a column).
+
+**Consequence for this run: `T3.6` does not start.** Lane C stays held pending a founder
+answer to the position-20/#18 contradiction, exactly as `docs/handoff-next.md` anticipated.
+
 ### `T8.2` — the scheduled audit, run 2026-09-02, read-only
 
 Build plan §7 schedules an audit after `T8.2`. It has run. **Two high findings, neither
@@ -2707,3 +2867,326 @@ card, not against a remembered sentence about it.**
 - **Email sign-in is unfinished and unowned.** It shipped Google-only because no
   table existed for a magic link's single-use token. That table exists now. No card
   owns finishing it.
+
+## This run resumed 2026-09-03 — what was verified before touching anything
+
+**All four worktrees were level with `main` at `e698033`, clean, before any lane
+launched** — verified directly (`git status --short` in each), not assumed from this
+file. `sortiva-fd`, the previous integrator session, confirmed the same independently
+and left `docs/handoff-next.md` as the kick-off prompt for this run; it matches this
+file's own "Picking this up again" instructions and added no new information beyond
+restating them, except naming the file itself. All four worktrees were then
+fast-forwarded from `main` (docs-only commits) before any card launched.
+
+**Order followed, per `docs/handoff-next.md` and this file's "What to do first"**:
+(1) the `T3.5` audit, (2) `T2.7` in lane B, (3) `T9.7` in lane F, (4) prepare and start
+`T4.0` in a new Lane D worktree. `caffeinate -dimsu -t 21600` re-applied before
+launching anything.
+
+## `T4.0` preparation — the collected deferral list, each item verified against the code
+
+**Schema wave 3 is partly "the columns earlier cards were told to defer."** Collecting
+that list is the integrator's job, not the lane's — the same pattern `T8.0` followed.
+**Every item below was checked directly against `packages/db/migrations/*.sql` and the
+code that would consume each column, not taken from memory of this file or of
+`DECISIONS.md`** — `T8.0`'s own collected list had one item that was wrong (a "defence
+in depth" index that would have done the opposite of what it was named for), and the
+lane was right to refuse it, so this list does not get the benefit of the doubt either.
+**If the `T4.0` lane finds one of these wrong, the instruction is the same as it was for
+`T8.0`: stop and report, don't build it anyway.**
+
+1. **A `notification_type` enum value for a deletion-confirmation email.** Verified: the
+   enum (`packages/db/migrations/0000_wave1.sql:10`) has no such value, and
+   `email_sends.type` is that same enum. `T8.2` built the suppression bypass that would
+   let such a mail through (`EmailAudience.securityEmail`) and `T8.3` found nobody can
+   call it — a merchant who deletes their account gets no email at all today. **A second
+   half, found by `T8.3` and worth restating so `T4.0` doesn't have to rediscover it:**
+   `email_sends` and `notifications` both cascade-delete from `accounts`
+   (`packages/db/migrations/0000_wave1.sql:188` and the sibling FK on `notifications`),
+   so even once the enum value exists, the record of "we told them" is erased seven days
+   later by our own retention sweep — exactly the record account-deletion mail most
+   needs to survive. **The precedent already in this schema for exactly this shape**:
+   `spend_events.account_id` carries no foreign key to `accounts` and is pruned by age
+   only, specifically so deleting the payer doesn't erase the record of the payment
+   (`DECISIONS.md`, 2026-08-31, `R4`/`T2.0`). `T8.3`'s own recommendation was the same
+   treatment for this row. Whether to apply it is still this wave's call to make and
+   journal, not a founder question — it's an implementation shape, not a product change.
+
+2. **`products.options` / `products.metafields`.** Verified: `products`
+   (`packages/db/migrations/0002_wave2.sql:55`) has no such columns. `T2.4` named this
+   "the single highest-value schema-wave addition here" — without it, a store that
+   states its attributes in Shopify metafields or option names (rather than tags or
+   descriptions) yields fewer family axes; the family is still correct, it just says
+   less about what distinguishes its members. Works retroactively for nothing — a
+   store's existing rows only carry it after their next full sync.
+
+3. **A monthly roll-up table for Search Console history.** Verified: no such table
+   exists (`gsc_daily`/`gsc_query_daily` schema at `packages/db/src/schema/search.ts:45`
+   carries only the comment "kept for 16 months, then rolled up to monthly" with nothing
+   built to do the rolling). `T8.3`'s retention sweep prunes at 16 months with nowhere to
+   roll into, journalled as a known loss: Google itself serves only 16 months, so a
+   pruned row can never be re-fetched — the first store to cross that age loses its
+   earlier history for good, non-recoverably. **This card only needs to add the table.**
+   The job that fills it before `T8.3`'s prune runs is a separate follow-up, per
+   `T8.3`'s own journal entry.
+
+4. **An `article` column on `spend_events`, so `article_cost_finalized` can attribute
+   costs to one article.** Verified: `spend_events`
+   (`packages/db/migrations/0002_wave2.sql:279`) has no such column, and
+   `packages/core/src/ops/article-cost.ts` — built by `T8.4`, fully implemented — has
+   zero production callers (confirmed by grep: only its own barrel export references
+   it). Follow the same shape as `spend_events.account_id`: a plain column, no foreign
+   key to `articles.id`, so deleting an article doesn't erase what it cost to produce.
+
+5. **An incidents table.** Verified: no such table exists (confirmed no `CREATE TABLE
+   "incidents"` in any migration). `T8.4` built `incidentFrom()` and `listActiveFlags()`
+   in `packages/core/src/ops/kill-switches.ts` to read `ops_flags` rows as an
+   open-incident list instead, with a comment naming the reason: "there is no incidents
+   table and this card may not add one." What it can't do: record what an operator
+   *found* when they investigated a trip — only what raised it. This is a plain
+   addition, not a founder question; nothing about it changes existing behaviour.
+
+**Two items are founder questions (1 and 3) — collect the need, do not build either:**
+
+6. **A `sessions` table.** Founder question 3. Verified still absent (no `CREATE TABLE
+   "session`/`"sessions"` anywhere). Needed for "sign out everywhere" and instant
+   lockout; costs a database read on every authenticated request. **Do not add this in
+   `T4.0`** — if the founder says yes later, it is its own mini-wave, because it also
+   means changing the session strategy, which is Lane A territory.
+7. **A marker for a deleted inventory page.** Founder question 1. Verified
+   `store_pages` (`packages/db/migrations/0002_wave2.sql:107`) has no status/deleted-at
+   column. Two shapes are on the table (a single date field, or a status field with
+   room for "moved"/"unreachable" later) and the founder hasn't picked either. `T3.5`
+   surfaced a second option worth carrying forward if this ever gets built: "not seen by
+   the last completed walk" could stand in for a column, but only once something also
+   records that a walk *completed* — an interrupted walk would otherwise mark live pages
+   as gone. **Do not add this in `T4.0`.**
+
+**One item is not a column at all, and `T4.0` should not try to make it one:**
+
+8. **`store_pages.intent_class` exists and nothing writes it.** Verified: the column is
+   present (`packages/db/migrations/0002_wave2.sql:121`) and three separate cards have
+   now reported that nothing populates it — `T3.4` (cannibalization's same-intent check
+   fails closed on every row because of it), `T3.5` (weakens the existing-target check
+   the same way, on every real store), and this integrator's own read of both. **It
+   needs an owner who writes it — a producer — not a column, which already exists.** The
+   natural owners, per `DECISIONS.md`'s own suggestion, are the inventory sync (Lane C)
+   or the persona/families work (Lane B); neither has claimed it. Left here as an open
+   item for whoever next has room, not part of the schema wave.
+
+## `T9.7` LANDED — settings screens and the notification bell
+
+**Merged as `5d2e321` into `main`, two commits, full gate green** (nine of ten commands;
+`pnpm eval` red by design, unchanged). Tests **2,566**, up from 2,513 — **53 added**.
+
+Four Settings screens (Publishing, Store profile, Connections, Account) and a
+notification bell in the app shell's toolbar, all built against a route/schema/copy
+contract that earlier cards (`T1.2a`, `T8.1`–`T8.3`) had already written without a
+consumer — this card is mostly a real backend meeting mock fixtures for the first time,
+not new plumbing. Auto-publish's delivery-mode toggle drives an inline write-grant →
+blog-picker flow; the billing card renders the three cancellation facts verbatim; account
+deletion is type-to-confirm; the bell polls every 30 seconds with seen/read tiers.
+
+**Inspected before merging, not taken on trust:** diffstat confirmed every changed file
+sits inside Lane F's directories (`apps/web/app/(app)/**`, `packages/ui`); the copy
+addition (95 lines) is one contiguous block inserted after the billing keys, not
+appended at the tail, matching the standing instruction to reduce collision risk; `git
+diff` on `DECISIONS.md` read in full — six entries, each a real, well-reasoned choice
+with a nearest-spec citation, none silently deciding something outside the lane's
+authority.
+
+**One flake on the merged-tree gate, re-run and confirmed clean.** The first `pnpm test`
+run failed one timing-sensitive test
+(`packages/providers/src/shopify/limiter.test.ts`, a real-wall-clock pacing assertion,
+84ms measured against a ≥90ms floor) — the documented concurrent-load shape, not a
+regression. Ran the file alone (clean, 314ms) and the full suite again (clean, **2,566
+passing, 182 files**) before trusting it. Three other sessions were building at the time
+(`T2.7`, `T4.0`, and the now-finished `T3.5` audit).
+
+**Two real gaps found and correctly not built around**, both outside Lane F's directories:
+
+1. **Auto-publish's write-scope OAuth grant has no backend.** The Shopify provider
+   hard-codes read-only scopes into its one `authorizeUrl`, and the callback actively
+   discards any write scope Shopify returns (an existing invariant-21 test). The
+   "Grant access" button is wired to the only OAuth-start route that exists, which
+   cannot deliver what the button promises. **Needs a second start/callback pair in Lane
+   B's directories** (`apps/web/app/api/shopify`, `packages/providers/shopify`) plus a
+   route-table addition.
+2. **Store profile's business fields render read-only.** The only write route,
+   `POST /api/profile/confirm`, refuses a second call once confirmed — there is no
+   later-edit route for description/language/country/audience/tone or the top-seller
+   order, though main §6.8 and ui §9.2 both call this screen "permanently editable".
+   Keywords, competitors and the family report stay fully live on their own existing
+   routes. **Needs a profile-update endpoint in Lane B's `apps/web/app/api/profile`**,
+   or the spec's "permanently editable" scoped down to what already is.
+
+**A smaller, self-contained finding also journalled:** the bell currently renders every
+notification's generic line (`renderNotification` was built with a `resolved` parameter
+for exactly this and has no caller anywhere yet), because resolving a reference — an
+article's title, a page's name — into display text needs a lookup nothing provides. Not
+a defect in this card; the renderer's own designed degrade path, now actually visible
+because this is the first thing that calls it.
+
+**Files outside Lane F's directories: none.** No migration. `pnpm stubs:report`
+unchanged at 8. `env:check` unchanged at 38/38.
+
+**Next in lane F: `T9.8`, the M9 exit gate** — end-to-end Playwright flows against
+staging (or `next start` locally, since `pnpm dev` still cannot boot). **Launched
+after this section was written** — see the "Right now" note at the top of this file.
+
+## `T4.0` LANDED — schema wave 3: the content engine's tables, plus the wave's deferred columns. **M4 can now start.**
+
+**Merged as `9137904` into `main`, five commits, full gate green** (nine of ten
+commands; `pnpm eval` red by design, unchanged). Tests **2,594**, up from 2,566 —
+**28 added**. 55 tables now (41 + 14 new), verified directly against a fresh empty
+database, not taken from the lane's report (see below).
+
+**What it adds.** The card's own scope — `topics, articles, gate_decisions,
+article_product_refs, article_claims, article_labels, pattern_stats, refresh_log,
+not_interested, publish_intents` — plus every item from the integrator's collected
+deferral list except the two founder-question items and the one non-item, exactly as
+instructed: `products.options`/`.metafields`; `gsc_monthly`/`gsc_query_monthly`
+roll-up tables; `spend_events.article_id` (no foreign key, ledger-shaped, same
+reasoning as `spend_events.account_id`); `incident_findings` (what an operator found
+investigating a kill-switch trip, separate from `ops_flags` itself); and
+`deletion_confirmation_emails` plus one new `notification_type` enum value
+(`account_deletion_confirmed`), so the account-deletion email's send record survives
+the account row it confirms — the same no-foreign-key ledger shape, verified directly
+in the migration SQL (no `ALTER TABLE ... ADD CONSTRAINT` targets this table's
+`account_id` anywhere in the file).
+
+**`article_product_refs` is shaped around the founder's product-reference decision**
+(2026-09-01: prices live in articles as a reference to the current value, never a
+number), superseding main §13's literal `price_at_write` column — it carries
+`placeholder_key`, `fields_rendered`, `resolved_values_json` instead. `article_claims`
+enforces at the database level that a claim cannot exist without at least one evidence
+entry (a `CHECK` on `jsonb_array_length(evidence_json) >= 1`); a reference row must
+name at least one field to render (`CHECK` on `cardinality(fields_rendered) >= 1`).
+Both are the card's own named done-when items, confirmed firing in
+`packages/db/src/constraints-wave3.test.ts` (28/28 passing).
+
+**Correctly did not build the two founder-question items or the one non-item.**
+Verified directly in the diff: no `sessions` table, no deleted-page marker on
+`store_pages`, no column touching `store_pages.intent_class`.
+
+### Inspected before merging, not taken on trust — one real discrepancy found and corrected
+
+Diffstat confirmed every file outside `packages/db` was a necessary mechanical
+consequence of the new enum value (`packages/core/src/contracts/opportunities.ts`'s
+`NOTIFICATION_TYPES` list, `packages/core/src/notifications/matrix.ts` and
+`render.ts`, `packages/jobs/src/notify/assembler.ts` — all in Lane G's directories,
+each adding one row to an exhaustive `Record<NotificationType, ...>` the type checker
+already forces on every consumer, each with a clear comment, none touching Lane G's
+actual business logic). Read the full `DECISIONS.md` diff (nine entries) end to end —
+every choice traces to a precedent already in the codebase or an explicitly flagged
+open question, nothing decides anything a founder should have been asked, and two
+entries (the `article_product_refs.product_id` FK behaviour, the `gsc_monthly` roll-up
+dropping device/country) name real, stated costs rather than hiding them.
+
+**The one thing that didn't hold up: the lane reported `pnpm db:migrate` as
+"unreliable in this sandbox" and verified correctness a different way instead** (the
+same migrator function `packages/db/src/testing.ts` already uses for every constraint
+suite, against three fresh databases). **Checked independently and this is wrong** —
+`pnpm db:migrate` against a genuinely empty database works cleanly, both on `main`
+before this merge (41 tables) and on the merged tree after it (55 tables), confirmed
+twice with separate scratch databases. Whatever the lane's session hit, it wasn't a
+defect in the migration or a real sandbox limitation — recorded here so nobody carries
+the false claim forward. Not chased further since it doesn't change anything: the
+migration is correct and the standard gate step now confirms it directly.
+
+**Files outside Lane D's directories, all reviewed as legitimate:** the four
+notification-registry files above (Lane G — mechanical, enum-forced); `packages/ui/strings/en.json`
+(one line — the `account_deletion_confirmed` bell copy key, auto-merged); `packages/db/src/testing.ts`
+(added the 14 new tables to the shared truncate list, child-first, the same pattern
+`WAVE_2B_TABLES` already established — a shared registry every schema wave extends);
+`packages/core/openapi.json` (regenerated, one enum value, verified by hand to be
+exactly that). No lane-boundary violation found.
+
+**Two invariant tests caught real consequences of the new table/enum and both were
+fixed correctly:** `no-customer-data.test.ts` flagged `deletion_confirmation_emails.email`
+as looking like a shopper field — it's the merchant's own address, added to the
+allowlist with the same reasoning `accounts.email` already carries; `openapi.json` had
+drifted from the new enum value, regenerated and hand-verified to differ by exactly
+that one value.
+
+**What `M4`'s next cards inherit:** the tables exist; nothing populates them yet.
+`T4.1` (topic model & Gate 1) is the next card and can now start — it is not blocked by
+`T3.6`/`T3.7` (which stay held on founder question 8) since `T4.1` only needs the
+`existingTargetCheck` contract `T3.5` already filled, not the signal/opportunity
+pipeline `T3.6` would add. Two open shape questions explicitly left to whoever writes
+through these tables first, not settled here: `gate_decisions.outcome` is free text
+(no spec fixes its vocabulary yet); `article_claims.staleness` is a new three-band enum
+that may prove too coarse.
+
+## `T2.7` LANDED — confirmation API, the SSE progress stream, two chaos scenarios. **M2 is closed.**
+
+**Merged as `49506ea` into `main`, five commits, full gate green** (nine of ten
+commands; `pnpm eval` red by design, unchanged). Tests **2,599**, up from 2,594 —
+reconciles exactly against T2.7's own +5 over its 2,513 branch point. This was the M2
+exit gate — onboarding now runs, unattended, from a claimed domain all the way to the
+merchant's review screen, and confirming it hands the account off with nothing further
+this milestone owes it.
+
+**What it closes.** A new `awaiting_confirmation` step moves the domain
+`ingesting → needs_confirmation` and fires the review-ready notification once keywords
+and competitors are discovered — deliberately not gated on Search Console, which is a
+sibling step, not a dependency, so skipping GSC never stalls a merchant's onboarding.
+`GET /api/profile` assembles the whole review screen; `POST /api/profile/confirm` does
+the guarded `needs_confirmation → ready_for_planning` transition and, **only if that
+transition wins its race**, writes the merchant's edits — a losing double-click or
+retry touches no table. `GET /api/ingestion/status`/`stream` fill two routes that were
+already sitting in the frozen contract with a real consumer (Lane F's onboarding
+stepper, built weeks of build-time ago against a mock) and no owner — no lane's
+directory list named them, and this is the first card positioned to.
+
+**A real bug found and fixed in the chaos harness itself, not just in this card's own
+scenarios.** The harness guesses how many checkpoints a scenario has (previously a
+hardcoded 8) and narrows that guess once a clean pass reveals the true count. A
+scenario with genuinely fewer checkpoints than the guess — both new ones, at 1 and 6 —
+could have its very first kill-point draw overshoot, let the pass run to completion
+undisturbed, and then have every *retry* find the step already fully ledgered and
+report **zero kills exercised** despite being asked for several — a false "converged"
+with nothing actually interrupted. Fixed generally with an optional `initialCeiling`
+scenarios can declare; every existing scenario was unaffected because catalogue sync's
+per-page walk already has close to 8 checkpoints, which is exactly why nobody had hit
+this before. `pnpm chaos` is now 5 tests, up from 3.
+
+**Two design choices worth knowing about, both journalled rather than silently
+decided:**
+- `keywords.confirmed` — the column `T3.3` already reads, that nothing before this
+  card ever set — is now written **account-wide, all at once, by "Confirm profile."**
+  There's no per-keyword confirm control on the screen to key it off anything finer.
+  **One consequence flagged rather than hidden:** competitor suggestions read confirmed
+  keywords, so a merchant's very first visit to the review screen — before they've
+  clicked Confirm — sees an empty suggestions list. Pre-existing gap, not introduced
+  here, just newly visible now that the column's meaning is pinned down.
+- `T2.4`'s flagged four-into-three family-grouping-source mismatch (the database enum
+  has four values, the frozen `familySchema` contract names three) is resolved for the
+  first screen that exposes it: `collection`→`taxonomy` (the more honest name for what
+  that value already means, per `T2.4`'s own reasoning), `split_variant` and
+  `fact_cluster` both →`fact_clustering` (closer in kind to each other than to either
+  other value), `embedding` unchanged. An approximation on the merchant-visible badge,
+  not a hidden one — `split_variant` should get its own contract value at the next
+  re-freeze.
+
+**One open question recorded, not answered — worth carrying forward the way `T-START`
+was for the equivalent gap upstream.** Confirming a profile does the guarded
+transition and nothing else; main §6.9 says reaching `ready_for_planning` is supposed
+to start the Opportunity Engine's onboarding run, which seeds the first calendar —
+but that machinery (`signal_runs`, `TopicScheduler`) is `T3.7`'s and doesn't exist yet
+on any branch. **Same shape as `T2.1`'s open question that `T-START` eventually
+closed**: the handler that would react to this state doesn't exist, so nothing can
+call it yet. Whoever lands `T3.7` (blocked on founder question 8 in the meantime)
+inherits deciding whether `confirmProfile` gains a callback port or a sweep picks up
+every `ready_for_planning` account.
+
+**Files outside Lane B's directories, flagged and reviewed as legitimate:**
+`apps/web/app/api/ingestion/**` and `packages/db/src/stores/ingestion.ts` — verified
+directly in `packages/core/src/api/routes.ts` that both routes were already in the
+frozen contract, and in the lane ownership table (build plan §3) that no lane's row
+claims `apps/web/app/api/ingestion` at all — an omission in the table, not a
+deliberate exclusion, and no other lane plausibly owns the ingestion pipeline's own
+progress screen. No migration.
+
+**M2 is now complete: `T-START` → `T2.1` → `T2.2` → `T2.3` → `T2.4` → `T2.5` → `T2.6`
+→ `T2.7`, all landed.** Nothing left in this milestone. Lane B is idle.
