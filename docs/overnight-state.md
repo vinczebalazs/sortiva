@@ -3488,7 +3488,7 @@ because `sortiva-85` flagged it independently and it is Lane C territory, curren
 held by this session's `T3.6` build. Not picked up yet; no card in the plan names
 either half, the same shape as `store_pages.intent_class`'s open ownership above.
 
-## FOUNDER — a typed topic title becomes a `QueryCluster` through one model call on Add. **Relayed, not yet independently verified — reconcile against `sortiva-85`'s actual `DECISIONS.md` entry once `lane-b` next merges.**
+## FOUNDER — a typed topic title becomes a `QueryCluster` through one model call on Add. **CONFIRMED — `sortiva-85`'s actual `DECISIONS.md` entry landed in `R-STREAM`'s commit and matches this relay exactly.**
 
 **`T4.1` flagged a real gap rather than guessing: nothing turns a merchant's typed
 topic title into the search-term/intent-class/family-id triple ("a `QueryCluster`")
@@ -3668,4 +3668,58 @@ additive, verified: one new enum value, one new tier mapping, no existing behavi
 touched); `eslint.config.mjs` (two new composition-root exemptions, identical shape to
 existing entries, flagged in the report as required). No migration.
 
-**Next in lane D: `T4.3`** (evidence pack, Gate 2, article construction) — not started.
+**Next in lane D: `T4.3`** (evidence pack, Gate 2, article construction) — **launched after
+this section was written, running now, see "Right now" at the top.**
+
+## `R-STREAM` LANDED — the stand-in report told a lie, and a test now stops that happening again
+
+**Merged by `sortiva-85` directly (founder present, own gate run), two commits
+(`fa95c85` + merge `29ea126`), already an ancestor of this session's `main`** —
+verified independently before recording: `git log`, the actual diff, the new test file
+read in full, and re-run myself (`pnpm typecheck` clean, `pnpm stubs:report` → 9,
+`seams-wired.test.ts` 6/6 passing against a fresh check). Tests **2,780**, up from 2,774.
+
+**The finding is worse than the remediation card that named it.** `pnpm stubs:report`
+exists so a milestone's exit gate cannot pass while one of its seams is still a
+stand-in — and a seam leaves that report by a person deleting a line from the script,
+a judgement checked by nobody. `T2.2`'s session deleted the change-stream's line with a
+note claiming "the change stream is served in production by `DatabaseCatalogEvents`."
+**That sentence was false.** `DatabaseCatalogEvents` is constructed nowhere outside its
+own test, and the job that would drain the stream is registered nowhere. The *writing*
+half genuinely works — a merchant's edit really is recorded — but nothing has ever read
+it. **`M2`'s exit gate (`T2.7`, already declared closed in this file) passed partly on
+a false report line.** Recorded here plainly rather than softened; it does not reopen
+`T2.7` — the underlying mechanism (writing changes down) is real and correct, only the
+"and something reads it" half was fictional, and that half was never `T2.7`'s to build.
+
+**The line is restored** (`new doubles.StubCatalogEvents()`, `scripts/stub-report.mjs`),
+with a note stating what's actually true instead of what was hoped. `pnpm stubs:report`
+is **9**, up from 8 — the correct number, not a regression.
+
+**The durable fix is a test, not the restored line — a line can be deleted again by the
+next well-meaning session.** New: `packages/core/src/contracts/seams-wired.test.ts`.
+**A seam may be absent from the stand-in report only when its real implementation is
+constructed somewhere that is genuinely not a test** — a class instantiating itself
+inside its own defining file doesn't count, closing the exact loophole that let a
+private helper or a self-test satisfy the check while production never used it. Proved
+non-vacuous: deleting the restored line makes two tests fail, each naming what to do
+about it. **Two seams are already asserted this way, both re-verified as real**: the
+notification emitter (Shopify composition root, since `T8.1`/founder authorization) and
+`DbExistingTargetCheck` (the calendar's add-topic route, confirmed genuinely wired as
+of `T4.2`, not just claimed). **Any future card that fills a seam and deletes its stub
+line must add a matching entry here, with a reason — this is now enforced, not just
+asked for.**
+
+**The reader stays deliberately unwired — a founder decision, not an oversight.** Wiring
+it would be a real production behaviour change that would sit dormant anyway: the
+recurring schedule is off pending four handlers (founder question 4, answered "wait"
+this run), so neither the change stream nor the nightly re-read runs on a clock today.
+**The change-stream consumer (`packages/jobs/src/inventory/drain.ts`, Lane C territory)
+is available whenever someone wants it** — the founder's stated reasoning is that it
+and the recurring-schedule switch-on should be judged together, not separately, since
+turning one on without the other accomplishes nothing.
+
+**Also journalled in this commit**: the founder's `QueryCluster`-via-one-model-call
+decision that unblocked `T4.2` (previously recorded above as "relayed, not yet
+independently verified" — **now confirmed**: the actual `DECISIONS.md` entry matches
+exactly what was relayed, word for word in substance).
