@@ -38,6 +38,10 @@ const REAL_IMPLEMENTATION: Record<string, { symbol: string; why: string }> = {
     symbol: 'DbNotificationEmitter',
     why: 'the Shopify composition root hands this out, so a notification reaches a real row rather than a stand-in',
   },
+  StubOpportunitySource: {
+    symbol: 'DbOpportunitySource',
+    why: 'the onboarding scan’s calendar-seeding step (packages/jobs/src/scan/onboarding.ts) builds it and calls acceptedContentOpportunities(), and that step is registered as the signal_scan_onboarding_sweep crontab task, so a confirmed account really reaches this seam in production',
+  },
 }
 
 function sourceFiles(dir: string, out: string[] = []): string[] {
