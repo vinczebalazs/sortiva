@@ -1,3 +1,4 @@
+import { and, desc, eq, inArray } from 'drizzle-orm'
 import type { Db } from '../client'
 import { gateDecisions } from '../schema'
 import type { AccountScope } from '../scope'
@@ -48,4 +49,50 @@ export async function insertGateDecision(
     .returning()
   if (!row) throw new Error('failed to insert the gate decision')
   return row
+}
+
+/**
+ * The most recent decision on this topic for one of the given gates —
+ * `GET /api/calendar`'s `rejection` field reads this for a
+ * `rejected_by_gate` day, main §8.6's "which gate, plain-language reason".
+ */
+export async function findLatestGateDecisionForTopic(
+  db: Db,
+  scope: AccountScope,
+  topicId: string,
+  gates: readonly (1 | 2 | 3)[] = [1, 2, 3],
+): Promise<GateDecisionRow | undefined> {
+  const [row] = await db
+    .select()
+    .from(gateDecisions)
+    .where(
+      and(
+        eq(gateDecisions.accountId, scope.accountId),
+        eq(gateDecisions.topicId, topicId),
+        inArray(gateDecisions.gate, [...gates]),
+      ),
+    )
+    .orderBy(desc(gateDecisions.decidedAt))
+    .limit(1)
+  return row
+}
+
+/** Bulk variant for the calendar list — every topic's latest decision in one query rather than one per topic. */
+export async function latestGateDecisionsForTopics(
+  db: Db,
+  scope: AccountScope,
+  topicIds: readonly string[],
+): Promise<Map<string, GateDecisionRow>> {
+  if (topicIds.length === 0) return new Map()
+  const rows = await db
+    .select()
+    .from(gateDecisions)
+    .where(and(eq(gateDecisions.accountId, scope.accountId), inArray(gateDecisions.topicId, [...topicIds])))
+    .orderBy(desc(gateDecisions.decidedAt))
+
+  const latest = new Map<string, GateDecisionRow>()
+  for (const row of rows) {
+    if (!latest.has(row.topicId)) latest.set(row.topicId, row)
+  }
+  return latest
 }

@@ -3,9 +3,12 @@ import {
   manualAddOutcome,
   isLimitedIntelligence,
   substanceInventory,
+  accountAttribution,
+  GATE_DECISION_EVENT,
   type ExistingTargetCheck,
   type Gate1ReasonCard,
   type Logger,
+  type PosthogCapture,
   type QueryCluster,
 } from '@sortiva/core'
 import {
@@ -44,6 +47,8 @@ export interface AdmitManualTopicDeps {
   readonly existingTargetCheck: ExistingTargetCheck
   readonly now?: () => Date
   readonly logger?: Logger
+  /** Optional so the gate runs without telemetry in a test. Main §14.7's `gate_decision` event — wired here by T4.2; see DECISIONS 2026-09-03 T4.2. */
+  readonly capture?: Pick<PosthogCapture, 'capture'>
 }
 
 export interface AdmitManualTopicInput {
@@ -226,6 +231,15 @@ export async function admitManualTopic(
     },
     now,
   )
+
+  // Main §14.7's Quality event, T4.1's gate_decisions row given a PostHog
+  // capture to go with it (see DECISIONS 2026-09-03 T4.2). No per-criterion
+  // scores here — Gate 1 makes no model call and has none to carry.
+  deps.capture?.capture({
+    event: GATE_DECISION_EVENT,
+    attribution: accountAttribution(input.accountId),
+    properties: { gate: 1, outcome: gate1.outcome, prompt_version: null, model_id: null },
+  })
 
   if (gate1.admitted) {
     return {

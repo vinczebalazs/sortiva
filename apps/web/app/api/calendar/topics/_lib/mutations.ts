@@ -1,0 +1,131 @@
+import {
+  moveTopicRequestSchema,
+  pinTopicRequestSchema,
+  topicSchema,
+  type ConflictCode,
+} from '@sortiva/core'
+import { findTopic, type Db } from '@sortiva/db'
+import { moveTopic, pinTopic, vetoTopic } from '@sortiva/jobs'
+import type { AccountHandler } from '../../../auth/_lib/session'
+
+/**
+ * Veto, move and pin — the three guarded mutations on an existing topic,
+ * main §8.7. Each is a thin parse → call `packages/jobs/src/generation` →
+ * serialise; the state machine and the conflict-code mapping live there and
+ * in `packages/core/src/calendar`, not here.
+ */
+
+export interface TopicMutationDeps {
+  readonly db: Db
+  readonly now?: () => Date
+}
+
+type RouteCtx = { readonly params: Promise<{ topicId: string }> }
+
+const CONFLICT_MESSAGES: Partial<Record<ConflictCode, string>> = {
+  topic_already_published: 'This topic has already resolved and can no longer be changed.',
+  topic_already_generating: 'This topic already started generating.',
+  topic_pinned: 'That day is pinned and cannot be displaced.',
+  calendar_date_in_past: 'Pick a date in the future.',
+}
+
+function conflict(code: ConflictCode): Response {
+  return Response.json(
+    { error: { code, message: CONFLICT_MESSAGES[code] ?? 'That change could not be made.' } },
+    { status: 409 },
+  )
+}
+
+function notFound(): Response {
+  return Response.json(
+    { error: { code: 'topic_not_found', message: 'That topic is gone.' } },
+    { status: 404 },
+  )
+}
+
+export function makeVetoTopicHandler(deps: TopicMutationDeps): AccountHandler<RouteCtx> {
+  return async (_request, { scope, route }) => {
+    const { topicId } = await route.params
+    const existing = await findTopic(deps.db, scope, topicId)
+    if (!existing) return notFound()
+
+    const result = await vetoTopic({ db: deps.db, ...(deps.now ? { now: deps.now } : {}) }, { accountId: scope.accountId, topicId })
+    if (!result.ok) return conflict(result.code)
+    return Response.json({ ok: true })
+  }
+}
+
+export function makeMoveTopicHandler(deps: TopicMutationDeps): AccountHandler<RouteCtx> {
+  return async (request, { scope, route }) => {
+    const { topicId } = await route.params
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return Response.json({ error: { code: 'invalid_body', message: 'Expected a JSON body with a date.' } }, { status: 422 })
+    }
+    const parsed = moveTopicRequestSchema.safeParse(body)
+    if (!parsed.success) {
+      return Response.json({ error: { code: 'invalid_body', message: 'Provide a date as YYYY-MM-DD.' } }, { status: 422 })
+    }
+
+    const result = await moveTopic(
+      { db: deps.db, ...(deps.now ? { now: deps.now } : {}) },
+      { accountId: scope.accountId, topicId, toDate: parsed.data.date },
+    )
+    if (!result.ok) return result.code === 'not_found' ? notFound() : conflict(result.code)
+    return Response.json(topicSchema.parse(serialiseTopicForResponse(result.topic)))
+  }
+}
+
+export function makePinTopicHandler(deps: TopicMutationDeps): AccountHandler<RouteCtx> {
+  return async (request, { scope, route }) => {
+    const { topicId } = await route.params
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return Response.json({ error: { code: 'invalid_body', message: 'Expected a JSON body with pinned.' } }, { status: 422 })
+    }
+    const parsed = pinTopicRequestSchema.safeParse(body)
+    if (!parsed.success) {
+      return Response.json({ error: { code: 'invalid_body', message: 'Provide pinned as a boolean.' } }, { status: 422 })
+    }
+
+    const result = await pinTopic(
+      { db: deps.db, ...(deps.now ? { now: deps.now } : {}) },
+      { accountId: scope.accountId, topicId, pinned: parsed.data.pinned },
+    )
+    if (!result.ok) return result.code === 'not_found' ? notFound() : conflict(result.code)
+    return Response.json(topicSchema.parse(serialiseTopicForResponse(result.topic)))
+  }
+}
+
+/**
+ * `topicSchema` carries fields (`why`, `signalType`, `articleId`,
+ * `monthlySearchVolume`, `rejection`) a move/pin response has no reason to
+ * re-fetch — the merchant dragged or pinned a chip they can already see, and
+ * this response's whole job is confirming where it landed. Filled with the
+ * same "nothing new to say" defaults `GET /api/calendar` uses for the fields
+ * it cannot cheaply answer either.
+ */
+function serialiseTopicForResponse(topic: Awaited<ReturnType<typeof findTopic>>) {
+  if (!topic) throw new Error('serialiseTopicForResponse called with no topic')
+  return {
+    id: topic.id,
+    title: topic.title,
+    scheduledFor: topic.scheduledDate,
+    state: topic.state,
+    intentClass: topic.intentClass,
+    kind: topic.kind,
+    source: topic.source,
+    pinned: topic.pinned,
+    targetKeyword: topic.targetKeyword,
+    monthlySearchVolume: null,
+    why: { templateKey: topic.whyLine ?? 'topic.auto', params: {} },
+    opportunityId: topic.opportunityId,
+    signalType: null,
+    articleId: null,
+    rejection: null,
+  }
+}

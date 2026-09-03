@@ -434,3 +434,67 @@ export async function setOpportunityTopicId(
     .set({ topicId, updatedAt: now })
     .where(and(eq(opportunities.accountId, scope.accountId), eq(opportunities.id, opportunityId)))
 }
+
+/** Bulk lookup for the calendar list — every topic's originating opportunity in one query. */
+export async function findOpportunitiesByIds(
+  db: Db,
+  scope: AccountScope,
+  opportunityIds: readonly string[],
+): Promise<OpportunityRow[]> {
+  if (opportunityIds.length === 0) return []
+  return db
+    .select()
+    .from(opportunities)
+    .where(and(eq(opportunities.accountId, scope.accountId), inArray(opportunities.id, [...opportunityIds])))
+}
+
+export async function findOpportunityById(
+  db: Db,
+  scope: AccountScope,
+  opportunityId: string,
+): Promise<OpportunityRow | undefined> {
+  const [row] = await db
+    .select()
+    .from(opportunities)
+    .where(and(eq(opportunities.accountId, scope.accountId), eq(opportunities.id, opportunityId)))
+    .limit(1)
+  return row
+}
+
+/**
+ * The veto flow's own transition, main §7.9: "dismissed - user said no; goes
+ * to the not-interested list." Guarded on the row still being open, read and
+ * written inside one transaction so the `from` status the PostHog event
+ * carries is the status that was actually true the instant this update
+ * committed, not one read moments earlier and possibly stale.
+ */
+export async function dismissOpportunityGuarded(
+  db: Db,
+  scope: AccountScope,
+  opportunityId: string,
+  now: Date = new Date(),
+): Promise<{ readonly row: OpportunityRow; readonly from: OpportunityRow['status'] } | undefined> {
+  return db.transaction(async (tx) => {
+    const [before] = await tx
+      .select({ status: opportunities.status })
+      .from(opportunities)
+      .where(and(eq(opportunities.accountId, scope.accountId), eq(opportunities.id, opportunityId)))
+      .limit(1)
+    if (!before || !(OPEN_OPPORTUNITY_STATUSES as readonly string[]).includes(before.status)) {
+      return undefined
+    }
+    const [row] = await tx
+      .update(opportunities)
+      .set({ status: 'dismissed', updatedAt: now })
+      .where(
+        and(
+          eq(opportunities.accountId, scope.accountId),
+          eq(opportunities.id, opportunityId),
+          eq(opportunities.status, before.status),
+        ),
+      )
+      .returning()
+    if (!row) return undefined
+    return { row, from: before.status }
+  })
+}

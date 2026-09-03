@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm'
+import { eq, and, gte, lte, ne, inArray } from 'drizzle-orm'
 import type { Db } from '../client'
 import { topics } from '../schema'
 import type { AccountScope } from '../scope'
@@ -57,5 +57,201 @@ export async function findTopic(db: Db, scope: AccountScope, topicId: string): P
     .from(topics)
     .where(and(eq(topics.accountId, scope.accountId), eq(topics.id, topicId)))
     .limit(1)
+  return row
+}
+
+/** Every topic scheduled in `[from, to]`, inclusive — the calendar's own read, `GET /api/calendar`. */
+export async function listTopicsInRange(
+  db: Db,
+  scope: AccountScope,
+  from: string,
+  to: string,
+): Promise<TopicRow[]> {
+  return db
+    .select()
+    .from(topics)
+    .where(
+      and(
+        eq(topics.accountId, scope.accountId),
+        gte(topics.scheduledDate, from),
+        lte(topics.scheduledDate, to),
+      ),
+    )
+}
+
+/**
+ * The dates in `[from, to]` a new placement may not land on — every row that
+ * is not `vetoed`. A vetoed day is an intentional gap again (main §8.7: "the
+ * calendar keeps the gap ... replenishment fills it later"), so it is the one
+ * state excluded here.
+ */
+export async function occupiedDatesInRange(
+  db: Db,
+  scope: AccountScope,
+  from: string,
+  to: string,
+): Promise<Set<string>> {
+  const rows = await db
+    .select({ scheduledDate: topics.scheduledDate })
+    .from(topics)
+    .where(
+      and(
+        eq(topics.accountId, scope.accountId),
+        gte(topics.scheduledDate, from),
+        lte(topics.scheduledDate, to),
+        ne(topics.state, 'vetoed'),
+      ),
+    )
+  return new Set(rows.map((r) => r.scheduledDate))
+}
+
+/** The non-vetoed row on this exact date, if any — what "the day is occupied" means for move and add. */
+export async function findTopicOnDate(
+  db: Db,
+  scope: AccountScope,
+  date: string,
+): Promise<TopicRow | undefined> {
+  const [row] = await db
+    .select()
+    .from(topics)
+    .where(
+      and(eq(topics.accountId, scope.accountId), eq(topics.scheduledDate, date), ne(topics.state, 'vetoed')),
+    )
+    .limit(1)
+  return row
+}
+
+/**
+ * The daily job's dequeue flip, main §8.7/§14.3.1: `planned → generating`,
+ * guarded so a redelivered dispatch or a second scheduler pass affects
+ * nothing the first already claimed. `undefined` means the guard's zero-row
+ * case — someone else already moved this topic on; the caller stops
+ * (invariant 15).
+ */
+export async function beginGenerating(
+  db: Db,
+  scope: AccountScope,
+  topicId: string,
+  now: Date = new Date(),
+): Promise<TopicRow | undefined> {
+  const [row] = await db
+    .update(topics)
+    .set({ state: 'generating', updatedAt: now })
+    .where(
+      and(eq(topics.accountId, scope.accountId), eq(topics.id, topicId), eq(topics.state, 'planned')),
+    )
+    .returning()
+  return row
+}
+
+/**
+ * The veto transition, guarded on the topic still being in one of the three
+ * states main §8.7 allows a veto from (`planned`, `generating`, `in_review`).
+ * `undefined` means the guard failed — the topic had already resolved, or a
+ * concurrent dequeue/veto got there first (the race this card's done-when
+ * names). The caller does not decide what else a veto implies (discarding a
+ * draft, dismissing the opportunity, recording the fingerprint) — see
+ * `packages/jobs/src/generation/veto-topic.ts`.
+ */
+export async function vetoTopicGuarded(
+  db: Db,
+  scope: AccountScope,
+  topicId: string,
+  reason: string | null,
+  now: Date = new Date(),
+): Promise<TopicRow | undefined> {
+  const [row] = await db
+    .update(topics)
+    .set({ state: 'vetoed', vetoReason: reason, updatedAt: now })
+    .where(
+      and(
+        eq(topics.accountId, scope.accountId),
+        eq(topics.id, topicId),
+        inArray(topics.state, ['planned', 'generating', 'in_review']),
+      ),
+    )
+    .returning()
+  return row
+}
+
+/** The move transition, guarded on the topic still being `planned`. */
+export async function moveTopicGuarded(
+  db: Db,
+  scope: AccountScope,
+  topicId: string,
+  newDate: string,
+  now: Date = new Date(),
+): Promise<TopicRow | undefined> {
+  const [row] = await db
+    .update(topics)
+    .set({ scheduledDate: newDate, updatedAt: now })
+    .where(
+      and(eq(topics.accountId, scope.accountId), eq(topics.id, topicId), eq(topics.state, 'planned')),
+    )
+    .returning()
+  return row
+}
+
+/**
+ * A drag onto an occupied day swaps the two dates in one transaction — ui
+ * spec §6.1. `a.date`/`b.date` are each topic's own *current* date (the
+ * caller has already read both rows); this function exchanges them. Both
+ * halves are guarded on `planned`; if either has moved on since the caller
+ * checked, the whole swap is rolled back rather than leaving one topic moved
+ * and the other not.
+ */
+export async function swapTopicDates(
+  db: Db,
+  scope: AccountScope,
+  a: { readonly topicId: string; readonly date: string },
+  b: { readonly topicId: string; readonly date: string },
+  now: Date = new Date(),
+): Promise<{ readonly a: TopicRow; readonly b: TopicRow } | undefined> {
+  return db.transaction(async (tx) => {
+    const [rowA] = await tx
+      .update(topics)
+      .set({ scheduledDate: b.date, updatedAt: now })
+      .where(
+        and(eq(topics.accountId, scope.accountId), eq(topics.id, a.topicId), eq(topics.state, 'planned')),
+      )
+      .returning()
+    if (!rowA) return undefined
+
+    const [rowB] = await tx
+      .update(topics)
+      .set({ scheduledDate: a.date, updatedAt: now })
+      .where(
+        and(eq(topics.accountId, scope.accountId), eq(topics.id, b.topicId), eq(topics.state, 'planned')),
+      )
+      .returning()
+    if (!rowB) {
+      // Roll the transaction back rather than leaving `a` moved with `b`
+      // untouched — Postgres discards both writes when the callback throws.
+      throw new SwapGuardFailed()
+    }
+    return { a: rowA, b: rowB }
+  }).catch((error) => {
+    if (error instanceof SwapGuardFailed) return undefined
+    throw error
+  })
+}
+
+class SwapGuardFailed extends Error {}
+
+/** The pin/unpin transition, guarded on the topic not already `published`. */
+export async function pinTopicGuarded(
+  db: Db,
+  scope: AccountScope,
+  topicId: string,
+  pinned: boolean,
+  now: Date = new Date(),
+): Promise<TopicRow | undefined> {
+  const [row] = await db
+    .update(topics)
+    .set({ pinned, updatedAt: now })
+    .where(
+      and(eq(topics.accountId, scope.accountId), eq(topics.id, topicId), ne(topics.state, 'published')),
+    )
+    .returning()
   return row
 }
