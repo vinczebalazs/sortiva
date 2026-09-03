@@ -175,6 +175,13 @@ export default tseslint.config(
       // exempt. A route handler and a queue task are both called by their
       // framework, so neither has a caller of ours to be passed these by.
       'apps/web/app/api/shopify/_lib/config.ts',
+      // T4.2's own two composition roots, on the identical shape: each hands
+      // a raw `db()` handle to a constructor (`AnthropicLlmClient`,
+      // `DataForSeoProvider`, `DbExistingTargetCheck`, or straight through as
+      // `CalendarDeps.db`/`AddTopicDeps.db`) that a repository call later
+      // scopes with an `AccountScope`. Neither file runs a query itself.
+      'apps/web/app/api/calendar/_lib/config.ts',
+      'apps/web/app/api/calendar/topics/_lib/config.ts',
     ],
     rules: { 'sortiva/no-raw-db-access': 'off' },
   },
