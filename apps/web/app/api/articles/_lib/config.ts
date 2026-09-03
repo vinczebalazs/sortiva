@@ -10,6 +10,7 @@ import { loadPrompt } from '@sortiva/llm/prompts'
 import type { GenerationTaskDeps } from '@sortiva/jobs/generation/tasks'
 import type { ReplenishmentTaskDeps } from '@sortiva/jobs/generation/replenish-tasks'
 import { DbOpportunitySource } from '@sortiva/jobs/scan/opportunity-source'
+import { DbNotificationEmitter } from '@sortiva/jobs/notify/emitter'
 import type { ReviewDeps } from './review'
 
 /**
@@ -96,6 +97,10 @@ export function generationTaskDeps(): GenerationTaskDeps {
     judgePrompt: loadPrompt('judge', 1),
     contradictionPrompt: loadPrompt('contradiction', 1),
     revisePrompt: loadPrompt('revise', 1),
+    // The bell, for the one thing this cycle has to tell a merchant: a draft
+    // is waiting for them. Given the factory rather than a handle, for the
+    // same reason `getDb` is — nothing opens a connection at registration.
+    notifications: new DbNotificationEmitter(db),
     capture: generationCapture(),
   }
 }

@@ -7,6 +7,7 @@ import {
   type DequeueBlockReason,
   type IntentClass,
   type Logger,
+  type NotificationEmitter,
   type PosthogCapture,
   type SeoDataProvider,
   type SeoLocale,
@@ -14,6 +15,7 @@ import {
 import {
   accountScope,
   beginGenerating,
+  findArticleById,
   findLatestGateDecisionForTopic,
   findPlannedTopicOnDate,
   findQueryClusterById,
@@ -69,6 +71,14 @@ export interface DailyGenerationDeps extends Omit<GenerateArticleDeps, 'db'> {
   /** The shared connection pool — the per-account lock needs a connection of its own. */
   readonly pool: pg.Pool
   readonly seo: SeoDataProvider
+  /**
+   * The bell. Only used on accounts that asked to see drafts before they
+   * publish — without it a draft moves into review and nobody is told, which
+   * is what made that setting unusable. Optional so a scenario harness can run
+   * the cycle without one; the running product must supply it, and
+   * `GenerationTaskDeps` makes that a compile error rather than a silence.
+   */
+  readonly notifications?: NotificationEmitter
   readonly capture?: Pick<PosthogCapture, 'capture'>
   readonly now?: () => Date
   readonly logger?: Logger
@@ -195,9 +205,10 @@ export async function runDailyGenerationForAccount(
         // Both halves, in this order: the article first, because the calendar
         // entry's state is what the merchant's screen reads and it must never
         // say "waiting for you" about an article that is not.
-        await markArticleInReview(deps.db, scope, result.articleId, now)
+        const moved = await markArticleInReview(deps.db, scope, result.articleId, now)
         await markTopicInReviewGuarded(deps.db, scope, topic.id, now)
         awaitsReview = true
+        await announceDraftForReview(deps, accountId, result.articleId, moved !== undefined, log)
       }
     }
 
@@ -229,6 +240,52 @@ export async function runDailyGenerationForAccount(
   }
 
   return outcome
+}
+
+/**
+ * "Your draft is waiting."
+ *
+ * Draft review is a setting a merchant switches on to have the last word
+ * before anything appears on their site. Switching it on used to mean the
+ * day's article simply stopped appearing, with nothing sent and nothing said;
+ * this is the sending.
+ *
+ * Two things it is careful about, and each is a way of telling somebody
+ * something untrue:
+ *
+ *  - **It never announces a draft that is not waiting.** The move into review
+ *    is a guarded update, and it matches nothing when the merchant vetoed the
+ *    topic while the article was being written — the race main §8.7 describes.
+ *    So when the update matched nothing, the article is read back, and only an
+ *    article actually sitting in review is announced. A discarded one is not.
+ *  - **It announces the same draft once.** The key is the article's own id, so
+ *    a redelivered job — and a retry of a run that died between the move and
+ *    this call, which finds the article already in review — writes no second
+ *    row and sends no second email.
+ */
+async function announceDraftForReview(
+  deps: DailyGenerationDeps,
+  accountId: string,
+  articleId: string,
+  moved: boolean,
+  log: Logger,
+): Promise<void> {
+  if (!deps.notifications) {
+    log.warn('draft_ready_notification_not_configured', { account_id: accountId, article_id: articleId })
+    return
+  }
+
+  if (!moved) {
+    const current = await findArticleById(deps.db, accountScope(accountId), articleId)
+    if (current?.state !== 'in_review') return
+  }
+
+  await deps.notifications.emit(
+    'draft_ready_for_review',
+    { article_id: articleId },
+    articleId,
+    accountAttribution(accountId),
+  )
 }
 
 /**

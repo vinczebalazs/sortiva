@@ -10,6 +10,7 @@ import { accountScope, articlesReadyForDelivery, schema, tripAccountFlag, type D
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
 import { loadPrompt, MockLlmClient } from '@sortiva/llm'
 import type { PageFetcher } from '@sortiva/providers'
+import { DbNotificationEmitter } from '../notify/emitter'
 import { runDailyGenerationForAccount } from './daily-cycle'
 
 /**
@@ -273,6 +274,10 @@ describe.skipIf(!available)('the daily generation cycle', () => {
       judgePrompt: JUDGE_PROMPT,
       contradictionPrompt: CONTRADICTION_PROMPT,
       revisePrompt: REVISE_PROMPT,
+      // The real bell against the real tables, not a double: the thing worth
+      // proving is that a retried day writes one row, and that is the unique
+      // constraint's job rather than a stub's.
+      notifications: new DbNotificationEmitter(db),
       now: () => NOW,
       logger: silentLogger,
     }
@@ -556,5 +561,99 @@ describe.skipIf(!available)('the daily generation cycle', () => {
     expect(article!.state).toBe('draft')
     const [topic] = await db.select().from(schema.topics).where(eq(schema.topics.id, topicId))
     expect(topic!.state).toBe('generating')
+  })
+
+  /**
+   * Telling the merchant a draft is waiting. Without this, switching draft
+   * review on made the day's article simply stop appearing: it sat in review
+   * and nothing said so.
+   */
+  describe('the draft-is-waiting notification', () => {
+    async function bell(): Promise<{ type: string; dedupeKey: string; payload: unknown }[]> {
+      const rows = await db
+        .select()
+        .from(schema.notifications)
+        .where(eq(schema.notifications.accountId, accountId))
+      return rows.map((r) => ({ type: r.type, dedupeKey: r.dedupeKey, payload: r.payloadJson }))
+    }
+
+    async function withDraftReviewOn(): Promise<void> {
+      await db
+        .update(schema.accountSettings)
+        .set({ draftReview: true })
+        .where(eq(schema.accountSettings.accountId, accountId))
+    }
+
+    it('rings once for a draft that is waiting, and does not ring again on a redelivered day', async () => {
+      await withDraftReviewOn()
+      const { familyId, productIds } = await seedFamily()
+      await seedTopic(familyId, TODAY)
+
+      const llm = new MockLlmClient()
+      enqueueWholeRun(llm, productIds[0]!)
+      await runDailyGenerationForAccount(deps(llm), accountId)
+
+      const [article] = await db.select().from(schema.articles).where(eq(schema.articles.accountId, accountId))
+      expect(await bell()).toEqual([
+        {
+          type: 'draft_ready_for_review',
+          // The article's own id, so the same draft can only ever be
+          // announced once however many times the job is delivered.
+          dedupeKey: article!.id,
+          // References, never words: the headline is looked up when the bell
+          // is rendered.
+          payload: { article_id: article!.id },
+        },
+      ])
+
+      await runDailyGenerationForAccount(deps(llm), accountId)
+      expect(await bell()).toHaveLength(1)
+    })
+
+    it('says nothing on a store that never asked to review drafts', async () => {
+      const { familyId, productIds } = await seedFamily()
+      await seedTopic(familyId, TODAY)
+
+      const llm = new MockLlmClient()
+      enqueueWholeRun(llm, productIds[0]!)
+      await runDailyGenerationForAccount(deps(llm), accountId)
+
+      expect(await bell()).toEqual([])
+    })
+
+    /**
+     * The race main §8.7 describes: the merchant vetoes the topic while the
+     * article is being written. The move into review then matches nothing and
+     * the draft is already gone — telling them it is waiting would be telling
+     * them something untrue about an article they threw away.
+     */
+    it('says nothing when the draft was discarded while it was being written', async () => {
+      await withDraftReviewOn()
+      const { familyId, productIds } = await seedFamily()
+      await seedTopic(familyId, TODAY)
+
+      const llm = new MockLlmClient()
+      enqueueWholeRun(llm, productIds[0]!)
+      // The veto lands after the article exists and before the run reaches the
+      // review transition.
+      const vetoedMidRun = {
+        complete: async (request: Parameters<LlmClient['complete']>[0]) => {
+          const answer = await llm.complete(request)
+          if (request.callType === 'judge') {
+            await db
+              .update(schema.articles)
+              .set({ state: 'discarded' })
+              .where(eq(schema.articles.accountId, accountId))
+          }
+          return answer
+        },
+      } as LlmClient
+
+      await runDailyGenerationForAccount(deps(vetoedMidRun), accountId)
+
+      const [article] = await db.select().from(schema.articles).where(eq(schema.articles.accountId, accountId))
+      expect(article!.state).toBe('discarded')
+      expect(await bell()).toEqual([])
+    })
   })
 })
