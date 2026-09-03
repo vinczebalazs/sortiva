@@ -221,6 +221,12 @@ describe('resolving a mention', () => {
   })
 })
 
+/** The rejection reason, or `null` where the address was accepted. */
+function problemWith(raw: string, domain: string): string | null {
+  const check = checkPublishedUrl(raw, domain)
+  return check.ok ? null : check.problem
+}
+
 describe('the address a merchant says they published at', () => {
   it('accepts the claimed domain and a subdomain of it', () => {
     expect(checkPublishedUrl('https://example.com/blog/bottles', 'example.com')).toEqual({
@@ -238,12 +244,12 @@ describe('the address a merchant says they published at', () => {
       problem: 'off_domain',
     })
     // The lookalike that a plain "ends with" test would let through.
-    expect(checkPublishedUrl('https://notexample.com/bottles', 'example.com').problem).toBe('off_domain')
+    expect(problemWith('https://notexample.com/bottles', 'example.com')).toBe('off_domain')
   })
 
   it('rejects something that is not a web address at all', () => {
-    expect(checkPublishedUrl('bottles', 'example.com').problem).toBe('malformed')
-    expect(checkPublishedUrl('javascript:alert(1)', 'example.com').problem).toBe('malformed')
-    expect(checkPublishedUrl('ftp://example.com/x', 'example.com').problem).toBe('malformed')
+    expect(problemWith('bottles', 'example.com')).toBe('malformed')
+    expect(problemWith('javascript:alert(1)', 'example.com')).toBe('malformed')
+    expect(problemWith('ftp://example.com/x', 'example.com')).toBe('malformed')
   })
 })

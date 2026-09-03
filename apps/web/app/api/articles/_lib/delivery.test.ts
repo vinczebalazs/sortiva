@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { okSchema } from '@sortiva/core'
+import { okSchema, toProductRow } from '@sortiva/core'
 import {
   accountScope,
   insertArticleProductRefs,
@@ -16,11 +16,7 @@ import {
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
 import { eq } from 'drizzle-orm'
 import { withAccount } from '../../auth/_lib/session'
-import {
-  makeConfirmPublishedUrlHandler,
-  makeExportArticleHandler,
-  type RouteCtx,
-} from './delivery'
+import { makeConfirmPublishedUrlHandler, makeExportArticleHandler } from './delivery'
 
 /**
  * The two things a merchant on export mode does: download the article, and tell
@@ -149,17 +145,20 @@ describe.skipIf(!available)('export delivery routes', () => {
       accountScope(accountId),
       [
         {
-          shopifyProductId: '900',
-          title: 'Trailblazer 750',
-          rawBodyHtml: null,
-          productType: 'Bottle',
-          tags: [],
-          variants: [
-            { id: '1', title: 'One size', sku: 'TB-750', price, compareAtPrice: null, available: true },
-          ],
+          // Built through the catalogue's own mapper rather than by hand, so
+          // this test never names the quarantined description column — the
+          // same reason the mapper exists.
+          ...toProductRow({
+            id: 900,
+            title: 'Trailblazer 750',
+            handle: 'trailblazer-750',
+            product_type: 'Bottle',
+            variants: [{ id: 1, title: 'One size', sku: 'TB-750', price, inventory_quantity: 4 }],
+          }),
+          // The shop's currency, which the mapper has nowhere to read from
+          // yet — see DECISIONS 2026-09-04 T5.1.
           priceRange: { min: price, max: price, currency: 'USD' },
           updatedAt: NOW,
-          checksum: `checksum-${price}`,
         },
       ],
       NOW,
