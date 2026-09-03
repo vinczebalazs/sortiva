@@ -1,6 +1,12 @@
 import { sql } from 'drizzle-orm'
 import type pg from 'pg'
-import { generationHourFor, localClock, type Logger, type PosthogCapture } from '@sortiva/core'
+import {
+  generationHourFor,
+  localClock,
+  type Logger,
+  type NotificationEmitter,
+  type PosthogCapture,
+} from '@sortiva/core'
 import { accountClocks, systemScope, type Db } from '@sortiva/db'
 import { rules } from '@sortiva/rules'
 import { registerTask } from '../runtime/tasks'
@@ -42,6 +48,14 @@ export interface GenerationTaskDeps extends Omit<DailyGenerationDeps, 'db' | 'po
   readonly getDb: () => Db
   /** Factories rather than handles, so registering at process start opens no connection. */
   readonly getPool: () => pg.Pool
+  /**
+   * Required here although the cycle itself will run without one: this is the
+   * type the running product is built from, and a store with draft review
+   * switched on and no bell wired is a store whose articles quietly stop
+   * appearing. A missing emitter is a build failure rather than a silence
+   * somebody notices weeks later.
+   */
+  readonly notifications: NotificationEmitter
   readonly capture?: Pick<PosthogCapture, 'capture'>
   readonly now?: () => Date
   readonly logger?: Logger

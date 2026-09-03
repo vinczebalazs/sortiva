@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { makeWorkerUtils, type WorkerUtils } from 'graphile-worker'
-import { silentLogger } from '@sortiva/core'
+import { silentLogger, StubNotificationEmitter } from '@sortiva/core'
 import { schema, type Db } from '@sortiva/db'
 import {
   TEST_DATABASE_URL,
@@ -71,6 +71,8 @@ describe.skipIf(!available)('the generation-cycle sweep', () => {
       judgePrompt: loadPrompt('judge', 1),
       contradictionPrompt: loadPrompt('contradiction', 1),
       revisePrompt: loadPrompt('revise', 1),
+      // The sweep only queues jobs; nothing it does reaches the bell.
+      notifications: new StubNotificationEmitter(),
       now: () => now,
       logger: silentLogger,
     }
