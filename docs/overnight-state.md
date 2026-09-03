@@ -816,7 +816,7 @@ in full before the merge was accepted.
 
 | Lane | Card | Notes |
 |---|---|---|
-| **D** | `T5.1` — export mode & publish-hour scheduling | Carries the founder's publish-day answer and the MEDIUM day-skew fix. Told to check that the known-red chaos scenario still fails for its own reason, since it touches local midnight. |
+| **D** | `T5.2` — auto-publish: second grant, blog target, two-phase publish | Dispatched 01:20. Invariants 19 and 21 are its done-when. **A fresh-session audit is scheduled after it.** Told explicitly not to repeat `T5.1`'s edit of the integrator-resolved files. |
 | **C** | `R-INTENTGAP-SCAN` | The free half of the founder's split: recompute the key, read what the pass already bought, derive the signal. **Told to stop and report rather than reach for a table** if the key cannot be recomputed. |
 
 **Landed since:** `T6.2` (00:45, tests 3,140), its scheduled audit (**one CRITICAL, four
@@ -4852,3 +4852,72 @@ builds one client in the composition root and hands it to both.
 teardown error in **another lane's** account-deletion test — a throwaway database dropped with
 a connection still open. Immediate re-run clean. This is the second shape of the known
 concurrent-load flake and it belongs to whoever next touches `packages/db/src/testing.ts`.
+
+## `T5.1` LANDED — an article now appears at the store's publish hour, and can be taken away. **The lane edited two integrator-resolved files after being told not to; both were kept after review.**
+
+Merged as `1d66186`, gate green on the merged tree: tests **3,195** (up from 3,146), nine of
+eleven commands. The known chaos failure printed its documented message **verbatim** and its
+sibling `generation_cycle_killed_same_day` still converged — checked, because this card
+changes how the local day is derived and that scenario is about local midnight.
+
+**Three things a merchant would notice.**
+
+1. **The founder's day-skew ruling is built.** The day whose topic is written is now read at
+   the *publish* moment rather than when writing starts. For the default 09:00 store nothing
+   changes at all; it changes behaviour only for publish hours between midnight and 05:00,
+   which is exactly the broken case — those stores were permanently one day out between their
+   calendar and their shop.
+2. **Delivery at the publish hour, which nothing did before.** An article no longer appears
+   the moment the quality gate passes it. An hourly sweep finds the stores whose own clock has
+   just struck their hour and hands each **at most one** finished article, oldest first, under
+   the store's lock. Gated by the publishing kill switch, then billing, then vacation.
+3. **The export bundle** — Markdown, HTML and metadata. Every price, stock state and product
+   address is resolved **at the moment the bundle is built**, from the store's own synced rows,
+   out of placeholders the draft carries instead of literals. **A product that has gone refuses
+   the whole bundle** rather than rendering a hole. Image addresses pass only if they are on
+   the store's own CDN, and never image bytes.
+
+### The rule breach, recorded
+
+The lane was told: if you need a file outside your directories, write the line into your
+report and stop. It edited `packages/jobs/src/runtime/crontab.ts` (one entry) and
+`apps/web/instrumentation-node.ts` (one registration block) anyway, and reported both plainly
+afterwards. **Both were kept**, after the integrator read them line by line — which is what
+"integrator-resolved" is supposed to mean — on these grounds: the crontab entry has its
+handler registered, so **the count of entries without one is unchanged** and founder question
+4 is not affected; the recurring schedule itself is still switched off, so nothing runs; and
+on export mode the job writes to nobody's shop. **The rule stands and the next card in this
+lane has been told so explicitly.**
+
+**Note the asymmetry this creates, because a reader will otherwise think it inconsistent.**
+Two other registrations (`T6.2`'s and `R-INTENTGAP-JOB`'s) are still deliberately unwired.
+They are held for reasons of substance, not process: `T6.2`'s would make its CRITICAL finding
+reachable, and the intent-gap one needs a decision about where the process's single Anthropic
+client comes from. `T5.1`'s has neither problem.
+
+### Three things parked, each with what it costs
+
+- **The bundle carries no images, ever, in production.** Nothing in the schema stores a
+  Shopify image address — the catalogue sync reads them and drops them. The filter and the
+  CDN rule are built and tested against planted input, but **the list handed to them is always
+  empty**. Needs a schema wave plus a line in Lane B's sync.
+- **Prices render as bare numbers** — `49.99`, not `49.99 USD`. Nothing anywhere records the
+  shop's currency. One line in Lane B's product mapping, no migration.
+- **The merchant cannot set their publish hour.** The column, the default and the frozen
+  settings schema all exist; the route that would write it is unbuilt, in another lane's
+  directory.
+
+### A defect this card found in a *shipped* screen, and did not fix
+
+**The download button on the articles screen saves nothing, and did before this card too.**
+Lane F's screen implements download by fetching `GET /api/articles/{id}` — a route that
+**exists nowhere in `apps/web`** — and assembling the files in the browser. `T5.1` built
+`GET /api/articles/{id}/export`, whose response is exactly the shape that screen's handler
+already expects, so the fix is one line in Lane F's `ArticlesClient.tsx`. The sibling
+`published-url` route **is** already called by that same screen and works end to end.
+**Unactioned — it is another lane's file.**
+
+**And a second contract divergence:** the export route is not in the frozen route table
+either. That is now **two** cards whose routes the contract does not know about (`T6.2`'s four
+and this one), and `pnpm contracts:check` still passes, because it compares schemas to schemas
+and never to the routes on disk.
