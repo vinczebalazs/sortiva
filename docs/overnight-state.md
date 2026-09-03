@@ -2176,8 +2176,11 @@ Lane C was told this when it was resumed.
 
 ## Questions waiting on the founder
 
-**Three of eight are now answered — 1, 4 and 8 — by the founder directly, at 12:40 this
-run, in a second session (`sortiva-85`) running alongside this one.** Verified
+**Twelve questions now exist. Three are answered — 1, 4 and 8 — by the founder directly,
+at 12:40 this run, in a second session (`sortiva-85`) running alongside this one. Nine
+remain open: 2, 3, 5, 6, 7, and 9–12, the last four raised by `T4.4`'s audit and listed
+at the end of this section. `R-PRIVACY`, `R-STREAM` and `R-DEV` have all since been
+authorised and fixed.** Verified
 independently before recording: `git log` shows the three commits
 (`d3758c7`/`ec2f213`/`5a6b46d`) actually on `main`, authored by the founder's own git
 identity, each with a `DECISIONS.md` entry read in full. **Five remain open — 2, 3, 5,
@@ -2382,6 +2385,40 @@ and it accepts that positions 11–20 simply produce nothing.
 that done-when names exactly the #18 fixture the shipped code can never produce. Lane C
 stops after the `T3.5` audit and does not start `T3.6` until this is answered.
 
+**9. Where does an article go when the merchant overrules the quality gate?** Today it
+returns to `draft` and rejoins the ordinary delivery path. It has to leave `rejected` or
+nothing would ever deliver it, and no state means "rejected but publish anyway". **The
+`T4.4` auditor's assessment, which this session agrees with: the reasoning is right and
+the state is the weak part.** `draft` already means "written, not yet graded", so that one
+value now covers three situations, and the only thing separating them is a flag whose
+meaning is "excluded from learning", not "cleared to deliver". If publishing later asks
+"which drafts go out today", it gets un-graded articles too unless every query remembers
+to join the gate-decision table. *Options:* keep `draft`, or add a fifth state meaning
+"cleared to deliver" in the next schema wave — **cheaper now than after `T5.1` builds on
+it.** *Either way, a second question:* should an overridden article still pass through
+draft review on accounts that have review turned on?
+
+**10. May the judge's own sentences be shown to the merchant verbatim?** The constitution
+says every user-facing "why" renders from templates, never from a model. The spec says
+the rejection card and the override dialog restate the judge's failing criteria in plain
+language. Gate 3 currently interpolates the model's own sentence into the merchant's
+reason card. **This is a contradiction between the constitution and the spec, not a coding
+mistake** — it needs a ruling either way. (Note: a justification may also come back in
+the store's own language inside an otherwise-English sentence.)
+
+**11. Is a weaker quality bar for non-English stores acceptable at launch?** A Danish
+store's drafts are checked for numbers, measurements, percentages and durations, but not
+for superlatives, absolutes, attributed statements or comparisons — and the merchant
+cannot see the difference. It *is* recorded on every gate decision, so it is auditable
+rather than silent. *Options:* accept for launch and say so, or fund per-locale word lists
+before the first non-English store.
+
+**12. Should the judge's model be lockable?** An operator can point the judge at the cheap
+model today with one environment variable that ships in `.env.example`, and neither the
+code nor CI would notice — **and the spend would be misreported, since the expensive price
+list is kept.** Invariant 11 says never substitute a smaller model for the judge; the code
+honours that everywhere except this one configuration route.
+
 ## A lane broke the one-card rule, and it cost something
 
 **Lane F did not stop after `T9.1`.** Its brief said "do not start another card"
@@ -2431,6 +2468,95 @@ Small, real, and each belongs to a named next card rather than to a sweep.
   independently pointed three separate places at the same path. They agree.
 
 ## Audit findings, unactioned
+
+### `T4.4` — the scheduled audit, run 2026-09-03, read-only. **Two HIGH findings, and four decisions for the founder.**
+
+Required by build plan §7 before `T4.5`. It has run, changed nothing, and **cleared
+`T4.5` to start**. It verified every claim independently rather than reading the report —
+including running the checks against sample sentences to find what they miss.
+
+**What it confirmed sound, and these are the load-bearing ones:** the ordering claim
+genuinely holds (no model call can be spent before every free check passes — every branch
+read, no path around it); the judge is genuinely blind, on the first grade *and* the
+regrade; a third repair attempt is unreachable within a run and cannot be bought by
+raising the config number; information gain's exception ends the run with zero repair
+calls; the calibration exclusion is correct and correctly account-scoped, including the
+`NOT IN`-with-NULL trap that would have silently emptied it; the citation check really is
+independent of the writer's markers; and `judge.eval` genuinely discriminates — a
+degenerate judge scoring everything 4 posts errors of 0.95–1.70 against a 0.5 ceiling and
+12 false passes.
+
+**[HIGH] A Gate 3 decision does not record which thresholds decided it.** Invariant 9
+requires `rules_version` — the hash of the numbers file — stamped on every gate decision,
+which is the whole point of logging them to audit drift. The audit blob carries scores,
+justifications and failed criteria, but no rules version, and the table has no column for
+one. **Repo-wide, not new here** (Gates 1 and 2 are the same), but `T4.4`'s own
+calibration query is the first consumer that needs it. Fix is one line into the existing
+JSON blob — no migration.
+
+**[HIGH] The self-contradiction check is skipped on a repaired draft.** Every other free
+check re-runs on the revision; this one does not. **A repair is a rewrite of exactly the
+sections the judge objected to — the most likely moment for a second, different figure to
+appear** — and the regrade that follows never asks about internal consistency. The revise
+prompt asks the writer not to contradict itself; nothing verifies it.
+
+**[MEDIUM] The contradiction ruling fails open.** Only verdicts marked `contradiction` are
+kept, and nothing requires one verdict per candidate pair — a model returning an empty
+array, or silently dropping the pair that mattered, reads as "no contradiction".
+
+**[MEDIUM] The judge can still be downgraded, through configuration.** In code it is
+properly locked: the request names no model, a per-call override is refused for judging.
+But the tier resolves through `ANTHROPIC_MODEL_SONNET`, an environment variable shipped in
+`.env.example`, which accepts any model id. Pointing it at Haiku silently downgrades the
+judge **and misreports the spend**, since the Sonnet price list is kept.
+
+**[MEDIUM] The title, meta description and every heading escape the citation and strength
+checks.** The checks walk intro, section bodies and FAQ answers only — confirmed by
+running it. So *"The 5 best hiking packs under 2 kg"* as a title carries a number and a
+superlative, uncited, and passes. **The title is the most-read line and the one that
+appears in search results.**
+
+**[MEDIUM] The checkable-content detector misses several common ways of stating a fact** —
+verified by running it: `"IP67 rated"` (spec codes), `"holds twenty litres"` (written-out
+numbers), `"the quietest motor"` / `"our top-rated option"` (only a fixed 21-word
+superlative list, no general `-est`), `"half what the Beta does"`. Each is a sentence that
+can then assert anything with no citation. **The mechanism is right; the word lists are
+the gap.**
+
+**[MEDIUM] Near-duplicate detection against the ranking pages cannot realistically fire.**
+Similarity is measured as the share of the *draft's* five-word runs found in the
+comparison text, and the stored competitor excerpt is capped at ~250 words — so a
+1,200-word draft that copied it verbatim scores ~0.20 against a 0.6 threshold. The
+own-articles half compares full bodies and works. **A check that cannot fire looks exactly
+like a check that is passing.**
+
+**[MEDIUM] The override exists as parts and nothing binds them.** The flag write, the audit
+payload and the dialog copy all exist and are tested, but nothing calls any of them (no
+`/api/articles` route exists yet) and `'overridden'` is never written to `gate_decisions`
+by any path. Whoever wires it must remember two calls, in order, in one transaction.
+Not a defect in what shipped — the shape most likely to be got wrong later.
+
+**[MEDIUM] The generation pipeline has no idempotency — a retry pays for a whole second
+article.** No derived key, no lock, no checkpoint; a re-run after a crash creates a second
+article row (`keyword-2`) and pays again for the claim plan, draft, contradiction ruling
+and judge. **Nothing re-enters it today** (it is not registered as a job), so this is a
+handoff requirement for `T4.5`, which owns orchestration — not a `T4.4` defect.
+
+**Four LOW findings:** two `judge.eval` gold cases can't catch a false pass (gold
+`informationGain: 3` is below the live floor, so humans failed them too, but neither is
+marked `passed: false`); the eval's error metric treats `passed` as a phantom criterion;
+three of four word lists match on substrings, so *"That claim is misleading"* reads as a
+superlative and *"Our bestselling pack"* likewise — false rejects, the acceptable
+direction, but each costs an article; and one reason string says "a revision didn't fix
+it" on a path where no repair was attempted.
+
+**The three questions, answered:** (a) **Blocks `T4.5`? No** — but `T4.5` must own
+idempotency, and should know a passed article's state is `draft`, the same value it had
+before grading, so only the `gate_decisions` row distinguishes "graded and passed" from
+"never graded" after a crash. (b) **Blocks another lane? No** — `JudgeLite` is usable as
+frozen by `T6.2`; `T5.1`/`T5.2` inherit the override's landing state; whoever builds
+pattern learning must reproduce invariant 12's exclusion by hand, as there is no shared
+helper. (c) **Founder decisions: four — see the section below.**
 
 **Nothing here has been acted on. That is deliberate** — the overnight rules permit
 stopping a lane on a finding and nothing else. **The `T-EMAIL` auditor was asked
