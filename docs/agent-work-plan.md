@@ -521,6 +521,18 @@ Done when: `pnpm dev` starts and serves `/` and `/api/health`; a gate step prove
 **Why this is not a lane's to take.** It is the same family as the defect `T-BOOT` repaired — a module resolved one way at build time and another at run time — and the founder ruled on that one deliberately, choosing "load on first use, plus a lint rule" and **explicitly rejecting** "mark the package external to the server bundle". The obvious fix here (declaring the job library external, or keeping it out of the dev bundle) is that rejected option wearing different clothes, so it should be settled by the same person rather than picked at night by an integrator.
 Note: **this is pre-existing, not a regression from the 2026-09-02 run.** The start-up hook has imported the jobs package since well before it. Its cost is that every developer runs against `next start` or not at all, and that two browser-flow suites are dead locally.
 
+### Mini-wave, authorised 2026-09-03 by the founder
+
+Schema wave 3 (`T4.0`) closed deliberately without this, because the founder had not
+picked its shape. The shape is now picked, so it needs a wave of its own — a feature card
+may not add a migration (§3, "Schema ownership").
+
+**T4.0a — Schema mini-wave: a store page can be recorded as gone** · integrator to assign
+Scope: one migration adding a status field to `store_pages` naming which condition the row is in — live or gone, with room for a further condition such as "moved" or "unreachable" to be added later without a second migration. Existing rows default to live. **Migration only**: nothing in this card writes the new value or reads it, and the inventory walk is untouched.
+Read first: main §12.3; `DECISIONS.md` `2026-09-03 — FOUNDER — A deleted store page gets a status field`; `DECISIONS.md` `2026-09-02 — T3.2` (the original deferral) and the `T4.0` preparation list in `docs/overnight-state.md` (item 7).
+Done when: the migration applies forward, every existing `store_pages` row reads as live, and a constraint test proves the field cannot hold a value outside the named set.
+Note: the founder chose the status field over a single deleted-at date, and rejected inferring deletion from "not seen by the last completed walk" — that option needs something to record that a walk *completed*, and an interrupted walk would otherwise mark live pages as gone. **Two follow-ups this card does not do**, and neither is a founder question: the producer that sets the value when a page disappears, and teaching `T3.5`'s existing-target check to skip a page that is gone — which is the reason the field exists, since today the product can recommend improving a page a merchant has deleted.
+
 ### M8 — Notifications, email, lifecycle, ops · Lane G
 
 **T8.0 — Schema wave 4**

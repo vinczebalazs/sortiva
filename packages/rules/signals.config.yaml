@@ -138,7 +138,12 @@ defaults:
       # them keeps one competitor's quirk from setting our roadmap.
       competitors_ranking_min: 2
       competitor_position_max: 10
-      our_absent_position_max: 20
+      # How well we must already rank before this stops counting as a gap. At
+      # 10, a store sitting anywhere in 11-30 still produces a signal, and the
+      # band below turns that into "improve the page you have" rather than
+      # "write a second one". Raising it back toward 20 silences positions
+      # 11-20 completely, which is what it used to do.
+      our_absent_position_max: 10
       # Where our own relevant page already sits in this band, the answer is to
       # improve it rather than write a second one competing with it.
       optimize_position_min: 11

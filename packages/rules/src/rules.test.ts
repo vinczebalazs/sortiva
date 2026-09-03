@@ -43,7 +43,7 @@ const NAMED_THRESHOLDS: ReadonlyArray<readonly [path: string, spec: string]> = [
   ['signals.existing_page_intent_gap.serp_top_n', 'main §7.3 — top-5 SERP pages'],
   ['signals.competitor_coverage_gap.competitors_ranking_min', 'main §7.3 — ≥ 2 business competitors'],
   ['signals.competitor_coverage_gap.competitor_position_max', 'main §7.3 — rank ≤ 10'],
-  ['signals.competitor_coverage_gap.our_absent_position_max', 'main §7.3 — we hold no position ≤ 20'],
+  ['signals.competitor_coverage_gap.our_absent_position_max', 'main §7.3 — we hold no position ≤ 20; set to 10, see DECISIONS.md 2026-09-03'],
   ['signals.competitor_coverage_gap.optimize_position_min', 'main §7.3 — relevant URL at 11–30'],
   ['signals.competitor_coverage_gap.optimize_position_max', 'main §7.3 — relevant URL at 11–30'],
   ['signals.product_family_coverage_gap.revenue_share_min', 'main §7.3 — ≥ 10% of 90d revenue'],

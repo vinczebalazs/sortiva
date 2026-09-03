@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "rules_version": "9fb26ae9bc2eec0cf191512346e24d61c5d231691f85e29cd7acb5b253713760",
+  "rules_version": "2bd23161cec8987808ea96ed3e892097a538fbcacd0b258c369e0091d9c59e87",
   "defaults": {
     "signals": {
       "striking_distance": {
@@ -59,7 +59,7 @@
         "needs_gsc": false,
         "competitors_ranking_min": 2,
         "competitor_position_max": 10,
-        "our_absent_position_max": 20,
+        "our_absent_position_max": 10,
         "optimize_position_min": 11,
         "optimize_position_max": 30
       },
@@ -384,7 +384,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -708,7 +708,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -1032,7 +1032,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -1356,7 +1356,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -1680,7 +1680,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -2004,7 +2004,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -2328,7 +2328,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -2652,7 +2652,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -2976,7 +2976,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -3300,7 +3300,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -3624,7 +3624,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -3948,7 +3948,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -4272,7 +4272,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -4596,7 +4596,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -4920,7 +4920,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -5244,7 +5244,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -5568,7 +5568,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -5892,7 +5892,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -6216,7 +6216,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -6540,7 +6540,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
@@ -6864,7 +6864,7 @@
           "needs_gsc": false,
           "competitors_ranking_min": 2,
           "competitor_position_max": 10,
-          "our_absent_position_max": 20,
+          "our_absent_position_max": 10,
           "optimize_position_min": 11,
           "optimize_position_max": 30
         },
