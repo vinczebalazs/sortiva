@@ -80,3 +80,5 @@ export {
   type OpportunityStatusActor,
   type SignalRunSummary,
 } from './events'
+
+export { toContractOpportunity, type StoredOpportunity } from './contract-mapping'
