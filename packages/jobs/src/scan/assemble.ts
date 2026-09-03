@@ -57,6 +57,7 @@ import {
   type Db,
 } from '@sortiva/db'
 import type { RulesLayer } from '@sortiva/rules'
+import { rebuildQueryClustersForAccount } from './clusters'
 import { DbExistingTargetCheck } from './existing-target'
 import { runtimeLogger } from '../runtime/logging'
 
@@ -197,9 +198,20 @@ export async function assembleGscInputs(
 ): Promise<GscAssembly> {
   const db = deps.db
   const now = (deps.now ?? (() => new Date()))().toISOString()
-  const { pages: pageList, index: pages } = await pageFacts(db, accountId)
+  const { index: pages } = await pageFacts(db, accountId)
   const minImpressions = deps.rules.clusters.min_query_impressions
 
+  // Clusters have to be current at the moment this scan reads them — nothing
+  // else rebuilds them on a schedule of its own (`clusters.ts`'s own doc
+  // comment names the weekly scan, this card, as the caller). Skipped rather
+  // than thrown when there is no live GSC connection: `rebuildQueryClustersForAccount`
+  // reads that state itself and answers `not_connected`, and this function is
+  // never called in that branch anyway (the caller in `run.ts` only invokes
+  // it once `accountIsLimitedIntelligence` is false).
+  await rebuildQueryClustersForAccount(
+    { db, ...(deps.now ? { now: deps.now } : {}), ...(deps.logger ? { logger: deps.logger } : {}) },
+    accountId,
+  )
   const clusterRows = await listQueryClusters(db, accountScope(accountId))
   const clusters = clusterRows.map((row) => ({
     headQuery: row.headQuery,
