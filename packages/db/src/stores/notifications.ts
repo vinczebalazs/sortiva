@@ -8,6 +8,7 @@ import {
   openMerchantTasks,
   unappliedOptimizeRecommendations,
 } from '../repositories/notifications'
+import { articlesAwaitingReview, unconfirmedExportedArticles } from '../repositories/articles'
 import { accountScope } from '../scope'
 
 /**
@@ -51,6 +52,20 @@ export function makeNotificationStore(options: NotificationStoreOptions = {}): N
 
     markRead(accountId, notificationId) {
       return markNotificationRead(database(), accountScope(accountId), notificationId)
+    },
+
+    async draftsAwaitingReview(accountId) {
+      const rows = await articlesAwaitingReview(database(), accountScope(accountId))
+      return rows.map((row) => ({ refs: { article_id: row.articleId }, since: row.since }))
+    },
+
+    async unconfirmedExportUrls(accountId, publishedBefore) {
+      const rows = await unconfirmedExportedArticles(
+        database(),
+        accountScope(accountId),
+        publishedBefore,
+      )
+      return rows.map((row) => ({ refs: { article_id: row.articleId }, since: row.since }))
     },
 
     openMerchantTasks(accountId) {

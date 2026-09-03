@@ -1,24 +1,23 @@
 import {
-  captureStubUsed,
   monthlySummaryContent,
   noticeContent,
-  registerStub,
   unsubscribeUrl as buildUnsubscribeUrl,
   mintUnsubscribeToken,
-  accountAttribution,
   type EmailAssembler,
   type EmailContent,
   type EmailSendRecord,
   type HeldBackTopic,
   type MonthlySummaryFacts,
   type NoticeFacts,
-  type PosthogCapture,
   type EmailableType,
 } from '@sortiva/core'
 import {
   accountScope,
+  findArticleById,
   findNotification,
+  heldBackTopicsInMonth,
   opportunityMonthFacts,
+  publishedArticleCountInMonth,
   type Db,
 } from '@sortiva/db'
 
@@ -32,31 +31,12 @@ import {
  * produces the generic wording rather than a name that is no longer true.
  */
 
-/**
- * Articles and quality-gate decisions live in tables schema wave 3 creates. Until
- * then a title cannot be looked up and a month cannot report what went live.
- *
- * Registered rather than silently returning nothing: a summary that reports an
- * empty month is indistinguishable from a store that had a quiet one, and the
- * difference matters enormously to whoever reads it.
- */
-export const EMAIL_CONTENT_STUB = 'EmailFacts.articles'
-
-registerStub({
-  contract: EMAIL_CONTENT_STUB,
-  filledBy: 'D — T4.0 (schema wave 3: articles, topics and gate decisions)',
-  behaviour:
-    'article titles fall back to the generic wording; the monthly summary reports no articles published and no topics held back',
-  mustBeGoneBy: 'M4',
-})
-
 export interface AssemblerDeps {
   readonly getDb: () => Db
   /** Public origin, for the links in the email. */
   readonly appUrl?: string
   /** Signs the one-click unsubscribe links. */
   readonly unsubscribeSecret?: string
-  readonly capture?: Pick<PosthogCapture, 'capture'>
   readonly now?: () => Date
 }
 
@@ -125,7 +105,7 @@ export function makeEmailAssembler(deps: AssemblerDeps): EmailAssembler {
       const facts: NoticeFacts = {}
       const mutable = facts as { title?: string; count?: number }
       if (refs.article_id) {
-        const title = await articleTitle(deps, record.accountId)
+        const title = await articleTitle(deps, record.accountId, refs.article_id)
         if (title) mutable.title = title
       }
       if (type === 'opportunities_ready') {
@@ -142,12 +122,26 @@ export function makeEmailAssembler(deps: AssemblerDeps): EmailAssembler {
   }
 }
 
-/** Undefined until schema wave 3 exists; the caller then uses the generic wording. */
-async function articleTitle(deps: AssemblerDeps, accountId: string): Promise<string | undefined> {
-  captureStubUsed(deps.capture, EMAIL_CONTENT_STUB, accountAttribution(accountId), {
-    condition: 'article_title',
-  })
-  return undefined
+/**
+ * A stored notification names an article by id and never by title, so this is
+ * where the id becomes words. An article deleted between queueing and sending
+ * simply has no title, and the caller falls back to the generic wording rather
+ * than naming something that is no longer there.
+ *
+ * The id is checked before it reaches the query: payloads are references, but
+ * not every reference is a `uuid`, and handing Postgres a `topic-week` string
+ * would raise a type error rather than return nothing.
+ */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+async function articleTitle(
+  deps: AssemblerDeps,
+  accountId: string,
+  articleId: string,
+): Promise<string | undefined> {
+  if (!UUID.test(articleId)) return undefined
+  const article = await findArticleById(deps.getDb(), accountScope(accountId), articleId)
+  return article?.title
 }
 
 function monthWindow(now: Date): { from: Date; to: Date } {
@@ -165,6 +159,26 @@ export function periodWindow(period: string): { from: Date; to: Date } {
   }
 }
 
+/**
+ * Which sentence a held-back topic gets, chosen by the gate that stopped it
+ * rather than by the exact fault it was stopped for.
+ *
+ * The calendar's rejection card is where a merchant sees the specific reason,
+ * and it has the interpolation values to render one. The summary does not: the
+ * per-fault sentences take parameters (which criterion failed, which passage),
+ * those parameters are stored differently by each gate, and one gate's reason
+ * keys have no entry in the string catalogue at all — a summary that pasted a
+ * stored key straight in would either print `{failed_criteria}` to a merchant or
+ * fail to send. So the email states the stage honestly and the card carries the
+ * detail. See DECISIONS 2026-09-03 R-ARTICLES.
+ */
+const HELD_REASON_KEY: Record<number | 'unknown', string> = {
+  1: 'email.monthlySummary.heldReason.gate1',
+  2: 'email.monthlySummary.heldReason.gate2',
+  3: 'email.monthlySummary.heldReason.gate3',
+  unknown: 'email.monthlySummary.heldReason.unknown',
+}
+
 const MONTH_LABEL = new Intl.DateTimeFormat('en', { month: 'long', year: 'numeric', timeZone: 'UTC' })
 
 export async function monthlySummaryFacts(
@@ -175,15 +189,16 @@ export async function monthlySummaryFacts(
   const db = deps.getDb()
   const scope = accountScope(accountId)
   const window = periodWindow(period)
-  const opportunity = await opportunityMonthFacts(db, scope, window)
+  const [opportunity, articlesPublished, held] = await Promise.all([
+    opportunityMonthFacts(db, scope, window),
+    publishedArticleCountInMonth(db, scope, window),
+    heldBackTopicsInMonth(db, scope, window),
+  ])
 
-  // The published-and-held-back half of the month. Announced as a stub rather
-  // than reported as a quiet month.
-  captureStubUsed(deps.capture, EMAIL_CONTENT_STUB, accountAttribution(accountId), {
-    condition: 'monthly_summary_content',
-  })
-  const articlesPublished = 0
-  const heldBack: readonly HeldBackTopic[] = []
+  const heldBack: readonly HeldBackTopic[] = held.map((topic) => ({
+    title: topic.title,
+    reasonKey: HELD_REASON_KEY[topic.gate] ?? HELD_REASON_KEY.unknown,
+  }))
 
   return {
     period,
@@ -192,6 +207,10 @@ export async function monthlySummaryFacts(
     heldBack,
     optimizeRecommendationsGenerated: opportunity.optimizeRecommendationsGenerated,
     optimizeRecommendationsApplied: opportunity.optimizeRecommendationsApplied,
+    // Always zero, and knowingly so: there is no repairs table in the schema
+    // and nothing records a repair, so a real count cannot be taken until
+    // `T5.3` builds one. The summary omits the line entirely at zero rather
+    // than claiming none happened.
     repairsCompleted: 0,
     merchantTasksResolved: opportunity.merchantTasksResolved,
     nextOpportunities: opportunity.topOpportunities.map((row) => ({

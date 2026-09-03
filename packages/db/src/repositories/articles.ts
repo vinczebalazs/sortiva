@@ -1,7 +1,7 @@
-import { and, desc, eq, inArray, isNotNull } from 'drizzle-orm'
+import { and, count, desc, eq, gte, inArray, isNotNull, isNull, lt } from 'drizzle-orm'
 import type { Db } from '../client'
 import { articles, gateDecisions } from '../schema'
-import type { AccountScope } from '../scope'
+import type { AccountScope, SystemScope } from '../scope'
 
 export type ArticleRow = typeof articles.$inferSelect
 
@@ -346,4 +346,122 @@ export async function discardDraftForTopic(
     )
     .returning()
   return row
+}
+
+/** One article the dashboard's "needs you" list is about, and how long it has been waiting. */
+export interface WaitingArticleRow {
+  readonly articleId: string
+  readonly since: Date
+}
+
+/**
+ * Drafts the merchant asked to see before they publish — main §9.3's optional
+ * review step. `updated_at` rather than `created_at` is the wait: the row is
+ * created when generation starts and only becomes the merchant's problem when
+ * the judge passes it into `in_review`.
+ */
+export async function articlesAwaitingReview(
+  db: Db,
+  scope: AccountScope,
+): Promise<readonly WaitingArticleRow[]> {
+  const rows = await db
+    .select({ articleId: articles.id, since: articles.updatedAt })
+    .from(articles)
+    .where(and(eq(articles.accountId, scope.accountId), eq(articles.state, 'in_review')))
+  return rows
+}
+
+/**
+ * Articles a merchant downloaded and published somewhere we were never told
+ * about. Without the address we cannot attribute a single click to the article,
+ * so their own reporting is the thing that stays blank — which is why this is a
+ * nudge and not an error.
+ *
+ * `publishedBefore` is the caller's cutoff so the waiting period lives in one
+ * place (`packages/core`'s attention module) rather than in this query.
+ */
+export async function unconfirmedExportedArticles(
+  db: Db,
+  scope: AccountScope,
+  publishedBefore: Date,
+): Promise<readonly WaitingArticleRow[]> {
+  const rows = await db
+    .select({ articleId: articles.id, since: articles.publishedAt })
+    .from(articles)
+    .where(and(eq(articles.accountId, scope.accountId), ...unconfirmedExport(publishedBefore)))
+  return rows.flatMap((row) => (row.since ? [{ articleId: row.articleId, since: row.since }] : []))
+}
+
+export interface UnconfirmedExportRow extends WaitingArticleRow {
+  readonly accountId: string
+}
+
+/**
+ * The same articles across every account, for the hourly reminder sweep.
+ *
+ * Unscoped by necessity and not by accident: a sweep that asked account by
+ * account would have to enumerate every account first and would do one query
+ * per store to find the handful that qualify. `accountsWithTimezone` above
+ * carries the same reasoning for the monthly summary. Each row names the
+ * account it belongs to, so everything downstream is attributed.
+ */
+export async function unconfirmedExportedArticlesAcrossAccounts(
+  db: Db,
+  _scope: SystemScope,
+  publishedBefore: Date,
+  limit = 500,
+): Promise<readonly UnconfirmedExportRow[]> {
+  const rows = await db
+    .select({ accountId: articles.accountId, articleId: articles.id, since: articles.publishedAt })
+    .from(articles)
+    .where(and(...unconfirmedExport(publishedBefore)))
+    .orderBy(articles.publishedAt)
+    .limit(limit)
+  return rows.flatMap((row) =>
+    row.since ? [{ accountId: row.accountId, articleId: row.articleId, since: row.since }] : [],
+  )
+}
+
+/**
+ * Exported, live, and still missing its address. `delivery = 'export'` is the
+ * whole point: an auto-published article's URL comes back from Shopify, so
+ * there is nobody to ask.
+ */
+function unconfirmedExport(publishedBefore: Date) {
+  return [
+    eq(articles.delivery, 'export'),
+    eq(articles.state, 'published'),
+    isNull(articles.publishedUrl),
+    isNotNull(articles.publishedAt),
+    lt(articles.publishedAt, publishedBefore),
+  ]
+}
+
+/**
+ * How many articles actually went live in a month, for the monthly summary.
+ *
+ * Override-published articles are counted. They went live on the merchant's
+ * store, and a summary that left them out would tell a merchant nothing
+ * happened in a month they watched an article publish. Invariant 12 keeps them
+ * out of calibration data and out of claims about how *our* articles perform —
+ * `gateDecisionsForCalibration` is where that exclusion lives — and neither is
+ * what this count is.
+ */
+export async function publishedArticleCountInMonth(
+  db: Db,
+  scope: AccountScope,
+  window: { from: Date; to: Date },
+): Promise<number> {
+  const [row] = await db
+    .select({ n: count() })
+    .from(articles)
+    .where(
+      and(
+        eq(articles.accountId, scope.accountId),
+        eq(articles.state, 'published'),
+        gte(articles.publishedAt, window.from),
+        lt(articles.publishedAt, window.to),
+      ),
+    )
+  return row?.n ?? 0
 }

@@ -1,10 +1,9 @@
+import { accountAttribution, type Logger, type NotificationEmitter } from '@sortiva/core'
 import {
-  accountAttribution,
-  registerStub,
-  type Logger,
-  type NotificationEmitter,
-} from '@sortiva/core'
-import type { Db } from '@sortiva/db'
+  systemScope,
+  unconfirmedExportedArticlesAcrossAccounts,
+  type Db,
+} from '@sortiva/db'
 import { runtimeLogger } from '../runtime/logging'
 import { registerTask } from '../runtime/tasks'
 
@@ -28,25 +27,6 @@ export const EXPORT_URL_REMINDER_SWEEP_TASK = 'export_url_reminder_sweep'
  */
 export const REMINDER_AFTER_DAYS = 7
 
-/**
- * Exported articles live in the `articles` table, which schema wave 3 creates.
- * Until then this sweep can find nothing, and it says so rather than reporting
- * a clean zero — a reminder job that cannot see articles looks exactly like a
- * product where everyone confirms their URLs.
- *
- * Registered but not captured per call: `stub_used` needs an account to
- * attribute the event to, and a sweep that found nothing has none. The registry
- * is what `pnpm stubs:report` reads, and that is what makes the gap visible.
- */
-export const EXPORT_REMINDER_STUB = 'ExportUrlReminder.articles'
-
-registerStub({
-  contract: EXPORT_REMINDER_STUB,
-  filledBy: 'D — T4.0 (schema wave 3: articles and their published addresses)',
-  behaviour: 'the sweep finds no exported articles, so no reminder is ever sent',
-  mustBeGoneBy: 'M4',
-})
-
 export interface ExportUrlReminderDeps {
   readonly getDb: () => Db
   readonly notifications: NotificationEmitter
@@ -54,13 +34,36 @@ export interface ExportUrlReminderDeps {
   readonly now?: () => Date
 }
 
-/** What the sweep needs to read. Filled by the lane that owns `articles`. */
+/** One article this sweep may ask about. */
 export interface UnconfirmedExport {
   readonly accountId: string
   readonly articleId: string
 }
 
 export type UnconfirmedExportSource = (cutoff: Date) => Promise<readonly UnconfirmedExport[]>
+
+/**
+ * The real source: every account's exported-but-unconfirmed articles in one
+ * query.
+ *
+ * It reads across accounts rather than one at a time, and says why in the
+ * scope it asks for — a sweep that went account by account would have to walk
+ * every store on the platform hourly to find the handful with anything
+ * waiting. Every row it returns names its own account, so the notification it
+ * produces is attributed to the right one.
+ */
+export function dbUnconfirmedExports(getDb: () => Db): UnconfirmedExportSource {
+  return async (cutoff) => {
+    const rows = await unconfirmedExportedArticlesAcrossAccounts(
+      getDb(),
+      systemScope(
+        'the export-URL reminder sweep looks across every account for articles published with no address',
+      ),
+      cutoff,
+    )
+    return rows.map((row) => ({ accountId: row.accountId, articleId: row.articleId }))
+  }
+}
 
 export interface ExportUrlReminderResult {
   readonly considered: number
@@ -75,8 +78,8 @@ export async function sweepExportUrlReminders(
   const now = (deps.now ?? (() => new Date()))()
   const cutoff = new Date(now.getTime() - REMINDER_AFTER_DAYS * 24 * 60 * 60 * 1000)
 
-  // No source until `articles` exists, which is the registered stub above.
-  const pending: readonly UnconfirmedExport[] = source ? await source(cutoff) : []
+  const read = source ?? dbUnconfirmedExports(deps.getDb)
+  const pending = await read(cutoff)
 
   let notified = 0
   for (const item of pending) {
@@ -99,7 +102,7 @@ let registered = false
 
 export function registerExportUrlReminderTask(
   deps: ExportUrlReminderDeps,
-  source?: UnconfirmedExportSource,
+  source: UnconfirmedExportSource = dbUnconfirmedExports(deps.getDb),
 ): void {
   if (registered) return
   registered = true

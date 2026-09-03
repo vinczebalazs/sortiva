@@ -1,6 +1,6 @@
-import { and, desc, eq, gte, inArray, notInArray } from 'drizzle-orm'
+import { and, desc, eq, gte, inArray, lt, notInArray } from 'drizzle-orm'
 import type { Db } from '../client'
-import { articles, gateDecisions } from '../schema'
+import { articles, gateDecisions, topics } from '../schema'
 import type { AccountScope } from '../scope'
 
 export type GateDecisionRow = typeof gateDecisions.$inferSelect
@@ -140,4 +140,47 @@ export async function gateDecisionsForCalibration(
     .where(and(...conditions))
     .orderBy(desc(gateDecisions.decidedAt))
     .limit(options.limit ?? 500)
+}
+
+/** A topic the quality bar stopped, and which gate stopped it. */
+export interface HeldBackTopicRow {
+  readonly topicId: string
+  readonly title: string
+  readonly gate: number
+}
+
+/**
+ * What the quality bar held back in a month, for the monthly summary — main
+ * §8.6: "5 topics were held back by our quality bar — here's each one and why."
+ *
+ * The decision row is not on its own enough to say a topic was held: a gate
+ * writes a row when it passes a topic too. What settles it is the topic's own
+ * state, so this asks both questions — a decision inside the month, on a topic
+ * that ended up rejected. The latest such decision per topic wins, because a
+ * topic can be looked at by more than one gate and it is the one that stopped
+ * it that has the reason.
+ */
+export async function heldBackTopicsInMonth(
+  db: Db,
+  scope: AccountScope,
+  window: { from: Date; to: Date },
+  limit = 25,
+): Promise<readonly HeldBackTopicRow[]> {
+  const rows = await db
+    .select({ topicId: topics.id, title: topics.title, gate: gateDecisions.gate })
+    .from(gateDecisions)
+    .innerJoin(topics, eq(gateDecisions.topicId, topics.id))
+    .where(
+      and(
+        eq(gateDecisions.accountId, scope.accountId),
+        eq(topics.state, 'rejected_by_gate'),
+        gte(gateDecisions.decidedAt, window.from),
+        lt(gateDecisions.decidedAt, window.to),
+      ),
+    )
+    .orderBy(desc(gateDecisions.decidedAt))
+
+  const held = new Map<string, HeldBackTopicRow>()
+  for (const row of rows) if (!held.has(row.topicId)) held.set(row.topicId, row)
+  return [...held.values()].slice(0, limit)
 }
