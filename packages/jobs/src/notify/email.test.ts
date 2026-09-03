@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { sql } from 'drizzle-orm'
 import type pg from 'pg'
-import { accountAttribution, EmailSendFailure } from '@sortiva/core'
+import { accountAttribution, EmailSendFailure, monthlySummaryContent } from '@sortiva/core'
 import { makeEmailStore } from '@sortiva/db'
 import {
   databaseAvailable,
@@ -18,6 +18,8 @@ import { DbNotificationEmitter } from './emitter'
 import { sweepOauthReminders } from '../ingestion/reminder'
 import { drainEmailQueue, runEmailSend, type EmailWorkerDeps } from './send-worker'
 import { localClock, periodCovered, sweepMonthlySummaries } from './monthly-summary'
+import { monthlySummaryFacts } from './assembler'
+import { sweepExportUrlReminders } from './export-url-reminder'
 
 /**
  * The email pipeline against a real Postgres, because every property that
@@ -273,4 +275,184 @@ describe.skipIf(!available)('the email pipeline', () => {
       expect(rows[0]!.n).toBe(1)
     })
   })
+
+  describe('the month the summary reports', () => {
+    const PERIOD = '2026-08'
+    const inAugust = (day: number) => `2026-08-${String(day).padStart(2, '0')}T10:00:00Z`
+
+    /** A topic, with the opportunity every topic is required to name. */
+    const aTopic = async (title: string, forAccount = accountId): Promise<string> => {
+      const { rows: opportunity } = await pool.query<{ id: string }>(
+        `INSERT INTO opportunities
+           (account_id, signal_type, entity_type, entity_ref, evidence_json, impact,
+            impact_score, confidence, reason_template_key, recommended_action, rules_version)
+         VALUES ($1,'uncovered_commercial_query','query_cluster',$2,'[]'::jsonb,'high',
+            80, 70, 'uncovered_commercial_query.default', 'create', 'abc123')
+         RETURNING id`,
+        [forAccount, `cluster:${title}`],
+      )
+      const { rows } = await pool.query<{ id: string }>(
+        `INSERT INTO topics (account_id, opportunity_id, title, intent_class, source, scheduled_date)
+         VALUES ($1,$2,$3,'buying_guide','auto','2026-08-10')
+         RETURNING id`,
+        [forAccount, opportunity[0]!.id, title],
+      )
+      return rows[0]!.id
+    }
+
+    const publishArticle = async (title: string, publishedAt: string, forAccount = accountId) => {
+      const topicId = await aTopic(title, forAccount)
+      await pool.query(
+        `INSERT INTO articles (account_id, topic_id, title, slug, state, published_at)
+         VALUES ($1,$2,$3,$3,'published',$4)`,
+        [forAccount, topicId, title, publishedAt],
+      )
+    }
+
+    const holdTopic = async (title: string, gate: number, decidedAt: string) => {
+      const topicId = await aTopic(title)
+      await pool.query(`UPDATE topics SET state = 'rejected_by_gate' WHERE id = $1`, [topicId])
+      await pool.query(
+        `INSERT INTO gate_decisions
+           (account_id, topic_id, gate, outcome, reason_user_facing, decided_at)
+         VALUES ($1,$2,$3,'held','gate.reason',$4)`,
+        [accountId, topicId, gate, decidedAt],
+      )
+    }
+
+    const facts = (forAccount = accountId) =>
+      monthlySummaryFacts({ getDb: () => ctx.db }, forAccount, PERIOD)
+
+    const readOut = async (forAccount = accountId) => {
+      const { text } = await new ReactEmailRenderer().render(
+        monthlySummaryContent(await facts(forAccount), {
+          dashboardUrl: 'https://sortiva.app/dashboard',
+          unsubscribeUrl: 'https://sortiva.app/u?t=tok',
+        }),
+      )
+      return text
+    }
+
+    it('names what went live and what the quality bar stopped', async () => {
+      await publishArticle('Choosing a wool blanket', inAugust(4))
+      await holdTopic('Merino care, step by step', 3, inAugust(12))
+
+      const august = await facts()
+      expect(august.articlesPublished).toBe(1)
+      expect(august.heldBack).toEqual([
+        { title: 'Merino care, step by step', reasonKey: 'email.monthlySummary.heldReason.gate3' },
+      ])
+
+      const text = await readOut()
+      expect(text).toContain('One article went live on your store.')
+      expect(text).toContain('Merino care, step by step')
+      expect(text).toContain("The draft didn't clear our quality bar")
+    })
+
+    it('says the same month was quiet when it was, rather than reporting nothing at all', async () => {
+      const august = await facts()
+      expect(august.articlesPublished).toBe(0)
+      expect(august.heldBack).toEqual([])
+
+      const text = await readOut()
+      expect(text).toContain('Nothing went live this month.')
+      expect(text).toContain('Nothing was held back this month.')
+    })
+
+    it('counts only the month it is reporting on', async () => {
+      await publishArticle('Published in July', '2026-07-30T10:00:00Z')
+      await publishArticle('Published in September', '2026-09-02T10:00:00Z')
+      expect((await facts()).articlesPublished).toBe(0)
+    })
+
+    it("cannot see another store's month", async () => {
+      const other = await insertAccount(pool, 'neighbour@example.com')
+      await publishArticle('Their article', inAugust(4), other)
+
+      expect((await facts()).articlesPublished).toBe(0)
+      expect((await facts(other)).articlesPublished).toBe(1)
+    })
+
+    it('names the gate that stopped each topic, so the sentence is true of it', async () => {
+      await holdTopic('Never worth writing', 1, inAugust(2))
+      await holdTopic('Nothing to write from', 2, inAugust(3))
+
+      const reasons = (await facts()).heldBack.map((topic) => topic.reasonKey).sort()
+      expect(reasons).toEqual([
+        'email.monthlySummary.heldReason.gate1',
+        'email.monthlySummary.heldReason.gate2',
+      ])
+    })
+  })
+
+  describe('the seven-day export-URL reminder', () => {
+    const daysAgo = (days: number) =>
+      new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
+
+    const anExport = async (
+      slug: string,
+      publishedAt: string,
+      overrides: { delivery?: string; publishedUrl?: string } = {},
+    ) => {
+      const { rows: opportunity } = await pool.query<{ id: string }>(
+        `INSERT INTO opportunities
+           (account_id, signal_type, entity_type, entity_ref, evidence_json, impact,
+            impact_score, confidence, reason_template_key, recommended_action, rules_version)
+         VALUES ($1,'uncovered_commercial_query','query_cluster',$2,'[]'::jsonb,'high',
+            80, 70, 'uncovered_commercial_query.default', 'create', 'abc123')
+         RETURNING id`,
+        [accountId, `cluster:${slug}`],
+      )
+      const { rows: topic } = await pool.query<{ id: string }>(
+        `INSERT INTO topics (account_id, opportunity_id, title, intent_class, source, scheduled_date)
+         VALUES ($1,$2,$3,'buying_guide','auto','2026-10-01') RETURNING id`,
+        [accountId, opportunity[0]!.id, slug],
+      )
+      await pool.query(
+        `INSERT INTO articles
+           (account_id, topic_id, title, slug, state, delivery, published_url, published_at)
+         VALUES ($1,$2,$3,$3,'published',$4,$5,$6)`,
+        [
+          accountId,
+          topic[0]!.id,
+          slug,
+          overrides.delivery ?? 'export',
+          overrides.publishedUrl ?? null,
+          publishedAt,
+        ],
+      )
+    }
+
+    const sweep = () => sweepExportUrlReminders({ getDb: () => ctx.db, notifications: emitter })
+
+    it('asks once about an article published with no address, and never again', async () => {
+      await anExport('exported-long-ago', daysAgo(9))
+
+      expect(await sweep()).toEqual({ considered: 1, notified: 1 })
+      // The second run finds the same article; the unique triple refuses the
+      // insert, which is what makes an hourly sweep safe to run hourly.
+      expect(await sweep()).toEqual({ considered: 1, notified: 0 })
+
+      const { rows } = await pool.query<{ n: number }>(
+        `SELECT count(*)::int AS n FROM notifications
+          WHERE account_id = $1 AND type = 'export_url_reminder'`,
+        [accountId],
+      )
+      expect(rows[0]!.n).toBe(1)
+      expect(await emailRows()).toEqual([
+        expect.objectContaining({ type: 'export_url_reminder', state: 'queued' }),
+      ])
+    })
+
+    it('leaves alone a recent export, one already confirmed, and an auto-published article', async () => {
+      await anExport('published-yesterday', daysAgo(1))
+      await anExport('already-confirmed', daysAgo(9), {
+        publishedUrl: 'https://shop.example/blog/a',
+      })
+      await anExport('auto-published', daysAgo(9), { delivery: 'auto' })
+
+      expect(await sweep()).toEqual({ considered: 0, notified: 0 })
+    })
+  })
+
 })

@@ -76,19 +76,22 @@ new doubles.StubCatalogEvents()
 // checked end to end before the line was removed**: the emitter is constructed in
 // `apps/web/app/api/shopify/_lib/config.ts`, not merely exported.
 
-// Not every stub is a class. The attention list's three article-backed readers
-// register when their module loads, because there is nothing to construct —
-// importing it is what wires them.
+// Not every stub is a class. The attention list's one remaining article-backed
+// reader registers when its module loads, because there is nothing to
+// construct — importing it is what wires it. Three conditions used to register
+// here; two of them read the `articles` table for real from 2026-09-03
+// (`R-ARTICLES`), and only pending repairs is left, which has no table anywhere
+// in the schema until `T5.3` makes one.
 await import('../packages/core/src/notifications/ports.ts')
 
-// The two halves of the email pipeline that cannot see articles yet: the
-// monthly summary cannot report what went live or what the quality bar held
-// back, and the seven-day "where did you publish this" reminder can find nothing
-// to remind anyone about. Both register on import, and both are the reason this
-// report exists — a summary reporting an empty month looks exactly like a store
-// that had a quiet one.
-await import('../packages/jobs/src/notify/assembler.ts')
-await import('../packages/jobs/src/notify/export-url-reminder.ts')
+// The two halves of the email pipeline that could not see articles are gone
+// from this list, from 2026-09-03 (`R-ARTICLES`), and their imports with them:
+// the monthly summary counts what actually went live and what the gates held
+// back, and the seven-day "where did you publish this" reminder reads its own
+// articles. Checked the way the note above demands rather than taken on trust:
+// `registerExportUrlReminderTask` now defaults to the real database source, and
+// that task is registered in `apps/web/instrumentation-node.ts`, so the sweep a
+// deployed worker runs reads real rows.
 
 // The two brakes that cannot see. The judge fail-rate and publish error-rate
 // trips are built and tested, but nothing records a draft's gate decision or a
