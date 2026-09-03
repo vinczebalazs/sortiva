@@ -647,41 +647,179 @@ copy file was untouched**, because the user-facing side of an outage is already 
 string and everything this card added is operator-facing. **`.env.example` gained one
 variable**, and the integrator added it to `main`'s gitignored `.env` to keep the gate green.
 
+## `T3.5`, `T9.6` and `T2.6` LANDED — the last three of the night
+
+### `T3.5` — the existing-target check. **The seam invariant 6 rests on is filled.**
+
+**Merged, three commits.** Until this card the seam was a stand-in that answered "nothing
+found" to every question, **so every proposed page looked uncontested.** `existingTargetCheck`
+is now off the stub list.
+
+**Three ways of looking, deliberately not overlapping:** what Google actually showed is final
+for the pages it reported; what the store publishes decides for pages Google said nothing
+about; and what the search vendor says the domain ranks for, **only** for a store with no
+Search Console connection and **named as a proxy in the evidence** rather than passed off as
+a measurement. A page found but too weak to take the work over does not block the new page —
+**it gets linked to it**, so the two support each other instead of splitting the search.
+
+**The CREATE guarantee is structural, not conventional.** The check returns a value that
+cannot be constructed anywhere else — the type brand cannot be named outside the module and
+a forged object is rejected at runtime. It **names the topic it was issued for so it cannot
+be carried across**, and carries a weak match's linking task *inside* it so honouring the
+match and honouring the link cannot come apart. **The honest limit the lane stated itself:
+neither caller exists yet**, so what changed today is that no caller can get a silent "no
+match" any more.
+
+**A spec contradiction it followed rather than resolved, and it breaks the next card.**
+§7.3 requires the competitor-gap signal to find "no position ≤ 20"; the same row's action
+column and §7.8 both describe "competitor gap + a URL at #18 → improve it". **#18 is ≤ 20 —
+both cannot be obeyed.** Following the rule leaves positions 11–20 producing nothing, and
+**`T3.6`'s stated done-when expects exactly that fixture to yield an OPTIMIZE at #18.**
+Either the threshold moves to 10 or `T3.6`'s done-when names 21–30. **Nobody can build
+`T3.6` honestly until this is settled.**
+
+**On deleted pages (founder question 1) it surfaced a second option nobody had.** The
+inventory already stamps when the nightly walk last saw each row, so "not seen by the last
+completed walk" could stand in for a column — **but only if something records that a walk
+completed**, because an interrupted walk would mark live pages as gone and produce exactly
+the competing pages the rule exists to stop. Meanwhile the check fails safe and says so in
+the evidence rather than asserting a page exists. Its reasoning for the asymmetry is right:
+**treating a live page as gone publishes a competitor to it and raises no error anywhere;
+treating a gone page as live costs one dismissed suggestion.**
+
+**An empty column is quietly weakening the check on every real store.** The column recording
+what a page is *for* is written by nothing, so a page selling the right products with no
+recorded purpose scores a **weak** match. **No card in the plan claims that column** — this
+is the third card to report it.
+
+### `T9.6` — dashboard, products and performance
+
+**Merged, two commits.** The one to read: **it rendered all four screens and looked at
+them**, which found three real defects no test would have caught — date labels hanging off
+both edges of the chart, two marker labels colliding because the spacing rule compared marker
+positions rather than the labels' own widths, and a compact chart reserving room for labels
+it does not draw.
+
+**It refused the design canvas's headline figure.** The canvas draws "Attributed articles —
+51 of 58"; invariant 23 admits no exception, **and that figure is also the most misleading on
+the page** — the difference is exported articles nobody has confirmed a URL for, which the
+spec says must never count as failures. **Its denominator check reads the finished markup,
+not the copy file**, because a denominator assembled at render time out of two innocent
+values is exactly how this comes back.
+
+**"Too new" is separated from "did badly" structurally:** an unrated result gets **no figures
+at all** — em dashes — plus a dashed chip saying we wait 28 days, and is dimmed rather than
+coloured, **so an absence of judgement never looks like a judgement.**
+
+**Two colour decisions worth keeping:** two chart panels rather than two lines on one plot,
+because forty clicks and two thousand impressions have no shared scale and a second axis
+makes the gap between the lines look like a finding; and ink lines with coloured markers,
+because **the canvas's brand indigo and its publish-marker purple are the same colour under
+the commonest form of colour blindness** — measured separation 0.4 against a floor of 8.
+
+**A copy contradiction it did not resolve silently:** Appendix A — which invariant 24 makes
+binding — writes the growth headline one way, and main §7.12 and ui §4 both write it another
+for the dashboard. It used the pinned sentence on both screens, **because adding a second
+near-identical sentence to the catalogue is exactly how two copies of a pinned string
+drift.** If the dashboard should name the product where Opportunities says "we", **Appendix A
+needs a second row, not a second copy of the first.**
+
+### `T2.6` — keywords bought, competitors proposed, and the brake read
+
+**Merged, three commits. The first card that spends money with the search vendor.**
+
+**A SERP domain is structurally prevented from becoming a competitor by four things**, not
+one: the snapshot table **has no account column at all** (asserted against
+`information_schema`), so a row in it belongs to a *search* and not a merchant; the only
+writer to the competitors table takes an explicit source and no code path reads a snapshot
+and calls it; **one ranking function serves both places a domain is ever named**, because two
+would drift and the drift would be a marketplace offered in one place and hidden in the
+other; and computing a suggestion **writes nothing**, asserted directly.
+
+**The five-cap is enforced twice and cannot disagree.** The database trigger is the
+authority — it locks the account row before counting, which application code cannot do — and
+the constant in the repository exists only to turn the refusal into a specific message. **The
+test fills the account through the repository, then inserts the next row with raw SQL and
+asserts the database itself raises.** Change the constant without the trigger and it fails.
+
+**The crash the cache exists for is simulated, not asserted:** a step killed part-way through
+the results pages reads the three already bought back from the database and buys only the
+remainder. A second test **deliberately bypasses the completed-work ledger** — which would
+have made the run free without proving anything — leaving only the product's own memory.
+
+**An invariant reading the integrator checked rather than accepted.** The lane flagged that
+its ingestion draft list writes competitor rows automatically, which the constitution's
+invariant 5 could be read to forbid. **The integrator read main §7.2.1 directly and the lane
+is right:** the spec defines a business competitor as *"auto-proposed at ingestion, hard cap
+5"* and attaches *"nothing is ever auto-added"* specifically to the **ongoing** suggestion
+mechanism from *confirmed* keywords. **Two distinct mechanisms; the constitution compresses
+them lossily.** The code matches the spec exactly. **`CLAUDE.md`'s invariant 5 wording should
+be corrected by the spec keepers** — it is the constitution that is imprecise, not the build.
+
+**`global.pause_enrichment` had existed since the ops schema wave with nothing reading it.**
+Both this step and the enrichment job now check it before any vendor call and **stop rather
+than degrade** — no shallower page, no older snapshot. The caps behind it are still dormant
+because the schedule is off.
+
+**`packages/rules` gained a block, which changes `rules_version` for every lane** — intended
+behaviour of that mechanism, but worth knowing at merge time.
+
 ## Right now
 
-**Status at 2026-09-03, 00:15.** `main` is at `634f420`, clean. **Seventeen cards landed
-overnight**, plus the bell wiring: `T8.0`, `T-START`, `T-ANALYTICS`, `T3.4`, `T8.1`,
-`T-EMAIL`, `T9.3`, `T2.2`, `T8.2`, `T9.4`, `T2.3`, `T2.4`, `T8.3`, `T9.5`, `T2.5`, `T8.4`.
-Tests **2,270**, up from 1,362 — **908 added**. Stubs **9** (up from 7 — `T8.4` declared two
-of its own that cannot see yet, which is the registry working). Copy file **804 keys**, from
-331. `.env` now **38** variables.
+**Status at 2026-09-03, 08:10 — the run has ended.** `main` is at `a3b8d4b`, clean, and
+every worktree is clean with nothing unmerged. **Twenty cards landed overnight**, plus the
+bell wiring: `T8.0`, `T-START`, `T-ANALYTICS`, `T3.4`, `T8.1`, `T-EMAIL`, `T9.3`, `T2.2`,
+`T8.2`, `T9.4`, `T2.3`, `T2.4`, `T8.3`, `T9.5`, `T2.5`, `T8.4`, `T3.5`, `T9.6`, `T2.6`.
+Tests **2,513**, up from 1,362 — **1,151 added**. Copy catalogue **956 keys**, from 331.
 
-**`pnpm eval` is red and stays red** until the founder decides. Every other command is
-green. **Do not describe this tree as fully green.**
+**`pnpm eval` is red and stays red** until founder question 6 is answered. Every other gate
+command is green on the merged tree. **Do not describe this tree as fully green.**
 
-**`M8` is closed** — its exit gate landed. **`M2` is one card from closing** and **`M9` is
-two.**
+### How the run ended
 
-| Lane | Branch | Where it is |
+**A second account rate limit at about 01:00, resetting 02:50.** The session did not schedule
+a wake-up, so it stayed idle until morning rather than resuming — the run simply stopped
+there. **Nothing was lost.** Two sessions were killed and neither had produced work: the
+`T3.5` audit had written its expectations and not yet read the diff, and `T9.7` had not
+started. **All four worktrees are clean, with nothing unmerged.**
+
+The first rate limit, at 20:25, is written up further down along with the one lesson that
+mattered: **the lane that had been committing in halves resumed from its own commits; the one
+that had not left a draft its successor had to audit file by file.**
+
+| Lane | Branch | Where it stopped |
 |---|---|---|
-| B — Store Intelligence | `lane-b` | `T-START`, `T2.2`–`T2.5` merged. **`T2.6` building** — first card to spend with the search vendor. Then `T2.7` closes the milestone |
-| C — Search Intelligence | `lane-c` | `T3.4`, `T-EMAIL` merged. **`T3.5` building — held all night, freed by `T2.5`.** It is the card invariant 6 rests on, and **an audit is scheduled after it** |
-| F — Frontend | `lane-f` | `T-ANALYTICS`, `T9.3`–`T9.5` merged. **`T9.6` building.** Then `T9.7`, `T9.8` |
-| G — Ops & notifications | `lane-g` | `T8.0`–`T8.4` all merged. **Idle — its milestone is complete.** `T8.2`'s audit ran; **no audit is scheduled after `T8.4`** |
+| B — Store Intelligence | `lane-b` | `T-START`, `T2.2`–`T2.6` merged. **Idle. `T2.7` closes the milestone** and is unblocked |
+| C — Search Intelligence | `lane-c` | `T3.4`, `T-EMAIL`, `T3.5` merged. **Idle and BLOCKED — `T3.5`'s scheduled audit never ran**, and build plan §7 makes it required before `T3.6`. `T3.6` also has a broken done-when (see `T3.5` above) |
+| F — Frontend | `lane-f` | `T-ANALYTICS`, `T9.3`–`T9.6` merged. **Idle. `T9.7` was killed before it began** and can simply restart. Then `T9.8`, the milestone's exit gate |
+| G — Ops & notifications | `lane-g` | `T8.0`–`T8.4` all merged. **Idle — milestone complete.** Nothing left in M8 |
 
-**Lane G has nothing left in its milestone.** The remaining unstarted work belongs to Lanes
-C and D and the exit gates. **Lane G is the obvious home for `R-PRIVACY`, `R-STREAM` or
-`R-DEV`** if the founder wants one taken — but all three are held pending a ruling, and
-`R-PRIVACY` sits in Lane B's directory besides.
+### What to do first when picking this up
 
-**Four audits have run, all read-only, all held, none stopped a lane.** A fifth is scheduled
-after `T3.5`, which is building now.
+1. **Run the `T3.5` audit.** It is scheduled, required, and blocking `T3.6`. Nothing else is
+   waiting on it.
+2. **Settle the §7.3 / §7.8 contradiction** before `T3.6` starts, or that card cannot meet its
+   own done-when. Either the threshold moves to 10 or the done-when names 21–30.
+3. **Restart `T9.7`** — it lost nothing and is a clean start.
+4. **`T2.7`** closes M2 and is unblocked.
 
-**Three `.env` incidents, one lesson.** `.env` is gitignored and per-worktree, so every time
-a card adds a variable the integrator must add it to `main`'s copy by hand, and to a lane's
-copy **only once that lane's branch also carries the matching `.env.example`**. Refreshing a
-worktree ahead of its branch is what made `env:check` fail with 37 against 36 earlier, and
-cost lane G report space.
+### Milestones
+
+**`M8` is complete** — its exit gate landed. **`M2` is one card from complete** (`T2.7`).
+**`M9` is two** (`T9.7`, `T9.8`). **`M3` is blocked** on an audit and a spec contradiction.
+**`M4` (the content engine) has not started** and is what the whole night was clearing the way
+for — `T2.5` unblocked it, and `T4.0` is a schema wave.
+
+**Scope, honestly.** 63 cards defined, 2 deferred by founder decision. **51 now done.**
+The estimate written at 23:20 was "around 45 of 63" and the run reached 51 before it was cut
+short by the limit rather than by anything in the work.
+
+### Five audits were scheduled; four ran
+
+`T-EMAIL`'s (lane-requested), `T2.2`'s (**scheduled — found the critical privacy defect**),
+`T8.2`'s (**scheduled — found two high defects**), and none outstanding for `T9.x`. **`T3.5`'s
+is scheduled and did not run.** All findings are held, unactioned, in the audit section
+below. **No audit stopped a lane.**
 ### Three remediation cards now exist in the build plan
 
 Build plan §7 says findings become cards. **None is fixed** — acting on a finding still needs
