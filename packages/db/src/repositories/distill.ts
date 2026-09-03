@@ -1,4 +1,4 @@
-import { and, eq, sql } from 'drizzle-orm'
+import { and, eq, inArray, isNotNull, sql } from 'drizzle-orm'
 import type { FactSheet } from '@sortiva/core'
 import type { Db } from '../client'
 import { productFacts, products } from '../schema'
@@ -108,6 +108,59 @@ export async function productFactsForAccount(
     fluffDiscarded: row.fluffDiscarded !== 0,
     distilledAt: row.distilledAt,
   }))
+}
+
+/** One product's fact sheet plus the family/title fields Gate 1's substance check needs. */
+export interface ProductSubstanceRow {
+  readonly productId: string
+  readonly title: string
+  readonly familyId: string
+  readonly factSheet: FactSheet
+}
+
+/**
+ * The distilled products behind a set of families, for Gate 1's substance
+ * inventory (main §8.2 — "do the mapped families' merged fact sheets have
+ * enough populated fields across enough member products").
+ *
+ * A product with no distilled fact sheet yet (still queued, or the family was
+ * just formed) is left out rather than counted as contributing nothing — the
+ * caller's `substanceInventory()` already treats an absent product as zero
+ * facts through `productsConsidered`, and double-counting it here would only
+ * duplicate that.
+ */
+export async function productSubstanceForFamilies(
+  db: Db,
+  scope: AccountScope,
+  familyIds: readonly string[],
+): Promise<ProductSubstanceRow[]> {
+  if (familyIds.length === 0) return []
+  const rows = await db
+    .select({
+      productId: products.id,
+      title: products.title,
+      familyId: products.familyId,
+      factsJson: productFacts.factsJson,
+    })
+    .from(products)
+    .innerJoin(productFacts, eq(productFacts.productId, products.id))
+    .where(
+      and(
+        eq(products.accountId, scope.accountId),
+        inArray(products.familyId, [...familyIds]),
+        isNotNull(products.familyId),
+      ),
+    )
+    .orderBy(products.id)
+
+  return rows
+    .filter((row): row is typeof row & { familyId: string } => row.familyId !== null)
+    .map((row) => ({
+      productId: row.productId,
+      title: row.title,
+      familyId: row.familyId,
+      factSheet: row.factsJson as FactSheet,
+    }))
 }
 
 /** One product's fact sheet, for the single-product path a webhook or a repair takes. */
