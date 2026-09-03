@@ -158,6 +158,11 @@ export interface GatesConfig {
     window_days: number
     match_position_max: number
   }
+  evidence_pack_check: {
+    distinct_claims_min: number
+    boilerplate_repeat_share_min: number
+    boilerplate_ratio_max: number
+  }
   draft_grading: {
     criterion_score_min: number
     criterion_score_max: number
@@ -282,6 +287,21 @@ export interface CtrCurveConfig {
   standard_curve: Readonly<Record<string, number>>
 }
 
+/**
+ * Numbers that shape the draft itself, once Gate 2 has cleared the pack to
+ * write from — main §9.2.
+ */
+export interface GenerationConfig {
+  length: {
+    serp_word_count_multiple_min: number
+    serp_word_count_multiple_max: number
+    fallback_word_count_min: number
+  }
+  internal_links: {
+    min_count: number
+  }
+}
+
 export interface BudgetsConfig {
   optimize: { generations_per_account_per_day: number }
   intent_gap: { analyses_per_account_per_day: number }
@@ -306,6 +326,7 @@ export interface RulesLayer {
   scoring: ScoringConfig
   gates: GatesConfig
   learning: LearningConfig
+  generation: GenerationConfig
   budgets: BudgetsConfig
   auto_trips: AutoTripsConfig
   discovery: DiscoveryConfig

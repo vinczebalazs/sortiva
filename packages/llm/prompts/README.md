@@ -16,5 +16,5 @@ Every call made with a prompt is stamped with both `prompt_version` and
 
 Prompt files land with the cards that need them: `distill` (T2.3), `persona`
 (T2.5), `seeds` (T2.6), `preview` (T1.3), `judge` (T4.4), `intent_gap` and
-`optimize_reco` (T6.x), `topic-classify` (T4.2). M0 ships the loader, not the
-prompts.
+`optimize_reco` (T6.x), `topic-classify` (T4.2), `claim-plan` and `draft`
+(T4.3). M0 ships the loader, not the prompts.
