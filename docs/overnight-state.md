@@ -4159,3 +4159,94 @@ of this card. The kill switch itself was not in scope.
 `packages/llm` (prompts, the `judge.eval` set, and the new dependency),
 `packages/ui/strings/en.json` (copy rule). No migration. No API route, so no
 composition-root trap.
+
+## `T4.5` LANDED — the product now writes one article a day, on its own. **`T4.5` is on the scheduled-audit list; its audit must run before `T4.6`.**
+
+**Merged as `daf35db`, two commits, all eleven gate commands green.** Tests **3,017**, up
+from 2,967. **Before this card nothing in the product wrote an article by itself** — the
+pipeline existed and was exported, but `generation_cycle_daily` was a name in the
+schedule with no handler behind it.
+
+**An hourly sweep, not a daily one, and the reason generalises.** The schedule changed
+from `0 3 * * *` to `0 * * * *`: the cycle must start a fixed number of hours before each
+store's *own* publish hour so writing, grading and the one repair finish in time, and
+03:00 UTC is a different time of day in every country — one fixed moment cannot be early
+enough for a German store and an Australian one at once. **This is the third card to
+reach the same conclusion** (the weekly signal scan and the monthly summary sweep did
+too); per-account-clock-with-hourly-sweep is now the established pattern. The lead is a
+new number in `packages/rules` because it decides how much runway the writer, checks,
+judge and repair get.
+
+**The checks run in §14.5's order** — kill switches → entitlement → vacation → Shopify
+token → a topic for today — and **each is proven to stop before spending anything**:
+verified at merge, every one of those tests asserts zero model calls, not merely a
+refusal.
+
+### The idempotency the `T4.4` audit demanded — built, four mechanisms deep
+
+The audit's handoff was blunt: a retry paid for a whole second article. Now: the calendar
+is queried on the exact date for `planned` only, so **future topics are unreachable by
+construction** (invariant 14); the `planned → generating` transition is guarded, so a
+second arrival matches zero rows and stops; the idempotency key is **derived** from
+account, task and topic-plus-local-date — never random — into `idempotency_ledger`, so a
+redelivered job returns the stored outcome having spent nothing; and the whole run sits
+under the account lock.
+
+**The checkpoint is the part worth reading.** `generateArticle` now looks for an article
+the topic already has. A `draft` one is **adopted** — same row, same slug, so no
+`keyword-2` — its claims and references replaced rather than appended, and **the stored
+draft is reused rather than re-written**, reconstructed from `articles.title`/
+`meta_description`/`body_json` plus `article_product_refs`. It is validated before use: if
+the re-run's plan came back different, the stored draft's citations no longer resolve and
+it is rewritten rather than graded against a plan it was never written from. **A topic
+left `generating` by a dead run is now finished on the next pass instead of stranded
+forever.** Proven: after a crash, the retry adopts the same article id and slug and makes
+no second writer call.
+
+**Residual cost, stated rather than hidden:** the claim plan and Gate 3's calls still
+re-run on a resumed attempt — Gate 3 grades *against* the plan, and `article_claims` has
+no ordinal column to rebuild the positional citation ids from. Free inside the LLM
+wrapper's 24-hour request cache, re-paid outside it. Closing it fully needs a column, so
+a migration, so out of scope. **Parking the draft in `idempotency_ledger` was explicitly
+rejected** — that is the one table nothing may delete per account, so article prose there
+would survive a store-redaction purge.
+
+### The post-grading state question, answered without a migration
+
+`draft` is kept, and the ambiguity made harmless instead: a new read,
+**`articlesReadyForDelivery`**, joins the article's state against a *passed* Gate 3
+decision on its topic. A crash between writer and judge leaves a row that reads as
+unfinished — which it is. **This is the interface `T5.1`/`T5.2` must use; the state alone
+is not sufficient**, and that is now proven by a test that tells a graded-and-passed
+draft apart from one that was never graded.
+
+**Draft review: two answers, no third.** Approve returns the article to the delivery path;
+discard discards it and closes the calendar day as vetoed — but deliberately **does not**
+add the subject to the not-interested list, since that is a judgement on the article, not
+the topic. **No editor**, proven by grep at merge: no `PATCH`/`PUT`/`DELETE` under
+`/api/articles`, only approve and discard exist, and a test fails if that changes.
+
+### The gap that makes review unusable today, flagged not fixed
+
+**A merchant with draft review switched on is never told a draft is waiting.**
+`draft_ready_for_review` is declared in the notification matrix with rendered copy and
+nothing emits it; the dashboard's "needs you" source is still a stub returning nothing.
+Both live in Lane G's directories. **So a waiting draft is invisible until someone opens
+the content screen by chance.** Not in this card's scope — but **draft review is not
+usable without one of them**, and that is worth someone's decision rather than discovery.
+
+**Also not built and not claimed:** `GET /api/articles` and `GET /api/articles/{id}` are
+in the frozen contract and unbuilt, so Lane F's article screens still have nothing real to
+read. Approve marks permission only — the publish hour is `T5.1`.
+
+**Two of founder question 4's four missing crontab handlers are now registered** —
+`signal_scan_weekly` (T3.7) and `generation_cycle_daily` (this card). **Two remain:**
+`replenishment_monthly` (`T4.6`) and `publish_intent_recovery_sweep` (`T5.x`). The
+recurring schedule can be switched on once those land.
+
+**Files outside Lane D's directories**, all precedented and reviewed at merge:
+`packages/db/src/repositories`, `packages/rules` (one number), and the three
+integrator-resolved ordered files — `crontab.ts`, `instrumentation-node.ts`,
+`eslint.config.mjs` — each a single additive registration or exemption following an
+existing pattern. **No migration.** The composition-root trap was correctly avoided:
+`reviewDeps()` is deferred into the request-handler closure.
