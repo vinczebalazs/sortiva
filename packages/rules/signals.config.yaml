@@ -412,6 +412,14 @@ defaults:
     # up. Shorten it and replenishment runs closer to the edge; lengthen it and
     # we commit to topics further ahead of the evidence.
     replenishment_horizon_days: 60
+    # And how far ahead a top-up fills to. It has to sit above the trigger or
+    # every run would leave the calendar back on the edge it had just crossed,
+    # and it is what main §8.7's "~3-month backlog" is as a number. Raise it and
+    # more of the calendar is committed against evidence that will be months old
+    # by the time it is written; lower it towards the trigger and replenishment
+    # fires almost every time it looks.
+    # UNSIGNED — the spec gives the trigger, never the target.
+    replenishment_target_horizon_days: 90
 
     labels:
       # Nothing is judged before this many days post-publish — rankings have

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "rules_version": "ef9f0f6ce2b4a503ba47c09cbd38084f04ea634bb5501010c29bdf168a9835ce",
+  "rules_version": "538a1d2bbe6e0ccc68340b712c723a36a397c067d1fdeb390ec7d1d9d22462ec",
   "defaults": {
     "signals": {
       "striking_distance": {
@@ -194,6 +194,7 @@
     },
     "learning": {
       "replenishment_horizon_days": 60,
+      "replenishment_target_horizon_days": 90,
       "labels": {
         "maturity_days": 28,
         "window_days": 28,
@@ -545,6 +546,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -895,6 +897,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -1245,6 +1248,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -1595,6 +1599,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -1945,6 +1950,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -2295,6 +2301,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -2645,6 +2652,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -2995,6 +3003,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -3345,6 +3354,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -3695,6 +3705,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -4045,6 +4056,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -4395,6 +4407,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -4745,6 +4758,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -5095,6 +5109,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -5445,6 +5460,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -5795,6 +5811,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -6145,6 +6162,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -6495,6 +6513,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -6845,6 +6864,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -7195,6 +7215,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,
@@ -7545,6 +7566,7 @@
       },
       "learning": {
         "replenishment_horizon_days": 60,
+        "replenishment_target_horizon_days": 90,
         "labels": {
           "maturity_days": 28,
           "window_days": 28,

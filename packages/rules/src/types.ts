@@ -185,6 +185,7 @@ export type PatternDimension = 'intent_class' | 'family_id' | 'keyword_cluster' 
 
 export interface LearningConfig {
   replenishment_horizon_days: number
+  replenishment_target_horizon_days: number
   labels: {
     maturity_days: number
     window_days: number
