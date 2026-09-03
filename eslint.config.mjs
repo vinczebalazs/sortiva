@@ -187,6 +187,11 @@ export default tseslint.config(
       // No query runs here — every one goes through a repository call scoped
       // with an `AccountScope` later.
       'apps/web/app/api/opportunities/_lib/config.ts',
+      // T4.5's, identical again: hands a raw `db()` handle through as
+      // `ReviewDeps.db` for the approve and discard routes. Every query it
+      // enables runs in `packages/jobs/src/generation/review-article.ts`
+      // behind an `AccountScope`; no query runs here.
+      'apps/web/app/api/articles/_lib/config.ts',
     ],
     rules: { 'sortiva/no-raw-db-access': 'off' },
   },

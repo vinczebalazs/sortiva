@@ -1,0 +1,80 @@
+import { db, dbPool, PostgresCostLedger, PostgresRequestCache } from '@sortiva/db'
+import { GuardedPageFetcher, MockSeoDataProvider, PosthogServerCapture } from '@sortiva/providers'
+import type { SeoDataProvider } from '@sortiva/core'
+import { DataForSeoProvider } from '@sortiva/providers'
+// Deep imports, not the package barrel — `@sortiva/llm`'s whole export surface
+// is loaded by the server's start-up hook, and pulling it in here is how
+// earlier cards broke the build (see DECISIONS 2026-09-01 T1.3).
+import { AnthropicLlmClient } from '@sortiva/llm/client'
+import { loadPrompt } from '@sortiva/llm/prompts'
+import type { GenerationTaskDeps } from '@sortiva/jobs/generation/tasks'
+import type { ReviewDeps } from './review'
+
+/**
+ * What the review routes and the daily generation cycle are built from.
+ *
+ * Functions rather than values, and called from inside the request handler or
+ * the task registration rather than at module scope: `db()` opens a connection
+ * pool, and doing that while Next is collecting a route's exports runs it at
+ * build time, in a process that has no database. That is how `T4.2` broke the
+ * production build.
+ *
+ * The model client, the search vendor and the capture are this card's own
+ * process-wide singletons, the same small shape `apps/web/app/api/shopify/_lib/config.ts`
+ * and `apps/web/app/api/calendar/topics/_lib/config.ts` already use for the
+ * same three services rather than importing across another lane's directory.
+ */
+
+let llm: AnthropicLlmClient | undefined
+let capture: PosthogServerCapture | undefined
+let seo: SeoDataProvider | undefined
+
+function generationCapture(): PosthogServerCapture {
+  capture ??= new PosthogServerCapture()
+  return capture
+}
+
+function generationLlm(): AnthropicLlmClient {
+  llm ??= new AnthropicLlmClient({
+    cache: new PostgresRequestCache(db()),
+    capture: generationCapture(),
+    ledger: new PostgresCostLedger(db()),
+  })
+  return llm
+}
+
+function generationSeoProvider(): SeoDataProvider {
+  if (seo) return seo
+  seo =
+    process.env.SEO_PROVIDER_MODE === 'mock'
+      ? new MockSeoDataProvider({}, generationCapture())
+      : new DataForSeoProvider({
+          cache: new PostgresRequestCache(db()),
+          capture: generationCapture(),
+          ledger: new PostgresCostLedger(db()),
+        })
+  return seo
+}
+
+export function reviewDeps(): ReviewDeps {
+  return { db: db() }
+}
+
+export function generationTaskDeps(): GenerationTaskDeps {
+  return {
+    getDb: db,
+    getPool: dbPool,
+    llm: generationLlm(),
+    // The one guarded fetcher: every outbound page read in the product goes
+    // through it, so the SSRF protections are not something a caller can
+    // forget.
+    pageFetcher: new GuardedPageFetcher(),
+    seo: generationSeoProvider(),
+    claimPlanPrompt: loadPrompt('claim-plan', 1),
+    draftPrompt: loadPrompt('draft', 1),
+    judgePrompt: loadPrompt('judge', 1),
+    contradictionPrompt: loadPrompt('contradiction', 1),
+    revisePrompt: loadPrompt('revise', 1),
+    capture: generationCapture(),
+  }
+}
