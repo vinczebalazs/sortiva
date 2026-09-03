@@ -112,3 +112,9 @@ export {
   signalsNeedingSearchConsole,
   signalsWithoutSearchConsole,
 } from './limited-intelligence'
+
+export {
+  classifyKeywordIntent,
+  mapKeywordToFamilies,
+  type FamilyMappingCandidate,
+} from './keyword-classify'

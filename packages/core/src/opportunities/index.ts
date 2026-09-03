@@ -67,6 +67,7 @@ export {
   canTransition,
   EXPIRY_REASONS,
   InvalidOpportunityTransitionError,
+  reconcileStatusWithPreconditions,
   type ExpiryReason,
 } from './lifecycle'
 

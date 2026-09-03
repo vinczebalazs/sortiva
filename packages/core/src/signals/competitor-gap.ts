@@ -101,6 +101,19 @@ export function detectCompetitorCoverageGaps(
         ...(inOptimizeBand && candidate.ourUrl
           ? [{ key: 'our_ranking_url', value: normalisePageUrl(candidate.ourUrl), source: INVENTORY_SOURCE }]
           : []),
+        // The `intent_class` convention `DbTopicScheduler` already reads
+        // (DECISIONS 2026-09-03 T4.2) — the data was already on the candidate
+        // (`KeywordCandidate.intentClass`), it was simply never stamped into
+        // this signal's own evidence. One `family_id` fact per mapped family:
+        // `EvidenceFact.value` cannot hold an array, so a repeated key is the
+        // encoding, same convention this card establishes in
+        // `uncovered-query.ts`/`family-coverage.ts`. See DECISIONS 2026-09-03 T3.7.
+        { key: 'intent_class', value: candidate.intentClass, source: INVENTORY_SOURCE },
+        ...candidate.familyIds.map((familyId) => ({
+          key: 'family_id',
+          value: familyId,
+          source: INVENTORY_SOURCE,
+        })),
       ]),
     })
   }

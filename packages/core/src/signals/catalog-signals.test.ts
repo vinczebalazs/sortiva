@@ -346,6 +346,7 @@ describe('a range the store earns from with nothing written about it', () => {
       revenueShare: config.revenue_share_min * 2,
       mappedContent: [],
       keywordCandidatesClearingFloor: config.keyword_candidates_min,
+      intentClass: 'buying_guide' as const,
       ...overrides,
     }
   }

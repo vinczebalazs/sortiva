@@ -4,6 +4,7 @@ import {
   assertCanTransition,
   canTransition,
   InvalidOpportunityTransitionError,
+  reconcileStatusWithPreconditions,
 } from './lifecycle'
 import type { OpportunityStatus } from '../contracts/opportunities'
 
@@ -57,5 +58,41 @@ describe('the opportunity status machine (main §7.9)', () => {
   it('assertCanTransition throws a named error on an illegal move, and nothing on a legal one', () => {
     expect(() => assertCanTransition('completed', 'new')).toThrow(InvalidOpportunityTransitionError)
     expect(() => assertCanTransition('new', 'accepted')).not.toThrow()
+  })
+})
+
+describe('reconcileStatusWithPreconditions — the T3.6 scheduled-audit HIGH finding, closed (main §7.9)', () => {
+  it('blocks an auto-accepted REFRESH the instant a technical blocker appears on re-detection', () => {
+    expect(reconcileStatusWithPreconditions('accepted', 'REFRESH', false)).toEqual({ to: 'blocked' })
+  })
+
+  it('blocks a new (never-accepted) OPTIMIZE/FIX row the same way', () => {
+    expect(reconcileStatusWithPreconditions('new', 'OPTIMIZE', false)).toEqual({ to: 'blocked' })
+  })
+
+  it('leaves an accepted row alone while its preconditions stay clear', () => {
+    expect(reconcileStatusWithPreconditions('accepted', 'CREATE', true)).toBeNull()
+  })
+
+  it('unblocks back to accepted for CREATE/REFRESH once the precondition clears — the promised "re-checked at next scan"', () => {
+    expect(reconcileStatusWithPreconditions('blocked', 'CREATE', true)).toEqual({ to: 'accepted' })
+    expect(reconcileStatusWithPreconditions('blocked', 'REFRESH', true)).toEqual({ to: 'accepted' })
+  })
+
+  it('unblocks back to new for OPTIMIZE/FIX/HOLD once the precondition clears', () => {
+    expect(reconcileStatusWithPreconditions('blocked', 'OPTIMIZE', true)).toEqual({ to: 'new' })
+    expect(reconcileStatusWithPreconditions('blocked', 'FIX', true)).toEqual({ to: 'new' })
+    expect(reconcileStatusWithPreconditions('blocked', 'HOLD', true)).toEqual({ to: 'new' })
+  })
+
+  it('leaves a still-blocked row alone while its precondition is still open', () => {
+    expect(reconcileStatusWithPreconditions('blocked', 'CREATE', false)).toBeNull()
+  })
+
+  it('never touches scheduled, executing, completed, dismissed or expired — the calendar owns those', () => {
+    for (const status of ['scheduled', 'executing', 'completed', 'dismissed', 'expired'] as const) {
+      expect(reconcileStatusWithPreconditions(status, 'CREATE', false)).toBeNull()
+      expect(reconcileStatusWithPreconditions(status, 'CREATE', true)).toBeNull()
+    }
   })
 })

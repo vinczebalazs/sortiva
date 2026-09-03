@@ -1,5 +1,5 @@
 import type { SignalsConfig } from '@sortiva/rules'
-import type { EvidenceFact } from '../contracts/opportunities'
+import type { EvidenceFact, IntentClass } from '../contracts/opportunities'
 import { INVENTORY_SOURCE, facts } from './types'
 
 /**
@@ -38,6 +38,16 @@ export interface FamilyCoverageCandidate {
   readonly mappedContent: readonly MappedContent[]
   /** How many searches mapped to this range clear the demand floor. */
   readonly keywordCandidatesClearingFloor: number
+  /**
+   * What kind of article a whole-range gap wants. Unlike every other signal
+   * that proposes new coverage, this one has no single keyword to read an
+   * intent off — it is a gap in the range itself, not in one search — so the
+   * caller decides and supplies it rather than this module guessing at free
+   * text. `DbTopicScheduler` needs this via the `intent_class` evidence fact
+   * below (DECISIONS 2026-09-03 T4.2) or it cannot place the resulting topic
+   * at all.
+   */
+  readonly intentClass: IntentClass
 }
 
 export interface FamilyCoverageGapSignal {
@@ -97,6 +107,11 @@ export function detectFamilyCoverageGaps(
           value: candidate.keywordCandidatesClearingFloor,
           source: 'dataforseo',
         },
+        // Same `intent_class`/`family_id` convention as the other two
+        // new-coverage signals (DECISIONS 2026-09-03 T3.7) — a single
+        // `family_id` fact is enough here, since the family *is* the entity.
+        { key: 'intent_class', value: candidate.intentClass, source: INVENTORY_SOURCE },
+        { key: 'family_id', value: candidate.familyId, source: INVENTORY_SOURCE },
       ]),
     })
   }
