@@ -28,6 +28,9 @@ const available = await databaseAvailable()
 const NOW = new Date('2026-09-03T07:00:00.000Z')
 const CLAIM_PLAN_PROMPT = loadPrompt('claim-plan', 1)
 const DRAFT_PROMPT = loadPrompt('draft', 1)
+const JUDGE_PROMPT = loadPrompt('judge', 1)
+const CONTRADICTION_PROMPT = loadPrompt('contradiction', 1)
+const REVISE_PROMPT = loadPrompt('revise', 1)
 
 const seo: SeoDataProvider = {
   keywordMetrics: () => Promise.reject(new Error('not expected to be called')),
@@ -173,6 +176,9 @@ describe.skipIf(!available)('generateArticle against real data', () => {
       pageFetcher,
       claimPlanPrompt: CLAIM_PLAN_PROMPT,
       draftPrompt: DRAFT_PROMPT,
+      judgePrompt: JUDGE_PROMPT,
+      contradictionPrompt: CONTRADICTION_PROMPT,
+      revisePrompt: REVISE_PROMPT,
       now: () => NOW,
       logger: silentLogger,
     }
@@ -223,26 +229,68 @@ describe.skipIf(!available)('generateArticle against real data', () => {
     )
   }
 
-  /** `productMentionProductId` must name a real product id, only known once `seedFamily` has run. */
+  /**
+   * `productMentionProductId` must name a real product id, only known once
+   * `seedFamily` has run.
+   *
+   * The body is deliberately long enough and varied enough to survive Gate 3's
+   * free checks — every sentence carrying checkable content cites the claim it
+   * came from, the target phrase is not repeated past the stuffing threshold,
+   * and no figure appears twice with two different values. A fixture that
+   * failed those would prove nothing about the stages before them.
+   */
   function enqueueDraft(llm: MockLlmClient, productMentionProductId: string): void {
     llm.enqueue(
       'draft',
       JSON.stringify({
         title: 'Best water bottles: a buying guide',
         metaDescription: 'How to choose a water bottle, by material and capacity.',
-        intro: 'For most kitchens, the stainless steel bottle is the right default[[c1]].',
+        intro:
+          'For most kitchens, the stainless steel bottle is the right default[[c1]]. It survives being dropped, it does not hold flavours from yesterday, and it keeps a cold drink cold through an afternoon. Glass suits someone who cares about taste and is careful with a bottle; plastic suits someone for whom weight settles it.',
         sections: [
-          { heading: 'The decision', body: 'Material and origin both matter[[c1]][[c2]].' },
+          {
+            heading: 'The decision',
+            body: 'Two things decide this: what the bottle is made of, and where it was made[[c1]][[c2]]. Everything else — lid design, colour, finish — follows from those and matters far less in daily use. Work out which of the three materials suits how you actually drink, then narrow down within it.',
+          },
           {
             heading: 'Selection criteria: by capacity',
-            body: 'Larger bottles suit longer days away from a tap[[c7]].',
+            body: 'Larger sizes suit long days away from a tap, and smaller ones fit a bag and a hand better[[c7]]. If the bottle spends its life on a desk, size is close to irrelevant; if it goes in a rucksack, it decides whether you refill once or three times.',
           },
-          { heading: 'Recommended types', body: 'Stainless steel resists dents and keeps drinks cold longest.' },
-          { heading: 'Common mistakes', body: 'Picking a bottle before checking the lid seals properly.' },
-          { heading: 'Products', body: 'The {{p1}} is a solid all-rounder.' },
+          {
+            heading: 'Recommended types',
+            body: 'Steel resists dents and holds temperature well[[c1]]. Glass gives the cleanest taste and is the one to avoid if it will be knocked about. Plastic weighs least of the three, and replacing one costs little when it eventually wears out.',
+          },
+          {
+            heading: 'Common mistakes',
+            body: 'The usual one is picking a bottle before checking that the lid seals. The second is buying for a use case you do not have — a vacuum-insulated flask is wasted on someone who refills at a desk twice a day.',
+          },
+          {
+            heading: 'Products',
+            body: 'The {{p1}} is a solid all-rounder for someone who has not settled on a preference yet.',
+          },
         ],
         faq: [],
         productMentions: [{ id: 'p1', productId: productMentionProductId, refType: 'recommendation', fields: ['price'] }],
+      }),
+    )
+  }
+
+  /** A judge verdict that sits above every floor: information gain and grounding at 4, the rest at 3. */
+  function enqueueJudge(llm: MockLlmClient, scores?: Record<string, number>): void {
+    const values = {
+      informationGain: 4,
+      factualGrounding: 4,
+      searchIntentMatch: 3,
+      actionability: 3,
+      languageQuality: 3,
+      ecommerceUsefulness: 3,
+      ...scores,
+    }
+    llm.enqueue(
+      'judge',
+      JSON.stringify({
+        scores: values,
+        justifications: Object.fromEntries(Object.keys(values).map((k) => [k, `graded on ${k}`])),
       }),
     )
   }
@@ -254,6 +302,7 @@ describe.skipIf(!available)('generateArticle against real data', () => {
     const order = new OrderAssertingLlmClient()
     enqueueClaimPlan(order.inner)
     enqueueDraft(order.inner, productIds[0]!)
+    enqueueJudge(order.inner)
 
     const result = await generateArticle(deps(order), {
       accountId,
@@ -266,17 +315,23 @@ describe.skipIf(!available)('generateArticle against real data', () => {
       linkTaskUrl: null,
     })
 
-    expect(result.outcome).toBe('drafted')
-    if (result.outcome !== 'drafted') throw new Error('expected drafted')
+    expect(result.outcome).toBe('graded')
+    if (result.outcome === 'held_thin_pack') throw new Error('expected a graded article')
 
     // Done-when: Gate 2 admits a real, distinct pack.
     expect(result.gate2.outcome).toBe('admitted')
 
     // Done-when: the claim plan was persisted before the draft's model call.
     expect(order.claimsPersistedBeforeDraftCall).toBe(true)
-    expect(order.inner.callCount).toBe(2)
     expect(order.inner.calls[0]!.callType).toBe('claim_plan')
     expect(order.inner.calls[1]!.callType).toBe('draft')
+
+    // Gate 3 passed on the first attempt: one judge call, no repair, and no
+    // contradiction call at all because the deterministic pass found nothing
+    // to ask about.
+    expect(result.gate3.outcome).toBe('passed')
+    expect(result.gate3.calls).toEqual({ judge: 1, contradiction: 0, repair: 0 })
+    expect(order.inner.callCount).toBe(3)
 
     // Done-when: the writer's own prompt carried the claim list, not the raw pack.
     const draftRequest = order.requests.find((r) => r.callType === 'draft')
@@ -300,9 +355,26 @@ describe.skipIf(!available)('generateArticle against real data', () => {
     ].join('\n')
     expect(containsCurrencyFigure(allText)).toBe(false)
 
-    // A real article row and its claims/refs exist.
+    // A real article row and its claims/refs exist, and the draft itself is
+    // stored: title and meta description in their own columns, the body in
+    // `body_json` with no second copy of either inside it.
     const [articleRow] = await db.select().from(schema.articles).where(eq(schema.articles.id, result.articleId))
     expect(articleRow?.state).toBe('draft')
+    expect(articleRow?.title).toBe('Best water bottles: a buying guide')
+    expect(articleRow?.metaDescription).toBe('How to choose a water bottle, by material and capacity.')
+    const storedBody = articleRow?.bodyJson as Record<string, unknown>
+    expect(Object.keys(storedBody).sort()).toEqual(['faq', 'intro', 'sections'])
+
+    // The Gate 3 decision is auditable: the prompt and model that produced the
+    // scores are on the row, not just the scores.
+    const gate3Rows = await db
+      .select()
+      .from(schema.gateDecisions)
+      .where(and(eq(schema.gateDecisions.topicId, topicId), eq(schema.gateDecisions.gate, 3)))
+    expect(gate3Rows).toHaveLength(1)
+    expect(gate3Rows[0]!.outcome).toBe('passed')
+    expect(gate3Rows[0]!.promptVersion).toBe('judge.v1')
+    expect(gate3Rows[0]!.modelId).toBeTruthy()
     const claimRows = await db
       .select()
       .from(schema.articleClaims)

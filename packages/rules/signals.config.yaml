@@ -362,6 +362,50 @@ defaults:
       # paying repeatedly to talk a bad draft into passing its own grader.
       repair_loops_max: 1
 
+    # ── Gate 3: the free checks that run before any grading call ──────────
+    draft_lints:
+      # How similar a draft may be to one of the store's own earlier articles,
+      # or to a page already ranking, before we call it a near-duplicate and
+      # refuse it. Measured as the share of word runs the two texts have in
+      # common, 0–1. Raise it and the fortieth article starts sounding like the
+      # twelfth; lower it and genuinely distinct articles on one product family
+      # start colliding, because they legitimately share vocabulary.
+      # UNSIGNED — main §8.4 names the check ("n-gram/embedding similarity"),
+      # not the number.
+      near_duplicate_similarity_max: 0.6
+      # How many consecutive words count as one run for that comparison.
+      # Shorter runs match on ordinary phrasing and flag everything; longer
+      # runs only catch near-verbatim reuse and miss a paraphrase.
+      near_duplicate_shingle_words: 5
+      # The share of the article's words that may be the target keyword before
+      # it reads as stuffing rather than as writing about the subject.
+      # UNSIGNED — main §8.4 names "keyword-stuffing density" with no figure.
+      keyword_density_max: 0.03
+      # A draft shorter than this share of the length target we set it is not a
+      # short article, it is an unfinished one — the writer stopped early. The
+      # target itself comes from the SERP (see `generation.length`), so this is
+      # a floor under that target rather than a word count of its own.
+      # UNSIGNED — main §8.4 says "length floor" and names no figure.
+      length_target_floor_ratio: 0.6
+      # Two numbers about the same thing may differ by this share and still
+      # count as agreeing — the same measurement rounded differently ("1.2 kg"
+      # against "1.15 kg") is not the merchant-embarrassing contradiction the
+      # check is hunting. Anything wider becomes a candidate conflict, and only
+      # then does a model decide whether the two statements are scoped
+      # differently or actually disagree.
+      # UNSIGNED — `docs/content-pointers.md` §8 describes the check, not a
+      # tolerance.
+      numeric_agreement_tolerance: 0.05
+      # How much two statements have to be about the same thing before a
+      # difference between them counts as a candidate conflict worth asking a
+      # model about. Measured as the share of the shorter statement's subject
+      # words the two have in common. Two products' capacities share the word
+      # "pack" and are not in conflict; a threshold restated later in the
+      # article shares nearly every word naming it. Lower this and we pay for
+      # rulings on pairs that were never about the same subject.
+      # UNSIGNED.
+      contradiction_subject_overlap_min: 0.5
+
   # ── Learning: measuring what happened after publish ────────────────────────
   learning:
     # When the calendar's planned horizon falls below this many days, top it

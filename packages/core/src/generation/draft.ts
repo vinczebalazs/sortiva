@@ -67,6 +67,28 @@ export interface Draft {
   readonly productMentions: readonly DraftProductMentionOutput[]
 }
 
+/**
+ * The draft as `articles.body_json` stores it.
+ *
+ * Three of the writer's fields are deliberately absent. `title` and
+ * `metaDescription` have columns of their own, and **the column is the
+ * authoritative copy** — the calendar, the articles list, publishing and
+ * export all read the row, so a second copy inside the JSON would be two
+ * answers to one question, drifting apart the first time one of them is
+ * corrected. `productMentions` is absent for the same reason:
+ * `article_product_refs` already holds those as rows. See DECISIONS
+ * 2026-09-03 T4.4.
+ */
+export interface ArticleBody {
+  readonly intro: string
+  readonly sections: readonly DraftSection[]
+  readonly faq: readonly DraftFaqEntry[]
+}
+
+export function articleBodyOf(draft: Draft): ArticleBody {
+  return { intro: draft.intro, sections: draft.sections, faq: draft.faq }
+}
+
 const RESPONSE_SCHEMA = {
   type: 'object',
   additionalProperties: false,

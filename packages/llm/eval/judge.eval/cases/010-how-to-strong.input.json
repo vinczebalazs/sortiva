@@ -1,0 +1,111 @@
+{
+  "targetKeyword": "how to season a cast iron pan",
+  "draft": {
+    "title": "How to season a cast iron pan",
+    "metaDescription": "Seasoning a cast iron pan, step by step, and how to tell when it worked.",
+    "intro": "Wipe the pan with a thin film of oil, put it upside down in a 230°C oven for an hour, and let it cool in the oven. Repeat three times for a new pan. The film has to be thin enough to look dry — a visible layer of oil will go sticky rather than hard.",
+    "sections": [
+      {
+        "heading": "The steps",
+        "body": "Wash the pan and dry it on the hob until no moisture is left. Rub oil over every surface, inside and out, then wipe it back off with a clean cloth until the pan looks dry. Bake upside down at 230°C for an hour with a tray underneath. Let it cool in the oven."
+      },
+      {
+        "heading": "How to tell it worked",
+        "body": "A seasoned pan is dark and even, and water beads on it rather than spreading. If it is patchy or tacky, the oil layer was too thick — heat the pan and wipe it back, then repeat."
+      },
+      {
+        "heading": "Keeping it",
+        "body": "Both skillets are hand wash, dried on the hob and wiped with oil while warm. That last step is the whole maintenance routine; skipping the drying is what puts rust on a pan overnight."
+      }
+    ],
+    "faq": [],
+    "productMentions": []
+  },
+  "pack": {
+    "accountId": "judge-eval",
+    "topicId": "judge-eval",
+    "intentClass": "buying_guide",
+    "targetKeyword": "how to season a cast iron pan",
+    "families": [
+      {
+        "familyId": "f1",
+        "name": "Cast iron cookware",
+        "differentiationAxes": [
+          "diameter",
+          "handle"
+        ]
+      }
+    ],
+    "products": [
+      {
+        "productId": "p1",
+        "title": "Skillet 26",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "cast iron",
+          "dimensions": "26 cm diameter",
+          "weight": "2.1 kg",
+          "capacity": null,
+          "compatibility": [],
+          "use_cases_stated": [
+            "hob",
+            "oven",
+            "open fire"
+          ],
+          "care": "hand wash, dry on the hob, wipe with oil",
+          "certifications": [],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 7
+        }
+      },
+      {
+        "productId": "p2",
+        "title": "Skillet 30",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "cast iron",
+          "dimensions": "30 cm diameter",
+          "weight": "2.9 kg",
+          "capacity": null,
+          "compatibility": [],
+          "use_cases_stated": [],
+          "care": "hand wash, dry on the hob, wipe with oil",
+          "certifications": [],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 4
+        }
+      }
+    ],
+    "serp": {
+      "keyword": "how to season a cast iron pan",
+      "locale": "en-US",
+      "topResultCount": 1,
+      "averageWordCount": 900,
+      "competitorAngles": [
+        {
+          "url": "https://rival.example/seasoning",
+          "domain": "rival.example",
+          "position": 1,
+          "headings": [
+            "What seasoning is",
+            "Step by step"
+          ],
+          "excerpt": "Seasoning is polymerised oil bonded to the iron."
+        }
+      ]
+    },
+    "linkTasks": [],
+    "assembledAt": "2026-09-03T07:00:00.000Z"
+  },
+  "note": "A how-to that answers first, gives the procedure, and says how to tell it worked."
+}

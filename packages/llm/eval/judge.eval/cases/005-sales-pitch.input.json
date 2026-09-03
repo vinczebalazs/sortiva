@@ -1,0 +1,136 @@
+{
+  "targetKeyword": "best trail running shoes for wide feet",
+  "draft": {
+    "title": "Wide-fit trail shoes",
+    "metaDescription": "Our wide-fit trail shoe range.",
+    "intro": "Our trail shoes are designed with the discerning runner in mind. Crafted from premium materials and engineered for performance, they represent the pinnacle of what a trail shoe can be.",
+    "sections": [
+      {
+        "heading": "Uncompromising quality",
+        "body": "Every pair is built to the highest standards. Our design team has spent years perfecting the fit, and it shows in every stride."
+      },
+      {
+        "heading": "Shop the range",
+        "body": "Browse our collection today and discover why runners everywhere are making the switch."
+      }
+    ],
+    "faq": [],
+    "productMentions": []
+  },
+  "pack": {
+    "accountId": "judge-eval",
+    "topicId": "judge-eval",
+    "intentClass": "buying_guide",
+    "targetKeyword": "best trail running shoes for wide feet",
+    "families": [
+      {
+        "familyId": "f1",
+        "name": "Trail shoes",
+        "differentiationAxes": [
+          "last width",
+          "drop",
+          "outsole"
+        ]
+      }
+    ],
+    "products": [
+      {
+        "productId": "p1",
+        "title": "Ridge Wide",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "engineered mesh with TPU overlays",
+          "dimensions": null,
+          "weight": "290 g",
+          "capacity": null,
+          "compatibility": [],
+          "use_cases_stated": [
+            "technical trail",
+            "wet rock"
+          ],
+          "care": null,
+          "certifications": [],
+          "origin": "Vietnam",
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 5
+        }
+      },
+      {
+        "productId": "p2",
+        "title": "Ridge Standard",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "engineered mesh",
+          "dimensions": null,
+          "weight": "265 g",
+          "capacity": null,
+          "compatibility": [],
+          "use_cases_stated": [
+            "hard-packed trail"
+          ],
+          "care": null,
+          "certifications": [],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 3
+        }
+      },
+      {
+        "productId": "p3",
+        "title": "Fell Wide",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "ripstop nylon",
+          "dimensions": null,
+          "weight": "310 g",
+          "capacity": null,
+          "compatibility": [
+            "gaiter attachment"
+          ],
+          "use_cases_stated": [
+            "boggy ground"
+          ],
+          "care": null,
+          "certifications": [],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 4
+        }
+      }
+    ],
+    "serp": {
+      "keyword": "best trail running shoes for wide feet",
+      "locale": "en-US",
+      "topResultCount": 1,
+      "averageWordCount": 900,
+      "competitorAngles": [
+        {
+          "url": "https://rival.example/trail-shoes",
+          "domain": "rival.example",
+          "position": 1,
+          "headings": [
+            "Best trail shoes 2026",
+            "How we tested",
+            "The winners"
+          ],
+          "excerpt": "We tested twelve shoes over six months on mixed terrain."
+        }
+      ]
+    },
+    "linkTasks": [],
+    "assembledAt": "2026-09-03T07:00:00.000Z"
+  },
+  "note": "Accurate enough, but it is an advertisement: no decision is identified and no trade-off is stated."
+}

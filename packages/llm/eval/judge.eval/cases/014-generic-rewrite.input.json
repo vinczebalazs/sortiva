@@ -1,0 +1,141 @@
+{
+  "targetKeyword": "what size backpack for a weekend trip",
+  "draft": {
+    "title": "Backpack size guide",
+    "metaDescription": "Backpack capacity explained.",
+    "intro": "Backpack capacity is measured in litres. Different trips need different capacities, and choosing the right one is important for comfort.",
+    "sections": [
+      {
+        "heading": "Understanding litres",
+        "body": "A litre is a measure of volume. Backpack capacity ranges from small daypacks to large expedition packs."
+      },
+      {
+        "heading": "Choosing a size",
+        "body": "Consider the length of your trip, the season, and how much gear you need to carry. Most weekend trips need between 30 and 50 litres."
+      },
+      {
+        "heading": "Final thoughts",
+        "body": "The right pack size depends on your individual needs and preferences."
+      }
+    ],
+    "faq": [],
+    "productMentions": []
+  },
+  "pack": {
+    "accountId": "judge-eval",
+    "topicId": "judge-eval",
+    "intentClass": "buying_guide",
+    "targetKeyword": "what size backpack for a weekend trip",
+    "families": [
+      {
+        "familyId": "f1",
+        "name": "Backpacks",
+        "differentiationAxes": [
+          "capacity",
+          "frame"
+        ]
+      }
+    ],
+    "products": [
+      {
+        "productId": "p1",
+        "title": "Daypack 22",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "ripstop nylon",
+          "dimensions": null,
+          "weight": "640 g",
+          "capacity": "22 litres",
+          "compatibility": [],
+          "use_cases_stated": [
+            "day walks",
+            "commuting"
+          ],
+          "care": null,
+          "certifications": [],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 5
+        }
+      },
+      {
+        "productId": "p2",
+        "title": "Weekender 38",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "ripstop nylon",
+          "dimensions": null,
+          "weight": "1.1 kg",
+          "capacity": "38 litres",
+          "compatibility": [
+            "hip belt",
+            "rain cover"
+          ],
+          "use_cases_stated": [
+            "two to three nights"
+          ],
+          "care": null,
+          "certifications": [],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 6
+        }
+      },
+      {
+        "productId": "p3",
+        "title": "Expedition 65",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "cordura",
+          "dimensions": null,
+          "weight": "1.9 kg",
+          "capacity": "65 litres",
+          "compatibility": [
+            "hip belt",
+            "rain cover",
+            "trekking pole loops"
+          ],
+          "use_cases_stated": [],
+          "care": null,
+          "certifications": [],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 6
+        }
+      }
+    ],
+    "serp": {
+      "keyword": "what size backpack for a weekend trip",
+      "locale": "en-US",
+      "topResultCount": 1,
+      "averageWordCount": 900,
+      "competitorAngles": [
+        {
+          "url": "https://rival.example/pack-size",
+          "domain": "rival.example",
+          "position": 1,
+          "headings": [
+            "Pack size guide",
+            "Litres explained"
+          ],
+          "excerpt": "Most weekend trips need between 30 and 50 litres."
+        }
+      ]
+    },
+    "linkTasks": [],
+    "assembledAt": "2026-09-03T07:00:00.000Z"
+  },
+  "note": "Restates the ranking page's own sentence and never reaches the store's packs."
+}

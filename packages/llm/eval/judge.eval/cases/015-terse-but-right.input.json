@@ -1,0 +1,137 @@
+{
+  "targetKeyword": "what size backpack for a weekend trip",
+  "draft": {
+    "title": "What size backpack for a weekend trip",
+    "metaDescription": "Weekend pack sizes, with the numbers.",
+    "intro": "38 litres. The Weekender 38 weighs 1.1 kg and takes a hip belt, which is what carries a weekend load properly.",
+    "sections": [
+      {
+        "heading": "The alternatives",
+        "body": "The Daypack 22 is 640 g and 22 litres, which is a day out rather than a night away. The Expedition 65 is 1.9 kg of cordura and more pack than a weekend needs."
+      },
+      {
+        "heading": "The hip belt",
+        "body": "A hip belt moves the load onto your hips. The Daypack 22 does not have one; the Weekender 38 and the Expedition 65 do."
+      }
+    ],
+    "faq": [],
+    "productMentions": []
+  },
+  "pack": {
+    "accountId": "judge-eval",
+    "topicId": "judge-eval",
+    "intentClass": "buying_guide",
+    "targetKeyword": "what size backpack for a weekend trip",
+    "families": [
+      {
+        "familyId": "f1",
+        "name": "Backpacks",
+        "differentiationAxes": [
+          "capacity",
+          "frame"
+        ]
+      }
+    ],
+    "products": [
+      {
+        "productId": "p1",
+        "title": "Daypack 22",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "ripstop nylon",
+          "dimensions": null,
+          "weight": "640 g",
+          "capacity": "22 litres",
+          "compatibility": [],
+          "use_cases_stated": [
+            "day walks",
+            "commuting"
+          ],
+          "care": null,
+          "certifications": [],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 5
+        }
+      },
+      {
+        "productId": "p2",
+        "title": "Weekender 38",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "ripstop nylon",
+          "dimensions": null,
+          "weight": "1.1 kg",
+          "capacity": "38 litres",
+          "compatibility": [
+            "hip belt",
+            "rain cover"
+          ],
+          "use_cases_stated": [
+            "two to three nights"
+          ],
+          "care": null,
+          "certifications": [],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 6
+        }
+      },
+      {
+        "productId": "p3",
+        "title": "Expedition 65",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "cordura",
+          "dimensions": null,
+          "weight": "1.9 kg",
+          "capacity": "65 litres",
+          "compatibility": [
+            "hip belt",
+            "rain cover",
+            "trekking pole loops"
+          ],
+          "use_cases_stated": [],
+          "care": null,
+          "certifications": [],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 6
+        }
+      }
+    ],
+    "serp": {
+      "keyword": "what size backpack for a weekend trip",
+      "locale": "en-US",
+      "topResultCount": 1,
+      "averageWordCount": 900,
+      "competitorAngles": [
+        {
+          "url": "https://rival.example/pack-size",
+          "domain": "rival.example",
+          "position": 1,
+          "headings": [
+            "Pack size guide",
+            "Litres explained"
+          ],
+          "excerpt": "Most weekend trips need between 30 and 50 litres."
+        }
+      ]
+    },
+    "linkTasks": [],
+    "assembledAt": "2026-09-03T07:00:00.000Z"
+  },
+  "note": "Right answer, right evidence, but too compressed to serve a reader who does not already know the vocabulary."
+}

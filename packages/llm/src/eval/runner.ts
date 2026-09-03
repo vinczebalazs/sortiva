@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { distillEvalRunner } from './distill-runner'
+import { judgeEvalRunner } from './judge-runner'
 import { personaEvalRunner } from './persona-runner'
 import { fieldF1, meanAbsoluteError, type F1Score, type MaeScore } from './metrics'
 
@@ -261,4 +262,5 @@ export async function runEvalSet(
 export const EVAL_RUNNERS: EvalRunnerRegistry = {
   distill: (input, config) => distillEvalRunner()(input, config),
   persona: (input, config) => personaEvalRunner()(input, config),
+  judge: (input, config) => judgeEvalRunner()(input, config),
 }

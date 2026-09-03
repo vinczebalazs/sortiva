@@ -1,6 +1,6 @@
-import { and, desc, eq, inArray } from 'drizzle-orm'
+import { and, desc, eq, gte, inArray, notInArray } from 'drizzle-orm'
 import type { Db } from '../client'
-import { gateDecisions } from '../schema'
+import { articles, gateDecisions } from '../schema'
 import type { AccountScope } from '../scope'
 
 export type GateDecisionRow = typeof gateDecisions.$inferSelect
@@ -15,9 +15,11 @@ export type GateDecisionRow = typeof gateDecisions.$inferSelect
  * card's *template key* rather than rendered prose — see DECISIONS
  * 2026-09-03 T4.1 — with the interpolation params, retry condition and
  * redirect (none of which this table has a column for) folded into
- * `scoresJson` instead. Gate 1 makes no model call, so `promptVersion` and
- * `modelId` are always null here, matching the column comments already on
- * the table.
+ * `scoresJson` instead. Gate 1 makes no model call, so it passes neither
+ * `promptVersion` nor `modelId` and they stay null, matching the column
+ * comments already on the table. Gate 3 does make one and passes both:
+ * without them a stored score cannot be attributed to the prompt and model
+ * that produced it, which is the entire reason main §8.5 asks for this table.
  */
 export interface GateDecisionInput {
   readonly topicId: string
@@ -25,6 +27,8 @@ export interface GateDecisionInput {
   readonly outcome: string
   readonly scoresJson: unknown
   readonly reasonUserFacing: string | null
+  readonly promptVersion?: string | null
+  readonly modelId?: string | null
 }
 
 export async function insertGateDecision(
@@ -42,8 +46,8 @@ export async function insertGateDecision(
       outcome: input.outcome,
       scoresJson: input.scoresJson as never,
       reasonUserFacing: input.reasonUserFacing,
-      promptVersion: null,
-      modelId: null,
+      promptVersion: input.promptVersion ?? null,
+      modelId: input.modelId ?? null,
       decidedAt: now,
     })
     .returning()
@@ -95,4 +99,45 @@ export async function latestGateDecisionsForTopics(
     if (!latest.has(row.topicId)) latest.set(row.topicId, row)
   }
   return latest
+}
+
+/**
+ * The calibration set — main §8.5: the gate decisions the quality bar is tuned
+ * against, sampled to see whether the judge is drifting across model and
+ * prompt changes.
+ *
+ * **Override-published articles are excluded here, at the query.** An article
+ * a merchant published after we said it was not good enough cannot be evidence
+ * about whether our judgement was right; leaving it in would let a store that
+ * overrides everything quietly loosen the bar for everyone. Invariant 12, main
+ * §8.6. The exclusion lives in this function rather than in each caller so
+ * there is one place it can be got wrong, and one test that proves it is not.
+ *
+ * Scoped per account like every other repository read, so sampling across
+ * stores means asking for each store rather than reaching across all of them
+ * from one query.
+ */
+export async function gateDecisionsForCalibration(
+  db: Db,
+  scope: AccountScope,
+  options: { readonly since?: Date; readonly limit?: number } = {},
+): Promise<GateDecisionRow[]> {
+  const overridden = db
+    .select({ topicId: articles.topicId })
+    .from(articles)
+    .where(and(eq(articles.accountId, scope.accountId), eq(articles.publishedViaOverride, true)))
+
+  const conditions = [
+    eq(gateDecisions.accountId, scope.accountId),
+    eq(gateDecisions.gate, 3),
+    notInArray(gateDecisions.topicId, overridden),
+  ]
+  if (options.since) conditions.push(gte(gateDecisions.decidedAt, options.since))
+
+  return db
+    .select()
+    .from(gateDecisions)
+    .where(and(...conditions))
+    .orderBy(desc(gateDecisions.decidedAt))
+    .limit(options.limit ?? 500)
 }

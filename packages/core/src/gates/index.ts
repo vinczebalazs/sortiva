@@ -10,3 +10,4 @@ export {
   type Gate1RetryCondition,
 } from './gate1'
 export { GATE_DECISION_EVENT, type GateDecisionEventProperties } from './events'
+export * from './gate3'

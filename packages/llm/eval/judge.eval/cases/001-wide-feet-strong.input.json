@@ -1,0 +1,140 @@
+{
+  "targetKeyword": "best trail running shoes for wide feet",
+  "draft": {
+    "title": "Trail shoes for wide feet: what actually changes",
+    "metaDescription": "Which trail shoes suit wide feet, and what last width, drop and outsole change.",
+    "intro": "If your feet are wide, last width matters more than any other number on the box, and two of the three shoes here are built on a wider last. The Ridge Wide is the one to start with for technical trail; the Fell Wide is the one for boggy ground, where its gaiter attachment earns its keep.",
+    "sections": [
+      {
+        "heading": "What last width actually means",
+        "body": "Last width is the shape the shoe is built around, not how much the upper stretches. The Ridge Wide uses engineered mesh with TPU overlays, which holds a wide forefoot without the overlays cutting in; the standard version uses plain mesh on a narrower last and will feel tight across the ball of the foot however you lace it."
+      },
+      {
+        "heading": "Weight, and what you give up for it",
+        "body": "The Ridge Wide is 290 g against the standard model's 265 g, and the Fell Wide is 310 g. That 45 g spread is the price of the wider platform and, in the Fell's case, the gaiter attachment. On a two-hour run it is not something most people notice; on a long day it is."
+      },
+      {
+        "heading": "Which to pick",
+        "body": "Technical trail and wet rock: the Ridge Wide. Boggy ground where you will want gaiters: the Fell Wide. Hard-packed paths and a normal-width foot: the standard Ridge, which is lighter and cheaper to replace."
+      }
+    ],
+    "faq": [],
+    "productMentions": []
+  },
+  "pack": {
+    "accountId": "judge-eval",
+    "topicId": "judge-eval",
+    "intentClass": "buying_guide",
+    "targetKeyword": "best trail running shoes for wide feet",
+    "families": [
+      {
+        "familyId": "f1",
+        "name": "Trail shoes",
+        "differentiationAxes": [
+          "last width",
+          "drop",
+          "outsole"
+        ]
+      }
+    ],
+    "products": [
+      {
+        "productId": "p1",
+        "title": "Ridge Wide",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "engineered mesh with TPU overlays",
+          "dimensions": null,
+          "weight": "290 g",
+          "capacity": null,
+          "compatibility": [],
+          "use_cases_stated": [
+            "technical trail",
+            "wet rock"
+          ],
+          "care": null,
+          "certifications": [],
+          "origin": "Vietnam",
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 5
+        }
+      },
+      {
+        "productId": "p2",
+        "title": "Ridge Standard",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "engineered mesh",
+          "dimensions": null,
+          "weight": "265 g",
+          "capacity": null,
+          "compatibility": [],
+          "use_cases_stated": [
+            "hard-packed trail"
+          ],
+          "care": null,
+          "certifications": [],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 3
+        }
+      },
+      {
+        "productId": "p3",
+        "title": "Fell Wide",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "ripstop nylon",
+          "dimensions": null,
+          "weight": "310 g",
+          "capacity": null,
+          "compatibility": [
+            "gaiter attachment"
+          ],
+          "use_cases_stated": [
+            "boggy ground"
+          ],
+          "care": null,
+          "certifications": [],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 4
+        }
+      }
+    ],
+    "serp": {
+      "keyword": "best trail running shoes for wide feet",
+      "locale": "en-US",
+      "topResultCount": 1,
+      "averageWordCount": 900,
+      "competitorAngles": [
+        {
+          "url": "https://rival.example/trail-shoes",
+          "domain": "rival.example",
+          "position": 1,
+          "headings": [
+            "Best trail shoes 2026",
+            "How we tested",
+            "The winners"
+          ],
+          "excerpt": "We tested twelve shoes over six months on mixed terrain."
+        }
+      ]
+    },
+    "linkTasks": [],
+    "assembledAt": "2026-09-03T07:00:00.000Z"
+  },
+  "note": "A genuinely useful buying guide that uses store facts the SERP does not have."
+}

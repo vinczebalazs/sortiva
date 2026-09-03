@@ -1,0 +1,9 @@
+{
+  "name": "judge",
+  "metric": "criterion_mae",
+  "runner": "judge",
+  "promptVersion": "judge.v1",
+  "maxMae": 0.5,
+  "allowFalsePass": false,
+  "description": "Twenty drafts with hand-assigned gold scores per criterion, spanning the ways a draft fails: a rewrite of what already ranks, fabricated figures and attributions, a well-made article answering the wrong intent, a specification dump with no decision in it, a sales pitch, absolutes on unsupported claims, and — in Danish as well as English, because language quality has to be graded in the language it was written in — the stock openings and empty claims that mark generated text. Passes at per-criterion mean absolute error <= 0.5 across the set AND zero false passes: a draft humans failed that the judge lets through is a hard fail no aggregate may absorb, mirroring the tuning target that the acceptable error is a false reject and never a false pass. A gold file carries `passed: false` only where humans failed the draft; the runner returns the pass/fail the real floors in packages/rules would have produced, so the false-pass check asks about the decision that would really have been made rather than about a number. Append-only: a production failure gets minimised and added here."
+}

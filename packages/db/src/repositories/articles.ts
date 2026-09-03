@@ -14,8 +14,8 @@ export type ArticleRow = typeof articles.$inferSelect
  * something generated a real draft; `T4.3`'s pipeline
  * (`packages/jobs/src/generation`) is that caller now — the shape needed no
  * change, only a real title/slug/target keyword instead of placeholder ones.
- * `articles` still has no column to hold a draft's body or metadata
- * description; see this card's session report.
+ * `T4.0b` then added `body_json` and `meta_description`, and `saveDraftBody`
+ * below is what writes them.
  */
 export interface ArticleStubInput {
   readonly topicId: string
@@ -48,6 +48,99 @@ export async function insertArticleStub(
   return row
 }
 
+/**
+ * The finished draft, written once the writer has produced one.
+ *
+ * `title` and `meta_description` are written to their own columns and are
+ * **not** kept inside `body_json`: the column is the one authoritative copy,
+ * because that is what the calendar, the articles list, publishing and export
+ * all read, and a second copy in the JSON would be a second answer to the same
+ * question — the reason `productMentions` was kept out of the body too. See
+ * DECISIONS 2026-09-03 T4.4.
+ */
+export interface DraftBodyInput {
+  readonly title: string
+  readonly metaDescription: string
+  /** `{intro, sections, faq}` — the writer's own structure, minus the two fields above. */
+  readonly body: unknown
+}
+
+export async function saveDraftBody(
+  db: Db,
+  scope: AccountScope,
+  articleId: string,
+  input: DraftBodyInput,
+  now: Date = new Date(),
+): Promise<ArticleRow | undefined> {
+  const [row] = await db
+    .update(articles)
+    .set({
+      title: input.title,
+      metaDescription: input.metaDescription,
+      bodyJson: input.body as never,
+      updatedAt: now,
+    })
+    .where(and(eq(articles.accountId, scope.accountId), eq(articles.id, articleId)))
+    .returning()
+  return row
+}
+
+/**
+ * A draft the quality bar turned down. Guarded to `draft`: an article already
+ * in review or published is not Gate 3's to move, and a zero-row result means
+ * something else owns this article now.
+ */
+export async function markArticleRejectedByGate(
+  db: Db,
+  scope: AccountScope,
+  articleId: string,
+  now: Date = new Date(),
+): Promise<ArticleRow | undefined> {
+  const [row] = await db
+    .update(articles)
+    .set({ state: 'rejected', updatedAt: now })
+    .where(and(eq(articles.accountId, scope.accountId), eq(articles.id, articleId), eq(articles.state, 'draft')))
+    .returning()
+  return row
+}
+
+/**
+ * "Publish anyway" — main §8.6. The flag is permanent: it is what keeps this
+ * article out of the calibration data, out of pattern learning and out of any
+ * claim we make about how our articles perform. Guarded to `rejected`, because
+ * overriding anything else is overriding a decision that was never made.
+ *
+ * The article returns to `draft` so the ordinary delivery path picks it up
+ * exactly as it would a draft that passed — the merchant has already given the
+ * deliberate confirmation, and a second approval step would be asking twice.
+ */
+export async function markArticleOverridden(
+  db: Db,
+  scope: AccountScope,
+  articleId: string,
+  now: Date = new Date(),
+): Promise<ArticleRow | undefined> {
+  const [row] = await db
+    .update(articles)
+    .set({ state: 'draft', publishedViaOverride: true, updatedAt: now })
+    .where(and(eq(articles.accountId, scope.accountId), eq(articles.id, articleId), eq(articles.state, 'rejected')))
+    .returning()
+  return row
+}
+
+export async function findArticleById(
+  db: Db,
+  scope: AccountScope,
+  articleId: string,
+): Promise<ArticleRow | undefined> {
+  const [row] = await db
+    .select()
+    .from(articles)
+    .where(and(eq(articles.accountId, scope.accountId), eq(articles.id, articleId)))
+    .limit(1)
+  return row
+}
+
 export async function findArticleByTopic(
   db: Db,
   scope: AccountScope,
@@ -65,6 +158,32 @@ export async function findArticleByTopic(
 export async function slugsForAccount(db: Db, scope: AccountScope): Promise<ReadonlySet<string>> {
   const rows = await db.select({ slug: articles.slug }).from(articles).where(eq(articles.accountId, scope.accountId))
   return new Set(rows.map((r) => r.slug))
+}
+
+export interface ArticleBodyRow {
+  readonly id: string
+  readonly title: string
+  readonly bodyJson: unknown
+}
+
+/**
+ * The account's own recent article bodies, for Gate 3's near-duplicate check
+ * (main §8.4: "the classic at-scale failure where article #40 sounds like
+ * article #12"). Only articles that actually have a body are worth comparing
+ * against, and the article being graded is excluded by the caller.
+ */
+export async function recentArticleBodiesForAccount(
+  db: Db,
+  scope: AccountScope,
+  limit = 25,
+): Promise<readonly ArticleBodyRow[]> {
+  const rows = await db
+    .select({ id: articles.id, title: articles.title, bodyJson: articles.bodyJson })
+    .from(articles)
+    .where(and(eq(articles.accountId, scope.accountId), isNotNull(articles.bodyJson)))
+    .orderBy(desc(articles.createdAt))
+    .limit(limit)
+  return rows
 }
 
 export interface RelatedArticleRow {

@@ -171,6 +171,14 @@ export interface GatesConfig {
     other_criteria_min: number
     repair_loops_max: number
   }
+  draft_lints: {
+    near_duplicate_similarity_max: number
+    near_duplicate_shingle_words: number
+    keyword_density_max: number
+    length_target_floor_ratio: number
+    numeric_agreement_tolerance: number
+    contradiction_subject_overlap_min: number
+  }
 }
 
 export type PatternDimension = 'intent_class' | 'family_id' | 'keyword_cluster' | 'action_type'

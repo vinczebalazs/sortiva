@@ -1,0 +1,105 @@
+{
+  "targetKeyword": "are bamboo toothbrushes better",
+  "draft": {
+    "title": "Are bamboo toothbrushes better",
+    "metaDescription": "Why bamboo toothbrushes are the sustainable choice.",
+    "intro": "Bamboo toothbrushes are 100% biodegradable and eliminate plastic waste entirely. Switching to bamboo prevents 300 grams of plastic from entering the ocean every year, and bamboo is the most sustainable material available.",
+    "sections": [
+      {
+        "heading": "The benefits",
+        "body": "Bamboo is fully compostable, naturally antibacterial and grows faster than any other plant. Bamboo brushes guarantee a smaller footprint."
+      },
+      {
+        "heading": "Make the switch",
+        "body": "There is no reason not to switch. Bamboo is always the better option."
+      }
+    ],
+    "faq": [],
+    "productMentions": []
+  },
+  "pack": {
+    "accountId": "judge-eval",
+    "topicId": "judge-eval",
+    "intentClass": "buying_guide",
+    "targetKeyword": "are bamboo toothbrushes better",
+    "families": [
+      {
+        "familyId": "f1",
+        "name": "Toothbrushes",
+        "differentiationAxes": [
+          "handle material",
+          "bristle"
+        ]
+      }
+    ],
+    "products": [
+      {
+        "productId": "p1",
+        "title": "Bamboo Soft",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "moso bamboo handle, nylon-6 bristles",
+          "dimensions": null,
+          "weight": "12 g",
+          "capacity": null,
+          "compatibility": [],
+          "use_cases_stated": [],
+          "care": "dry between uses; handle is home compostable once bristles are removed",
+          "certifications": [
+            "FSC"
+          ],
+          "origin": "China",
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 5
+        }
+      },
+      {
+        "productId": "p2",
+        "title": "Recycled Soft",
+        "familyId": "f1",
+        "images": [],
+        "factSheet": {
+          "material": "recycled polypropylene handle, nylon-6 bristles",
+          "dimensions": null,
+          "weight": "18 g",
+          "capacity": null,
+          "compatibility": [],
+          "use_cases_stated": [],
+          "care": "dishwasher safe",
+          "certifications": [],
+          "origin": null,
+          "verifiable_claims": [],
+          "variant_axes": [],
+          "price_range": null,
+          "fluff_discarded": false,
+          "fact_count": 3
+        }
+      }
+    ],
+    "serp": {
+      "keyword": "are bamboo toothbrushes better",
+      "locale": "en-US",
+      "topResultCount": 1,
+      "averageWordCount": 900,
+      "competitorAngles": [
+        {
+          "url": "https://rival.example/bamboo",
+          "domain": "rival.example",
+          "position": 1,
+          "headings": [
+            "Are bamboo brushes better",
+            "The bristle problem"
+          ],
+          "excerpt": "The handle composts; the bristles do not."
+        }
+      ]
+    },
+    "linkTasks": [],
+    "assembledAt": "2026-09-03T07:00:00.000Z"
+  },
+  "note": "Confident, fluent, and wrong: absolutes on unsupported claims, and it hides the bristle problem the store's own facts name."
+}
