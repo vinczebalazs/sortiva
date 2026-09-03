@@ -92,6 +92,15 @@ jobs:
       - name: The built application starts and serves a page
         run: pnpm smoke:boot
 
+      # And the same two pages from `next dev`, because the two are not the same
+      # build. Next compiles the start-up hook for the Edge runtime as well as
+      # Node, and Edge has no filesystem — so a Node-only import reachable from
+      # that hook breaks development while the step above stays green. That is
+      # what happened: every page in `next dev` answered 500 for most of a week
+      # and no gate could see it, because no gate had ever started a dev server.
+      - name: The development server starts and serves a page
+        run: pnpm smoke:dev
+
   # Runs on any change to a prompt file or a model id, and a failure blocks the
   # deploy. Gated on the paths that can change a model's behaviour.
   eval:

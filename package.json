@@ -29,7 +29,8 @@
     "diagnose": "tsx scripts/diagnose-store.mjs",
     "dlq": "tsx scripts/replay-dlq.mjs",
     "posthog:apply": "tsx scripts/posthog-provision.mjs --apply",
-    "switch": "tsx scripts/kill-switch.mjs"
+    "switch": "tsx scripts/kill-switch.mjs",
+    "smoke:dev": "node scripts/smoke-boot.mjs --dev"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
