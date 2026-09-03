@@ -171,7 +171,30 @@ const WAVE_2_TABLES = [
 /** Schema mini-wave 2b (T2.0b). Neither table references anything. */
 const WAVE_2B_TABLES = ['idempotency_ledger', 'verification_tokens'] as const
 
-const ALL_TABLES = [...WAVE_2B_TABLES, ...WAVE_2_TABLES, ...WAVE_1_TABLES] as const
+/** Schema wave 3 (T4.0), child-first, on the same terms. */
+const WAVE_3_TABLES = [
+  'gate_decisions',
+  'article_claims',
+  'article_labels',
+  'article_product_refs',
+  'refresh_log',
+  'publish_intents',
+  'not_interested',
+  'pattern_stats',
+  'articles',
+  'topics',
+  'gsc_monthly',
+  'gsc_query_monthly',
+  'incident_findings',
+  'deletion_confirmation_emails',
+] as const
+
+const ALL_TABLES = [
+  ...WAVE_3_TABLES,
+  ...WAVE_2B_TABLES,
+  ...WAVE_2_TABLES,
+  ...WAVE_1_TABLES,
+] as const
 
 export async function truncateAll(pool: pg.Pool): Promise<void> {
   await pool.query(
@@ -191,6 +214,7 @@ export async function insertAccount(pool: pg.Pool, email: string): Promise<strin
 export const UNIQUE_VIOLATION = '23505'
 export const CHECK_VIOLATION = '23514'
 export const NOT_NULL_VIOLATION = '23502'
+export const FOREIGN_KEY_VIOLATION = '23503'
 /** What `spend_events`' append-only trigger raises (migration 0003). */
 export const RESTRICT_VIOLATION = '23001'
 
