@@ -817,7 +817,8 @@ in full before the merge was accepted.
 | Lane | Card | Notes |
 |---|---|---|
 | **D** | `T5.1` — export mode & publish-hour scheduling | Carries the founder's publish-day answer and the MEDIUM day-skew fix. Told to check that the known-red chaos scenario still fails for its own reason, since it touches local midnight. |
-| **E** | `T6.2` — OPTIMIZE recommendations | The largest card left. **A fresh-session audit is scheduled after it** (build plan §7). |
+| **E** | `R-INTENTGAP-JOB` | `T6.2` landed and merged at 00:45 — **read its own section at the end of this file, including the two integrator actions held.** Tests **3,140**. |
+| **audit** | `T6.2`'s scheduled audit | Read-only, fresh session, pinned to `c46812d~1..6be6f95` so later work on the branch cannot confuse it. Build plan §7 requires it before `T6.3`. |
 
 **Idle:** lanes B, C, F and G — B, F and G have no milestone work left, and C's only
 available card (`R-INTENTGAP-SCAN`) waits on Lane E's job half.
@@ -4615,3 +4616,74 @@ registry), `scripts/stub-report.mjs` (the milestone-comparison fix), and
 `apps/web/instrumentation-node.ts` (one additive registration). **No migration, no new API
 route**, and the composition root is called from inside the registration, never at module
 scope.
+
+## `T6.2` LANDED — a merchant can ask for a page to be improved. **Two integrator actions are ready and deliberately NOT taken — read those before assuming M6 works end to end.**
+
+Merged as `3d020a0`, gate green on the merged tree: tests **3,140** (up from 3,093), nine of
+eleven commands, `eval` and the one named midnight chaos scenario red for their documented
+reasons and nothing else.
+
+**What a merchant gets.** They pick one of their own pages and ask for it to be improved.
+The product assembles what it knows — how the page reads now, what people searched to reach
+it over 28 days, what the pages outranking it settle that it does not, the store's own
+product facts and family axes, its other pages as link candidates, and its own voice — asks
+Sonnet for edits, runs five free checks, re-asks **once** with the failures attached, grades
+the survivor, and stores it. It is downloadable as Markdown or HTML. Marking it applied
+schedules the outcome measurement 28 days out. **Nothing is written to their store**, by
+design and by test.
+
+**Verified by the integrator rather than taken from the report:** the composition root is
+called inside each request-handler closure, not at module scope — the defect that made every
+`/api/calendar` route return 500 while `pnpm build` stayed green. The lane also started the
+built app with a real database URL and hit all four new routes: each answered **401, not
+500**.
+
+### Action 1, held: the generation job is registered nowhere, so a request would hang forever
+
+`registerOptimizeTasks` exists and is tested. Handlers are installed in
+`apps/web/instrumentation-node.ts`, which the build plan reserves for the integrator, so the
+lane correctly stopped short. **Today the route writes its queue row and nothing picks it
+up**: a merchant's opportunity would sit in `executing` for ever.
+
+**Why the integrator did not simply wire it, though the file is his.** It is the same shape
+as plugging in the bell, which the previous run explicitly held for the founder: it switches
+on a **paid** pipeline that has never run anywhere. And the lane flagged a defect that this
+wiring would make reachable for the first time — see below. Nothing tonight needs it:
+`T6.3` does not depend on it and the scheduled audit is read-only. **One line plus a full
+gate re-run whenever the founder says go.**
+
+### Action 2, held: the routes on disk and the frozen contract disagree
+
+The card and the build plan's lane table both say `apps/web/app/api/recommendations`, and
+that is what was built — four routes. **The frozen route table
+(`packages/core/src/api/routes.ts`, from `T0.7`) instead declares
+`POST /api/opportunities/{opportunityId}/recommendations` and
+`POST /api/opportunities/{opportunityId}/tasks/{taskId}`.** Verified directly, not taken from
+the report.
+
+So the product now **declares two endpoints it does not serve and serves four it does not
+declare**, and `pnpm contracts:check` passes throughout because it compares zod to OpenAPI
+and never to the routes on disk — a reporter that cannot see the thing it is trusted for.
+The practical cost lands on Lane F, which builds screens against the contract: it would mock
+two endpoints that do not exist and miss four that do.
+
+**Changing a frozen contract is on the integrator's never-without-asking list**, so this is
+held rather than resolved. The two ways out: add the four routes to the contract, or move
+the implementation under `/api/opportunities/{id}/…` when Lane C's directory is free.
+
+### A defect the lane flagged and correctly did not fix
+
+The nightly auto-trip sweep counts the OPTIMIZE daily allowance in **model calls**, trips at
+`used >= cap`, and raises an account flag that stays up until an operator clears it. So a
+store that legitimately uses both of its generations in a day — or one whose single
+generation needed the re-ask — has its OPTIMIZE calls **paused indefinitely** from then on.
+The card's own in-request cap counts *generations*, which is what the spec caps. The sweep is
+in another lane's file. **This is reachable for the first time the moment Action 1 is taken**,
+which is part of why it was not.
+
+### What this leaves for `T6.3`, the M6 exit gate
+
+`T6.3` is not blocked by any of the above. It is blocked only by the scheduled audit of
+`T6.2`, which build plan §7 requires before anything builds on this card, and which is
+running now.
+
