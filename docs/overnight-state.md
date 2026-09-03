@@ -2592,6 +2592,119 @@ Small, real, and each belongs to a named next card rather than to a sweep.
 
 ## Audit findings, unactioned
 
+### `T6.2` — the scheduled audit, run 2026-09-04, read-only. **One CRITICAL, four HIGH. It stops `T6.3` and it vindicates not wiring the job.**
+
+Required by build plan §7 before `T6.3`. Pinned to `c46812d~1..6be6f95` so later work on the
+branch could not confuse it. Expectations written from the spec before the diff was opened.
+
+**[CRITICAL] The feature is switched on nowhere, and the first two attempts to use it break
+the account permanently.** The integrator already knew the job was unregistered; **the
+consequence is far worse than "nothing happens", and this is the part nobody had.** Pressing
+the button marks the opportunity `executing` *before* queueing. Nothing ever picks the work
+up, so: the merchant watches a spinner that never resolves; the daily allowance counts
+`executing` rows as spent, so **two presses consume the store's allowance of two for ever,
+not just for the day**; and the transition guard only admits `new`/`accepted` → `executing`,
+so those opportunities can never be retried — the API answers 409 from then on. **Recoverable
+only by editing the database.**
+
+**[HIGH] There is no way out of "generating" when the work is refused or crashes.** The job
+returns the opportunity to `accepted` on exactly two paths — success and validation failure.
+`paused` (the store's call type is switched off), `skipped` (page not in the inventory) and
+any exception leave the row where it is. Grepped: no sweeper, no timeout, no reaper exists
+anywhere. **This survives fixing the registration**, and produces the identical permanent
+stuck state.
+
+**[HIGH] The nightly spend sweep switches OPTIMIZE off permanently for ordinary use — the
+lane's reading was right, and incomplete.** It counts **model calls**, not generations; it
+trips at `used >= cap` rather than above it; and the flag is sticky until an operator clears
+it. So a merchant who uses both of their two daily recommendations — **or one recommendation
+that needed its single automatic retry** — has OPTIMIZE switched off for good. Two things the
+lane did not say: the same defect applies to the intent-gap call type, and **when it fires the
+merchant is shown the outage copy** — "we paused this action rather than continue with
+lower-quality or stale data" — which tells them we protected their quality when they in fact
+hit an accounting bug. The operator-facing incident text also states a count that is wrong.
+Lane G's file.
+
+**[HIGH] One of the four signals that produce an OPTIMIZE opportunity carries no search term,
+so the pipeline buys a Google results page for a URL.** Three signals record a query cluster;
+`missing_or_weak_metadata` records none, and the pipeline falls back to **the page's own web
+address as the search**. It then pays the search vendor for results for
+`https://store.example/collections/boots` as though it were a search, tells the model "The
+search: <that URL>", and measures keyword stuffing against the words in a URL. Likely end
+state: a failed recommendation, after spending the merchant's allowance and our vendor money.
+Nothing logs it. Spans two lanes, so the fix is the integrator's to place.
+
+**[HIGH] The four endpoints are not in the frozen contract, and nothing can detect that.**
+Already known; the audit adds what makes it worse. The frontend's mock server is **generated
+from that table**, so Lane F would build the drawer against two endpoints that do not exist
+and have no mock for the four that do, including the download ui §5.3 requires. There is **no
+test anywhere comparing shipped route files against the contract** — the one test that walks
+route files skips any path the table does not declare, so these four escape even the
+account-scoping safety net (they are correctly scoped; nothing checks it), and they bypass the
+contract-level test that enforces invariant 8.
+
+**Five MEDIUM.** (1) The card performs three status transitions the project's own state
+machine forbids (`new`/`accepted` → `executing`, `executing` → `accepted`) and nothing throws,
+because the database helper never consults the graph — the auditor judges **the code right and
+the graph wrong**, but it is unjournalled and `T6.3` will read that graph as truth. (2) The
+"why we suggested this title" field is a free-form string the model invents, validated against
+nothing, with no matching copy in the catalogue — so whatever phrase the model puts there is
+what a merchant risks seeing. (3) A canonical Appendix A sentence was **retyped inline**
+instead of read from the catalogue, so the snapshot test that guards it cannot see this copy
+and the two will drift. (4) The duplicate-paragraph check is blind past ~6,000 characters and
+that number is not in `packages/rules`, so on a long page the product can confidently tell a
+merchant to add a section their page already has. (5) Nothing stops one of our **own published
+articles** entering this path, which main §10.5 forbids — and the code contains a written
+brief inviting it.
+
+**The "no Shopify writes" check is real, not vacuous — with one hole.** Asked specifically to
+test whether it could fail, the auditor probed it: it catches importing the client, naming a
+write scope, a GraphQL mutation and the publish-intent table, and it fails loudly on an empty
+directory. **It does not catch a REST write through a client handed in as a dependency**, and
+it has no positive control, so if the provider class is renamed all four patterns quietly stop
+matching and the test stays green.
+
+**Six LOW**, including: a failed recommendation records `model_id: 'unknown'` though the model
+was known; two copies of the same helper disagree, so a downloaded document can name a
+different search than the one the recommendation was written for; and `eslint.config.mjs` — an
+ordered, integrator-resolved file — was edited without the report saying so.
+
+**What it verified sound, since it is load-bearing.** The fabricated-citation test is a
+genuine negative — it plants a plausible product reference the evidence pack never held and
+asserts the check names it. Nothing writes to the merchant's store, in substance and not only
+by grep. The quarantine holds: the page body comes from the inventory's stored text, product
+facts arrive only as distilled sheets. Nine thresholds landed in `packages/rules` with
+plain-language notes and `rules_version` moved with them. **The grader is deliberately
+stricter than the article grader** — the card ignores the shared seam's verdict and re-decides
+on the minimum against its own floors, which is what the spec requires and what the shared
+seam would have quietly under-delivered. Account isolation is joined through the opportunity
+and tested. One retry then stop. Supersession, never deletion. The download escapes every
+variable before writing HTML. All 64 tests were re-run by the auditor rather than taken on
+trust.
+
+**Three founder decisions were made silently and need a ruling**: (1) the grader's verdict is
+final with no second chance, so a merchant's daily allowance can be consumed by our failure;
+(2) a suggestion may be grounded **entirely in what competitors say**, with nothing from the
+merchant's own store behind it — sound reasoning, journalled, but it widens what "grounded"
+means in a product whose pitch is that it does not make things up; (3) **where model prose may
+reach a merchant** — the drawer and download carry a model-written paragraph, which the spec
+explicitly asks for and which is therefore right, but it is the exact boundary invariant 8
+exists to police and it was set without comment.
+
+**Consequences the integrator took, which is all he is permitted to take:**
+
+- **`T6.3` is STOPPED.** Not for a technical reason — the auditor's (a): `T6.3`'s own
+  done-when drives an OPTIMIZE opportunity through its states, and the state graph it will
+  read does not contain the transitions `T6.2` performs. It would trip over that or silently
+  copy it. The graph is Lane C's file and correcting it is acting on a finding.
+- **The M6 exit gate must not be allowed to pass while the job is unregistered**, because the
+  gate's whole job is to re-run the consumer's tests against the real implementation and there
+  is no reachable implementation.
+- **Not wiring the job was right, for a bigger reason than the one recorded earlier.** The
+  earlier reasoning was "it switches on a paid pipeline that has never run". The real reason is
+  that wiring it without the stuck-state fix would make the CRITICAL reachable rather than
+  theoretical.
+
 ### `T4.5` — the scheduled audit, run 2026-09-03, read-only. **Two HIGH findings; one blocks `T5.1`/`T5.2`. It also corrects a claim this file made.**
 
 Required by build plan §7 before `T4.6`. **Cleared `T4.6` to start**, ran 151 tests across
@@ -4683,7 +4796,15 @@ which is part of why it was not.
 
 ### What this leaves for `T6.3`, the M6 exit gate
 
-`T6.3` is not blocked by any of the above. It is blocked only by the scheduled audit of
-`T6.2`, which build plan §7 requires before anything builds on this card, and which is
-running now.
+**`T6.3` IS STOPPED.** Its scheduled audit ran and found a CRITICAL and four HIGH — read the
+`T6.2` audit entry in "Audit findings, unactioned". The stopper is procedural rather than
+technical: `T6.3`'s own done-when drives an OPTIMIZE opportunity through its states, and the
+state graph it will read does not contain the transitions `T6.2` actually performs. Correcting
+that graph is acting on an audit finding, which needs the founder.
+
+**The audit also settles Action 1 above.** Not wiring the job was right, and for a bigger
+reason than the one first recorded: the first two presses of the button consume the store's
+daily allowance *permanently* and lock those opportunities out of retry for ever, and a
+refusal or crash mid-generation does the same. Wiring it tonight would have turned a
+theoretical hole into a reachable one.
 
