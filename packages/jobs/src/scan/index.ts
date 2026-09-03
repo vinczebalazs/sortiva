@@ -44,3 +44,10 @@ export {
 export { sweepWeeklyScans, weeklyRunId, type WeeklyScanDeps } from './weekly'
 
 export { runEventDrivenScan } from './event'
+
+export {
+  readIntentGapSignals,
+  type IntentGapReadDeps,
+  type IntentGapReadInput,
+  type IntentGapReadResult,
+} from './intent-gap'

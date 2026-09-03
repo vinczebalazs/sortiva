@@ -52,6 +52,7 @@ import {
   computeScanWindows,
   type AssembleDeps,
 } from './assemble'
+import { readIntentGapSignals } from './intent-gap'
 
 /**
  * The whole decision pipeline (main §7.5 steps 1–7) run for one account: read
@@ -133,6 +134,12 @@ const GSC_SIGNAL_TYPES: readonly SignalType[] = [
   'low_ctr_at_strong_rank',
   'content_decay',
   'cannibalization',
+  // Not itself a Search Console measurement, but the shortlist that reaches it
+  // is: a page qualifies by sitting between positions 4 and 20 for one of the
+  // store's query clusters, which is Google's own record of what it showed. A
+  // store without that record has no shortlist, so this is evaluated in the
+  // same branch as the four above.
+  'existing_page_intent_gap',
 ]
 
 export async function runSignalScan(
@@ -204,6 +211,7 @@ async function runSignalScanLocked(
 
   const signals: DetectedSignal[] = []
   let ctrCurve: CtrCurve | undefined
+  let intentGapReEvaluated: ReadonlySet<string> = new Set<string>()
 
   if (!limitedIntelligence) {
     const gsc = await assembleGscInputs(assembleDeps, accountId, windows)
@@ -212,6 +220,29 @@ async function runSignalScanLocked(
     signals.push(...detectContentDecay(gsc.decay).detections)
     signals.push(...detectCannibalization(gsc.cannibalization).detections)
     ctrCurve = gsc.lowCtr.curve.curve
+
+    // Free, and deliberately so: the page comparisons this reads were bought by
+    // a scheduled pass of its own the day before, so nothing here fetches a
+    // page or calls a model. A page with no stored comparison is passed over —
+    // this scan never buys one, because one slow fetch would hold up every
+    // other signal for this store.
+    const intentGap = await readIntentGapSignals(
+      { db: deps.db, ...(deps.now ? { now: deps.now } : {}), logger: log },
+      {
+        accountId,
+        clusters: gsc.strikingDistance.clusters,
+        rows: gsc.strikingDistance.rows,
+        pages: gsc.strikingDistance.pages,
+        // The same fallback the paying pass uses. Both sides put the market
+        // into the search identity, so a difference here would mean looking
+        // under a key nothing was written under.
+        locale: persona
+          ? { language: persona.language, country: persona.country }
+          : { language: 'en', country: 'US' },
+      },
+    )
+    signals.push(...intentGap.signals)
+    intentGapReEvaluated = intentGap.reEvaluated
   }
 
   const keywordCandidates = await assembleKeywordCandidates(assembleDeps, accountId)
@@ -320,6 +351,12 @@ async function runSignalScanLocked(
   // to Lane D's calendar state machine, not a signal-detection pass.
   for (const row of openBeforeThisPass) {
     if (!evaluatedTypes.includes(row.signalType as SignalType)) continue
+    // The one signal this scan does not measure for itself. Not finding a
+    // stored comparison for a page means nobody compared it — the pass was
+    // paused, the merchant edited the page, the results page was bought again —
+    // and none of those is evidence that the gap closed. Only a page we
+    // actually read a comparison for can lose its opportunity here.
+    if (row.signalType === 'existing_page_intent_gap' && !intentGapReEvaluated.has(row.entityRef)) continue
     if (row.status !== 'new' && row.status !== 'accepted' && row.status !== 'blocked') continue
     const stillDetected = detectedEntityRefsByType.get(row.signalType)?.has(row.entityRef)
     if (stillDetected) continue
