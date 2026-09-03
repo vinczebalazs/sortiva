@@ -8,6 +8,19 @@ export * from './repositories'
 export { makeFamilyStore, type FamilyStore, type FamilyStoreOptions } from './stores/families'
 export { makeKeywordStore, type KeywordStore, type KeywordStoreOptions } from './stores/keywords'
 export { makeGscConnectStore, type GscConnectStoreOptions } from './stores/gsc'
+export {
+  makeProfileStore,
+  type ProfileFamily,
+  type ProfileSearchConsole,
+  type ProfileStore,
+  type ProfileStoreOptions,
+} from './stores/profile'
+export {
+  makeIngestionStatusStore,
+  type IngestionRunView,
+  type IngestionStatusStore,
+  type IngestionStatusStoreOptions,
+} from './stores/ingestion'
 export { makeNotificationStore, type NotificationStoreOptions } from './stores/notifications'
 export { makeEmailStore, type EmailStoreOptions } from './stores/email'
 export {

@@ -1,4 +1,5 @@
 export * from './brief'
+export * from './confirm'
 export * from './degeneracy'
 export * from './limits'
 export * from './locale'

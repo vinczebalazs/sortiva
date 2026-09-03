@@ -238,12 +238,51 @@ export async function replaceTopProducts(
   return ranked.length
 }
 
-export async function listTopProducts(db: Db, scope: AccountScope) {
+export type TopProductRow = typeof topProducts.$inferSelect
+
+export async function listTopProducts(db: Db, scope: AccountScope): Promise<TopProductRow[]> {
   return db
     .select()
     .from(topProducts)
     .where(eq(topProducts.accountId, scope.accountId))
     .orderBy(topProducts.rank)
+}
+
+/**
+ * The confirmation screen's edit to the best-seller list: dragged into a new
+ * order, and anything the merchant removed left out of `orderedProductIds`.
+ *
+ * A merchant's edit rather than the 90-day recompute that owns this table the
+ * rest of the time (`replaceTopProducts` above) — so this never inserts a row
+ * the sync did not already write, only reorders or deletes what is there. An id
+ * that names another account's product, or no product at all, is silently
+ * skipped: the ids on this screen came from a `GET /api/profile` this account
+ * was handed, but a stale client holding an old list must not be able to touch
+ * a row it does not own.
+ */
+export async function reorderTopProducts(
+  db: Db,
+  scope: AccountScope,
+  orderedProductIds: readonly string[],
+): Promise<void> {
+  const held = await listTopProducts(db, scope)
+  const heldIds = new Set(held.map((row) => row.productId))
+  const kept = orderedProductIds.filter((id) => heldIds.has(id))
+  const keptSet = new Set(kept)
+
+  const drop = held.filter((row) => !keptSet.has(row.productId)).map((row) => row.productId)
+  if (drop.length > 0) {
+    await db
+      .delete(topProducts)
+      .where(and(eq(topProducts.accountId, scope.accountId), inArray(topProducts.productId, drop)))
+  }
+
+  for (const [index, productId] of kept.entries()) {
+    await db
+      .update(topProducts)
+      .set({ rank: index + 1 })
+      .where(and(eq(topProducts.accountId, scope.accountId), eq(topProducts.productId, productId)))
+  }
 }
 
 /** One landing page's takings on one day. */
