@@ -83,6 +83,17 @@ export interface RunSignalScanDeps {
   readonly capture: Pick<PosthogCapture, 'capture'>
   readonly now?: () => Date
   readonly logger?: Logger
+  /**
+   * Called right after each opportunity row is persisted (created, updated,
+   * reconciled or expired) — never consulted by production code, and never a
+   * point this scan resumes from. Its only caller is the chaos scenario
+   * (`packages/jobs/src/chaos/signal-scan.scenario.ts`), which throws through
+   * it to prove the design this whole module states in its own doc comment:
+   * no interior checkpoint is needed because a kill anywhere in this loop and
+   * a fresh re-run from the top converge on the identical end state, by
+   * construction of every write being naturally idempotent.
+   */
+  readonly onOpportunityPersisted?: (entityRef: string) => void
 }
 
 export type SignalRunKind = 'onboarding' | 'weekly' | 'event'
@@ -298,6 +309,7 @@ async function runSignalScanLocked(
         }
       }
     }
+    deps.onOpportunityPersisted?.(draft.entityRef)
   }
 
   // Expiry: an open row of a signal type this pass evaluated, whose entity
@@ -316,6 +328,7 @@ async function runSignalScanLocked(
       expired += 1
       deps.capture.capture(opportunityStatusChanged(attribution, { from: row.status, to: 'expired', actor: 'expiry' }))
     }
+    deps.onOpportunityPersisted?.(row.entityRef)
   }
 
   const finishedAt = (deps.now ?? (() => new Date()))()

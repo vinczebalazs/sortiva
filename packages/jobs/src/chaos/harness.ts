@@ -15,6 +15,7 @@ import { runStep } from '../runtime/runStep'
 import { catalogSyncKilledMidWalk } from './catalog-sync.scenario'
 import { distillKilledMidBatch } from './distill.scenario'
 import { familyGroupKilledAfterCommit } from './family-group.scenario'
+import { signalScanKilledMidPass } from './signal-scan.scenario'
 
 /**
  * Kills workers at random points during a full synthetic ingestion and publish
@@ -422,4 +423,11 @@ export const CHAOS_SCENARIOS: readonly ChaosScenario[] = [
   // (no per-item cost, but a redelivery must reconcile onto the same rows).
   distillKilledMidBatch,
   familyGroupKilledAfterCommit,
+  // T3.7: the signal scan itself, killed between opportunities persisting.
+  // No `job_steps` row involved at all — the universal `assertEveryStepSettled`
+  // check above passes on this scenario vacuously (no ingestion job exists for
+  // this account), and the scenario's own `assert` carries the real
+  // convergence proof: no duplicate opportunity rows, and a finished
+  // `signal_runs` row whose own counts account for every page.
+  signalScanKilledMidPass,
 ]
