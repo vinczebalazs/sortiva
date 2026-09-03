@@ -182,6 +182,11 @@ export default tseslint.config(
       // scopes with an `AccountScope`. Neither file runs a query itself.
       'apps/web/app/api/calendar/_lib/config.ts',
       'apps/web/app/api/calendar/topics/_lib/config.ts',
+      // T3.7's own composition root, identical shape: hands a raw `db()`
+      // handle straight through as `OpportunitiesDeps.db`/`ScanStatusDeps.db`.
+      // No query runs here — every one goes through a repository call scoped
+      // with an `AccountScope` later.
+      'apps/web/app/api/opportunities/_lib/config.ts',
     ],
     rules: { 'sortiva/no-raw-db-access': 'off' },
   },

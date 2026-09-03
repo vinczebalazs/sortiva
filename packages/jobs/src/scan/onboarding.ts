@@ -9,7 +9,6 @@ import {
   acceptedContentOpportunities as acceptedContentOpportunityRows,
   systemScope,
   transitionOpportunityStatus,
-  type Db,
 } from '@sortiva/db'
 import { rules } from '@sortiva/rules'
 import { DbTopicScheduler, TopicSchedulingError } from '../generation/topic-scheduler'
@@ -145,7 +144,7 @@ async function seedCalendar(deps: OnboardingScanDeps, accountId: string, log: Re
   return scheduled
 }
 
-export interface OnboardingSweepDeps extends OnboardingScanDeps {}
+export type OnboardingSweepDeps = OnboardingScanDeps
 
 /**
  * The sweep half of the gap `T2.1`'s and `T2.7`'s own DECISIONS entries
