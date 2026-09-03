@@ -13,7 +13,19 @@
  * So this holds a small amount of state for the length of one run, anchored to
  * the day the run happens on. Everything else about the site still comes from
  * the frozen fixtures — this replaces the calendar and article routes only.
+ *
+ * The opportunities routes are the same shape of problem for a different pair
+ * of screens: scheduling a CREATE has to put a topic on this same calendar, and
+ * generating an OPTIMIZE recommendation has to be something a second read can
+ * see finished. Both live here too, so a browser flow can move an opportunity
+ * onto the calendar and then look at the calendar and find it.
  */
+
+import {
+  fixtureCreateOpportunity,
+  fixtureOpportunity,
+  type Opportunity,
+} from '@sortiva/core'
 
 const DAY_MS = 86_400_000
 
@@ -166,10 +178,55 @@ function seedTopics(): E2ETopic[] {
 export const GAP_BEHIND = -3
 export const GAP_AHEAD = 6
 
+// ── Opportunities ──────────────────────────────────────────────────────────
+
+/** The day a scheduled CREATE lands on. Free in every seeded calendar above. */
+const SCHEDULED_TOPIC_OFFSET = 3
+
+interface RecommendationField {
+  readonly field: string
+  readonly current: string | null
+  readonly suggested: string
+  readonly evidence: string | null
+}
+
+interface OpportunityTask {
+  id: string
+  label: string
+  state: 'open' | 'applied' | 'skipped'
+}
+
+interface OpportunityOverlay {
+  scheduledFor: string | null
+  recommendation: { state: 'none' | 'generating' | 'ready'; fields: RecommendationField[] }
+  tasks: OpportunityTask[]
+}
+
+/** The two opportunities the browser flows exercise: one OPTIMIZE, one CREATE. */
+const OPPORTUNITY_SOURCES: readonly Opportunity[] = [fixtureOpportunity, fixtureCreateOpportunity]
+
+function seedOpportunityOverlays(): Map<string, OpportunityOverlay> {
+  return new Map(
+    OPPORTUNITY_SOURCES.map((source) => [
+      source.id,
+      {
+        scheduledFor: null,
+        recommendation: { state: 'none', fields: [] },
+        tasks:
+          source.recommendedAction === 'OPTIMIZE'
+            ? [{ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', label: 'Rewrite the collection title', state: 'open' }]
+            : [],
+      },
+    ]),
+  )
+}
+
 export class ContentState {
   topics: E2ETopic[] = seedTopics()
   /** Every write the screens made, so a flow can assert on what was actually sent. */
   calls: string[] = []
+  /** Per-opportunity state a static fixture cannot carry: has it been scheduled, generated, applied. */
+  opportunities: Map<string, OpportunityOverlay> = seedOpportunityOverlays()
 
   /**
    * Back to the beginning. Every flow here changes the calendar, so without
@@ -179,6 +236,7 @@ export class ContentState {
   reset() {
     this.topics = seedTopics()
     this.calls = []
+    this.opportunities = seedOpportunityOverlays()
   }
 
   calendar() {
@@ -310,6 +368,152 @@ export class ContentState {
     this.calls.push(`dismiss ${id}`)
     return { status: 200 as const, body: { ok: true } }
   }
+
+  /** The list row: the fixture's static facts plus whatever this run did to it. */
+  private opportunityRow(source: Opportunity) {
+    const overlay = this.opportunities.get(source.id)
+    return {
+      id: source.id,
+      signalType: source.signalType,
+      entityRef: source.entityRef,
+      recommendedAction: source.recommendedAction,
+      status: overlay?.scheduledFor ? 'scheduled' : source.status,
+      impact: source.impact,
+      impactScore: source.impactScore,
+      confidence: source.confidence,
+      confidenceScore: source.confidenceScore,
+      confidenceFactors: [
+        { label: 'Search Console data', direction: 'up' as const },
+        { label: '28-day window', direction: 'up' as const },
+      ],
+      evidence: source.evidence,
+      why: { templateKey: source.reasonTemplateKey, params: source.reasonParams },
+      preconditions: source.preconditions.map((code) => ({
+        code,
+        whatToDo: { templateKey: `precondition.${code}`, params: { products: 6 } },
+      })),
+      rulesVersion: source.rulesVersion,
+      limitedIntelligence: source.limitedIntelligence,
+      detectedAt: source.detectedAt,
+      scheduledFor: overlay?.scheduledFor ?? null,
+      expiresAt: null,
+    }
+  }
+
+  opportunitiesList() {
+    const rows = OPPORTUNITY_SOURCES.map((source) => this.opportunityRow(source))
+    return {
+      opportunities: rows,
+      counts: {
+        open: rows.length,
+        byAction: { CREATE: 1, OPTIMIZE: 1, REFRESH: 0, FIX: 0, HOLD: 0 },
+      },
+      lastScanAt: new Date().toISOString(),
+      nextScanAt: offset(7),
+      limitedIntelligence: false,
+      cursor: null,
+    }
+  }
+
+  opportunityDetail(id: string) {
+    const source = OPPORTUNITY_SOURCES.find((entry) => entry.id === id)
+    const overlay = this.opportunities.get(id)
+    if (!source || !overlay) return null
+    return {
+      opportunity: this.opportunityRow(source),
+      tasks: overlay.tasks,
+      serpSnapshot: [
+        { position: 1, domain: 'competitor.example', url: 'https://competitor.example/collections/trail' },
+      ],
+      recommendation:
+        source.recommendedAction === 'OPTIMIZE'
+          ? {
+              state: overlay.recommendation.state,
+              fields: overlay.recommendation.fields,
+              internalLinksIn: [],
+              internalLinksOut: [],
+              intentNote:
+                overlay.recommendation.state === 'ready'
+                  ? 'Buyers searching this term are comparing width before price.'
+                  : null,
+              failureReason: null,
+            }
+          : null,
+      history: [{ at: source.detectedAt, from: null, to: 'new', actor: 'autopilot', reason: null }],
+      outcome: null,
+    }
+  }
+
+  scheduleOpportunity(id: string) {
+    this.calls.push(`schedule ${id}`)
+    const source = OPPORTUNITY_SOURCES.find((entry) => entry.id === id)
+    const overlay = this.opportunities.get(id)
+    if (!source || !overlay) {
+      return { status: 404 as const, body: { error: { code: 'not_found', message: 'gone' } } }
+    }
+    if (overlay.scheduledFor) {
+      return {
+        status: 409 as const,
+        body: { error: { code: 'opportunity_not_open', message: 'already scheduled' } },
+      }
+    }
+    const scheduledFor = offset(SCHEDULED_TOPIC_OFFSET)
+    overlay.scheduledFor = scheduledFor
+    // The calendar takes at most one topic a day, so the day handed back is
+    // the product's own answer — this is the same route the CREATE/REFRESH
+    // autopilot policy schedules through, "Schedule" only pulls it forward.
+    this.topics.push({
+      id: `bbbbbbbb-0000-4000-8000-${id.slice(-12)}`,
+      title: source.entityRef.label,
+      scheduledFor,
+      state: 'planned',
+      intentClass: 'buying_guide',
+      kind: 'new',
+      source: 'auto',
+      pinned: false,
+      targetKeyword: null,
+      monthlySearchVolume: null,
+      why: { templateKey: source.reasonTemplateKey, params: source.reasonParams },
+      opportunityId: id,
+      signalType: source.signalType,
+      articleId: null,
+      rejection: null,
+    })
+    return { status: 200 as const, body: { topicId: `bbbbbbbb-0000-4000-8000-${id.slice(-12)}`, scheduledFor } }
+  }
+
+  /** Fills in a recommendation as though generation had just finished. */
+  generateRecommendation(id: string) {
+    this.calls.push(`generate ${id}`)
+    const overlay = this.opportunities.get(id)
+    if (!overlay) return { status: 404 as const, body: { error: { code: 'not_found', message: 'gone' } } }
+    overlay.recommendation = {
+      state: 'ready',
+      fields: [
+        {
+          field: 'title',
+          current: 'Trail running shoes',
+          suggested: 'Trail running shoes for wide feet',
+          evidence: '3 of the top 5 results cover width explicitly',
+        },
+        {
+          field: 'metaDescription',
+          current: null,
+          suggested: 'Wide-fit trail running shoes that do not pinch at the toe box.',
+          evidence: null,
+        },
+      ],
+    }
+    return { status: 200 as const, body: { ok: true } }
+  }
+
+  markOpportunityTask(id: string, taskId: string, state: 'applied' | 'skipped') {
+    this.calls.push(`opportunity-task ${id} ${taskId} ${state}`)
+    const task = this.opportunities.get(id)?.tasks.find((entry) => entry.id === taskId)
+    if (!task) return { status: 404 as const, body: { error: { code: 'not_found', message: 'gone' } } }
+    task.state = state
+    return { status: 200 as const, body: { ok: true } }
+  }
 }
 
 // ── Articles ────────────────────────────────────────────────────────────────
@@ -318,6 +522,8 @@ export class ContentState {
 export const HELD_ARTICLE_ID = '77777777-0000-4000-8000-000000000009'
 /** An exported article nobody has told us the address of. */
 export const EXPORTED_ARTICLE_ID = '88888888-0000-4000-8000-000000000008'
+/** A draft that cleared the quality bar and is waiting on a human's approve/discard. */
+export const IN_REVIEW_ARTICLE_ID = '99999999-0000-4000-8000-000000000007'
 
 export function articlesList() {
   return {
@@ -340,6 +546,18 @@ export function articlesList() {
         state: 'published',
         delivery: 'export',
         publishedAt: new Date(Date.now() - 3 * DAY_MS).toISOString(),
+        publishedUrl: null,
+        publishedViaOverride: false,
+        repaired: false,
+        refreshedCount: 0,
+        performance: null,
+      },
+      {
+        id: IN_REVIEW_ARTICLE_ID,
+        title: 'Choosing a drop height for fell running',
+        state: 'in_review',
+        delivery: 'auto',
+        publishedAt: null,
         publishedUrl: null,
         publishedViaOverride: false,
         repaired: false,
@@ -377,7 +595,15 @@ export function articleDetail(id: string) {
             modelId: 'claude-sonnet-5',
             passed: false,
           }
-        : null,
+        : id === IN_REVIEW_ARTICLE_ID
+          ? {
+              scores: { informationGain: 4, factualGrounding: 4, structure: 4 },
+              justifications: {},
+              promptVersion: 'judge.v1',
+              modelId: 'claude-sonnet-5',
+              passed: true,
+            }
+          : null,
     history: [{ at: new Date(Date.now() - DAY_MS).toISOString(), event: 'generated' }],
   }
 }

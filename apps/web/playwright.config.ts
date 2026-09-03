@@ -57,6 +57,16 @@ const PUBLIC_FUNNEL = '**/public-funnel.e2e.spec.ts'
  * mid-test.
  */
 const CONTENT = '**/content.e2e.spec.ts'
+/**
+ * The M9 exit gate (`T9.8`): onboarding end to end, and the Opportunities
+ * screen's own actions carried onto the Content screens' calendar. Both need
+ * the same fixture-backed site and the same run-length state as Content, for
+ * the same reason — a claimed domain, a scheduled topic, a generated
+ * recommendation are all things a second read has to find where the first
+ * request left them.
+ */
+const ONBOARDING = '**/onboarding.e2e.spec.ts'
+const OPPORTUNITIES = '**/opportunities.e2e.spec.ts'
 const mockedSiteURL = 'http://localhost:3100'
 const deployed = Boolean(process.env.E2E_BASE_URL)
 
@@ -68,6 +78,13 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   forbidOnly: Boolean(process.env.CI),
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
+  // Content, Opportunities and onboarding all mutate the one `ContentState` /
+  // `OnboardingState` pair the mock server holds for the length of a run.
+  // Two of those files' tests racing in different workers could see each
+  // other's writes — a schedule from one test landing on a day another test
+  // is asserting is empty. Serial locally is the cheap fix for a suite this
+  // small; a deployed run never touches the mock server at all.
+  workers: deployed ? undefined : 1,
   use: {
     baseURL,
     trace: 'on-first-retry',
@@ -77,7 +94,7 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      testIgnore: [PUBLIC_FUNNEL, CONTENT],
+      testIgnore: [PUBLIC_FUNNEL, CONTENT, ONBOARDING, OPPORTUNITIES],
     },
     // Skipped against a deployed environment, where the fixture server is not
     // running and the real endpoints answer for themselves.
@@ -92,6 +109,16 @@ export default defineConfig({
           {
             name: 'content',
             testMatch: CONTENT,
+            use: { ...devices['Desktop Chrome'], baseURL: mockedSiteURL },
+          },
+          {
+            name: 'onboarding',
+            testMatch: ONBOARDING,
+            use: { ...devices['Desktop Chrome'], baseURL: mockedSiteURL },
+          },
+          {
+            name: 'opportunities',
+            testMatch: OPPORTUNITIES,
             use: { ...devices['Desktop Chrome'], baseURL: mockedSiteURL },
           },
         ]),

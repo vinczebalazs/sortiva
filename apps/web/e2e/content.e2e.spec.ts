@@ -235,6 +235,29 @@ test.describe('an article', () => {
     await expect(page.getByRole('textbox')).toHaveCount(0)
   })
 
+  test('a draft waiting for review is approved outright, with one click and no editor in sight', async ({
+    page,
+  }) => {
+    await page.goto('/content/articles')
+    await page.getByRole('link', { name: 'Choosing a drop height for fell running' }).click()
+
+    await expect(page.locator('[data-article-state="in_review"]')).toBeVisible()
+    // Both decisions are on offer; only one of them writes nothing further.
+    await expect(page.locator('[data-article-action="discard"]')).toBeVisible()
+
+    await page.locator('[data-article-action="approve"]').click()
+
+    await expect(page.locator('[data-article-notice]')).toHaveText(
+      'Approved. It publishes at your publishing hour.',
+    )
+    await expect
+      .poll(async () => {
+        const response = await page.request.get('/api/_e2e/calls')
+        return ((await response.json()) as { calls: string[] }).calls
+      })
+      .toContain('article approve 99999999-0000-4000-8000-000000000007')
+  })
+
   test('held back, it shows the judge’s own objection and lets it be overruled deliberately', async ({
     page,
   }) => {
