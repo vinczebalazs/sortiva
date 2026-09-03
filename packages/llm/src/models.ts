@@ -50,6 +50,12 @@ export const CALL_TYPE_TIER = {
   judge: 'sonnet',
   intent_gap: 'sonnet',
   optimize_reco: 'sonnet',
+  // A classification over a short title and a list of the account's own
+  // family names — the same shape of task as `distill` (structured
+  // extraction, not open-ended reasoning or writing), and on the request path
+  // of a merchant waiting for the "Add" button to resolve. See DECISIONS
+  // 2026-09-03 T4.2.
+  topic_classify: 'haiku',
 } as const satisfies Record<string, ModelTier>
 
 /**

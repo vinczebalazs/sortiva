@@ -15,6 +15,14 @@ export const LLM_CALL_TYPES = [
   'preview',
   'intent_gap',
   'optimize_reco',
+  /**
+   * A merchant-typed calendar topic title → `{head, members, intentClass,
+   * familyIds}`. Added by T4.2, on the founder's authorisation, once the
+   * "what turns free text into a QueryCluster" gap flagged by T4.1 was
+   * resolved — see DECISIONS 2026-09-03 T4.2. Runs once per manual add, never
+   * across a scan, so it does not carry Gate 1's "~free" requirement.
+   */
+  'topic_classify',
 ] as const
 
 export type LlmCallType = (typeof LLM_CALL_TYPES)[number]
