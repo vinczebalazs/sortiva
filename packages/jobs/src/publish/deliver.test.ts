@@ -264,11 +264,12 @@ describe.skipIf(!available)('handing over an article at the publish hour', () =>
   })
 
   /**
-   * Auto-publish is a write to the merchant's own shop under a second consent
-   * and through the two-phase intent protocol. Exporting instead would be
-   * delivering in a mode they did not choose, so the article waits.
+   * A process with no way to write to a shop cannot serve an auto-publish
+   * store. Exporting instead would be delivering in a mode the merchant did not
+   * choose, and marking the article published with no address would make it
+   * look posted when nothing was — so it waits.
    */
-  it('leaves an auto-publish store to the auto-publish path', async () => {
+  it('never exports an article for a store that asked for publishing', async () => {
     await db
       .update(schema.accountSettings)
       .set({ delivery: 'auto' })
@@ -276,7 +277,7 @@ describe.skipIf(!available)('handing over an article at the publish hour', () =>
     await seedArticle({ title: 'Best bottles', gateOutcome: 'passed' })
 
     const result = await runExportDeliveryForAccount(deps(), { accountId, date: TODAY })
-    expect(result).toEqual({ status: 'skipped', reason: 'auto_publish' })
+    expect(result).toEqual({ status: 'skipped', reason: 'auto_publish_unconfigured' })
     expect((await articleStates())['Best bottles']!.state).toBe('draft')
   })
 

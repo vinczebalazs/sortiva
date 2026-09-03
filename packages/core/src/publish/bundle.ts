@@ -64,6 +64,19 @@ export interface ExportBundle {
   readonly files: readonly BundleFile[]
   /** The values each reference resolved to, for recording what the merchant was handed. */
   readonly resolved: ReadonlyMap<string, ResolvedReference>
+  /**
+   * The same article as the HTML file holds, alongside it rather than only
+   * inside it.
+   *
+   * Auto-publishing needs exactly this — a body to post and a title and handle
+   * to post it under — and reaching into the file list by position or by
+   * filename to get it would make an export detail load-bearing for publishing.
+   * Both paths render from one build of the article, which is what guarantees a
+   * downloaded copy and a posted copy cannot disagree about a price.
+   */
+  readonly html: string
+  readonly markdown: string
+  readonly metadata: BundleMetadata
 }
 
 /**
@@ -221,18 +234,24 @@ export function buildExportBundle(input: BuildBundleInput): ExportBundle {
     })),
   }
 
+  const markdown = markdownBody(input.article, resolved)
+  const html = htmlBody(input.article, resolved)
+
   return {
     resolved,
+    html,
+    markdown,
+    metadata,
     files: [
       {
         filename: bundleFilename(input.article.slug, 'md'),
         mimeType: 'text/markdown',
-        content: markdownBody(input.article, resolved),
+        content: markdown,
       },
       {
         filename: bundleFilename(input.article.slug, 'html'),
         mimeType: 'text/html',
-        content: htmlBody(input.article, resolved),
+        content: html,
       },
       {
         filename: bundleFilename(input.article.slug, 'json'),

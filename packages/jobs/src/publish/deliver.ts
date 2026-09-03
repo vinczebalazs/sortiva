@@ -4,7 +4,9 @@ import {
   decideDelivery,
   type DeliveryBlockReason,
   type Logger,
+  type NotificationEmitter,
   type PosthogCapture,
+  type ShopifyPublishProvider,
 } from '@sortiva/core'
 import {
   accountScope,
@@ -14,6 +16,7 @@ import {
   type ArticleRow,
   type Db,
 } from '@sortiva/db'
+import { publishArticleToShopify, type TokenDecryptor } from './auto-publish'
 import { withAccountLock } from '../runtime/lock'
 import { lookupCompletedWork, recordCompletedWork } from '../runtime/ledger'
 import { deriveIdempotencyKey, inputVersion } from '../runtime/idempotency'
@@ -29,10 +32,15 @@ import { runtimeLogger } from '../runtime/logging'
  * at nine in the morning where the audience is (or whatever hour the merchant
  * set), which is predictable for them and paced for their readers.
  *
- * On export mode — the only mode this file serves — "published" means the
- * article is now downloadable in the app and the merchant is asked where they
- * put it. **Nothing here writes to anybody's shop.** Auto-publish, which does,
- * is a separate consent and a separate card.
+ * On export mode, "published" means the article is now downloadable in the app
+ * and the merchant is asked where they put it; nothing is written to anybody's
+ * shop. On auto-publish it means the article is posted to the merchant's own
+ * blog, which is a second, separate consent and goes through the two-phase
+ * claim protocol in `auto-publish.ts`.
+ *
+ * Which of the two happens is the merchant's setting and nothing else. There is
+ * no path here that exports an article for a store that asked for publishing,
+ * or posts one for a store that did not.
  *
  * At most one article is handed over per pass, which combined with one pass a
  * day is what keeps publication looking like a shop that writes rather than a
@@ -49,6 +57,15 @@ export interface DeliveryDeps {
   readonly db: Db
   /** The shared connection pool — the per-account lock needs a connection of its own. */
   readonly pool: pg.Pool
+  /**
+   * The one seam that writes to a merchant's shop, and the key that unlocks
+   * their token. Optional because an export-only deployment needs neither: an
+   * auto-publish store on a process without them stops rather than being
+   * exported instead, which would deliver in a mode the merchant did not choose.
+   */
+  readonly shopify?: ShopifyPublishProvider
+  readonly cipher?: TokenDecryptor
+  readonly notifications?: NotificationEmitter
   readonly capture?: Pick<PosthogCapture, 'capture'>
   readonly now?: () => Date
   readonly logger?: Logger
@@ -56,10 +73,24 @@ export interface DeliveryDeps {
 
 export type DeliveryOutcome =
   /** Nothing was handed over, and why. */
-  | { readonly status: 'skipped'; readonly reason: DeliveryBlockReason | 'auto_publish' | 'lost_race' }
+  | {
+      readonly status: 'skipped'
+      readonly reason:
+        | DeliveryBlockReason
+        | 'lost_race'
+        /** An auto-publish store on a process with no way to write to a shop. */
+        | 'auto_publish_unconfigured'
+        /** Auto-publish stopped for a reason of its own; `auto-publish.ts` logged which. */
+        | 'auto_publish_blocked'
+    }
   /** This hour's delivery already happened; nothing ran. */
   | { readonly status: 'already_done'; readonly articleId: string | null }
-  | { readonly status: 'delivered'; readonly articleId: string }
+  | {
+      readonly status: 'delivered'
+      readonly articleId: string
+      /** Which way it went out: downloadable in the app, or posted to the shop. */
+      readonly delivery: 'export' | 'auto'
+    }
 
 /** What the ledger keeps, so a redelivered job can answer without acting again. */
 interface DeliveryRecord {
@@ -82,14 +113,16 @@ export async function runExportDeliveryForAccount(
 
   const outcome = await withAccountLock(deps.pool, input.accountId, async () => {
     const settings = await readAccountSettings(deps.db, scope)
-    if (settings.delivery !== 'export') {
-      // Auto-publish is a different act entirely — a write to the merchant's
-      // shop under a second consent, through the two-phase intent protocol.
-      // Until that is built, an auto-publish store's finished article waits
-      // rather than being quietly exported instead, which would be delivering
-      // in a mode the merchant did not choose.
-      log.info('delivery_skipped_auto_publish', { account_id: input.accountId, date: input.date })
-      return { status: 'skipped', reason: 'auto_publish' } as const
+    const auto = settings.delivery === 'auto'
+    if (auto && !(deps.shopify && deps.cipher)) {
+      // Waiting is visible and correct; exporting instead would deliver in a
+      // mode the merchant did not choose, and marking the article published
+      // with no address would make it look posted when nothing was.
+      log.warn('delivery_auto_publish_unconfigured', {
+        account_id: input.accountId,
+        date: input.date,
+      })
+      return { status: 'skipped', reason: 'auto_publish_unconfigured' } as const
     }
 
     const [switches, lifecycle] = await Promise.all([
@@ -129,6 +162,34 @@ export async function runExportDeliveryForAccount(
     // publishing ahead rather than one morning of it, and the oldest goes
     // first so nothing waits for ever behind newer work.
     const next = oldestFirst(ready)[0] as ArticleRow
+
+    if (auto) {
+      // The write to the merchant's shop, under their second consent, through
+      // the claim protocol. The article is moved to `published` inside that
+      // path and only once the shop has confirmed the post — never before.
+      const published = await publishArticleToShopify(
+        {
+          db: deps.db,
+          pool: deps.pool,
+          shopify: deps.shopify as NonNullable<DeliveryDeps['shopify']>,
+          cipher: deps.cipher as NonNullable<DeliveryDeps['cipher']>,
+          ...(deps.notifications ? { notifications: deps.notifications } : {}),
+          ...(deps.capture ? { capture: deps.capture } : {}),
+          now: () => now,
+          logger: log,
+        },
+        { accountId: input.accountId, articleId: next.id },
+      )
+      if (published.status !== 'published') {
+        // Deliberately no ledger entry: nothing was delivered, so tomorrow's
+        // run must be free to try this article again once whatever stopped it
+        // — a withdrawn permission, a product that has gone — is fixed.
+        return { status: 'skipped', reason: 'auto_publish_blocked' } as const
+      }
+      await recordCompletedWork(deps.db, key, { articleId: next.id } satisfies DeliveryRecord)
+      return { status: 'delivered', articleId: next.id, delivery: 'auto' } as const
+    }
+
     const delivered = await markArticleDelivered(deps.db, scope, next.id, 'export', now)
     if (!delivered) {
       // Zero rows: discarded, or already delivered, between the read and the
@@ -145,10 +206,12 @@ export async function runExportDeliveryForAccount(
       article_id: delivered.id,
       delivery: 'export',
     })
-    return { status: 'delivered', articleId: delivered.id } as const
+    return { status: 'delivered', articleId: delivered.id, delivery: 'export' } as const
   })
 
-  if (outcome.status === 'delivered') {
+  // Auto-publish reports itself, from the moment the shop confirmed the post.
+  // Reporting it here as well would count one article twice.
+  if (outcome.status === 'delivered' && outcome.delivery === 'export') {
     deps.capture?.capture({
       event: ARTICLE_DELIVERED_EVENT,
       attribution: accountAttribution(input.accountId),

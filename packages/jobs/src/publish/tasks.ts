@@ -5,6 +5,8 @@ import { accountClocks, systemScope, type Db } from '@sortiva/db'
 import { registerTask } from '../runtime/tasks'
 import { runtimeLogger } from '../runtime/logging'
 import { runExportDeliveryForAccount, type DeliveryDeps } from './deliver'
+import { sweepPublishRecovery } from './recovery'
+import type { AutoPublishDeps } from './auto-publish'
 
 /**
  * How a finished article reaches the merchant at the hour they chose.
@@ -21,6 +23,15 @@ import { runExportDeliveryForAccount, type DeliveryDeps } from './deliver'
 
 export const PUBLISH_DELIVERY_SWEEP_TASK = 'publish_delivery_sweep'
 export const PUBLISH_DELIVERY_ACCOUNT_TASK = 'publish_delivery_account'
+/**
+ * The five-minute sweep that settles publications a crash left unanswered.
+ *
+ * Its own schedule rather than part of the hourly delivery sweep, because the
+ * window it closes is minutes wide: between a post landing on a merchant's shop
+ * and our recording that it did, the app believes the article never went out.
+ * Waiting up to an hour to notice would make every crash a visible outage.
+ */
+export const PUBLISH_RECOVERY_SWEEP_TASK = 'publish_recovery_sweep'
 
 export interface PublishDeliveryPayload {
   readonly accountId: string
@@ -77,6 +88,23 @@ export function registerPublishTasks(deps: PublishTaskDeps): void {
 
   registerTask(PUBLISH_DELIVERY_SWEEP_TASK, async () => {
     await sweepPublishDeliveries(deps)
+  })
+
+  registerTask(PUBLISH_RECOVERY_SWEEP_TASK, async () => {
+    if (!(deps.shopify && deps.cipher)) {
+      // A process with no way to write to a shop has nothing to recover. Said
+      // out loud rather than passed over: a silent no-op here would look
+      // identical to a sweep that ran and found nothing.
+      ;(deps.logger ?? runtimeLogger()).warn('publish_recovery_unconfigured', {})
+      return
+    }
+    await sweepPublishRecovery({
+      ...(deps as Omit<AutoPublishDeps, 'db' | 'pool' | 'shopify' | 'cipher'>),
+      db: deps.getDb(),
+      pool: deps.getPool(),
+      shopify: deps.shopify,
+      cipher: deps.cipher,
+    })
   })
 
   registerTask(PUBLISH_DELIVERY_ACCOUNT_TASK, async (payload) => {

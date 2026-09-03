@@ -3565,3 +3565,24 @@ Decision: `setDeliveryMode(db, scope, 'auto')` is an `INSERT … SELECT` whose `
 Why: main §9.5 says auto-publish cannot be enabled without a target blog resolved, and invariant 21 makes read and write two separate consents. A store left in auto-publish with nothing to post to would fail silently every morning at its publish hour with nothing the merchant could do about it, so this is a property worth holding in the data rather than in one code path — the same shape invariant 5 uses for the competitor cap. Turning it *off* is unguarded because withdrawing consent has to work under every condition, including a connection that is already broken.
 Nearest spec: main §9.5; CLAUDE.md invariant 21.
 Class (filled by audit):
+
+## 2026-09-04 — T5.2 — An article is recorded as published only after the shop confirms the post
+Decision: the two-phase publish writes the claim row first and leaves the article in `draft`; the article moves to `published` in step 3, once Shopify has answered with an article id. A crash between the post and the record leaves an article that still reads as undelivered, and the five-minute recovery sweep moves it.
+Why: main §14.3.7 step 1 says the claim is inserted "in the same transaction that marks the article publishing" — and there is no `publishing` value in the `article_state` enum, nor may a feature card add one. Of the two available readings, marking it `published` before the post would tell the merchant something is on their site during exactly the window when a crash may have left it nowhere. The claim row is itself the durable "this publication is in flight" marker that a second worker collides with, so nothing is lost by leaving the article alone until there is something true to record.
+Consequence: for up to fifteen minutes after a crash (ten minutes' grace plus one sweep) a published article shows in the app as still waiting. It is never the other way round.
+Nearest spec: main §14.3.7; main §13 `articles`, `publish_intents`; CLAUDE.md invariant 19.
+Class (filled by audit):
+
+## 2026-09-04 — T5.2 — A republication is re-sent rather than looked up, and a first publication is looked up rather than re-sent
+Decision: the recovery sweep asks the shop "is my post already there?" only for a **first** publication. For a revision it simply re-issues the update, because replacing an article's contents with the same contents produces the same article. Neither path can create: an update carries the remote id or does not happen.
+Why: main §14.3.7 step 4 describes the marker lookup for the create case, and step 5 says updates use "the same protocol" conditional on the stored remote id. Taken literally, a marker lookup on an update answers a question that does not decide anything — the article is found either way, because it was found when it was first published — so the decision has to come from the stored id, which is what step 5 actually says. Re-issuing is safe in a way re-creating never is.
+Consequence: a revision that fails repeatedly is retried by each sweep until it ages out at 25 minutes, where a first publication is retried at most three times. Both end in the dead-letter queue.
+Nearest spec: main §14.3.7 steps 4 and 5; CLAUDE.md invariant 19.
+Class (filled by audit):
+
+## 2026-09-04 — T5.2 — A publish blocked by a missing product raises the bell, because the repair queue does not exist yet
+Decision: when an article names a product the store no longer has, the publish fails, nothing is claimed, nothing is posted, and a `repair_needed` notification is emitted, deduplicated on the article and the reason.
+Why: `docs/content-pointers.md` §9 and the card both say the publish fails and "a repair is raised". There is no repairs table anywhere in the schema — the word appears only as `accounts.auto_repair` and two enum values — and it arrives with `T5.3`, which owns the repair queue and the export-account action card. The notification type, its copy and its email template all exist and are tested. So the merchant is told; what to *do* about it is `T5.3`'s. Doing nothing at all would leave an article that silently never appears, which is the worse of the two.
+What it needs: `T5.3` to route this into the repair queue rather than only the bell.
+Nearest spec: `docs/content-pointers.md` §9; main §14.1; tech §1 (notifications are append-only, unique on `(account_id, type, dedupe_key)`).
+Class (filled by audit):
