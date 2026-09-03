@@ -80,7 +80,17 @@ export const deliveryModeEnum = pgEnum('delivery_mode', ['export', 'auto'])
 /** Whether new articles land as drafts or live, set per account. */
 export const shopifyPublishAsEnum = pgEnum('shopify_publish_as', ['live', 'draft'])
 
-/** One value per row of the notification matrix; each has a template and a place in the UI. */
+/**
+ * One value per row of the notification matrix; each has a template and a
+ * place in the UI.
+ *
+ * `account_deletion_confirmed` was added by schema wave 3 (T4.0) — see
+ * DECISIONS 2026-09-03 T4.0. It is account-security mail (tech §1.5 exempts
+ * it from suppression; `EmailAudience.securityEmail` already carries the
+ * bypass) and its send record lives in `deletion_confirmation_emails`, not
+ * `email_sends`, because `email_sends` cascades from `accounts` and the
+ * record of "we told them" must outlive the account it confirms.
+ */
 export const notificationTypeEnum = pgEnum('notification_type', [
   'ingestion_review_ready',
   'opportunities_ready',
@@ -97,6 +107,7 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'monthly_summary_ready',
   'export_url_reminder',
   'oauth_reminder',
+  'account_deletion_confirmed',
 ])
 
 /** Where one email got to: queued, sent, or stopped. */
@@ -278,3 +289,86 @@ export const spendVendorEnum = pgEnum('spend_vendor', ['anthropic', 'dataforseo'
  * apart afterwards.
  */
 export const spendOutcomeEnum = pgEnum('spend_outcome', ['succeeded', 'failed'])
+
+// ───────────────────────── schema wave 3 (T4.0) ─────────────────────────────
+
+/** Whether a topic is new coverage or an existing article coming back for another pass. */
+export const topicKindEnum = pgEnum('topic_kind', ['new', 'refresh'])
+
+/** Who put the topic on the calendar. `exploration` is the replenishment planner's own deliberate long-shot slice, §9.6.6. */
+export const topicSourceEnum = pgEnum('topic_source', ['auto', 'manual', 'exploration'])
+
+/** The calendar's state machine, main §8.7: `planned → generating → in_review (if draft review is on) → published | rejected_by_gate | vetoed`. */
+export const topicStateEnum = pgEnum('topic_state', [
+  'planned',
+  'generating',
+  'in_review',
+  'published',
+  'rejected_by_gate',
+  'vetoed',
+])
+
+/** An article's own lifecycle, main §13 `articles`. */
+export const articleStateEnum = pgEnum('article_state', [
+  'draft',
+  'in_review',
+  'published',
+  'rejected',
+  'discarded',
+])
+
+/** The four kinds of assertion a claim plan may contain — main content-pointers.md §1. Collapsing these is how a generated article ends up stating an opinion as a specification. */
+export const claimKindEnum = pgEnum('claim_kind', [
+  'merchant_fact',
+  'external_fact',
+  'derived_fact',
+  'recommendation',
+])
+
+/**
+ * How soon a claim's support is expected to move, so the refresh diagnosis
+ * (content-pointers.md §9's "claims aged out" row) knows what to re-check
+ * first. Not dictated by any spec — see DECISIONS 2026-09-03 T4.0.
+ */
+export const claimStalenessEnum = pgEnum('claim_staleness', ['stable', 'seasonal', 'volatile'])
+
+/** What kind of mention a product reference is — main §13 `article_product_refs`. */
+export const productRefTypeEnum = pgEnum('product_ref_type', ['link', 'recommendation', 'mention'])
+
+/**
+ * The volatile fields a placeholder in an article body may stand in for.
+ * Never a literal in the body itself — main §13, and the founder decision of
+ * 2026-09-01 (`DECISIONS.md`, card T4.0) that retired storing a price as text.
+ */
+export const productRefFieldEnum = pgEnum('product_ref_field', [
+  'price',
+  'stock',
+  'sale_status',
+  'url',
+  'title',
+])
+
+/** One row per gate/topic evaluation, main §13 `gate_decisions`. The gate number itself is a plain smallint (checked 1–3), not an enum — see that table's comment. */
+
+/** Two-phase publish, main §14.3.7. */
+export const publishIntentStateEnum = pgEnum('publish_intent_state', [
+  'pending',
+  'confirmed',
+  'abandoned',
+])
+
+/** How a weekly-recomputed article performed against the store's own median — main §13 `article_labels`, §9.6.2. */
+export const articleLabelEnum = pgEnum('article_label', [
+  'winner',
+  'neutral',
+  'underperformer',
+  'unrated',
+])
+
+/** What a pattern multiplier is computed over — main §13 `pattern_stats`, §9.6.3. Unused until T7.1 (deferred, `DECISIONS.md` 2026-09-02); the table ships now because T4.6 reads it with a stub multiplier. */
+export const patternDimensionEnum = pgEnum('pattern_dimension', [
+  'intent_class',
+  'family',
+  'keyword_cluster',
+  'action_type',
+])

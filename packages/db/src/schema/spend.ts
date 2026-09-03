@@ -62,6 +62,18 @@ export const spendEvents = pgTable(
      */
     accountId: uuid('account_id'),
     previewTarget: text('preview_target'),
+    /**
+     * Which article this call was spent on, when it was spent on one at all —
+     * most spend (persona, keywords, enrichment) is not attributable to a
+     * single article. Added by schema wave 3 (T4.0) so `article_cost_finalized`
+     * (`packages/core/src/ops/article-cost.ts`) can sum this ledger by article
+     * instead of the caller summing the calls it made itself (see DECISIONS
+     * 2026-08-31 R3, which built the event with nothing to call it from).
+     *
+     * No foreign key, on the same reasoning as `account_id` above: an article
+     * being discarded must never erase the record of what it cost to attempt.
+     */
+    articleId: uuid('article_id'),
     vendor: spendVendorEnum('vendor').notNull(),
     /**
      * What the money bought: one of our LLM call types (`distill`, `persona`,
@@ -84,6 +96,10 @@ export const spendEvents = pgTable(
     // A replay is free work, recorded as such. Charging for one would inflate
     // the very number the caps are computed from.
     check('spend_events_cache_hit_is_free_ck', sql`${t.cacheHit} = false OR ${t.usdCost} = 0`),
+    // Supports summing one article's all-in cost at `article_cost_finalized` time.
+    index('spend_events_article_idx')
+      .on(t.articleId, t.occurredAt)
+      .where(sql`${t.articleId} IS NOT NULL`),
     // Supports the per-account daily trip: today's spend against this account's
     // own trailing median, and against the hard ceiling.
     index('spend_events_account_occurred_idx').on(t.accountId, t.occurredAt),

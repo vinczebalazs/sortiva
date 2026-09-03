@@ -99,6 +99,49 @@ export const emailSends = pgTable(
 )
 
 /**
+ * The record that a merchant was told their account is gone.
+ *
+ * `email_sends` cascades from `accounts` (`ON DELETE CASCADE`), and the
+ * deletion sweep erases the account row about a week after this mail goes out
+ * (main §14.6) — so a send recorded in `email_sends` would be destroyed by the
+ * same sweep that made it true, and the one audit trail that most needs to
+ * survive account deletion would not. This table holds the same triple
+ * `email_sends` does, minus the foreign key, on the same reasoning
+ * `spend_events` already established for money spent on a now-deleted account
+ * (DECISIONS 2026-08-31 T2.0): erasing the payer must not erase the record of
+ * the payment, and erasing the account must not erase the record that we told
+ * its owner it was gone.
+ *
+ * Added by schema wave 3 (T4.0), collected from the gap `T8.2`/`T8.3` recorded
+ * (`notification_type` had no value for this mail, and nowhere for the record
+ * to live that a cascade could not reach) — see DECISIONS 2026-09-03 T4.0.
+ * `type` is not carried here: this table exists for exactly one notification
+ * type, so a column repeating that fact would say nothing an index could use.
+ */
+export const deletionConfirmationEmails = pgTable(
+  'deletion_confirmation_emails',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    /** No foreign key — see the table comment. The account row this refers to may already be gone. */
+    accountId: uuid('account_id').notNull(),
+    /** Captured at send time, because the account row (and the address on it) will not outlive this record. */
+    email: text('email').notNull(),
+    dedupeKey: text('dedupe_key').notNull(),
+    templateVersion: text('template_version').notNull(),
+    state: emailSendStateEnum('state').notNull().default('queued'),
+    providerMessageId: text('provider_message_id'),
+    queuedAt: timestamp('queued_at', { withTimezone: true }).notNull().defaultNow(),
+    sentAt: timestamp('sent_at', { withTimezone: true }),
+    lastError: text('last_error'),
+  },
+  (t) => [
+    // One deletion confirmation per account per dedupe key, matching the
+    // idempotency shape `email_sends` uses — a retried worker sends once.
+    uniqueIndex('deletion_confirmation_emails_account_dedupe_key').on(t.accountId, t.dedupeKey),
+  ],
+)
+
+/**
  * Addresses we have stopped emailing. Bounce and complaint webhooks from the
  * mail provider land here, and a suppressed address skips the queue — except
  * for account-security mail such as a deletion confirmation, which someone is

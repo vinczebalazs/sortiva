@@ -18,3 +18,6 @@ export * from './spend'
 // ─────────────────────── schema mini-wave 2b (T2.0b) ────────────────────────
 export * from './auth'
 export * from './idempotency'
+
+// ───────────────────────── schema wave 3 (T4.0) ─────────────────────────────
+export * from './content-engine'
