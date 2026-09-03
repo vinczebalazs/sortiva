@@ -175,6 +175,32 @@ failure is the more useful outcome: it fails before a merchant sees it. **Note t
 own eval set does not exist yet** and lands with its card, so this is the first of two
 measurements, not the last.
 
+## A pattern worth acting on: the reporters were wrong three times, always in the reassuring direction
+
+Not an incident — a class. Three times this run, **the mechanism that tells you whether
+something is finished was itself broken, and each time it failed towards "fine":**
+
+1. **The stand-in report claimed a seam was filled when nothing read it.** A line was
+   deleted by hand with a note saying the change stream "is served in production by
+   `DatabaseCatalogEvents`". That class is constructed nowhere outside its own test.
+   **M2 and M3 were both declared closed partly on that sentence.** (`R-STREAM`)
+2. **The same report's milestone comparison was string-based**, so `'M10' <= 'M4'` was
+   true and two items due at the very end were reported as overdue in **every milestone
+   gate since M2.** (`T4.6`)
+3. **`smoke:boot` proved the app started while every authenticated page returned 500** —
+   it only ever asked for `/` and `/api/health`, both outside the layout that was broken.
+   That is what `smoke:dev` and, separately, `T9.8`'s browser flows exist to close.
+
+Two of the three were caught only because a card went looking for something else. **The
+fix for the class, not the instances: audit the reporters themselves rather than only
+what they report on.** `seams-wired.test.ts` is the model — it exists precisely because a
+human judgement call was the only guard on the stand-in report, and it now fails when a
+line is removed without anything real replacing it. Nothing equivalent guards
+`env:check`, `contracts:check`, `stubs:report`'s remaining logic, or the smoke checks'
+coverage. **`T10.2`, the invariant sweep, is the natural home for this** — its done-when
+is already "zero invariants without teeth", and a reporter that cannot fail is an
+invariant without teeth wearing a green tick.
+
 ## In the morning, report
 
 What landed with test counts. What each audit found, unactioned. Which lanes stopped and
