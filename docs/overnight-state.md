@@ -2177,9 +2177,9 @@ Lane C was told this when it was resumed.
 ## Questions waiting on the founder
 
 **Twelve questions now exist. Three are answered — 1, 4 and 8 — by the founder directly,
-at 12:40 this run, in a second session (`sortiva-85`) running alongside this one. Thirteen
-remain open: 2, 3, 5, 6, 7, and 9–16 — the last eight raised by the `T4.4` and `T4.5`
-audits and listed at the end of this section. `R-PRIVACY`, `R-STREAM` and `R-DEV` have all since been
+at 12:40 this run, in a second session (`sortiva-85`) running alongside this one. Fourteen
+remain open: 2, 3, 5, 6, 7, and 9–17 — the last nine raised by the `T4.4` and `T4.5`
+audits and by `T4.6`'s exit gate, and listed at the end of this section. `R-PRIVACY`, `R-STREAM` and `R-DEV` have all since been
 authorised and fixed.** Verified
 independently before recording: `git log` shows the three commits
 (`d3758c7`/`ec2f213`/`5a6b46d`) actually on `main`, authored by the founder's own git
@@ -2446,6 +2446,28 @@ before", which leaves the calendar and the store **permanently one day apart** f
 store publishing before 06:00. Whichever answer is chosen, the MEDIUM day-skew finding
 needs it. **This is `T5.1`'s subject matter and the fix belongs in that card rather than
 as a patch afterwards.**
+
+**17. `pnpm chaos` is now red on one scenario. Leave it failing, or resolve it?** `T4.6`
+wrote a chaos case proving `T4.5`'s HIGH finding: a generation run killed before the
+store's local midnight is never picked up once the retry lands the next day — the article
+is written, never graded, the calendar day sticks on "generating", and **the queue records
+the retry as a success**. It is one named scenario of eight; the other seven pass.
+
+*Why it was not simply fixed:* every way of converging is a product decision. Finishing
+yesterday's draft today puts an article on a day the calendar never scheduled, which
+brushes invariant 14. Abandoning it means deciding what the merchant is told about a day
+that silently produced nothing. A sweeper is a third shape with its own cadence. It is also
+not one clause — the resume is only consulted when today has no planned topic at all, so a
+store with a full calendar never reaches it either.
+
+*The recommendation, from the card and endorsed by this session:* a sweeper that finds
+topics stranded past their own day, finishes the one furthest along, and dead-letters the
+rest.
+
+*The cost of leaving it red:* the same cost `pnpm eval`'s red has — a gate with a standing
+failure trains people to skim it. **Mitigated by it being one *named* scenario:** a failure
+anywhere else in `chaos` is a genuine regression and still visible as one. The precedent is
+exactly `pnpm eval`, left failing all run as the honest signal rather than made to pass.
 
 ## A lane broke the one-card rule, and it cost something
 
@@ -4403,3 +4425,121 @@ integrator-resolved ordered files — `crontab.ts`, `instrumentation-node.ts`,
 `eslint.config.mjs` — each a single additive registration or exemption following an
 existing pattern. **No migration.** The composition-root trap was correctly avoided:
 `reviewDeps()` is deferred into the request-handler closure.
+
+## `T4.6` LANDED — replenishment, and an exit gate that reported the milestone's holes instead of hiding them. **⚠️ `pnpm chaos` IS NOW RED, DELIBERATELY — read this before treating that as a regression.**
+
+**Merged as `1479937`, two commits.** Tests **3,049**, up from 3,017. **The gate is now ten
+of eleven green, with TWO documented reds: `pnpm eval` (no Anthropic key, unchanged all
+run) and `pnpm chaos` (one named scenario of eight — see below).**
+
+**What it built.** When a store's planned calendar runs short of 60 days, the job reads the
+opportunities the engine auto-accepted, drops vetoed subjects, ranks what remains, and
+fills unoccupied days out to 90. **It spends nothing** — no model call, no search request.
+Two shares constrain it: revisiting old articles is capped at 40% of days offered, and a
+floor (at least 2, or 15%) is kept for article kinds the store has never tried. Every day
+filled carries its opportunity, its score, and a why-line that is a **key into the copy
+catalogue, never model prose** (invariant 8).
+
+### The defect it fixed is the reason the product could not write anything on its own
+
+**`DbTopicScheduler` was dropping the product families off every automatically scheduled
+topic** — `const familyIds: readonly string[] = []`, hardcoded. Families travel from the
+engine as one repeated `family_id` evidence fact each (a fact's value cannot hold a list),
+a convention `T3.7` established and every detector already emits; the scheduler simply
+never read it. **So every auto-scheduled topic reached the writer with nothing to write
+about and was held as a thin evidence pack.** The end-to-end test returned `held_thin_pack`
+before the fix and a graded article after. Verified at merge by reading the diff directly.
+`T4.2` had flagged this as a known gap and `T3.7` supplied the convention — **this is the
+card that connected them**, which is exactly what an exit gate is for.
+
+### ⚠️ `pnpm chaos` is red on one named scenario, on purpose
+
+Two scenarios were written, and the pair is what makes the finding legible:
+`generation_cycle_killed_same_day` **converges**; `generation_cycle_killed_across_midnight`
+**does not** — one article written, none graded, topic stuck in `generating`. **This
+reproduces `T4.5`'s HIGH audit finding exactly**, and the failure message says so in plain
+language rather than as an assertion diff.
+
+**It was not fixed, and this session agrees with that.** Every way of converging is a
+product decision, not a code change: finishing yesterday's draft today puts an article on
+a day the calendar never scheduled (brushing invariant 14); abandoning it means deciding
+what the merchant is told about a day that silently produced nothing; a separate sweeper is
+a third shape with its own cadence. It is also more than one clause — the resume is only
+consulted when today has *no* planned topic, so a store with a full calendar never reaches
+it either. **The card's recommendation, which this session endorses: a sweeper that finds
+topics stranded past their own day, finishes the one furthest along, and dead-letters the
+rest.**
+
+**For whoever runs the gate next: this is one named scenario, not a blanket red.** A new
+failure in any other scenario is a real regression. The precedent is `pnpm eval`, left
+red all run as the honest signal rather than made to pass. **This is founder question 17.**
+
+### The stub gate's true state — it said seven, four are real, and none are Lane D's
+
+- **Stale, cleared:** `TopicScheduler`. `T4.2` filled the seam and nobody removed the line.
+  Verified to the bar `seams-wired.test.ts` enforces — `DbTopicScheduler` is built in three
+  non-test places (the onboarding scan's seeding step, the schedule action behind
+  `POST /api/opportunities/{id}`, and now replenishment) — and the required
+  `REAL_IMPLEMENTATION` entry was added.
+- **A defect in the gate itself, fixed:** `JudgeOutcomeCounter` and `PublishOutcomeCounter`
+  are due at M10, but **`'M10' <= 'M4'` is `true` in JavaScript** — "1" sorts before "4".
+  **Every milestone gate since M2 has been reporting them falsely.** The script now parses
+  the number. This made nothing green: M4 still fails on four, M3 still fails on one.
+- **Real, none of them Lane D's:**
+  - **`CatalogEvents`** (Lane B, due M2). Merchants' product changes are recorded and
+    nothing reads them. **M2 *and* M3 were both declared closed with this outstanding.**
+    Blocks `T5.3` (drift & repair), whose entire input is this stream.
+  - **`AttentionSources.articles`** (Lane G) — the dashboard's "needs you" list returns
+    nothing. **Blocks draft review being usable at all.**
+  - **`EmailFacts.articles`** (Lane G) — the monthly summary reports no articles published
+    and no topics held back, so **a working month looks like a quiet one.**
+  - **`ExportUrlReminder.articles`** (Lane G) — export accounts are never chased for their
+    published URL, so those articles get **no attribution and no performance signal at
+    all.**
+  - All three Lane G ones were blocked on the `articles` table, **which has existed since
+    `T4.0`. They are now buildable.**
+
+### Does M4 actually run end to end? Yes — and it did not before this card
+
+`m4-flow.test.ts` runs an accepted opportunity → replenishment places it → the store's day
+arrives → the pipeline writes, checks and grades → the article sits `in_review` and the
+calendar says so. **Real:** the opportunity is a database row read through the frozen
+seam's real implementation; real scheduler, real pipeline, real Gate 2 and Gate 3, real
+article body, claims and product references. **Stubbed: only the three outside
+boundaries** — model client, search vendor, page fetcher. Nothing internal.
+
+**Wired but unproven, stated plainly by the card rather than discovered later:**
+- **No Gate 1 pass runs on a replenished topic.** Main §9.6.4 ends "Gate 1 runs *after*
+  scoring, on the top-ranked candidates only" — nothing does that. The checks *were* made
+  when the opportunity was detected, but never re-made against the store as it is when the
+  topic is actually scheduled. **The tell is in the audit trail: an auto-scheduled topic
+  has no gate-1 `gate_decisions` row at all, while a manually added one does.** Not built
+  because the design has real content (does a failing re-check reject, convert, or free the
+  day? does it spend a search request per pick — the cost the ordering exists to control?).
+- **Gate 2 records only its refusals**, so "was the pack checked?" is answerable only by
+  the absence of a hold.
+- **Pattern multipliers are structurally live and factually empty** — nothing writes
+  `pattern_stats` because that job is `T7.1`, deferred out of v1. In production every
+  multiplier is 1.0 and every candidate reads as "unexplored". The planner degrades
+  correctly under that by design, which is why the exploration floor promotes *after*
+  scoring rather than reserving before it.
+
+**Verdict, in the card's own words and this session's: M4 is functionally complete but
+does not exit clean.** The engine genuinely runs from opportunity to reviewable article.
+Three holes remain — the midnight crash, no post-scoring Gate 1, and draft review being
+unusable — **none of them holes in this card's own increment; all three are the
+milestone's.**
+
+**A constraint requested, not added** (correctly — a feature card may not migrate): a
+partial unique index on `topics (account_id, scheduled_date)` where `state <> 'vetoed'`,
+plus turning the manual-add route's check-then-insert into an insert-with-conflict.
+Replenishment itself is safe (it holds the per-account lock), but the manual-add route does
+not take that lock, so a merchant adding a topic while a top-up runs is unprotected.
+
+**Files outside Lane D's directories**, all precedented and reviewed at merge:
+`packages/db/src/repositories`, `packages/rules` (one number), `packages/ui/strings`
+(four why-line strings), `packages/core/src/contracts/seams-wired.test.ts` (the guard's own
+registry), `scripts/stub-report.mjs` (the milestone-comparison fix), and
+`apps/web/instrumentation-node.ts` (one additive registration). **No migration, no new API
+route**, and the composition root is called from inside the registration, never at module
+scope.
