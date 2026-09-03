@@ -768,30 +768,101 @@ behaviour of that mechanism, but worth knowing at merge time.
 
 ## Right now
 
-**Status at 2026-09-03, 14:55 — a second session (`sortiva-85`, the founder present in
-it) has been working alongside this one since 12:40.** `main` is at `1149bcd`, clean.
-Landed this run, in order: the `T3.5` audit, `T9.7`, `T4.0` (**M4 unblocked**), `T2.7`
-(**M2 closed**), three founder decisions + `R-PRIVACY` authorization, `R-PRIVACY`
-itself (`sortiva-85`), `T4.0a`, `T4.1`, `T3.6` + its scheduled audit (one HIGH finding,
-held), the founder's relayed answer on manual-add cluster resolution, `T4.2`.
-Tests **2,774**, up from 2,513 at this run's start. Full gate green throughout (nine of
-ten commands; `pnpm eval` red by design) — **`T4.2`'s own merge required fixing two
-real defects the gate found (a duplicate event export, and a production build failure
-across every `/api/calendar` route) — read that section before assuming a green build
-means every route works; `smoke:boot` still only checks `/` and `/api/health`.**
+**Status at 2026-09-03, 23:30 — a new integrator session (`sortiva-92`) picked this up
+from `docs/handoff-next.md`.** `main` is at `299b589`, clean. Tests **3,049** as of the
+last gate run on the previous session's tree; nothing has merged in this session yet.
+**M2, M3, M8, M9 and M4 are all closed. M7 is deferred out of v1 by founder decision.**
 
-**Running now:** the `T3.6` audit landed (see the `T3.5`/`T3.6` audit entries above —
-`T3.7` is now unblocked in principle, but see the note below). **Idle, correctly:**
-lane C (`T3.6` + its audit both landed; `T3.7` needs `T4.2`'s `TopicScheduler`, which
-just landed too — ready to dispatch), lane F (M9 closed), lane G (M8 + `T4.0a` closed).
-**`sortiva-85`**: last known state was idle, offered to take `T3.7`/other work — this
-session has not yet replied with the new landings; do that before dispatching `T3.7`
-to avoid a collision.
+**The founder is present and answered two questions tonight** (both journalled in
+`DECISIONS.md`, both dated `2026-09-03 — FOUNDER`):
 
-**Everything from `## Picking this up again` down to `## This run resumed 2026-09-03`
-describes the *previous* run's end state (2026-09-03, 08:10) and is kept as history.**
-Read the sections below this one, in order, for this run's own record: the `T4.0`
-preparation list, then each card's own `LANDED` section in the order above.
+1. **The override delivery fix, which was blocking `T5.1`** — take *both* halves. The
+   read that decides which finished articles go out is widened to accept an article
+   whose subject passed the quality gate **or** which carries the override flag **or**
+   whose subject has a gate-3 decision recorded as `overridden` (an arm nothing writes
+   yet, so the read is already correct when the override route lands). Rationale and
+   the rejected single-half alternatives are in the journal entry.
+2. **Open question 13, first half** — the `draft_ready_for_review` notification is built
+   now, rather than shipping draft review with no way to be told a draft is waiting. The
+   second half of question 13 (does an overridden article still pass through review on
+   accounts that have review on) **stays open**; today it rejoins the ordinary path.
+
+**Both answers became one card, `R-DELIVER`**, in the build plan under "Founder-authorised
+fix card". It is in Lane D and must merge **before `T5.1` starts** — `T5.1` builds on the
+first fix and is about to edit the same file as the second.
+
+### Three lanes are running as of 23:30
+
+| Lane | Card | Directory | Notes |
+|---|---|---|---|
+| **D — Content & publishing** | `R-DELIVER` | `../sortiva-lane-d` | The two founder answers. `T5.1` is dispatched only once this merges and gates. |
+| **E — OPTIMIZE & FIX** | `T6.1` intent-gap analysis | `../sortiva-lane-e` | **Worktree created this session** (`lane-e` branched from `main`), `.env` copied in. Lane E had never been used, so there is no inherited state. |
+| **G — Ops & notifications** | `R-ARTICLES` | `../sortiva-lane-g` | Worktree fast-forwarded from `cc008ed` (65 commits behind) to `main`. |
+
+**Idle, correctly:** lane B (M2 closed), lane C (M3 closed), lane F (M9 closed).
+**No other Claude session is running on this machine** — checked with `ListAgents` before
+launching anything. `caffeinate -dimsu -t 21600` is running (pid checked, not assumed).
+
+### `R-ARTICLES` — the card this session wrote
+
+Not in the original build plan. The three article-shaped stubs were all blocked on the
+`articles` table, which has existed since `T4.0` this morning, so all three are buildable
+with no migration. One Lane G session does all three. **Two things were deliberately held
+back from it, and the card says so:**
+
+- **`pendingRepairs` stays a stub.** There is no repairs table anywhere in the schema —
+  verified by listing every `pgTable` in `packages/db/src/schema`; the word "repair"
+  appears only as `accounts.auto_repair` and two enum values. It arrives with `T5.3`. The
+  card requires that one condition be re-registered on its own with `mustBeGoneBy: 'M5'`
+  rather than deleted or left claiming schema wave 3 will fill it.
+- **The `draft_ready_for_review` emission went to Lane D instead**, because its call site
+  (`packages/jobs/src/generation/daily-cycle.ts`) is Lane D's directory and `T5.1` is
+  about to edit that same file for the day-skew fix. A cross-lane write there would have
+  collided at merge.
+
+Also worth knowing before reviewing it: `unconfirmedExportUrls` and the export-URL
+reminder sweep will correctly find **nothing** until `T5.1` starts marking exported
+articles published. That is an empty result from a correct query, not a stub.
+
+### What this session verified rather than took on trust
+
+The handoff warns that three separate lane reports were wrong today, always in the
+reassuring direction. Before dispatching anything, this session re-derived the one claim
+that changed what it did:
+
+**The override finding is real.** `packages/db/src/repositories/articles.ts:196` requires
+a gate-3 decision with outcome literally `passed`; `markArticleOverridden` at line 117 of
+the same file sets the flag, moves the article to `draft`, and writes **nothing** to
+`gate_decisions`. `OVERRIDE_GATE_OUTCOME = 'overridden'` is defined in
+`packages/core/src/gates/gate3/override.ts` and written by no path in the repository.
+`gate_decisions.outcome` is a free-text column, so neither fix shape needs a migration.
+All three stubs named in the handoff were likewise confirmed present with live
+`registerStub` entries before the card was written.
+
+### What is still waiting on the founder
+
+**Thirteen open questions** in "Questions waiting on the founder" below. Question 13 is now
+half-answered (see above) and the override blocker is cleared. **Nothing else blocks a
+lane.** The shortest fuses now:
+
+- **Question 6 — the Anthropic key.** Costed and ready; the founder has already chosen to
+  do it. Roughly 40 cents a run, on its own gate rather than every commit. **The action is
+  the founder's alone**: a real key on the blank `ANTHROPIC_API_KEY=` line in `.env`
+  (line 33). Never ask for it in a session, never write one into `.env.example`.
+- **Question 16 — for a store publishing at 02:00, which day's article is it?** `T5.1`
+  needs this and the MEDIUM day-skew fix belongs in that card.
+- **Question 17 — leave `pnpm chaos` red on the midnight scenario, or resolve it?**
+
+### The gate, unchanged
+
+Eleven commands, one at a time, never chained; `pnpm test` and `pnpm lint:prove` must not
+run simultaneously. `pnpm eval` and one named `chaos` scenario
+(`generation_cycle_killed_across_midnight`) are **deliberately red**. A failure anywhere
+else in `chaos` is a genuine regression. `pnpm smoke:dev` is the newest command and exists
+because `smoke:boot` proved the app started while every authenticated page returned 500 —
+if anyone touches `apps/web/instrumentation.ts`, the import must stay inside the
+`NEXT_RUNTIME === 'nodejs'` check.
+
 
 ### The previous run's end state, kept as history
 
@@ -2419,7 +2490,9 @@ code nor CI would notice — **and the spend would be misreported, since the exp
 list is kept.** Invariant 11 says never substitute a smaller model for the judge; the code
 honours that everywhere except this one configuration route.
 
-**13. Does draft review ship without any way to be told a draft is waiting?** The toggle
+**13. HALF-ANSWERED 2026-09-03, 23:25 — build the emission. Carded as `R-DELIVER`, Lane D, in progress.** The founder chose the auditor's and both sessions' recommendation over hiding the toggle or shipping it broken; it is placed in Lane D rather than Lane G because the call site is in Lane D's directory and `T5.1` is about to edit the same file. **The second half of this question stays open: should an overridden article still pass through draft review on accounts that have review turned on?** Today it rejoins the ordinary path. Full detail: `DECISIONS.md` `2026-09-03 — FOUNDER — The draft-ready notification is built now`. **Original question kept below for context.**
+
+*Original question: does draft review ship without any way to be told a draft is waiting?* The toggle
 exists, defaults to off, and switching it on today makes articles disappear: nothing emits
 the notification, the dashboard's attention list is a live stub returning empty, and the
 screens that would list the draft are not built. *Options:* build the emission first (the
@@ -2525,7 +2598,7 @@ Required by build plan §7 before `T4.6`. **Cleared `T4.6` to start**, ran 151 t
 26 files against real Postgres, and verified every load-bearing claim independently.
 
 **[HIGH] An override-published article can never be delivered — and this blocks the
-publishing cards.** When a merchant overrules a quality rejection, the article returns to
+publishing cards.** **AUTHORISED AND BEING FIXED 2026-09-03, 23:25 — the founder took both halves of the fix; carded as `R-DELIVER`, Lane D, in progress. `T5.1` is unblocked the moment it merges and gates.** Independently re-verified by `sortiva-92` against the code before dispatch: the finding is exactly right. When a merchant overrules a quality rejection, the article returns to
 `draft` with the override flag set, exactly as `T4.4` and `T4.5` both intended. But
 `articlesReadyForDelivery` — **the read `T5.1`/`T5.2` are explicitly told to build on** —
 returns an article only if its topic has a Gate 3 decision whose outcome is literally
