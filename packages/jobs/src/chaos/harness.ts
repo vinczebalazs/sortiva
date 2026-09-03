@@ -13,6 +13,8 @@ import { runStep } from '../runtime/runStep'
 // is still evaluating: this file only lists the scenario in an array, and the
 // scenario only uses `WorkerKilled` inside functions.
 import { catalogSyncKilledMidWalk } from './catalog-sync.scenario'
+import { distillKilledMidBatch } from './distill.scenario'
+import { familyGroupKilledAfterCommit } from './family-group.scenario'
 
 /**
  * Kills workers at random points during a full synthetic ingestion and publish
@@ -68,6 +70,19 @@ export interface ChaosScenario {
    * Throw to fail.
    */
   assert(ctx: Omit<ChaosContext, 'checkpoint' | 'attempt'>): Promise<void>
+  /**
+   * How many checkpoints a clean pass of this scenario reaches, if that number
+   * is knowable and below the default starting guess of 8. Without this, a
+   * scenario with fewer checkpoints than the default risks the first draw
+   * overshooting *and* the pass it draws against genuinely finishing the work
+   * — which settles the step and records its ledger entry — so every retry
+   * after that finds nothing left to interrupt and the scenario reports zero
+   * kills despite asking for some. Declaring the true count here makes the
+   * very first draw land inside range, so that can never happen. Omit it only
+   * when 8 is already a safe underestimate (`catalog_sync`'s six-page walk
+   * plus its orders-page boundary, or more).
+   */
+  readonly initialCeiling?: number
 }
 
 export interface ChaosResult {
@@ -106,8 +121,10 @@ export async function runChaosScenario(
   let reached: string[] = []
   // How many checkpoints a pass is assumed to have. Tightened to the real count
   // the first time a pass runs to completion, so an overshooting draw cannot
-  // silently spend the kill budget on kills that never happen.
-  let ceiling = 8
+  // silently spend the kill budget on kills that never happen. A scenario that
+  // knows its own count starts here rather than at the default guess — see
+  // `ChaosScenario.initialCeiling`.
+  let ceiling = scenario.initialCeiling ?? 8
 
   while (attempt < maxAttempts) {
     const seen: string[] = []
@@ -399,4 +416,10 @@ export const CHAOS_SCENARIOS: readonly ChaosScenario[] = [
   // the catalogue sync is the longest thing the product does over a network and
   // so the step most likely to be running when a process ends.
   catalogSyncKilledMidWalk,
+  // T2.7: the two steps right after it, each interrupted at the point that
+  // actually matters for what they do — mid-catalogue for distillation
+  // (paying per product), right after the one write commits for grouping
+  // (no per-item cost, but a redelivery must reconcile onto the same rows).
+  distillKilledMidBatch,
+  familyGroupKilledAfterCommit,
 ]

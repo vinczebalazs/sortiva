@@ -52,6 +52,9 @@ const ALLOWED = new Set(
     'packages/core/src/distill/quarantine.test.ts',
     // Asserts the description is still stored and still not in the fact sheet.
     'packages/jobs/src/ingestion/distill.test.ts',
+    // Seeds a real description for the chaos scenario to distil, the same way
+    // `distill.test.ts` above does.
+    'packages/jobs/src/chaos/distill.scenario.ts',
   ].map((path) => path.split('/').join(sep)),
 )
 
