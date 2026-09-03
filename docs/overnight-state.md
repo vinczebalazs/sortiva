@@ -768,100 +768,99 @@ behaviour of that mechanism, but worth knowing at merge time.
 
 ## Right now
 
-**Status at 2026-09-03, 23:30 — a new integrator session (`sortiva-92`) picked this up
-from `docs/handoff-next.md`.** `main` is at `299b589`, clean. Tests **3,049** as of the
-last gate run on the previous session's tree; nothing has merged in this session yet.
-**M2, M3, M8, M9 and M4 are all closed. M7 is deferred out of v1 by founder decision.**
+**Status at 2026-09-04, 00:05 — integrator session `sortiva-92`. The founder went to sleep
+at about 00:00 with the instruction "take the project as far as you can until the morning".**
+`main` is at `95dcc59`, clean. Tests **3,093**, up from 3,049 at this session's start.
+**M2, M3, M8, M9 and M4 are closed. M7 is deferred out of v1.** No other Claude session is
+running on this machine (`ListAgents` checked before every launch); `caffeinate` is running.
 
-**The founder is present and answered two questions tonight** (both journalled in
-`DECISIONS.md`, both dated `2026-09-03 — FOUNDER`):
+### Three cards landed and merged this session, each gated on the merged tree
 
-1. **The override delivery fix, which was blocking `T5.1`** — take *both* halves. The
-   read that decides which finished articles go out is widened to accept an article
-   whose subject passed the quality gate **or** which carries the override flag **or**
-   whose subject has a gate-3 decision recorded as `overridden` (an arm nothing writes
-   yet, so the read is already correct when the override route lands). Rationale and
-   the rejected single-half alternatives are in the journal entry.
-2. **Open question 13, first half** — the `draft_ready_for_review` notification is built
-   now, rather than shipping draft review with no way to be told a draft is waiting. The
-   second half of question 13 (does an overridden article still pass through review on
-   accounts that have review on) **stays open**; today it rejoins the ordinary path.
+| Card | Lane | What it changed |
+|---|---|---|
+| `R-ARTICLES` | G | The dashboard can see a waiting draft and an unconfirmed export; the monthly summary reports the actual month instead of every month reading as empty |
+| `R-DELIVER` | D | An overridden article can actually be delivered; a draft entering review is announced |
+| `T6.1` | E | The paid comparison between our page and the ones outranking it |
 
-**Both answers became one card, `R-DELIVER`**, in the build plan under "Founder-authorised
-fix card". It is in Lane D and must merge **before `T5.1` starts** — `T5.1` builds on the
-first fix and is about to edit the same file as the second.
+**The gate was run in full after each merge**, one command at a time: nine of eleven green,
+with `pnpm eval` red on exactly its three documented sets (no Anthropic key) and `pnpm chaos`
+red on exactly `generation_cycle_killed_across_midnight` and nothing else — both confirmed by
+reading the failure text, not by assuming. No migration landed, so `db:migrate` was not
+required.
 
-### Three lanes are running as of 23:30
+**One merge conflict, hand-resolved:** `R-ARTICLES` and `R-DELIVER` both edited
+`packages/db/src/repositories/articles.ts` — the collision the plan warns about when two
+lanes touch adjacent territory. It was the import line only; both sides' work was verified
+present by name after resolving, and the full gate was re-run before anything else merged.
 
-| Lane | Card | Directory | Notes |
-|---|---|---|---|
-| **D — Content & publishing** | `R-DELIVER` | `../sortiva-lane-d` | The two founder answers. `T5.1` is dispatched only once this merges and gates. |
-| **E — OPTIMIZE & FIX** | `T6.1` intent-gap analysis | `../sortiva-lane-e` | **Worktree created this session** (`lane-e` branched from `main`), `.env` copied in. Lane E had never been used, so there is no inherited state. |
-| **G — Ops & notifications** | `R-ARTICLES` | `../sortiva-lane-g` | Worktree fast-forwarded from `cc008ed` (65 commits behind) to `main`. |
+**The concurrent-load flake is real and was triangulated again.** With three lane sessions
+running, `pnpm test` failed 8 then 12 suites on 10-second hook timeouts with **zero failing
+tests**; with the machine quiet the same tree passed 239/239 in 44 seconds against 110. That
+is contention, not a regression — but re-running is not ignoring, and the third run was read
+in full before the merge was accepted.
 
-**Idle, correctly:** lane B (M2 closed), lane C (M3 closed), lane F (M9 closed).
-**No other Claude session is running on this machine** — checked with `ListAgents` before
-launching anything. `caffeinate -dimsu -t 21600` is running (pid checked, not assumed).
+### Four founder answers came in before he slept, all journalled
 
-### `R-ARTICLES` — the card this session wrote
+1. **The override delivery fix** — take both halves (flag now, recorded decision later). Built.
+2. **Open question 13, first half** — build the draft-ready notification. Built. **The second
+   half stays open**: should an overridden article still pass through draft review on accounts
+   that have review switched on? Today it rejoins the ordinary path.
+3. **Open question 16 — an article belongs to the day it appears**, not the day writing
+   started. A 02:00 publisher's Tuesday slot publishes on Tuesday. Folded into `T5.1`, which
+   is building now.
+4. **The intent-gap wiring shape** — its own scheduled pass, with the weekly scan reading
+   what that pass already bought rather than buying anything itself. Carded as
+   `R-INTENTGAP-JOB` (Lane E) and `R-INTENTGAP-SCAN` (Lane C), neither dispatched yet.
 
-Not in the original build plan. The three article-shaped stubs were all blocked on the
-`articles` table, which has existed since `T4.0` this morning, so all three are buildable
-with no migration. One Lane G session does all three. **Two things were deliberately held
-back from it, and the card says so:**
+### Running now
 
-- **`pendingRepairs` stays a stub.** There is no repairs table anywhere in the schema —
-  verified by listing every `pgTable` in `packages/db/src/schema`; the word "repair"
-  appears only as `accounts.auto_repair` and two enum values. It arrives with `T5.3`. The
-  card requires that one condition be re-registered on its own with `mustBeGoneBy: 'M5'`
-  rather than deleted or left claiming schema wave 3 will fill it.
-- **The `draft_ready_for_review` emission went to Lane D instead**, because its call site
-  (`packages/jobs/src/generation/daily-cycle.ts`) is Lane D's directory and `T5.1` is
-  about to edit that same file for the day-skew fix. A cross-lane write there would have
-  collided at merge.
+| Lane | Card | Notes |
+|---|---|---|
+| **D** | `T5.1` — export mode & publish-hour scheduling | Carries the founder's publish-day answer and the MEDIUM day-skew fix. Told to check that the known-red chaos scenario still fails for its own reason, since it touches local midnight. |
+| **E** | `T6.2` — OPTIMIZE recommendations | The largest card left. **A fresh-session audit is scheduled after it** (build plan §7). |
 
-Also worth knowing before reviewing it: `unconfirmedExportUrls` and the export-URL
-reminder sweep will correctly find **nothing** until `T5.1` starts marking exported
-articles published. That is an empty result from a correct query, not a stub.
+**Idle:** lanes B, C, F and G — B, F and G have no milestone work left, and C's only
+available card (`R-INTENTGAP-SCAN`) waits on Lane E's job half.
 
-### What this session verified rather than took on trust
+### What `T6.1` landed unwired, and why that is recorded rather than hidden
 
-The handoff warns that three separate lane reports were wrong today, always in the
-reassuring direction. Before dispatching anything, this session re-derived the one claim
-that changed what it did:
+`scanIntentGaps` — the weekly pass — **is called by nothing outside its own test.** Verified
+by grep by the integrator, not taken from the lane's report; the lane declared it plainly,
+which is the opposite of the `R-STREAM` failure. Everything downstream is proved: the jobs
+test drives a real store page and results page through the analysis, and the core test feeds
+the resulting signal to Lane C's `buildOpportunityDraft`, which returns `OPTIMIZE` on the
+existing URL. **`T6.2` does not need the wiring** — it calls the analysis functions directly.
+The two cards above close it.
 
-**The override finding is real.** `packages/db/src/repositories/articles.ts:196` requires
-a gate-3 decision with outcome literally `passed`; `markArticleOverridden` at line 117 of
-the same file sets the flag, moves the article to `draft`, and writes **nothing** to
-`gate_decisions`. `OVERRIDE_GATE_OUTCOME = 'overridden'` is defined in
-`packages/core/src/gates/gate3/override.ts` and written by no path in the repository.
-`gate_decisions.outcome` is a free-text column, so neither fix shape needs a migration.
-All three stubs named in the handoff were likewise confirmed present with live
-`registerStub` entries before the card was written.
+### The order for the rest of the night
 
-### What is still waiting on the founder
+Lane D: `T5.1` → `T5.2` → **its scheduled audit** → `T5.3`, **which stops** — its whole input
+is the `CatalogEvents` change stream, whose reader the founder deliberately left unwired, to
+be judged together with switching the recurring schedule on.
+Lane E: `T6.2` → **its scheduled audit** → `R-INTENTGAP-JOB` → `T6.3`.
+Lane C: `R-INTENTGAP-SCAN`, once the job half has merged.
+Then M10's exit gates, which need everything above.
 
-**Thirteen open questions** in "Questions waiting on the founder" below. Question 13 is now
-half-answered (see above) and the override blocker is cleared. **Nothing else blocks a
-lane.** The shortest fuses now:
-
-- **Question 6 — the Anthropic key.** Costed and ready; the founder has already chosen to
-  do it. Roughly 40 cents a run, on its own gate rather than every commit. **The action is
-  the founder's alone**: a real key on the blank `ANTHROPIC_API_KEY=` line in `.env`
-  (line 33). Never ask for it in a session, never write one into `.env.example`.
-- **Question 16 — for a store publishing at 02:00, which day's article is it?** `T5.1`
-  needs this and the MEDIUM day-skew fix belongs in that card.
-- **Question 17 — leave `pnpm chaos` red on the midnight scenario, or resolve it?**
+**Audits are read-only and their findings are held for the founder.** The only permitted
+action on a finding is stopping a lane.
 
 ### The gate, unchanged
 
-Eleven commands, one at a time, never chained; `pnpm test` and `pnpm lint:prove` must not
-run simultaneously. `pnpm eval` and one named `chaos` scenario
-(`generation_cycle_killed_across_midnight`) are **deliberately red**. A failure anywhere
-else in `chaos` is a genuine regression. `pnpm smoke:dev` is the newest command and exists
-because `smoke:boot` proved the app started while every authenticated page returned 500 —
-if anyone touches `apps/web/instrumentation.ts`, the import must stay inside the
-`NEXT_RUNTIME === 'nodejs'` check.
+Eleven commands, one at a time, never chained; `pnpm test` and `pnpm lint:prove` must not run
+simultaneously. `pnpm eval` and `generation_cycle_killed_across_midnight` are deliberately
+red. A failure anywhere else in `chaos` is a genuine regression. If anyone touches
+`apps/web/instrumentation.ts`, the import must stay inside the `NEXT_RUNTIME === 'nodejs'`
+check — only `smoke:dev` catches the alternative.
+
+### A reporter gap found while reviewing `R-ARTICLES`, unactioned
+
+`seams-wired.test.ts` — the guard that exists because a seam was dropped from the stub report
+without anything real replacing it — **only covers class-shaped stand-ins.** It reads
+`export class Stub*` out of `doubles.ts` and looks for `new doubles.Stub*()` in the report
+script. The two stubs `R-ARTICLES` removed register by module import instead, so the guard
+neither checked them nor could have. Their removal was verified by hand and is sound. **This
+is exactly the "audit the reporters themselves" gap the handoff describes, and `T10.2`'s
+done-when — "zero invariants without teeth" — is its home.** Recorded, not acted on.
 
 
 ### The previous run's end state, kept as history
