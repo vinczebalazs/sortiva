@@ -859,14 +859,16 @@ the founder — but each is now a card with a done-when rather than prose in a r
   credential exists.**
 - **`R-STREAM`** (integrator to assign) — the change stream has a producer, no consumer, and
   the check that would have said so was switched off.
-- **`R-DEV`** (integrator to assign) — **`next dev` cannot start at all.** Found by `T9.5`,
-  reproduced directly by the integrator: the start-up hook pulls the job library and, through
-  it, a config loader Next cannot bundle for dev. **The production build is fine and
-  `smoke:boot` is green, which is exactly why no gate catches it.** Pre-existing, not a
-  regression from tonight. Its cost is that every developer runs against `next start` or not
-  at all, and two browser-flow suites are dead locally. **It is deliberately not fixed
-  tonight**: the obvious fix is the same option the founder explicitly rejected when ruling
-  on `T-BOOT`, so it belongs to the same person rather than to an integrator at midnight.
+- **`R-DEV`** — **FIXED 2026-09-03 (`c1d2541`), and the diagnosis recorded here all run was
+  wrong. See the `R-DEV` LANDED section at the end of this file.** What this entry used to
+  say — "`next dev` cannot start at all" — was carried by three sessions, including into
+  lane briefings by this integrator, and was never true: the server starts fine and every
+  page then answers 500. The real cause was the Edge runtime, not the config loader.
+  **Original text kept below for the record, because acting on it is what cost the time:**
+  *"`next dev` cannot start at all. Found by `T9.5`, reproduced directly by the integrator:
+  the start-up hook pulls the job library and, through it, a config loader Next cannot
+  bundle for dev. The production build is fine and `smoke:boot` is green, which is exactly
+  why no gate catches it."*
 
 ### A merge broke and was repaired, which is what merging concurrent lanes costs
 
@@ -3872,3 +3874,91 @@ patterns), `scripts/stub-report.mjs` (the seam it closed). No migration.
 **`T6.x` (OPTIMIZE & FIX, Lane E) can now start in principle** — it needs `T3.6` (done)
 and `T4.4` (not started, itself blocked on `T4.3`'s schema gap above). **`M6` overall
 still needs both `T3.6` and `T4.4`.**
+
+## `T4.0b` LANDED — a finished draft finally has somewhere to live
+
+**Merged as `829271c` by `sortiva-85`, founder-authorised, migration only.** This is the
+gap `T4.3` found and stopped on. `articles` gains two nullable columns: **`body_json`**,
+holding the draft in the writer's own shape (`{intro, sections:[{heading, body}],
+faq:[{question, answer}]}`), and **`meta_description`**, a field beside `title`/`slug`
+because publish and export read it as one.
+
+**The founder chose structured storage over prose or both**, on the reasoning that
+everything downstream wants the pieces — the judge scores section by section, the review
+screen renders blocks — and plain text can always be produced from structure while
+structure cannot be reliably recovered from prose. "Both" was rejected because two
+representations of one article drift apart.
+
+**One departure from the option as offered, flagged by `sortiva-85` rather than buried:**
+`jsonb`, not gzipped `bytea`. Postgres already compresses a large `jsonb` value through
+TOAST, so the saving over gzip is small at ~10–30KB per article, while gzipped bytea
+makes the content opaque — the judge, the review screen and any later cross-article
+analysis would each have to decompress everything to look at anything. Structure was the
+half of the answer carrying the intent. Reversible in a small change if the founder
+prefers otherwise.
+
+**Verified independently before building on it**: both columns present with the right
+types, and the check constraint genuinely bites — a JSON *string* inserted into
+`body_json` is rejected by Postgres, not merely refused on paper. A fresh empty database
+migrates cleanly to 55 tables.
+
+**Both columns are nullable on purpose** — `insertArticleStub` creates the row before the
+writer runs, so an article legitimately exists with no draft. **Do not make either
+`NOT NULL` without dealing with that.** And **`productMentions` is deliberately not in
+the JSON**: `article_product_refs` holds those as rows already, and two answers to one
+question is the bug that shape avoids — read references from the table, never the body.
+
+**A `db:migrate` failure `sortiva-85` hit locally is not a repo defect**: a stale
+developer database carrying wave-3's types without matching journal rows. Confirmed here
+by running the same command against a freshly created empty database, which applied
+cleanly. Every gate run in this file has used a throwaway database, which is why it never
+surfaced there. Worth someone recreating their local database eventually.
+
+## `R-DEV` LANDED — the development server serves pages again, **and the diagnosis this file carried all run was wrong**
+
+**Merged as `c1d2541` by `sortiva-85` on the founder's authorisation.** The correction
+matters more than the fix, because the wrong version was repeated into three sessions'
+briefings, including by this integrator.
+
+**`next dev` was never failing to start.** It starts fine: the worker connects, 22 tasks
+register, Next reports ready in about eight seconds — and *then* every page answers 500.
+"Cannot start at all" sent people looking at start-up and bundling when the server was
+already up.
+
+**The actual cause: Next compiles `instrumentation.ts` for the Edge runtime as well as
+Node, and Edge has no filesystem.** The existing `NEXT_RUNTIME !== 'nodejs'` early return
+stopped the body *running* under Edge but not from being *compiled* for it — so the job
+worker's vendor config reader, which needs `fs/promises`, was compiled for a runtime that
+cannot provide it, every route touching that module graph failed to compile, and Next
+served 500. **`pnpm build` stayed green because a production build only compiles what it
+ships.**
+
+**The fix is the founder's own chosen option, not the one they rejected on `T-BOOT`**: the
+body moved to `apps/web/instrumentation-node.ts` and is imported *inside* a positive
+`NEXT_RUNTIME === 'nodejs'` check, which Next substitutes at build time, removing the
+branch from the Edge bundle outright. No `serverExternalPackages`, nothing marked
+external, production behaviour identical (worker still in-process, `smoke:boot` green, 22
+tasks). Measured: 500/500 became 200/200.
+
+**⚠️ THE GATE HAS AN ELEVENTH COMMAND NOW: `pnpm smoke:dev`.** It is
+`scripts/smoke-boot.mjs --dev` plus a CI step. **Nothing in the gate had ever started a
+development server** — every step either read the code or started the *built* app — which
+is precisely why this survived so long. Confirmed to bite by hoisting the import back to
+module scope: the defect returns and `smoke:dev` fails. **Verified here directly: `PASS
+GET / -> 200`, `PASS GET /api/health -> 200`, dev server up in 10.4s.** Add it to every
+gate run from here.
+
+**If you touch `apps/web/instrumentation.ts`, keep the import inside the runtime check.**
+Hoisting it back to module scope silently restores the defect and no unit test will catch
+it — only `smoke:dev` will.
+
+**Two things deliberately left open, stated rather than quietly fixed:**
+1. **A bare `pnpm dev` still has no environment.** Next reads `.env` only from the
+   directory it starts in, there is no `apps/web/.env`, and nothing loads the repo root's
+   — so a developer still meets "DATABASE_URL is not set". `ENCRYPTION_MASTER_KEY` is
+   blank too and has never been generated locally. `smoke:dev` passes because the smoke
+   script reads the root file and mints a throwaway key. Changing how `pnpm dev` itself
+   starts was not the option the founder picked, so it was not done.
+2. **The two Playwright projects pointing at `pnpm dev` still will not run locally** until
+   (1) is settled. `R-DEV`'s own done-when named them; **that part is not met and is not
+   claimed to be.**
