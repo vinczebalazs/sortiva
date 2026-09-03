@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "rules_version": "408ef6e33bacb5e2c36961434fb3799342480df2d27d3bd0ee85aa9381af3646",
+  "rules_version": "7f78a3c1474ef89803d0f3f69cebfe05f1297b22f8a51d51b02c101ae97b105f",
   "defaults": {
     "signals": {
       "striking_distance": {
@@ -182,6 +182,14 @@
         "factual_grounding_min": 4,
         "other_criteria_min": 3,
         "repair_loops_max": 1
+      },
+      "draft_lints": {
+        "near_duplicate_similarity_max": 0.6,
+        "near_duplicate_shingle_words": 5,
+        "keyword_density_max": 0.03,
+        "length_target_floor_ratio": 0.6,
+        "numeric_agreement_tolerance": 0.05,
+        "contradiction_subject_overlap_min": 0.5
       }
     },
     "learning": {
@@ -522,6 +530,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -861,6 +877,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -1200,6 +1224,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -1539,6 +1571,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -1878,6 +1918,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -2217,6 +2265,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -2556,6 +2612,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -2895,6 +2959,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -3234,6 +3306,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -3573,6 +3653,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -3912,6 +4000,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -4251,6 +4347,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -4590,6 +4694,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -4929,6 +5041,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -5268,6 +5388,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -5607,6 +5735,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -5946,6 +6082,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -6285,6 +6429,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -6624,6 +6776,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -6963,6 +7123,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
@@ -7302,6 +7470,14 @@
           "factual_grounding_min": 4,
           "other_criteria_min": 3,
           "repair_loops_max": 1
+        },
+        "draft_lints": {
+          "near_duplicate_similarity_max": 0.6,
+          "near_duplicate_shingle_words": 5,
+          "keyword_density_max": 0.03,
+          "length_target_floor_ratio": 0.6,
+          "numeric_agreement_tolerance": 0.05,
+          "contradiction_subject_overlap_min": 0.5
         }
       },
       "learning": {
