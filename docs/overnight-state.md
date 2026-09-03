@@ -4981,3 +4981,63 @@ render the generic "we can't show the reason" wording, because this signal has n
 the copy catalogue. Pre-existing and shared with other live signal types, the renderer
 degrades honestly rather than showing a raw key, and inventing merchant-facing wording is not
 a lane's to do.
+
+## `T5.2` LANDED — a merchant can let Sortiva post to their shop, and it posts exactly once. **Its scheduled audit is running.**
+
+Merged as `3e045e5`, gate green on the merged tree: tests **3,265** (up from 3,205), nine of
+eleven commands. **`pnpm chaos` is now nine scenarios, eight passing** — the new
+kill-between-posting-and-recording case passes, and the only failure remains
+`generation_cycle_killed_across_midnight`.
+
+**What a merchant gets.** Installing Sortiva still asks for read access only. **Posting is a
+second, separate permission** with its own flow: a scope list that keeps every read scope and
+adds exactly one write scope, a check that throws away a grant that came back without it, and
+a signed value carried through Shopify's consent screen naming the account and saying *this
+was the publishing pass* — so an install redirect cannot be replayed at it to record a
+read-only grant as a publishing one. **Auto-publish cannot be switched on with nowhere to
+post**: the same two conditions are a `WHERE` clause on the database write, not merely a check
+before it.
+
+**Every post is claimed, sent carrying our own marker, then recorded.** A second worker
+collides on the claim and stops. The recovery sweep **asks the shop whether our marker is
+already there before it ever considers sending again** — found means adopt, not found means
+send, and there is no third path. A claim nobody can settle is abandoned after three sweeps
+into the dead-letter queue. An article is recorded as published only after the shop confirms.
+**An update names the article it revises or does not happen**: when the merchant has deleted
+the post, nothing puts it back and they are told.
+
+**Verified by the integrator rather than taken from the report:** Lane B's install flow is
+untouched (invariant 21's first half — checked by diffing that directory, which is empty); the
+second grant adds exactly one write scope and keeps the read ones; and the update path
+**abandons rather than creating**, which is the specific fallback invariant 19 forbids.
+**The lane obeyed the integrator-resolved-files rule this time** — no crontab edit, no
+composition-root edit — after `T5.1` in the same lane did not. It did append one line to
+`eslint.config.mjs` and said so; six prior cards did the same and `pnpm lint` is red without
+it.
+
+### Three things the lane flagged, all held
+
+1. **The recovery sweep will never run.** Built, tested and registered, but its schedule entry
+   lives in the crontab, which it was told not to edit — the exact entry is written verbatim
+   in `DECISIONS.md`. **Until it lands, a crash mid-publish leaves a live post the app shows
+   as unpublished.** It never double-posts, but it never recovers either. No composition-root
+   change is needed; `T5.1`'s registration already covers it.
+2. **The blog picker is at the wrong address for Lane F's Settings screen** — the frozen
+   contract puts these on `/api/settings/*`, a directory that does not exist and that no lane
+   owns, and `PATCH /api/settings` spans four other lanes' settings. Built at `/api/publish/*`
+   instead. **The Settings screen would get a 404 from all three.** This is the **third**
+   contract divergence tonight.
+3. **Nothing here has talked to a real Shopify store.** Everything is proven against a fake.
+   The lane's own best guess at what breaks first: the article address it builds uses the
+   blog's id where Shopify's URLs use the blog's handle — and that address is stored at
+   publish and read later by attribution and performance.
+
+**Also:** `republishArticleToShopify` is complete and called by nothing — `T5.3`'s repair
+queue is its trigger.
+
+### After this card and its audit, the night is done
+
+`T5.3` is blocked: its whole input is the `CatalogEvents` change stream, whose reader the
+founder deliberately left unwired to be judged together with switching the recurring schedule
+on. `T6.3` is stopped by the `T6.2` audit. Every other lane has no milestone work left. **M10's
+exit gates need all of the above.**
