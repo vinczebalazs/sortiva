@@ -768,20 +768,24 @@ behaviour of that mechanism, but worth knowing at merge time.
 
 ## Right now
 
-**Status at 2026-09-03, 12:46 — a new run is in progress.** `main` is at `49506ea`,
-clean. Landed so far this run, in order: the `T3.5` audit (read-only, findings held —
-see the founder-question-8 section and the dedicated audit entry, both below),
-`T9.7` (lane F), `T4.0` (schema wave 3, lane D — **M4 unblocked**), `T2.7` (lane B —
-**M2 closed**). Tests **2,599**, up from 2,513 at this run's start. Full gate green
-throughout (nine of ten commands; `pnpm eval` red by design, unchanged all run).
+**Status at 2026-09-03, 13:30 — a second session (`sortiva-85`, the founder present in
+it) joined mid-run at 12:40.** `main` is at `38bdb88`, clean, and already contains
+`sortiva-85`'s `R-PRIVACY` merge as an ancestor. Landed this run, in order: the `T3.5`
+audit (read-only), `T9.7` (lane F), `T4.0` (schema wave 3, lane D — **M4 unblocked**),
+`T2.7` (lane B — **M2 closed**), three founder decisions + `R-PRIVACY` authorization
+(`sortiva-85`, 12:40), `T3.6` dispatched (lane C, unblocked by the threshold answer),
+`T4.0a` (schema mini-wave, lane G), `T4.1` (topic model & Gate 1, lane D),
+`R-PRIVACY` (lane B, `sortiva-85`). Tests **2,644**, up from 2,513 at this run's start.
+Full gate green throughout (nine of ten commands; `pnpm eval` red by design,
+unchanged all run) — **read "A hazard this run surfaced" below before trusting any
+gate run in the shared directory** if picking this up while both sessions are active.
 
-**Running now:** `T9.8` (lane F, the M9 exit gate) and `T4.1` (lane D, topic model &
-Gate 1). **Idle, correctly, with no invented work:** lane B (M2 is complete and the
-plan gives it nothing further) and lane G (M8 is complete; its only remaining work is
-the three held remediation cards, and `R-PRIVACY` sits in Lane B's own directory
-regardless). **Held, not idle:** lane C — `T3.6` cannot be built as its own done-when
-is written until founder question 8 (the position-20/#18 contradiction) is answered;
-see the `T3.5` audit section for detail.
+**Running now:** `T3.6` (lane C, opportunity scoring — the card the founder's
+threshold answer unblocked). **Idle, correctly, with no invented work:** lane D (`T4.1`
+landed; `T4.2` is next but read its own section above first — it inherits a real,
+unresolved gap `T4.1` flagged), lane F (M9 is closed, nothing further in the plan),
+lane G (M8 is closed, `T4.0a` was its only extra work). **`sortiva-85` is idle too**,
+last message asked this session what to take next.
 
 **Everything from `## Picking this up again` down to `## This run resumed 2026-09-03`
 describes the *previous* run's end state (2026-09-03, 08:10) and is kept as history.**
@@ -3189,4 +3193,232 @@ deliberate exclusion, and no other lane plausibly owns the ingestion pipeline's 
 progress screen. No migration.
 
 **M2 is now complete: `T-START` → `T2.1` → `T2.2` → `T2.3` → `T2.4` → `T2.5` → `T2.6`
-→ `T2.7`, all landed.** Nothing left in this milestone. Lane B is idle.
+→ `T2.7`, all landed.** Nothing left in this milestone. Lane B is idle (until
+`sortiva-85`'s `R-PRIVACY` — see below).
+
+## The founder joined a second session mid-run, and answered four questions directly
+
+**At 12:40, a second Claude session (`sortiva-85`) started on this same machine, with
+the founder actually present in it — not asked through this integrator, but working
+directly.** It committed three things straight to `main` while this session was mid-gate:
+`d3758c7` (the competitor-gap threshold, answering founder question 8), `ec2f213` (a
+temporary answers file, since folded in and deleted), `5a6b46d` (an external SEO-tactic
+review, no scope change). **Verified independently before treating any of it as real**:
+`git log` on this session's own `main`, the actual `DECISIONS.md` entries, the commits'
+authorship (the founder's own git identity). Questions 1, 4 and 8 are now answered — see
+the "Questions waiting on the founder" section, each marked ANSWERED in place — and
+`R-PRIVACY` is authorised. Full detail on what each answer changed is in that section;
+this note is only the provenance.
+
+**Division of labour agreed between the two sessions, by direct message, to avoid two
+integrators writing to `main` or to this file at once:** `sortiva-85` holds lane B
+(`R-PRIVACY`, in progress) and writes nothing to `docs/overnight-state.md`. This session
+holds lanes C, D, F, G and keeps writing this file, folding in anything `sortiva-85`
+lands. Neither touches the other's worktree.
+
+## `T9.8` LANDED — onboarding, opportunities and content proved end to end. **M9 is closed.**
+
+**Merged as `fa14fcd` into `main`, two commits, full gate green** (nine of ten commands;
+`pnpm eval` red by design, unchanged). This is the M9 exit gate: five screens built
+across five separate cards (`T9.3`–`T9.7`) had each been verified only in isolation,
+against injected fixtures — this is the first time any of them ran together, in a real
+browser, against a real build.
+
+**"Playwright against staging" was not literally satisfiable** — the project has never
+been deployed — so the flows ran against `pnpm build` + `next start` fronted by the same
+fixture-backed mock server `T9.2`/`T9.5` already built, the same substitution those two
+cards made. Journalled, not silently substituted.
+
+**Two real production bugs found and fixed, neither catchable by anything in the gate
+before this card:**
+
+1. **Every authenticated screen 500'd in a production build.** The shell
+   (`apps/web/app/(app)/layout.tsx`, a Server Component) was passing a translate
+   *function* into `NotificationBell` (a Client Component) — React refuses to serialise
+   a function across that boundary, and Next answers the request with a 500 the instant
+   it tries. `pnpm build`, `typecheck`, `test` and `smoke:boot` all stayed green through
+   it (`smoke:boot` only ever asks for `/` and `/api/health`, both outside this layout),
+   and `next dev` cannot start at all (`R-DEV`) to have caught it that way either. This
+   bug was `T9.7`'s, shipped and merged by this integrator without anything in the gate
+   able to see it. Fixed by passing a plain language code instead, and having the client
+   component build its own translator.
+2. **The Opportunities drawer never re-read itself after its own actions.** Generating a
+   recommendation or marking a task applied posted successfully and then left the open
+   drawer showing exactly what it showed before the click, forever, until closed and
+   reopened by hand — because the refresh those actions triggered re-reads the *list*,
+   whose rows carry no recommendation or task detail. Fixed by re-fetching the open
+   drawer's own detail once its action settles.
+
+**Both fixes verified directly** (the diffs, not just the report): the layout change is
+the textbook-correct fix for a real Next.js App Router server/client serialisation
+error; the drawer fix is a straightforward missing re-read.
+
+**Files outside Lane F's strict directory list, same precedent `T9.5` already set:**
+`apps/web/e2e/**` and `playwright.config.ts` — the browser-flow harness itself.
+
+**Real-vendor evidence outstanding, unchanged:** Search Console's own OAuth+picker path
+is still only exercised via component tests and "Skip for now" in the browser flow — its
+real round trip has no credentials to run against, same as Shopify's.
+
+## `T4.0a` LANDED — a store page can now be recorded as gone (schema mini-wave)
+
+**Merged as `aabeea7` into `main`, two commits, full gate green.** The founder's
+answer to question 1 (see above), built the same day it was decided. `store_pages`
+gains one column, `status`, a new Postgres enum (`live`/`gone`, `NOT NULL DEFAULT
+'live'`) matching the shape the existing `store_page_type` enum already sets on the
+same table. **Migration only, exactly as scoped** — nothing writes `gone`, nothing
+reads the column, both are separate follow-up cards. Every existing row defaults to
+`live`, proved against a fresh database. Four new constraint tests, all passing
+against real Postgres, including that the column rejects any value outside `live`/
+`gone` and rejects null.
+
+**No lane-boundary concern** — this is a schema-wave card, the one kind allowed
+outside its author's own directories, and it touched only `packages/db`.
+
+## `T4.1` LANDED — the topic model and Gate 1 admission
+
+**Merged as `38bdb88` into `main`, three commits (one merge conflict, resolved —
+see below), full gate green.** M4 (the content engine) now has its first working
+piece: a topic can be evaluated against the five admission checks main §8.2 names
+(demand floor, winnability, intent/commercial relevance, substance, and the
+existing-target/cannibalization check via `T3.5`'s real contract, never
+recomputed) and come out as one of nine outcomes, each with a template-key reason
+card rather than rendered prose (invariant 8). The manual-add path runs the same
+gate against real data and writes real `topics`/`gate_decisions` rows, including
+minting a placeholder `opportunities` row so a manually-added topic satisfies
+`topics.opportunity_id NOT NULL` ahead of Lane C's real Opportunity Engine —
+zeroed impact/confidence, deliberately, so these rows are visibly not real scoring
+output once `T3.6`'s land.
+
+**A merge conflict, real and resolved, not auto-mergeable:** `packages/db/src/
+repositories/keywords.ts` — `T2.7` added `confirmAllKeywords`, `T4.1` added
+`findKeywordByTerm`, both non-overlapping functions in the same file. Kept both;
+verified no other file needed the same treatment (checked every other file `git
+status` listed as modified for stray conflict markers before committing).
+
+**One real bug this card's own integration test caught in itself, fixed in the
+same commit:** Gate 1's checks originally ran in the order main §8.2 lists them,
+which put substance-inventory before the existing-target check — a store with a
+strong existing match but a thin, newly-formed family came back "held, add more
+detail" for an article that, because a page already covers the intent, was never
+going to be written regardless. Reordered so existing-target runs first; a strong
+match now short-circuits before substance is even asked about.
+
+**A real, unresolved gap flagged for `T4.2` (which is itself audited before
+`T4.3` starts, per build plan §7) rather than guessed past:** nothing anywhere
+turns a merchant's typed topic title into the `QueryCluster` (search term +
+intent class + family mapping) both Gate 1 and the manual-add path need to run at
+all — the frozen `addTopicRequestSchema` collects only `{title, date, pin}`.
+`T4.1` took the cluster as an explicit input rather than inventing a resolution.
+Three shapes are on the table, each with a real cost (a keyword/family match,
+cheap but silently rejects anything that doesn't match; an LLM call, which
+invariant/§8.2 wants Gate 1 to stay "~free" of; or a UI change collecting family
+selection, which touches `packages/ui` and the frozen request schema) — **this
+needs a founder or integrator decision before `T4.2` can wire the real
+`POST /api/calendar/topics` route honestly.**
+
+**Also flagged, worth a founder's eyes but not blocking anything:** `gate_decisions
+.reason_user_facing` and `topics.why_line` are named as if they held a rendered
+sentence; they actually hold a template key only (per invariant 8, correctly), with
+interpolation params living in `scores_json` for `gate_decisions` and nowhere at all
+for `topics` — a topic-list why-line will render its static fallback with no numbers
+filled in until `topics` gains a params column in a future wave. Naming, not a defect.
+
+**Files outside Lane D's strict list:** `packages/db/src/repositories/*` — not
+lane-exclusive; other lanes (including `T3.5`) have already added repositories
+there. No migration.
+
+## The concurrent-load test flake, triangulated across four independent sessions
+
+**Worth recording in detail because it burned real time this run and the pattern is
+now unambiguous.** With four of this session's lane sessions plus `sortiva-85`'s
+running at once, `uptime` load averages reached 30 — well past the ~13 the previous
+run saw and called safe. Two consecutive `pnpm test` runs on the merged tree (after
+`T9.8`) each failed differently: the first with 8 real-looking assertion failures
+mixed into 45 "failed" files; the second with **every one of 2,614 individual tests
+passing** and only whole-suite `afterAll`/`beforeAll` hook timeouts (10s) against the
+shared local Postgres. **Two other sessions (`T4.0a`'s and `T4.1`'s, independently,
+unprompted) hit and reported the identical symptom** — different files each time,
+individual tests always passing, hook timeouts under load — and both correctly
+declined to chase it as a code defect, isolating their own new suites instead to
+prove those were sound. A third, later re-run with load eased (three concurrent
+sessions instead of five) came back clean: **2,644/2,644, exit 0.**
+
+**This is the documented trap in `docs/overnight-state.md`'s traps section, at a
+worse concurrency than it was written for.** No genuine regression was found
+underneath it this time — unlike the one precedent where re-running surfaced a real
+bug. Left unactioned, as before: belongs to whoever next touches
+`packages/db/src/testing.ts`, and is worse now than previously documented because
+this run ran five concurrent Postgres-backed sessions where the earlier note assumed
+four.
+
+## `R-PRIVACY` LANDED — the critical privacy finding from `T2.2`'s audit is fixed
+
+**Merged as `18e4781`, three commits, by `sortiva-85` directly** — the founder present
+in that session authorised and oversaw it, and that session gated and merged its own
+work, exactly as it told this one it would. **Already inside every gate this session
+ran from `T9.8` onward**: `18e4781` landed in the shared directory at 13:11, before
+this session's `T9.8` merge, so it is a first-parent ancestor of `main` here and every
+test count and gate result in the sections above already includes it — confirmed by
+`git merge-base --is-ancestor 18e4781 38bdb88` (`yes`) and by `sortiva-85`'s own
+independent gate of the same commit in `lane-b`, landing on the identical count
+(2,644 tests, 187 files, exit 0) this session reached separately.
+
+**What it fixes.** The Shopify webhook receiver stored every incoming message body
+verbatim, including the two privacy topics (`customers/redact`, `customers/data_
+request`) whose `customer` object carries a shopper's email and phone — so the row
+meant to prove "we hold nothing about your shoppers" was the row that disproved it,
+and nothing ever deleted it. **Read the full finding in "Audit findings, unactioned"
+above (`T2.2`'s audit, the CRITICAL entry) for what was wrong; this is the fix.**
+
+**The fix is an allowlist, not a cleanup.** `storableWebhookBody` keeps four named
+fields from a privacy request — store id, store domain, and the two order-id lists —
+and drops everything else, including `customer.id`, before the row is ever written.
+Every topic goes through the same call, so a privacy topic added later is covered
+without anyone remembering to extend a list. Invariant 4's own guard test — which
+could only ever see column names, and the breach was inside a JSONB blob named
+`payload` — now walks JSONB contents too, and is proved non-vacuous by planting a
+real `customers/redact` body, asserting the scan catches the shopper's data, then
+asserting the schema is clean only after removing it.
+
+**Verified by reverting the fix**, not just by asserting it: undoing the one-line
+receiver change turns exactly two tests red — the stored row read back out of a real
+database, not the reducing function tested in isolation.
+
+## A hazard this run surfaced: two sessions sharing one physical directory for `main`
+
+**Worth carrying forward explicitly, because it is a sharper version of the
+"gate flakes under load" trap and it is not the same failure.** `sortiva-85` and this
+session both write to `/Users/balazs/Desktop/sortiva` for `main`-branch work — not two
+worktrees of the same branch (git would refuse that), but the literal same directory,
+because `main` can only be checked out in one place and both sessions needed to be
+"the integrator" for different pieces of the same run. `sortiva-85` ran `pnpm test`
+there at 13:23 and got 43 failed suites — not a flake: it caught this session's
+`packages/db/src/repositories/keywords.ts` **mid-conflict-resolution, with literal
+`<<<<<<<`/`=======`/`>>>>>>>` markers still in the file**, which `esbuild` cannot
+parse, which fails every suite that transitively imports it. `sortiva-85` correctly
+did not report this as a code defect and instead re-gated from a fast-forwarded
+`lane-b`, isolated from the shared directory.
+
+**The lesson, stated plainly for whoever runs a two-integrator night again:** a gate
+result from a shared `main` directory is only trustworthy if nothing else could be
+mid-write there at that instant, and neither session can see the other's in-progress
+edits to know. **The safer pattern, adopted for the rest of this run:** gate from a
+lane worktree fast-forwarded to `main`'s tip rather than the shared directory itself,
+whenever another session might plausibly be active in it — the shared directory is
+still where merges and commits happen, but the verifying `pnpm test`/`build`/etc.
+calls are safer run from an isolated worktree nobody else touches. This is distinct
+from the Postgres-contention flake above (confirmed separately, by two sessions
+running in their own isolated worktrees hitting the identical hook-timeout symptom at
+the same time) — the two hazards compound under concurrency but have different causes
+and different fixes.
+
+## What `T4.0a` leaves open, restated by `sortiva-85` and worth keeping visible
+
+`store_pages.status` exists and defaults every row to `live`. **Nothing writes `gone`,
+and `T3.5`'s existing-target check does not yet skip a page marked gone** — which is
+the entire reason the column exists, per the founder's own decision. Both are named,
+explicit follow-ups from `T4.0a`'s own report, not new information — restated here
+because `sortiva-85` flagged it independently and it is Lane C territory, currently
+held by this session's `T3.6` build. Not picked up yet; no card in the plan names
+either half, the same shape as `store_pages.intent_class`'s open ownership above.
