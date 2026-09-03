@@ -768,24 +768,25 @@ behaviour of that mechanism, but worth knowing at merge time.
 
 ## Right now
 
-**Status at 2026-09-03, 13:30 — a second session (`sortiva-85`, the founder present in
-it) joined mid-run at 12:40.** `main` is at `38bdb88`, clean, and already contains
-`sortiva-85`'s `R-PRIVACY` merge as an ancestor. Landed this run, in order: the `T3.5`
-audit (read-only), `T9.7` (lane F), `T4.0` (schema wave 3, lane D — **M4 unblocked**),
-`T2.7` (lane B — **M2 closed**), three founder decisions + `R-PRIVACY` authorization
-(`sortiva-85`, 12:40), `T3.6` dispatched (lane C, unblocked by the threshold answer),
-`T4.0a` (schema mini-wave, lane G), `T4.1` (topic model & Gate 1, lane D),
-`R-PRIVACY` (lane B, `sortiva-85`). Tests **2,644**, up from 2,513 at this run's start.
-Full gate green throughout (nine of ten commands; `pnpm eval` red by design,
-unchanged all run) — **read "A hazard this run surfaced" below before trusting any
-gate run in the shared directory** if picking this up while both sessions are active.
+**Status at 2026-09-03, 14:55 — a second session (`sortiva-85`, the founder present in
+it) has been working alongside this one since 12:40.** `main` is at `1149bcd`, clean.
+Landed this run, in order: the `T3.5` audit, `T9.7`, `T4.0` (**M4 unblocked**), `T2.7`
+(**M2 closed**), three founder decisions + `R-PRIVACY` authorization, `R-PRIVACY`
+itself (`sortiva-85`), `T4.0a`, `T4.1`, `T3.6` + its scheduled audit (one HIGH finding,
+held), the founder's relayed answer on manual-add cluster resolution, `T4.2`.
+Tests **2,774**, up from 2,513 at this run's start. Full gate green throughout (nine of
+ten commands; `pnpm eval` red by design) — **`T4.2`'s own merge required fixing two
+real defects the gate found (a duplicate event export, and a production build failure
+across every `/api/calendar` route) — read that section before assuming a green build
+means every route works; `smoke:boot` still only checks `/` and `/api/health`.**
 
-**Running now:** `T3.6` (lane C, opportunity scoring — the card the founder's
-threshold answer unblocked). **Idle, correctly, with no invented work:** lane D (`T4.1`
-landed; `T4.2` is next but read its own section above first — it inherits a real,
-unresolved gap `T4.1` flagged), lane F (M9 is closed, nothing further in the plan),
-lane G (M8 is closed, `T4.0a` was its only extra work). **`sortiva-85` is idle too**,
-last message asked this session what to take next.
+**Running now:** the `T3.6` audit landed (see the `T3.5`/`T3.6` audit entries above —
+`T3.7` is now unblocked in principle, but see the note below). **Idle, correctly:**
+lane C (`T3.6` + its audit both landed; `T3.7` needs `T4.2`'s `TopicScheduler`, which
+just landed too — ready to dispatch), lane F (M9 closed), lane G (M8 + `T4.0a` closed).
+**`sortiva-85`**: last known state was idle, offered to take `T3.7`/other work — this
+session has not yet replied with the new landings; do that before dispatching `T3.7`
+to avoid a collision.
 
 **Everything from `## Picking this up again` down to `## This run resumed 2026-09-03`
 describes the *previous* run's end state (2026-09-03, 08:10) and is kept as history.**
