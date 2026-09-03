@@ -3962,3 +3962,74 @@ it — only `smoke:dev` will.
 2. **The two Playwright projects pointing at `pnpm dev` still will not run locally** until
    (1) is settled. `R-DEV`'s own done-when named them; **that part is not met and is not
    claimed to be.**
+
+## `T4.4` LANDED — Gate 3: the free checks, then a blind judge, then exactly one repair
+
+**Merged as `ba01070`, three commits, full gate green — now eleven commands plus the
+documented red.** Tests **2,967**, up from 2,890. **This card is on the scheduled-audit
+list (build plan §7) and its audit must run before `T4.5` starts.**
+
+Before this card the writer produced a draft and nothing looked at it. Now: **the
+ordering is the substance.** Every free check runs first — structural validity (ragged
+tables, duplicate headings, skipped heading levels, dead links, unresolvable product
+placeholders, unclosed markup, our own internal vocabulary leaking into the prose),
+citations, assertion strength, the no-literal-prices rule, length, internal links,
+keyword density, near-duplication against both the store's own earlier articles and the
+pages currently ranking. Then the contradiction pass, which is free until it finds a
+genuine candidate: numbers, thresholds, recommendations and absolutes are extracted,
+grouped by subject and required to agree arithmetically, and **only real disagreements
+cost a model call.** Only then the judge.
+
+**The citation check scans sentences itself rather than trusting the writer's markers**,
+so a forgotten citation fails rather than passes — which is the whole point of the rule.
+Arithmetic claims are **re-derived from the pack's own numbers**, not re-judged.
+
+**The judge is blind and cannot be cheapened**: its request is built from scratch each
+call (draft, store facts, top-3 ranking pages), carries none of the writer's
+conversation, and names no model, so it cannot run on the cheap tier. Six criteria
+including the new *ecommerce usefulness*. **Gate on the minimum, never the average.**
+
+**Verified directly at merge, not taken from the report** — all three call-count
+assertions run and pass: a draft failing structural validity buys **zero** judge calls
+(and an empty request log); a draft failing only information gain is rejected with
+**zero** repair calls, per the founder's own exception; a second regrade failure ends at
+`{judge: 2, repair: 1}` with no third loop. Also confirmed passing: judge blindness
+(before *and* after a repair), the 5/5/5/1/5 draft failing on the minimum, and the
+contradiction pair being caught **and** correctly passed when the model rules the two
+statements differently scoped.
+
+**One merge-time fix needed, and it is a known trap**: `packages/llm` gained a
+`@sortiva/rules` dependency, so `pnpm typecheck` failed on the merged tree until
+`pnpm install` linked it. Declared in `package.json`, not yet linked in this worktree's
+`node_modules` — the documented lockfile hazard. No code change; `pnpm install` and it
+was clean.
+
+### A decision this card needs the founder for, and it is cheaper to answer now
+
+**An overridden article lands in `draft` and rejoins the ordinary delivery path.** It has
+to leave `rejected` or nothing will ever deliver it, and there is no state meaning
+"rejected but publish it anyway". The card chose `draft` over `in_review` on the grounds
+that the merchant already gave the deliberate confirmation §8.6 requires, and the spec
+says only that an override is logged and flagged. **This is the interface `T5.1`/`T5.2`
+will build against** — if an override should still pass through draft review when that
+setting is on, this is the line to change, and changing it now is far cheaper than after
+publishing is built on it.
+
+### Two gaps it surfaced rather than papered over
+
+- **The word-list checks are English-only.** A non-English store gets the shape-based
+  checks but not the vocabulary ones — a real, user-invisible weakening, the same shape
+  as the filler-word gap `T3.3` already recorded.
+- **Gate 1's and Gate 2's reason keys have no copy anywhere in the repo.** So main
+  §8.6's "plain-language reason" is currently a key rendered on a screen. Pre-existing,
+  not this card's doing, and not fixed by it.
+
+**Also now unblocked but out of scope**: `JudgeOutcomeCounter`, §14.5's judge-fail-rate
+auto-trip, whose stub said "once a draft's gate decision is stored" — which is true as
+of this card. The kill switch itself was not in scope.
+
+**Files outside Lane D's directories**, all precedented: `packages/db/src/repositories`,
+`packages/rules` (six new unsigned thresholds — invariant 9 requires them there),
+`packages/llm` (prompts, the `judge.eval` set, and the new dependency),
+`packages/ui/strings/en.json` (copy rule). No migration. No API route, so no
+composition-root trap.
