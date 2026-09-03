@@ -3574,3 +3574,97 @@ rather than crashing, until Lane F writes the sentences.
 `DbExistingTargetCheck` pattern) but isn't wired into any job yet — nothing consumes it
 before Lane D's `T4.2`/`T4.6`, which is exactly where this run's `T4.2` build is headed
 next.
+
+## `T4.2` LANDED — the calendar, `TopicScheduler`, and the real manual-add model call. **A production build defect from this merge was found and fixed — read that section, not just the card summary.**
+
+**Merged as `196346a` into `main`, two commits, clean auto-merge — then two more real
+defects found by the gate itself and fixed in `a563131`, full gate green after.** Tests
+**2,774**, up from 2,713.
+
+**Mid-card plan change, redirected live:** this card started under instructions to park
+the manual-add cluster-resolution gap `T4.1` flagged. Partway through, the founder's
+actual answer was relayed by `sortiva-85` (see the `FOUNDER` section above) — this
+session forwarded it to the running build mid-card. **Built for real, nothing left
+parked**: one model call (Haiku, `topic-classify.v1`, invariant 25's wrapper) turns a
+merchant's typed title into a `QueryCluster`, with the two sub-decisions the founder
+left to the card — model/prompt choice, and failure handling — made and journalled:
+a failed call writes nothing and answers with Appendix A's canonical outage copy;
+an invented family id is filtered out, never trusted.
+
+**Rest of the card's scope, all built**: guarded topic-state transitions (veto/move/
+swap/pin), lock semantics (a veto after dequeue cancels publication, discards the
+draft), `TopicScheduler` filled for real (placement only, deliberately not Gate 1 —
+see its own journal entry), `/api/calendar` routes matching the frozen contract, and
+the two calendar PostHog events main §14.7 actually names.
+
+### Two real defects found by the gate, neither visible to any lane on its own branch
+
+**1. An ambiguous export, from two cards that couldn't have seen each other's file.**
+`packages/core/src/opportunities/events.ts` (`T3.6`, merged first) and
+`packages/core/src/calendar/events.ts` (`T4.2`) both declared
+`OPPORTUNITY_STATUS_CHANGED_EVENT` with the identical string value — a genuine
+duplicate, not a naming collision over different things. `packages/core/src/index.ts`'s
+barrel re-exports both, so `pnpm typecheck` failed on the merged tree with "Module
+'./calendar' has already exported a member named 'OPPORTUNITY_STATUS_CHANGED_EVENT'."
+**Fixed by deleting the duplicate** (`calendar/events.ts`, now empty of purpose) and
+pointing `veto-topic.ts`'s emission at `T3.6`'s own, more complete builder function via
+the barrel it already imports from — no behaviour change, since both built the exact
+same event shape.
+
+**2. `pnpm build` failed collecting page data for every `/api/calendar/**` route**,
+with `Error: DATABASE_URL is not set` — a production-build-breaking defect, the same
+*family* of bug `T-BOOT` fixed for `packages/rules` months ago, now found in this
+card's own composition roots. **Root cause, traced by bisection** (isolating routes one
+at a time, not guessed): `calendarDeps()`, `topicMutationDeps()` and `addTopicDeps()`
+all call `db()` — which opens a real Postgres connection pool — **synchronously**, and
+each was invoked **at module scope** in its `route.ts` file
+(`export const GET = withAccount(makeGetCalendarHandler(calendarDeps()))`), so it ran
+during Next's build-time page-data collection, before the runtime environment is
+necessarily available in that context — not during a real request. **Every other
+composition root in this codebase already defers this** (`packages/db/src/stores/
+keywords.ts`'s own `database()` closure calls `db()` lazily, only when a store method
+actually runs) — these five calendar routes were the first to call `db()` inline at a
+route's own module scope rather than deferring it.
+
+**Fixed by deferring each `xDeps()` call into the request-handler closure** in all five
+`route.ts` files, matching the codebase's existing pattern, with no interface or test
+changes needed. **Verified beyond the build succeeding**: bisected which specific route
+broke it (moving directories to `/tmp` and back), confirmed the fix with a clean
+`pnpm build`, then started the actual built app with a throwaway `ENCRYPTION_MASTER_KEY`
+(the same accommodation `scripts/smoke-boot.mjs` already makes) and confirmed
+`GET /api/calendar` and `POST /api/calendar/topics/{id}/move` answer **401**
+(unauthenticated — correct), not 500.
+
+**Why this matters beyond the fix itself**: `pnpm smoke:boot` only ever asks `/` and
+`/api/health` (outside any calendar route), so this would have shipped a production
+build where every calendar API request 500s, undetected by any existing gate command,
+exactly the shape `T-BOOT` and `T9.8`'s layout-serialisation bug both already proved
+this codebase is vulnerable to. **A candidate pattern worth a founder or integrator
+decision, not applied here**: a gate step that starts the built app and hits every
+route in the frozen contract with an unauthenticated request, expecting 401/403 rather
+than 500 — `smoke:boot` proves the app *starts*; nothing proves every *route* survives
+being loaded.
+
+### One real gap flagged, not fixed — matters for `T3.7`/`T4.6`, not this card
+
+**The `Opportunity` contract has no field for a topic's intent class or family ids.**
+`topics.intent_class` is `NOT NULL` and `topics.family_ids` defaults to `'{}'`, but the
+frozen `Opportunity` contract carries neither, and its `EvidenceFact.value` type
+(`string | number`) cannot hold an array at all. `DbTopicScheduler` works around it
+today: intent class is read from an `intent_class` evidence-fact convention Gate 1
+already writes, throwing rather than guessing if that fact is missing; `familyIds` has
+no such fallback and is written as `[]` — schema-legal, not silently wrong (an article
+with no mapped families is a problem `T4.3` will hit and can surface loudly), but
+genuinely incomplete. **Whoever builds `T3.7`'s onboarding seed or `T4.6`'s
+replenishment scoring — the two real callers of `TopicScheduler.schedule` — will hit
+this the first time a real, non-fixture `Opportunity` reaches it**, and needs either
+the frozen contract re-opened (an integrator decision) or a documented evidence-fact
+convention for both fields from Lane C.
+
+**Files outside Lane D's strict directories**: `packages/core/src/contracts/llm.ts`
+and `packages/llm/src/models.ts`/`prompts/` (the new `topic_classify` call type — purely
+additive, verified: one new enum value, one new tier mapping, no existing behaviour
+touched); `eslint.config.mjs` (two new composition-root exemptions, identical shape to
+existing entries, flagged in the report as required). No migration.
+
+**Next in lane D: `T4.3`** (evidence pack, Gate 2, article construction) — not started.
