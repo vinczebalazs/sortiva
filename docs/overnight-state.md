@@ -817,11 +817,14 @@ in full before the merge was accepted.
 | Lane | Card | Notes |
 |---|---|---|
 | **D** | `T5.1` — export mode & publish-hour scheduling | Carries the founder's publish-day answer and the MEDIUM day-skew fix. Told to check that the known-red chaos scenario still fails for its own reason, since it touches local midnight. |
-| **E** | `R-INTENTGAP-JOB` | `T6.2` landed and merged at 00:45 — **read its own section at the end of this file, including the two integrator actions held.** Tests **3,140**. |
-| **audit** | `T6.2`'s scheduled audit | Read-only, fresh session, pinned to `c46812d~1..6be6f95` so later work on the branch cannot confuse it. Build plan §7 requires it before `T6.3`. |
+| **C** | `R-INTENTGAP-SCAN` | The free half of the founder's split: recompute the key, read what the pass already bought, derive the signal. **Told to stop and report rather than reach for a table** if the key cannot be recomputed. |
 
-**Idle:** lanes B, C, F and G — B, F and G have no milestone work left, and C's only
-available card (`R-INTENTGAP-SCAN`) waits on Lane E's job half.
+**Landed since:** `T6.2` (00:45, tests 3,140), its scheduled audit (**one CRITICAL, four
+HIGH — read the audit section**), and `R-INTENTGAP-JOB` (01:05, tests **3,146**). Gate green
+on the merged tree after each.
+
+**Idle:** lane E — **`T6.3` is stopped by its own audit**, see below. Lanes B, F and G have no
+milestone work left.
 
 ### What `T6.1` landed unwired, and why that is recorded rather than hidden
 
@@ -838,8 +841,9 @@ The two cards above close it.
 Lane D: `T5.1` → `T5.2` → **its scheduled audit** → `T5.3`, **which stops** — its whole input
 is the `CatalogEvents` change stream, whose reader the founder deliberately left unwired, to
 be judged together with switching the recurring schedule on.
-Lane E: `T6.2` → **its scheduled audit** → `R-INTENTGAP-JOB` → `T6.3`.
-Lane C: `R-INTENTGAP-SCAN`, once the job half has merged.
+Lane E: `T6.2` → its audit → `R-INTENTGAP-JOB` all done. **`T6.3` is stopped**, so the lane
+is idle and correctly so.
+Lane C: `R-INTENTGAP-SCAN`, dispatched 01:10.
 Then M10's exit gates, which need everything above.
 
 **Audits are read-only and their findings are held for the founder.** The only permitted
@@ -4808,3 +4812,43 @@ daily allowance *permanently* and lock those opportunities out of retry for ever
 refusal or crash mid-generation does the same. Wiring it tonight would have turned a
 theoretical hole into a reachable one.
 
+
+## `R-INTENTGAP-JOB` LANDED — the paid page comparison is now a job, and it is the **second** registration waiting on one line from the integrator
+
+Merged as `ff826c6`, gate green on the merged tree: tests **3,146**, nine of eleven commands,
+the two documented reds and nothing else. Purely additive, entirely inside Lane E's own
+directory — verified by diffstat, not by report.
+
+**What it does.** The comparison `T6.1` built now runs as a scheduled pass of its own, on the
+store's **own Sunday** — the day before the weekly scan that reads what it bought, and early
+enough that a comparison is still usable when the scan runs. An hourly sweep matches stores
+whose local clock has turned Sunday and queues one job each. The pass takes the store's lock,
+derives its key from the store plus that local date (never at random), returns the stored
+answer if it already ran, and walks the shortlist buying what the daily allowance permits.
+
+**Two details worth keeping.** A pass stopped by the allowance is **deliberately not recorded
+as finished**, so the pages below the cut-off stay reachable when it resets. And there is no
+cursor — the request cache is the checkpoint, and the lane journalled why a second
+"this page is done" marker would be actively harmful rather than merely redundant. The
+kill-and-resume test proves it: the resumed pass makes exactly one model call and buys no
+second results page.
+
+**Its own honest gap, and it is the same gap twice now.** `registerIntentGapTasks` is called
+by nothing, and `intent_gap_scan_weekly` is in no crontab — **both on instruction.** The lane
+was asked directly whether a schedule entry is needed for the card to mean anything and
+answered yes, plainly. So there are now **two unwired registrations waiting on the integrator**
+(this and `T6.2`'s), and they interact: the worker refuses to start on a crontab entry whose
+handler is not registered, so registration must land first or with the schedule, never after.
+
+**One thing the integrator must resolve before wiring either.** The registration line needs an
+Anthropic client, and the generation lane memoises its own inside
+`apps/web/app/api/articles/_lib/config.ts` without exporting it. The lane deliberately did
+**not** build a second client in its own config, because a second client in one process is
+what that file's own comment warns against. So the integrator either exports that factory or
+builds one client in the composition root and hands it to both.
+
+**A gate note, recorded because it will recur.** The lane's first `pnpm test` reported
+250/250 files and 3,146/3,146 tests passing but exited non-zero on a Postgres `57P01`
+teardown error in **another lane's** account-deletion test — a throwaway database dropped with
+a connection still open. Immediate re-run clean. This is the second shape of the known
+concurrent-load flake and it belongs to whoever next touches `packages/db/src/testing.ts`.
