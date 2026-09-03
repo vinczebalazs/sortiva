@@ -37,3 +37,19 @@ export {
   resetOptimizeTaskRegistration,
   type OptimizeTaskDeps,
 } from './tasks'
+export {
+  INTENT_GAP_PASS_STEP,
+  runIntentGapPassForAccount,
+  type IntentGapPassDeps,
+  type IntentGapPassOutcome,
+} from './intent-gap-pass'
+export {
+  INTENT_GAP_ACCOUNT_TASK,
+  INTENT_GAP_SWEEP_TASK,
+  enqueueIntentGapPass,
+  registerIntentGapTasks,
+  resetIntentGapTaskRegistration,
+  sweepIntentGapPasses,
+  type IntentGapAccountPayload,
+  type IntentGapTaskDeps,
+} from './intent-gap-tasks'
