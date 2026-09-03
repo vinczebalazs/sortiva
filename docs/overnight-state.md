@@ -817,7 +817,10 @@ in full before the merge was accepted.
 | Lane | Card | Notes |
 |---|---|---|
 | **D** | `T5.2` — auto-publish: second grant, blog target, two-phase publish | Dispatched 01:20. Invariants 19 and 21 are its done-when. **A fresh-session audit is scheduled after it.** Told explicitly not to repeat `T5.1`'s edit of the integrator-resolved files. |
-| **C** | `R-INTENTGAP-SCAN` | The free half of the founder's split: recompute the key, read what the pass already bought, derive the signal. **Told to stop and report rather than reach for a table** if the key cannot be recomputed. |
+
+**Idle and correctly so:** lane C (`R-INTENTGAP-SCAN` landed 01:25; M3 is closed and it has
+nothing else), lane E (`T6.3` stopped by its own audit), lanes B, F and G (no milestone work
+left).
 
 **Landed since:** `T6.2` (00:45, tests 3,140), its scheduled audit (**one CRITICAL, four
 HIGH — read the audit section**), and `R-INTENTGAP-JOB` (01:05, tests **3,146**). Gate green
@@ -4921,3 +4924,60 @@ already expects, so the fix is one line in Lane F's `ArticlesClient.tsx`. The si
 either. That is now **two** cards whose routes the contract does not know about (`T6.2`'s four
 and this one), and `pnpm contracts:check` still passes, because it compares schemas to schemas
 and never to the routes on disk.
+
+## `R-INTENTGAP-SCAN` LANDED — the founder's split is closed, and it flagged a contradiction about what a merchant is told
+
+Merged as `c70c1bd`, gate green on the merged tree: tests **3,205**, nine of eleven, the two
+documented reds and nothing else. No migration, and **no change to `signals.config.yaml`, so
+no `rules_version` churn** for any other lane.
+
+**What it does.** The weekly scan now produces the *existing-page intent gap* signal — "this
+page of yours ranks, but answers less than the pages ranking above it" — **and buys nothing
+to do it.** It rebuilds the address the Sunday pass filed its answer under, out of three rows
+it can read for free: the page's own change fingerprint, the identity of the results page that
+was read, and when it was read. No stored answer means the page is passed over. **The escape
+hatch was not needed** — the key was recomputable, so no table and nothing outside the lane.
+
+**Measured, not asserted:** the end-to-end case checks the search provider recorded **zero**
+calls. And a separate guard file forbids the scan from ever acquiring a page fetcher, a model
+client, or the paid comparison itself — **and it asserts up front that it found files to
+check**, so it fails loudly rather than passing on an empty list. That is the non-vacuity
+shape the `T6.2` audit went looking for, applied without being asked.
+
+### One judgement past the card's wording, flagged by the lane and kept
+
+**A page nobody compared keeps its opportunity.** The type list the lane had to extend drives
+two things: which signals are evaluated, and the sweep that closes an opportunity whose
+evidence a scan no longer finds. Extending it literally would mean: the paying pass is stopped
+by the store's daily allowance → no comparison exists → **the merchant's opportunity silently
+disappears**, and returns the following week as a *new* row with a second "we found something"
+notification. Not having compared a page is not evidence the gap closed. **Reversing this is
+deleting one line**, and the lane said so.
+
+### FLAGGED, held for the founder — two statements about this signal disagree, and both are visible
+
+`signals.config.yaml` records this signal as **not** needing Search Console (`needs_gsc:
+false`), and that flag is exactly what the **Limited Intelligence badge** reads to tell a
+merchant which signals are unavailable to them. But both halves built here only work for a
+store with Search Console connected, because the shortlist is built from Google's own record
+of what it showed. **So today the badge does not name this signal while the scan does not
+evaluate it** — a store without Search Console is quietly missing something nothing tells them
+about.
+
+Main §7.11's own list also omits Intent Gap, and §7.3 gives it a **second qualifying route**
+that needs no Search Console at all — being the store's existing target for a keyword
+competitors rank for — **which neither half implements.** Not resolved, correctly: flipping
+the flag changes `rules_version` for every lane and changes what a merchant is told.
+
+### Both halves are live in code and dark in production, and that is expected
+
+The scan half runs for every store every Monday from this merge, because the weekly scan is
+already registered and already in the crontab. **The paying half is registered nowhere and
+scheduled nowhere**, so the scan will find nothing to read until the integrator wires it —
+which is the second of the two held registrations described elsewhere in this file.
+
+**One more parked item.** If the pass were wired today, the opportunity card's why-line would
+render the generic "we can't show the reason" wording, because this signal has no sentence in
+the copy catalogue. Pre-existing and shared with other live signal types, the renderer
+degrades honestly rather than showing a raw key, and inventing merchant-facing wording is not
+a lane's to do.
