@@ -12,6 +12,7 @@ import type { PublishTaskDeps } from '@sortiva/jobs/publish/tasks'
 import type { ReplenishmentTaskDeps } from '@sortiva/jobs/generation/replenish-tasks'
 import { DbOpportunitySource } from '@sortiva/jobs/scan/opportunity-source'
 import { DbNotificationEmitter } from '@sortiva/jobs/notify/emitter'
+import type { DeliveryDeps } from './delivery'
 import type { ReviewDeps } from './review'
 
 /**
@@ -61,6 +62,11 @@ function generationSeoProvider(): SeoDataProvider {
 }
 
 export function reviewDeps(): ReviewDeps {
+  return { db: db() }
+}
+
+/** What the download and the published-address confirm are built from: the database, and nothing else. */
+export function deliveryDeps(): DeliveryDeps {
   return { db: db() }
 }
 
