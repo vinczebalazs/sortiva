@@ -12,6 +12,7 @@ import { runStep } from '../runtime/runStep'
 // types. The cycle is safe because neither side calls the other while its module
 // is still evaluating: this file only lists the scenario in an array, and the
 // scenario only uses `WorkerKilled` inside functions.
+import { publishKilledBetweenExecuteAndConfirm } from './auto-publish.scenario'
 import { catalogSyncKilledMidWalk } from './catalog-sync.scenario'
 import { distillKilledMidBatch } from './distill.scenario'
 import { familyGroupKilledAfterCommit } from './family-group.scenario'
@@ -439,4 +440,10 @@ export const CHAOS_SCENARIOS: readonly ChaosScenario[] = [
   // yesterday should become. See DECISIONS 2026-09-03 T4.6.
   generationCycleKilledSameDay,
   generationCycleKilledAcrossMidnight,
+  // T5.2: the one main §14.3.9 names outright — killed between putting the
+  // article on the merchant's shop and recording that we did. It is the only
+  // interruption in the product that can cost a merchant something they cannot
+  // take back, so the assertion is a count on the shop itself: exactly one
+  // article, however many times the worker died.
+  publishKilledBetweenExecuteAndConfirm,
 ]

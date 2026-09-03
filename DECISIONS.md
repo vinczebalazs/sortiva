@@ -3561,3 +3561,107 @@ Decision: as the card instructs, the intent-gap read runs inside the same branch
 Why: the branch is right in practice. A page reaches the shortlist by sitting between positions 4 and 20 for one of the store's query clusters, which is Google's own record of what it showed; and the pass that buys the comparisons only sweeps stores that have Search Console connected, so a Limited Intelligence store has nothing stored to read anyway. But it leaves two statements about the same signal disagreeing, and both are visible: `needs_gsc` is what the Opportunities screen's *Limited Intelligence* badge reads to name which signals are unavailable, so today the badge does not name this one while the scan does not evaluate it. Main §7.11's own list of what stops without Search Console also omits Intent Gap, while main §7.3 gives it a second qualifying route — being the store's existing target for a keyword competitors rank for — which needs no Search Console at all and which neither half implements today (the paying pass passes no competitor-gap targets). **Not resolved here** because flipping `needs_gsc` changes `rules_version` for every lane and changes what a merchant is told, and building the second route is new work the card does not ask for. Integrator/founder call: either flip the flag so the badge tells the truth, or wire the competitor-gap route on both sides so the flag stays true.
 Nearest spec: main §7.3 (the Intent Gap row's two qualifying routes), §7.11 (Limited Intelligence), Appendix A (the badge copy); `packages/core/src/signals/limited-intelligence.ts`; invariant 9.
 Class (filled by audit):
+
+## 2026-09-04 — T5.2 — The marker we write onto a merchant's shop names the article, not the revision
+Decision: every post Sortiva makes carries `sortiva-<article id>` in a Shopify metafield **and** as a tag, and that string never changes when the article is later revised. Our own claim rows (`publish_intents.article_external_id`) do carry a revision suffix — `sortiva-<id>#r2` — and that suffix never leaves the database.
+Why: the marker exists so that a worker which died mid-publish can ask the shop "is my post already there?" instead of guessing. That question is about the *article*, so a marker that changed per revision would make the shop unsearchable for exactly the thing we needed to find. The revision still needs a name of its own, because the table's unique index is what stops two workers publishing the same thing and a confirmed first claim would otherwise block every later repair — so the revision lives in the claim's name, where only we read it. The tag duplicates the metafield because a tag travels inside the ordinary article-list response, and finding the same value in a metafield would cost one extra request per article on a blog that may hold hundreds; it is also the fallback for a store where the metafield write is refused.
+Consequence: the tag is visible to the merchant in Shopify's admin, on every article we post.
+Nearest spec: main §14.3.7 steps 2 and 5; CLAUDE.md invariant 19.
+Class (filled by audit):
+
+## 2026-09-04 — T5.2 — How many times recovery has been tried is counted from the claim's age, not from a column
+Decision: `recoveryDecision` in `packages/core/src/publish/intent.ts` decides "wait / adopt / re-send / give up" from two facts only — how old the unconfirmed claim is, and whether the shop already carries our marker. Giving up happens at 25 minutes.
+Why: main §14.3.7 says the sweep runs every 5 minutes, first looks at a claim 10 minutes old, and abandons after 3 failed recoveries. Under that cadence "three failures" and "twenty-five minutes old" are the same moment, and `publish_intents` has no column for an attempt counter — a feature card may not add a migration. Deriving it also has a property a counter does not: it cannot drift, because there is no write to lose.
+What it costs: if the sweep's cadence is ever changed, the number of attempts before giving up changes with it. The three constants are named together in one file so that is visible rather than buried.
+What would close it: an `attempts` column on `publish_intents`, in a schema wave.
+Nearest spec: main §14.3.7 step 4; main §13 `publish_intents`.
+Class (filled by audit):
+
+## 2026-09-04 — T5.2 — Auto-publish is refused in the database, not only in the API
+Decision: `setDeliveryMode(db, scope, 'auto')` is an `INSERT … SELECT` whose `WHERE` requires the store to have granted `write_content` **and** to have named a target blog. With neither, no row is inserted and no conflict update runs, so the switch does not move. Switching back to export is never guarded.
+Why: main §9.5 says auto-publish cannot be enabled without a target blog resolved, and invariant 21 makes read and write two separate consents. A store left in auto-publish with nothing to post to would fail silently every morning at its publish hour with nothing the merchant could do about it, so this is a property worth holding in the data rather than in one code path — the same shape invariant 5 uses for the competitor cap. Turning it *off* is unguarded because withdrawing consent has to work under every condition, including a connection that is already broken.
+Nearest spec: main §9.5; CLAUDE.md invariant 21.
+Class (filled by audit):
+
+## 2026-09-04 — T5.2 — An article is recorded as published only after the shop confirms the post
+Decision: the two-phase publish writes the claim row first and leaves the article in `draft`; the article moves to `published` in step 3, once Shopify has answered with an article id. A crash between the post and the record leaves an article that still reads as undelivered, and the five-minute recovery sweep moves it.
+Why: main §14.3.7 step 1 says the claim is inserted "in the same transaction that marks the article publishing" — and there is no `publishing` value in the `article_state` enum, nor may a feature card add one. Of the two available readings, marking it `published` before the post would tell the merchant something is on their site during exactly the window when a crash may have left it nowhere. The claim row is itself the durable "this publication is in flight" marker that a second worker collides with, so nothing is lost by leaving the article alone until there is something true to record.
+Consequence: for up to fifteen minutes after a crash (ten minutes' grace plus one sweep) a published article shows in the app as still waiting. It is never the other way round.
+Nearest spec: main §14.3.7; main §13 `articles`, `publish_intents`; CLAUDE.md invariant 19.
+Class (filled by audit):
+
+## 2026-09-04 — T5.2 — A republication is re-sent rather than looked up, and a first publication is looked up rather than re-sent
+Decision: the recovery sweep asks the shop "is my post already there?" only for a **first** publication. For a revision it simply re-issues the update, because replacing an article's contents with the same contents produces the same article. Neither path can create: an update carries the remote id or does not happen.
+Why: main §14.3.7 step 4 describes the marker lookup for the create case, and step 5 says updates use "the same protocol" conditional on the stored remote id. Taken literally, a marker lookup on an update answers a question that does not decide anything — the article is found either way, because it was found when it was first published — so the decision has to come from the stored id, which is what step 5 actually says. Re-issuing is safe in a way re-creating never is.
+Consequence: a revision that fails repeatedly is retried by each sweep until it ages out at 25 minutes, where a first publication is retried at most three times. Both end in the dead-letter queue.
+Nearest spec: main §14.3.7 steps 4 and 5; CLAUDE.md invariant 19.
+Class (filled by audit):
+
+## 2026-09-04 — T5.2 — A publish blocked by a missing product raises the bell, because the repair queue does not exist yet
+Decision: when an article names a product the store no longer has, the publish fails, nothing is claimed, nothing is posted, and a `repair_needed` notification is emitted, deduplicated on the article and the reason.
+Why: `docs/content-pointers.md` §9 and the card both say the publish fails and "a repair is raised". There is no repairs table anywhere in the schema — the word appears only as `accounts.auto_repair` and two enum values — and it arrives with `T5.3`, which owns the repair queue and the export-account action card. The notification type, its copy and its email template all exist and are tested. So the merchant is told; what to *do* about it is `T5.3`'s. Doing nothing at all would leave an article that silently never appears, which is the worse of the two.
+What it needs: `T5.3` to route this into the repair queue rather than only the bell.
+Nearest spec: `docs/content-pointers.md` §9; main §14.1; tech §1 (notifications are append-only, unique on `(account_id, type, dedupe_key)`).
+Class (filled by audit):
+
+## 2026-09-04 — T5.2 — The write grant and the blog picker are served at `/api/publish/*`, not at the addresses the frozen contract names for them
+Decision: the four routes that turn auto-publish on live under `apps/web/app/api/publish/` — this lane's own directory — as `POST /api/publish/grant/start`, `GET /api/publish/grant/callback`, `GET /api/publish/blogs`, `POST /api/publish/target` and `POST /api/publish/mode`. None of them appears in `packages/core/src/api/routes.ts`.
+Why: the frozen route table (`T0.7`) names `GET /api/settings/blogs`, `POST /api/settings/blog`, and puts the auto-publish switch on `PATCH /api/settings` with the two conflict codes this card enforces (`write_scope_required`, `target_blog_unresolved`). Those live under `apps/web/app/api/settings`, which **does not exist**, is owned by no lane in build plan §3, and is built by no card. Building it would have meant writing the entire settings surface — publish hour, timezone, draft review, vacation mode, e-mail preferences, UI language — which spans four other lanes' semantics and is a card in its own right; a `PATCH /api/settings` that silently ignored six of its ten fields would be worse than none. So the routes were built where this lane owns the ground, at addresses that say what they are.
+What it costs, plainly: **Lane F's Settings screen calls the contract's addresses and will get a 404 from all of them.** `phaseAfterDeliveryConflict` in `packages/ui/src/settings/settings.ts` already knows both conflict codes and both are returned unchanged, so the flow works the moment the addresses agree.
+What would close it: either the Settings screen's three calls are re-pointed at `/api/publish/*` and the three contract rows are amended, or `/api/settings` is built and its `delivery` field calls `autoPublishReadiness` and `setDeliveryMode` — the same two functions these routes call. Integrator's choice; both are small.
+Also unresolved, and unchanged by this card: `settingsSchema` still carries no field naming *which* blog is the current target, so the Settings screen can offer to change it but cannot state it (recorded at 2026-09-03 T9.7). `readPublishTarget` returns it; nothing renders it.
+Nearest spec: main §9.5; ui §9.1; tech §3; build plan §3 (lane ownership), §4 (frozen contracts).
+Class (filled by audit):
+
+## 2026-09-04 — T5.2 — The publishing grant comes back to its own callback, and Lane B's install callback is untouched
+Decision: the second Shopify pass starts at `POST /api/publish/grant/start` and returns to `GET /api/publish/grant/callback`, both in this lane. `apps/web/app/api/shopify` — the install start, the install callback, and the `assertReadOnlyGrant` that throws a write grant away — is not edited at all. The state value carried through the consent screen is signed by `signPublishGrantState` in `packages/core/src/publish/grant.ts`, which is this card's own and independent of Lane B's `_lib/state.ts`.
+Why: three reasons, in order of weight. The two flows end in different places — the install finishes on the dashboard with onboarding resuming behind it, this one finishes in Settings with a blog still to choose — so one shared callback would have to branch on purpose anyway. `apps/web/app/api/shopify` is Lane B's directory and a `T2.1` test deliberately holds the install callback's discard-a-write-grant behaviour in place; changing it is a review failure and arguably a security regression. And a separate purpose stamped inside the signed state means an install redirect cannot be replayed at the publishing callback to record a read-only grant as a publishing one.
+What this needs from outside the repository: `https://<APP_URL>/api/publish/grant/callback` must be registered as an allowed redirect URI on the Shopify app, and the app's configured scopes must include `write_content`. Both live in the Shopify Partner dashboard. Until they are, the second grant cannot complete against a real store; it is proven here against a fake shop.
+Nearest spec: main §9.5; CLAUDE.md invariant 21; build plan §3; DECISIONS 2026-09-03 T9.7 (which flagged this gap and declined to guess at it).
+Class (filled by audit):
+
+## 2026-09-04 — T5.2 — NOT DONE, and the exact line it needs: the recovery sweep is registered and nothing schedules it
+Decision: **none taken, deliberately.** The five-minute sweep that settles a publication a crash left unanswered is built, tested and registered as the task `publish_recovery_sweep` — and `packages/jobs/src/runtime/crontab.ts`, which is integrator-resolved and which this session was told not to edit, has no entry for it. Nothing in production will ever run it.
+The line, verbatim, for whoever adds it — one more object in `CRON_ENTRIES`:
+
+    {
+      task: 'publish_recovery_sweep',
+      schedule: '*/5 * * * *',
+      why:
+        'Settles publications a crash left unanswered. Between putting an article on a merchant\'s ' +
+        'shop and recording that we did there is an instant where the post exists and nothing of ' +
+        'ours knows it; a worker that dies there leaves a claim with no answer, and the naive ' +
+        'repair — try again — is how a merchant ends up with the same article posted twice. Every ' +
+        'five minutes, because the window it closes is minutes wide: the app believes the article ' +
+        'never went out for as long as it stays open. A claim younger than ten minutes is left ' +
+        'alone in case a worker still holds it, and each pass asks the shop whether our marker is ' +
+        'already there before it ever considers sending again.',
+    },
+
+No registration is needed in `apps/web/instrumentation-node.ts`: `registerPublishTasks(publishTaskDeps())` is already called there from `T5.1`, and this task registers inside it. A registered task with no crontab entry is not caught by `assertCrontabTasksExist`, which only fails the other way round — so nothing goes red; the sweep simply never runs.
+Consequence until the entry lands: a publish interrupted between posting and recording leaves the article showing as unpublished in the app for ever, with the post live on the merchant's shop. The next day's run tries the same article, collides with the claim, and stops — so it never double-posts, but it also never recovers.
+Nearest spec: main §14.3.7 step 4; build plan §3 ("Files no lane owns").
+Class (filled by audit):
+
+## 2026-09-04 — T5.2 — Every publishing behaviour in this card is proven against a fake shop, not a Shopify store
+Decision: `FakeShopifyPublishClient` (`packages/providers/src/shopify/publish-double.ts`) stands in for Shopify everywhere this card is tested, including the chaos case. No test in this card has ever talked to a Shopify store.
+Why: there is no Shopify development store credential in this environment, and the card's first done-when — "dev-store smoke publishes once" — cannot be run. What the fake buys is something a real store could not: it counts creates, so "exactly one article after a kill" is a measurement rather than an inspection, and it survives repeated worker deaths reproducibly.
+What is therefore **not** proven: that Shopify accepts the article payload as written — the metafield shape, `summary_html`, `published: false` for a draft post, the `handle` collision behaviour when a slug is already taken on that blog, and whether the article URL this card builds (`https://<shop>.myshopify.com/blogs/<blogId>/<handle>`) is the address a reader actually gets, since Shopify's own blog URLs use the blog *handle* rather than its id. That last one is the most likely thing to be wrong on first contact with a real store.
+What it needs: a development-store credential and one live publish, before this is relied on. Recorded rather than worked around.
+Nearest spec: main §9.5, §14.3.9; build plan T5.2 done-when 1.
+Class (filled by audit):
+
+## 2026-09-04 — T5.2 — The republish path is built and nothing in production calls it
+Decision: `republishArticleToShopify` (`packages/jobs/src/publish/republish.ts`) implements main §14.3.7 step 5 in full — an update per revision, conditional on the stored remote id, that never falls back to create — and no code path in the running product reaches it.
+Why: the card's scope names the update protocol, and the thing that *causes* an update is a repair or a refresh, which is `T5.3`. Building the protocol now and leaving the trigger to `T5.3` is what the card asks for; building a trigger would be building another card.
+Consequence, stated: an article whose product data drifts after publication is not updated on the merchant's shop today. The recovery sweep reaches this function only for a revision claim, and no revision claim can exist until something opens one.
+What closes it: `T5.3`'s repair queue calling it with the next revision number.
+Nearest spec: main §14.3.7 step 5, §14.1; build plan T5.3.
+Class (filled by audit):
+
+## 2026-09-04 — T5.2 — One integrator-resolved file was edited: the lint exemption list
+Decision: `eslint.config.mjs` gains one entry, `'apps/web/app/api/publish/_lib/config.ts'`, appended to the existing composition-root list that exempts a file from `sortiva/no-raw-db-access`.
+Why: that rule stops any code outside `packages/db` importing the raw database handle, so no query can reach a table without naming whose account it belongs to. A composition root does not query — it hands `db()` to something that later scopes it — and the rule cannot tell the two apart. Six previous cards from four lanes have appended to this exact array for the identical reason, each with its own note. Without it `pnpm lint` is red, which is a gate this card has to pass.
+The file is integrator-resolved rather than union-merged, so a merge touches it. Flagged here and in the session report so that is expected rather than discovered.
+Nearest spec: build plan §3 ("Ordered code … stays integrator-resolved. If a lane needs to change one, say so in the session report").
+Class (filled by audit):

@@ -12,6 +12,9 @@ import type { PublishTaskDeps } from '@sortiva/jobs/publish/tasks'
 import type { ReplenishmentTaskDeps } from '@sortiva/jobs/generation/replenish-tasks'
 import { DbOpportunitySource } from '@sortiva/jobs/scan/opportunity-source'
 import { DbNotificationEmitter } from '@sortiva/jobs/notify/emitter'
+// This lane's own publishing composition root, one directory over: which
+// Shopify write client and which token cipher exist in this process.
+import { publishProvider, publishTokenCipher } from '../../publish/_lib/config'
 import type { DeliveryDeps } from './delivery'
 import type { ReviewDeps } from './review'
 
@@ -93,12 +96,25 @@ export function replenishmentTaskDeps(): ReplenishmentTaskDeps {
  * What hands a finished article to the merchant at their own publish hour.
  *
  * No model client, no search vendor and no page fetcher: delivery spends
- * nothing. It reads which articles are cleared, moves one of them, and records
- * that it did — so giving it any of the paid seams would make it possible for
- * a publish to start writing.
+ * nothing on vendors. It reads which articles are cleared, hands one over, and
+ * records that it did — so giving it any of the paid seams would make it
+ * possible for a publish to start writing prose.
+ *
+ * The Shopify write client and the token cipher are here because an
+ * auto-publish store's hand-over *is* a write to their shop. Both are absent
+ * when this deployment has no Shopify credentials, and an auto-publish store is
+ * then left waiting with that said out loud in the log — never exported
+ * instead, which would deliver in a mode the merchant did not choose.
  */
 export function publishTaskDeps(): PublishTaskDeps {
-  return { getDb: db, getPool: dbPool, capture: generationCapture() }
+  const shopify = publishProvider()
+  return {
+    getDb: db,
+    getPool: dbPool,
+    ...(shopify ? { shopify, cipher: publishTokenCipher() } : {}),
+    notifications: new DbNotificationEmitter(db),
+    capture: generationCapture(),
+  }
 }
 
 export function generationTaskDeps(): GenerationTaskDeps {
