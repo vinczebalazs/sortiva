@@ -3422,3 +3422,30 @@ explicit follow-ups from `T4.0a`'s own report, not new information — restated 
 because `sortiva-85` flagged it independently and it is Lane C territory, currently
 held by this session's `T3.6` build. Not picked up yet; no card in the plan names
 either half, the same shape as `store_pages.intent_class`'s open ownership above.
+
+## FOUNDER — a typed topic title becomes a `QueryCluster` through one model call on Add. **Relayed, not yet independently verified — reconcile against `sortiva-85`'s actual `DECISIONS.md` entry once `lane-b` next merges.**
+
+**`T4.1` flagged a real gap rather than guessing: nothing turns a merchant's typed
+topic title into the search-term/intent-class/family-id triple ("a `QueryCluster`")
+both Gate 1 and the manual-add path need to run at all.** Relayed by `sortiva-85` at
+13:35, sourced from the founder directly in that session. **Decision: one model call,
+made at the moment the merchant clicks Add, resolves the typed title into a full
+`QueryCluster`.** Not a keyword/family word-match, not a UI change collecting family
+selection — `sortiva-85` verified three things in the code before putting it to the
+founder (worth restating since they're checkable facts, not opinion): `keywords` has
+no family link or intent column; nothing anywhere derives an `IntentClass` from text,
+every existing use only consumes or passes one through; `buildQueryClusters` works
+from GSC query rows carrying impressions and cannot serve free text. The "Gate 1 must
+stay ~free" concern doesn't reach this path: scan-produced topics already arrive with
+clusters built from Search Console data, so the model call runs once per manual add,
+never across a scan.
+
+**Two things deliberately left to `T4.2` to decide and journal itself:** which model
+and prompt version; and what happens when the call fails or names a family id that
+doesn't exist for the account (the standing degrade-to-pause-never-guess rule is a
+candidate shape, not a mandate — the card's call).
+
+**Action taken:** `T4.2` was already running in lane D, instructed to park this exact
+piece — redirected mid-build (11 minutes in) to build the real wiring instead, with
+this reasoning relayed in full. If it had gone further before the redirect landed, its
+own report will say so.
