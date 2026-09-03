@@ -104,6 +104,23 @@ export const articles = pgTable(
     title: text('title').notNull(),
     slug: text('slug').notNull(),
     targetKeyword: text('target_keyword'),
+    /**
+     * The draft in the shape the writer produced it — intro, sections, FAQ —
+     * rather than rendered prose. Every reader downstream wants the pieces: the
+     * judge scores a section at a time, and the review screen shows them as
+     * blocks. Flattening to markdown here would make each of them parse it back,
+     * and prose is exactly where the structure gets lost.
+     *
+     * Null until the writer has run. The row is created first, because a claim
+     * has to hang off an article that already exists.
+     */
+    bodyJson: jsonb('body_json'),
+    /**
+     * Beside `title` and `slug` rather than inside the body, because it is not
+     * part of what a reader sees on the page: publishing and export both read it
+     * as a field of their own.
+     */
+    metaDescription: text('meta_description'),
     state: articleStateEnum('state').notNull().default('draft'),
     /**
      * Main §8.6: an override-published article is excluded from calibration
@@ -121,6 +138,13 @@ export const articles = pgTable(
     index('articles_account_state_idx').on(t.accountId, t.state),
     uniqueIndex('articles_account_slug_key').on(t.accountId, t.slug),
     index('articles_topic_idx').on(t.topicId),
+    // A draft is an object with named parts. A bare array or string here would
+    // mean somebody stored rendered prose after all, which every reader would
+    // then have to guess at.
+    check(
+      'articles_body_json_object_ck',
+      sql`${t.bodyJson} IS NULL OR jsonb_typeof(${t.bodyJson}) = 'object'`,
+    ),
   ],
 )
 

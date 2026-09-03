@@ -533,6 +533,13 @@ Read first: main §12.3; `DECISIONS.md` `2026-09-03 — FOUNDER — A deleted st
 Done when: the migration applies forward, every existing `store_pages` row reads as live, and a constraint test proves the field cannot hold a value outside the named set.
 Note: the founder chose the status field over a single deleted-at date, and rejected inferring deletion from "not seen by the last completed walk" — that option needs something to record that a walk *completed*, and an interrupted walk would otherwise mark live pages as gone. **Two follow-ups this card does not do**, and neither is a founder question: the producer that sets the value when a page disappears, and teaching `T3.5`'s existing-target check to skip a page that is gone — which is the reason the field exists, since today the product can recommend improving a page a merchant has deleted.
 
+**T4.0b — Schema mini-wave: a finished draft has somewhere to be stored** · integrator
+Scope: one migration adding `articles.body_json` (the draft in the shape the writer produced it — intro, sections, FAQ) and `articles.meta_description`. **Migration only**: nothing writes or reads either column; `T4.4` onward do that.
+Read first: `DECISIONS.md` `2026-09-03 — FOUNDER — A stored draft keeps its parts separate`; main §9.2 (on-page metadata generated with the draft); `packages/core/src/generation/draft.ts` (the `Draft` shape being stored).
+Done when: the migration applies forward from empty, an article row can exist with no draft, a stored draft reads back as an object rather than a string to parse, one part can be queried without reading the whole body, and a non-object body is refused.
+Note: **LANDED 2026-09-03.** `jsonb`, not gzipped `bytea` — see the journal entry for why, and for what it would cost to change.
+
+
 ### M8 — Notifications, email, lifecycle, ops · Lane G
 
 **T8.0 — Schema wave 4**

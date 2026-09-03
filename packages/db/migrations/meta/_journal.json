@@ -71,6 +71,13 @@
       "when": 1788433886983,
       "tag": "0009_t4_0a_store_page_status",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1788458493903,
+      "tag": "0010_t4_0b_article_body",
+      "breakpoints": true
     }
   ]
 }
