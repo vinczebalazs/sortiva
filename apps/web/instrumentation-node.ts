@@ -195,6 +195,18 @@ export async function startServerRuntime() {
   const { replenishmentTaskDeps } = await import('./app/api/articles/_lib/config')
   registerReplenishmentTasks(replenishmentTaskDeps())
 
+  // The publish hour. An article does not appear the moment the quality gate
+  // passes it — it appears at nine in the morning where the store's audience
+  // is, or whatever hour the merchant set. Same two-job shape: an hourly sweep
+  // that finds the stores whose clock has just struck that hour, and a
+  // per-store job that hands over at most one finished article.
+  //
+  // On export mode this writes to nobody's shop: it makes the article
+  // downloadable and asks the merchant where they published it.
+  const { registerPublishTasks } = await import('@sortiva/jobs')
+  const { publishTaskDeps } = await import('./app/api/articles/_lib/config')
+  registerPublishTasks(publishTaskDeps())
+
   // Email: the minute-by-minute drain that turns each queued row into a job,
   // the job that sends one, and the two sweeps that schedule mail on a clock —
   // the monthly summary and the seven-day "where did you publish this" reminder.

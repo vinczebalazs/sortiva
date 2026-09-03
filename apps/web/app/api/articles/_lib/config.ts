@@ -8,9 +8,11 @@ import { DataForSeoProvider } from '@sortiva/providers'
 import { AnthropicLlmClient } from '@sortiva/llm/client'
 import { loadPrompt } from '@sortiva/llm/prompts'
 import type { GenerationTaskDeps } from '@sortiva/jobs/generation/tasks'
+import type { PublishTaskDeps } from '@sortiva/jobs/publish/tasks'
 import type { ReplenishmentTaskDeps } from '@sortiva/jobs/generation/replenish-tasks'
 import { DbOpportunitySource } from '@sortiva/jobs/scan/opportunity-source'
 import { DbNotificationEmitter } from '@sortiva/jobs/notify/emitter'
+import type { DeliveryDeps } from './delivery'
 import type { ReviewDeps } from './review'
 
 /**
@@ -63,6 +65,11 @@ export function reviewDeps(): ReviewDeps {
   return { db: db() }
 }
 
+/** What the download and the published-address confirm are built from: the database, and nothing else. */
+export function deliveryDeps(): DeliveryDeps {
+  return { db: db() }
+}
+
 /**
  * What tops the calendar back up when its runway runs short.
  *
@@ -80,6 +87,18 @@ export function replenishmentTaskDeps(): ReplenishmentTaskDeps {
     opportunities: new DbOpportunitySource(db()),
     capture: generationCapture(),
   }
+}
+
+/**
+ * What hands a finished article to the merchant at their own publish hour.
+ *
+ * No model client, no search vendor and no page fetcher: delivery spends
+ * nothing. It reads which articles are cleared, moves one of them, and records
+ * that it did — so giving it any of the paid seams would make it possible for
+ * a publish to start writing.
+ */
+export function publishTaskDeps(): PublishTaskDeps {
+  return { getDb: db, getPool: dbPool, capture: generationCapture() }
 }
 
 export function generationTaskDeps(): GenerationTaskDeps {

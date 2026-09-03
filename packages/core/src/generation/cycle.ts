@@ -144,3 +144,25 @@ export function localClock(now: Date, timeZone: string): LocalClock {
 export function generationHourFor(publishHour: number, leadHours: number): number {
   return ((publishHour - leadHours) % 24 + 24) % 24
 }
+
+/**
+ * Which calendar day's article this run is writing.
+ *
+ * An article belongs to the day it appears, not the day it was written. A store
+ * that publishes at 02:00 starts writing at 20:00 the evening before, so asking
+ * the clock at the writing moment would take Tuesday's topic on Tuesday evening
+ * and put it in front of readers on Wednesday — the calendar and the store
+ * permanently a day apart, with every planned day silently delivered late.
+ *
+ * So the day is read off the clock at the *publish* moment: now plus the same
+ * lead the run started with. For the ordinary 09:00 store that is the same date
+ * either way; for an after-midnight publish hour it is the following one, which
+ * is exactly the day the merchant sees the article on.
+ *
+ * Adding real hours rather than shifting a date string is deliberate: it stays
+ * correct across a daylight-saving change, where "six hours later" and "six
+ * hours later on the wall clock" are different moments.
+ */
+export function publishDayFor(now: Date, timeZone: string, leadHours: number): string {
+  return localClock(new Date(now.getTime() + leadHours * 60 * 60 * 1000), timeZone).date
+}

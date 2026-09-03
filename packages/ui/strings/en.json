@@ -1128,6 +1128,12 @@
   "content.articles.urlInvalid": "That address is not on {domain}.",
   "content.articles.urlMalformed": "That doesn't look like a web address.",
   "content.articles.urlSaved": "Saved. We'll attribute its search performance from here.",
+  "content.articles.export.gone": "That article is gone.",
+  "content.articles.export.notWritten": "This article has not been written yet.",
+  "content.articles.export.notPublished": "This article has not been published yet.",
+  "content.articles.export.needsDomain": "Connect your website before confirming where an article was published.",
+  "content.articles.export.productGone": "This article mentions a product your store no longer has. We haven't changed the article \u2014 download it again once the product is back.",
+  "content.articles.export.notReady": "This article is still being prepared. Try again shortly.",
 
   "content.article.back": "Articles",
   "content.article.readOnlyNote": "This is the article exactly as it would publish. There is no editor — wording changes are made in your store after publishing.",

@@ -3467,3 +3467,80 @@ Decision: **none taken.** `registerIntentGapTasks` (`packages/jobs/src/optimize/
 Why: two separate holds, both instructed. The schedule is switched off by the founder's decision (open question 4) until the last handlerless crontab entries land, and this card was told in as many words not to be the thing that quietly turns paid work on. The composition root, `apps/web/instrumentation-node.ts`, is reserved for the integrator by the build plan, and `T6.2`'s `registerOptimizeTasks` is already waiting there for the same reason — this is the second entry of the same shape, not a new kind of gap.
 What the wiring needs, precisely. In `startServerRuntime()`, alongside the other `register*Tasks` calls: `registerIntentGapTasks({ getDb: db, getPool: dbPool, seo: seoProvider(), pageFetcher: new GuardedPageFetcher(), llm: <the process's Anthropic client>, prompt: loadPrompt('intent-gap', 1) })`. The LLM client is the one thing that is not already built in that file — the generation lane memoises its own inside `apps/web/app/api/articles/_lib/config.ts` and does not export it, so either that factory grows an export or the composition root builds the process's one client itself and hands it to both. And in `crontab.ts`, one entry: `{ task: 'intent_gap_scan_weekly', schedule: '0 * * * *', why: … }` — hourly for the local-Sunday reason above, and only when the founder switches the schedule back on. A crontab entry naming a task nobody registered is refused at worker start, so the two have to land together or the registration first.
 Nearest spec: build plan §3 (lane ownership), §6 `R-INTENTGAP-JOB`; DECISIONS 2026-09-04 T6.2 (nothing calls the OPTIMIZE task registration).
+## 2026-09-04 — T5.1 — The day an article belongs to is read at the publish moment, not at the writing moment
+Decision: the daily generation cycle now derives "which day's topic is this" from the store's local clock at the moment the article is due out — `now` plus the writing lead — rather than from the clock when the writing starts. `publishDayFor(now, timezone, leadHours)` in `packages/core/src/generation/cycle.ts` is that derivation, and both the hourly sweep that queues the job and the run itself use it.
+Why: authorised by the founder ahead of this card, from a MEDIUM audit finding. Writing starts a fixed six hours before each store's publish hour and wraps backwards over midnight, so a store publishing at 02:00 starts at 20:00 the previous evening. Reading the date at the writing moment took Tuesday evening's date and published the result on Wednesday, leaving the calendar and the shop permanently one day apart — every planned day delivered late, for ever, on every store whose publish hour is earlier than its lead. The article belongs to the day it appears. Real hours are added and the sum then formatted in the store's zone, rather than a date string being shifted, so a daylight-saving change does not move the answer.
+Consequence, stated: for the default 09:00 store nothing changes at all (03:00 + 6h is the same date). It changes behaviour only for a publish hour earlier than the lead — 00:00 to 05:00 — which is precisely the case that was broken.
+Nearest spec: main §9.1 (one pass per account per day, anchored to the persona timezone), §9.4 (the publish hour); CLAUDE.md invariant 14.
+Class (filled by audit):
+
+## 2026-09-04 — T5.1 — One article is handed over per publish hour, oldest first
+Decision: the delivery run publishes at most one article per pass, choosing the oldest of those cleared. A merchant with three approved drafts gets one a day for three days.
+Why: main §9.4 gives the reason for a fixed hour as "predictable for the merchant, and naturally spaced at ≤1/day so publishing never looks like an algorithmic burst". Handing over everything that happens to be ready would produce exactly that burst the first morning after a merchant worked through a review backlog. Oldest first so nothing waits for ever behind newer work. Nothing in the specs states this explicitly, which is why it is journalled: it is a reading of the pacing sentence rather than a rule quoted from one.
+Consequence: a store that accumulates finished drafts drains them at one a day. The count is never shown to the merchant as a backlog figure — invariant 23 forbids denominators — so this is invisible except as articles appearing on consecutive mornings.
+Nearest spec: main §9.4; CLAUDE.md invariants 14, 23.
+Class (filled by audit):
+
+## 2026-09-04 — T5.1 — "The live store" means our synced catalogue rows, read at build time — not a Shopify API call
+Decision: the founder's rule that every product reference is resolved against the live store at the moment the bundle is built is implemented as a read of `products` and `store_pages` — our own mirror of the shop, kept current by the daily sync and the product webhooks — at the moment the merchant presses download. No Shopify request is made during a download.
+Why: three reasons, and the card's own done-when settles it. The done-when is "a bundle built **after a fixture price change** carries the new price", which is a change to our rows. A download is a request path, and a vendor call inside one makes the download as slow and as failable as Shopify is that minute. And an export-mode account has read scopes only and may have been disconnected entirely, in which case a live call has nothing to ask — while the mirror still holds what the store last said. The distinction that matters is preserved either way: the values come from the store's *current* rows and never from what was written down when the article was drafted.
+Consequence, stated plainly: a price changed in Shopify is reflected in a download once the webhook or the nightly sweep has landed it — minutes, usually, and up to a day if a webhook is lost. That is a real window and it is the same window every other part of the product already reads through.
+Nearest spec: main §9.4, §9.5; `docs/content-pointers.md` §9; DECISIONS 2026-09-01 (founder, the price-as-reference rule).
+Class (filled by audit):
+
+## 2026-09-04 — T5.1 — A download is refused outright when a referenced product has gone
+Decision: `buildExportBundle` throws rather than rendering a gap, and the route answers 409 with a sentence naming what happened. The same is true of a marker in the body that no reference row explains.
+Why: the founder's rule for auto-publish (card `T5.2`) is that a missing product fails the publish and raises a repair rather than publishing a hole. A download is the export-mode equivalent of a publish — it is the moment the article leaves us — so it fails the same way. The alternative, rendering the sentence without the product, hands the merchant prose with a hole in it that they would paste into their own blog without noticing.
+Not done here: raising a repair or an action card. That is `T5.3`, which owns the repair queue and the "export accounts get action cards" rule; there is no repairs table in the schema yet.
+Nearest spec: main §14.1 (drift and repair), §9.5; `docs/content-pointers.md` §9.
+Class (filled by audit):
+
+## 2026-09-04 — T5.1 — PARKED, needs a schema wave: the export bundle can carry no images, because nothing stores an image address
+Decision: the bundle's image block is built, filtered and tested, and in the running product it is **always empty**. `buildBundleForArticle` passes an empty list with a comment saying why.
+Why: `products` has no column for a Shopify image URL and there is no separate table for one. The catalogue sync reads `images` from the Admin API and uses them only inside the content checksum, then drops them (`toProductRow`, `packages/core/src/catalog/products.ts`). `T4.3` recorded the same gap for the evidence pack and the draft. So there is nowhere to read an image address back from, and a feature card may not add a migration.
+What it costs: an exported article carries no images, and main §9.2's "product images from the catalog only" is unmet on the export path. The rule the card asks for — only `cdn.shopify.com` addresses, never bytes — is implemented and tested against planted input (`shopifyCdnImagesOnly`), so the day a column exists this needs one line changed.
+What it needs: one column or side table holding a product's image addresses and alt text, filled by Lane B's catalogue sync. A schema-wave card.
+Nearest spec: main §9.2 (images), tech §2.1 ("the export bundle contains URLs, not image bytes"); DECISIONS 2026-09-03 T4.3.
+Class (filled by audit):
+
+## 2026-09-04 — T5.1 — A price is printed with its currency only when the store's rows carry one, and today they never do
+Decision: `formatPrice` prints `49.99 USD` when a currency is known and a bare `49.99` when it is not, and never guesses one from the merchant's country.
+Why: a shop in Germany selling in dollars is ordinary, so a currency inferred from the persona country would be wrong on exactly the stores that care. The `priceRange` type already has an optional `currency` field — and Lane B's `toProductRow` never fills it, so in the running product every export price is a bare number.
+What it costs: an exported article's prices read as unlabelled figures. Fixing it is one line in the catalogue mapper (`priceRange: { min, max, currency }` from the shop's own currency) and needs no migration, because `price_range` is `jsonb` — but that file is Lane B's. Flagged rather than done.
+Nearest spec: main §9.2; `docs/content-pointers.md` §9.
+Class (filled by audit):
+
+## 2026-09-04 — T5.1 — The download endpoint is not in the frozen route table, and returns the three files in one response
+Decision: `GET /api/articles/{articleId}/export` exists as a route in `apps/web` and has **no entry** in `packages/core/src/api/routes.ts`. It returns `{files: [{filename, mimeType, content}]}` — all three at once.
+Why: two separate things. (a) The frozen contract (`T0.7`) names `/api/articles/{articleId}` and `/published-url` but no download route at all, while ui §6.2 requires download buttons for Markdown, HTML and metadata and Lane F's articles screen already calls an `onDownload(article)` callback expecting exactly this list. The route table is in `packages/core/src/api`, which is not this lane's, so the entry could not be added here. (b) All three in one response because they are rendered from a single reading of the store: three requests could straddle a price change and hand the merchant a Markdown file and an HTML file that disagree.
+What it needs: an entry in `ROUTES` plus a response schema, and `pnpm contracts:check --write`. Integrator or whoever owns the contract. Until then the OpenAPI document does not describe a route the product serves.
+Nearest spec: ui §6.2; tech §3; build plan §3 (lane ownership).
+Class (filled by audit):
+
+## 2026-09-04 — T5.1 — Two files outside this lane's directories were edited, both append-shaped
+Decision: `packages/jobs/src/runtime/crontab.ts` gains one entry (`publish_delivery_sweep`, hourly) and `apps/web/instrumentation-node.ts` gains one registration block.
+Why: a scheduled job with no crontab entry never runs, and a task with no registration is a name the crontab check refuses at worker start. Neither file belongs to a lane in build plan §3; three previous cards from three different lanes have each appended to both, and the additions are one block each at a stable point. The integrator should expect a touch here on merge. The alternative — folding delivery into the existing generation sweep to avoid the edit — would have made one task name mean two unrelated things and made the crontab's own explanation untrue.
+Nearest spec: build plan §3 ("Files no lane owns"); tech §2 (in-process worker).
+Class (filled by audit):
+
+## 2026-09-04 — T5.1 — An auto-publish store's finished article waits rather than being exported instead
+Decision: the delivery run stops with `auto_publish` when the account's delivery mode is `auto`, and hands over nothing.
+Why: auto-publish is a write to the merchant's own shop under a second, explicit consent, through the two-phase intent protocol — card `T5.2`. Exporting instead would deliver in a mode the merchant did not choose, and marking the article `published` with no address would make it look posted when nothing was. Waiting is visible and correct; `T5.2` picks it up from the same `draft` state.
+Consequence until `T5.2` lands: an account that switches to auto-publish stops receiving articles entirely. Nothing today can switch it — the settings route that would is not built — so no live store can reach this state.
+Nearest spec: main §9.5 (delivery modes), §14.3.7; CLAUDE.md invariant 21.
+Class (filled by audit):
+
+## 2026-09-04 — T5.1 — The publish hour is configurable in the database and by nothing else
+Decision: this card reads `account_settings.publish_hour` and `.timezone` and honours whatever is there. It adds no way for a merchant to change them.
+Why: the card's scope says "09:00 persona-timezone publish hour (configurable, IANA)". The columns exist with the right defaults, the frozen contract already carries `PATCH /api/settings` with `publishHour` and `timezone` in its schema, and the Settings screen's strings are already written — but the route itself is unbuilt and `apps/web/app/api/settings` is not this lane's directory. So the hour is configurable in the sense that everything downstream of the setting honours it; a merchant cannot yet set it.
+Nearest spec: main §9.4; ui §9 (Settings → Publishing); build plan §3.
+Class (filled by audit):
+
+## 2026-09-04 — T5.1 — FLAGGED: the download button points at a route nobody has built, and not at the one this card built
+Decision: **none taken.** Stated so it is not discovered later as a bug.
+Why: `apps/web/app/(app)/content/articles/ArticlesClient.tsx` (Lane F) implements the download by fetching `GET /api/articles/{id}` — the read-only detail route — and assembling the three files in the browser from its response, with `articleFiles()` in `packages/ui`. That detail route **does not exist**: there is no `route.ts` for it anywhere in `apps/web`, so the fetch fails, the callback returns an empty list, and pressing a download button today saves nothing. The confirm-address button next to it calls `POST /api/articles/{id}/published-url`, which this card built, and works.
+Why the browser cannot keep doing it that way: the founder's rule is that every product reference is resolved against the live store at the moment the bundle is built. A browser cannot resolve one — it has no access to the catalogue — so the values would have to be resolved by whatever serves `/api/articles/{id}`, whose response schema is frozen and carries a single rendered `html` string plus a metadata object with no product-reference block. Building the bundle where the store's rows are is what `GET /api/articles/{id}/export` does.
+What it needs: the articles screen's `download` callback re-pointed at `/api/articles/{id}/export`, which returns `{files: [{filename, mimeType, content}]}` — exactly the shape `onDownload` already expects, so it is a one-line change in another lane's file. Either that, or the detail route is built and made to resolve references itself, which duplicates the resolver.
+Consequence until then: the export bundle is reachable and correct at its own address and **no screen calls it**.
+Nearest spec: ui §6.2; main §9.4, §9.5; build plan §3 (lane ownership).
+Class (filled by audit):
