@@ -406,6 +406,56 @@ defaults:
       # UNSIGNED.
       contradiction_subject_overlap_min: 0.5
 
+    # ── OPTIMIZE: the checks a page recommendation passes before anyone sees
+    # it. Separate from the draft numbers above because the artefact is
+    # different — a handful of suggested edits to a page that already ranks,
+    # not an article.
+    optimize_recommendation:
+      # The two things the grader is asked about, each held at 4 out of 5.
+      # Grounding: every suggestion traces to something the store actually
+      # knows or a ranking page actually says. Intent match: the edits address
+      # what the searcher wanted. Both sit a point above an ordinary criterion
+      # because the merchant applies these by hand to a page that already earns
+      # traffic — a weak recommendation costs them real work and can lose them
+      # the ranking they had.
+      grounding_min: 4
+      intent_match_min: 4
+      # One re-ask with the lint errors attached, then we stop and say we could
+      # not produce a safe recommendation. A second re-ask is paying again to
+      # talk the model past its own checks.
+      regenerations_max: 1
+      # Google truncates a title around this width and a description around
+      # that one, so a longer suggestion is cut off in the very result the
+      # merchant is trying to win the click from.
+      title_max_chars: 60
+      meta_description_max_chars: 155
+      # How much of a suggested passage may already appear on the page before
+      # it counts as restating what is there rather than adding to it, measured
+      # as the share of the suggestion's word runs found on the page.
+      # UNSIGNED — main §10.3 names the check ("no suggested copy may duplicate
+      # an existing paragraph", n-gram) and no number. Raise it and near
+      # rewrites of existing paragraphs start passing; lower it and a
+      # suggestion that legitimately reuses the product's vocabulary fails.
+      duplicate_paragraph_similarity_max: 0.5
+      # How many consecutive words count as one run in that comparison.
+      duplicate_paragraph_shingle_words: 5
+      # The share of the recommendation's suggested prose — all its sections
+      # and answers together, and never its title or description, which are
+      # supposed to name the search — that may be the target phrase before it
+      # reads as stuffing. Its own number rather than the draft one because
+      # suggested copy is short: naming the search once where it belongs is a
+      # larger share of a few hundred words than of a whole article.
+      # UNSIGNED — main §10.3 says "no keyword stuffing" and names no figure.
+      keyword_density_max: 0.05
+      # How many of the store's other pages are offered as internal-link
+      # candidates. A store with three thousand pages cannot show them all, and
+      # a longer list is a more expensive prompt for the same handful of
+      # suggestions. Pages sharing a product family come first, so raising this
+      # mostly adds pages that are further from the subject.
+      # UNSIGNED — main §10.3 asks for "the store's other pages mapped to
+      # adjacent intents" and names no number.
+      internal_link_candidates_max: 10
+
   # ── Learning: measuring what happened after publish ────────────────────────
   learning:
     # When the calendar's planned horizon falls below this many days, top it

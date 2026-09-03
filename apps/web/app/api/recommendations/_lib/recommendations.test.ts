@@ -1,0 +1,428 @@
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import type { OptimizeRecommendation, RecommendationLabels } from '@sortiva/core'
+import {
+  accountScope,
+  insertMinimalOpportunity,
+  storeOptimizeRecommendation,
+  upsertStorePages,
+  type OpportunityRow,
+} from '@sortiva/db'
+import {
+  TEST_DATABASE_URL,
+  databaseAvailable,
+  insertAccount,
+  setupTestDb,
+  truncateAll,
+  type TestDb,
+} from '@sortiva/db/testing'
+import {
+  TRUNCATE_QUEUE_SQL,
+  installQueueSchema,
+  type WorkerUtils,
+} from '@sortiva/jobs/runtime/testing'
+import { rules } from '@sortiva/rules'
+import { withAccount } from '../../auth/_lib/session'
+import {
+  makeApplyRecommendationHandler,
+  makeDownloadRecommendationHandler,
+  makeGenerateRecommendationHandler,
+  makeReadRecommendationHandler,
+  type RecommendationsDeps,
+} from './handlers'
+
+/**
+ * T6.2 done-when: "third request in a day returns the cap error; mark-applied
+ * schedules an outcome row at +28 d".
+ */
+
+const available = await databaseAvailable()
+const NOW = new Date('2026-09-03T10:00:00.000Z')
+
+const labels: RecommendationLabels = {
+  documentTitle: 'Page recommendations',
+  page: 'Page',
+  search: 'Search',
+  intentNote: 'What is missing',
+  titleTag: 'Title',
+  metaDescription: 'Description',
+  headings: 'Headings',
+  sections: 'Sections',
+  faq: 'Questions',
+  internalLinks: 'Links',
+  linksFrom: 'From',
+  linksTo: 'To',
+  current: 'Now',
+  suggested: 'Suggested',
+  basedOn: 'Based on',
+  notSet: 'not set',
+  headingAdd: 'Add',
+  headingRewrite: 'Rewrite',
+  trustLine: 'Sortiva does not change your store.',
+}
+
+const PAGE_URL = 'https://example-store.com/collections/wide-trail-shoes'
+
+function recommendation(): OptimizeRecommendation {
+  return {
+    title_tag: { current: 'Wide trail shoes', suggested: 'Wide trail running shoes', rationale_key: null },
+    meta_description: { current: null, suggested: 'Trail shoes in two widths.', rationale_key: null },
+    headings: [],
+    sections: [
+      {
+        heading: 'How to measure your forefoot',
+        suggested_copy: 'Stand on paper and mark the widest point of each foot.',
+        facts_used: ['subtopic:how to measure forefoot width'],
+        gap_source: 'serp',
+      },
+    ],
+    faq: [],
+    internal_links: { add_from: [], add_to: [] },
+    intent_note: 'The page never says how to check your own width.',
+  }
+}
+
+describe.skipIf(!available)('/api/recommendations', () => {
+  let harness: TestDb
+  let accountId: string
+  let workerUtils: WorkerUtils
+
+  beforeAll(async () => {
+    harness = await setupTestDb('web_recommendations')
+    // The queue's tables are installed by the worker, not by our migrations —
+    // in production it starts in the same process as the web server before a
+    // request can arrive. Nothing starts a worker here, so the suite installs
+    // them itself.
+    const url = new URL(TEST_DATABASE_URL)
+    url.pathname = `/${harness.databaseName}`
+    workerUtils = await installQueueSchema(url.toString())
+  })
+
+  afterAll(async () => {
+    await workerUtils?.release()
+    await harness.close()
+  })
+
+  beforeEach(async () => {
+    await truncateAll(harness.pool)
+    await harness.pool.query(TRUNCATE_QUEUE_SQL)
+    accountId = await insertAccount(harness.pool, 'recommendations@example.com')
+    await harness.pool.query(
+      'INSERT INTO subscriptions (account_id, stripe_subscription_id, price_id, status) VALUES ($1, $2, $3, $4)',
+      [accountId, 'sub_test', 'price_test', 'active'],
+    )
+    await upsertStorePages(harness.db, accountScope(accountId), [
+      {
+        url: PAGE_URL,
+        pageType: 'collection',
+        handle: 'wide-trail-shoes',
+        shopifyId: 'gid://shopify/Collection/1',
+        title: 'Wide trail shoes',
+        seoTitle: 'Wide trail shoes',
+        seoDescription: null,
+        headings: ['Wide trail shoes'],
+        bodyHtml: '<p>Shoes with room across the forefoot.</p>',
+        outboundInternalLinks: [],
+        familyIds: [],
+        checksum: 'checksum-1',
+      },
+    ])
+  })
+
+  function deps(): RecommendationsDeps {
+    return { db: harness.db, labels, now: () => NOW }
+  }
+
+  const post = (body: unknown, id: string | null = accountId) =>
+    withAccount(makeGenerateRecommendationHandler(deps()), async () => id)(
+      new Request('http://localhost/api/recommendations', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+      undefined,
+    )
+
+  const read = (opportunityId: string) =>
+    withAccount(makeReadRecommendationHandler(deps()), async () => accountId)(
+      new Request(`http://localhost/api/recommendations?opportunityId=${opportunityId}`),
+      undefined,
+    )
+
+  const apply = (id: string, body: unknown = {}) =>
+    withAccount(makeApplyRecommendationHandler(deps()), async () => accountId)(
+      new Request(`http://localhost/api/recommendations/${id}/apply`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+      { params: Promise.resolve({ id }) },
+    )
+
+  const download = (id: string, format: string) =>
+    withAccount(makeDownloadRecommendationHandler(deps()), async () => accountId)(
+      new Request(`http://localhost/api/recommendations/${id}/download?format=${format}`),
+      { params: Promise.resolve({ id }) },
+    )
+
+  async function optimizeOpportunity(entityRef = PAGE_URL): Promise<OpportunityRow> {
+    return insertMinimalOpportunity(
+      harness.db,
+      accountScope(accountId),
+      {
+        signalType: 'existing_page_intent_gap',
+        entityType: 'url',
+        entityRef,
+        evidenceJson: [{ key: 'query_cluster', value: 'trail running shoes for wide feet', source: 'gsc' }],
+        recommendedAction: 'optimize',
+        status: 'new',
+        reasonTemplateKey: 'opportunity.existing_page_intent_gap',
+        reasonParams: {},
+        limitedIntelligence: false,
+        rulesVersion: rules().rulesVersion,
+      },
+      NOW,
+    )
+  }
+
+  async function storedRecommendation(opportunityId: string, generatedAt = NOW): Promise<string> {
+    const row = await storeOptimizeRecommendation(harness.db, accountScope(accountId), {
+      opportunityId,
+      pageUrl: PAGE_URL,
+      recommendationJson: recommendation(),
+      judgeScoresJson: { factualGrounding: 5, searchIntentMatch: 4 },
+      promptVersion: 'optimize-reco.v1',
+      modelId: 'claude-sonnet-5',
+      rulesVersion: rules().rulesVersion,
+      state: 'valid',
+    })
+    if (!row) throw new Error('failed to store the recommendation')
+    await harness.pool.query('UPDATE optimize_recommendations SET generated_at = $1 WHERE id = $2', [
+      generatedAt.toISOString(),
+      row.id,
+    ])
+    return row.id
+  }
+
+  it('queues a generation and moves the opportunity to in-progress', async () => {
+    const opportunity = await optimizeOpportunity()
+
+    const response = await post({ opportunityId: opportunity.id })
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({ state: 'generating', generated: true })
+
+    const { rows } = await harness.pool.query<{ identifier: string; payload: unknown }>(
+      "SELECT t.identifier, j.payload FROM graphile_worker._private_jobs j JOIN graphile_worker._private_tasks t ON t.id = j.task_id WHERE t.identifier = 'optimize_recommendation_generate'",
+    )
+    expect(rows).toHaveLength(1)
+    expect(rows[0]?.payload).toMatchObject({ accountId, opportunityId: opportunity.id })
+
+    const status = await harness.pool.query<{ status: string }>(
+      'SELECT status FROM opportunities WHERE id = $1',
+      [opportunity.id],
+    )
+    expect(status.rows[0]?.status).toBe('executing')
+  })
+
+  it('returns the cap error on the third request in a day', async () => {
+    const cap = rules().defaults.budgets.optimize.generations_per_account_per_day
+    expect(cap).toBe(2)
+
+    // Two generations already spent today, each with its recommendation
+    // written — the meter the cap reads.
+    const first = await optimizeOpportunity(`${PAGE_URL}/a`)
+    const second = await optimizeOpportunity(`${PAGE_URL}/b`)
+    await storedRecommendation(first.id)
+    await storedRecommendation(second.id)
+
+    const third = await optimizeOpportunity(`${PAGE_URL}/c`)
+    const response = await post({ opportunityId: third.id })
+
+    expect(response.status).toBe(409)
+    const body = (await response.json()) as { error: { code: string; message: string } }
+    expect(body.error.code).toBe('optimize_daily_cap_reached')
+    expect(body.error.message).toContain('available tomorrow')
+
+    const { rows } = await harness.pool.query(
+      "SELECT 1 FROM graphile_worker._private_jobs j JOIN graphile_worker._private_tasks t ON t.id = j.task_id WHERE t.identifier = 'optimize_recommendation_generate'",
+    )
+    expect(rows).toHaveLength(0)
+  })
+
+  it('serves the stored recommendation rather than spending again on unchanged evidence', async () => {
+    const opportunity = await optimizeOpportunity()
+    const id = await storedRecommendation(opportunity.id)
+
+    const response = await post({ opportunityId: opportunity.id })
+    expect(await response.json()).toMatchObject({ state: 'ready', recommendationId: id, generated: false })
+
+    const { rows } = await harness.pool.query(
+      "SELECT 1 FROM graphile_worker._private_jobs j JOIN graphile_worker._private_tasks t ON t.id = j.task_id WHERE t.identifier = 'optimize_recommendation_generate'",
+    )
+    expect(rows).toHaveLength(0)
+  })
+
+  it('regenerates once the scan has moved the evidence on', async () => {
+    const opportunity = await optimizeOpportunity()
+    await storedRecommendation(opportunity.id, new Date('2026-09-01T10:00:00.000Z'))
+    await harness.pool.query('UPDATE opportunities SET updated_at = $1 WHERE id = $2', [
+      '2026-09-02T10:00:00.000Z',
+      opportunity.id,
+    ])
+
+    const response = await post({ opportunityId: opportunity.id })
+    expect(await response.json()).toMatchObject({ state: 'generating' })
+  })
+
+  it('402s an account with no active subscription', async () => {
+    const unpaid = await insertAccount(harness.pool, 'unpaid@example.com')
+    const opportunity = await optimizeOpportunity()
+
+    const response = await post({ opportunityId: opportunity.id }, unpaid)
+    expect(response.status).toBe(402)
+  })
+
+  it('refuses an opportunity that is blocked on something else', async () => {
+    const opportunity = await optimizeOpportunity()
+    await harness.pool.query("UPDATE opportunities SET status = 'blocked' WHERE id = $1", [opportunity.id])
+
+    const response = await post({ opportunityId: opportunity.id })
+    expect(response.status).toBe(409)
+  })
+
+  it('schedules the outcome measurement 28 days after mark-applied', async () => {
+    const opportunity = await optimizeOpportunity()
+    const id = await storedRecommendation(opportunity.id)
+
+    const response = await apply(id)
+    expect(response.status).toBe(200)
+    const body = (await response.json()) as { appliedAt: string; outcomeDueAt: string }
+
+    const maturityDays = rules().defaults.learning.outcomes.maturity_days
+    expect(maturityDays).toBe(28)
+    expect(body.outcomeDueAt).toBe('2026-10-01T10:00:00.000Z')
+
+    const { rows } = await harness.pool.query<{ run_at: Date; payload: { opportunityId: string } }>(
+      "SELECT j.run_at, j.payload FROM graphile_worker._private_jobs j JOIN graphile_worker._private_tasks t ON t.id = j.task_id WHERE t.identifier = 'opportunity_outcome_measure'",
+    )
+    expect(rows).toHaveLength(1)
+    expect(rows[0]?.payload.opportunityId).toBe(opportunity.id)
+    expect(new Date(rows[0]!.run_at).toISOString()).toBe('2026-10-01T10:00:00.000Z')
+
+    const opportunityRow = await harness.pool.query<{ status: string; applied_at: Date }>(
+      'SELECT status, applied_at FROM opportunities WHERE id = $1',
+      [opportunity.id],
+    )
+    expect(opportunityRow.rows[0]?.status).toBe('completed')
+    expect(new Date(opportunityRow.rows[0]!.applied_at).toISOString()).toBe(NOW.toISOString())
+  })
+
+  it('marks one task applied without completing the opportunity', async () => {
+    const opportunity = await optimizeOpportunity()
+    const row = await storeOptimizeRecommendation(
+      harness.db,
+      accountScope(accountId),
+      {
+        opportunityId: opportunity.id,
+        pageUrl: PAGE_URL,
+        recommendationJson: recommendation(),
+        judgeScoresJson: null,
+        promptVersion: 'optimize-reco.v1',
+        modelId: 'claude-sonnet-5',
+        rulesVersion: rules().rulesVersion,
+        state: 'valid',
+      },
+      [
+        {
+          kind: 'title_rewrite',
+          description: 'Wide trail running shoes',
+          suggestedCopyRef: 'title_tag',
+          evidenceRefs: [],
+        },
+      ],
+    )
+
+    const listed = await read(opportunity.id)
+    const view = (await listed.json()) as { tasks: { id: string; state: string }[] }
+    expect(view.tasks).toHaveLength(1)
+
+    const response = await apply(row!.id, { taskId: view.tasks[0]?.id })
+    expect(response.status).toBe(200)
+
+    const status = await harness.pool.query<{ status: string }>(
+      'SELECT status FROM opportunities WHERE id = $1',
+      [opportunity.id],
+    )
+    expect(status.rows[0]?.status).toBe('new')
+  })
+
+  it('reads back the recommendation and notices the merchant applied the title', async () => {
+    const opportunity = await optimizeOpportunity()
+    await storedRecommendation(opportunity.id)
+    await harness.pool.query('UPDATE store_pages SET seo_title = $1 WHERE url = $2', [
+      'Wide trail running shoes',
+      PAGE_URL,
+    ])
+
+    const response = await read(opportunity.id)
+    const body = (await response.json()) as {
+      recommendation: { state: string; sections: { heading: string }[] }
+      looksApplied: { signals: string[] } | null
+    }
+
+    expect(body.recommendation.state).toBe('ready')
+    expect(body.recommendation.sections[0]?.heading).toBe('How to measure your forefoot')
+    expect(body.looksApplied?.signals).toContain('title_matches_suggestion')
+  })
+
+  it('shows a failed generation as one sentence and no partial output', async () => {
+    const opportunity = await optimizeOpportunity()
+    await storeOptimizeRecommendation(harness.db, accountScope(accountId), {
+      opportunityId: opportunity.id,
+      pageUrl: PAGE_URL,
+      recommendationJson: { failed: true, reasons: ['sections[0]: cites "product:x/y"'] },
+      judgeScoresJson: null,
+      promptVersion: 'optimize-reco.v1',
+      modelId: 'claude-sonnet-5',
+      rulesVersion: rules().rulesVersion,
+      state: 'failed_validation',
+    })
+
+    const response = await read(opportunity.id)
+    const body = (await response.json()) as {
+      recommendation: { state: string; sections: unknown[]; failureReason: { templateKey: string } }
+    }
+
+    expect(body.recommendation.state).toBe('failed_validation')
+    expect(body.recommendation.sections).toEqual([])
+    expect(body.recommendation.failureReason.templateKey).toBe('optimize.failedValidation.reason')
+    expect(JSON.stringify(body)).not.toContain('product:x/y')
+  })
+
+  it('downloads the recommendation as Markdown and as HTML', async () => {
+    const opportunity = await optimizeOpportunity()
+    const id = await storedRecommendation(opportunity.id)
+
+    const markdown = await download(id, 'md')
+    expect(markdown.headers.get('content-type')).toContain('text/markdown')
+    expect(markdown.headers.get('content-disposition')).toContain('attachment')
+    const text = await markdown.text()
+    expect(text).toContain('# Page recommendations')
+    expect(text).toContain('trail running shoes for wide feet')
+    expect(text).toContain('Sortiva does not change your store.')
+
+    const html = await download(id, 'html')
+    expect(html.headers.get('content-type')).toContain('text/html')
+    expect(await html.text()).toContain('<h1>Page recommendations</h1>')
+  })
+
+  it('will not download another account\'s recommendation', async () => {
+    const opportunity = await optimizeOpportunity()
+    const id = await storedRecommendation(opportunity.id)
+    const other = await insertAccount(harness.pool, 'other@example.com')
+
+    const response = await withAccount(makeDownloadRecommendationHandler(deps()), async () => other)(
+      new Request(`http://localhost/api/recommendations/${id}/download?format=md`),
+      { params: Promise.resolve({ id }) },
+    )
+
+    expect(response.status).toBe(404)
+  })
+})

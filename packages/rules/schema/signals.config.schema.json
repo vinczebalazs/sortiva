@@ -587,7 +587,8 @@
         "existing_target_check",
         "evidence_pack_check",
         "draft_grading",
-        "draft_lints"
+        "draft_lints",
+        "optimize_recommendation"
       ],
       "properties": {
         "demand_floor": {
@@ -767,6 +768,64 @@
               "type": "number",
               "exclusiveMinimum": 0,
               "maximum": 1
+            }
+          }
+        },
+        "optimize_recommendation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "grounding_min",
+            "intent_match_min",
+            "regenerations_max",
+            "title_max_chars",
+            "meta_description_max_chars",
+            "duplicate_paragraph_similarity_max",
+            "duplicate_paragraph_shingle_words",
+            "keyword_density_max",
+            "internal_link_candidates_max"
+          ],
+          "properties": {
+            "grounding_min": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5
+            },
+            "intent_match_min": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5
+            },
+            "regenerations_max": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "title_max_chars": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "meta_description_max_chars": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "duplicate_paragraph_similarity_max": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1
+            },
+            "duplicate_paragraph_shingle_words": {
+              "type": "integer",
+              "minimum": 2
+            },
+            "keyword_density_max": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1
+            },
+            "internal_link_candidates_max": {
+              "type": "integer",
+              "minimum": 1
             }
           }
         }
