@@ -1,19 +1,8 @@
-import {
-  accountAttribution,
-  toContractOpportunity,
-  type NotificationEmitter,
-  type Opportunity,
-} from '@sortiva/core'
-import {
-  accountScope,
-  acceptedContentOpportunities as acceptedContentOpportunityRows,
-  systemScope,
-  transitionOpportunityStatus,
-} from '@sortiva/db'
-import { rules } from '@sortiva/rules'
+import { accountAttribution, type NotificationEmitter } from '@sortiva/core'
+import { accountScope, accountsReadyForPlanning, systemScope, transitionOpportunityStatus } from '@sortiva/db'
 import { DbTopicScheduler, TopicSchedulingError } from '../generation/topic-scheduler'
-import { accountsReadyForPlanning } from '@sortiva/db'
 import { runtimeLogger } from '../runtime/logging'
+import { DbOpportunitySource } from './opportunity-source'
 import { runSignalScan, type RunSignalScanDeps } from './run'
 
 /**
@@ -75,37 +64,18 @@ export async function runOnboardingScan(
 
 async function seedCalendar(deps: OnboardingScanDeps, accountId: string, log: ReturnType<typeof runtimeLogger>): Promise<number> {
   const scope = accountScope(accountId)
-  const confidenceConfig = rules().defaults.scoring.confidence
-  const rows = await acceptedContentOpportunityRows(deps.db, scope)
+  // The frozen `OpportunitySource` seam itself, not a hand-rolled read: this
+  // is the real "calendar-seeding" caller the seam's own contract comment
+  // names main §6.9's onboarding run as, and it is what `pnpm stubs:report`
+  // checks for at the M3 exit gate — the stand-in (`StubOpportunitySource`)
+  // is removed from that script in this same commit precisely because this
+  // is now a genuine caller, not merely an export. See DECISIONS 2026-09-03 T3.7.
+  const source = new DbOpportunitySource(deps.db)
+  const opportunities = await source.acceptedContentOpportunities(accountId)
   const scheduler = new DbTopicScheduler({ db: deps.db, ...(deps.now ? { now: deps.now } : {}) })
 
   let scheduled = 0
-  for (const row of rows) {
-    const opportunity: Opportunity = toContractOpportunity(
-      {
-        id: row.id,
-        accountId: row.accountId,
-        signalType: row.signalType,
-        entityType: row.entityType,
-        entityRef: row.entityRef,
-        evidenceJson: row.evidenceJson,
-        impact: row.impact,
-        impactScore: row.impactScore,
-        confidence: row.confidence,
-        reasonTemplateKey: row.reasonTemplateKey,
-        reasonParamsJson: row.reasonParamsJson,
-        recommendedAction: row.recommendedAction,
-        preconditionsJson: row.preconditionsJson,
-        status: row.status,
-        rulesVersion: row.rulesVersion,
-        limitedIntelligence: row.limitedIntelligence,
-        detectedAt: row.detectedAt,
-        updatedAt: row.updatedAt,
-        expiredReason: row.expiredReason,
-      },
-      confidenceConfig,
-    )
-
+  for (const opportunity of opportunities) {
     try {
       await scheduler.schedule(opportunity)
       // `TopicScheduler.schedule()` (Lane D, `T4.2`) sets `topics.opportunity_id`
@@ -121,7 +91,7 @@ async function seedCalendar(deps: OnboardingScanDeps, accountId: string, log: Re
       // caller of `.schedule()` and needs the same guarded transition on its
       // own side, or its own re-runs will hit the identical
       // double-schedule risk. See DECISIONS 2026-09-03 T3.7.
-      await transitionOpportunityStatus(deps.db, scope, row.id, { from: ['accepted'], to: 'scheduled' })
+      await transitionOpportunityStatus(deps.db, scope, opportunity.id, { from: ['accepted'], to: 'scheduled' })
       scheduled += 1
     } catch (error) {
       if (error instanceof TopicSchedulingError) {
@@ -132,8 +102,8 @@ async function seedCalendar(deps: OnboardingScanDeps, accountId: string, log: Re
         // builds one, or at the next weekly scan's own re-detection.
         log.warn('onboarding_scan.schedule_failed', {
           account_id: accountId,
-          opportunity_id: row.id,
-          signal_type: row.signalType,
+          opportunity_id: opportunity.id,
+          signal_type: opportunity.signalType,
           error: error.message,
         })
         continue
