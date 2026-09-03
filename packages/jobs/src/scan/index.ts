@@ -20,8 +20,27 @@ export {
 
 export {
   CTR_CURVE_REFIT_TASK,
+  SIGNAL_SCAN_ONBOARDING_SWEEP_TASK,
+  SIGNAL_SCAN_WEEKLY_TASK,
   registerScanTasks,
+  registerSignalScanTasks,
   resetScanTaskRegistration,
+  resetSignalScanTaskRegistration,
   runCtrCurveRefit,
   type ScanTaskDeps,
+  type SignalScanTaskDeps,
 } from './tasks'
+
+export { runSignalScan, type RunSignalScanDeps, type SignalRunKind, type SignalRunOutcome } from './run'
+
+export {
+  runOnboardingScan,
+  sweepOnboardingRuns,
+  type OnboardingScanDeps,
+  type OnboardingScanResult,
+  type OnboardingSweepDeps,
+} from './onboarding'
+
+export { sweepWeeklyScans, weeklyRunId, type WeeklyScanDeps } from './weekly'
+
+export { runEventDrivenScan } from './event'

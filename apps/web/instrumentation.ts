@@ -74,7 +74,7 @@ export async function register() {
   // onboarding, because it is queued from a form long after onboarding is over
   // and runs ahead of the sweeps so the chip on their screen fills in.
   const { registerKeywordEnrichTask } = await import('@sortiva/jobs/ingestion/enrich')
-  const { adminClient, ingestionDeps, notificationEmitter } = await import(
+  const { adminClient, ingestionDeps, notificationEmitter, seoProvider } = await import(
     './app/api/shopify/_lib/config'
   )
   registerIngestionTasks(ingestionDeps)
@@ -158,8 +158,20 @@ export async function register() {
   // Rebuilding the intents a store is searched for is deliberately not here: it
   // has to be current at the moment the weekly signal scan reads it, so the scan
   // calls `rebuildQueryClustersForAccount` rather than a schedule of its own.
-  const { registerScanTasks } = await import('@sortiva/jobs')
+  const { registerScanTasks, registerSignalScanTasks } = await import('@sortiva/jobs')
   registerScanTasks({ getDb: db, getPool: dbPool })
+
+  // The Opportunity Engine's own three cadences (main §7.5): the onboarding
+  // activation run, the weekly signal scan, and the crontab's own
+  // per-account-local-clock sweeps for both — the same shared composition
+  // root every other lane's tasks already come from here.
+  registerSignalScanTasks({
+    getDb: db,
+    getPool: dbPool,
+    seo: seoProvider(),
+    notifications: notificationEmitter(),
+    capture: analytics,
+  })
 
   // Email: the minute-by-minute drain that turns each queued row into a job,
   // the job that sends one, and the two sweeps that schedule mail on a clock —

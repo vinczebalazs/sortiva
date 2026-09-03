@@ -44,8 +44,26 @@ export const CRON_ENTRIES: readonly CronEntry[] = [
   },
   {
     task: 'signal_scan_weekly',
-    schedule: '0 6 * * 1',
-    why: 'The weekly signal scan. The task filters to accounts for whom it is locally Monday, because the schedule cannot express per-account time zones.',
+    schedule: '0 * * * *',
+    why:
+      'The weekly signal scan. Hourly, not weekly: a one-shot run at a single UTC moment can never ' +
+      'be "locally Monday" for every timezone at once — a store far enough west of UTC would never ' +
+      'match and would go permanently unscanned, not just late — so this follows the same proven ' +
+      'per-account-clock pattern the monthly summary sweep already uses. (This entry\'s schedule was ' +
+      'a placeholder before the task had a real implementation behind it; see DECISIONS 2026-09-03 ' +
+      'T3.7 for why it changed.) Re-running 24 times a day costs nothing: `run_id` is derived from ' +
+      'the account\'s own local Monday date, so every hour after the one that matched finds the run ' +
+      'already finished and does nothing.',
+  },
+  {
+    task: 'signal_scan_onboarding_sweep',
+    schedule: '*/5 * * * *',
+    why:
+      'The onboarding run (main §6.9, "the activation moment"): confirming a profile has no port to ' +
+      'start it directly (the confirm-profile route predates this card, T3.7), so this polls for a ' +
+      'confirmed account with no finished onboarding scan yet, the same shape every other ' +
+      '"start the next thing" sweep in this codebase already uses. Every run after the one that ' +
+      'starts a given account\'s scan finds it already finished and does nothing.',
   },
   {
     task: 'ctr_curve_refit_weekly',

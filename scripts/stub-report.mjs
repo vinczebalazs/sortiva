@@ -31,7 +31,17 @@ const doubles = await import('../packages/core/src/contracts/doubles.ts')
 // (Lane D's topic gate). What has changed is that a caller can no longer get a
 // silent "no match": the stand-in is gone, and a new page cannot be proposed
 // without the clearance only the real check mints.
-new doubles.StubOpportunitySource()
+//
+// `StubOpportunitySource` is deliberately not constructed, from 2026-09-03:
+// `T3.6` filled the seam (`DbOpportunitySource`, `packages/jobs/src/scan/
+// opportunity-source.ts`) and `T3.7` gave it a real production caller —
+// `runOnboardingScan`'s calendar-seeding step (`packages/jobs/src/scan/
+// onboarding.ts`) constructs it and calls `.acceptedContentOpportunities()`,
+// not a hand-rolled read of the same table. Checked end to end, the same bar
+// the notifications-seam note above sets: `sweepOnboardingRuns` is
+// registered as the `signal_scan_onboarding_sweep` crontab task in
+// `apps/web/instrumentation.ts`, so a confirmed account really does reach
+// this seam in production, not merely in a test.
 new doubles.StubTopicScheduler()
 new doubles.StubJudgeLite()
 // `StubCatalogEvents` is listed again, from 2026-09-03, and the note that used

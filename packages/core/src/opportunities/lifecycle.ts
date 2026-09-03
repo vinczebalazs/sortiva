@@ -1,4 +1,4 @@
-import type { OpportunityStatus } from '../contracts/opportunities'
+import type { OpportunityAction, OpportunityStatus } from '../contracts/opportunities'
 
 /**
  * The status machine main §7.9 draws in prose, as a graph a caller can check
@@ -58,6 +58,47 @@ export class InvalidOpportunityTransitionError extends Error {
 /** Throws rather than returning a boolean, matching `assertClearedToCreate`'s posture: there is no sensible way to carry on with an illegal move. */
 export function assertCanTransition(from: OpportunityStatus, to: OpportunityStatus): void {
   if (!canTransition(from, to)) throw new InvalidOpportunityTransitionError(from, to)
+}
+
+/**
+ * What re-detection should do about a row's status when this pass's fresh
+ * preconditions disagree with what the stored row already says — closing the
+ * gap `T3.6`'s scheduled audit found (HIGH, 2026-09-03): `upsertOpportunity`
+ * deliberately never touches `status` on an update, which protects a
+ * merchant's in-progress work from being reset backward, but also means a
+ * technical blocker discovered *after* a CREATE/REFRESH auto-accepted never
+ * actually re-blocks it — `acceptedContentOpportunities()`, the exact seam
+ * Lane D's replenishment and calendar-seeding read, keeps returning a row that
+ * should no longer be offered.
+ *
+ * Deliberately narrow. Only `new`, `accepted` and `blocked` are considered:
+ * `scheduled`/`executing` are the calendar's own territory (`topics`' state
+ * machine, Lane D, `T4.2`) the instant a topic exists for the row, and a
+ * signal-detection pass reaching past that into a topic already placed or
+ * generating is exactly the kind of cross-lane reach this card's directories
+ * do not extend to. So this closes the gap for the window that matters most —
+ * before Lane D ever sees the row — and leaves the rest of the merchant's
+ * progress exactly where `T3.6` left it. See DECISIONS 2026-09-03 T3.7.
+ *
+ * Also completes the promise `T3.6`'s own journal named but did not build:
+ * main §7.9's "blocked — re-evaluated automatically" and the HOLD view's own
+ * copy ("we'll re-check automatically after your next scan") are honoured in
+ * the same pass, symmetrically — a row whose precondition has cleared moves
+ * back out of `blocked`, using the same edge `T3.6`'s lifecycle graph already
+ * allows.
+ */
+export function reconcileStatusWithPreconditions(
+  current: OpportunityStatus,
+  action: OpportunityAction,
+  preconditionsNowEmpty: boolean,
+): { readonly to: OpportunityStatus } | null {
+  if ((current === 'new' || current === 'accepted') && !preconditionsNowEmpty) {
+    return { to: 'blocked' }
+  }
+  if (current === 'blocked' && preconditionsNowEmpty) {
+    return { to: action === 'CREATE' || action === 'REFRESH' ? 'accepted' : 'new' }
+  }
+  return null
 }
 
 /**

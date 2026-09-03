@@ -95,6 +95,12 @@ export function detectUncoveredCommercialQueries(
         ...(coverage.strength === 'weak' && coverage.url
           ? [{ key: 'existing_target_url', value: coverage.url, source: INVENTORY_SOURCE }]
           : []),
+        // One fact per mapped family — the `TopicScheduler`/`Opportunity`
+        // contract has no channel for an array (DECISIONS 2026-09-03 T4.2's
+        // flagged gap), so a repeated key is the encoding. `backed`, not
+        // `candidate.familyIds`: the families this opportunity is actually
+        // backed by, the ones a generated article would draw from.
+        ...backed.map((familyId) => ({ key: 'family_id', value: familyId, source: INVENTORY_SOURCE })),
       ]),
     })
   }
