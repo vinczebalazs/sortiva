@@ -1,8 +1,10 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import type pg from 'pg'
+import { OVERRIDE_GATE_OUTCOME } from '@sortiva/core'
 import { accountScope } from './scope'
 import type { Db } from './client'
 import {
+  articlesReadyForDelivery,
   findArticleById,
   gateDecisionsForCalibration,
   insertGateDecision,
@@ -46,7 +48,8 @@ describe.skipIf(!available)('the override path and the calibration exclusion', (
   })
 
   /** An article and the topic it came from, both real rows — the chain the audit trail needs. */
-  async function anArticle(slug: string): Promise<{ topicId: string; articleId: string }> {
+  async function anArticle(slug: string, owner?: string): Promise<{ topicId: string; articleId: string }> {
+    const ownerId = owner ?? accountId
     const { rows: opportunity } = await pool.query<{ id: string }>(
       `INSERT INTO opportunities
          (account_id, signal_type, entity_type, entity_ref, evidence_json, impact,
@@ -54,19 +57,19 @@ describe.skipIf(!available)('the override path and the calibration exclusion', (
        VALUES ($1,'uncovered_commercial_query','query_cluster',$2,'[]'::jsonb,'high',
           80, 70, 'uncovered_commercial_query.default', 'create', 'abc123')
        RETURNING id`,
-      [accountId, `cluster:${slug}`],
+      [ownerId, `cluster:${slug}`],
     )
     const { rows: topic } = await pool.query<{ id: string }>(
       `INSERT INTO topics (account_id, opportunity_id, title, intent_class, source, scheduled_date)
        VALUES ($1,$2,$3,'buying_guide','auto','2026-10-01')
        RETURNING id`,
-      [accountId, opportunity[0]!.id, slug],
+      [ownerId, opportunity[0]!.id, slug],
     )
     const { rows: article } = await pool.query<{ id: string }>(
       `INSERT INTO articles (account_id, topic_id, title, slug)
        VALUES ($1,$2,$3,$4)
        RETURNING id`,
-      [accountId, topic[0]!.id, slug, slug],
+      [ownerId, topic[0]!.id, slug, slug],
     )
     return { topicId: topic[0]!.id, articleId: article[0]!.id }
   }
@@ -141,5 +144,108 @@ describe.skipIf(!available)('the override path and the calibration exclusion', (
     const [row] = await gateDecisionsForCalibration(db, scope)
     expect(row?.promptVersion).toBe('judge.v1')
     expect(row?.modelId).toBe('claude-sonnet-5')
+  })
+
+  /**
+   * The other half of "publish anyway": the article has to be able to go out.
+   *
+   * `articlesReadyForDelivery` is the single read that answers "which finished
+   * articles go out today", and until this landed it asked only whether the
+   * quality bar had passed the article's topic. An overridden article's only
+   * decision is the rejection, so it could never be returned — the one case
+   * "publish anyway" exists to serve would have been the one case that never
+   * went out.
+   */
+  describe('what an override makes deliverable', () => {
+    /** A rejection recorded on the topic, so the article's only decision is a refusal. */
+    async function reject(topicId: string): Promise<void> {
+      await insertGateDecision(db, accountScope(accountId), {
+        topicId,
+        gate: 3,
+        outcome: 'rejected_after_repair',
+        scoresJson: { scores: { informationGain: 2 } },
+        reasonUserFacing: 'gate3.below_quality_bar',
+        promptVersion: 'judge.v1',
+        modelId: 'claude-sonnet-5',
+      })
+    }
+
+    it('delivers an article the merchant overruled, and still not one nobody graded', async () => {
+      const scope = accountScope(accountId)
+      const overridden = await anArticle('overruled-and-delivered')
+      const ungraded = await anArticle('never-graded')
+
+      await reject(overridden.topicId)
+      await markArticleRejectedByGate(db, scope, overridden.articleId)
+      await markArticleOverridden(db, scope, overridden.articleId)
+
+      const ready = await articlesReadyForDelivery(db, scope)
+      expect(ready.map((a) => a.id)).toEqual([overridden.articleId])
+      // The half-written article from a run that died before the judge sits in
+      // the same state and must stay out.
+      expect(ready.some((a) => a.id === ungraded.articleId)).toBe(false)
+    })
+
+    /**
+     * Nothing writes this outcome yet — the override route is not built. The
+     * arm exists so that when it is built and records the decision, delivery
+     * already accepts it. Planted by hand here for exactly that reason.
+     */
+    it('delivers an article whose override was recorded as a gate 3 decision', async () => {
+      const scope = accountScope(accountId)
+      const { topicId, articleId } = await anArticle('recorded-override')
+
+      await reject(topicId)
+      await insertGateDecision(db, scope, {
+        topicId,
+        gate: 3,
+        outcome: OVERRIDE_GATE_OUTCOME,
+        scoresJson: { scores: { informationGain: 2 } },
+        reasonUserFacing: null,
+        promptVersion: 'judge.v1',
+        modelId: 'claude-sonnet-5',
+      })
+
+      // The flag is deliberately not set: this proves the decision row alone
+      // is enough.
+      expect((await findArticleById(db, scope, articleId))?.publishedViaOverride).toBe(false)
+      expect((await articlesReadyForDelivery(db, scope)).map((a) => a.id)).toEqual([articleId])
+    })
+
+    /**
+     * Invariant 12, restated where it is easiest to break: being deliverable
+     * and being learned from are separate questions, and the override answers
+     * them differently.
+     */
+    it('delivers the overridden article without letting it back into the calibration data', async () => {
+      const scope = accountScope(accountId)
+      const overridden = await anArticle('delivered-not-learned-from')
+
+      await reject(overridden.topicId)
+      await markArticleRejectedByGate(db, scope, overridden.articleId)
+      await markArticleOverridden(db, scope, overridden.articleId)
+
+      expect((await articlesReadyForDelivery(db, scope)).map((a) => a.id)).toEqual([overridden.articleId])
+      expect(await gateDecisionsForCalibration(db, scope)).toEqual([])
+    })
+
+    it('does not show one account the other account’s overridden article', async () => {
+      const otherId = await insertAccount(pool, 'other-override@example.com')
+      const theirs = await anArticle('their-override', otherId)
+      const otherScope = accountScope(otherId)
+
+      await insertGateDecision(db, otherScope, {
+        topicId: theirs.topicId,
+        gate: 3,
+        outcome: 'rejected_after_repair',
+        scoresJson: { scores: { informationGain: 2 } },
+        reasonUserFacing: 'gate3.below_quality_bar',
+      })
+      await markArticleRejectedByGate(db, otherScope, theirs.articleId)
+      await markArticleOverridden(db, otherScope, theirs.articleId)
+
+      expect((await articlesReadyForDelivery(db, otherScope)).map((a) => a.id)).toEqual([theirs.articleId])
+      expect(await articlesReadyForDelivery(db, accountScope(accountId))).toEqual([])
+    })
   })
 })

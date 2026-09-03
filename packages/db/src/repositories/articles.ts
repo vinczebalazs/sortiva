@@ -1,4 +1,5 @@
-import { and, desc, eq, inArray, isNotNull } from 'drizzle-orm'
+import { and, desc, eq, inArray, isNotNull, or } from 'drizzle-orm'
+import { OVERRIDE_GATE_OUTCOME } from '@sortiva/core'
 import type { Db } from '../client'
 import { articles, gateDecisions } from '../schema'
 import type { AccountScope } from '../scope'
@@ -189,23 +190,42 @@ export async function discardArticleGuarded(
  * `state = 'draft'` alone does not mean that: the row is created before the
  * writer runs, so a crash between the writer and the judge leaves a `draft`
  * that has never been graded, indistinguishable by state from one that passed.
- * The Gate 3 decision on its topic is what tells them apart, so this asks both
- * questions at once. Anything that publishes, exports or counts finished
+ * Something other than the state has to tell them apart, so this asks for one
+ * of three things as well. Anything that publishes, exports or counts finished
  * articles must come through here rather than reading the state alone.
+ *
+ * The three ways a draft earns delivery:
+ *
+ *  1. **The quality bar passed it** — the ordinary case.
+ *  2. **The merchant overruled a rejection.** "Publish anyway" sets the
+ *     permanent flag and returns the article to `draft`; it deliberately does
+ *     not touch the decision trail, so the only decision on that topic stays
+ *     the rejection. Without this arm the one case "publish anyway" exists to
+ *     serve would be the one case that never went out.
+ *  3. **An override that was recorded as a decision.** Nothing writes this
+ *     outcome yet. It is accepted here so that when the override route is
+ *     built and records it alongside the flag, delivery already works — and
+ *     still works if whoever builds it records only one of the two.
+ *
+ * Delivering an overridden article is the *only* thing the flag stops
+ * standing in the way of. It still keeps the article out of the data the
+ * quality bar is tuned against, out of pattern learning and out of every
+ * claim we make about how our articles perform; those exclusions live in
+ * their own queries and this changes none of them.
  */
 export async function articlesReadyForDelivery(
   db: Db,
   scope: AccountScope,
   limit = 50,
 ): Promise<ArticleRow[]> {
-  const passed = db
+  const cleared = db
     .select({ topicId: gateDecisions.topicId })
     .from(gateDecisions)
     .where(
       and(
         eq(gateDecisions.accountId, scope.accountId),
         eq(gateDecisions.gate, 3),
-        eq(gateDecisions.outcome, 'passed'),
+        inArray(gateDecisions.outcome, ['passed', OVERRIDE_GATE_OUTCOME]),
       ),
     )
 
@@ -216,7 +236,7 @@ export async function articlesReadyForDelivery(
       and(
         eq(articles.accountId, scope.accountId),
         eq(articles.state, 'draft'),
-        inArray(articles.topicId, passed),
+        or(inArray(articles.topicId, cleared), eq(articles.publishedViaOverride, true)),
       ),
     )
     .orderBy(desc(articles.updatedAt))
