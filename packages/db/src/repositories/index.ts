@@ -1,4 +1,6 @@
 export * from './accounts'
+export * from './article-claims'
+export * from './article-product-refs'
 export * from './articles'
 export * from './catalog'
 export * from './catalog-events'

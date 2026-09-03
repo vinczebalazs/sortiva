@@ -145,6 +145,37 @@ export async function beginGenerating(
 }
 
 /**
+ * Gate 2 (or Gate 3, `T4.4`) held or rejected the topic mid-generation —
+ * main §8.7: "a scheduled topic can still fail Gate 2/3 after generating...
+ * the calendar never silently shows fewer published articles than were
+ * scheduled." Guarded on `generating`, the one state this can fire from: a
+ * gate runs only after the daily dequeue's `beginGenerating` flip, and a
+ * concurrent veto that already moved the topic to `vetoed` must not be
+ * clobbered by a gate result that was already in flight (the same race
+ * `vetoTopicGuarded`'s own comment names).
+ *
+ * No reason is written here: `topics.veto_reason` is the merchant's own veto
+ * text (main §8.7), not a gate's — the calendar already reads a gate
+ * rejection's reason from `gate_decisions.reason_user_facing`, keyed by
+ * `(topic_id, gate)`, per `T4.2`'s `latestGateDecisionsForTopics`. Writing
+ * the same words into `veto_reason` too would give the calendar two sources
+ * of truth for one sentence.
+ */
+export async function rejectTopicByGateGuarded(
+  db: Db,
+  scope: AccountScope,
+  topicId: string,
+  now: Date = new Date(),
+): Promise<TopicRow | undefined> {
+  const [row] = await db
+    .update(topics)
+    .set({ state: 'rejected_by_gate', updatedAt: now })
+    .where(and(eq(topics.accountId, scope.accountId), eq(topics.id, topicId), eq(topics.state, 'generating')))
+    .returning()
+  return row
+}
+
+/**
  * The veto transition, guarded on the topic still being in one of the three
  * states main §8.7 allows a veto from (`planned`, `generating`, `in_review`).
  * `undefined` means the guard failed — the topic had already resolved, or a
