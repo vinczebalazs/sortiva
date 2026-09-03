@@ -264,6 +264,18 @@ describe('runGate3 — the judge, the floors and the single repair loop', () => 
     expect(repairs).toBe(1)
   })
 
+  it('reports a judge failure with the repair loop turned off as exactly that, not as a repair that happened', async () => {
+    const llm = new RecordingLlmClient({ 'judge.v1': verdict({ actionability: 2 }) })
+    const result = await runGate3(
+      { llm, judgePrompt: JUDGE_PROMPT, contradictionPrompt: CONTRADICTION_PROMPT },
+      input(passingDraft(plan)),
+    )
+
+    expect(result.outcome).toBe('rejected_judge')
+    expect(result.repaired).toBe(false)
+    expect(result.calls).toEqual({ judge: 1, contradiction: 0, repair: 0 })
+  })
+
   it('a draft failing only information gain is rejected with zero repair calls (call-count assertion)', async () => {
     const llm = new RecordingLlmClient({ 'judge.v1': verdict({ informationGain: 2 }) })
     let repairs = 0
@@ -282,6 +294,7 @@ describe('runGate3 — the judge, the floors and the single repair loop', () => 
 
     expect(result.outcome).toBe('rejected_no_information_gain')
     expect(result.reasonTemplateKey).toBe('gate3.no_information_gain')
+    expect(result.repaired).toBe(false)
     // No rewrite adds material the research never gathered, so the repair call
     // is not spent — founder decision, 2026-09-01.
     expect(repairs).toBe(0)

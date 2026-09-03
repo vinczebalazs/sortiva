@@ -45,6 +45,8 @@ export type Gate3Outcome =
   | 'rejected_lint'
   | 'rejected_contradiction'
   | 'rejected_no_information_gain'
+  /** Failed the judge with no repair available — a configuration with the loop turned off. */
+  | 'rejected_judge'
   | 'rejected_after_repair'
 
 export interface Gate3ModelCalls {
@@ -239,7 +241,9 @@ export async function runGate3(deps: Gate3Deps, input: Gate3Input): Promise<Gate
   // gathered. Founder decision, 2026-09-01 (`DECISIONS.md`).
   if (first.evaluation.informationGainFailed || !deps.repairWriter || input.gates.draft_grading.repair_loops_max < 1) {
     return {
-      outcome: first.evaluation.informationGainFailed ? 'rejected_no_information_gain' : 'rejected_after_repair',
+      // Not `rejected_after_repair`: no repair was attempted here, and the
+      // outcome string is what lands on the audit row.
+      outcome: first.evaluation.informationGainFailed ? 'rejected_no_information_gain' : 'rejected_judge',
       passed: false,
       draft: input.draft,
       repaired: false,
