@@ -1,0 +1,185 @@
+/*
+ * Settings: the left sub-nav and the four panels it switches between.
+ *
+ * Colours and shape come from `tokens.css`. Each panel is a plain stack of
+ * rows — settings are read once and changed rarely, so nothing here competes
+ * for attention the way a dashboard or an opportunity card does.
+ */
+
+.sortiva-settings {
+  display: flex;
+  gap: 32px;
+  max-width: 1000px;
+}
+
+.sortiva-settings__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 160px;
+}
+
+.sortiva-settings__nav a {
+  padding: 8px 12px;
+  border-radius: var(--sortiva-radius-inner);
+  color: var(--sortiva-text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.sortiva-settings__nav a[aria-current='page'] {
+  background: var(--sortiva-accent-soft);
+  color: var(--sortiva-accent);
+  font-weight: 600;
+}
+
+.sortiva-settings__panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.sortiva-settings__panel h1 {
+  margin: 0;
+  font-family: var(--sortiva-font-heading);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.sortiva-settings__panel h2 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sortiva-settings__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 0;
+  border-top: 1px solid var(--sortiva-line);
+  flex-wrap: wrap;
+}
+
+.sortiva-settings__note {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: var(--sortiva-text-muted);
+  max-width: 56ch;
+}
+
+.sortiva-settings__error {
+  color: var(--sortiva-critical);
+  font-size: 12.5px;
+}
+
+.sortiva-settings__saved {
+  color: var(--sortiva-positive);
+  font-size: 12.5px;
+}
+
+.sortiva-settings__info {
+  font-size: 12.5px;
+  color: var(--sortiva-text-muted);
+  font-style: italic;
+}
+
+.sortiva-settings__inline-card {
+  padding: 16px;
+  border-radius: var(--sortiva-radius-inner);
+  background: var(--sortiva-surface-sunken);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sortiva-settings__button-row {
+  display: flex;
+  gap: 8px;
+}
+
+.sortiva-settings__billing-card {
+  padding: 18px;
+  border-radius: var(--sortiva-radius-inner);
+  background: var(--sortiva-surface-sunken);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sortiva-settings__billing-status {
+  margin: 0;
+  font-weight: 600;
+}
+
+.sortiva-settings__facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 16px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.sortiva-settings__facts dt {
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-settings__facts-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12.5px;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-settings__danger-zone {
+  padding: 16px;
+  border-radius: var(--sortiva-radius-inner);
+  border: 1px solid var(--sortiva-critical-soft);
+  background: var(--sortiva-critical-soft);
+}
+
+.sortiva-settings__danger-button {
+  background: var(--sortiva-critical);
+  color: #fff;
+  border: none;
+  border-radius: var(--sortiva-radius-inner);
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.sortiva-settings__danger-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.sortiva-settings__modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(21, 25, 42, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+}
+
+.sortiva-settings__modal {
+  width: 420px;
+  max-width: calc(100vw - 32px);
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius);
+  box-shadow: var(--sortiva-shadow-raised);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sortiva-settings__modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}

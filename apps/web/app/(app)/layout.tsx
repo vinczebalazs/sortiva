@@ -3,6 +3,7 @@ import {
   AppShell,
   bannerContextFromAccount,
   navContextFromAccount,
+  NotificationBell,
   resolveLanguage,
   createTranslate,
   type ShellAccount,
@@ -51,6 +52,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         banners={bannerContextFromAccount(account as ShellAccount, {
           vacationMode: settings?.vacationMode ?? false,
         })}
+        toolbar={account.accountId ? <NotificationBell t={t} /> : null}
       >
         {children}
       </AppShell>

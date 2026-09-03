@@ -44,7 +44,11 @@ export const BANNERS: readonly BannerDefinition[] = [
     tone: 'critical',
     messageKey: 'banner.paymentFailed',
     actionKey: 'banner.paymentFailed.action',
-    actionHref: '/settings/billing',
+    // Billing lives under Settings → Account (ui §9.4), not a page of its own;
+    // `packages/core/src/billing/checkout.ts` already sends the Stripe Portal
+    // back to `/settings/account`, so this matches rather than invents a second
+    // convention.
+    actionHref: '/settings/account',
     dismissible: false,
   },
   {
