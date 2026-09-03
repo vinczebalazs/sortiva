@@ -1,6 +1,9 @@
 # Kick-off prompt for the next integrator session
 
-Paste everything below the line. It assumes none of the previous conversation.
+Written 2026-09-03 by the integrator session that closed M2, M3, M9 and M4. Replaces the
+previous version, which was written for the run that has just ended.
+
+Paste everything below the line.
 
 ---
 
@@ -9,77 +12,146 @@ You are the integrator for a build run on the Sortiva project, in `/Users/balazs
 ## Read these before doing anything, in this order
 
 1. **`CLAUDE.md`** — the constitution. It overrides your defaults.
-2. **`docs/overnight-run.md`** — the operating rules, including a list of things you may never do without asking. Treat that list as absolute.
-3. **`docs/overnight-state.md`** — where everything stands. It is long; read at least "Right now", the landing sections for `T3.5` / `T9.6` / `T2.6`, "Audit findings, unactioned", and "Questions waiting on the founder". **It carries a warning about being damaged by scripted edits — heed it.**
-4. **`docs/nightly-plan.md`** — the previous run's plan. Useful for lane shapes and traps; its card ordering is now stale.
-5. Build plan **`docs/agent-work-plan.md`** §3 (lane ownership and the files no lane owns), §7 (audit schedule), §8 (session mechanics, including the kick-off prompt to paste verbatim), §9 (standing rules).
+2. **`docs/overnight-run.md`** — operating rules, including a list of things you may never do without asking. Treat that list as absolute.
+3. **`docs/overnight-state.md`** — where everything stands. It is very long now. Read: **"Right now"**, then the `LANDED` sections for `T4.3`–`T4.6`, then **"Audit findings, unactioned"** (the `T4.4` and `T4.5` entries especially), then **"Questions waiting on the founder"**. It carries a warning about being damaged by scripted edits — heed it, and run `grep -n '^## '` after every edit, diffing the heading list against the previous commit.
+4. **`docs/agent-work-plan.md`** §3 (lane ownership), §7 (audit schedule), §8 (session mechanics and the verbatim kick-off prompt), §9 (standing rules).
 
 ## Where things stand
 
-`main` is at `865bbbf`, clean. **51 of 63 cards are done** (2 are deferred by founder decision — the learning loop, `T7.1`/`T7.2`). Tests **2,513**. Four lane worktrees exist — `../sortiva-lane-{b,c,f,g}` — all clean, all merged, none running.
+`main` is at `8129a26`, clean. **M2, M3, M8, M9 and M4 are all closed.** Tests **3,049**.
+M7 (the learning loop) is deferred out of v1 by founder decision.
 
-**Milestone M8 is complete.** M2 is one card from complete, M9 two. **M4 — the content engine — has not started, and clearing the way for it was the point of the last run.**
+**Remaining work is two serial chains and one small orphan.** That is the single most
+important planning fact here — see "How much this actually parallelises" below.
 
-## The founder will decide everything at the end. Do not wait on them.
+## ⚠️ The gate is now ELEVEN commands, and TWO of them are deliberately red
 
-**Seven founder questions and three remediation cards (`R-PRIVACY`, `R-STREAM`, `R-DEV`) are open and will stay open.** They are all recorded in `docs/overnight-state.md` and in the build plan. Your job is to **keep building everything that does not depend on them**, and to stop a lane only where a card genuinely cannot be done honestly without an answer.
+Run them one at a time, never chained. `pnpm test` and `pnpm lint:prove` must never run
+simultaneously (a shared-fixture race).
 
-**Do not fix any audit finding**, and do not answer a founder question yourself. If a card hits one, park it and move on.
+`lint` · `lint:prove` · `typecheck` · `test` · `contracts:check` · `build` ·
+`smoke:boot` · **`smoke:dev`** · `chaos` · `env:check` · `stubs:report`
+— plus `db:migrate` against a **freshly created empty database** whenever migrations changed.
 
-## Do these first, in this order
+- **`pnpm smoke:dev` is new.** Nothing in the gate had ever started a *development* server, which is exactly how a defect that made every dev page return 500 survived for days. If anyone touches `apps/web/instrumentation.ts`, **the import must stay inside the `NEXT_RUNTIME === 'nodejs'` check** — hoisting it back to module scope silently restores that defect and only `smoke:dev` will tell you.
+- **`pnpm eval` is red and must stay red** until founder question 6 is answered. Three eval sets refuse to grade against a stand-in and there is no Anthropic key. **A report claiming "eval passes" is false.**
+- **`pnpm chaos` is red on ONE NAMED SCENARIO** — `generation_cycle_killed_across_midnight`. It is a deliberate, documented reproduction of a real defect (founder question 17). **The other seven scenarios pass, so a failure anywhere else in `chaos` is a genuine regression and must be treated as one.**
 
-1. **Run the `T3.5` audit.** It is scheduled by build plan §7, it is **blocking `T3.6`**, and it needs no decision from anyone — the previous run's attempt was killed by a rate limit before it read the diff. Read-only. Use the audit prompt in §8. Hold its findings.
-2. **Launch `T2.7`** in lane B. It closes M2 and is unblocked.
-3. **Launch `T9.7`** in lane F. Its previous session was killed before it began, so it is a clean start, not a resume.
-4. **Create a Lane D worktree and start `T4.0`** — see below. This is the biggest remaining unblock.
+## How much this actually parallelises — read before spinning up sessions
 
-## `T4.0` needs integrator preparation before its lane starts
+**Realistically three concurrent lanes, not five.** The remaining cards are two strictly
+serial chains plus one orphan:
 
-`T4.0` is schema wave 3 (articles, repairs). Like `T8.0` before it, **a schema wave's content is partly "the columns earlier cards were told to defer", and collecting that list is the integrator's job, not the lane's.** Do that collection first and write it into the card or the state file so the lane inherits a list rather than a search.
+```
+Lane D (publishing):     T5.1 → T5.2 → T5.3        ← T5.1 blocked (see below); T5.3 blocked on CatalogEvents
+Lane E (recommendations): T6.1 → T6.2 → T6.3        ← T6.1 startable NOW; lane has never been used
+Lane G (orphan):          the three article-shaped stubs   ← not a card yet; you must write it
+Then:                     M10 exit gates (T10.1–T10.4), which need everything above
+```
 
-**Deferrals that accumulated during the last run** — verify each against the code before including it, because at least one item on the previous wave's list turned out to be wrong:
+Within a chain the cards genuinely depend on each other — `T6.2` consumes `T6.1`'s intent
+gap, `T5.2` consumes `T5.1`'s publishing path. **A lane never runs two cards at once.** So
+adding sessions beyond three buys nothing and costs contention. Four concurrent sessions is
+the documented cap anyway, and the real bottleneck last run was the account rate limit, not
+the machine.
 
-- **`email_sends.type` has no value for a deletion-confirmation email.** `T8.2` found it, `T8.3` found the second half: that row would also cascade-delete with the account it confirms. **A merchant who deletes their account currently gets no email at all.** Needs an enum value *and* a ruling on where that one record lives.
-- **`products.options` / `products.metafields`.** `T2.4` calls this "the single highest-value schema-wave addition" — without it, a store keeping its attributes in metafields yields fewer family axes. Works only from each store's next full sync.
-- **A monthly roll-up table for Search Console history.** `T8.3` deletes it at 16 months rather than rolling it up, because there is nowhere to roll it into. Google only serves 16 months, so **after the first store passes that age its earlier history is gone for good.**
-- **An article column on `spend_events`**, so `article_cost_finalized` can attribute costs. Built by `T8.4` with no caller.
-- **An incidents table** — `T8.4` can record what raised a kill switch, but nowhere to record what an operator *found*.
-- **A `sessions` table** — this one is **founder question 3**, so collect it but do not build it unless answered.
-- **A marker for a deleted inventory page** — **founder question 1**, same treatment. Note `T3.5` surfaced a second option: "not seen by the last completed walk", which needs something to record that a walk *completed*.
+## Dispatch these, in this order
 
-**Also worth knowing but not a migration:** `store_pages.intent_class` exists and **nothing writes it**. Three separate cards have now reported it — it makes cannibalization inert and silently weakens the existing-target check on every real store. **No card in the plan claims it.** It needs an owner, not a column.
+### 1. `T6.1` — Intent-gap analysis · **Lane E, worktree does not exist yet**
 
-## Launching a lane
+`git worktree add ../sortiva-lane-e -b lane-e main`, then copy `.env` from the repo root
+into it (it is gitignored and per-worktree; `env:check` fails without it).
 
-Give every lane session a worktree path, the **verbatim kick-off prompt from build plan §8**, and these standing instructions:
+Fully unblocked: `M6` needs `T3.6` and `T4.4`, both merged. **The biggest genuinely
+available chunk.** Lane E has never been used, so there is no inherited state.
 
-- Stage by explicit path; **never `git add -A`, `git add .`, or `git commit -a`.**
-- **Commit in halves, not at the end.** Two lanes were killed mid-card by rate limits last run. The one that had been committing in halves resumed from its own commits; the one that had not left an uncommitted draft its successor had to audit file by file. This is not hygiene — it is the difference between resuming and re-auditing.
-- Never touch another lane's worktree or any branch but its own.
-- No migration outside a schema-wave card.
-- Stop and report rather than guess if a product choice appears that no document answers.
+### 2. The three article-shaped stubs · **Lane G** — you must write this card
+
+Not in the build plan. All three were blocked on the `articles` table, **which has existed
+since `T4.0` this morning**, so all three are now buildable. One session does all three:
+
+- **`AttentionSources.articles`** — the dashboard's "needs you" list returns nothing. **This is why draft review is unusable:** a merchant who turns the toggle on is never told a draft is waiting, and no screen lists it. Also needs the `draft_ready_for_review` notification actually emitted — the type, the copy and the email template all exist; only the sending is missing.
+- **`EmailFacts.articles`** — the monthly summary reports no articles published and no topics held back, so **a productive month reads as a quiet one.**
+- **`ExportUrlReminder.articles`** — export accounts are never chased for their published URL, so those articles get **no attribution and no performance signal at all.**
+
+These live in Lane G's directories (`packages/core/notifications`, `packages/jobs/notify`).
+
+### 3. `T5.1` — Export mode & publish-hour scheduling · **Lane D** — ⚠️ blocked until one fix lands
+
+**Do not dispatch this until the override defect is fixed.** `T4.5`'s audit found it:
+`articlesReadyForDelivery` — the read `T5.1`/`T5.2` are explicitly told to build on —
+returns an article only if its topic has a Gate 3 decision whose outcome is `passed`. **An
+overridden article's only decision is a rejection**, so "publish anyway" would be built,
+tested against a normal passing article, and silently never publish. **One clause plus a
+test in `packages/db`.** It is an audit finding, so it needs the founder's word before
+anyone touches it — ask, then dispatch it as a tiny card or fold it into `T5.1`'s brief.
+
+`T5.1` also inherits a MEDIUM finding squarely in its subject matter: **a store publishing
+before 06:00 gets the wrong calendar day's article** (writing starts six hours before the
+publish hour, but the day taken is the date when writing *starts*, so a 02:00 publisher is
+permanently one day out). The fix belongs in that card, not as a patch afterwards.
+
+**`T5.3` is blocked further out**: its whole input is the `CatalogEvents` change stream,
+which has a producer and no consumer — the founder deliberately left the reader unwired,
+to be judged together with switching the recurring schedule on. Revisit both together.
+
+## Audits you will owe
+
+Build plan §7 schedules one after **`T5.2`** and one after **`T6.2`**. Audits are
+read-only, run in a fresh session, and **their findings are held for the founder, never
+acted on** — the only permitted action is stopping a lane. Use the audit prompt in §8.
+The last three audits each found something real that no test caught, so do not skip them.
+
+## Standing instructions for every lane session
+
+- Stage by explicit path. **Never `git add -A`, `git add .`, or `git commit -a`.**
+- **Commit in halves, not at the end.** Two lanes were killed mid-card by rate limits in an earlier run; the one that had been committing in halves resumed from its own commits, the one that had not left a draft its successor had to audit file by file.
+- Never touch another lane's worktree or branch.
+- **No migration outside a schema-wave card.** If a card needs a column, it parks that part and reports it — that is how `T4.0a` and `T4.0b` came about, both correctly.
+- **If a card adds an API route, the composition root (`xDeps()`) must be called inside the request-handler closure, never at module scope.** `T4.2` broke the production build exactly this way and it had to be fixed post-merge — every `/api/calendar` route returned 500 while `pnpm build` stayed green.
+- Stop and report rather than guess when a product choice appears that no document answers.
 - **Finish the one card and stop.**
 
 ## The loop, per lane
 
-Launch the card → it reports → inspect its branch → merge into `main` → **run the full gate one command at a time, never chained** (`lint`, `lint:prove`, `typecheck`, `test`, `contracts:check`, `build`, `smoke:boot`, `chaos`, `env:check`, `stubs:report`, and `db:migrate` on an empty database if migrations changed) → rewrite `docs/overnight-state.md` → start that lane's next card. **A lane never runs two cards at once. `pnpm test` and `pnpm lint:prove` must never run at the same time.**
+Launch → it reports → **inspect the branch yourself** → merge into `main` → run the full
+gate one command at a time → rewrite `docs/overnight-state.md` → dispatch that lane's next
+card.
 
-**Do not take a lane's report at face value.** Last run, one lane reported a missing dependency as a pre-existing repo bug; it was a stale `node_modules` in its own worktree. Another reported its predecessor's code as non-compiling; it compiled. Verify claims that would change what you do.
+**Do not take a lane's report at face value.** This run alone: one claimed `pnpm db:migrate`
+was broken in the sandbox (it was a stale local database — a fresh one migrated cleanly);
+one claimed a draft-reuse check validated something it did not; and a build that passed
+every gate command still served 500 on every authenticated page. **Verify anything whose
+truth would change what you do next.** Reading the diff and re-running the specific
+assertion takes minutes and has caught something nearly every time.
 
-## Traps that have already cost time — carry all of these
+## Traps that have already cost time — carry all of them
 
-- **Rate limits end runs.** Two hit last night. **When one hits, schedule a wake-up for the reset time** — the previous session did not, and the run sat idle from 01:00 until morning for no reason.
-- **The machine sleeps and it kills sessions.** Re-apply `caffeinate -dimsu -t 21600` before launching, and check `pgrep -fl caffeinate` if sessions start dying.
-- **`pnpm eval` is RED and must stay red** until founder question 6 is answered. Two evaluation sets refuse to grade against a stand-in and there is no Anthropic key. **The gate is nine green and one red for a documented reason. Any report claiming "eval passes" is false.**
-- **`pnpm dev` cannot start at all** (carded as `R-DEV`). Run browser flows against `next start` after a build.
-- **The gate flakes under concurrent lane load.** Every test can pass while the run exits non-zero, or test *files* time out. **Re-run once before investigating** — but a lane that did that found a *genuine* regression underneath, so re-running is not ignoring.
-- **`packages/ui/strings/en.json` is not union-merged** and produced three hand-resolved conflicts in one night. It now holds 956 keys. Tell lanes to keep additions contiguous and to insert mid-file rather than at the tail. **Both an auditor and the integrator independently concluded the real fix is the `.gitattributes` setting on that file.** Resolve conflicts by checking the two sides share no key, keeping both, and restoring the comma the conflict boundary swallows — then verify the file parses and every block survives.
-- **`.env` is gitignored and per-worktree.** When a card adds a variable you must add it to `main`'s copy by hand, and to a lane's copy **only once that lane's branch also carries the matching `.env.example`.** Refreshing ahead of the branch makes `env:check` fail and costs a lane report space.
-- **Adding a method to a frozen provider interface breaks every later card's inline test double.** This bit twice in one night. Check the interface before adding a test file with its own double.
-- **`packages/rules` changes `rules_version` for every lane**, because it is a hash of the file's bytes.
-- **A NUL byte can get into a source file and make git treat it as binary** — no diff shown, and a merge resolved by wholesale replacement. It happened twice to the same lane. Scan new files if a merge looks odd.
-- **Editing `docs/overnight-state.md` by line position has damaged it three times**, including once last night. **Always `grep -n '^## '` afterwards and diff the heading list against the previous commit.** That check caught both incidents.
+- **Two sessions sharing one physical directory for `main`.** If the founder runs a second session, you will both write to `/Users/balazs/Desktop/sortiva`. A gate run there is only trustworthy if nothing else is mid-write, and neither session can see the other's in-progress edits — one session's `pnpm test` caught the other mid-merge-conflict, with literal conflict markers in a file, and read it as 43 broken suites. **Gate from a lane worktree fast-forwarded to `main`'s tip when another session might be active.**
+- **The gate flakes under concurrent load.** Postgres hook timeouts at 10s, different files each time, individual tests all passing. Three independent sessions hit it simultaneously. **Re-run once before investigating** — but re-running is not ignoring: one lane found a genuine regression underneath.
+- **A lockfile or workspace-dependency change needs `pnpm install` after merge.** `T4.4` added a dependency and `typecheck` failed on the merged tree until it was linked.
+- **Two cards can independently create the same export or the same file.** `T3.6` and `T4.2` both declared an identically-named event; `T4.1` and `T3.6` both created the same repository file. Both surfaced only at merge. Expect it when two lanes touch adjacent territory.
+- **`packages/ui/strings/en.json` is not union-merged.** Keep additions contiguous and insert mid-file. The real fix is that file's `.gitattributes` setting; two separate sessions have now concluded that independently.
+- **`.env` is gitignored and per-worktree.** Add a new variable to `main`'s copy by hand, and to a lane's copy **only once that lane's branch also carries the matching `.env.example`.**
+- **`packages/rules` changes `rules_version` for every lane**, because it is a hash of the file.
+- **Editing `docs/overnight-state.md` by line position has damaged it repeatedly.** Always `grep -n '^## '` afterwards and diff the heading list.
+- **Rate limits end runs.** When one hits, **schedule a wake-up for the reset time** — an earlier run sat idle from 01:00 until morning for want of that.
+- **The machine sleeps and kills sessions.** `caffeinate -dimsu -t 21600`, and check `pgrep -fl caffeinate` if sessions start dying.
+
+## What the founder still owes an answer on
+
+**Fourteen open questions**, all in `docs/overnight-state.md`'s "Questions waiting on the
+founder". **None blocks a lane except the override fix above.** The ones with the shortest
+fuse, because something is being built on top of them:
+
+- **The override fix** (blocks `T5.1` — above).
+- **Question 13** — does draft review ship at all without a way to be told a draft is waiting? Today the toggle's only effect is to make articles vanish.
+- **Question 16** — for a store publishing at 02:00, which day's article is it? `T5.1` needs this.
+- **Question 17** — leave `pnpm chaos` red on the midnight scenario, or resolve it?
 
 ## In the morning, report
 
-What landed with test counts. What each audit found, unactioned. Which lanes stopped and the exact question that stopped them. What is still running. Anything you assumed. **Report nothing as done that is not merged and green** — and remember that "green" now means nine of ten commands.
+What landed with test counts. What each audit found, unactioned. Which lanes stopped and
+the exact question that stopped them. What is still running. Anything you assumed.
+**Report nothing as done that is not merged and green — and "green" now means nine of
+eleven commands, with `eval` and one named `chaos` scenario red for documented reasons.**
