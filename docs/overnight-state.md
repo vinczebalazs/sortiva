@@ -3723,3 +3723,76 @@ turning one on without the other accomplishes nothing.
 decision that unblocked `T4.2` (previously recorded above as "relayed, not yet
 independently verified" — **now confirmed**: the actual `DECISIONS.md` entry matches
 exactly what was relayed, word for word in substance).
+
+## `T4.3` LANDED — the first real article draft, and a genuinely urgent schema gap. **Read the gap section before dispatching `T4.4`.**
+
+**Merged as `f177af7` into `main`, two commits, clean auto-merge, full gate green.**
+Tests **2,855**, up from 2,780 — reconciles exactly against `T4.3`'s own +75.
+
+**What it builds**: the pipeline that turns an admitted topic into a Sonnet-drafted
+article, with the mechanism that makes fabrication structurally unreachable rather than
+merely checked afterward. A **claim plan is written and durably persisted before the
+draft call runs** — proved by a test double that queries the database for the persisted
+claims from inside the model client's own `complete()` method at the exact moment the
+`draft` call type arrives, so the ordering is enforced, not asserted. **The writer sees
+only the approved claim list — id, text, kind, confidence — never the raw evidence
+pack**: a product's fact sheet is deliberately excluded from what the writer receives
+(only id and title, so it can attach a reference token to the right item), read as
+required by `docs/content-pointers.md`'s own "the writer only ever sees the approved
+claims" guarantee, not the card's own looser reading. Two of the four claim kinds are
+derived by **code, with no model call at all** — a merchant fact is read directly off
+the fact sheet, a derived fact is arithmetic re-run in code — only *recommendation* and
+*external-fact* claims go to the model, and even those are verified before acceptance:
+a quote must appear verbatim in its cited excerpt, a recommendation must name a real
+claim id. Seven section shapes, each with a named failure condition; the grounding
+harness (every citation and product-mention token must resolve to something real); the
+no-literal-currency-figure check — all tested and passing.
+
+### The gap this card found, verified directly against the schema, not taken on trust
+
+**`articles` has no column to store a generated draft's body or its meta description.**
+Confirmed by reading the migration directly (`packages/db/migrations/0008_wave3.sql`):
+the table has `title, slug, target_keyword, state, delivery, published_url` and
+timestamps — nothing else. The pipeline produces a complete, checked `Draft` object —
+title, meta description, intro, sections, FAQ, product mentions, all grounded and
+passing every check — and persists everything that *does* have a column
+(`article_claims`, `article_product_refs`, the four `articles` fields above). **The
+generated body itself is not persisted anywhere.** It exists only in memory, for the
+duration of one job run, then is gone.
+
+**Why this is more urgent than a typical open item**: every card downstream of `T4.3`
+in the plan needs to read a draft's body from somewhere that isn't "the process that
+just generated it." `T4.4` (Gate 3 — lints, the blind judge, the repair loop) **cannot
+be built for real without this** — there is nothing to grade. `T4.5` (the `in_review`
+state a merchant approves or discards) needs it to render. `T5.1`/`T5.2` (publish, two
+different vendors) need it to send. **This is not a "nice to have later" gap like the
+product-images one below it — it blocks the very next card in this lane's own
+sequence.**
+
+**Correctly not decided by the lane, and not decided here either — this needs a
+founder or integrator call before `T4.4` starts:** the card's own recommendation is a
+`bytea`, compressed column, matching `store_pages.body_compressed`'s own precedent (no
+blob service exists; Postgres is the store) — but the **shape** of what that column
+holds is a real product decision, not an implementation detail, because it changes what
+three different downstream cards can do with it: **markdown text** (simple, human-
+readable, easy to diff and export, needs a render step everywhere it's shown);
+**structured JSON** (matching `Draft`'s own shape — intro/sections/FAQ — no re-parse
+needed by the judge or the review screen, but every consumer needs to know that shape);
+or **both** (rendered HTML plus the structured source — most flexible, most storage,
+most to keep in sync). **This session recommends structured JSON**, matching what the
+pipeline already produces and what `T4.4`'s lints (per-section checks) and `T4.5`'s
+review screen (rendering sections with their own controls) both seem likely to want
+directly — but this is a recommendation, not a decision made on the founder's behalf.
+
+**A second, smaller, already-known gap restated here for visibility**: product images
+are empty in every evidence pack and every draft, for the same root cause `T2.7`
+already found and flagged (`products` has no column for a Shopify image URL — the
+catalog sync reads `product.images` to compute a checksum and then drops it). Not new;
+tied here because a reader of this card's own done-when ("images are catalog URLs
+only") needs to know the mechanism is correct and simply has nothing to show yet.
+
+**Files outside Lane D's strict directories**, all precedented: `packages/db/src/
+repositories` (not lane-exclusive), `packages/rules` (new Gate 2 thresholds, `UNSIGNED`,
+`rules_version` changed — same pattern every signal-threshold card has followed),
+`packages/llm/prompts` (two new versioned prompt files, following `T4.2`'s own
+precedent). No migration.
