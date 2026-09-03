@@ -56,6 +56,14 @@ export const CALL_TYPE_TIER = {
   // of a merchant waiting for the "Add" button to resolve. See DECISIONS
   // 2026-09-03 T4.2.
   topic_classify: 'haiku',
+  // The claim plan decides what the article is allowed to assert and how
+  // strongly — real judgement over evidence, not a short classification, so
+  // it runs on the same tier as the writer it gates. T4.3, DECISIONS
+  // 2026-09-03 T4.3.
+  claim_plan: 'sonnet',
+  // "Sonnet draft via LlmClient (call_type: draft)" — the build plan's own
+  // words for this card. T4.3.
+  draft: 'sonnet',
 } as const satisfies Record<string, ModelTier>
 
 /**

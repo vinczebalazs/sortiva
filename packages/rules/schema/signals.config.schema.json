@@ -585,6 +585,7 @@
         "winnability",
         "substance_floor",
         "existing_target_check",
+        "evidence_pack_check",
         "draft_grading"
       ],
       "properties": {
@@ -662,6 +663,27 @@
             },
             "match_position_max": {
               "$ref": "#/definitions/serpPosition"
+            }
+          }
+        },
+        "evidence_pack_check": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "distinct_claims_min",
+            "boilerplate_repeat_share_min",
+            "boilerplate_ratio_max"
+          ],
+          "properties": {
+            "distinct_claims_min": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "boilerplate_repeat_share_min": {
+              "$ref": "#/definitions/ratio"
+            },
+            "boilerplate_ratio_max": {
+              "$ref": "#/definitions/ratio"
             }
           }
         },
@@ -937,6 +959,50 @@
         }
       }
     },
+    "generation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "length",
+        "internal_links"
+      ],
+      "properties": {
+        "length": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "serp_word_count_multiple_min",
+            "serp_word_count_multiple_max",
+            "fallback_word_count_min"
+          ],
+          "properties": {
+            "serp_word_count_multiple_min": {
+              "$ref": "#/definitions/positiveNumber"
+            },
+            "serp_word_count_multiple_max": {
+              "$ref": "#/definitions/positiveNumber"
+            },
+            "fallback_word_count_min": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "internal_links": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "min_count"
+          ],
+          "properties": {
+            "min_count": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
     "budgets": {
       "type": "object",
       "additionalProperties": false,
@@ -1078,6 +1144,7 @@
         "scoring",
         "gates",
         "learning",
+        "generation",
         "budgets",
         "auto_trips",
         "discovery",
@@ -1097,6 +1164,9 @@
         },
         "learning": {
           "$ref": "#/definitions/learning"
+        },
+        "generation": {
+          "$ref": "#/definitions/generation"
         },
         "budgets": {
           "$ref": "#/definitions/budgets"
@@ -1133,6 +1203,9 @@
           "type": "object"
         },
         "learning": {
+          "type": "object"
+        },
+        "generation": {
           "type": "object"
         },
         "budgets": {

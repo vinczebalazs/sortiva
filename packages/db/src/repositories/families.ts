@@ -262,6 +262,29 @@ export async function findFamily(
   }
 }
 
+/** Every named family among the given ids, for the evidence-pack assembly step (`packages/jobs/src/generation`) — one round trip for a topic's whole `family_ids` array. */
+export async function findFamiliesByIds(
+  db: Db,
+  scope: AccountScope,
+  familyIds: readonly string[],
+): Promise<FamilyRecord[]> {
+  if (familyIds.length === 0) return []
+  const rows = await db
+    .select()
+    .from(productFamilies)
+    .where(and(eq(productFamilies.accountId, scope.accountId), inArray(productFamilies.id, [...familyIds])))
+
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    memberCount: row.memberCount,
+    differentiationAxes: row.differentiationAxes,
+    groupingSource: row.groupingSource,
+    confidence: row.confidence,
+    computedAt: row.computedAt,
+  }))
+}
+
 /** How many of this store's products no family has claimed. Zero after a successful grouping. */
 export async function ungroupedProductCount(db: Db, scope: AccountScope): Promise<number> {
   const [row] = await db

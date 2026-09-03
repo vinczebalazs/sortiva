@@ -23,6 +23,21 @@ export const LLM_CALL_TYPES = [
    * across a scan, so it does not carry Gate 1's "~free" requirement.
    */
   'topic_classify',
+  /**
+   * T4.3's claim plan — every assertion the article will make, enumerated
+   * against the evidence pack and bound to it, before any prose is written.
+   * Runs once per article, over the evidence pack; its output (not the pack
+   * itself) is what the `draft` call below is ever shown.
+   * `docs/content-pointers.md` §1.
+   */
+  'claim_plan',
+  /**
+   * T4.3's writer: Sonnet, given only the approved claim list from
+   * `claim_plan` and the section shape — never the raw evidence pack, so
+   * there is no route to asserting something no claim covers.
+   * `docs/content-pointers.md` §1.
+   */
+  'draft',
 ] as const
 
 export type LlmCallType = (typeof LLM_CALL_TYPES)[number]

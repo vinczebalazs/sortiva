@@ -325,6 +325,25 @@ defaults:
       window_days: 28
       match_position_max: 30
 
+    # ── Gate 2: evidence pack check (T4.3) ─────────────────────────────────
+    # After research, before drafting: does the assembled pack actually say
+    # enough, in enough different ways, to write an honest article from — main
+    # §8.3, "a 90%-boilerplate pack is killed here."
+    evidence_pack_check:
+      # UNSIGNED — no floor was stated, only "enough". Below this many distinct
+      # claims (merchant facts, competitor angles, external facts together) the
+      # pack cannot support even one section's worth of specific content.
+      distinct_claims_min: 6
+      # A candidate claim counts as boilerplate when this share or more of the
+      # family's contributing products state the identical value — "leather"
+      # on every one of ten products says nothing about any single one of them.
+      # UNSIGNED — main §8.3 names the failure ("90% boilerplate"), not this rule.
+      boilerplate_repeat_share_min: 0.8
+      # The pack is held when at least this share of its candidate claims are
+      # boilerplate by the rule above. main §8.3's own number: "a
+      # 90%-boilerplate pack is killed here."
+      boilerplate_ratio_max: 0.9
+
     # ── Gate 3: draft grading ─────────────────────────────────────────────
     draft_grading:
       # The judge scores each draft on several criteria on this scale, and we
@@ -438,6 +457,28 @@ defaults:
         # A FIX counts as working when the cluster's impressions concentrate on
         # the URL we designated primary.
         primary_url_impression_share_min: 0.70
+
+  # ── Article construction (T4.3) ─────────────────────────────────────────────
+  # Numbers that shape the draft itself, once Gate 2 has cleared the pack to
+  # write from: how long, how many internal links it must carry.
+  generation:
+    length:
+      # No fixed word count — main §9.2: the draft targets the same depth as
+      # the SERP's own top-3 pages, not a global number. This is the band
+      # around their average word count the draft is asked to land inside.
+      # UNSIGNED — "comparable coverage" was specified, not a ratio.
+      serp_word_count_multiple_min: 0.7
+      serp_word_count_multiple_max: 1.3
+      # When no SERP word-count reading exists at all (a fetch failed for
+      # every top result), fall back to a plain floor rather than write with
+      # no target.
+      # UNSIGNED.
+      fallback_word_count_min: 600
+
+    internal_links:
+      # Main §9.2: "every article links the referenced product/collection
+      # pages and at least one related earlier article once any exist."
+      min_count: 1
 
   # ── Caps, kill switches and auto-trips ─────────────────────────────────────
   # These are the money and blast-radius limits. Every one of them is enforced

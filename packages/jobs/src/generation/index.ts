@@ -14,3 +14,14 @@ export { DbTopicScheduler, TopicSchedulingError, type DbTopicSchedulerDeps } fro
 export { vetoTopic, type VetoTopicDeps, type VetoTopicInput, type VetoTopicResult } from './veto-topic'
 export { moveTopic, type MoveTopicDeps, type MoveTopicInput, type MoveTopicResult } from './move-topic'
 export { pinTopic, type PinTopicDeps, type PinTopicInput, type PinTopicResult } from './pin-topic'
+export {
+  assembleEvidencePack,
+  type AssembleEvidencePackDeps,
+  type AssembleEvidencePackInput,
+} from './assemble-evidence-pack'
+export {
+  generateArticle,
+  type GenerateArticleDeps,
+  type GenerateArticleInput,
+  type GenerateArticleResult,
+} from './generate-article'

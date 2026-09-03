@@ -24,6 +24,7 @@ export {
   type DeepPartial,
   type DiscoveryConfig,
   type GatesConfig,
+  type GenerationConfig,
   type LearningConfig,
   type PatternDimension,
   type RulesDocument,
