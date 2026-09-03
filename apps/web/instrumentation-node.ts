@@ -186,6 +186,15 @@ export async function startServerRuntime() {
   const { generationTaskDeps } = await import('./app/api/articles/_lib/config')
   registerGenerationTasks(generationTaskDeps())
 
+  // Keeping the calendar stocked. Same two-job shape: a monthly sweep over
+  // every planning account, and a per-store job that decides whether the
+  // store's runway has actually run short and fills the empty days if it has.
+  // `replenishment_monthly` was likewise a name in the schedule with nothing
+  // behind it, so a calendar that ran out stayed empty.
+  const { registerReplenishmentTasks } = await import('@sortiva/jobs')
+  const { replenishmentTaskDeps } = await import('./app/api/articles/_lib/config')
+  registerReplenishmentTasks(replenishmentTaskDeps())
+
   // Email: the minute-by-minute drain that turns each queued row into a job,
   // the job that sends one, and the two sweeps that schedule mail on a clock —
   // the monthly summary and the seven-day "where did you publish this" reminder.

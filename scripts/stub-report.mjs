@@ -42,7 +42,18 @@ const doubles = await import('../packages/core/src/contracts/doubles.ts')
 // registered as the `signal_scan_onboarding_sweep` crontab task in
 // `apps/web/instrumentation.ts`, so a confirmed account really does reach
 // this seam in production, not merely in a test.
-new doubles.StubTopicScheduler()
+//
+// `StubTopicScheduler` is deliberately not constructed, from 2026-09-03:
+// `T4.2` filled the seam (`DbTopicScheduler`, `packages/jobs/src/generation/
+// topic-scheduler.ts`) and this line was simply never removed, so the M4 gate
+// has been failing on bookkeeping. Checked to the same bar the notifications
+// note above sets rather than taken from a card's report: the real class is
+// constructed in three production callers — `runOnboardingScan`'s
+// calendar-seeding step (registered as the `signal_scan_onboarding_sweep`
+// crontab task), the schedule action behind `POST /api/opportunities/{id}`,
+// and `T4.6`'s monthly replenishment job (registered as
+// `replenishment_monthly`). The double still exists and its own tests still
+// use it; nothing in production does.
 new doubles.StubJudgeLite()
 // `StubCatalogEvents` is listed again, from 2026-09-03, and the note that used
 // to sit here was wrong. It said the change stream "is served in production by
@@ -99,8 +110,22 @@ for (const stub of stubs) {
   console.log()
 }
 
+/**
+ * Milestones are compared as the numbers they are, not as the strings they
+ * look like. `'M10' <= 'M4'` is true in JavaScript — 1 sorts before 4 — so
+ * every gate from M2 onwards was reporting the two M10 counters as overdue,
+ * and every reader of the M4 gate had to know to discount them. A label this
+ * cannot parse sorts last rather than first, so an unrecognised one can never
+ * fail a gate by accident.
+ */
+function milestoneOrder(label) {
+  const digits = /^M(\d+)$/.exec(String(label))
+  return digits ? Number(digits[1]) : Number.POSITIVE_INFINITY
+}
+
 if (milestone) {
-  const overdue = stubs.filter((s) => s.mustBeGoneBy <= milestone)
+  const due = milestoneOrder(milestone)
+  const overdue = stubs.filter((s) => milestoneOrder(s.mustBeGoneBy) <= due)
   if (overdue.length > 0) {
     console.error(`FAIL  ${overdue.length} stub(s) should have been replaced by ${milestone}:`)
     for (const stub of overdue) console.error(`      - ${stub.contract} (${stub.filledBy})`)

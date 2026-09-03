@@ -10,7 +10,28 @@ export {
   type AddManualTopicInput,
   type AddManualTopicResult,
 } from './add-manual-topic'
-export { DbTopicScheduler, TopicSchedulingError, type DbTopicSchedulerDeps } from './topic-scheduler'
+export {
+  DbTopicScheduler,
+  TopicSchedulingError,
+  type DbTopicSchedulerDeps,
+  type TopicPlacement,
+} from './topic-scheduler'
+export {
+  replenishCalendarForAccount,
+  REPLENISHMENT_COMPLETED_EVENT,
+  type ReplenishDeps,
+  type ReplenishOutcome,
+} from './replenish'
+export {
+  registerReplenishmentTasks,
+  resetReplenishmentTaskRegistration,
+  sweepReplenishment,
+  enqueueReplenishment,
+  REPLENISHMENT_SWEEP_TASK,
+  REPLENISHMENT_ACCOUNT_TASK,
+  type ReplenishmentTaskDeps,
+  type ReplenishmentAccountPayload,
+} from './replenish-tasks'
 export { vetoTopic, type VetoTopicDeps, type VetoTopicInput, type VetoTopicResult } from './veto-topic'
 export { moveTopic, type MoveTopicDeps, type MoveTopicInput, type MoveTopicResult } from './move-topic'
 export { pinTopic, type PinTopicDeps, type PinTopicInput, type PinTopicResult } from './pin-topic'

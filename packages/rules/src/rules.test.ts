@@ -105,6 +105,7 @@ const NAMED_THRESHOLDS: ReadonlyArray<readonly [path: string, spec: string]> = [
 
   // ── Learning loop ──────────────────────────────────────────────────────────
   ['learning.replenishment_horizon_days', 'main §9.6.1 — planned horizon below ~60 days'],
+  ['learning.replenishment_target_horizon_days', 'main §8.7 — "~3-month backlog"; the target is unstated, see DECISIONS.md 2026-09-03 T4.6'],
   ['learning.labels.maturity_days', 'main §9.6.2 — no judgment before 28 days'],
   ['learning.labels.winner_clicks_store_median_multiple_min', 'main §9.6.2 — clicks ≥ 2× store median'],
   ['learning.labels.winner_position_improvement_min', 'main §9.6.2 — position improved ≥ 5 spots'],

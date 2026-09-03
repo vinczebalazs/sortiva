@@ -777,6 +777,7 @@
       "additionalProperties": false,
       "required": [
         "replenishment_horizon_days",
+        "replenishment_target_horizon_days",
         "labels",
         "patterns",
         "refresh",
@@ -785,6 +786,10 @@
       ],
       "properties": {
         "replenishment_horizon_days": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "replenishment_target_horizon_days": {
           "type": "integer",
           "minimum": 1
         },

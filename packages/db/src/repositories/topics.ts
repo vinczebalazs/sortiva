@@ -1,4 +1,4 @@
-import { eq, and, gte, lte, ne, inArray } from 'drizzle-orm'
+import { eq, and, desc, gte, lte, ne, inArray } from 'drizzle-orm'
 import type { Db } from '../client'
 import { topics } from '../schema'
 import type { AccountScope } from '../scope'
@@ -16,6 +16,8 @@ export interface TopicInput {
   readonly source: TopicRow['source']
   /** The template key Gate 1 (or the scoring record) rendered this from — see DECISIONS 2026-09-03 T4.1 on why this column holds a key, not prose. */
   readonly whyLine: string
+  /** What the planner ranked this at, when a planner ranked it. Absent for a topic nobody scored — a manual add. */
+  readonly score?: number
   readonly scheduledDate: string
   readonly pinned: boolean
   readonly state: TopicRow['state']
@@ -40,6 +42,10 @@ export async function insertTopic(
       kind: input.kind,
       source: input.source,
       whyLine: input.whyLine,
+      // `numeric` round-trips as a string in Postgres; the column is what the
+      // planner's ordering is audited against, so it is stored at full
+      // precision rather than rounded on the way in.
+      score: input.score === undefined ? null : String(input.score),
       scheduledDate: input.scheduledDate,
       pinned: input.pinned,
       state: input.state,
@@ -103,6 +109,34 @@ export async function occupiedDatesInRange(
       ),
     )
   return new Set(rows.map((r) => r.scheduledDate))
+}
+
+/**
+ * The furthest-out day that still has a topic waiting on it, on or after
+ * `from` — how far ahead the calendar is actually planned, which is what
+ * decides whether a top-up is due.
+ *
+ * Only `planned` counts. A day already generating, published or held back has
+ * had its article; it is history, not runway.
+ */
+export async function furthestPlannedDate(
+  db: Db,
+  scope: AccountScope,
+  from: string,
+): Promise<string | null> {
+  const [row] = await db
+    .select({ scheduledDate: topics.scheduledDate })
+    .from(topics)
+    .where(
+      and(
+        eq(topics.accountId, scope.accountId),
+        eq(topics.state, 'planned'),
+        gte(topics.scheduledDate, from),
+      ),
+    )
+    .orderBy(desc(topics.scheduledDate))
+    .limit(1)
+  return row?.scheduledDate ?? null
 }
 
 /** The non-vetoed row on this exact date, if any — what "the day is occupied" means for move and add. */
