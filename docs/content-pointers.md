@@ -113,6 +113,12 @@ question must be the heading **verbatim** and the first paragraph beneath it mus
 complete, self-contained answer — a heading followed by "There are three things to consider:"
 produces structured data that answers nothing.
 
+**The markup itself no longer earns a search-result feature.** Google retired FAQ rich
+results for every site on 2026-05-07. Keep the FAQ block anyway — it covers buyer questions
+the body does not, and it is the shape AI answer engines quote — but do not spend effort on
+`FAQPage` markup expecting a rich snippet, here or in the OPTIMIZE recommendation, because
+there is no longer one to win.
+
 ## 5. Passage-level writing rules
 
 These are language-model-independent and reader-driven, which is why they are worth fixing in
