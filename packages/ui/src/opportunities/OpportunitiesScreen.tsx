@@ -119,6 +119,18 @@ export function OpportunitiesScreen({
     setDetailState('idle')
   }
 
+  /**
+   * Re-reads the open drawer's own detail, once whatever it just asked for has
+   * settled — a generated recommendation or a marked task lives in
+   * `OpportunityDetail`, which `list()` never carries. Without this the drawer
+   * stays showing "generate" or an open task forever, because nothing else
+   * that follows a drawer action ever reads the drawer's own subject again.
+   */
+  async function reloadDetail(row: OpportunityRow) {
+    const loaded = await client.detail(row.id)
+    if (loaded) setDetail(loaded)
+  }
+
   const visible = useMemo(
     () => ({ ...data, opportunities: data.opportunities.filter((row) => !hidden.includes(row.id)) }),
     [data, hidden],
@@ -178,14 +190,20 @@ export function OpportunitiesScreen({
               field,
             })
           }
-          onGenerate={() => void actions.generate(detail.opportunity)}
-          onTask={(task, state) => void actions.markTask(detail.opportunity, task.id, state)}
+          onGenerate={() => {
+            const row = detail.opportunity
+            void actions.generate(row).then(() => reloadDetail(row))
+          }}
+          onTask={(task, state) => {
+            const row = detail.opportunity
+            void actions.markTask(row, task.id, state).then(() => reloadDetail(row))
+          }}
           onMarkAllApplied={() => {
-            for (const task of detail.tasks) {
-              if (task.state === 'open') {
-                void actions.markTask(detail.opportunity, task.id, 'applied')
-              }
-            }
+            const row = detail.opportunity
+            const open = detail.tasks.filter((task) => task.state === 'open')
+            void Promise.all(open.map((task) => actions.markTask(row, task.id, 'applied'))).then(() =>
+              reloadDetail(row),
+            )
           }}
         />
       ) : null}
