@@ -94,6 +94,56 @@ export function intentFor(topic: string): WebhookIntent | undefined {
 export const NO_CUSTOMER_DATA_HELD = 'no customer data held'
 
 /**
+ * The only fields of a privacy request we write down.
+ *
+ * An allowlist rather than a list of things to delete, because the two fail in
+ * opposite directions: a denylist keeps anything Shopify adds later, and what
+ * they add to a message *about a shopper* is likely to be about that shopper.
+ * This way a field nobody has considered is dropped, and letting one through is
+ * a deliberate edit here.
+ *
+ * `shop_id` and `shop_domain` name the merchant's store, not a person. The two
+ * order-id lists say which orders the request covers, which is what makes the
+ * stored row an audit trail — "they asked, on this date, about these orders,
+ * and we answered that we hold nothing" — rather than just a timestamp.
+ */
+const PRIVACY_REQUEST_KEEP = new Set(['shop_id', 'shop_domain', 'orders_to_redact', 'orders_requested'])
+
+/**
+ * What may be stored from a webhook, given its topic.
+ *
+ * Shopify's two customer messages carry the shopper's email and phone in a
+ * `customer` object, and their whole point is that we are supposed to hold
+ * nothing about that person — so writing the message down verbatim would create
+ * the very record we tell Shopify does not exist, in the one row most likely to
+ * be produced if anyone ever asks us to prove it.
+ *
+ * Every topic goes through here, not just the privacy ones, so that a privacy
+ * topic added to the intent table later is covered without anyone remembering
+ * to come back. Non-privacy topics keep their body unchanged: those are about
+ * products and pages, and the drain reads them.
+ */
+export function storableWebhookBody(
+  topic: string,
+  body: Record<string, unknown>,
+): Record<string, unknown> {
+  if (intentFor(topic)?.kind !== 'privacy') return body
+
+  const kept: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(body)) {
+    // Shape as well as name: an allowed key holding an object would copy
+    // whatever that object grows, which is how `customer` got in.
+    if (PRIVACY_REQUEST_KEEP.has(key) && isPlainValue(value)) kept[key] = value
+  }
+  return kept
+}
+
+function isPlainValue(value: unknown): boolean {
+  if (Array.isArray(value)) return value.every((entry) => entry === null || typeof entry !== 'object')
+  return value === null || typeof value !== 'object'
+}
+
+/**
  * Which id inside a webhook body names the thing that changed.
  *
  * Shopify puts the subject's id at the top level of every one of these bodies,

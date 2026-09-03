@@ -1,4 +1,4 @@
-import { isKnownTopic } from '@sortiva/core'
+import { isKnownTopic, storableWebhookBody } from '@sortiva/core'
 import { recordWebhookEvent, systemScope, type Database } from '@sortiva/db'
 import { shopHandleFrom, verifyWebhookHmac } from '@sortiva/providers'
 // A deep import, not the package barrel: the barrel re-exports the spend-cap
@@ -93,7 +93,13 @@ export async function handleShopifyWebhook(
     // The store's name arrives in a header rather than in the body, and the
     // table has no column for it. Keeping it beside the body is what lets the
     // drain answer "whose store is this" without the request still being open.
-    payload: { shop_handle: shopHandle, body },
+    //
+    // The body is reduced before it is written, not after: Shopify's two
+    // customer-privacy messages carry a shopper's email and phone, and we
+    // answer those messages by saying we hold nothing about the merchant's
+    // shoppers. Storing the message first and cleaning it later would mean the
+    // claim is false for as long as the row exists.
+    payload: { shop_handle: shopHandle, body: storableWebhookBody(topic, body) },
   })
 
   if (stored && options.enqueue !== false && shopHandle) {
