@@ -1,10 +1,16 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
-import { publishMarker, silentLogger, type LlmClient, type SeoDataProvider } from '@sortiva/core'
+import {
+  publishMarker,
+  readRepairOutcome,
+  silentLogger,
+  type LlmClient,
+  type SeoDataProvider,
+} from '@sortiva/core'
 import { schema } from '@sortiva/db'
 import { loadPrompt, MockLlmClient } from '@sortiva/llm'
 import { FakeShopifyPublishClient, type PageFetcher } from '@sortiva/providers'
 import { runDailyGenerationForAccount } from '../generation/daily-cycle'
-import { runExportDeliveryForAccount } from '../publish/deliver'
+import { publishArticleToShopify } from '../publish/auto-publish'
 import { runDriftPassForAccount } from '../drift/sweep'
 import type { ChaosContext, ChaosScenario } from './harness'
 
@@ -34,7 +40,12 @@ const FAMILY_ID = '33333333-3333-4333-8333-333333333333'
 
 /** The shop outlives the kills, because a real one does. */
 const shop = new FakeShopifyPublishClient()
-const state = { goneProductId: '', standInProductId: '', topicId: '' }
+/**
+ * One product id, only so the mock writer's answer can name a real row. Which
+ * product the article ends up recommending is the pipeline's own choice and is
+ * read back off the finished article rather than assumed here.
+ */
+const state = { anyProductId: '' }
 
 const cipher = { decrypt: (value: string) => value.replace(/^enc:/, '') }
 
@@ -86,11 +97,11 @@ function enqueueWholeRun(llm: MockLlmClient, productId: string): void {
       sections: [
         {
           heading: 'The decision',
-          body: 'Two things decide this: what the bottle is made of, and where it was made[[c1]][[c2]]. Everything else — lid design, colour, finish — follows from those and matters far less in daily use. Work out which of the three materials suits how you actually drink, then narrow down within it.',
+          body: 'Two things decide this: what the bottle is made of, and where it was made[[c1]]. Everything else — lid design, colour, finish — follows from those and matters far less in daily use. Work out which of the three materials suits how you actually drink, then narrow down within it.',
         },
         {
           heading: 'Selection criteria: by capacity',
-          body: 'Larger sizes suit long days away from a tap, and smaller ones fit a bag and a hand better[[c7]]. If the bottle spends its life on a desk, size is close to irrelevant; if it goes in a rucksack, it decides whether you refill once or three times.',
+          body: 'Larger sizes suit long days away from a tap, and smaller ones fit a bag and a hand better. If the bottle spends its life on a desk, size is close to irrelevant; if it goes in a rucksack, it decides whether you refill once or three times.',
         },
         {
           heading: 'Recommended types',
@@ -138,7 +149,7 @@ function checkpointing(inner: MockLlmClient, ctx: ChaosContext): LlmClient {
 export const driftRepairAcrossPublish: ChaosScenario = {
   name: 'drift_repair_across_publish',
 
-  setup: seedStoreWithAWithdrawnProduct,
+  setup: seedStore,
 
   // Three model calls, the mend, and the re-post. The first posting offers no
   // kill point here on purpose: the scenario that exists for that instant
@@ -149,7 +160,7 @@ export const driftRepairAcrossPublish: ChaosScenario = {
   async drive(ctx) {
     const db = drizzle(ctx.pool, { schema })
     const llm = new MockLlmClient()
-    enqueueWholeRun(llm, state.goneProductId)
+    enqueueWholeRun(llm, state.anyProductId)
 
     // Write and grade the day's article.
     await runDailyGenerationForAccount(
@@ -170,21 +181,49 @@ export const driftRepairAcrossPublish: ChaosScenario = {
       ctx.accountId,
     )
 
-    // Hand it over at the publish hour — which, for this store, means posting
-    // it to their blog.
-    await runExportDeliveryForAccount(
-      {
-        db,
-        pool: ctx.pool,
-        shopify: shop,
-        cipher,
-        now: () => NOW,
-        logger: silentLogger,
-      },
-      { accountId: ctx.accountId, date: TOPIC_DATE },
+    // Post it to their blog.
+    //
+    // The publish-hour job is deliberately not what does this. Its record of
+    // "this store's article for this date is handed over" is keyed on the date,
+    // and every run of this scenario uses the same date on a database the whole
+    // chaos suite shares — so the second run of the suite would find the first
+    // run's record and hand over nothing, and the scenario would pass or fail
+    // depending on how many times it had been run. This is the same posting
+    // path the publish hour calls, entered directly.
+    const { rows: written } = await ctx.pool.query<{ id: string }>(
+      'SELECT id FROM articles WHERE account_id = $1',
+      [ctx.accountId],
     )
+    if (written[0]) {
+      await publishArticleToShopify(
+        {
+          db,
+          pool: ctx.pool,
+          shopify: shop,
+          cipher,
+          now: () => NOW,
+          logger: silentLogger,
+        },
+        { accountId: ctx.accountId, articleId: written[0].id },
+      )
+    }
 
-    // The merchant withdrew the product it recommends. Notice, mend, re-post.
+    // The merchant withdraws the product the article actually recommends.
+    //
+    // Which of the three that is is the writer's choice, not the scenario's, so
+    // it is read off the finished article rather than assumed. Recording it
+    // here rather than in the setup is also the truer order: a product is
+    // withdrawn after the article is out, not before it is written.
+    const { rows: mentioned } = await ctx.pool.query<{ shopify_product_id: string }>(
+      `SELECT p.shopify_product_id
+         FROM article_product_refs r
+         JOIN products p ON p.id = r.product_id
+        WHERE r.article_id IN (SELECT id FROM articles WHERE account_id = $1 AND state = 'published')`,
+      [ctx.accountId],
+    )
+    if (mentioned[0]) await recordWithdrawal(ctx.pool, ctx.accountId, mentioned[0].shopify_product_id)
+
+    // Notice, mend, re-post.
     await runDriftPassForAccount(
       {
         db,
@@ -226,17 +265,6 @@ export const driftRepairAcrossPublish: ChaosScenario = {
       throw new Error(`the shop was asked to create an article ${creates} times; the repair must update, never create`)
     }
 
-    const { rows: refs } = await ctx.pool.query<{ product_id: string | null }>(
-      'SELECT product_id FROM article_product_refs WHERE article_id = $1',
-      [articleId],
-    )
-    if (refs.length !== 1 || refs[0]!.product_id !== state.standInProductId) {
-      throw new Error(
-        `the article still recommends the withdrawn product (${refs[0]?.product_id}). The mend either never ran ` +
-          `or was undone by a retry.`,
-      )
-    }
-
     const { rows: repairs } = await ctx.pool.query<{ status: string; outcome_json: unknown }>(
       `SELECT status, outcome_json FROM opportunities
         WHERE account_id = $1 AND entity_type = 'article' AND entity_ref = $2
@@ -244,12 +272,31 @@ export const driftRepairAcrossPublish: ChaosScenario = {
       [ctx.accountId, articleId],
     )
     if (repairs.length !== 1) {
-      throw new Error(`expected one repair record; found ${repairs.length}`)
+      throw new Error(
+        `expected one repair record for the withdrawn product; found ${repairs.length}. Either the pass never ` +
+          `noticed, or a retry raised a second card about the same article.`,
+      )
     }
     if (repairs[0]!.status !== 'completed') {
       throw new Error(
         `the repair ended "${repairs[0]!.status}": the article in the app is mended and the one on the merchant's ` +
           `blog still names a product they withdrew, with nothing left that will ever notice.`,
+      )
+    }
+    const record = readRepairOutcome(repairs[0]!.outcome_json)
+    const swap = record?.references[0]
+    if (!record || !swap) {
+      throw new Error('the repair finished with no record of what it changed, so nothing can say what the merchant got')
+    }
+
+    const { rows: refs } = await ctx.pool.query<{ product_id: string | null }>(
+      'SELECT product_id FROM article_product_refs WHERE article_id = $1',
+      [articleId],
+    )
+    if (refs.length !== 1 || refs[0]!.product_id !== swap.toProductId) {
+      throw new Error(
+        `the article recommends ${refs[0]?.product_id} and the repair says it should recommend ` +
+          `${swap.toProductId}. The mend was either undone by a retry or applied twice.`,
       )
     }
 
@@ -261,16 +308,16 @@ export const driftRepairAcrossPublish: ChaosScenario = {
       )
     ).rows[0]?.shopify_article_id
     const body = remoteId ? shop.articles.get(remoteId)?.bodyHtml : undefined
-    if (!body || !body.includes('Bottle 1')) {
+    if (!body || !body.includes(swap.toProductTitle) || body.includes(swap.fromProductTitle)) {
       throw new Error(
-        `the article on the merchant's shop does not name the replacement product. The repair was recorded as ` +
-          `done and the page a reader sees was never corrected.`,
+        `the article on the merchant's shop still names "${swap.fromProductTitle}" rather than ` +
+          `"${swap.toProductTitle}". The repair was recorded as done and the page a reader sees was never corrected.`,
       )
     }
   },
 }
 
-async function seedStoreWithAWithdrawnProduct(
+async function seedStore(
   pool: Parameters<NonNullable<ChaosScenario['setup']>>[0],
   accountId: string,
 ): Promise<void> {
@@ -339,8 +386,7 @@ async function seedStoreWithAWithdrawnProduct(
       ],
     )
     const productId = rows[0]!.id
-    if (i === 0) state.goneProductId = productId
-    if (i === 1) state.standInProductId = productId
+    if (i === 0) state.anyProductId = productId
     await pool.query(
       `INSERT INTO product_facts (product_id, facts_json, fact_count, fluff_discarded, prompt_version, model_id)
        VALUES ($1, $2::jsonb, 2, 0, 'v1', 'test-model') ON CONFLICT (product_id) DO NOTHING`,
@@ -375,29 +421,52 @@ async function seedStoreWithAWithdrawnProduct(
      RETURNING id`,
     [accountId],
   )
-  const { rows: topicRows } = await pool.query<{ id: string }>(
+  await pool.query(
     `INSERT INTO topics (account_id, opportunity_id, title, target_keyword, intent_class, family_ids, kind, source,
                          why_line, scheduled_date, state)
      VALUES ($1, $2, 'Best water bottles', 'best water bottles', 'buying_guide', ARRAY[$3::uuid], 'new', 'auto',
-             'opportunity.uncovered_commercial_query', $4, 'planned') RETURNING id`,
+             'opportunity.uncovered_commercial_query', $4, 'planned')`,
     [accountId, opportunityRows[0]!.id, FAMILY_ID, TOPIC_DATE],
   )
-  state.topicId = topicRows[0]!.id
 
-  // The merchant withdraws the product the article is about to recommend. The
-  // change is written down the way the webhook handler writes it; nothing
-  // deletes the local row, so this entry is the only evidence it went.
+}
+
+/**
+ * The merchant withdrawing a product, written down the way the webhook handler
+ * writes it.
+ *
+ * Nothing deletes the local product row, so this entry is the only evidence the
+ * product ever went — which is why the daily pass reads deletions from here and
+ * everything else from current state. Keyed on the change itself, so recording
+ * it again on a retry writes nothing.
+ */
+async function recordWithdrawal(
+  pool: Parameters<NonNullable<ChaosScenario['setup']>>[0],
+  accountId: string,
+  shopifyProductId: string,
+): Promise<void> {
+  // One withdrawal per run of the scenario, whatever the article recommends by
+  // then. Without this guard a retry would withdraw the *replacement* the
+  // previous attempt just swapped in, and the store would lose a product per
+  // kill — which is a merchant nobody has, and would test nothing.
+  const { rows: already } = await pool.query<{ n: number }>(
+    `SELECT count(*)::int AS n FROM webhook_events
+      WHERE topic = 'catalog_change/product_deleted' AND payload ->> 'account_id' = $1`,
+    [accountId],
+  )
+  if ((already[0]?.n ?? 0) > 0) return
+
   await pool.query(
     `INSERT INTO webhook_events (webhook_id, source, topic, payload, status, received_at, processed_at)
      VALUES ($1, 'shopify', 'catalog_change/product_deleted', $2::jsonb, 'processed', $3, $3)
      ON CONFLICT (webhook_id) DO NOTHING`,
     [
-      `catalog_change/${accountId}:product_deleted:chaos-drift-bottle-0:${NOW.toISOString()}`,
+      `catalog_change/${accountId}:product_deleted:${shopifyProductId}:${NOW.toISOString()}`,
       JSON.stringify({
         account_id: accountId,
         shop_handle: 'chaos-drift',
         kind: 'product_deleted',
-        entity_id: 'chaos-drift-bottle-0',
+        entity_id: shopifyProductId,
         occurred_at: NOW.toISOString(),
         changed_fields: [],
       }),
