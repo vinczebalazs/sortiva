@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "rules_version": "b58283943f51b002bbbbd1ff99586e57f168bf80c3bf3309246e615a0abd1e8e",
+  "rules_version": "e594068f77ca61f17890ebdf5609144140c0cb2a6d08a084af92b0a7a287981e",
   "defaults": {
     "signals": {
       "striking_distance": {
@@ -80,11 +80,14 @@
       },
       "product_change_impact": {
         "priority": "P0",
-        "needs_gsc": false
+        "needs_gsc": false,
+        "out_of_stock_days_min": 14
       },
       "broken_product_reference": {
         "priority": "P0",
-        "needs_gsc": false
+        "needs_gsc": false,
+        "repair_within_hours": 24,
+        "substitute_fact_overlap_min": 0.6
       },
       "internal_linking_gap": {
         "priority": "P1",
@@ -443,11 +446,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -805,11 +811,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -1167,11 +1176,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -1529,11 +1541,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -1891,11 +1906,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -2253,11 +2271,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -2615,11 +2636,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -2977,11 +3001,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -3339,11 +3366,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -3701,11 +3731,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -4063,11 +4096,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -4425,11 +4461,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -4787,11 +4826,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -5149,11 +5191,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -5511,11 +5556,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -5873,11 +5921,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -6235,11 +6286,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -6597,11 +6651,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -6959,11 +7016,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -7321,11 +7381,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",
@@ -7683,11 +7746,14 @@
         },
         "product_change_impact": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "out_of_stock_days_min": 14
         },
         "broken_product_reference": {
           "priority": "P0",
-          "needs_gsc": false
+          "needs_gsc": false,
+          "repair_within_hours": 24,
+          "substitute_fact_overlap_min": 0.6
         },
         "internal_linking_gap": {
           "priority": "P1",

@@ -101,6 +101,33 @@ export function sectionsFor(shape: ArticleShape, axes: readonly string[]): reado
   return out
 }
 
+/**
+ * The axes an article was actually built around, read back off its own section
+ * headings.
+ *
+ * Nothing records the shape of the range at the moment an article was written —
+ * the headings are the record. `sectionsFor` above writes an axis into a
+ * heading as "<section>: by <axis>", so a published buying guide carries the
+ * attributes it compared on in its own table of contents. That is what the
+ * drift pass compares against when the family's attributes later move: an
+ * article built around terrain and drop, on a range that now differs by width
+ * instead, is comparing on something that no longer distinguishes anything.
+ *
+ * An article whose shape has no axis-derived section yields nothing, and that
+ * is correct rather than a gap: the axes never shaped it, so they cannot have
+ * made it stale.
+ */
+export function axesFromSections(sections: readonly string[]): readonly string[] {
+  const axes: string[] = []
+  for (const section of sections) {
+    const marker = section.indexOf(': by ')
+    if (marker < 0) continue
+    const axis = section.slice(marker + ': by '.length).trim()
+    if (axis && !axes.includes(axis)) axes.push(axis)
+  }
+  return axes
+}
+
 const PROBLEM_WORDS = ['fix', 'broken', 'troubleshoot', 'not working', "won't", 'wont', "doesn't work", 'issue', 'problem', 'repair']
 const SIZING_WORDS = ['size', 'sizing', 'size chart', 'fit guide', 'what size']
 

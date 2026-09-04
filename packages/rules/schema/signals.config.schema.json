@@ -364,10 +364,58 @@
           "$ref": "#/definitions/signalCommon"
         },
         "product_change_impact": {
-          "$ref": "#/definitions/signalCommon"
+          "type": "object",
+          "allOf": [
+            {
+              "$ref": "#/definitions/signalCommon"
+            }
+          ],
+          "required": [
+            "priority",
+            "needs_gsc",
+            "out_of_stock_days_min"
+          ],
+          "properties": {
+            "priority": {
+              "$ref": "#/definitions/priority"
+            },
+            "needs_gsc": {
+              "type": "boolean"
+            },
+            "out_of_stock_days_min": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
         },
         "broken_product_reference": {
-          "$ref": "#/definitions/signalCommon"
+          "type": "object",
+          "allOf": [
+            {
+              "$ref": "#/definitions/signalCommon"
+            }
+          ],
+          "required": [
+            "priority",
+            "needs_gsc",
+            "repair_within_hours",
+            "substitute_fact_overlap_min"
+          ],
+          "properties": {
+            "priority": {
+              "$ref": "#/definitions/priority"
+            },
+            "needs_gsc": {
+              "type": "boolean"
+            },
+            "repair_within_hours": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "substitute_fact_overlap_min": {
+              "$ref": "#/definitions/ratio"
+            }
+          }
         },
         "internal_linking_gap": {
           "$ref": "#/definitions/signalCommon"

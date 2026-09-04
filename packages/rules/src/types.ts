@@ -87,8 +87,16 @@ export interface SignalsConfig {
   }
   catalog_richness_gap: SignalCommon
   missing_or_weak_metadata: SignalCommon
-  product_change_impact: SignalCommon
-  broken_product_reference: SignalCommon
+  product_change_impact: SignalCommon & {
+    /** Days every variant must have been unbuyable before an article recommending it counts as wrong. */
+    out_of_stock_days_min: number
+  }
+  broken_product_reference: SignalCommon & {
+    /** The promise the daily repair pass keeps, not a comparison it makes. */
+    repair_within_hours: number
+    /** How much of a vanished product's recorded facts a stand-in must share before it is swapped in without a human. */
+    substitute_fact_overlap_min: number
+  }
   internal_linking_gap?: SignalCommon
   orphan_page?: SignalCommon
   indexing_issue?: SignalCommon

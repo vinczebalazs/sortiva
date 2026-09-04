@@ -171,14 +171,35 @@ defaults:
       needs_gsc: false
 
     product_change_impact:
-      # Detected by the drift/repair loop rather than here; its thresholds are
-      # owned by that card (DECISIONS 2026-08-27 T0.2).
+      # A published article describes a product that has changed under it.
+      # Detected by the drift/repair loop rather than by the weekly scan.
       priority: P0
       needs_gsc: false
+      # How long every variant of a product must have been unbuyable before an
+      # article recommending it counts as wrong rather than merely unlucky.
+      # Lower it and a weekend restock becomes a repair the merchant did not
+      # need; raise it and a discontinued product goes on being recommended
+      # for longer. A product that comes back in stock before this many days
+      # have passed clears itself and costs nothing.
+      out_of_stock_days_min: 14
 
     broken_product_reference:
+      # A product an article links to or recommends is gone from the store, so
+      # the page cannot be handed to a reader as it stands.
       priority: P0
       needs_gsc: false
+      # How long we allow ourselves to notice and act. The pass that finds
+      # these runs daily, so this is the promise that schedule keeps rather
+      # than a knob the pass reads to decide anything; shortening it means
+      # running the pass more often, not changing a comparison.
+      repair_within_hours: 24
+      # How closely a replacement product must resemble the one that vanished
+      # before we will swap it into a published sentence without a human. It is
+      # a share of the vanished product's recorded facts that the candidate
+      # must also carry. Lower it and articles start recommending products
+      # that are only loosely alike; raise it and almost every deletion turns
+      # into a rewrite that costs a day of the calendar.
+      substitute_fact_overlap_min: 0.6
 
     # P1 — the model accommodates these; V1 does not detect them.
     internal_linking_gap:
