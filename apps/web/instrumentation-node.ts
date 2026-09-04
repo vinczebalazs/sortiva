@@ -211,6 +211,20 @@ export async function startServerRuntime() {
   const { replenishmentTaskDeps } = await import('./app/api/articles/_lib/config')
   registerReplenishmentTasks(replenishmentTaskDeps())
 
+  // The improve-this-page button, and the weekly comparison of a page against
+  // what already ranks for its search. The press recorded what the merchant
+  // asked for and queued this; until now nothing answered to the name, so the
+  // page was marked as being worked on and nothing ever worked on it.
+  //
+  // Neither belongs in the schedule: the first is queued by the button, and the
+  // second stays scheduleless until that is decided separately.
+  const { registerOptimizeTasks, registerIntentGapTasks } = await import('@sortiva/jobs')
+  const { optimizeTaskDeps, intentGapTaskDeps } = await import(
+    './app/api/recommendations/_lib/config'
+  )
+  registerOptimizeTasks(optimizeTaskDeps())
+  registerIntentGapTasks(intentGapTaskDeps())
+
   // The publish hour. An article does not appear the moment the quality gate
   // passes it — it appears at nine in the morning where the store's audience
   // is, or whatever hour the merchant set. Same two-job shape: an hourly sweep
