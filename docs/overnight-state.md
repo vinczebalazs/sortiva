@@ -768,8 +768,9 @@ behaviour of that mechanism, but worth knowing at merge time.
 
 ## Right now
 
-**Status at 2026-09-04, 09:50 — two cards landed and gated, and `T5.3` is now dispatchable.**
-`main` is at `8a399f3`, clean. Tests **3,271**, up from 3,265. No lane is running. What was decided,
+**Status at 2026-09-04, 11:05 — three cards landed and gated, and M5 is closed.** `main` is at
+`ef7d705`, clean. Tests **3,324**, up from 3,265 at the start of the day. No lane is running.
+**`T6.3` is the only card a founder answer would unblock today.** What was decided,
 what it unblocked, and what is still stopped is in the section **"2026-09-04 morning — five
 founder answers, and what checking them changed"** at the end of this file. **Read that before
 anything else.** The night's end state, which everything below still describes, follows.
@@ -5326,6 +5327,76 @@ were committed. Both exist on `main`. The lane was right to flag it rather than 
 with two genuine failures in the existing webhook suite: its test database had no queue tables,
 because until now nothing in that path queued anything. Fixed with the shared helper the
 domain-claim suite already uses.
+
+### `T5.3` LANDED — **M5 is closed.** A published article is mended when the store moves under it
+
+**Merged as `f12db7c`, with the two integrator lines on top as `ef7d705`. Full gate re-run on
+the merged tree: green, nine of eleven.** Tests **3,324**, up from 3,271. `pnpm stubs:report` is
+**3**, down from 4. `pnpm chaos` is now **ten** scenarios, nine passing, the same single named one
+red.
+
+**What a merchant gets.** Until now, once we published an article it was frozen and their store
+was not. If they withdrew a product a guide recommended, the guide went on recommending it — a
+page ranking well while being wrong, which is worse than no page. Now, once a day, every product
+mention in every published article is checked against the store as it is now, on four questions:
+withdrawn, unbuyable for a fortnight, a range that no longer differs the way the article compares
+it, or a collection gone. What follows depends on what the merchant consented to: an auto-publish
+store with automatic repair on gets the article mended and re-posted as an update; an export
+store gets a corrected download and a card and **nothing of ours touches their site**; anything
+needing new prose queues a rewrite through the normal gate and costs a calendar day, as it should.
+
+**A price change costs them nothing** — no card, no rewrite, no calendar day. That is the founder
+decision of 2026-09-01 built as decided rather than as the main spec's drift table still reads,
+and it is asserted by a test that checks tomorrow's topic is untouched in state, date and title.
+
+**No migration, and the reasoning is worth keeping.** A repair *is* an opportunity row — the spec
+says so outright — so every column already existed, and the unique index on open rows gives
+"re-detection updates, never duplicates" for free. The one thing needing a home, the before/after
+log every repair must keep, went into the repair's own outcome record under its own key so the
+learning loop can later write beside it rather than over it. **Verified: the branch touches no
+migration and no schema file.**
+
+**One done-when is partly met and the lane said so rather than burying it.** The new crash
+scenario runs generate → publish → withdraw → mend → re-post against a real database, killing the
+worker at each model call, at the mend and at the re-post — but it **seeds** its store rather than
+running the ingestion pipeline, so "ingest → … → repair" is not literally end to end. Ingestion's
+own crash cases are covered by three existing scenarios. The lane ran the new scenario four extra
+times to prove it passes reliably rather than by luck.
+
+**The two integrator lines were applied together, deliberately.** The lane built the daily pass
+and could not switch it on: both the schedule and the composition root are integrator-resolved.
+**A schedule entry without its handler disables every recurring job** — this morning's defect
+exactly — so the entry and the registration landed in one commit, and the handler name was checked
+against the schedule name before either was written. Verified by starting the built application:
+`[worker] started with 32 task(s), cron enabled`, from 30 before the merge.
+
+**The last stub in the attention list is gone.** `pendingRepairs` was the most dangerous kind of
+stand-in: it returned an empty list, so an account that could not see its repairs looked exactly
+like an account with nothing broken. The lane filled it and checked it end to end to the standard
+that file now sets, rather than reporting it filled.
+
+**One test failed on the first full gate run and passed on the re-run**, along with all 3,324. The
+failing name was not captured before the re-run, which is a gap in how it was checked. The
+crontab assertions — the only thing the integrator's own edit could have broken — were then run on
+their own and pass 60/60. Recorded rather than passed over.
+
+**Two gaps the lane found and correctly did not close.**
+- **The collection-deleted trigger has a policy and nothing that can raise it.** The shared change
+  stream's list of change kinds — a contract frozen in milestone 0 — has `collection_updated` and
+  no `collection_deleted`, and the Shopify topics we subscribe to include collection create and
+  update but not delete. The policy row was kept so the gap is visible in one place.
+- **A repair needing new prose can wait weeks.** It becomes an accepted rewrite the merchant can
+  see immediately, but it reaches the calendar only at the next monthly replenishment, and only
+  when the planned horizon has run short. No document sets a deadline for that case. Scheduling it
+  directly would be a second, quieter path onto the calendar past the placement rules, so the lane
+  did not. **Worth a founder decision if a broken article waiting a month is not acceptable.**
+
+**And the republish overwrite question is now more urgent, not less.** The repair reuses `T5.2`'s
+republish path unchanged, and that path sends the article's address, its tags and its
+published/unpublished state along with the body — so a repair **renames the article back if the
+merchant renamed it, removes any tag they added, and republishes it if they unpublished it.** A
+store with automatic repair on can now have that happen **without ever clicking anything.** The
+lane was told not to widen it and did not.
 
 ### Verification done this morning, so it is not re-done
 
