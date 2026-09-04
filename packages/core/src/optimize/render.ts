@@ -36,8 +36,13 @@ export interface RecommendationLabels {
 
 export interface RenderRecommendationInput {
   readonly recommendation: OptimizeRecommendation
-  /** What the document is about. */
-  readonly page: { readonly url: string; readonly targetQuery: string }
+  /**
+   * What the document is about. `targetQuery` is null when the store has no
+   * pooled intent covering this page — the download then names the page and
+   * says nothing about a search, rather than printing the page's own address
+   * under a heading that says "search".
+   */
+  readonly page: { readonly url: string; readonly targetQuery: string | null }
   /**
    * The evidence addresses in plain language. Passed in rather than taken from
    * the evidence pack, because a download happens days after the generation and
@@ -73,7 +78,8 @@ export function renderRecommendationMarkdown(input: RenderRecommendationInput): 
 
   lines.push(`# ${labels.documentTitle}`, '')
   lines.push(`**${labels.page}:** ${input.page.url}`)
-  lines.push(`**${labels.search}:** ${input.page.targetQuery}`, '')
+  if (input.page.targetQuery !== null) lines.push(`**${labels.search}:** ${input.page.targetQuery}`)
+  lines.push('')
   lines.push(`## ${labels.intentNote}`, '', rec.intent_note, '')
 
   lines.push(`## ${labels.titleTag}`, '')
@@ -164,10 +170,11 @@ export function renderRecommendationHtml(input: RenderRecommendationInput): stri
   const body: string[] = []
 
   body.push(`<h1>${escape(labels.documentTitle)}</h1>`)
-  body.push(
-    `<p><strong>${escape(labels.page)}:</strong> ${escape(input.page.url)}<br />` +
-      `<strong>${escape(labels.search)}:</strong> ${escape(input.page.targetQuery)}</p>`,
-  )
+  const search =
+    input.page.targetQuery === null
+      ? ''
+      : `<br /><strong>${escape(labels.search)}:</strong> ${escape(input.page.targetQuery)}`
+  body.push(`<p><strong>${escape(labels.page)}:</strong> ${escape(input.page.url)}${search}</p>`)
   body.push(`<h2>${escape(labels.intentNote)}</h2>`, paragraphs(rec.intent_note))
 
   for (const [heading, field] of [

@@ -7,6 +7,9 @@ import {
   generateRecommendation,
   normalisePageUrl,
   optimizeRouteFor,
+  resolveTargetQueryFromClusters,
+  targetQueryFromEvidence,
+  toIsoDate,
   type JudgeLite,
   type Logger,
   type NotificationEmitter,
@@ -19,7 +22,9 @@ import {
   accountScope,
   countOptimizeGenerationsSince,
   findOpportunityById,
+  gscPageQueryTotals,
   listOpenOpportunities,
+  listQueryClusters,
   listStorePages,
   readPersona,
   storeOptimizeRecommendation,
@@ -81,16 +86,55 @@ export type GenerateOptimizeOutcome =
   | { readonly status: 'paused'; readonly flag?: string; readonly reason: string }
   /** Nothing to work on: the opportunity is gone, is not an OPTIMIZE, or its page is not in the inventory. */
   | { readonly status: 'skipped'; readonly reason: string }
+  /**
+   * We do not know which search this page competes for, so there is nothing
+   * honest to write it against. Nothing was bought and the store's daily
+   * allowance is untouched.
+   */
+  | { readonly status: 'no_target_query'; readonly page: string; readonly explanation: string }
 
-/** The search the recommendation is about, read off the evidence the scan recorded. */
-function targetQueryOf(evidence: unknown, fallback: string): string {
-  if (!Array.isArray(evidence)) return fallback
-  const facts = evidence as readonly { key?: unknown; value?: unknown }[]
-  for (const key of ['query_cluster', 'query', 'keyword']) {
-    const found = facts.find((fact) => fact.key === key)
-    if (found && typeof found.value === 'string' && found.value.trim() !== '') return found.value
-  }
-  return fallback
+/**
+ * The search this recommendation is about: the one the detection recorded, or
+ * failing that the store's own intent this page is most shown for.
+ *
+ * Null means neither exists, and the caller refuses rather than substituting.
+ * The window is the one the clusters were themselves pooled over, so a page is
+ * matched against the same rows that decided what the store's intents are.
+ */
+async function resolveTargetQuery(
+  deps: GenerateOptimizeDeps,
+  scope: AccountScope,
+  opportunity: { readonly evidenceJson: unknown; readonly entityRef: string },
+  now: Date,
+): Promise<string | null> {
+  const recorded = targetQueryFromEvidence(opportunity.evidenceJson)
+  if (recorded !== null) return recorded
+
+  const config = rules().defaults
+  const end = new Date(now)
+  end.setUTCDate(end.getUTCDate() - config.search_console.data_lag_days)
+  const start = new Date(end)
+  start.setUTCDate(start.getUTCDate() - config.clusters.window_days + 1)
+
+  const [clusters, rows] = await Promise.all([
+    listQueryClusters(deps.db, scope),
+    gscPageQueryTotals(
+      deps.db,
+      scope,
+      { startDate: toIsoDate(start), endDate: toIsoDate(end) },
+      config.clusters.min_query_impressions,
+    ),
+  ])
+
+  return resolveTargetQueryFromClusters({
+    pageUrl: opportunity.entityRef,
+    clusters: clusters.map((cluster) => ({
+      headQuery: cluster.headQuery,
+      memberQueries: cluster.memberQueries,
+      clusterId: cluster.clusterId,
+    })),
+    rows,
+  })
 }
 
 /**
@@ -263,6 +307,28 @@ async function runGeneration(
     return { status: 'skipped', reason: 'our_own_article_goes_to_the_refresh_pool' }
   }
 
+  // The last free moment, and the one that decides whether there is anything
+  // to buy. A page put here by the listing detection carries no search of its
+  // own; if the store has no pooled intent covering it either, we refuse. The
+  // alternative the pipeline used to take — treat the page's own address as the
+  // search — bought a results page for a URL, wrote against it, and ended in a
+  // rejected recommendation that had already cost the merchant a day.
+  const targetQuery = await resolveTargetQuery(deps, scope, opportunity, now)
+  if (targetQuery === null) {
+    const explanation =
+      'We could not tell which search this page competes for: the detection recorded none, ' +
+      "and none of the store's pooled searches covers this page. No recommendation was " +
+      'offered, nothing was bought, and the day\'s allowance was not touched.'
+    log.warn('optimize_reco.no_target_query', {
+      account_id: input.accountId,
+      opportunity_id: opportunity.id,
+      signal_type: opportunity.signalType,
+      page: opportunity.entityRef,
+      explanation,
+    })
+    return { status: 'no_target_query', page: opportunity.entityRef, explanation }
+  }
+
   // The store's daily allowance, re-read here rather than trusted from the
   // request that asked for this. The request's check is a courtesy — it lets a
   // merchant be told "tomorrow" straight away instead of watching a spinner —
@@ -286,7 +352,7 @@ async function runGeneration(
     accountId: input.accountId,
     opportunityId: opportunity.id,
     pageUrl: opportunity.entityRef,
-    targetQuery: targetQueryOf(opportunity.evidenceJson, opportunity.entityRef),
+    targetQuery,
     locale: await localeFor(deps, input.accountId),
   })
   if (assembled.status === 'unavailable') {

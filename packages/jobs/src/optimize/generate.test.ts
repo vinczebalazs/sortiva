@@ -17,6 +17,8 @@ import {
   listOptimizeTasks,
   storeOptimizeRecommendation,
   tripAccountFlag,
+  upsertGscQueryDaily,
+  upsertQueryClusters,
   upsertStorePages,
   type Db,
   type OpportunityRow,
@@ -45,6 +47,8 @@ const available = await databaseAvailable()
 const NOW = new Date('2026-09-03T09:00:00.000Z')
 const PAGE = 'https://shop.example/collections/hiking-boots'
 const QUERY = 'waterproof hiking boots'
+/** A second intent, so a search taken from the store's clusters is distinguishable from the one an opportunity recorded. */
+const CLUSTER_QUERY = 'wide fit hiking boots'
 const FAMILY_ID = '33333333-3333-4333-8333-333333333333'
 
 const RIVALS = [1, 2, 3, 4, 5].map((n) => ({
@@ -286,7 +290,7 @@ async function statusOf(opportunityId: string): Promise<string | undefined> {
 }
 
 function fixtures(recommendations: unknown[], scores = { factualGrounding: 4, searchIntentMatch: 4 }) {
-  const seo = new MockSeoDataProvider({ serp: { [QUERY]: RIVALS } })
+  const seo = new MockSeoDataProvider({ serp: { [QUERY]: RIVALS, [CLUSTER_QUERY]: RIVALS } })
   const pageFetcher = new MockPageFetcher()
   for (const rival of RIVALS) {
     pageFetcher.on(rival.url, '<h2>Waterproofing</h2><p>Gore-Tex keeps water out.</p>')
@@ -729,5 +733,126 @@ describe.skipIf(!available)('a generation that does not finish', () => {
 
     expect(outcome.status).toBe('generated')
     expect(await statusOf(opportunity.id)).toBe('accepted')
+  })
+})
+
+/**
+ * The one detection that finds a page without ever looking at a search: a page
+ * whose Google listing is missing or shared with another of the store's pages.
+ * It is found by reading the store's own catalogue, so its evidence names no
+ * search at all.
+ */
+async function metadataOpportunity(): Promise<OpportunityRow> {
+  return insertMinimalOpportunity(
+    db,
+    accountScope(accountId),
+    {
+      signalType: 'missing_or_weak_metadata',
+      entityType: 'url',
+      entityRef: PAGE,
+      evidenceJson: [
+        { key: 'page_type', value: 'collection', source: 'shopify' },
+        { key: 'missing_fields', value: 'seo_description', source: 'shopify' },
+        { key: 'duplicate_fields', value: 'seo_title', source: 'shopify' },
+      ],
+      recommendedAction: 'optimize',
+      status: 'executing',
+      reasonTemplateKey: 'opportunity.missing_or_weak_metadata',
+      reasonParams: {},
+      limitedIntelligence: false,
+      rulesVersion: rules().rulesVersion,
+    },
+    NOW,
+  )
+}
+
+/**
+ * A day inside the window the store's intents are pooled over: Search Console
+ * reports two days late, and clustering looks at the 28 days before that.
+ */
+const IN_WINDOW_DATE = '2026-08-20'
+
+/** Gives the store one pooled intent, and this page a share of it. */
+async function giveThePageAnIntent(head: string, member: string): Promise<void> {
+  const scope = accountScope(accountId)
+  await upsertGscQueryDaily(db, scope, [
+    { date: IN_WINDOW_DATE, page: PAGE, query: head, device: 'desktop', country: 'gbr', clicks: 4, impressions: 300, position: 7.5 },
+    { date: IN_WINDOW_DATE, page: PAGE, query: member, device: 'desktop', country: 'gbr', clicks: 1, impressions: 60, position: 9 },
+  ])
+  await upsertQueryClusters(db, scope, [{ headQuery: head, memberQueries: [member] }])
+}
+
+describe.skipIf(!available)('a page whose detection recorded no search', () => {
+  it('is refused outright when the store has no intent covering it, and the search vendor is never entered', async () => {
+    const opportunity = await metadataOpportunity()
+    const f = fixtures([withProductId(goodRecommendation())])
+
+    const outcome = await generateOptimizeRecommendation(f.deps, {
+      accountId,
+      opportunityId: opportunity.id,
+    })
+
+    expect(outcome.status).toBe('no_target_query')
+    if (outcome.status !== 'no_target_query') return
+    expect(outcome.page).toBe(PAGE)
+    // A sentence, not a code: this is what a person reads in the logs when they
+    // ask why a page was never recommended.
+    expect(outcome.explanation).toContain('could not tell which search this page competes for')
+
+    // The provider's own meter, not a spy: `MockSeoDataProvider` records one
+    // entry per call it is asked to serve — cache hits included — and prices
+    // the billable ones from the same map the live adapter uses. Zero on all
+    // three means the vendor was never entered at all, which is the thing this
+    // card exists to guarantee.
+    expect(f.seo.calls).toHaveLength(0)
+    expect(f.seo.billableCalls).toBe(0)
+    expect(f.seo.totalUsdCost).toBe(0)
+    expect(f.llm.requests).toHaveLength(0)
+    expect(f.pageFetcher.callCount).toBe(0)
+  })
+
+  it('leaves the page where the merchant can act on it, and costs them no allowance', async () => {
+    const opportunity = await metadataOpportunity()
+    const f = fixtures([withProductId(goodRecommendation())])
+
+    await generateOptimizeRecommendation(f.deps, { accountId, opportunityId: opportunity.id })
+
+    expect(await statusOf(opportunity.id)).toBe('accepted')
+    const { rows } = await harness.pool.query<{ n: string }>(
+      'SELECT count(*)::text AS n FROM optimize_recommendations',
+    )
+    expect(rows[0]?.n).toBe('0')
+  })
+
+  it('is recommended exactly as any other page once one of the store’s intents covers it', async () => {
+    await giveThePageAnIntent(CLUSTER_QUERY, 'hiking boots wide fit')
+    const opportunity = await metadataOpportunity()
+    const f = fixtures([withProductId(goodRecommendation())])
+
+    const outcome = await generateOptimizeRecommendation(f.deps, {
+      accountId,
+      opportunityId: opportunity.id,
+    })
+
+    expect(outcome.status).toBe('generated')
+    // The search the writing call was given is the store's own intent — never
+    // the page's web address, which is what it used to be handed here.
+    const asked = f.llm.requests.find((request) => request.callType === 'optimize_reco')
+    const content = asked?.messages[0]?.content ?? ''
+    expect(content).toContain(`The search: ${CLUSTER_QUERY}`)
+    expect(content).not.toContain(`The search: ${PAGE}`)
+    expect(await latestOptimizeRecommendation(db, accountScope(accountId), opportunity.id)).toBeDefined()
+  })
+
+  it('buys a results page for that intent rather than for the page’s address', async () => {
+    await giveThePageAnIntent(CLUSTER_QUERY, 'hiking boots wide fit')
+    const opportunity = await metadataOpportunity()
+    const f = fixtures([withProductId(goodRecommendation())])
+
+    await generateOptimizeRecommendation(f.deps, { accountId, opportunityId: opportunity.id })
+
+    expect(f.seo.billableCalls).toBeGreaterThan(0)
+    const { rows } = await harness.pool.query<{ query: string }>('SELECT query FROM serp_snapshots')
+    expect(rows.map((row) => row.query)).toEqual([CLUSTER_QUERY])
   })
 })

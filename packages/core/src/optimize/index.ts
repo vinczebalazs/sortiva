@@ -75,6 +75,11 @@ export {
   type RecommendationSection,
 } from './recommendation'
 export {
+  resolveTargetQueryFromClusters,
+  targetQueryFromEvidence,
+  type ResolveTargetQueryInput,
+} from './target-query'
+export {
   renderRecommendationHtml,
   renderRecommendationMarkdown,
   type RecommendationLabels,

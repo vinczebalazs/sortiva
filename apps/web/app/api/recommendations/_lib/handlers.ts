@@ -11,6 +11,9 @@ import {
   renderConsolidationView,
   renderRecommendationHtml,
   renderRecommendationMarkdown,
+  resolveTargetQueryFromClusters,
+  targetQueryFromEvidence,
+  toIsoDate,
   type ConflictCode,
   type FixRecommendationView,
   type OptimizeEvidencePack,
@@ -23,10 +26,12 @@ import {
   findFamiliesByIds,
   findOpportunityById,
   findOptimizeRecommendation,
+  gscPageQueryTotals,
   isAccountFlagActive,
   latestOptimizeRecommendation,
   listOpenOpportunities,
   listOptimizeTasks,
+  listQueryClusters,
   listStorePages,
   markOpportunityApplied,
   markOptimizeTask,
@@ -545,7 +550,12 @@ export function makeDownloadRecommendationHandler(
       recommendation,
       page: {
         url: found.recommendation.pageUrl,
-        targetQuery: targetQueryOf(found.opportunity.evidenceJson, found.recommendation.pageUrl),
+        targetQuery: await targetQueryFor(
+          deps.db,
+          scope,
+          found.opportunity,
+          (deps.now ?? (() => new Date()))(),
+        ),
       },
       facts,
       labels: deps.labels,
@@ -563,11 +573,49 @@ export function makeDownloadRecommendationHandler(
   }
 }
 
-function targetQueryOf(evidence: unknown, fallback: string): string {
-  if (!Array.isArray(evidence)) return fallback
-  const facts = evidence as readonly { key?: unknown; value?: unknown }[]
-  const found = facts.find((fact) => fact.key === 'query_cluster' || fact.key === 'query')
-  return found && typeof found.value === 'string' ? found.value : fallback
+/**
+ * The search the document names, resolved the same way the generation resolved
+ * it: what the detection recorded, or the store's own pooled intent this page
+ * is most shown for.
+ *
+ * Null rather than the page's address when neither exists. A download is
+ * something a merchant reads and pastes into a brief, and a web address printed
+ * under the word "search" is a claim about a shopper that nobody made.
+ */
+async function targetQueryFor(
+  db: Db,
+  scope: AccountScope,
+  opportunity: OpportunityRow,
+  now: Date,
+): Promise<string | null> {
+  const recorded = targetQueryFromEvidence(opportunity.evidenceJson)
+  if (recorded !== null) return recorded
+
+  const config = rules().defaults
+  const end = new Date(now)
+  end.setUTCDate(end.getUTCDate() - config.search_console.data_lag_days)
+  const start = new Date(end)
+  start.setUTCDate(start.getUTCDate() - config.clusters.window_days + 1)
+
+  const [clusters, rows] = await Promise.all([
+    listQueryClusters(db, scope),
+    gscPageQueryTotals(
+      db,
+      scope,
+      { startDate: toIsoDate(start), endDate: toIsoDate(end) },
+      config.clusters.min_query_impressions,
+    ),
+  ])
+
+  return resolveTargetQueryFromClusters({
+    pageUrl: opportunity.entityRef,
+    clusters: clusters.map((cluster) => ({
+      headQuery: cluster.headQuery,
+      memberQueries: cluster.memberQueries,
+      clusterId: cluster.clusterId,
+    })),
+    rows,
+  })
 }
 
 /**
