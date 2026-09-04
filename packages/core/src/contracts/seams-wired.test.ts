@@ -38,6 +38,10 @@ const REAL_IMPLEMENTATION: Record<string, { symbol: string; why: string }> = {
     symbol: 'DbNotificationEmitter',
     why: 'the Shopify composition root hands this out, so a notification reaches a real row rather than a stand-in',
   },
+  StubCatalogEvents: {
+    symbol: 'DatabaseCatalogEvents',
+    why: 'the composition root (apps/web/instrumentation-node.ts) builds it and hands it to the registered catalogue-change drain, and the Shopify webhook handler asks for a pass the moment it records a change — so a merchant’s edit really is read in production, which is the half that used to be missing',
+  },
   StubOpportunitySource: {
     symbol: 'DbOpportunitySource',
     why: 'the onboarding scan’s calendar-seeding step (packages/jobs/src/scan/onboarding.ts) builds it and calls acceptedContentOpportunities(), and that step is registered as the signal_scan_onboarding_sweep crontab task, so a confirmed account really reaches this seam in production',
@@ -124,10 +128,13 @@ describe('a seam may only leave the stub report by being wired for real', () => 
     expect(constructionSites('DbClassThatDoesNotExist')).toEqual([])
   })
 
-  it('catches the exact case that got past the report', () => {
-    // The change stream: recorded by the product, read by nothing. It is back on
-    // the report, and this asserts the reason it belongs there still holds.
-    expect(constructionSites('DatabaseCatalogEvents')).toEqual([])
-    expect(stubsOnTheReport()).toContain('StubCatalogEvents')
+  it('the case that got past the report is now genuinely closed', () => {
+    // The change stream is the seam this whole file was written for: it was
+    // dropped from the report on a claim that nothing had checked, and for a
+    // long time the product recorded what merchants changed and read none of it.
+    // Both halves now run, so the claim is finally true — and this asserts the
+    // thing itself rather than the bookkeeping, so restoring the report line
+    // without unwiring anything would not quietly satisfy it.
+    expect(constructionSites('DatabaseCatalogEvents')).not.toEqual([])
   })
 })

@@ -55,19 +55,17 @@ const doubles = await import('../packages/core/src/contracts/doubles.ts')
 // `replenishment_monthly`). The double still exists and its own tests still
 // use it; nothing in production does.
 new doubles.StubJudgeLite()
-// `StubCatalogEvents` is listed again, from 2026-09-03, and the note that used
-// to sit here was wrong. It said the change stream "is served in production by
-// `DatabaseCatalogEvents`". It is not: that class is constructed nowhere outside
-// its own test, and the job that would drain the stream is registered nowhere.
-// What merchants change **is** recorded — that half works — and then nothing
-// ever reads it.
-//
-// So the seam is not filled, and this line stays until something in production
-// constructs a reader and drains it. `seams-wired.test.ts` now enforces the rule
-// this line was removed in breach of: a seam may only be dropped from this
-// report when its real implementation is actually constructed somewhere that is
-// not a test.
-new doubles.StubCatalogEvents()
+// `StubCatalogEvents` is deliberately not constructed, from 2026-09-04, and this
+// is the third note in this place — the first two were wrong, so the standard
+// here is higher than a card's report. What is true now, checked end to end:
+// the Shopify webhook handler writes every change a merchant makes to the shared
+// record and then asks for a pass over it; `DatabaseCatalogEvents` is built in
+// the composition root (`apps/web/instrumentation-node.ts`) and handed to the
+// drain task registered there, so the ask reaches a real reader; and the reader
+// re-reads the changed pages and re-scans the store's opportunities. Both halves
+// run, not just the writing one. `seams-wired.test.ts` holds this claim to the
+// rule the earlier removal broke: a seam leaves this report only when its real
+// implementation is constructed somewhere that is not a test.
 // `StubNotificationEmitter` is deliberately not constructed either, for the same
 // reason and from 2026-09-02: the Shopify composition root now hands out
 // `DbNotificationEmitter`, so a notification written in production reaches a real

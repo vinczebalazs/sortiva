@@ -173,6 +173,22 @@ export async function startServerRuntime() {
     capture: analytics,
   })
 
+  // Reading what a merchant changed in their own store, and acting on it while
+  // it is still the thing they just did. The webhook handler writes every change
+  // to a shared record and then asks for a pass over it; this is what answers to
+  // that ask. Without the line, the changes pile up unread and the store's pages
+  // are only ever as fresh as last night's walk.
+  //
+  // The scan is handed as a function rather than an object because building it
+  // opens a database connection and takes the shared pool, and registration runs
+  // while the server is still starting.
+  const { registerCatalogEventTasks, DatabaseCatalogEvents } = await import('@sortiva/jobs')
+  registerCatalogEventTasks({
+    getDb: db,
+    catalogEvents: new DatabaseCatalogEvents(db),
+    signalScan: () => ({ db: db(), pool: dbPool(), seo: seoProvider(), capture: analytics }),
+  })
+
   // The day's article. Two jobs: an hourly sweep that finds the stores whose
   // own clock has just reached their generation hour, and the per-store run
   // that writes and grades one article. Until now `generation_cycle_daily` was
