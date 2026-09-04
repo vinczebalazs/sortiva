@@ -128,9 +128,12 @@ export function killSwitch(flag: string): KillSwitchDefinition | undefined {
 }
 
 /**
- * Whoever or whatever raised a switch. `auto` is the product itself, and is
- * never allowed to lower one — an automatic trip means a person has to look at
- * why it fired, so nothing automatic may decide the answer is "it stopped".
+ * Whoever or whatever raised a switch. `auto` is the product itself, and may
+ * never be given as the *operator* lowering one: an incident means a person has
+ * to look at why it fired, and "the product says it is fine now" is not a
+ * person looking. The two per-store daily allowances are the exception the
+ * incident note below describes, and they are lowered by the sweep naming
+ * itself, never by an operator command claiming to be `auto`.
  */
 export const AUTOMATIC_ACTOR = 'auto'
 
@@ -211,10 +214,15 @@ export function reviewReset(input: {
  *
  * There is no incidents table and this card may not add one, so the incident
  * *is* the flag row: it already carries what raised it, why, when, and whether
- * it has been lowered — and because an automatic trip never lowers itself, an
- * open incident is exactly an active flag with `tripped_by = 'auto'`. This
- * function is the reading of those columns as an incident, so the shape is
- * written once rather than re-derived at each place that lists them.
+ * it has been lowered, so an open incident is an active flag with
+ * `tripped_by = 'auto'`. This function is the reading of those columns as an
+ * incident, so the shape is written once rather than re-derived at each place
+ * that lists them.
+ *
+ * One kind of automatic trip does lower itself: the two per-store daily
+ * allowances below, which report nothing an operator has to decide — the turn
+ * of the day decides it. Those close with `closedBy` naming the sweep rather
+ * than a person, which is how an incident list tells the two apart.
  */
 export interface Incident {
   readonly flag: string

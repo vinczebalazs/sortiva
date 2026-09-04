@@ -2,9 +2,11 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import {
   accountScope,
   appendSpendEvent,
+  insertMinimalOpportunity,
   isAccountFlagActive,
   isGlobalFlagActive,
   systemScope,
+  tripAccountFlag,
   type Db,
 } from '@sortiva/db'
 import {
@@ -17,7 +19,9 @@ import {
 import {
   ACCOUNT_INTENT_GAP_PAUSED_FLAG,
   ACCOUNT_OPTIMIZE_PAUSED_FLAG,
+  ACCOUNT_PAUSED_FLAG,
   ALL_WORK_PAUSED_FLAG,
+  MODEL_CALLS_PER_PAID_ANALYSIS_MAX,
   PUBLISHING_PAUSED_FLAG,
   createLogger,
   silentLogger,
@@ -113,7 +117,12 @@ class OfflineCapture implements PosthogCapture {
   }
 }
 
-async function usedCallType(accountId: string, callType: string, times: number): Promise<void> {
+async function usedCallType(
+  accountId: string,
+  callType: string,
+  times: number,
+  occurredAt: Date = NOW,
+): Promise<void> {
   for (let i = 0; i < times; i += 1) {
     await appendSpendEvent(db, accountScope(accountId), {
       vendor: 'anthropic',
@@ -121,8 +130,50 @@ async function usedCallType(accountId: string, callType: string, times: number):
       usdCost: 0.01,
       cacheHit: false,
       outcome: 'succeeded',
-      occurredAt: NOW,
+      occurredAt,
     })
+  }
+}
+
+/**
+ * One finished OPTIMIZE generation, as the product leaves it behind: a stored
+ * recommendation hanging off an opportunity, plus the model calls it took.
+ *
+ * `calls` is what makes this worth planting rather than faking — one generation
+ * is one recommendation however many times the model had to be asked, and the
+ * whole defect this card fixes was counting the asking.
+ */
+async function generatedOptimizeRecommendations(
+  accountId: string,
+  generations: number,
+  callsEach = 1,
+  at: Date = NOW,
+): Promise<void> {
+  for (let i = 0; i < generations; i += 1) {
+    const opportunity = await insertMinimalOpportunity(
+      db,
+      accountScope(accountId),
+      {
+        signalType: 'existing_page_intent_gap',
+        entityType: 'url',
+        entityRef: `https://shop.example/collections/page-${i}`,
+        evidenceJson: [],
+        recommendedAction: 'optimize',
+        status: 'accepted',
+        reasonTemplateKey: 'opportunity.existing_page_intent_gap',
+        reasonParams: {},
+        limitedIntelligence: false,
+        rulesVersion: rules().rulesVersion,
+      },
+      at,
+    )
+    await harness.pool.query(
+      `INSERT INTO optimize_recommendations
+         (opportunity_id, page_url, recommendation_json, prompt_version, model_id, rules_version, generated_at, state)
+       VALUES ($1, $2, '{}'::jsonb, 'optimize-reco.v1', 'claude-sonnet-5', $3, $4, 'valid')`,
+      [opportunity.id, `https://shop.example/collections/page-${i}`, rules().rulesVersion, at],
+    )
+    await usedCallType(accountId, 'optimize_reco', callsEach, at)
   }
 }
 
@@ -214,39 +265,107 @@ describe('publishing failing at the far end', () => {
 })
 
 describe('one store\'s daily allowance of a paid analysis', () => {
-  it('stops that call type for that store and nothing else', async () => {
-    const account = await insertAccount(harness.pool, 'gap@example.com')
-    await usedCallType(account, 'intent_gap', BUDGETS.intent_gap.analyses_per_account_per_day)
+  const OPTIMIZE_ALLOWANCE = BUDGETS.optimize.generations_per_account_per_day
+  const INTENT_GAP_ALLOWANCE = BUDGETS.intent_gap.analyses_per_account_per_day
+
+  it('leaves a store that used every one of its recommendations alone', async () => {
+    // The defect this card exists for. Two recommendations is what the merchant
+    // is entitled to, and having them is not a reason to switch the feature off.
+    const account = await insertAccount(harness.pool, 'full@example.com')
+    await generatedOptimizeRecommendations(account, OPTIMIZE_ALLOWANCE)
 
     const report = await sweep()
 
-    expect(report.trips.map((t) => t.flag)).toEqual([ACCOUNT_INTENT_GAP_PAUSED_FLAG])
+    expect(report.trips).toEqual([])
+    expect(await isAccountFlagActive(db, accountScope(account), ACCOUNT_OPTIMIZE_PAUSED_FLAG)).toBe(
+      false,
+    )
+  })
+
+  it('leaves a recommendation that needed a second attempt alone', async () => {
+    // One recommendation, four model calls: the writer's answer, a re-ask when
+    // it came back unreadable, and the same pair again when our own checks
+    // rejected the first attempt. One generation, and the store has one left.
+    const account = await insertAccount(harness.pool, 'retried@example.com')
+    await generatedOptimizeRecommendations(account, 1, 4)
+
+    expect((await sweep()).trips).toEqual([])
+  })
+
+  it('stops that call type, and nothing else, when a store goes past the allowance', async () => {
+    const account = await insertAccount(harness.pool, 'over@example.com')
+    await generatedOptimizeRecommendations(account, OPTIMIZE_ALLOWANCE + 1)
+
+    const report = await sweep()
+
+    expect(report.trips.map((t) => t.flag)).toEqual([ACCOUNT_OPTIMIZE_PAUSED_FLAG])
     expect(report.trips[0]?.accountId).toBe(account)
-    expect(await isAccountFlagActive(db, accountScope(account), ACCOUNT_INTENT_GAP_PAUSED_FLAG)).toBe(
+    expect(await isAccountFlagActive(db, accountScope(account), ACCOUNT_OPTIMIZE_PAUSED_FLAG)).toBe(
       true,
     )
     // The daily article is untouched; so is the other paid call type.
-    expect(await isAccountFlagActive(db, accountScope(account), ACCOUNT_OPTIMIZE_PAUSED_FLAG)).toBe(
+    expect(await isAccountFlagActive(db, accountScope(account), ACCOUNT_INTENT_GAP_PAUSED_FLAG)).toBe(
       false,
     )
     expect(await isGlobalFlagActive(db, SYSTEM, ALL_WORK_PAUSED_FLAG)).toBe(false)
   })
 
-  it('leaves a store one under its allowance alone', async () => {
-    const account = await insertAccount(harness.pool, 'under@example.com')
-    await usedCallType(account, 'optimize_reco', BUDGETS.optimize.generations_per_account_per_day - 1)
+  it('tells the operator how many generations there really were', async () => {
+    // Three recommendations that took two model calls each. The incident has to
+    // say three; it used to say six.
+    const account = await insertAccount(harness.pool, 'counted@example.com')
+    await generatedOptimizeRecommendations(account, OPTIMIZE_ALLOWANCE + 1, 2)
+
+    const report = await sweep()
+
+    expect(report.trips[0]?.reason).toContain(`${OPTIMIZE_ALLOWANCE + 1} OPTIMIZE generations`)
+    expect(report.trips[0]?.reason).not.toContain(`${(OPTIMIZE_ALLOWANCE + 1) * 2}`)
+  })
+
+  it('leaves a store that used every one of its intent-gap analyses alone', async () => {
+    const account = await insertAccount(harness.pool, 'gap-full@example.com')
+    await usedCallType(account, 'intent_gap', INTENT_GAP_ALLOWANCE)
 
     expect((await sweep()).trips).toEqual([])
+  })
+
+  it('leaves intent-gap analyses that needed a second ask alone', async () => {
+    // Every analysis the store is allowed, each of which had to be asked twice.
+    const account = await insertAccount(harness.pool, 'gap-retried@example.com')
+    await usedCallType(
+      account,
+      'intent_gap',
+      INTENT_GAP_ALLOWANCE * MODEL_CALLS_PER_PAID_ANALYSIS_MAX,
+    )
+
+    expect((await sweep()).trips).toEqual([])
+  })
+
+  it('stops intent-gap analysis once even the re-asks cannot explain the calls', async () => {
+    const account = await insertAccount(harness.pool, 'gap-over@example.com')
+    await usedCallType(
+      account,
+      'intent_gap',
+      INTENT_GAP_ALLOWANCE * MODEL_CALLS_PER_PAID_ANALYSIS_MAX + 1,
+    )
+
+    const report = await sweep()
+
+    expect(report.trips.map((t) => t.flag)).toEqual([ACCOUNT_INTENT_GAP_PAUSED_FLAG])
+    // The incident says what it counted and how that relates to the allowance,
+    // rather than reporting model calls as though they were analyses.
+    expect(report.trips[0]?.reason).toContain('paid model calls for intent-gap analyses')
+    expect(report.trips[0]?.reason).toContain(`allowance is ${INTENT_GAP_ALLOWANCE} analyses a day`)
   })
 
   it('does not spend a store\'s allowance on work served from cache', async () => {
     const account = await insertAccount(harness.pool, 'cached@example.com')
     // Enough replays to blow through the allowance twice over. Each cost
     // nothing and bought nothing new, so none of them should count against it.
-    for (let i = 0; i < BUDGETS.optimize.generations_per_account_per_day * 2; i += 1) {
+    for (let i = 0; i < INTENT_GAP_ALLOWANCE * 4; i += 1) {
       await appendSpendEvent(db, accountScope(account), {
         vendor: 'anthropic',
-        callType: 'optimize_reco',
+        callType: 'intent_gap',
         usdCost: 0,
         cacheHit: true,
         outcome: 'succeeded',
@@ -257,16 +376,91 @@ describe('one store\'s daily allowance of a paid analysis', () => {
     expect((await sweep()).trips).toEqual([])
   })
 
-  it('does not count one store\'s calls against another', async () => {
+  it('does not count one store\'s work against another', async () => {
     const loud = await insertAccount(harness.pool, 'loud@example.com')
     const quiet = await insertAccount(harness.pool, 'quiet@example.com')
-    await usedCallType(loud, 'optimize_reco', BUDGETS.optimize.generations_per_account_per_day)
-    await usedCallType(quiet, 'optimize_reco', 1)
+    await generatedOptimizeRecommendations(loud, OPTIMIZE_ALLOWANCE + 1)
+    await generatedOptimizeRecommendations(quiet, 1)
 
     const report = await sweep()
 
     expect(report.trips).toHaveLength(1)
     expect(report.trips[0]?.accountId).toBe(loud)
+  })
+})
+
+describe('a daily allowance comes back the next day, with nobody asked', () => {
+  const OPTIMIZE_ALLOWANCE = BUDGETS.optimize.generations_per_account_per_day
+  const TOMORROW = new Date('2026-09-02T00:04:00.000Z')
+
+  it('lowers its own switch once the day it was about has passed', async () => {
+    const account = await insertAccount(harness.pool, 'tomorrow@example.com')
+    await generatedOptimizeRecommendations(account, OPTIMIZE_ALLOWANCE + 1)
+
+    await sweep()
+    expect(await isAccountFlagActive(db, accountScope(account), ACCOUNT_OPTIMIZE_PAUSED_FLAG)).toBe(
+      true,
+    )
+
+    // Four minutes past midnight, on the sweep's ordinary five-minute clock.
+    // Nobody has done anything; yesterday's count simply is not today's.
+    const next = await sweep({ now: () => TOMORROW })
+
+    expect(next.cleared).toEqual([
+      { flag: ACCOUNT_OPTIMIZE_PAUSED_FLAG, accountId: account },
+    ])
+    expect(await isAccountFlagActive(db, accountScope(account), ACCOUNT_OPTIMIZE_PAUSED_FLAG)).toBe(
+      false,
+    )
+  })
+
+  it('leaves the switch up while the store is still over', async () => {
+    const account = await insertAccount(harness.pool, 'still-over@example.com')
+    await generatedOptimizeRecommendations(account, OPTIMIZE_ALLOWANCE + 1)
+
+    await sweep()
+    const second = await sweep()
+
+    expect(second.cleared).toEqual([])
+    expect(await isAccountFlagActive(db, accountScope(account), ACCOUNT_OPTIMIZE_PAUSED_FLAG)).toBe(
+      true,
+    )
+  })
+
+  it('never lowers a switch a person raised', async () => {
+    // An operator paused this store's recommendations for a reason the sweep
+    // knows nothing about. It is not the sweep's to decide that reason expired.
+    const account = await insertAccount(harness.pool, 'operator@example.com')
+    await tripAccountFlag(db, accountScope(account), {
+      flag: ACCOUNT_OPTIMIZE_PAUSED_FLAG,
+      actor: 'dana',
+      reason: 'Investigating a complaint about this store\'s suggestions.',
+      trippedBy: 'manual',
+    })
+
+    const report = await sweep({ now: () => TOMORROW })
+
+    expect(report.cleared).toEqual([])
+    expect(await isAccountFlagActive(db, accountScope(account), ACCOUNT_OPTIMIZE_PAUSED_FLAG)).toBe(
+      true,
+    )
+  })
+
+  it('never lowers a switch about anything but a daily allowance', async () => {
+    // The store's whole pipeline was stopped because its spending ran away.
+    // That is an incident, and an incident waits for a person.
+    const account = await insertAccount(harness.pool, 'runaway@example.com')
+    await tripAccountFlag(db, accountScope(account), {
+      flag: ACCOUNT_PAUSED_FLAG,
+      actor: 'spend_cap_sweep',
+      reason: 'Spent far more than this store normally does.',
+      trippedBy: 'auto',
+    })
+
+    const report = await sweep({ now: () => TOMORROW })
+
+    expect(report.cleared).toEqual([])
+    expect(await isAccountFlagActive(db, accountScope(account), ACCOUNT_PAUSED_FLAG)).toBe(true)
   })
 })
 
@@ -292,7 +486,11 @@ describe('analytics is told, never asked', () => {
     // the vendor throws, and the switch still goes up in our own database.
     const analytics = new OfflineCapture()
     const account = await insertAccount(harness.pool, 'offline@example.com')
-    await usedCallType(account, 'intent_gap', BUDGETS.intent_gap.analyses_per_account_per_day)
+    await usedCallType(
+      account,
+      'intent_gap',
+      BUDGETS.intent_gap.analyses_per_account_per_day * MODEL_CALLS_PER_PAID_ANALYSIS_MAX + 1,
+    )
 
     const report = await sweep({
       judge: judgeSaw(CAPS.judge_fail_rate.trailing_drafts, CAPS.judge_fail_rate.trailing_drafts),

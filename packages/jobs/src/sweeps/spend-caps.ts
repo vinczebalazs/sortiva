@@ -43,9 +43,10 @@ import { evaluateAutoTrips, type AutoTripDeps } from './auto-trips'
  *   preview endpoint only, which keeps the funnel alive on cached answers and
  *   never touches a paying store.
  *
- * A raised switch is never lowered here, or anywhere automatic. Something
- * crossed a money ceiling; a person decides whether that was a bug, abuse, or a
- * ceiling set too low.
+ * None of the three is ever lowered automatically. Something crossed a money
+ * ceiling; a person decides whether that was a bug, abuse, or a ceiling set too
+ * low. (The two per-store daily allowances in `auto-trips.ts`, which runs in the
+ * same job, are the one exception and say why there.)
  */
 
 export const SPEND_CAP_SWEEP_TASK = 'spend_cap_sweep'

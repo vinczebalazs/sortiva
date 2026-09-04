@@ -13,9 +13,10 @@
  *   attempts fail over an hour, the fault is at the platform. Publishing stops;
  *   writing does not, because a store that cannot be posted to today is still
  *   worth having drafts for tomorrow.
- * - **One store has used up its daily allowance of a paid, click-triggered
- *   analysis.** That store stops making *those* calls for the rest of the day
- *   and nothing else about it changes.
+ * - **One store has gone past its daily allowance of a paid, click-triggered
+ *   analysis.** Past, not up to: using the whole allowance is ordinary and is
+ *   refused at the button. That store stops making *those* calls for the rest
+ *   of the day and nothing else about it changes.
  *
  * Pure, like the spend arithmetic beside it: handed counts and ceilings,
  * answers yes or no. It never reads a database, never looks at a clock, and
@@ -130,32 +131,60 @@ export const PUBLISH_ERROR_MINIMUM_SAMPLE = 5
 export interface CallTypeCapVerdict {
   tripped: boolean
   used: number
-  cap: number
+  ceiling: number
   reason: string | null
 }
 
 /**
+ * The most model calls one paid analysis can turn into.
+ *
+ * The model wrapper asks a second time when the first answer comes back in a
+ * shape it cannot read, and both calls are billed and both land in the spend
+ * ledger. A ceiling compared against ledger rows therefore has to leave room
+ * for that second call, or a store that used its whole allowance and hit one
+ * malformed answer looks exactly like a store that went over.
+ *
+ * Not in `signals.config.yaml` because it decides nothing about a merchant's
+ * store — it is our own retry policy written down where the arithmetic that
+ * depends on it can see it, the same reason the minimum publish sample above is
+ * here. Letting the wrapper ask a third time without raising this would start
+ * pausing stores that did nothing unusual.
+ */
+export const MODEL_CALLS_PER_PAID_ANALYSIS_MAX = 2
+
+/**
  * One store's daily allowance of a paid analysis it triggers by clicking.
  *
- * A count rather than a dollar total: each of these is a fixed bundle of a paid
- * search read and a model call, so counting them is the same ceiling expressed
- * in the unit the merchant actually sees.
+ * **Above the ceiling, never at it.** Spending an allowance is what an
+ * allowance is for: a store that used all of today's has done nothing unusual,
+ * and its next click is refused by the button rather than by a brake. This is
+ * the backstop for the case that refusal did not catch, so it fires only when
+ * more work happened than the allowance permits.
+ *
+ * `used` and `ceiling` have to be counted in the same unit, and which unit that
+ * is depends on what the caller can actually count. The caller names it in
+ * `what`, and adds `note` where the unit it counted is not the unit the
+ * merchant's allowance is written in — an operator reading the incident should
+ * not have to work that out.
  */
 export function callTypeCapVerdict(input: {
   used: number
-  cap: number
-  /** What the merchant asked for, in words — this is read by an operator. */
+  ceiling: number
+  /** The unit `used` and `ceiling` are counted in, in words — an operator reads this. */
   what: string
+  /** How that unit relates to the merchant's allowance, where the two differ. */
+  note?: string
 }): CallTypeCapVerdict {
-  if (input.used < input.cap) {
-    return { tripped: false, used: input.used, cap: input.cap, reason: null }
+  if (input.used <= input.ceiling) {
+    return { tripped: false, used: input.used, ceiling: input.ceiling, reason: null }
   }
   return {
     tripped: true,
     used: input.used,
-    cap: input.cap,
+    ceiling: input.ceiling,
     reason:
-      `This store has run ${input.used} ${input.what} today, which is its daily allowance of ` +
-      `${input.cap}. Only that is paused; everything else about the store carries on.`,
+      `This store has run ${input.used} ${input.what} today, above the ceiling of ${input.ceiling}. ` +
+      (input.note === undefined ? '' : `${input.note} `) +
+      'Only that is paused; everything else about the store carries on.',
   }
 }

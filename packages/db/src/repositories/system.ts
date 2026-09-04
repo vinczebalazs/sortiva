@@ -134,10 +134,14 @@ export async function isAccountFlagActive(
 }
 
 /**
- * Every flip is recorded with who did it and why, and an automatic trip never
- * resets itself — someone has to look at why it fired. Returns undefined when
- * the flag is already active: the partial
- * unique index makes a second trip a no-op rather than a duplicate incident.
+ * Every flip is recorded with who did it and why. Returns undefined when the
+ * flag is already active: the partial unique index makes a second trip a no-op
+ * rather than a duplicate incident.
+ *
+ * Almost nothing lowers a switch on its own — an automatic trip means somebody
+ * has to look at why it fired. The exception is the two per-store daily
+ * allowances, which the auto-trip sweep takes back down once the day they were
+ * about has passed.
  */
 export async function tripAccountFlag(
   db: Db,
@@ -223,10 +227,12 @@ export async function resetAccountFlag(
 /**
  * Every switch that is currently up, newest first — the open-incident list.
  *
- * There is no incidents table: an automatic trip never lowers itself, so an
- * open incident *is* an active flag whose `tripped_by` is `auto`. Manual flags
- * come back in the same list because an operator wants one answer to "what is
- * stopped right now", not two.
+ * There is no incidents table: an open incident *is* an active flag whose
+ * `tripped_by` is `auto`. Manual flags come back in the same list because an
+ * operator wants one answer to "what is stopped right now", not two.
+ *
+ * The auto-trip sweep also reads this to find the per-store daily allowances it
+ * raised, which are the one kind of trip that comes back down on its own.
  */
 export async function listActiveFlags(db: Db, _scope: SystemScope): Promise<OpsFlagRow[]> {
   return db

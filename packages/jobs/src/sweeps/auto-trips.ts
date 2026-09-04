@@ -1,8 +1,11 @@
-import type { Db } from '@sortiva/db'
+import type { AccountScope, Db } from '@sortiva/db'
 import {
   accountScope,
   accountsWithVendorSpend,
   countAccountCalls,
+  countOptimizeGenerationsSince,
+  listActiveFlags,
+  resetAccountFlag,
   systemScope,
   tripAccountFlag,
   tripGlobalFlag,
@@ -12,8 +15,10 @@ import {
   ACCOUNT_INTENT_GAP_PAUSED_FLAG,
   ACCOUNT_OPTIMIZE_PAUSED_FLAG,
   ALL_WORK_PAUSED_FLAG,
+  AUTOMATIC_ACTOR,
   COUNT_FAILED_VENDOR_CALLS,
   KILL_SWITCH_TRIPPED_EVENT,
+  MODEL_CALLS_PER_PAID_ANALYSIS_MAX,
   PUBLISHING_PAUSED_FLAG,
   PUBLISH_ERROR_MINIMUM_SAMPLE,
   UnrecordedJudgeOutcomes,
@@ -45,6 +50,14 @@ import { runtimeLogger } from '../runtime/logging'
  * way that cannot undo or prevent the write. If the analytics vendor is down,
  * unreachable or throwing, the switch still goes up — that is the whole point
  * of the control plane living here.
+ *
+ * **The two daily allowances are the exception to "a trip waits for a person".**
+ * Every other switch here reports something nobody expected and stays up until
+ * an operator has looked. A day's allowance is different in kind: it is a
+ * condition that is true today and false tomorrow, and nobody has to decide that
+ * a new day has started. So this sweep lowers those two — and only those two,
+ * and only where it raised them itself — as soon as the count it complained
+ * about is back inside the ceiling, which the turn of the day guarantees.
  */
 
 /** Written into every switch this job raises, so a flag's origin is obvious. */
@@ -59,10 +72,17 @@ export interface AutoTrip {
   raised: boolean
 }
 
+/** A daily allowance switch this run took back down because the day it was about has passed. */
+export interface AllowanceCleared {
+  flag: string
+  accountId: string
+}
+
 export interface AutoTripReport {
   trips: AutoTrip[]
   /** Conditions the sweep could not evaluate because nothing records the numbers yet. */
   unmeasurable: string[]
+  cleared: AllowanceCleared[]
 }
 
 export interface AutoTripDeps {
@@ -112,6 +132,7 @@ export async function evaluateAutoTrips(
 
   const trips: AutoTrip[] = []
   const unmeasurable: string[] = []
+  const cleared: AllowanceCleared[] = []
 
   const raiseGlobal = async (flag: string, reason: string) => {
     const row = await tripGlobalFlag(db, system, { flag, actor: ACTOR, reason, trippedBy: 'auto' })
@@ -158,30 +179,25 @@ export async function evaluateAutoTrips(
   }
 
   // ── Per-store daily allowances ─────────────────────────────────────────────
-  // Counted out of the same ledger the dollar caps read, so the two can never
-  // disagree about what a store did today.
   const dayWindow: SpendWindow = { ...utcDayWindow(now), includeFailed: COUNT_FAILED_VENDOR_CALLS }
-  const perType = [
-    {
-      callType: 'intent_gap',
-      flag: ACCOUNT_INTENT_GAP_PAUSED_FLAG,
-      cap: budgets.intent_gap.analyses_per_account_per_day,
-      what: 'intent-gap analyses',
-    },
-    {
-      callType: 'optimize_reco',
-      flag: ACCOUNT_OPTIMIZE_PAUSED_FLAG,
-      cap: budgets.optimize.generations_per_account_per_day,
-      what: 'OPTIMIZE generations',
-    },
-  ]
+  const allowances = allowanceRules(db, {
+    dayStart: dayWindow.since,
+    dayWindow,
+    intentGapPerDay: budgets.intent_gap.analyses_per_account_per_day,
+    optimizePerDay: budgets.optimize.generations_per_account_per_day,
+  })
 
   const accountIds = await accountsWithVendorSpend(db, system, 'anthropic', dayWindow)
   for (const accountId of accountIds) {
     const scope = accountScope(accountId)
-    for (const rule of perType) {
-      const used = await countAccountCalls(db, scope, rule.callType, dayWindow)
-      const verdict = callTypeCapVerdict({ used, cap: rule.cap, what: rule.what })
+    for (const rule of allowances) {
+      const used = await rule.count(scope)
+      const verdict = callTypeCapVerdict({
+        used,
+        ceiling: rule.ceiling,
+        what: rule.what,
+        ...(rule.note === undefined ? {} : { note: rule.note }),
+      })
       if (!verdict.tripped || verdict.reason === null) continue
 
       const row = await tripAccountFlag(db, scope, {
@@ -209,6 +225,32 @@ export async function evaluateAutoTrips(
     }
   }
 
+  // ── Yesterday's allowances come back ───────────────────────────────────────
+  // Walked over the switches that are up rather than over the accounts that
+  // spent today, because the store this is about has typically spent nothing
+  // today — that is exactly why its allowance is free again.
+  for (const row of await listActiveFlags(db, system)) {
+    if (row.scope !== 'account' || row.accountId === null) continue
+    // Only what this sweep raised itself. An operator who paused one store's
+    // recommendations has a reason we know nothing about, and it is not ours to
+    // decide that reason has expired.
+    if (row.trippedBy !== AUTOMATIC_ACTOR || row.actor !== ACTOR) continue
+    const rule = allowances.find((candidate) => candidate.flag === row.flag)
+    if (!rule) continue
+
+    const scope = accountScope(row.accountId)
+    if ((await rule.count(scope)) > rule.ceiling) continue
+    const lowered = await resetAccountFlag(db, scope, { flag: rule.flag, resetBy: ACTOR })
+    if (lowered === undefined) continue
+
+    cleared.push({ flag: rule.flag, accountId: row.accountId })
+    log.info('kill_switch_cleared', {
+      account_id: row.accountId,
+      flag: rule.flag,
+      reset_by: ACTOR,
+    })
+  }
+
   if (unmeasurable.length > 0) {
     // Not "nothing went wrong" — "nobody is writing it down". Said every run,
     // because a brake that cannot see is the kind of gap that goes unnoticed
@@ -216,5 +258,62 @@ export async function evaluateAutoTrips(
     log.warn('auto_trip_unmeasurable', { conditions: unmeasurable })
   }
 
-  return { trips, unmeasurable }
+  return { trips, unmeasurable, cleared }
+}
+
+interface AllowanceRule {
+  readonly flag: string
+  /** Today's usage for one store, in whatever unit `ceiling` is written in. */
+  readonly count: (scope: AccountScope) => Promise<number>
+  readonly ceiling: number
+  /** The unit both numbers are in, for the operator who reads the incident. */
+  readonly what: string
+  readonly note?: string
+}
+
+/**
+ * What each of the two allowances counts, and against what.
+ *
+ * **Work the merchant asked for, not calls we made.** One OPTIMIZE generation
+ * can be up to four model calls — the writer's answer, a re-ask when it comes
+ * back in an unreadable shape, and the same pair again when our own checks
+ * reject the first attempt. Counting calls therefore let a single recommendation
+ * read as four, which is how a store with an allowance of two had the feature
+ * switched off on its first click of the day.
+ *
+ * OPTIMIZE has a row per generation to count, and it is counted with the same
+ * function the button itself uses, so the brake and the button can never
+ * disagree about how much of the day's allowance is gone. Intent-gap has no row
+ * per analysis anywhere — the only durable record is the ledger — so it still
+ * counts model calls, and its ceiling leaves room for the wrapper's one re-ask
+ * accordingly. The incident says so rather than quietly reporting calls as
+ * analyses.
+ */
+function allowanceRules(
+  db: Db,
+  input: {
+    dayStart: Date
+    dayWindow: SpendWindow
+    intentGapPerDay: number
+    optimizePerDay: number
+  },
+): readonly AllowanceRule[] {
+  return [
+    {
+      flag: ACCOUNT_INTENT_GAP_PAUSED_FLAG,
+      count: (scope) => countAccountCalls(db, scope, 'intent_gap', input.dayWindow),
+      ceiling: input.intentGapPerDay * MODEL_CALLS_PER_PAID_ANALYSIS_MAX,
+      what: 'paid model calls for intent-gap analyses',
+      note:
+        `The store's allowance is ${input.intentGapPerDay} analyses a day, and one analysis costs ` +
+        `up to ${MODEL_CALLS_PER_PAID_ANALYSIS_MAX} model calls when the first answer comes back ` +
+        'in a shape we cannot read.',
+    },
+    {
+      flag: ACCOUNT_OPTIMIZE_PAUSED_FLAG,
+      count: (scope) => countOptimizeGenerationsSince(db, scope, input.dayStart),
+      ceiling: input.optimizePerDay,
+      what: 'OPTIMIZE generations',
+    },
+  ]
 }
