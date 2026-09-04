@@ -521,4 +521,197 @@ describe.skipIf(!available)('/api/recommendations', () => {
 
     expect(response.status).toBe(404)
   })
+
+  /**
+   * T6.3's own done-when: an open technical obstacle on a collection stops the
+   * improve-this-page button on that collection, and says so on the card rather
+   * than removing it.
+   */
+  describe('a page with something wrong with it', () => {
+    async function indexingObstacle(entityRef = PAGE_URL): Promise<OpportunityRow> {
+      return insertMinimalOpportunity(
+        harness.db,
+        accountScope(accountId),
+        {
+          signalType: 'indexing_issue',
+          entityType: 'url',
+          entityRef,
+          evidenceJson: [{ key: 'reason', value: 'not_indexed', source: 'gsc' }],
+          recommendedAction: 'fix',
+          status: 'new',
+          reasonTemplateKey: 'opportunity.indexing_issue',
+          reasonParams: {},
+          limitedIntelligence: false,
+          rulesVersion: rules().rulesVersion,
+        },
+        NOW,
+      )
+    }
+
+    it('refuses to improve a collection Google is not indexing, and marks the card blocked', async () => {
+      const opportunity = await optimizeOpportunity()
+      await indexingObstacle()
+
+      const response = await post({ opportunityId: opportunity.id })
+
+      expect(response.status).toBe(409)
+      const body = (await response.json()) as { error: { code: string } }
+      expect(body.error.code).toBe('opportunity_not_open')
+
+      const status = await harness.pool.query<{ status: string }>(
+        'SELECT status FROM opportunities WHERE id = $1',
+        [opportunity.id],
+      )
+      expect(status.rows[0]?.status).toBe('blocked')
+
+      const { rows } = await harness.pool.query(
+        "SELECT 1 FROM graphile_worker._private_jobs j JOIN graphile_worker._private_tasks t ON t.id = j.task_id WHERE t.identifier = 'optimize_recommendation_generate'",
+      )
+      expect(rows, 'nothing may be bought for a page that cannot benefit from it').toHaveLength(0)
+    })
+
+    it('leaves a different page alone', async () => {
+      const opportunity = await optimizeOpportunity()
+      await indexingObstacle('https://example-store.com/collections/road-shoes')
+
+      expect((await post({ opportunityId: opportunity.id })).status).toBe(200)
+    })
+
+    it('does not treat the store competing with itself as an obstacle', async () => {
+      const opportunity = await optimizeOpportunity()
+      await insertMinimalOpportunity(
+        harness.db,
+        accountScope(accountId),
+        {
+          signalType: 'cannibalization',
+          entityType: 'url',
+          entityRef: PAGE_URL,
+          evidenceJson: [],
+          recommendedAction: 'fix',
+          status: 'new',
+          reasonTemplateKey: 'opportunity.cannibalization',
+          reasonParams: {},
+          limitedIntelligence: false,
+          rulesVersion: rules().rulesVersion,
+        },
+        NOW,
+      )
+
+      expect((await post({ opportunityId: opportunity.id })).status).toBe(200)
+    })
+  })
+
+  describe('an article we published for this store', () => {
+    const OUR_ARTICLE = 'https://example-store.com/blogs/news/choosing-wide-trail-shoes'
+
+    beforeEach(async () => {
+      await upsertStorePages(harness.db, accountScope(accountId), [
+        {
+          url: OUR_ARTICLE,
+          pageType: 'article_ours',
+          handle: 'choosing-wide-trail-shoes',
+          shopifyId: 'gid://shopify/Article/9',
+          title: 'Choosing wide trail shoes',
+          seoTitle: 'Choosing wide trail shoes',
+          seoDescription: null,
+          headings: ['Choosing wide trail shoes'],
+          bodyHtml: '<p>Ours.</p>',
+          outboundInternalLinks: [],
+          familyIds: [],
+          checksum: 'checksum-ours',
+        },
+      ])
+    })
+
+    it('is never handed back as a list of edits', async () => {
+      const opportunity = await optimizeOpportunity(OUR_ARTICLE)
+
+      const response = await post({ opportunityId: opportunity.id })
+
+      expect(response.status).toBe(409)
+      expect((await response.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'opportunity_not_open' },
+      })
+
+      const status = await harness.pool.query<{ status: string }>(
+        'SELECT status FROM opportunities WHERE id = $1',
+        [opportunity.id],
+      )
+      expect(status.rows[0]?.status, 'the press must not have spent the row').toBe('new')
+    })
+  })
+
+  describe('the FIX recommendation the drawer reads', () => {
+    it('names the primary page, the links to move and where a canonical would be wrong', async () => {
+      await upsertStorePages(harness.db, accountScope(accountId), [
+        {
+          url: 'https://example-store.com/pages/shoe-guide',
+          pageType: 'page',
+          handle: 'shoe-guide',
+          shopifyId: 'gid://shopify/Page/3',
+          title: 'Shoe guide',
+          seoTitle: null,
+          seoDescription: null,
+          headings: [],
+          bodyHtml: '<p>Guide.</p>',
+          outboundInternalLinks: ['https://example-store.com/products/trail-1'],
+          familyIds: [],
+          checksum: 'checksum-guide',
+        },
+      ])
+      const fix = await insertMinimalOpportunity(
+        harness.db,
+        accountScope(accountId),
+        {
+          signalType: 'cannibalization',
+          entityType: 'query_cluster',
+          entityRef: 'trail running shoes',
+          evidenceJson: [
+            { key: 'query_cluster', value: 'trail running shoes', source: 'gsc' },
+            { key: 'competing_page_1', value: PAGE_URL, source: 'gsc' },
+            { key: 'competing_page_1_impression_share', value: 0.45, source: 'gsc' },
+            { key: 'competing_page_1_position', value: 8.2, source: 'gsc' },
+            { key: 'competing_page_1_type', value: 'collection', source: 'content_inventory' },
+            {
+              key: 'competing_page_2',
+              value: 'https://example-store.com/products/trail-1',
+              source: 'gsc',
+            },
+            { key: 'competing_page_2_impression_share', value: 0.3, source: 'gsc' },
+            { key: 'competing_page_2_position', value: 12.4, source: 'gsc' },
+            { key: 'competing_page_2_type', value: 'product', source: 'content_inventory' },
+          ],
+          recommendedAction: 'fix',
+          status: 'new',
+          reasonTemplateKey: 'opportunity.cannibalization',
+          reasonParams: {},
+          limitedIntelligence: false,
+          rulesVersion: rules().rulesVersion,
+        },
+        NOW,
+      )
+
+      const body = (await (await read(fix.id)).json()) as {
+        recommendation: null
+        fix: {
+          sections: { kind: string; lines: { templateKey: string; params: Record<string, unknown> }[] }[]
+          trustLineKey: string
+        }
+      }
+
+      expect(body.recommendation).toBeNull()
+      expect(body.fix.trustLineKey).toBe('fix.trustLine')
+
+      const [primary, links, canonical] = body.fix.sections
+      expect(primary?.lines[0]?.params.url).toBe(PAGE_URL)
+      expect(links?.lines[0]?.params).toMatchObject({
+        fromUrl: 'https://example-store.com/pages/shoe-guide',
+        currentTarget: 'https://example-store.com/products/trail-1',
+        suggestedTarget: PAGE_URL,
+      })
+      expect(canonical?.lines.map((line) => line.templateKey)).toEqual([
+        'fix.consolidation.canonical.notAdvised',
+      ])
+    })
+  })
 })

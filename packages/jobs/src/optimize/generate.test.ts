@@ -546,6 +546,71 @@ describe.skipIf(!available)('a generation that does not finish', () => {
     expect(await statusOf(opportunity.id)).toBe('accepted')
   })
 
+  it('buys nothing for a page Google is not indexing, even once the work has been queued', async () => {
+    const opportunity = await optimizeOpportunity()
+    await insertMinimalOpportunity(
+      db,
+      accountScope(accountId),
+      {
+        signalType: 'indexing_issue',
+        entityType: 'url',
+        entityRef: PAGE,
+        evidenceJson: [{ key: 'reason', value: 'not_indexed', source: 'gsc' }],
+        recommendedAction: 'fix',
+        status: 'new',
+        reasonTemplateKey: 'opportunity.indexing_issue',
+        reasonParams: {},
+        limitedIntelligence: false,
+        rulesVersion: rules().rulesVersion,
+      },
+      NOW,
+    )
+    const f = fixtures([withProductId(goodRecommendation())])
+
+    const outcome = await generateOptimizeRecommendation(f.deps, {
+      accountId,
+      opportunityId: opportunity.id,
+    })
+
+    expect(outcome.status).toBe('skipped')
+    if (outcome.status !== 'skipped') return
+    expect(outcome.reason).toBe('blocked_by_precondition')
+    expect(f.llm.requests, 'nothing may be asked of a model for a page that cannot benefit').toEqual([])
+    expect(await statusOf(opportunity.id)).toBe('accepted')
+  })
+
+  it('leaves one of our own published articles to the rewrite pipeline', async () => {
+    await upsertStorePages(db, accountScope(accountId), [
+      {
+        url: PAGE,
+        pageType: 'article_ours',
+        handle: 'hiking-boots',
+        shopifyId: 'gid://shopify/Article/7',
+        title: 'Hiking boots',
+        seoTitle: 'Hiking boots',
+        seoDescription: null,
+        headings: [],
+        bodyHtml: '<p>Ours.</p>',
+        outboundInternalLinks: [],
+        familyIds: [],
+        checksum: 'checksum-ours',
+      },
+    ])
+    const opportunity = await optimizeOpportunity()
+    const f = fixtures([withProductId(goodRecommendation())])
+
+    const outcome = await generateOptimizeRecommendation(f.deps, {
+      accountId,
+      opportunityId: opportunity.id,
+    })
+
+    expect(outcome.status).toBe('skipped')
+    if (outcome.status !== 'skipped') return
+    expect(outcome.reason).toBe('our_own_article_goes_to_the_refresh_pool')
+    expect(f.llm.requests).toEqual([])
+    expect(await statusOf(opportunity.id)).toBe('accepted')
+  })
+
   it('hands the page back when the opportunity is not one this can act on', async () => {
     const opportunity = await optimizeOpportunity()
     await harness.pool.query(

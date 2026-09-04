@@ -1,9 +1,12 @@
 import {
   accountAttribution,
+  blockingPreconditionsFor,
   gradeRecommendation,
   lintMessages,
   lintRecommendation,
   generateRecommendation,
+  normalisePageUrl,
+  optimizeRouteFor,
   type JudgeLite,
   type Logger,
   type NotificationEmitter,
@@ -16,6 +19,8 @@ import {
   accountScope,
   countOptimizeGenerationsSince,
   findOpportunityById,
+  listOpenOpportunities,
+  listStorePages,
   readPersona,
   storeOptimizeRecommendation,
   transitionOpportunityStatus,
@@ -227,6 +232,35 @@ async function runGeneration(
   if (!opportunity) return { status: 'skipped', reason: 'opportunity_not_found' }
   if (opportunity.recommendedAction !== 'optimize') {
     return { status: 'skipped', reason: 'not_an_optimize_opportunity' }
+  }
+
+  // Asked again here, not only at the press. A run waits in the queue, and in
+  // that time a scan can find that Google is not indexing this page or is
+  // treating another address as the real one — at which point better copy on it
+  // cannot help, and this is the last moment before anything is bought.
+  const blocked = blockingPreconditionsFor(
+    opportunity.entityRef,
+    opportunity.recommendedAction,
+    await listOpenOpportunities(deps.db, scope),
+  )
+  if (blocked.length > 0) {
+    log.info('optimize_reco.blocked_by_precondition', {
+      account_id: input.accountId,
+      opportunity_id: opportunity.id,
+      preconditions: blocked,
+    })
+    return { status: 'skipped', reason: 'blocked_by_precondition' }
+  }
+
+  // An article we published for this store is rewritten through the article
+  // pipeline, never handed back as a list of edits. Checked before the pack is
+  // assembled, because assembling it is where the money goes.
+  const wanted = normalisePageUrl(opportunity.entityRef)
+  const page = (await listStorePages(deps.db, scope)).find(
+    (candidate) => normalisePageUrl(candidate.url) === wanted,
+  )
+  if (page && optimizeRouteFor(page.pageType) === 'refresh_pool') {
+    return { status: 'skipped', reason: 'our_own_article_goes_to_the_refresh_pool' }
   }
 
   // The store's daily allowance, re-read here rather than trusted from the
