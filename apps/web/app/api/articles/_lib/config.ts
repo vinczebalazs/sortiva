@@ -28,10 +28,12 @@ import type { ReviewDeps } from './review'
  * build time, in a process that has no database. That is how `T4.2` broke the
  * production build.
  *
- * The model client, the search vendor and the capture are this card's own
- * process-wide singletons, the same small shape `apps/web/app/api/shopify/_lib/config.ts`
+ * The search vendor and the capture are this card's own process-wide
+ * singletons, the same small shape `apps/web/app/api/shopify/_lib/config.ts`
  * and `apps/web/app/api/calendar/topics/_lib/config.ts` already use for the
- * same three services rather than importing across another lane's directory.
+ * same services rather than importing across another lane's directory. The
+ * model client is the exception: it is exported, and the OPTIMIZE lane spends
+ * through this one rather than building a second.
  */
 
 let llm: AnthropicLlmClient | undefined
@@ -43,7 +45,16 @@ function generationCapture(): PosthogServerCapture {
   return capture
 }
 
-function generationLlm(): AnthropicLlmClient {
+/**
+ * The one instrumented model client this server process spends through.
+ *
+ * Exported rather than private because a second client is a second place a
+ * merchant's model spend is recorded and a second set of cached answers, so the
+ * request cache that makes a retried step free stops working across the two.
+ * Named for the process rather than for generation because more than the
+ * generation cycle now uses it.
+ */
+export function processLlm(): AnthropicLlmClient {
   llm ??= new AnthropicLlmClient({
     cache: new PostgresRequestCache(db()),
     capture: generationCapture(),
@@ -144,7 +155,7 @@ export function generationTaskDeps(): GenerationTaskDeps {
   return {
     getDb: db,
     getPool: dbPool,
-    llm: generationLlm(),
+    llm: processLlm(),
     // The one guarded fetcher: every outbound page read in the product goes
     // through it, so the SSRF protections are not something a caller can
     // forget.
