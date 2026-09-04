@@ -74,13 +74,15 @@ new doubles.StubJudgeLite()
 // checked end to end before the line was removed**: the emitter is constructed in
 // `apps/web/app/api/shopify/_lib/config.ts`, not merely exported.
 
-// Not every stub is a class. The attention list's one remaining article-backed
-// reader registers when its module loads, because there is nothing to
-// construct — importing it is what wires it. Three conditions used to register
-// here; two of them read the `articles` table for real from 2026-09-03
-// (`R-ARTICLES`), and only pending repairs is left, which has no table anywhere
-// in the schema until `T5.3` makes one.
-await import('../packages/core/src/notifications/ports.ts')
+// The attention list is no longer on this list at all, from 2026-09-04
+// (`T5.3`), and the import that used to wire it is gone with it. Held to the
+// same end-to-end standard the notes above set rather than taken from a card's
+// report: the last stand-in was pending repairs, which returned nothing because
+// nothing recorded a repair. It now reads the store's own open repairs —
+// `openRepairs` in `packages/db/src/repositories/repair.ts`, bound in
+// `makeNotificationStore`, which is what the dashboard's attention route is
+// handed. No repairs table was added; a repair is an opportunity row, so the
+// read is over rows the daily drift pass really writes.
 
 // The two halves of the email pipeline that could not see articles are gone
 // from this list, from 2026-09-03 (`R-ARTICLES`), and their imports with them:

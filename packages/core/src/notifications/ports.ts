@@ -1,6 +1,5 @@
-import { accountAttribution, type PosthogCapture } from '../contracts/analytics'
+import type { PosthogCapture } from '../contracts/analytics'
 import type { NotificationType } from '../contracts/opportunities'
-import { captureStubUsed, registerStub } from '../contracts/stubs'
 import {
   EXPORT_URL_UNCONFIRMED_DAYS,
   OPTIMIZE_UNAPPLIED_DAYS,
@@ -39,6 +38,8 @@ export interface NotificationStore {
     accountId: string,
     publishedBefore: Date,
   ): Promise<readonly AttentionCandidate[]>
+  /** Published articles whose products moved under them and that are still waiting on somebody. */
+  pendingRepairs(accountId: string): Promise<readonly AttentionCandidate[]>
   openMerchantTasks(accountId: string): Promise<readonly AttentionCandidate[]>
   unappliedOptimizeRecommendations(
     accountId: string,
@@ -69,42 +70,22 @@ export async function notificationFeed(
 }
 
 /**
- * Four of the attention list's five conditions are real reads. The fifth — an
- * article needing a repair after the catalogue moved underneath it — has no
- * table to read: there is no repairs table anywhere in the schema, and `T5.3`
- * is the card that introduces one.
+ * All five of the attention list's conditions are real reads.
  *
- * It returns nothing, and it says so: registered as a wired stub, so
- * `pnpm stubs:report` names it and any call that reaches it shows up as
- * `stub_used` rather than as an empty list nobody thinks to question. An
- * attention list that silently cannot see repairs would look exactly like an
- * account with nothing broken.
+ * Pending repairs was the last stand-in here. It returned nothing and said so,
+ * because there was no way to tell "this store has nothing broken" from "we
+ * cannot see whether anything is broken" — and an attention list that silently
+ * cannot see repairs looks exactly like a healthy account. It now reads the
+ * store's own open repairs.
  */
-export const ARTICLE_ATTENTION_STUB = 'AttentionSources.articles'
-
-registerStub({
-  contract: ARTICLE_ATTENTION_STUB,
-  filledBy: 'D — T5.3 (the repair queue and the table behind it)',
-  behaviour:
-    'pending repairs return nothing; no repairs table exists in the schema yet, so nothing can be read',
-  mustBeGoneBy: 'M5',
-})
-
 export function attentionSourcesFor(
   store: NotificationStore,
   accountId: string,
-  capture?: Pick<PosthogCapture, 'capture'>,
+  _capture?: Pick<PosthogCapture, 'capture'>,
 ): AttentionSources {
-  const attribution = accountAttribution(accountId)
-
   return {
     draftsAwaitingReview: () => store.draftsAwaitingReview(accountId),
-    pendingRepairs: async () => {
-      captureStubUsed(capture, ARTICLE_ATTENTION_STUB, attribution, {
-        condition: 'repair_pending',
-      })
-      return []
-    },
+    pendingRepairs: () => store.pendingRepairs(accountId),
     unconfirmedExportUrls: (now) =>
       store.unconfirmedExportUrls(
         accountId,

@@ -13,6 +13,7 @@ import { runStep } from '../runtime/runStep'
 // is still evaluating: this file only lists the scenario in an array, and the
 // scenario only uses `WorkerKilled` inside functions.
 import { publishKilledBetweenExecuteAndConfirm } from './auto-publish.scenario'
+import { driftRepairAcrossPublish } from './drift-repair.scenario'
 import { catalogSyncKilledMidWalk } from './catalog-sync.scenario'
 import { distillKilledMidBatch } from './distill.scenario'
 import { familyGroupKilledAfterCommit } from './family-group.scenario'
@@ -446,4 +447,12 @@ export const CHAOS_SCENARIOS: readonly ChaosScenario[] = [
   // take back, so the assertion is a count on the shop itself: exactly one
   // article, however many times the worker died.
   publishKilledBetweenExecuteAndConfirm,
+  // T5.3: the whole product in one pass — read the store, write the day's
+  // article, post it, watch the merchant withdraw the product it recommends,
+  // mend it and post the corrected version. The instant it exists for is
+  // between mending and re-posting: once the article no longer names the
+  // withdrawn product, nothing about current state says a repair was ever
+  // owed, so a worker dying there would leave a stale page on somebody's blog
+  // with nothing left that could notice.
+  driftRepairAcrossPublish,
 ]
