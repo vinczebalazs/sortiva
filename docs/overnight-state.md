@@ -768,6 +768,12 @@ behaviour of that mechanism, but worth knowing at merge time.
 
 ## Right now
 
+**Status at 2026-09-04, 13:00 — every founder-authorised card has landed and `M6` is closed.**
+Tests **3,422**, up from 3,265 at the start of the day. `main` clean, gate nine of eleven.
+`R-OPTIMIZE-WIRE` is running in Lane E; `R-CONTRACT` is the integrator's and not started. **Six
+questions are back with the founder**, four from the docket and three raised by today's work (one
+overlaps). *Superseded status line below, kept for the sequence:*
+
 **Status at 2026-09-04, 12:40 — five of the six founder-authorised cards have landed.** Tests
 **3,369**, up from 3,265 at the start of the day. `main` is clean and the gate is green: nine of
 eleven. **`T6.3` is running in Lane E — the last card in M6.** `R-CONTRACT` is the integrator's
@@ -5581,6 +5587,81 @@ the same budget, or the shortlist shrinks is a product decision. **Founder quest
 handler rather than in the string catalogue, which the constitution says is copy's only home; and a
 comment in Lane E's analyse file still describes the sweep as counting calls — now imprecise rather
 than wrong. Neither was the lane's file.
+
+### `T6.3` LANDED — **M6's exit gate is in**, with one scope item honestly short
+
+**Merged. Gate green on the merged tree: nine of eleven.** Tests **3,422**, up from 3,369. No
+migration, no new API address, no new threshold — so `rules_version` did not move.
+
+**What a merchant gets.** Three of their own pages fighting over one search now comes with an
+answer rather than three generic to-dos: which page should keep that search **and why that one**
+("Google already shows it for 42% of the times your store appears for this search"), every
+internal link on their site pointing at a page we are asking them to demote and where it should
+point instead, and whether declaring one page the canonical version of another is appropriate —
+**with an explicit "do not do this here" where it is not.** All arithmetic over measurements
+already on the row; no model writes a word of it, and nothing is stored, so it cannot disagree with
+the evidence shown beside it.
+
+**And a page with something technically wrong stops accepting the improve-this-page button.** If
+Google is not indexing a collection, better copy on it cannot help. Pressing now moves the card to
+*blocked*, names what is in the way, and buys nothing — and the card stays visible, because a
+merchant who sees nothing assumes there is nothing to do. The rule is applied at the press **and
+again in the worker**, because a press waits in a queue and the world moves.
+
+**The no-writes guard is stronger than the card asked for, and it is non-vacuous.** Rather than
+checking only the FIX directory, it greps **every package's source and the whole web app** for
+each Shopify surface through which a redirect, theme edit or stored canonical could be created —
+and it **asserts up front that it found more than a hundred files** before forbidding anything.
+That is the pattern `R-INTENTGAP-SCAN` established and the one the four broken reporters lacked.
+
+**One scope item is PARTLY MET and the lane led with it.** A suggestion landing on one of *our own*
+published articles is now refused at the API and again at the worker, and nothing is bought — but
+**there is no refresh pool to route it into**, because that is `T7.2`, inside the learning
+milestone the founder deferred out of v1. So the product has stopped doing what it must not do and
+has nowhere to put the work instead. **The gap for a merchant: a weak-metadata or low-click-rate
+suggestion that lands on one of our articles now has no action they can take at all.** The lane
+declined to close it by rewriting the row's recommended action, because that changes which button
+the card offers — user-visible behaviour outside its card. The request shape the pool will consume
+is built and named, so wiring it later is one call.
+
+**Two judgements it made, both journalled, one worth a second opinion.** Which page wins: the one
+holding the largest share of the store's impressions for that search — Google's own revealed
+preference — with a deterministic tie-break so a reload never names a different page. **When a
+canonical is suggested: only between two pages of the same kind.** A canonical says two addresses
+are the same page and Google drops one; two collections are the same page, a product and a
+collection are not, and pointing a product's canonical at a collection asks Google to remove that
+product from search entirely — a worse outcome than the problem, reached by following our advice.
+**The specs say "canonical suggestion" and stop, so this is the lane's own reasoning.**
+
+**A red test that was not a flake, and the guard that caught it.** `pnpm test` went red on the
+first run — the product's own denominator check caught the lane's tie-break sentence reading "in
+{weeks} of the weeks we measured", which is the "x of y" shape the merchant-facing rules forbid.
+Reworded and committed separately. **An invariant with teeth doing its job, on the day four without
+teeth were carded.**
+
+**Two things it found and did not fix.**
+- **A blocked "write a new article" suggestion can still be scheduled between scans.** The
+  scheduling endpoint refuses anything not `accepted`, so a row the scan already blocked is safe —
+  but a blocker raised *since* the last scan will not have moved the row yet, and that endpoint
+  (Lane C's) does no live check.
+- **The "Blocked: … — what to do" ribbon has no words behind it.** The API sends the key
+  `precondition.indexing_issue`; the catalogue holds `opportunities.precondition.indexing_issue`.
+  They do not match, so the "what to do" half renders as a missing string. Pre-existing, and this
+  card makes it reachable far more often. **One key, in either Lane C's serialiser or Lane F's
+  catalogue.**
+
+### The shared model client — decided, and `R-OPTIMIZE-WIRE` dispatched
+
+Two cards deferred this and both were right to. The OPTIMIZE job needs the process's Anthropic
+client; the generation lane memoises its own privately and does not export it; building a second is
+what that file's own comment warns against.
+
+**Decided: export the existing one.** Not move construction into the composition root — the root
+imports the dependency bundles *from* these config files, so building the client there would invert
+that direction and force a client argument through every deps factory for no behavioural gain. The
+invariant that matters is one client per process, and exporting achieves it. Carded as
+`R-OPTIMIZE-WIRE`, Lane E, with the single cross-lane export authorised explicitly and the
+composition-root line reserved for the integrator.
 
 ### Verification done this morning, so it is not re-done
 
