@@ -768,6 +768,14 @@ behaviour of that mechanism, but worth knowing at merge time.
 
 ## Right now
 
+**Status at 2026-09-04, 09:30 — the founder answered five questions this morning and the build
+is moving again.** Two lanes are running; nothing is merged yet from today. What was decided,
+what it unblocked, and what is still stopped is in the section **"2026-09-04 morning — five
+founder answers, and what checking them changed"** at the end of this file. **Read that before
+anything else.** The night's end state, which everything below still describes, follows.
+
+### The night's end state, kept because it is still what is on `main`
+
 **Status at 2026-09-04, 02:25 — the night's work is finished, and it finished because it ran
 out of things it was allowed to decide, not out of capacity.** `main` is at `53ba96c`, clean.
 Tests **3,265**, up from **3,049** at this session's start — **216 added**. Full gate green on
@@ -5141,3 +5149,93 @@ queue is its trigger.
 founder deliberately left unwired to be judged together with switching the recurring schedule
 on. `T6.3` is stopped by the `T6.2` audit. Every other lane has no milestone work left. **M10's
 exit gates need all of the above.**
+
+## 2026-09-04 morning — five founder answers, and what checking them changed
+
+**Nothing is merged yet. Two lanes are running.** This section is the current state; everything
+above it describes `main` as it stood at 02:25 and is still accurate about `main`.
+
+### What the founder decided, in order
+
+All five are journalled in `DECISIONS.md` under today's date.
+
+1. **The recovery sweep is renamed, and the recurring job schedule switches on.** The job
+   worker enables recurring jobs only when every scheduled entry has code registered under
+   exactly that name; one mismatch turns all seventeen off, silently. There was exactly one
+   mismatch — the sweep that settles a publication a crash left unanswered was registered as
+   `publish_recovery_sweep` while the schedule has called it `publish_intent_recovery_sweep`
+   since M0. Renaming the handler satisfies the founder's own condition from 2026-09-03
+   ("wait for the four missing handlers") rather than relaxing it. **Carded as `R-SCHEDULE`,
+   dispatched to Lane D.**
+2. **A scheduled name with no handler must fail loudly rather than disable the schedule.**
+   Authorised as work, **not built now** — written into `T10.2`'s card in the build plan
+   alongside the three other reporters known to fail towards "fine".
+3. **The change-stream reader is wired**, so a merchant's edit to their store actually
+   reaches the product.
+4. **The trigger is the webhook**, on arrival — not the nightly sweep and not a schedule of
+   its own. A collection rewritten at nine in the morning is re-read minutes later.
+5. **A catalogue change also triggers a full signal scan** — the same paid market analysis the
+   weekly scan runs. The founder was told the cost before choosing. **(3)–(5) are carded as
+   `R-STREAM-WIRE`, dispatched to Lane B.**
+
+### What checking the second one changed, and this is the part that matters
+
+**"Wire the reader" was recorded everywhere as one line in the composition root — by this
+file, by the handoff, and by the code's own comments. It is not.** Verified before dispatching
+anything:
+
+- The registration is genuinely missing and is one line. But `enqueueCatalogEventDrain`, the
+  call that *starts* a pass, has exactly one caller in the repository: the reader re-queueing
+  itself when a pass found something. **Nothing ever starts the first pass**, so registering
+  the handler alone would leave the stream still unread and the wiring would look done. That
+  is what made the trigger a founder question rather than a coding detail.
+- **The producing half is real and running**, contrary to the comments in
+  `packages/jobs/src/inventory/drain.ts`, which still say it "does not exist yet". Both the
+  Shopify webhook handler and the nightly catalogue sweep write to the change record today.
+  Lane B is fixing those comments as part of `R-STREAM-WIRE`.
+- **The paid-scan half needs a change in Lane C's file.** `CatalogEventDrainDeps.signalScan`
+  is declared as an eager object holding a live database handle and connection pool, and every
+  other registration in the composition root is handed factories instead, on the stated rule
+  that registering a task must not open a database connection. So the dependency has to become
+  something the reader calls when it runs. **This is a cross-lane edit the integrator
+  authorised and placed with Lane B**, with the reason written into the card, because splitting
+  one wiring across two sequential cards would leave `main` half-wired for a card's duration.
+
+### The ordering the two dispatches were given, and why
+
+`R-STREAM-WIRE` deliberately **excludes** three files, and Lane B was told so explicitly:
+`apps/web/instrumentation-node.ts` (integrator-resolved), `scripts/stub-report.mjs` and
+`packages/core/src/contracts/seams-wired.test.ts`. The last two must change when the reader is
+genuinely wired — the `CatalogEvents` seam stops being a stand-in — but the test `R-STREAM`
+built asserts the real implementation is *constructed outside a test*, which depends on the
+composition-root line the lane may not apply. **The lane writes that line into its report; the
+integrator applies it and makes both bookkeeping changes after the merge, then gates.** Asking
+a lane to commit a test that cannot pass in its own worktree would have been the alternative.
+
+Both lanes were told, explicitly and by name, not to edit integrator-resolved files and to
+write any such line into their report instead — the trap `T5.1` hit.
+
+### What this does NOT unblock
+
+- **`T6.3` is still stopped.** Its stop is the `T6.2` audit's, not this one: its done-when
+  drives an OPTIMIZE opportunity through its states, and the state graph it will read does not
+  contain the transitions `T6.2` performs. Correcting the graph is acting on a finding and
+  needs the founder. **Not asked this morning.**
+- **`T5.3` becomes dispatchable only once `R-STREAM-WIRE` has merged and gated**, since its
+  whole input is the stream that card wires.
+- **The `T6.2` CRITICAL is untouched** — two presses of the OPTIMIZE button still permanently
+  disable it for an account, and the job is still deliberately unregistered.
+- **The contract divergence is untouched.** Ten endpoints still sit at addresses the frozen
+  route table does not know about, and it still blocks Lane F.
+- **`pnpm eval` is still red** and stays red until there is an Anthropic key.
+
+### Verification done this morning, so it is not re-done
+
+- Resolved every registered task-name constant in the tree and matched it by hand against all
+  seventeen scheduled entries. **Exactly one mismatch**, and it is the one the `T5.2` audit
+  named. The audit's own correction of a false second candidate
+  (`subscription_reconciliation_nightly`, registered from outside the jobs package) is right.
+- Confirmed no test asserts the old task-name string, so the rename moves one literal.
+- Confirmed `T5.1` **landed** (`1d66186`) and is not blocked — the one-clause delivery fix it
+  was waiting on landed before it as `R-DELIVER`. A note in the kick-off that `T5.1` was
+  blocked was stale; the blocked card is `T5.3`.

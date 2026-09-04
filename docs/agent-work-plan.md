@@ -514,6 +514,13 @@ Read first: build plan §4 (the `CatalogEvents` contract); main §12.3, §14.1; 
 Done when: either the consumer is registered in the composition root and the sweep enqueues a drain per store, **or** the stub-report line is restored until someone does — and in both cases a test proves the report tells the truth about whether the seam is wired.
 Note: the ownership is genuinely open — the producer is Lane B's, the consumer is Lane C's, and the report is nobody's. That is why this is the integrator's to assign rather than a lane's to take.
 
+**R-STREAM-WIRE — a merchant's edit actually reaches the product** · Lane B, placed by the integrator 2026-09-04
+Scope: `R-STREAM` took its own second branch — it restored the stand-in report line and built the test that stops the report lying again, and left the consumer unwired on the founder's instruction that wiring it and switching the recurring schedule on should be judged together. Both are now decided (`DECISIONS.md`, 2026-09-04). This card takes the first branch. **Three things, in three different grounds:** (a) the Shopify webhook handler queues a pass over the change stream immediately after it records what changed, so a collection rewritten at nine in the morning is re-read minutes later instead of at the next nightly walk — Lane B's file, and this card's real work; (b) the reader is registered in the composition root and handed the real change stream and the signal-scan dependencies, so a catalogue change also triggers a full market scan for that store — **integrator-resolved, so the lane writes the line into its report and does not apply it**; (c) the `CatalogEvents` seam leaves the stand-in report and gains its entry in `seams-wired.test.ts`, which is what `R-STREAM` built that file to require.
+Read first: build plan §4 (the `CatalogEvents` contract); main §7.5 (event-driven cadence), §12.3, §14.1; the `R-STREAM` LANDED section of `docs/overnight-state.md`; `DECISIONS.md` 2026-09-04 (both change-stream entries).
+Done when: a webhook delivered through the receiver leaves a queued pass behind it, asserted on the queue rather than on a mock; a pass over a planted change re-reads exactly the pages that changed and no others; a store with nothing changed queues no follow-on pass; two passes at the same point in the stream produce one scan, not two; and `pnpm stubs:report` no longer lists `CatalogEvents` **because** `seams-wired.test.ts` now proves it is constructed outside a test.
+Note: `packages/jobs/src/inventory/drain.ts` is Lane C's and needs no change — its dependencies already accept the scan. Its file comments claim the producing half "does not exist yet", which has been false since `T2.2`; leave them, and flag them.
+
+
 **R-DEV — `next dev` cannot start, so nobody can run the app locally** · integrator to assign
 Scope: `pnpm dev` fails outright. The server's start-up hook imports `@sortiva/jobs`, whose runtime imports `graphile-worker`, which imports `cosmiconfig`, which requires `fs/promises` — and Next cannot resolve that for the dev bundle. The error is `Module not found: Can't resolve 'fs/promises'` while compiling `/instrumentation`. **The production build is unaffected and `pnpm smoke:boot` is green**, which is exactly why no gate catches it: `smoke:boot` starts the *built* app. Found by `T9.5` while trying to run browser flows, and reproduced by the integrator directly.
 Read first: `DECISIONS.md` `2026-09-02 — T-BOOT` (all four entries) and the "FIXED — the application would not start" section of `docs/overnight-state.md`; tech §2.
@@ -670,6 +677,28 @@ Done when: Playwright against staging: onboarding through activation; opportunit
 
 **T10.1 — Full chaos test nightly green** — main §14.3.9; tech §5. Done when: ingest → scan → generate → publish → repair with random kills converges; exactly one remote article per external id; billable-call count equals distinct canonical requests; wired-stub report is empty.
 **T10.2 — Invariant sweep** — auditor session; every constitution invariant mapped to a named mechanism, each run; findings report. Done when: zero "invariant without teeth".
+
+> **Named work this card must carry (founder, 2026-09-04).** Four reporters are known to
+> fail towards "fine" — they report success when the thing they check is broken. Each is
+> already diagnosed; this card is where they get teeth.
+>
+> 1. **A scheduled job name with no matching handler disables the whole schedule instead of
+>    failing.** The worker enables recurring jobs only when every scheduled entry has code
+>    registered under exactly that name; one mismatch turns all seventeen off and says so in
+>    a single log line. It should stop the worker loudly. This is the defect that kept the
+>    product's clock off while everything looked green.
+> 2. **`contracts:check` never compares the frozen contract to the route files on disk** —
+>    only to the generated document — so ten endpoints built at addresses the contract does
+>    not know about passed it every time.
+> 3. **The stub report only sees class-shaped stand-ins**, so a stub of any other shape is
+>    outside it entirely.
+> 4. **The chaos suite discards `result.kills`**, so a scenario whose kill never fires is
+>    indistinguishable from one that passes.
+>
+> Two patterns worth copying, both already in the tree: `R-INTENTGAP-SCAN`'s guard file
+> asserts up front that it found files to check before forbidding anything, and its
+> end-to-end test *measures* that the search provider recorded zero calls rather than
+> asserting it.
 **T10.3 — DECISIONS drift check + spec-contradiction hunt** — auditor session; classify every entry, propose spec edits for class b, escalate class c; hunt stale cross-refs between the three specs. Done when: no class-c entries stand; spec-keeper approved edits applied to `/docs`.
 **T10.4 — Dev-store smoke suite & app-listing checklist** — tech §6; main §14.6 (GDPR webhooks), §6.2. Done when: OAuth (read, then write), sync, two-phase publish, webhook HMAC, `shop/redact`, `customers/*` all pass against the dev store; Shopify app-listing requirements checklist complete.
 
