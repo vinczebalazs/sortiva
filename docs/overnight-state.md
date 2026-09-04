@@ -768,12 +768,13 @@ behaviour of that mechanism, but worth knowing at merge time.
 
 ## Right now
 
-**Status at 2026-09-04, 12:20 — the founder answered the docket, and four cards are in flight.**
-Tests **3,330**. `T5.3` closed M5 this morning; `R-GRAPH` has now unblocked `T6.3`. **Three lanes
-are still running** (`R-OPTIMIZE-STUCK` in E, `R-PUBLISH` in D, `R-SPEND` in G). Sixteen founder
-decisions are journalled under today's date; six became cards, two are blocked on a schema
-mini-wave (`D7` a fifth article state, `D10` a sessions table), and four questions are back with
-the founder. What was decided,
+**Status at 2026-09-04, 12:40 — five of the six founder-authorised cards have landed.** Tests
+**3,369**, up from 3,265 at the start of the day. `main` is clean and the gate is green: nine of
+eleven. **`T6.3` is running in Lane E — the last card in M6.** `R-CONTRACT` is the integrator's
+and not started. Two decisions are blocked on a schema mini-wave (`D7` a fifth article state,
+`D10` a sessions table), and **three new founder questions came out of today's work**: which of a
+store's addresses is canonical for attribution, whether a merchant may dismiss work already
+running, and how the intent-gap allowance is shared between its two spenders. What was decided,
 what it unblocked, and what is still stopped is in the section **"2026-09-04 morning — five
 founder answers, and what checking them changed"** at the end of this file. **Read that before
 anything else.** The night's end state, which everything below still describes, follows.
@@ -5494,6 +5495,92 @@ right.** The integrator's call, and it cannot be taken while Lane D is running i
 Sent to Lane E the moment `R-OPTIMIZE-STUCK` merged, with the `R-GRAPH` history it needs: that the
 audit's list of missing transitions was one short, and that nothing consults the graph at write
 time so the graph informs rather than enforces.
+
+### `R-PUBLISH` and `R-SPEND` LANDED — five defects gone, one done-when honestly short
+
+**Both merged and gated separately. Gate green on the merged tree: nine of eleven.** Tests
+**3,369**, up from 3,339.
+
+**`R-PUBLISH` — what a merchant gets.** An established blog no longer gets the same article
+posted twice: the did-my-post-land check now filters server-side to posts written since the
+claim was opened and follows Shopify's own next-page pointer to the end. A momentary Shopify
+hiccup no longer kills an article for ever. A merchant whose Shopify permission was withdrawn is
+**told** — the same reconnect banner and 24-hour email the rest of the product raises, asserted
+on database rows rather than a mock. And **nothing we put on their shop is visible to their
+shoppers**: the `sortiva-<id>` tag is gone.
+
+**The best thing in that card is the failure split.** A failure at the moment of posting is judged
+by one question — *could the post have landed?* A positive refusal (dead token, rate limit, a
+request Shopify would not accept) means nothing was written, so the claim is released and the
+article is due again. **Everything else is "we do not know"**, which keeps the claim and lets the
+recovery sweep settle it by asking the shop. Getting that split backwards is precisely how a
+merchant ends up with two copies, so it is its own named, separately tested function that defaults
+to the safe answer.
+
+**The tag removal forced one narrowing, and it is the right one.** The article we send now has
+**no `tags` key at all** rather than an empty one — an empty value would have satisfied "no tag of
+ours" while wiping any tags the merchant had added themselves. So a republish now leaves the
+merchant's own tags alone. **The open founder question about republishing is narrowed, not
+answered:** the article's address and their choice to unpublish are still overwritten.
+
+**The fake shop can now fail the way a real shop fails**, which is the reason none of this was
+caught before. It pages, keeps the marker where a list response cannot see it, honours the
+creation-time filter, **refuses to answer "not there" when it ran out of pages before it ran out
+of articles**, and records every page and marker read so a test can assert a search really paged.
+There is a matching guard in the real code: a search that hits its page ceiling throws rather than
+answering "not there", because "not there" is the answer that authorises posting again.
+
+**Done-when 4 is PARTLY MET and the lane said so.** The blog-number-for-blog-name defect is fixed.
+But the recorded address still uses the store's `acme.myshopify.com` host, while Search Console
+reports a store's traffic under **the domain shoppers actually visit**. So attribution would still
+fail to match. Fixing it needs a decision the card does not carry — which of a store's addresses
+is canonical, and where a one-per-process publishing client would get a per-account domain.
+**Flagged, journalled, not chosen. This is a founder question.**
+
+**One thing mended in passing, correctly.** A single store's dead token used to end the **whole**
+recovery pass: the sweep walks unfinished publications across every account and an exception
+asking one shop propagated out of the loop, so one broken merchant stopped interrupted
+publications settling for everybody else, indefinitely. Each claim now has its own guard.
+
+**`R-SPEND` — what the brake counted, and what it counts now.** Before: rows in the spend ledger,
+one per model call. **One recommendation is up to four of those** (the writer's answer, a re-ask
+when the shape is unreadable, and that pair again when our own checks reject the first attempt).
+So one recommendation could count as four against a ceiling of two, and a store was switched off
+permanently — usually on its first or second click — and shown copy saying we had paused to
+protect its quality. Now OPTIMIZE counts **recommendations produced**, using the **same function
+the button checks** before it spends anything, so the brake and the button cannot disagree. Trips
+happen above the allowance, not at it, and a switch the sweep raised itself comes back down at the
+turn of the day.
+
+**The canonical outage sentence was not touched, and the lane explained why rather than assuming.**
+The route checks the store's own daily count first and answers the honest "2 per day — available
+tomorrow"; only if that passes does it check the pause switch. The bug was that the brake could
+raise the switch while the honest count was still inside the allowance, so the merchant fell
+through to the wrong message. With the count corrected that path is closed, and the outage
+sentence is now shown only for a deliberate pause by a person — which is what it says.
+
+**A departure from the written spec, journalled and worth the founder knowing.** Main §14.5 says
+automatic trips never auto-reset; the card required the opposite. **Scoped tightly:** only the two
+per-store daily-allowance switches, only where the sweep raised them itself. Every other automatic
+trip — including the account-wide spend pause — still waits for a person, and a switch a person
+raised is never lowered automatically.
+
+**Intent-gap is exact in the safe direction, not exact.** Nothing anywhere records one analysis as
+a row, so that type still counts model calls, against a ceiling that leaves room for the one
+automatic re-ask — a store could make up to twice its allowance before the brake fires. The lane
+declined to fix it properly because the options are a database column (all waves closed) or
+renaming a term in the spend ledger that every lane's rows share. **Right call.**
+
+**And it found a genuine product gap.** A store's intent-gap allowance is 10 analyses a day, but
+the scheduled comparison pass alone shortlists up to 10 and each OPTIMIZE generation may make one
+more — so **wholly legitimate use can reach 12.** The two spenders were built to the same number
+without either knowing about the other. Whether the allowance rises, the OPTIMIZE path draws on
+the same budget, or the shortlist shrinks is a product decision. **Founder question.**
+
+**Two small hand-ons.** Two merchant-facing sentences live inline in Lane E's recommendations
+handler rather than in the string catalogue, which the constitution says is copy's only home; and a
+comment in Lane E's analyse file still describes the sweep as counting calls — now imprecise rather
+than wrong. Neither was the lane's file.
 
 ### Verification done this morning, so it is not re-done
 
