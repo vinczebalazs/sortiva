@@ -15,6 +15,7 @@ import {
 } from '@sortiva/db/testing'
 import {
   ACCOUNT_INTENT_GAP_PAUSED_FLAG,
+  MODEL_CALLS_PER_PAID_ANALYSIS_MAX,
   silentLogger,
   type ClusterDefinition,
   type ClusterShareRow,
@@ -44,6 +45,15 @@ import { scanIntentGaps } from './scan'
 const available = await databaseAvailable()
 
 const BUDGETS = rules().defaults.budgets
+
+/**
+ * Enough paid model calls to put this store past its intent-gap allowance for the
+ * day, which is what raises the flag these cases are about. More rows than
+ * analyses because one analysis costs a second call when the first answer comes
+ * back unreadable, and the brake leaves room for that.
+ */
+const PAST_THE_ALLOWANCE =
+  BUDGETS.intent_gap.analyses_per_account_per_day * MODEL_CALLS_PER_PAID_ANALYSIS_MAX + 1
 const NOW = new Date('2026-09-03T09:00:00.000Z')
 const PAGE = 'https://shop.example/collections/hiking-boots'
 const QUERY = 'waterproof hiking boots'
@@ -229,9 +239,9 @@ describe.skipIf(!available)('an unchanged page compared against the same results
   })
 })
 
-describe.skipIf(!available)('a store that has used its allowance of analyses for the day', () => {
+describe.skipIf(!available)('a store this call type has been paused for', () => {
   it('stops this call type and leaves the daily article alone', async () => {
-    for (let i = 0; i < BUDGETS.intent_gap.analyses_per_account_per_day; i += 1) {
+    for (let i = 0; i < PAST_THE_ALLOWANCE; i += 1) {
       await appendSpendEvent(db, accountScope(accountId), {
         vendor: 'anthropic',
         callType: 'intent_gap',
@@ -267,7 +277,7 @@ describe.skipIf(!available)('a store that has used its allowance of analyses for
   })
 
   it('leaves the rest of the weekly shortlist for tomorrow rather than reporting a partial sweep as a clean one', async () => {
-    for (let i = 0; i < BUDGETS.intent_gap.analyses_per_account_per_day; i += 1) {
+    for (let i = 0; i < PAST_THE_ALLOWANCE; i += 1) {
       await appendSpendEvent(db, accountScope(accountId), {
         vendor: 'anthropic',
         callType: 'intent_gap',

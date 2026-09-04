@@ -1,6 +1,7 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { makeWorkerUtils, type WorkerUtils } from 'graphile-worker'
 import {
+  MODEL_CALLS_PER_PAID_ANALYSIS_MAX,
   silentLogger,
   type CoverageAnalysisOutput,
   type LlmClient,
@@ -56,6 +57,15 @@ import {
 const available = await databaseAvailable()
 
 const BUDGETS = rules().defaults.budgets
+
+/**
+ * Enough paid model calls to put this store past its intent-gap allowance for the
+ * day, which is what raises the flag these cases are about. More rows than
+ * analyses because one analysis costs a second call when the first answer comes
+ * back unreadable, and the brake leaves room for that.
+ */
+const PAST_THE_ALLOWANCE =
+  BUDGETS.intent_gap.analyses_per_account_per_day * MODEL_CALLS_PER_PAID_ANALYSIS_MAX + 1
 /** A Sunday, which is the day this pass is for. */
 const NOW = new Date('2026-09-06T09:00:00.000Z')
 const NEXT_DAY = new Date('2026-09-07T09:00:00.000Z')
@@ -238,8 +248,9 @@ function taskDeps(f: ReturnType<typeof fixtures>, now: Date = NOW): IntentGapTas
   }
 }
 
+/** Puts the store past its allowance and lets the real sweep raise the flag. */
 async function spendTheAllowance(): Promise<void> {
-  for (let i = 0; i < BUDGETS.intent_gap.analyses_per_account_per_day; i += 1) {
+  for (let i = 0; i < PAST_THE_ALLOWANCE; i += 1) {
     await appendSpendEvent(db, accountScope(accountId), {
       vendor: 'anthropic',
       callType: 'intent_gap',
@@ -309,7 +320,7 @@ describe.skipIf(!available)('the task the worker actually runs', () => {
   })
 })
 
-describe.skipIf(!available)('a store that has used its allowance of analyses for the day', () => {
+describe.skipIf(!available)('a store this call type has been paused for', () => {
   it('buys nothing, does not fail, and does not record the day as finished', async () => {
     await spendTheAllowance()
     const f = fixtures()

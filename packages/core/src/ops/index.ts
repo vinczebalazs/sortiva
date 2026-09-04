@@ -4,6 +4,7 @@ export {
   type ArticleCostBreakdown,
 } from './article-cost'
 export {
+  MODEL_CALLS_PER_PAID_ANALYSIS_MAX,
   PUBLISH_ERROR_MINIMUM_SAMPLE,
   callTypeCapVerdict,
   judgeFailRateVerdict,
