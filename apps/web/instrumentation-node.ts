@@ -223,6 +223,15 @@ export async function startServerRuntime() {
   const { publishTaskDeps } = await import('./app/api/articles/_lib/config')
   registerPublishTasks(publishTaskDeps())
 
+  // Keeping what we already published true. A store moves after an article is
+  // written — a product withdrawn, one nobody has been able to buy for weeks, a
+  // range that no longer differs the way the article compares it — and a guide
+  // that recommends something the merchant no longer sells is worse than no
+  // guide. This is the daily pass that finds those and mends them where it can.
+  const { registerDriftTasks } = await import('@sortiva/jobs')
+  const { driftTaskDeps } = await import('./app/api/articles/_lib/config')
+  registerDriftTasks(driftTaskDeps())
+
   // Email: the minute-by-minute drain that turns each queued row into a job,
   // the job that sends one, and the two sweeps that schedule mail on a clock —
   // the monthly summary and the seven-day "where did you publish this" reminder.

@@ -118,6 +118,19 @@ export const CRON_ENTRIES: readonly CronEntry[] = [
     why: 'Finds publish attempts that never confirmed, checks the remote for our marker, and adopts or retries them — so a crash mid-publish cannot leave a post half-made or make two.',
   },
   {
+    task: 'drift_sweep_daily',
+    schedule: '0 6 * * *',
+    why:
+      'Checks every published article against the store as it is now: a product withdrawn, ' +
+      'a product nobody has been able to buy for a fortnight, a range that no longer differs ' +
+      'the way the article compares it. Daily rather than event-driven because two of those ' +
+      'three are not events — no message from Shopify can announce them, only looking can ' +
+      'find them. A withdrawn product is announced, and a daily pass is what keeps the ' +
+      'promise to act on one inside a day. Safe to run repeatedly: the pass is keyed on the ' +
+      "store's own date and re-reads current state, so a second run in the same day finds " +
+      'nothing left to do.',
+  },
+  {
     task: 'spend_cap_sweep',
     schedule: '*/5 * * * *',
     why:
