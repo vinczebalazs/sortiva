@@ -823,7 +823,7 @@
   "fix.consolidation.primary.designate": "Make {url} the page you want to rank for this search.",
   "fix.consolidation.primary.mostShown": "Google already shows it for {sharePercent}% of the times your store appears for “{query}”.",
   "fix.consolidation.primary.bestPosition": "It sits highest of the competing pages for “{query}”, at position {position}.",
-  "fix.consolidation.primary.ledMostWeeks": "It was the page Google led with in {weeks} of the weeks we measured for “{query}”.",
+  "fix.consolidation.primary.ledMostWeeks": "It was the page Google led with for “{query}” in {weeks} separate weeks — more than any of the others.",
   "fix.consolidation.primary.onlyCandidate": "It is the only page of yours we measured for “{query}”.",
   "fix.consolidation.primary.secondary": "{url} also competes, on {sharePercent}% of your appearances.",
   "fix.consolidation.links.heading": "Links to point somewhere else",
