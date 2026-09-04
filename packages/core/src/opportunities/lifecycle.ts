@@ -31,6 +31,12 @@ import type { OpportunityAction, OpportunityStatus } from '../contracts/opportun
  * legitimate whatever the row happened to be doing when they gave it. The
  * repository's own guard for that move is "still open" and this mirrors it, so
  * the two cannot disagree.
+ *
+ * Every status write now asks this graph first and an undrawn move throws, so
+ * a missing edge stops a working feature instead of sitting quietly in a
+ * document. Each edge below is therefore drawn from the guard that actually
+ * performs the move rather than from an idea of how the lifecycle ought to
+ * run: where a guard says "any status the row is still open in", so does this.
  */
 const ALLOWED: Readonly<Record<OpportunityStatus, readonly OpportunityStatus[]>> = {
   new: ['accepted', 'executing', 'completed', 'blocked', 'dismissed', 'expired'],
@@ -40,12 +46,26 @@ const ALLOWED: Readonly<Record<OpportunityStatus, readonly OpportunityStatus[]>>
   // callers pick which by naming the row's `recommendedAction`, this graph
   // only says the edge exists.
   accepted: ['scheduled', 'executing', 'completed', 'blocked', 'dismissed', 'expired'],
-  scheduled: ['executing', 'completed', 'blocked', 'dismissed', 'expired'],
+  // Back to `accepted` because a claim can be given up. Replenishment marks a
+  // candidate as taken *before* it tries to put it on a calendar day, so that a
+  // crash between the two costs one candidate rather than producing two
+  // articles on one subject; when the placement is refused, the mark it made a
+  // moment earlier has to come off again.
+  scheduled: ['accepted', 'executing', 'completed', 'blocked', 'dismissed', 'expired'],
   // Finishing the work is not the merchant having acted on it, so generation
   // ends back at `accepted` rather than at `completed`. A recommendation that
   // failed our own quality checks lands in the same place, which is what keeps
   // the row theirs to press again instead of stranding it mid-flight.
-  executing: ['accepted', 'completed', 'blocked', 'expired'],
+  //
+  // Back to `new` for the same reason `scheduled` goes back to `accepted`:
+  // pressing "improve this page" marks the row as being worked on before the
+  // work is queued, and if queueing fails the row is put back exactly where it
+  // was — which, for a row nobody had touched yet, is `new`.
+  //
+  // To `dismissed` because a merchant may say "not interested" about something
+  // we are in the middle of doing, and their answer is not made to wait for us.
+  // The call we have already paid for is ours to absorb.
+  executing: ['new', 'accepted', 'completed', 'blocked', 'dismissed', 'expired'],
   blocked: ['new', 'accepted', 'completed', 'dismissed', 'expired'],
   // The not-interested list keeps a dismissed signal from ever being
   // re-proposed (main §7.9), but the same section's "show dismissed" view

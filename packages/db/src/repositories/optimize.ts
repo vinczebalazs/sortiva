@@ -1,7 +1,8 @@
 import { and, desc, eq, inArray, sql } from 'drizzle-orm'
 import type { Db } from '../client'
-import { opportunities, opportunityTasks, optimizeRecommendations } from '../schema'
+import { OPEN_OPPORTUNITY_STATUSES, opportunities, opportunityTasks, optimizeRecommendations } from '../schema'
 import type { AccountScope } from '../scope'
+import { assertMoveIsDrawn } from './opportunity-moves'
 import type { OpportunityTaskRow } from './opportunities'
 
 /**
@@ -204,6 +205,7 @@ export async function markOpportunityApplied(
   opportunityId: string,
   now: Date = new Date(),
 ): Promise<typeof opportunities.$inferSelect | undefined> {
+  assertMoveIsDrawn(OPEN_OPPORTUNITY_STATUSES, 'completed')
   const [row] = await db
     .update(opportunities)
     .set({ status: 'completed', appliedAt: now, updatedAt: now })
@@ -211,7 +213,7 @@ export async function markOpportunityApplied(
       and(
         eq(opportunities.id, opportunityId),
         eq(opportunities.accountId, scope.accountId),
-        inArray(opportunities.status, ['new', 'accepted', 'scheduled', 'executing', 'blocked']),
+        inArray(opportunities.status, [...OPEN_OPPORTUNITY_STATUSES]),
       ),
     )
     .returning()
@@ -284,6 +286,7 @@ export async function releaseAbandonedOptimizeGenerations(
   markedBefore: Date,
   now: Date = new Date(),
 ): Promise<string[]> {
+  assertMoveIsDrawn(['executing'], 'accepted')
   const rows = await db
     .update(opportunities)
     .set({ status: 'accepted', updatedAt: now })
