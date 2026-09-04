@@ -4058,3 +4058,72 @@ Nearest spec: main §14.2, §14.7; invariant 25 (one instrumented wrapper); tech
 Decision: the composition root now registers the improve-this-page generation and the weekly page-comparison pass. **Neither gets a crontab entry.** The first is queued by the merchant pressing a button; the second stays scheduleless until that is decided separately, which is the founder's standing position.
 Why: the improve-this-page job had been deliberately unregistered since `T6.2`, because wiring it while the stuck-state defects existed would have made a CRITICAL reachable rather than theoretical. `R-OPTIMIZE-STUCK` removed those, so the hold expired. Verified on the merged tree by starting the built application and reading the worker's own line: `started with 35 task(s), cron enabled`, from 32 before. A separate observation worth writing down: **`pnpm smoke:dev` replaces the production build**, so any check that starts the built server must run after `pnpm build`, not after the dev smoke.
 Nearest spec: main §10.1–10.4, §14.5; build plan §3 (integrator-resolved files).
+
+## 2026-09-04 evening — FOUNDER — Thirteen decisions taken in one pass
+Decision: the founder worked through every remaining open item. Each is recorded separately below. Two were answered only after the integrator produced concrete examples from the code, and **one of the integrator's own recommendations was withdrawn during that exchange as already built** — see the grounding entry.
+Nearest spec: none — process.
+
+## 2026-09-04 — FOUNDER — A repair sends only the words we wrote
+Decision: when we update an article we already posted, we send the title, body and summary and **omit the article's address, its tags and its published state**. Shopify's update is partial, so anything we do not send is left alone: a merchant's rename, their own tags and their decision to unpublish all survive a repair untouched. This settles the open republish-overwrite question and changes the stance from "we own this post once we make it" to "we own only the words we wrote".
+Why: `T5.3` made this reachable without the merchant clicking anything — a store with automatic repair on can have its post rewritten by a scheduled job. One third was already closed by the no-visible-tag answer, which forced the tags key to be omitted rather than emptied. The account's live-or-draft setting now applies when an article is **created** and not on later updates, which is right: it is a publishing preference, not a standing instruction to re-publish.
+Nearest spec: main §9.5, §14.3.7; invariant 21.
+
+## 2026-09-04 — FOUNDER — A store's own claimed domain is the address we record
+Decision: the address recorded for a published article uses **the merchant's own claimed domain** — the one their shoppers visit — not the `myshopify.com` host. This completes the half-fix `R-PUBLISH` landed.
+Why: Search Console reports a store's traffic under the domain shoppers actually visit, so an article recorded under the `myshopify` host can never be matched to the traffic it earns — a working, ranking article would appear to have earned nothing, permanently, and the damage lands months later. We already hold the claimed domain per account. The engineering consequence, stated: the publishing client is one per process, so it needs somewhere to look up a per-account domain rather than holding one.
+Nearest spec: main §12.2 (attribution), §9.5; main §2 (the claimed domain).
+
+## 2026-09-04 — FOUNDER — A stranded generation run is swept, finished or abandoned loudly
+Decision: a sweeper finds runs stranded past their own day, finishes the one furthest along, and gives up loudly on the rest. This resolves the deliberately-red chaos scenario.
+Why: today a run killed before the store's local midnight is never picked up once the retry lands the next day — the article is written, never graded, the calendar day sticks on "generating" for ever, and **the queue records the retry as a success**: no alert, no dead letter, no visible error, just a paid-for draft that never appears. The two alternatives were rejected on their own terms: finishing yesterday's draft today puts an article on a day the calendar never scheduled, brushing the rule that a gap stays a gap; abandoning throws away work already paid for. The sweeper's own cadence is an implementation choice for its card.
+Nearest spec: main §8.7, §9.1, §14.3; invariant 14.
+
+## 2026-09-04 — FOUNDER — The refresh pool comes forward out of the deferred milestone
+Decision: `T7.2`'s refresh pool is **un-deferred**. A suggestion landing on one of our own published articles is currently refused with nowhere to go, and the merchant sees a card they can do nothing with.
+Why: `T6.3` built the refusal correctly — the product must not answer "improve this page" with a list of edits when the page is one we wrote; that is ours to rewrite. But the place the work should go instead lives in the learning milestone the founder deferred on 2026-09-02, so the product has stopped doing the wrong thing and has nowhere to put the right thing. The founder chose to bring the pool forward rather than accept the dead end for launch. **This is the largest item decided tonight** and reopens part of a milestone previously out of v1. The rest of `M7` — labels, patterns, per-opportunity outcomes — stays deferred.
+Nearest spec: main §9.6.5 (refresh candidates), §10.5; build plan §6 `T7.2`.
+
+## 2026-09-04 — FOUNDER — The scheduled comparison shortlist shrinks below the allowance
+Decision: the weekly page-comparison pass shortlists **fewer** pages than the store's daily allowance of paid comparisons, so the merchant-pressed path always has room. The allowance itself does not move, and the two spenders do not share one counter.
+Why: the allowance is 10 a day; the scheduled pass alone shortlists up to 10 and each improve-this-page generation may make one more, so wholly ordinary use reaches 12 — two spenders built to the same number without either knowing the other existed. Raising the allowance was rejected as changing a deliberate number to fit an accident; one shared counter was rejected because it makes the button's availability depend on what a background job did earlier, which cannot be explained to a merchant who has just been refused. The shortlist loses its least promising candidates, which are the ones least worth paying for.
+Nearest spec: main §14.5 (per-type caps), §10.3.
+
+## 2026-09-04 — FOUNDER — Grounding in the merchant's own facts is asked for in the prompt, not enforced, and not counted
+Decision: the writing prompt asks for at least one fact from the merchant's own catalogue per suggested section where one exists. **No lint, no hard failure, and no measurement** — the founder was offered a report-only count and declined it explicitly ("don't even count it, there is no use").
+Why, and a correction: the integrator first recommended "allow it but say so on screen" and **withdrew that recommendation on checking the code — it is already built.** A fact drawn from the pages ranking above the merchant is already labelled to them as "Covered by the pages above you: <subtopic> (<competitor urls>)", against "Trailblazer GTX — waterproof rating" for one of their own. So the merchant can already tell where a suggestion comes from, which is what the proposal was for. Requiring an own-store fact was rejected because it silently drops suggestions about subjects the store has nothing recorded for yet — often the real gap. The founder's stance: put it in the prompt and accept that a model will not always obey, as part of using one.
+Nearest spec: main §10.3; invariant 7.
+
+## 2026-09-04 — FOUNDER — The recommendation's rationale is explained in the prompt, kept as prose, and labelled
+Decision: the `rationale_key` field is explained in the prompt (it is currently **required by the schema and never mentioned in the prompt at all**), stays free prose rather than becoming a key into the copy catalogue, and is **labelled on screen as model-written**.
+Why: the spec asks for a plain-language rationale, and a fixed list of reasons loses the specificity that makes it worth showing. The founder accepted the cost, which was stated: an unreviewed sentence reaches a merchant, and this is the exact boundary the "every explanation renders from a template" rule exists to hold — so the label is what keeps it honest. The field's name should stop implying it is a catalogue key.
+Nearest spec: main §10.4; invariant 8; Appendix A.
+
+## 2026-09-04 — FOUNDER — The citation word lists go, in every language, and the instruction moves to the prompt
+Decision: the English superlative/absolute/attribution/comparison lists are **removed**, not extended per language. The writing prompt instead asks for a citation on every superlative, absolute, attributed statement and comparison, in whatever language the store publishes in. **Shape-based detection stays** — numbers, measurements, percentages and durations are found by pattern and remain deterministic in every language.
+Why: the founder chose consistency over a stronger guarantee in one language, matching the grounding decision above. The cost was stated plainly before the choice and is real: for these four claim kinds nothing deterministic stands behind the model any more — it both writes the claims and decides which need evidence, in the check whose whole purpose was not trusting the writer. What this buys is that a Danish store and an English one are held to the same bar, where today "den mest vandtætte støvle" passes ungrounded and "the most waterproof boot" does not.
+Nearest spec: main §8.3, §8.4; invariant 11.
+
+## 2026-09-04 — FOUNDER — A merchant may dismiss work already running
+Decision: the "not interested" button works on a suggestion the product is in the middle of working on, and the work is abandoned. The state graph gains that edge.
+Why: the button already does this; only the graph forbade it. A merchant who has decided against something should not have to wait to say so, and a model call we have already paid for is our cost to absorb rather than their reason to be blocked.
+Nearest spec: main §7.9, §8.7.
+
+## 2026-09-04 — FOUNDER — The seven-day domain hold stays, and becomes reliable
+Decision: a deleted account's domain stays unclaimable for seven days, and the release happens on the deadline **whether or not the cleanup job ran**.
+Why: today the hold is delivered by a cleanup job deleting the row, so if that job never runs the domain is blocked for ever — safe, but not what was promised. Immediate release was rejected: a merchant who deletes in haste, or whose account is taken from them, could lose their domain to a squatter the same hour. Note the earlier journal recommendation of a database rule was already struck — it would free the domain the *instant* the account is deleted, because the deadline cannot live inside the rule.
+Nearest spec: main §2, §5, §14.6; invariant 1.
+
+## 2026-09-04 — FOUNDER — The generation runway widens from six hours to ten
+Decision: writing starts **ten** hours before the store's publish hour, not six. For a 09:00 publish that is 23:00 the previous evening in the store's own timezone.
+Why: six was specified by nobody, was a first guess, and has never been measured against a real run. Ten nearly doubles the room for the writer, the checks, the judge and the single repair attempt while still finishing the same night for most timezones — which matters because a run crossing the store's local midnight is exactly the case the stranded-run sweeper exists to catch. Twelve was rejected for leaning hardest on that sweeper and putting the most distance between reading a product's facts and the article appearing.
+Nearest spec: main §9.1, §9.4.
+
+## 2026-09-04 — FOUNDER — The opportunity state graph starts refusing moves it does not list
+Decision: every status write on an opportunity consults the graph first, and an unlisted move fails loudly instead of happening silently. **Its own card, with every path exercised before it goes live.**
+Why: today the graph is a document nothing consults, so it informs code that chooses to ask and cannot stop anything. Two disagreements between the graph and the running code were found on 2026-09-04 alone, both by a person going looking, and one of them was **the most common completion in the whole improve-this-page feature** — a merchant pressing "I applied this" — forbidden on paper and performed every time. The risk is the mirror image and was stated: a wrongly-drawn graph now breaks working features in production rather than being a stale document, which is why it is carded separately rather than folded into another change.
+Nearest spec: main §7.9, §14.3.1; invariant 15.
+
+## 2026-09-04 — FOUNDER — Deployment stays out for now
+Decision: the deployed start command is not fixed and nothing is deployed. It remains a known blocker for the first attempt to ship, alongside the deprecated platform config format and the deleted service.
+Why: nothing else is blocked by it, no merchant exists, and which of the two one-line fixes is right depends on the working directory the platform hands the service — which nobody knows, because the project has never been deployed. The founder chose not to spend the evening on it.
+Nearest spec: tech §2, §5; `docs/overnight-state.md` "BLOCKER — the deployed start command".

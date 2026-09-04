@@ -556,6 +556,84 @@ Read first: `DECISIONS.md` 2026-09-04 `R-OPTIMIZE-STUCK` entries and the `R-INTE
 Done when: the process constructs exactly one Anthropic client, proved by a test rather than by inspection; the job's dependencies are built without opening a database connection at registration time; and pressing the button end to end reaches the worker in a test that would fail if the registration were absent.
 Note: `R-INTENTGAP-JOB`'s own registration waits on the same client and can be wired in the same card. Say in your report whether you did, and why or why not.
 
+### Founder decisions of 2026-09-04 evening — the second wave of cards
+
+Thirteen decisions in one pass. Each card cites its `DECISIONS.md` entry of the same date;
+**read that entry before the card** — it carries the founder's reasoning and the cost they
+accepted, which the card text does not repeat.
+
+**T-WAVE5 — schema mini-wave: a fifth article state and a sessions table** · integrator to assign
+Scope: one migration, two additions, nothing that reads or writes either. (a) A fifth value on the article state, meaning **cleared to deliver** — for an article a merchant publishes over a quality rejection. Today it returns to `draft`, which already means "written, not yet graded", so one value covers three situations and the only thing separating them is a flag whose meaning is "excluded from learning". (b) A `sessions` table, so a signed-in session can be revoked before it expires — there is none anywhere today, and a session must exist somewhere before anything can delete it.
+Read first: `DECISIONS.md` 2026-09-04 "An overridden article gets its own state" and "Sessions become revocable".
+Done when: the migration applies forward from an empty database; an article can still exist in every state it could before; a session row can be written and deleted; and nothing in the product yet reads or writes either — the cards below do that.
+
+**R-REVOKE — signing out signs you out, and a deleted account locks out at once** · Lane G, after `T-WAVE5`
+Scope: sessions become revocable. Signing out revokes rather than only clearing the cookie in that browser; deleting an account or losing a credential locks out immediately. **Revisit the 24-hour session lifetime in the same card** — it is short only because revocation was impossible, so the reason for the number goes with this change.
+Read first: `DECISIONS.md` 2026-09-04 "Sessions become revocable"; main §4.1; tech §3.
+Done when: a copied session cookie stops working the moment its session is revoked; signing out in one browser ends the session everywhere; deleting an account revokes every session it had; and the cost the founder accepted — a database read on every signed-in request — is the only read added.
+
+**R-OVERRIDE-STATE — an overridden article stops pretending to be a draft** · Lane D, after `T-WAVE5`
+Scope: an article published over a quality rejection moves to the new fifth state instead of `draft`, and **does not pass through draft review** on accounts that have review turned on. Every read that asks "which articles go out today" is updated to name the new state rather than joining the decision table to work it out.
+Read first: `DECISIONS.md` 2026-09-04 "An overridden article gets its own state"; main §8.6, §9.3.
+Done when: an overridden article is delivered without a gate decision saying `passed`; it never appears in a review queue; and an un-graded draft still cannot be delivered by mistake — proved by planting one.
+
+**R-PUBLISH-2 — a repair sends only our words, and the address is the one shoppers visit** · Lane D
+Scope: two founder decisions in one path. (a) An update sends the title, body and summary and **omits the article's address, its tags and its published state**, so a merchant's rename, their own tags and their choice to unpublish survive a repair untouched. The account's live-or-draft setting applies at creation and not on later updates. (b) The address recorded for a published article uses **the merchant's own claimed domain**, not the `myshopify.com` host, so Search Console attribution can finally match. We already hold the claimed domain per account; the publishing client is one per process, so it needs somewhere to look one up rather than holding one.
+Read first: `DECISIONS.md` 2026-09-04 "A repair sends only the words we wrote" and "A store's own claimed domain is the address we record"; main §9.5, §12.2, §14.3.7.
+Done when: a repair on a post the merchant renamed, tagged and unpublished leaves all three as they left them — asserted on what is sent to the shop, not on our intent; a newly published article records the claimed domain; and an article published before this change is not silently re-addressed.
+
+**R-STRANDED — a run killed before midnight is finished or given up on, loudly** · Lane D
+Scope: a sweeper finds generation runs stranded past their own day, finishes the one furthest along, and dead-letters the rest so a person is told. **This is what turns the deliberately-red chaos scenario green** — do not change the scenario to make it pass; make the product converge.
+Read first: `DECISIONS.md` 2026-09-04 "A stranded generation run is swept"; main §8.7, §9.1, §14.3; the `T4.5` audit in `docs/overnight-state.md`.
+Done when: `generation_cycle_killed_across_midnight` passes for the right reason; a stranded run that cannot be finished leaves a dead letter rather than silence; and a calendar day is never given an article it was not scheduled for.
+
+**R-RUNWAY — ten hours of runway, not six** · Lane D
+Scope: writing starts ten hours before the store's publish hour rather than six. One number, in `packages/rules`, with a plain-language note saying what it decides and what moving it costs.
+Read first: `DECISIONS.md` 2026-09-04 "The generation runway widens".
+Done when: a store publishing at 09:00 starts writing at 23:00 its own previous evening; the publish-hour tests still pass across three timezones; and the day a run belongs to is unchanged by the widening.
+
+**R-GRAPH-ENFORCE — the state graph starts refusing, and a merchant may dismiss running work** · Lane C
+Scope: (a) Every status write on an opportunity consults the graph first, and a move the graph does not list **fails loudly**. (b) The graph gains the edge that lets a merchant press "not interested" on a suggestion the product is already working on, and the work is abandoned.
+Read first: `DECISIONS.md` 2026-09-04 "The opportunity state graph starts refusing moves" and "A merchant may dismiss work already running"; main §7.9, §14.3.1; the `R-GRAPH` section of `docs/overnight-state.md`.
+Done when: every path in the product that writes an opportunity status is exercised and passes — **this is the card's real work, and a path missed here breaks a working feature in production**; an unlisted move raises rather than writes; dismissing running work succeeds and stops the work; and the graph and the repository's own guards do not disagree anywhere, proved rather than asserted.
+Note: `R-GRAPH` found two disagreements by hand in one day, one of them the most common completion in the whole improve-this-page feature. **Assume there are more and go looking before switching enforcement on.**
+
+**R-RECO-QUALITY — three changes to what a recommendation may rest on and say** · Lane E
+Scope: (a) The writing prompt asks for at least one fact from the merchant's own catalogue per suggested section where one exists. **No lint, no hard failure, and no counting** — the founder declined a report-only measurement explicitly. (b) The `rationale_key` field is explained in the prompt, which never mentions it today though the schema requires it; it stays free prose and is **labelled on screen as model-written**; its name should stop implying it is a catalogue key. (c) The weekly comparison pass shortlists fewer pages than the store's daily allowance, so the merchant-pressed path always has room.
+Read first: `DECISIONS.md` 2026-09-04 "Grounding in the merchant's own facts", "The recommendation's rationale", "The scheduled comparison shortlist shrinks"; main §10.3, §10.4, §14.5.
+Done when: the prompt carries both instructions; the model-written line is labelled wherever a merchant sees it, including the download; and a store using the scheduled pass in full can still press the button its allowance permits.
+
+**R-GATE-LANG — every language gets the same citation bar** · Lane D
+Scope: **remove** the English superlative, absolute, attribution and comparison word lists rather than extend them per language, and move the instruction into the writing prompt: cite every superlative, absolute, attributed statement and comparison, in whatever language the store publishes in. **Shape-based detection stays exactly as it is** — numbers, measurements, percentages and durations are found by pattern and remain deterministic in every language.
+Read first: `DECISIONS.md` 2026-09-04 "The citation word lists go"; main §8.3, §8.4.
+Done when: an English draft and a Danish draft are held to the same bar; the shape-based checks still fail an uncited number in both; and nothing anywhere still branches on whether a lexicon exists for a language.
+Note: the founder was told the cost before choosing and accepted it — for these four claim kinds nothing deterministic stands behind the model any more. **Do not quietly reintroduce a list.**
+
+**R-HOLD — a deleted account's domain is released on the deadline, job or no job** · Lane G
+Scope: the seven-day hold on a deleted account's domain is delivered by something that does not depend on a cleanup job having run. Today the hold is the job deleting the row, so if the job never runs the domain is blocked for ever.
+Read first: `DECISIONS.md` 2026-09-04 "The seven-day domain hold stays" and the original question in `docs/overnight-state.md`; main §2, §5, §14.6; invariant 1.
+Done when: a domain deleted eight days ago can be claimed even if the cleanup job has never run; one deleted six days ago cannot; and the claim path is still insert-with-conflict rather than check-then-insert.
+
+**R-JUDGE-COPY — the judge cannot be downgraded, and its words reach a merchant in English** · Lane D
+Scope: (a) The judge tier stops honouring the `ANTHROPIC_MODEL_*` environment override, which ships in `.env.example` and would let an operator point the judge at the cheap model with neither the code nor CI noticing — while the spend was misreported, since the expensive price list is kept. The override stays for every other tier. (b) The judge's own justification may be shown to a merchant verbatim, and is **always in English** whatever language the store publishes in.
+Read first: `DECISIONS.md` 2026-09-04 "The quality judge's model cannot be changed by configuration" and "The judge's own sentences may reach a merchant"; main §8.4, §8.6, §14.4; invariant 11.
+Done when: setting the judge's model by environment variable is refused or ignored, proved by trying it; every other tier still honours it; and a Danish store's rejection card carries an English justification rather than a mixed-language sentence.
+
+**R-QUOTA — our own failure never costs a merchant a day, and we can see when it does** · Lane D
+Scope: a draft that fails our own quality gate does not consume the store's daily allowance, and **the rate at which that happens is measured and visible to an operator**. The founder named the measurement as the load-bearing half: a quota that silently absorbs our failures looks identical to a quota the merchant used.
+Read first: `DECISIONS.md` 2026-09-04 "A quality failure of ours never costs the merchant a day"; main §4.2, §8.4, §9.6.
+Done when: a gate rejection leaves the day's allowance intact; the count of days lost to our own failures is queryable per account and in aggregate; and **nothing of that count is shown to a merchant** — no denominators, per invariant 23.
+
+**R-SCANCOPY — the empty state stops promising Monday** · Lane F
+Scope: the canonical sentence telling a merchant with no open opportunities when the next scan runs becomes **relative** — "next scan in x days" — rather than naming Monday. Quoted copy, changed on the founder's word. The snapshot test that holds it moves with it.
+Read first: `DECISIONS.md` 2026-09-04 "The empty-state scan line becomes relative"; main Appendix A; ui §5.
+Done when: the empty state and the screen's own header can never contradict each other, whichever day a store's scan falls on; and the snapshot test holds the new string as firmly as it held the old one.
+
+**T7.2 — the refresh pool** · Lane D · **UN-DEFERRED 2026-09-04 by the founder**
+Scope: as written in M7, and **only this card** — the rest of M7 (labels, patterns, per-opportunity outcomes) stays deferred. A suggestion landing on one of our own published articles is refused today with nowhere to go, so the merchant sees a card they can do nothing with. This is where that work goes.
+Read first: `DECISIONS.md` 2026-09-04 "The refresh pool comes forward"; main §9.6.5; the `T6.3` section of `docs/overnight-state.md`, which built the refusal and named the request shape the pool consumes.
+Done when: a refusal from `T6.3` reaches the pool and becomes work the merchant can see; the pool respects the same placement rules as any other route onto the calendar — no second, quieter path; and a refresh never displaces new coverage beyond the cap the spec sets.
+
 **R-CONTRACT — the frozen contract describes the endpoints that exist** · integrator
 Scope: ten endpoints were built at addresses the frozen route table does not declare, while the table declares several with no implementation, and `contracts:check` passes throughout because it compares the table to a generated document and **never to the routes on disk**. The founder delegated the call: amend the contract to the built addresses rather than move ten endpoints; assign `apps/web/app/api/settings` to Lane F for anything genuinely settings-shaped; the missing routes-on-disk check lands with `T10.2`.
 Read first: `DECISIONS.md` 2026-09-04 "The frozen contract moves to the addresses that were built".
