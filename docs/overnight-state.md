@@ -768,9 +768,12 @@ behaviour of that mechanism, but worth knowing at merge time.
 
 ## Right now
 
-**Status at 2026-09-04, 11:05 — three cards landed and gated, and M5 is closed.** `main` is at
-`ef7d705`, clean. Tests **3,324**, up from 3,265 at the start of the day. No lane is running.
-**`T6.3` is the only card a founder answer would unblock today.** What was decided,
+**Status at 2026-09-04, 12:20 — the founder answered the docket, and four cards are in flight.**
+Tests **3,330**. `T5.3` closed M5 this morning; `R-GRAPH` has now unblocked `T6.3`. **Three lanes
+are still running** (`R-OPTIMIZE-STUCK` in E, `R-PUBLISH` in D, `R-SPEND` in G). Sixteen founder
+decisions are journalled under today's date; six became cards, two are blocked on a schema
+mini-wave (`D7` a fifth article state, `D10` a sessions table), and four questions are back with
+the founder. What was decided,
 what it unblocked, and what is still stopped is in the section **"2026-09-04 morning — five
 founder answers, and what checking them changed"** at the end of this file. **Read that before
 anything else.** The night's end state, which everything below still describes, follows.
@@ -5397,6 +5400,49 @@ published/unpublished state along with the body — so a repair **renames the ar
 merchant renamed it, removes any tag they added, and republishes it if they unpublished it.** A
 store with automatic repair on can now have that happen **without ever clicking anything.** The
 lane was told not to widen it and did not.
+
+### `R-GRAPH` LANDED — **`T6.3` is unblocked**, and the audit had undercounted
+
+**Merged as part of the founder-authorisation run. Gate green on the merged tree: nine of
+eleven.** Tests **3,330**, up from 3,324. Three files, no code changed — only the written graph.
+
+**What the graph is, and what was wrong.** One file lists, for each state a suggestion can be
+in, which states it may move to next, so any part of the product can ask "is this move legal?"
+in one place. It had been drawn entirely around the **calendar** — the other thing that moves
+these rows — so the only way into "generating" was from a calendar slot. An improve-this-page
+suggestion never gets a calendar slot; the merchant just presses a button. **So the whole
+merchant-initiated path was illegal on paper while the code performed it every time**, and
+nothing objected because the database helper never consults the graph.
+
+**The audit named three disagreements. There are four.** The lane grepped every status write on
+that path rather than trusting the list, and found that **the most common completion in the whole
+feature** — the merchant pressing "I applied this", which in the ordinary flow happens from
+`accepted` — was forbidden too, and nobody had noticed. **This is the third time today that
+checking a report rather than relaying it changed the answer.**
+
+**One judgement the card did not dictate, journalled.** `completed` is now reachable from every
+open status, matching the repository's own guard for that move ("the row is still open") verbatim
+rather than a narrower subset. Narrowing it would have needed a chain of reasoning about
+reachability and would have left the graph disagreeing with a shipping guard in at least one
+place — which is the exact class of defect this card exists to remove.
+
+**The refusal was proved non-vacuous.** The lane opened the graph to allow a move nothing performs,
+watched two tests fail, then reverted and re-ran green.
+
+**What this does NOT do, stated plainly by the lane.** Nothing consults the graph before a status
+is written, so it still cannot *stop* a bad move — it can only inform code that chooses to ask,
+and `T6.3` asks. Wiring it in at write time would change how every status write in the product
+behaves and surface disagreements as runtime failures rather than notes in a report. **Desirable,
+but a real behaviour change and its own card.** Not done, deliberately.
+
+**A second disagreement of the same family, left alone and needing a founder answer.** The "not
+interested" button will dismiss a suggestion that is **currently being worked on**, and the graph
+does not admit that. It is off the improve-this-page path, so outside what was authorised — and it
+is a product question rather than bookkeeping: *should a merchant be able to dismiss work already
+running?* Journalled.
+
+**Two stale comments left in place**, both drawing only the calendar's path and now narrower than
+the graph beneath them. One is another lane's file, one is the database schema.
 
 ### Verification done this morning, so it is not re-done
 
