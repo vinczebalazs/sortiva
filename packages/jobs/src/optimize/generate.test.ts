@@ -15,6 +15,7 @@ import {
   insertMinimalOpportunity,
   latestOptimizeRecommendation,
   listOptimizeTasks,
+  storeOptimizeRecommendation,
   tripAccountFlag,
   upsertStorePages,
   type Db,
@@ -276,6 +277,14 @@ async function optimizeOpportunity(): Promise<OpportunityRow> {
   )
 }
 
+async function statusOf(opportunityId: string): Promise<string | undefined> {
+  const { rows } = await harness.pool.query<{ status: string }>(
+    'SELECT status FROM opportunities WHERE id = $1',
+    [opportunityId],
+  )
+  return rows[0]?.status
+}
+
 function fixtures(recommendations: unknown[], scores = { factualGrounding: 4, searchIntentMatch: 4 }) {
   const seo = new MockSeoDataProvider({ serp: { [QUERY]: RIVALS } })
   const pageFetcher = new MockPageFetcher()
@@ -471,6 +480,7 @@ describe.skipIf(!available)('an OPTIMIZE generation', () => {
     expect(f.llm.requests).toHaveLength(0)
     expect(f.seo.billableCalls).toBe(0)
     expect(f.pageFetcher.callCount).toBe(0)
+    expect(await statusOf(opportunity.id)).toBe('accepted')
   })
 
   it('still recommends from the store\'s own facts when no comparison could be made', async () => {
@@ -506,5 +516,153 @@ describe.skipIf(!available)('an OPTIMIZE generation', () => {
       `product:${productId}/weight`,
     ])
     expect(f.llm.countOf('intent_gap')).toBe(0)
+  })
+})
+
+/**
+ * Every way out of a generation hands the page back.
+ *
+ * The page is marked "we are working on this" from the moment the merchant
+ * presses the button, and for a long time only two endings unmarked it. These
+ * cover the ones that did not: the call type switched off, the page gone from
+ * the store, and something simply going wrong. Each one used to leave the
+ * merchant watching a spinner that never resolved, on a page the button would
+ * refuse from then on.
+ */
+describe.skipIf(!available)('a generation that does not finish', () => {
+  it('hands the page back when its page is no longer in the store', async () => {
+    const opportunity = await optimizeOpportunity()
+    await harness.pool.query('DELETE FROM store_pages WHERE url = $1', [PAGE])
+    const f = fixtures([withProductId(goodRecommendation())])
+
+    const outcome = await generateOptimizeRecommendation(f.deps, {
+      accountId,
+      opportunityId: opportunity.id,
+    })
+
+    expect(outcome.status).toBe('skipped')
+    if (outcome.status !== 'skipped') return
+    expect(outcome.reason).toBe('page_not_in_inventory')
+    expect(await statusOf(opportunity.id)).toBe('accepted')
+  })
+
+  it('hands the page back when the opportunity is not one this can act on', async () => {
+    const opportunity = await optimizeOpportunity()
+    await harness.pool.query(
+      "UPDATE opportunities SET recommended_action = 'create' WHERE id = $1",
+      [opportunity.id],
+    )
+
+    const outcome = await generateOptimizeRecommendation(fixtures([]).deps, {
+      accountId,
+      opportunityId: opportunity.id,
+    })
+
+    expect(outcome.status).toBe('skipped')
+    expect(await statusOf(opportunity.id)).toBe('accepted')
+  })
+
+  it('hands the page back when something throws, and still reports the failure', async () => {
+    const opportunity = await optimizeOpportunity()
+    // No answer is queued for the recommendation call, so the model client
+    // throws part-way through — standing in for any unexpected failure.
+    const f = fixtures([])
+
+    await expect(
+      generateOptimizeRecommendation(f.deps, { accountId, opportunityId: opportunity.id }),
+    ).rejects.toThrow(/no stub answer queued/)
+
+    // The queue may retry, and the merchant may press again. Neither is
+    // possible if the page is still marked.
+    expect(await statusOf(opportunity.id)).toBe('accepted')
+  })
+
+  it('refuses to spend past the day\'s allowance even when the request let it through, and hands the page back', async () => {
+    const cap = rules().defaults.budgets.optimize.generations_per_account_per_day
+    expect(cap).toBe(2)
+
+    // Two recommendations already written today for this store — the meter the
+    // cap reads. The request path checks this too, but several presses can be
+    // accepted before any of them has written anything, which is the case this
+    // covers.
+    for (const suffix of ['a', 'b']) {
+      const spent = await insertMinimalOpportunity(
+        db,
+        accountScope(accountId),
+        {
+          signalType: 'existing_page_intent_gap',
+          entityType: 'url',
+          entityRef: `${PAGE}/${suffix}`,
+          evidenceJson: [{ key: 'query_cluster', value: QUERY, source: 'gsc' }],
+          recommendedAction: 'optimize',
+          status: 'accepted',
+          reasonTemplateKey: 'opportunity.existing_page_intent_gap',
+          reasonParams: {},
+          limitedIntelligence: false,
+          rulesVersion: rules().rulesVersion,
+        },
+        NOW,
+      )
+      await storeOptimizeRecommendation(db, accountScope(accountId), {
+        opportunityId: spent.id,
+        pageUrl: `${PAGE}/${suffix}`,
+        recommendationJson: withProductId(goodRecommendation()),
+        judgeScoresJson: null,
+        promptVersion: 'optimize-reco.v1',
+        modelId: 'claude-sonnet-5',
+        rulesVersion: rules().rulesVersion,
+        state: 'valid',
+      })
+    }
+
+    const opportunity = await optimizeOpportunity()
+    const f = fixtures([withProductId(goodRecommendation())])
+
+    const outcome = await generateOptimizeRecommendation(f.deps, {
+      accountId,
+      opportunityId: opportunity.id,
+    })
+
+    expect(outcome.status).toBe('paused')
+    if (outcome.status !== 'paused') return
+    expect(outcome.reason).toBe('daily_cap_reached')
+    expect(f.llm.requests).toHaveLength(0)
+    expect(f.seo.billableCalls).toBe(0)
+    expect(await statusOf(opportunity.id)).toBe('accepted')
+  })
+
+  it('does not count a page merely marked as being worked on against the allowance', async () => {
+    // Two pages marked and never worked on — under the old count these were
+    // the store's whole allowance, spent for ever on nothing.
+    for (const suffix of ['a', 'b']) {
+      await insertMinimalOpportunity(
+        db,
+        accountScope(accountId),
+        {
+          signalType: 'existing_page_intent_gap',
+          entityType: 'url',
+          entityRef: `${PAGE}/${suffix}`,
+          evidenceJson: [{ key: 'query_cluster', value: QUERY, source: 'gsc' }],
+          recommendedAction: 'optimize',
+          status: 'executing',
+          reasonTemplateKey: 'opportunity.existing_page_intent_gap',
+          reasonParams: {},
+          limitedIntelligence: false,
+          rulesVersion: rules().rulesVersion,
+        },
+        NOW,
+      )
+    }
+
+    const opportunity = await optimizeOpportunity()
+    const f = fixtures([withProductId(goodRecommendation())])
+
+    const outcome = await generateOptimizeRecommendation(f.deps, {
+      accountId,
+      opportunityId: opportunity.id,
+    })
+
+    expect(outcome.status).toBe('generated')
+    expect(await statusOf(opportunity.id)).toBe('accepted')
   })
 })

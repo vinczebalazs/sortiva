@@ -831,7 +831,8 @@
             "duplicate_paragraph_similarity_max",
             "duplicate_paragraph_shingle_words",
             "keyword_density_max",
-            "internal_link_candidates_max"
+            "internal_link_candidates_max",
+            "abandoned_after_minutes"
           ],
           "properties": {
             "grounding_min": {
@@ -872,6 +873,10 @@
               "maximum": 1
             },
             "internal_link_candidates_max": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "abandoned_after_minutes": {
               "type": "integer",
               "minimum": 1
             }

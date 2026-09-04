@@ -222,13 +222,23 @@ export async function markOpportunityApplied(
  * How many OPTIMIZE generations this account has spent today — what the daily
  * cap of main §10.2 is counted against.
  *
- * Two things are counted, and both have to be, for opposite reasons.
- * **Recommendations written since `since`**: the generations that finished,
- * including the ones that failed their checks, because a failed generation
- * still cost the model call the cap exists to limit. **Opportunities currently
- * `executing`**: a generation asked for a minute ago has written no row yet,
- * and without this a merchant clicking twice quickly would be over the cap
- * before either finished.
+ * **Only work that actually happened is counted**: recommendations written
+ * since `since`, including the ones that failed their checks, because a failed
+ * generation still cost the model call the cap exists to limit.
+ *
+ * A page merely *marked* as being worked on is deliberately not counted, and
+ * that is the whole point of this function. It used to add the opportunities
+ * sitting in `executing`, on the reasoning that a generation asked for a minute
+ * ago has written no row yet — but a mark is not a spend. Anything that leaves
+ * a page marked and never does the work (a queue nothing is listening to, a
+ * worker that dies holding it) then took a day's allowance away from the store
+ * permanently, for work we never did and never billed ourselves for. Two such
+ * presses cost a store its entire allowance for ever.
+ *
+ * What that mark was really protecting against — two clicks in the same few
+ * seconds both getting past the cap — is instead handled where it belongs, at
+ * the point the work is dequeued, under the account's lock, counting this same
+ * meter.
  *
  * Deliberately not model calls: one generation may make a second call when the
  * first output fails a lint, and charging a merchant's allowance for our own
@@ -250,16 +260,42 @@ export async function countOptimizeGenerationsSince(
       ),
     )
 
-  const [running] = await db
-    .select({ n: sql<number>`count(*)::int` })
-    .from(opportunities)
+  return written?.n ?? 0
+}
+
+/**
+ * Hands back every page this account has left marked "we are working on this"
+ * for longer than a generation could plausibly take.
+ *
+ * Without this a page can be marked and then abandoned — the worker died, the
+ * queue row was lost, the process was killed between the mark and the queue —
+ * and there is nothing in the product that ever unmarks it. The merchant is
+ * shown a spinner that never resolves and the button refuses them from then on,
+ * and the only repair is someone editing the database by hand.
+ *
+ * Guarded on the status it expects, so it can never take a page away from a
+ * generation that has already finished and moved it on. Returns the ids it
+ * released, which is what lets a caller log a real recovery rather than a
+ * no-op.
+ */
+export async function releaseAbandonedOptimizeGenerations(
+  db: Db,
+  scope: AccountScope,
+  markedBefore: Date,
+  now: Date = new Date(),
+): Promise<string[]> {
+  const rows = await db
+    .update(opportunities)
+    .set({ status: 'accepted', updatedAt: now })
     .where(
       and(
         eq(opportunities.accountId, scope.accountId),
         eq(opportunities.status, 'executing'),
         eq(opportunities.recommendedAction, 'optimize'),
+        sql`${opportunities.updatedAt} < ${markedBefore.toISOString()}`,
       ),
     )
+    .returning({ id: opportunities.id })
 
-  return (written?.n ?? 0) + (running?.n ?? 0)
+  return rows.map((row) => row.id)
 }

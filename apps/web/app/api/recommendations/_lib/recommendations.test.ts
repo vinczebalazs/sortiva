@@ -246,6 +246,102 @@ describe.skipIf(!available)('/api/recommendations', () => {
     expect(rows).toHaveLength(0)
   })
 
+  it('does not spend the store\'s allowance on presses nothing has picked up', async () => {
+    const cap = rules().defaults.budgets.optimize.generations_per_account_per_day
+    expect(cap).toBe(2)
+
+    // Two presses, both queued, neither picked up — the exact state a store
+    // was in with nothing registered to do the work. Under the old count these
+    // two spent the store's whole allowance, and not only for the day.
+    const first = await optimizeOpportunity(`${PAGE_URL}/a`)
+    const second = await optimizeOpportunity(`${PAGE_URL}/b`)
+    expect((await post({ opportunityId: first.id })).status).toBe(200)
+    expect((await post({ opportunityId: second.id })).status).toBe(200)
+
+    const marked = await harness.pool.query<{ n: string }>(
+      "SELECT count(*)::text AS n FROM opportunities WHERE status = 'executing'",
+    )
+    expect(marked.rows[0]?.n).toBe('2')
+
+    // A third page is still available to ask about, because nothing has been
+    // written and therefore nothing has been spent.
+    const third = await optimizeOpportunity(`${PAGE_URL}/c`)
+    const response = await post({ opportunityId: third.id })
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({ state: 'generating', generated: true })
+  })
+
+  it('answers a second press with "still going" rather than refusing the page for ever', async () => {
+    const opportunity = await optimizeOpportunity()
+
+    const firstPress = await post({ opportunityId: opportunity.id })
+    expect(await firstPress.json()).toMatchObject({ state: 'generating', generated: true })
+
+    const secondPress = await post({ opportunityId: opportunity.id })
+    expect(secondPress.status).toBe(200)
+    expect(await secondPress.json()).toMatchObject({ state: 'generating', generated: false })
+
+    // And the second press did not queue the work a second time.
+    const { rows } = await harness.pool.query(
+      "SELECT 1 FROM graphile_worker._private_jobs j JOIN graphile_worker._private_tasks t ON t.id = j.task_id WHERE t.identifier = 'optimize_recommendation_generate'",
+    )
+    expect(rows).toHaveLength(1)
+
+    // The page is still one the merchant can be given back, rather than one
+    // the API will refuse from now on.
+    const status = await harness.pool.query<{ status: string }>(
+      'SELECT status FROM opportunities WHERE id = $1',
+      [opportunity.id],
+    )
+    expect(status.rows[0]?.status).toBe('executing')
+  })
+
+  it('hands back a page left marked for longer than a generation can take', async () => {
+    const opportunity = await optimizeOpportunity()
+    // Plant the stuck row: marked, and nothing has touched it since well
+    // before the abandonment interval. This is the state a killed worker or a
+    // lost queue row leaves behind, and nothing in the product used to undo it.
+    const minutes = rules().defaults.gates.optimize_recommendation.abandoned_after_minutes
+    const markedAt = new Date(NOW.getTime() - (minutes + 1) * 60_000)
+    await harness.pool.query(
+      "UPDATE opportunities SET status = 'executing', updated_at = $1 WHERE id = $2",
+      [markedAt.toISOString(), opportunity.id],
+    )
+
+    // The drawer stops showing a spinner that would never have resolved.
+    const drawer = await read(opportunity.id)
+    expect(await drawer.json()).toMatchObject({ recommendation: null })
+
+    // And the button works again, on the same page.
+    const response = await post({ opportunityId: opportunity.id })
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({ state: 'generating', generated: true })
+
+    const { rows } = await harness.pool.query(
+      "SELECT 1 FROM graphile_worker._private_jobs j JOIN graphile_worker._private_tasks t ON t.id = j.task_id WHERE t.identifier = 'optimize_recommendation_generate'",
+    )
+    expect(rows).toHaveLength(1)
+  })
+
+  it('leaves a generation that is genuinely still running alone', async () => {
+    const opportunity = await optimizeOpportunity()
+    const minutes = rules().defaults.gates.optimize_recommendation.abandoned_after_minutes
+    const markedAt = new Date(NOW.getTime() - (minutes - 1) * 60_000)
+    await harness.pool.query(
+      "UPDATE opportunities SET status = 'executing', updated_at = $1 WHERE id = $2",
+      [markedAt.toISOString(), opportunity.id],
+    )
+
+    const drawer = await read(opportunity.id)
+    expect(await drawer.json()).toMatchObject({ recommendation: { state: 'generating' } })
+
+    const status = await harness.pool.query<{ status: string }>(
+      'SELECT status FROM opportunities WHERE id = $1',
+      [opportunity.id],
+    )
+    expect(status.rows[0]?.status).toBe('executing')
+  })
+
   it('serves the stored recommendation rather than spending again on unchanged evidence', async () => {
     const opportunity = await optimizeOpportunity()
     const id = await storedRecommendation(opportunity.id)

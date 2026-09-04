@@ -476,6 +476,17 @@ defaults:
       # UNSIGNED — main §10.3 asks for "the store's other pages mapped to
       # adjacent intents" and names no number.
       internal_link_candidates_max: 10
+      # How long a page may sit marked "we are working on this" before we treat
+      # the work as never having happened and hand the page back to the
+      # merchant to ask again. A generation takes a minute or two, so this is
+      # deliberately far longer than one: the only thing it has to outlast is a
+      # slow run, and the only thing it has to catch is a worker that died
+      # holding the page. Lower it and a genuinely slow generation can be handed
+      # back while it is still running, which costs a second, duplicate
+      # generation; raise it and a merchant whose generation was lost waits that
+      # much longer before the button works for that page again.
+      # UNSIGNED — nothing in the specs names this interval.
+      abandoned_after_minutes: 30
 
   # ── Learning: measuring what happened after publish ────────────────────────
   learning:

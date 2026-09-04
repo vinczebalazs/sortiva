@@ -198,6 +198,8 @@ export interface GatesConfig {
     duplicate_paragraph_shingle_words: number
     keyword_density_max: number
     internal_link_candidates_max: number
+    /** How long a generation may hold an opportunity before it counts as abandoned. */
+    abandoned_after_minutes: number
   }
 }
 

@@ -23,6 +23,7 @@ import {
   markOpportunityApplied,
   markOptimizeTask,
   productSubstanceForFamilies,
+  releaseAbandonedOptimizeGenerations,
   transitionOpportunityStatus,
   readLifecycleState,
   type AccountScope,
@@ -99,6 +100,26 @@ function startOfDay(now: Date): Date {
 }
 
 /**
+ * Hands back any page this store has been sitting on for longer than a
+ * generation can take, before either of this API's two reads looks at a status.
+ *
+ * Both the button and the drawer do this, because both are places a merchant
+ * would otherwise be stuck: the drawer would show a spinner that never
+ * resolves, and the button would refuse them for a page nothing is working on.
+ * There is no background sweeper — recovery happens the next time the merchant
+ * looks at or asks about the page, which is the moment it matters to them.
+ */
+async function releaseAbandoned(deps: RecommendationsDeps, scope: AccountScope, now: Date): Promise<void> {
+  const minutes = rules().defaults.gates.optimize_recommendation.abandoned_after_minutes
+  await releaseAbandonedOptimizeGenerations(
+    deps.db,
+    scope,
+    new Date(now.getTime() - minutes * 60_000),
+    now,
+  )
+}
+
+/**
  * `POST /api/recommendations` — "Generate recommendations", main §10.2.
  *
  * Refuses in four ways before spending anything, and each is a different thing
@@ -107,6 +128,12 @@ function startOfDay(now: Date): Date {
  * type is paused for the store (409). The stored recommendation is served
  * unchanged when the evidence has not moved since it was made, which is what
  * stops the button costing a merchant their allowance for the same answer.
+ *
+ * None of those refusals is permanent, and that is deliberate. Marking a page
+ * as being worked on does not spend the store's allowance and does not lock the
+ * page: a press that is never picked up is handed back, and a press while a
+ * generation is genuinely running is answered with "still going" rather than
+ * refused.
  */
 export function makeGenerateRecommendationHandler(deps: RecommendationsDeps): AccountHandler {
   return async (request, { scope }) => {
@@ -125,6 +152,8 @@ export function makeGenerateRecommendationHandler(deps: RecommendationsDeps): Ac
     if (denied) return denied
 
     const now = (deps.now ?? (() => new Date()))()
+    await releaseAbandoned(deps, scope, now)
+
     const opportunity = await findOpportunityById(deps.db, scope, opportunityId)
     if (!opportunity) return notFound()
     if (opportunity.recommendedAction !== 'optimize') {
@@ -132,6 +161,15 @@ export function makeGenerateRecommendationHandler(deps: RecommendationsDeps): Ac
     }
     if (opportunity.status === 'blocked') {
       return conflict('opportunity_not_open', 'Something has to be resolved on this page first.')
+    }
+
+    // A second press while the first is genuinely still running is the same
+    // request, not a conflict: say so and let the drawer keep waiting. It used
+    // to be refused with a 409, and because nothing ever moved the page back
+    // out of this status that refusal was permanent — the press before it had
+    // locked the page out of ever being asked about again.
+    if (opportunity.status === 'executing') {
+      return Response.json({ state: 'generating', opportunityId: opportunity.id, generated: false })
     }
 
     // Main §10.2: regeneration is allowed once the evidence has changed, and
@@ -158,8 +196,10 @@ export function makeGenerateRecommendationHandler(deps: RecommendationsDeps): Ac
       )
     }
 
-    // Guarded, so two tabs cannot both start a generation: the second sees no
-    // row change and is told the opportunity moved under it.
+    // Guarded: two tabs racing at the same instant cannot both start a
+    // generation, because only one of them changes a row. The store's
+    // allowance is not spent here, though — nothing is spent until the work
+    // actually runs, and the cap is re-read there against the same meter.
     const moved = await transitionOpportunityStatus(
       deps.db,
       scope,
@@ -171,10 +211,24 @@ export function makeGenerateRecommendationHandler(deps: RecommendationsDeps): Ac
       return conflict('opportunity_already_updated', 'This opportunity was updated by the latest scan — refreshed.')
     }
 
-    await enqueueOptimizeGeneration(deps.db, {
-      accountId: scope.accountId,
-      opportunityId: opportunity.id,
-    })
+    try {
+      await enqueueOptimizeGeneration(deps.db, {
+        accountId: scope.accountId,
+        opportunityId: opportunity.id,
+      })
+    } catch (error) {
+      // The page is marked as being worked on and the work was never asked
+      // for. Put it back where it was rather than leave a page nobody will
+      // ever pick up: the merchant can press again straight away.
+      await transitionOpportunityStatus(
+        deps.db,
+        scope,
+        opportunity.id,
+        { from: ['executing'], to: opportunity.status },
+        now,
+      )
+      throw error
+    }
 
     return Response.json({ state: 'generating', opportunityId: opportunity.id, generated: true })
   }
@@ -273,6 +327,8 @@ export function makeReadRecommendationHandler(deps: RecommendationsDeps): Accoun
   return async (request, { scope }) => {
     const opportunityId = new URL(request.url).searchParams.get('opportunityId')
     if (!opportunityId) return badRequest('An opportunityId is required.')
+
+    await releaseAbandoned(deps, scope, (deps.now ?? (() => new Date()))())
 
     const opportunity = await findOpportunityById(deps.db, scope, opportunityId)
     if (!opportunity) return notFound()
