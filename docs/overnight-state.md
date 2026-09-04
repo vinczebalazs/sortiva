@@ -768,108 +768,74 @@ behaviour of that mechanism, but worth knowing at merge time.
 
 ## Right now
 
-**Status at 2026-09-04, 00:05 — integrator session `sortiva-92`. The founder went to sleep
-at about 00:00 with the instruction "take the project as far as you can until the morning".**
-`main` is at `95dcc59`, clean. Tests **3,093**, up from 3,049 at this session's start.
-**M2, M3, M8, M9 and M4 are closed. M7 is deferred out of v1.** No other Claude session is
-running on this machine (`ListAgents` checked before every launch); `caffeinate` is running.
+**Status at 2026-09-04, 02:25 — the night's work is finished, and it finished because it ran
+out of things it was allowed to decide, not out of capacity.** `main` is at `53ba96c`, clean.
+Tests **3,265**, up from **3,049** at this session's start — **216 added**. Full gate green on
+the merged tree after every one of the eight merges: nine of eleven commands, with `pnpm eval`
+and the single named chaos scenario red for their documented reasons and nothing else.
 
-### Three cards landed and merged this session, each gated on the merged tree
+**M2, M3, M4, M8 and M9 are closed. M7 is deferred out of v1. M5 and M6 are each one card from
+complete, and both of those cards are blocked or stopped.** No lane is running. **There is no
+card that can be dispatched without a founder answer** — that is the state, and the next
+session should not invent work to fill four idle lanes.
 
-| Card | Lane | What it changed |
+### What landed tonight, in order
+
+| Card | Lane | Tests after |
 |---|---|---|
-| `R-ARTICLES` | G | The dashboard can see a waiting draft and an unconfirmed export; the monthly summary reports the actual month instead of every month reading as empty |
-| `R-DELIVER` | D | An overridden article can actually be delivered; a draft entering review is announced |
-| `T6.1` | E | The paid comparison between our page and the ones outranking it |
+| `R-ARTICLES` | G | 3,062 |
+| `R-DELIVER` | D | 3,069 |
+| `T6.1` | E | 3,093 |
+| `T6.2` | E | 3,140 |
+| `R-INTENTGAP-JOB` | E | 3,146 |
+| `T5.1` | D | 3,195 |
+| `R-INTENTGAP-SCAN` | C | 3,205 |
+| `T5.2` | D | 3,265 |
 
-**The gate was run in full after each merge**, one command at a time: nine of eleven green,
-with `pnpm eval` red on exactly its three documented sets (no Anthropic key) and `pnpm chaos`
-red on exactly `generation_cycle_killed_across_midnight` and nothing else — both confirmed by
-reading the failure text, not by assuming. No migration landed, so `db:migrate` was not
-required.
+Plus **two scheduled audits** (`T6.2` and `T5.2`), both read-only, both recorded unactioned,
+and **three cards written by this integrator** (`R-ARTICLES`, `R-DELIVER`, and the two halves
+of the intent-gap wiring).
 
-**One merge conflict, hand-resolved:** `R-ARTICLES` and `R-DELIVER` both edited
-`packages/db/src/repositories/articles.ts` — the collision the plan warns about when two
-lanes touch adjacent territory. It was the import line only; both sides' work was verified
-present by name after resolving, and the full gate was re-run before anything else merged.
+### Six founder answers came in before he slept
 
-**The concurrent-load flake is real and was triangulated again.** With three lane sessions
-running, `pnpm test` failed 8 then 12 suites on 10-second hook timeouts with **zero failing
-tests**; with the machine quiet the same tree passed 239/239 in 44 seconds against 110. That
-is contention, not a regression — but re-running is not ignoring, and the third run was read
-in full before the merge was accepted.
+All journalled in `DECISIONS.md`. In order: take **both halves** of the override delivery fix;
+**build** the draft-ready notification (question 13's first half — its second half stays open);
+an article belongs to **the day it appears** (question 16); and the intent-gap comparison runs
+as **its own job feeding the scan**. Every one of them is now built and merged.
 
-### Four founder answers came in before he slept, all journalled
+### Everything is stopped, and here is exactly why
 
-1. **The override delivery fix** — take both halves (flag now, recorded decision later). Built.
-2. **Open question 13, first half** — build the draft-ready notification. Built. **The second
-   half stays open**: should an overridden article still pass through draft review on accounts
-   that have review switched on? Today it rejoins the ordinary path.
-3. **Open question 16 — an article belongs to the day it appears**, not the day writing
-   started. A 02:00 publisher's Tuesday slot publishes on Tuesday. Folded into `T5.1`, which
-   is building now.
-4. **The intent-gap wiring shape** — its own scheduled pass, with the weekly scan reading
-   what that pass already bought rather than buying anything itself. Carded as
-   `R-INTENTGAP-JOB` (Lane E) and `R-INTENTGAP-SCAN` (Lane C), neither dispatched yet.
+- **`T5.3`** (M5 exit gate) — blocked. Its whole input is the `CatalogEvents` change stream,
+  whose reader the founder deliberately left unwired to be judged together with switching the
+  recurring schedule on. **The `T5.2` audit has now made those the same question.**
+- **`T6.3`** (M6 exit gate) — **stopped by the `T6.2` audit.** Its done-when drives an OPTIMIZE
+  opportunity through its states, and the state graph it will read does not contain the
+  transitions `T6.2` performs. Correcting the graph is acting on a finding.
+- **M10's exit gates** need both of the above.
+- **Lanes B, F and G** have no milestone work left.
 
-### Running now
+### The three things the founder should read first
 
-| Lane | Card | Notes |
-|---|---|---|
-| **D** | `T5.2` — auto-publish: second grant, blog target, two-phase publish | Dispatched 01:20. Invariants 19 and 21 are its done-when. **A fresh-session audit is scheduled after it.** Told explicitly not to repeat `T5.1`'s edit of the integrator-resolved files. |
+1. **The `T5.2` audit's CRITICAL.** The founder's own condition for switching the recurring
+   schedule on is **one string rename** from being met, and it looks met. Verified end to end
+   by this session, including checking and discarding a false second mismatch. **The lane's own
+   note about it was wrong in both halves.**
+2. **The `T6.2` audit's CRITICAL.** The OPTIMIZE feature is connected to nothing, and that is
+   far worse than it sounds: two presses of the button permanently disable it for that account.
+   **This is why the job was not wired**, and the reasoning first recorded for holding it was
+   weaker than the real one.
+3. **Ten endpoints now sit at addresses the frozen contract does not know**, and
+   `contracts:check` passes throughout because it never compares the contract to the routes on
+   disk. The root cause is that `apps/web/app/api/settings` is a directory **no lane owns and
+   no card builds**; three cards have deferred it.
 
-**Idle and correctly so:** lane C (`R-INTENTGAP-SCAN` landed 01:25; M3 is closed and it has
-nothing else), lane E (`T6.3` stopped by its own audit), lanes B, F and G (no milestone work
-left).
+### Integrator actions ready and deliberately NOT taken
 
-**Landed since:** `T6.2` (00:45, tests 3,140), its scheduled audit (**one CRITICAL, four
-HIGH — read the audit section**), and `R-INTENTGAP-JOB` (01:05, tests **3,146**). Gate green
-on the merged tree after each.
-
-**Idle:** lane E — **`T6.3` is stopped by its own audit**, see below. Lanes B, F and G have no
-milestone work left.
-
-### What `T6.1` landed unwired, and why that is recorded rather than hidden
-
-`scanIntentGaps` — the weekly pass — **is called by nothing outside its own test.** Verified
-by grep by the integrator, not taken from the lane's report; the lane declared it plainly,
-which is the opposite of the `R-STREAM` failure. Everything downstream is proved: the jobs
-test drives a real store page and results page through the analysis, and the core test feeds
-the resulting signal to Lane C's `buildOpportunityDraft`, which returns `OPTIMIZE` on the
-existing URL. **`T6.2` does not need the wiring** — it calls the analysis functions directly.
-The two cards above close it.
-
-### The order for the rest of the night
-
-Lane D: `T5.1` → `T5.2` → **its scheduled audit** → `T5.3`, **which stops** — its whole input
-is the `CatalogEvents` change stream, whose reader the founder deliberately left unwired, to
-be judged together with switching the recurring schedule on.
-Lane E: `T6.2` → its audit → `R-INTENTGAP-JOB` all done. **`T6.3` is stopped**, so the lane
-is idle and correctly so.
-Lane C: `R-INTENTGAP-SCAN`, dispatched 01:10.
-Then M10's exit gates, which need everything above.
-
-**Audits are read-only and their findings are held for the founder.** The only permitted
-action on a finding is stopping a lane.
-
-### The gate, unchanged
-
-Eleven commands, one at a time, never chained; `pnpm test` and `pnpm lint:prove` must not run
-simultaneously. `pnpm eval` and `generation_cycle_killed_across_midnight` are deliberately
-red. A failure anywhere else in `chaos` is a genuine regression. If anyone touches
-`apps/web/instrumentation.ts`, the import must stay inside the `NEXT_RUNTIME === 'nodejs'`
-check — only `smoke:dev` catches the alternative.
-
-### A reporter gap found while reviewing `R-ARTICLES`, unactioned
-
-`seams-wired.test.ts` — the guard that exists because a seam was dropped from the stub report
-without anything real replacing it — **only covers class-shaped stand-ins.** It reads
-`export class Stub*` out of `doubles.ts` and looks for `new doubles.Stub*()` in the report
-script. The two stubs `R-ARTICLES` removed register by module import instead, so the guard
-neither checked them nor could have. Their removal was verified by hand and is sound. **This
-is exactly the "audit the reporters themselves" gap the handoff describes, and `T10.2`'s
-done-when — "zero invariants without teeth" — is its home.** Recorded, not acted on.
-
+Three registrations, each one line in `apps/web/instrumentation-node.ts`, each held for a
+different reason — set out in full in the handoff and in each card's own section. **None was
+taken.** One rule breach was accepted rather than reverted (`T5.1` edited the crontab and the
+composition root after being told not to); both edits were reviewed line by line and kept, and
+the reasoning and the resulting asymmetry are recorded in that card's section.
 
 ### The previous run's end state, kept as history
 
