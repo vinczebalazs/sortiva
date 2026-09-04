@@ -25,6 +25,7 @@ import {
   type Db,
   type WebhookReceipt,
 } from '@sortiva/db'
+import { enqueueCatalogEventDrain } from '../inventory/queue'
 import { runtimeLogger } from '../runtime/logging'
 import { tryWithAccountLock } from '../runtime/lock'
 import { registerTask } from '../runtime/tasks'
@@ -248,6 +249,7 @@ async function compareProduct(
       changedFields: [],
     })),
   )
+  await askForTheChangesToBeRead(ingestion, accountId)
   return 'processed'
 }
 
@@ -277,7 +279,39 @@ async function recordSimpleChange(
       changedFields: [],
     })),
   )
+  await askForTheChangesToBeRead(ingestion, accountId)
   return 'processed'
+}
+
+/**
+ * Tells the reader there is something to read.
+ *
+ * Recording a change and acting on it are two halves that used to be joined by
+ * nothing: the merchant's edit went into the shared change record and sat there
+ * until the nightly walk found it, so a title fixed at nine in the morning was
+ * still being recommended against all day. This closes that gap — the store's
+ * changed pages are re-read, and its opportunities re-scanned, within minutes.
+ *
+ * A burst of edits does not become a burst of passes. The request carries a job
+ * key of the account alone, so a second ask while one is still waiting replaces
+ * it rather than adding to it, and a store that changed forty things gets one
+ * pass. The pass then keeps asking for itself while it keeps finding changes, so
+ * anything recorded while it was running is still picked up.
+ *
+ * The ask names no place to resume from, because this side does not know one.
+ * Replacing a waiting pass that did carry one therefore costs that pass its
+ * place and it re-reads the store's changes from the start — wasteful, never
+ * wrong, and self-correcting on the next pass.
+ *
+ * If this ask fails, the delivery is marked failed and no pass is queued — but
+ * nothing is lost: the change is already in the record, and the next edit's ask,
+ * or the nightly walk, drains it.
+ */
+async function askForTheChangesToBeRead(
+  ingestion: IngestionDeps,
+  accountId: string,
+): Promise<void> {
+  await enqueueCatalogEventDrain(ingestion.db, { accountId })
 }
 
 /**

@@ -19,9 +19,10 @@ import type { Logger } from '@sortiva/core'
  * merchant who rewrites a collection in the morning would see us go on
  * recommending against the old wording all day.
  *
- * This is the reading half. The half that produces the changes is Lane B's, and
- * is not built yet; until it is, nothing calls this and the nightly walk is the
- * only thing keeping the inventory current.
+ * This is the reading half. The half that produces the changes — the Shopify
+ * webhook handler and the nightly catalogue sweep, both Lane B's — writes them
+ * to the shared change record, and the webhook handler asks for a pass the
+ * moment it records one.
  */
 
 export interface CatalogEventDrainDeps {
@@ -29,16 +30,17 @@ export interface CatalogEventDrainDeps {
   readonly catalogEvents: CatalogEvents
   readonly logger?: Logger
   /**
-   * Wired the event-driven signal-scan cadence (main §7.5's cadence table,
-   * `T3.7`) to this reading half's own real trigger — a product/catalogue
-   * change actually drained. Optional because the writing half (Lane B's
-   * webhook producer for `CatalogEvents`) does not exist yet, so this whole
-   * task has no live caller in production either way (the same gap `T2.2`'s
-   * audit already flagged); a test double or a future composition root
-   * supplies it, and its absence here changes nothing that currently runs.
-   * See DECISIONS 2026-09-03 T3.7.
+   * What a full opportunity scan needs, built on demand rather than handed over
+   * up front. A merchant's edit is worth re-scanning the store's opportunities
+   * for, not only re-reading the page — otherwise a missing title fixed on
+   * Tuesday is not noticed until the weekly scan on Monday.
+   *
+   * A function and not an object because building it means opening a database
+   * connection and taking the shared pool, and registering a task must not do
+   * either: registration happens while the server is starting up, long before
+   * any job runs. Optional so a test can leave the scan out.
    */
-  readonly signalScan?: RunSignalScanDeps
+  readonly signalScan?: () => RunSignalScanDeps
 }
 
 export interface CatalogEventDrainResult {
@@ -80,13 +82,10 @@ export async function drainCatalogEvents(
     // resync is a separate queued job (`INVENTORY_SYNC_TASK`) this function
     // has no handle on waiting for, and threading that through would mean
     // reaching into `packages/jobs/src/inventory/tasks.ts`'s own task
-    // registration for a precision this seam does not need yet: nothing
-    // produces a real `CatalogEvent` in production today (Lane B's webhook
-    // stream, unbuilt), so this is provisioning the consumer side correctly
-    // for when it exists, not shipping a live guarantee now. The weekly
-    // scan is the backstop either way. See DECISIONS 2026-09-03 T3.7.
+    // registration. So the scan reads the pages as they were before this
+    // pass's re-reads land; the next change, or the weekly scan, catches up.
     if (deps.signalScan) {
-      await runEventDrivenScan(deps.signalScan, payload.accountId, { cursor })
+      await runEventDrivenScan(deps.signalScan(), payload.accountId, { cursor })
     }
   }
 
