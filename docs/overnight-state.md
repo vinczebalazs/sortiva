@@ -5716,6 +5716,41 @@ reads the pool's own count of connections made: zero.
 A check that starts the built server must run after `pnpm build`, not after the dev smoke. This
 cost the integrator two confusing runs.
 
+### `T-WAVE5` LANDED — schema mini-wave, and the gate flake is now carded
+
+**Merged. Gate green: nine of eleven.** Tests **3,440**. Migration only — nothing reads or writes
+either addition, so an overridden article still returns to `draft` and signing out still clears
+one cookie. `R-OVERRIDE-STATE` and `R-REVOKE` do that work, both now unblocked.
+
+**Two additions.** An article state meaning *cleared to deliver*, so a query asking "which
+articles go out today" can name a state instead of joining the gate-decision table and hoping it
+remembered to. And a `sessions` table, so a session can be ended at all — today a signed-in
+session is only a signed cookie, so nothing records it and nothing can revoke it.
+
+**The sessions table's shape is the whole cost of the feature and the lane treated it that way:**
+the token is the primary key itself, so the per-request read is one index probe landing on the
+row; revoking is deleting the row rather than setting a flag, so the constant read stays a plain
+hit-or-miss and no dead rows accumulate; account deletion cascades. Whether the stored token is
+the browser's value or a digest is left open for `R-REVOKE` — either fits the column, so it needs
+no second migration.
+
+**It diagnosed a false failure instead of reporting one.** There are two Postgres servers on this
+machine and the container's published port is already taken, so a database created through
+`docker exec` is invisible to the tests and to the migration tool. The lane found that, created
+the empty database on the server the tests actually reach, migrated there, verified the result,
+and dropped it — and deliberately left the shared dev database alone because three lanes were
+using it. **Worth remembering: `docker exec … psql` does not reach the database this project uses.**
+
+**A card-text error of the integrator's, corrected by the lane.** The card said "a fifth state";
+the list already held five, so this is the sixth. Nothing turns on the count.
+
+**The gate flake is worse and is now a card, `R-TESTDB`.** This gate run failed 13 test *files* on
+teardown timeouts and 21 on the re-run, with three lanes active — **while all 3,440 tests passed
+both times, with zero failing assertions and the same total.** So everything ran and everything
+passed; the harness is what breaks. It has been folklore in this file for days; it is now work,
+because a gate that goes red for its own reasons trains people to re-run instead of read, and
+this project has already had one genuine regression hide underneath exactly that.
+
 ### Verification done this morning, so it is not re-done
 
 - Resolved every registered task-name constant in the tree and matched it by hand against all
