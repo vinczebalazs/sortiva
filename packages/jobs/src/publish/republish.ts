@@ -132,6 +132,10 @@ export async function republishArticleToShopify(
   deps.checkpoint?.('republish:claimed')
 
   try {
+    // Only the words. No address, no tags, no published state: Shopify leaves
+    // an unsent field alone, so the merchant's rename, their own tags and their
+    // decision to take the post down all survive this. There is no field for
+    // them on an update to pass even by accident.
     const remote = await deps.shopify.updateArticle({
       shop: target.shopHandle,
       accessToken: deps.cipher.decrypt(target.accessTokenCipher),
@@ -141,10 +145,8 @@ export async function republishArticleToShopify(
       remoteArticleId,
       title: article.title,
       bodyHtml,
-      handle: article.slug,
       summary: article.metaDescription ?? '',
       marker: publishMarker(input.articleId),
-      publishAs: target.publishAs,
     })
 
     deps.checkpoint?.('republish:executed')

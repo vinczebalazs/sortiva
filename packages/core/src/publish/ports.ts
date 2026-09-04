@@ -79,9 +79,31 @@ export interface CreateArticleInput extends ShopifyStoreCredentials, ArticleAddr
   readonly publishAs: 'live' | 'draft'
 }
 
-export interface UpdateArticleInput extends CreateArticleInput {
+/**
+ * A revision of an article already on the merchant's blog — and deliberately
+ * **not** a create with an id added to it.
+ *
+ * Shopify's update is partial: a field we do not send is left as the merchant
+ * left it. So this carries only what we wrote — the title, the body and the
+ * summary — and has no field for the article's address, its tags or its
+ * published state. A merchant who renamed our post, tagged it themselves or
+ * took it down keeps all three through every later repair, because there is no
+ * way to express sending them.
+ *
+ * The consequence, and it is intended: the store's live-or-draft preference
+ * applies when an article is created and never again. It says how a new post
+ * should arrive, not that a post the merchant unpublished should come back.
+ */
+export interface UpdateArticleInput extends ShopifyStoreCredentials, ArticleAddressing {
+  readonly blogId: string
   /** The remote article we are revising. An update names it or does not happen. */
   readonly remoteArticleId: string
+  readonly title: string
+  /** The article body, already resolved against the store and stripped of internal markers. */
+  readonly bodyHtml: string
+  readonly summary: string
+  /** Our marker for this article — the same one every revision of it carries. */
+  readonly marker: string
 }
 
 /**

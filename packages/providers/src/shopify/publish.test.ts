@@ -123,6 +123,23 @@ const article = {
   publishAs: 'live' as const,
 }
 
+/**
+ * What a revision is allowed to carry. Spelled out rather than spread from
+ * `article`, because the fields it leaves behind — the address, the published
+ * state — are the point of the card: `UpdateArticleInput` has nowhere to put
+ * them.
+ */
+const revision = {
+  ...SHOP,
+  blogId: '77',
+  blogHandle: 'news',
+  storefrontDomain: 'acme.com',
+  title: 'Best bottles',
+  bodyHtml: '<p>Hello</p>',
+  summary: 'A summary.',
+  marker: 'sortiva-abc',
+}
+
 describe('what we put on a merchant`s blog', () => {
   it('sends no tag with a new article — nothing of ours is visible to their shoppers', async () => {
     await client().createArticle(article)
@@ -136,7 +153,7 @@ describe('what we put on a merchant`s blog', () => {
   })
 
   it('sends no tag on a revision either, so the merchant`s own tags survive', async () => {
-    await client().updateArticle({ ...article, remoteArticleId: '991' })
+    await client().updateArticle({ ...revision, remoteArticleId: '991' })
 
     const sent = recorded.find((r) => r.method === 'PUT')!
     const payload = sent.body!['article'] as Record<string, unknown>
@@ -180,6 +197,60 @@ describe('what we put on a merchant`s blog', () => {
     expect(recorded.find((r) => r.method === 'POST')!.path).toContain('/blogs/77/articles.json')
   })
 
+  describe('a revision sends the words we wrote and nothing else', () => {
+    /** Exactly the keys a revision may carry. A new one added here is a new thing we overwrite. */
+    it('sends the title, the body, the summary and our own hidden marker — and no more', async () => {
+      await client().updateArticle({ ...revision, remoteArticleId: '991' })
+
+      const payload = recorded.find((r) => r.method === 'PUT')!.body!['article'] as Record<
+        string,
+        unknown
+      >
+      expect(Object.keys(payload).sort()).toEqual([
+        'body_html',
+        'id',
+        'metafields',
+        'summary_html',
+        'title',
+      ])
+    })
+
+    it('sends no address, so a post the merchant renamed keeps its name', async () => {
+      await client().updateArticle({ ...revision, remoteArticleId: '991' })
+
+      const payload = recorded.find((r) => r.method === 'PUT')!.body!['article'] as Record<
+        string,
+        unknown
+      >
+      expect(Object.keys(payload)).not.toContain('handle')
+    })
+
+    it('sends no published state, so a post the merchant took down stays down', async () => {
+      await client().updateArticle({ ...revision, remoteArticleId: '991' })
+
+      const payload = recorded.find((r) => r.method === 'PUT')!.body!['article'] as Record<
+        string,
+        unknown
+      >
+      expect(Object.keys(payload)).not.toContain('published')
+      expect(Object.keys(payload)).not.toContain('published_at')
+    })
+
+    /**
+     * The other half of the same decision: the store's live-or-draft setting is
+     * how a *new* post should arrive, so it is still sent on a create.
+     */
+    it('still sends the address and the published state when the article is new', async () => {
+      await client().createArticle({ ...article, publishAs: 'draft' })
+
+      const payload = recorded.find((r) => r.method === 'POST')!.body!['article'] as Record<
+        string,
+        unknown
+      >
+      expect(payload['handle']).toBe('best-bottles')
+      expect(payload['published']).toBe(false)
+    })
+  })
 })
 
 describe('asking whether our post already landed', () => {

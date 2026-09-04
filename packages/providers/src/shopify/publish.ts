@@ -155,7 +155,7 @@ export class ShopifyPublishClient implements ShopifyPublishProvider {
       input,
       'POST',
       `blogs/${encodeURIComponent(input.blogId)}/articles.json`,
-      { article: articlePayload(input) },
+      { article: createPayload(input) },
     )
     const article = body.article
     if (!article?.id) {
@@ -173,13 +173,19 @@ export class ShopifyPublishClient implements ShopifyPublishProvider {
    * this method: a merchant who deleted the article meant to, and putting it
    * back under a new id would be a post they never asked for and cannot see
    * coming.
+   *
+   * It sends the words we wrote and nothing else. Shopify leaves an unsent
+   * field alone, so the merchant's own rename, their own tags and their
+   * decision to take the post down all survive a repair — which matters
+   * because a repair can now happen on a schedule, with nobody clicking
+   * anything.
    */
   async updateArticle(input: UpdateArticleInput): Promise<RemoteArticle> {
     const path = `blogs/${encodeURIComponent(input.blogId)}/articles/${encodeURIComponent(input.remoteArticleId)}.json`
     let body: { article?: RestArticle }
     try {
       body = await this.request<{ article?: RestArticle }>(input, 'PUT', path, {
-        article: { id: Number(input.remoteArticleId), ...articlePayload(input) },
+        article: { id: Number(input.remoteArticleId), ...updatePayload(input) },
       })
     } catch (error) {
       if (error instanceof ShopifyNotFound) throw new RemoteArticleGone(input.remoteArticleId)
@@ -365,7 +371,7 @@ function retryAfterMsFrom(header: string | null): number | undefined {
 }
 
 /**
- * The article as Shopify wants it.
+ * A new article, as Shopify wants it.
  *
  * The marker goes in a metafield and nowhere else. It used to be written as a
  * tag as well, because a tag comes back in a plain list response and a
@@ -374,19 +380,43 @@ function retryAfterMsFrom(header: string | null): number | undefined {
  * tag list their shoppers browse. Nothing we add to somebody's shop should be
  * visible to their customers.
  *
- * There is no `tags` key here at all, rather than an empty one: sending an
- * empty value on a revision would wipe whatever tags the merchant had put on
- * the post themselves.
+ * There is no `tags` key here at all, rather than an empty one: an empty value
+ * would wipe whatever tags the merchant had put on the post themselves.
  */
-function articlePayload(input: CreateArticleInput): Record<string, unknown> {
+function createPayload(input: CreateArticleInput): Record<string, unknown> {
+  return {
+    ...ourWords(input),
+    handle: input.handle,
+    // `published: false` is Shopify's own "save as draft": the article exists
+    // on the blog and no reader can see it. Sent on a create only — see
+    // `updatePayload`.
+    published: input.publishAs === 'live',
+  }
+}
+
+/**
+ * A revision, as Shopify wants it: the words we wrote, and nothing that
+ * belongs to the merchant.
+ *
+ * Shopify's update is partial — an absent field is left as it is — so the
+ * omissions here are the whole point. No `handle`, so a post the merchant
+ * renamed keeps its name and its address. No `published`, so a post they took
+ * down stays down. No `tags`, so their own tags survive. Sending any of the
+ * three would quietly undo a deliberate act of theirs, on their own site, on a
+ * schedule they did not trigger.
+ */
+function updatePayload(input: UpdateArticleInput): Record<string, unknown> {
+  return ourWords(input)
+}
+
+/** What we wrote, which is all a revision is entitled to change. */
+function ourWords(
+  input: Pick<CreateArticleInput, 'title' | 'bodyHtml' | 'summary' | 'marker'>,
+): Record<string, unknown> {
   return {
     title: input.title,
     body_html: input.bodyHtml,
-    handle: input.handle,
     summary_html: input.summary,
-    // `published: false` is Shopify's own "save as draft": the article exists
-    // on the blog and no reader can see it.
-    published: input.publishAs === 'live',
     metafields: [
       {
         namespace: PUBLISH_MARKER_NAMESPACE,

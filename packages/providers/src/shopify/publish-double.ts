@@ -50,6 +50,11 @@ interface FakeArticle extends RemoteArticle {
   readonly createdAt: Date
   /** Where the real marker lives: not in the list response, and not visible to the merchant. */
   readonly metafieldMarker: string
+  /**
+   * The merchant's own tags. We never send any, and a revision must not clear
+   * the ones they added — which is only demonstrable if the shop holds them.
+   */
+  readonly tags: readonly string[]
 }
 
 export type FakeShopCall = {
@@ -143,6 +148,10 @@ export class FakeShopifyPublishClient implements ShopifyPublishProvider {
     // The deleted-remotely case. A test that wants it deletes the article from
     // `articles` and calls update; nothing here may answer by creating one.
     if (!existing) throw new RemoteArticleGone(input.remoteArticleId)
+    // Shopify leaves an unsent field alone, and so does this: the handle, the
+    // published state, the address and any tags stay whatever the merchant last
+    // made them. A double that reset them would let a repair which overwrites a
+    // merchant's rename pass its tests.
     const updated: FakeArticle = {
       ...existing,
       title: input.title,
@@ -221,6 +230,7 @@ export class FakeShopifyPublishClient implements ShopifyPublishProvider {
     marker: string
     published: boolean
     createdAt?: Date
+    tags?: readonly string[]
   }): FakeArticle {
     const article: FakeArticle = {
       id: input.id,
@@ -239,6 +249,7 @@ export class FakeShopifyPublishClient implements ShopifyPublishProvider {
       title: input.title,
       createdAt: input.createdAt ?? this.now(),
       metafieldMarker: input.marker,
+      tags: input.tags ?? [],
     }
     this.articles.set(article.id, article)
     return article

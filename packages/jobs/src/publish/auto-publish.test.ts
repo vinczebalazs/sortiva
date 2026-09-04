@@ -632,6 +632,35 @@ describe.skipIf(!available)('posting an article to the merchant`s shop', () => {
     })
 
     /**
+     * The whole of decision (a), end to end: the merchant renamed our post,
+     * put their own tags on it and took it down, and a repair — which now runs
+     * on a schedule, with nobody clicking anything — leaves all three exactly
+     * as they left them.
+     */
+    it('leaves the merchant`s rename, their tags and their unpublish alone', async () => {
+      const { articleId, productId } = await publishOnce()
+      const remoteId = [...shop.articles.keys()][0]!
+      shop.articles.set(remoteId, {
+        ...shop.articles.get(remoteId)!,
+        handle: 'their-own-name',
+        tags: ['seasonal', 'staff-picks'],
+        published: false,
+        url: null,
+      })
+      await setPrice(productId, 61)
+
+      const result = await republishArticleToShopify(deps(), { accountId, articleId, revisionN: 1 })
+
+      expect(result.status).toBe('updated')
+      const after = shop.articles.get(remoteId)!
+      expect(after.handle).toBe('their-own-name')
+      expect(after.tags).toEqual(['seasonal', 'staff-picks'])
+      expect(after.published).toBe(false)
+      // What we did change: the words.
+      expect(after.bodyHtml).toContain('61.00 USD')
+    })
+
+    /**
      * Articles posted before the address changed keep the address they were
      * posted under. Re-addressing them would silently move where a merchant
      * believes their article lives, on no evidence that the new address is the
