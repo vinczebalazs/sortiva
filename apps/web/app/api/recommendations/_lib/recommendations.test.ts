@@ -509,6 +509,42 @@ describe.skipIf(!available)('/api/recommendations', () => {
     expect(await html.text()).toContain('<h1>Page recommendations</h1>')
   })
 
+  /**
+   * The listing detection finds a page by reading the store's own catalogue,
+   * so it records no search. The download used to print the page's own web
+   * address under the heading "Search", which reads as a claim that somebody
+   * typed it into Google. It now says nothing about a search unless there is
+   * one.
+   */
+  it('never prints the page\'s own address as the search it competes for', async () => {
+    const opportunity = await insertMinimalOpportunity(
+      harness.db,
+      accountScope(accountId),
+      {
+        signalType: 'missing_or_weak_metadata',
+        entityType: 'url',
+        entityRef: PAGE_URL,
+        evidenceJson: [{ key: 'missing_fields', value: 'seo_description', source: 'shopify' }],
+        recommendedAction: 'optimize',
+        status: 'new',
+        reasonTemplateKey: 'opportunity.missing_or_weak_metadata',
+        reasonParams: {},
+        limitedIntelligence: false,
+        rulesVersion: rules().rulesVersion,
+      },
+      NOW,
+    )
+    const id = await storedRecommendation(opportunity.id)
+
+    const text = await (await download(id, 'md')).text()
+    const html = await (await download(id, 'html')).text()
+
+    expect(text).toContain(`**Page:** ${PAGE_URL}`)
+    expect(text).not.toContain(`**Search:** ${PAGE_URL}`)
+    expect(text).not.toContain('**Search:**')
+    expect(html).not.toContain('<strong>Search:</strong>')
+  })
+
   it('will not download another account\'s recommendation', async () => {
     const opportunity = await optimizeOpportunity()
     const id = await storedRecommendation(opportunity.id)
