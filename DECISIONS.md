@@ -3793,3 +3793,83 @@ Decision: `registerCatalogEventTasks` still has no production caller. The compos
 Consequence, stated: until the integrator applies the line, a merchant's edit queues a pass and nothing answers to the pass's name, so the inventory is still only as fresh as the nightly walk. Everything that runs once the line lands is built and proved.
 Nearest spec: build plan §3, §6 `R-STREAM`.
 Class (filled by audit):
+
+## 2026-09-04 — FOUNDER — Sixteen answers left as comments on the build docket
+Decision: the founder worked through the decision docket (artifact, 2026-09-04) and left twenty-five comments. Sixteen were decisions and are recorded individually below. Five items were left uncommented (`B3` the remaining vendor credentials, `B4` deployment, `B5` the token-encryption and session secrets, `D11` the deleted-account domain hold, `D15` the six-hour runway) and four need something from the integrator before they can be answered (`D4`, `D5`, `D8`, `C8`).
+Why: recorded as one entry naming the source so the individual entries below are traceable to a single pass rather than looking like sixteen unrelated rulings. **Only one comment thread was sent to Claude**, so the integrator could read all twenty-five but could reply in and resolve exactly one; the remaining twenty-four stay open on the page as the founder's own notes regardless of what is built.
+Nearest spec: none — process.
+
+## 2026-09-04 — FOUNDER — The OPTIMIZE state graph is corrected, not the code
+Decision: "correct the graph." The card that built the improve-this-page feature performs three status moves the project's written state graph forbids, and nothing objects because the database helper never consults the graph. The auditor judged the code right and the graph wrong; the graph moves. Carded as `R-GRAPH`, Lane C (its file).
+Why: this is the only thing stopping `T6.3`, the last card in M6, whose own test drives an opportunity through exactly those states — it would either trip over the graph or silently copy the error. Acting on an audit finding needed the founder's word, which this is.
+Nearest spec: main §7.9 (opportunity lifecycle); build plan §6 `T6.3`.
+
+## 2026-09-04 — FOUNDER/INTEGRATOR — The frozen contract moves to the addresses that were built, and Lane F gets the settings ground
+Decision: the founder delegated this one — "decide for me." **The contract is amended to describe the ten endpoints as built, rather than the ten being moved to the addresses the table declares.** `apps/web/app/api/settings` is assigned to Lane F, which owns the screen that consumes it, for any endpoint that is genuinely settings-shaped rather than domain-shaped. And the check that would have caught the divergence — comparing shipped route files against the contract, which nothing does today — lands with `T10.2`. Carded as `R-CONTRACT`, integrator.
+Why: the addresses the three lanes chose are domain-grouped and read correctly (`/api/publish/*` for publishing, `/api/recommendations/*` for recommendations); herding them under `/api/settings` because a table written in milestone 0 said so would be worse organisation defended only by the table's age. Nothing is deployed, so no external caller depends on either shape. Contract changes go through the integrator by rule, which is why this is not a lane's to take. The frontend's fake server is generated from the table, so amending it is also what unblocks Lane F.
+Nearest spec: build plan §3 (contracts change only through the integrator); tech §3.
+
+## 2026-09-04 — FOUNDER — The OPTIMIZE stuck states are fixed
+Decision: "well fix it" and "come up with a fix, let me know what you did." Two findings, one card: pressing the improve-this-page button marks the opportunity busy before queueing, so with nothing registered to pick the work up two presses consume a store's daily allowance for ever and the state guard refuses to retry them; and separately there is no way out of the busy state when the work is refused or crashes — the job returns the row on exactly two paths and no sweeper, timeout or reaper exists anywhere. Carded as `R-OPTIMIZE-STUCK`, Lane E.
+Why: the second survives fixing the first and produces the identical permanent stuck state, so fixing one alone would leave the defect reachable by a different route. This is also what makes registering the job safe; the registration stays held until this lands.
+Nearest spec: main §7.9, §10.1–10.4; invariant 15 (guarded transitions).
+
+## 2026-09-04 — FOUNDER — The spend brake stops switching OPTIMIZE off for ordinary use
+Decision: "fix it." The nightly sweep counts model calls rather than generations, trips at exactly the cap rather than above it, and the flag is sticky until an operator clears it — so a merchant who uses both of their two daily recommendations, or one that needed its single automatic retry, has the feature switched off permanently. The same defect applies to the intent-gap call type. Carded as `R-SPEND`, Lane G (its file).
+Why: worse than an accounting bug, because of what the merchant is then shown — the outage copy, "we paused this action rather than continue with lower-quality or stale data", which tells them we protected their quality when they in fact hit our arithmetic. The operator-facing incident text also states a count that is wrong.
+Nearest spec: main §14.5 (spend caps), §14.4 and Appendix A (the outage sentence); invariant 22.
+
+## 2026-09-04 — FOUNDER — The publishing path's four defects are fixed together
+Decision: "fix it" on three separate findings, plus "no sortiva tag anywhere that's publicly visible." All four live in the same publishing code and are carded together as `R-PUBLISH`, Lane D, because separate cards would collide in one file. (a) The did-my-post-land check reads one page of up to 250 recent articles with no paging, so an established blog can answer "no" when the answer is yes and get a second copy posted. (b) A transient Shopify failure at the moment of posting strands that article for ever and a rejected token is never reported to the merchant, though the machinery to tell them exists and drives the reconnect banner. (c) The address recorded for a published article uses the blog's numeric id where Shopify uses its name, so Search Console attribution can never match and a working article appears to earn nothing for ever; the correct value is already stored and unused. (d) **The visible tag goes.**
+Why on (d) specifically: every published article currently carries a `sortiva-<id>` tag in the merchant's Shopify admin, which can surface in storefront tag lists their own shoppers see. The tag is a *duplicate* marker — the real one is a metafield, invisible to the merchant and Shopify's own place for app-owned data. The tag was written every time because the recovery sweep reads it out of a plain list response, and a metafield-only marker costs one extra request per article to look for. **That cost is now the price of the founder's answer, and it lands in the same card as (a), which changes that same lookup anyway.**
+Nearest spec: main §9.5, §14.3.7, §12.2 (attribution); invariant 19, 22.
+
+## 2026-09-04 — FOUNDER — A signal with no search term stops buying search results for a web address
+Decision: "detail what the fix would be and do it." Three of the four signals that produce an improve-this-page suggestion record a search term; the missing-or-weak-metadata signal records none, and the pipeline falls back to the page's own web address as the search. It then pays the search vendor for results for `https://store.example/collections/boots` as though a person had typed it, tells the model "the search: <that address>", and measures keyword stuffing against the words in a URL. Carded as `R-NOQUERY`, Lane E, placed there by the integrator because it spans two lanes.
+Why: the likely end state is a failed recommendation after spending both the merchant's daily allowance and our vendor money, and nothing logs it. **The fix detailed for the founder, and what the card specifies:** the pipeline must refuse to run rather than substitute — a signal that carries no search term either resolves one from the store's existing query clusters for that page, or the recommendation is not offered at all and says why. Substituting a URL for a search is the failure; a narrower fallback would repeat it more quietly.
+Nearest spec: main §7.3, §10.3, §14.5 (per-type cap); invariant 7.
+
+## 2026-09-04 — FOUNDER — The quality judge's model cannot be changed by configuration
+Decision: "yes no one should touch it." The judge tier stops honouring the `ANTHROPIC_MODEL_*` environment override. Today an operator can point the judge at the cheap model with one variable that ships in `.env.example`, and neither the code nor CI would notice — and the spend would be misreported, since the expensive price list is kept.
+Why: the rule is that a smaller model is never substituted for the judge, and the code honours it everywhere except this one configuration route. The override mechanism stays for every other tier, where pinning a model per environment without a code change is legitimate.
+Nearest spec: main §8.4, §14.4; invariant 11.
+
+## 2026-09-04 — FOUNDER — A quality failure of ours never costs the merchant a day, and we must be able to see when it does
+Decision: "our own failure to write good should never count toward the article quota. BUT we must have very solid foundations in place to track if this is happening." Two halves: a draft that fails our own gate does not consume the store's daily allowance, and the rate at which that happens is measured and visible rather than inferred.
+Why: the second half is the load-bearing one and the founder said so — a quota that silently absorbs our failures looks identical to a quota the merchant used, and the only way to know which is happening is to have counted. The measurement is not optional dressing on the fix.
+Nearest spec: main §4.2 (the cap), §8.4, §9.6; invariant 23 (no denominators shown to the merchant — the measurement is operator-facing).
+
+## 2026-09-04 — FOUNDER — The judge's own sentences may reach a merchant, and are always in English
+Decision: "yes, but always in English no matter what language store is in." This settles a contradiction between the constitution (every user-facing explanation renders from a template, never from a model) and the spec (the rejection card restates the judge's failing criteria in plain language). The spec wins, with a constraint the spec did not state: the judge's justification is always English, even for a store publishing in another language.
+Why: the contradiction was real and needed a ruling either way rather than a quiet resolution. The English constraint answers the specific hazard flagged by the audit — a justification coming back in the store's own language inside an otherwise-English sentence, which is a worse artefact than either language alone.
+Nearest spec: main §8.4, §8.6; invariant 8; Appendix A.
+
+## 2026-09-04 — FOUNDER — An overridden article gets its own state, and is never reviewed again
+Decision: "add a fifth state and something we overridden does not be reviewed again imho." An article a merchant publishes over a quality rejection gets a fifth state meaning "cleared to deliver", rather than returning to `draft` — which today covers three different situations at once — and it does **not** pass through draft review on accounts that have review turned on. This closes the second half of question 13.
+Why: `draft` currently means "written, not yet graded", and an overridden article is neither; the only thing separating them is a flag whose meaning is "excluded from learning", not "cleared to publish", so any query asking "which drafts go out today" gets un-graded articles unless it remembers to join the decision table. On the review half: a merchant who has just overruled the quality gate has already made the decision review exists to ask for.
+**Blocked on a migration.** A fifth state is a new enum value and all four schema waves are closed, so this needs a mini-wave before it can be built.
+Nearest spec: main §8.6, §9.3.
+
+## 2026-09-04 — FOUNDER — Sessions become revocable, and signing out revokes
+Decision: "yes it should and it should be revoked on sign out." A signed-in session becomes revocable before it expires, and signing out revokes it rather than only clearing the cookie in that browser. This buys "sign out everywhere" and instant lockout when an account is deleted or a credential is compromised.
+Why: the founder was told the cost before choosing — a database read on every signed-in request, on a platform chosen for being cheap — and took it. The 24-hour session lifetime should be revisited in the same card: it is short *because* revocation was impossible, so the reason for the number goes with this change.
+**Blocked on a migration.** There is no `sessions` table anywhere in the schema and a session must exist somewhere before anything can delete it; all four schema waves are closed, so this needs a mini-wave.
+Nearest spec: main §4.1; tech §3.
+
+## 2026-09-04 — FOUNDER — The empty-state scan line becomes relative
+Decision: "yes reword it and it should be relative (next scan in x days)." The canonical sentence telling a merchant with no open opportunities when the next scan runs stops naming Monday and names a relative interval instead. This is quoted copy, so only the founder could change it, and they have.
+Why: the screen's header already shows the real next-scan date, taken from the API, because a store whose scan lands on a Tuesday would otherwise be told something untrue every week. So the header could say Tuesday while the line below promised Monday. A relative interval is true whichever day the scan falls on, which removes the contradiction rather than papering over it.
+Nearest spec: main Appendix A (canonical strings); ui §5; invariant 24 (the snapshot test that holds these strings moves with the copy).
+
+## 2026-09-04 — FOUNDER — Discarding a draft still does not retire the subject
+Decision: "no, a bad draft never means bad subject." No change: throwing away a draft closes the calendar day and leaves the subject available for future planning. Recorded because the behaviour was previously an undictated choice made by a card and journalled rather than asked.
+Nearest spec: main §8.7, §9.3.
+
+## 2026-09-04 — FOUNDER — Auto-published articles ship without images, for now
+Decision: "for now yes." Articles published automatically carry no images, against what main §9.2 asks for. Accepted deliberately rather than by omission, and marked as a known departure to revisit rather than a settled design.
+Nearest spec: main §9.2.
+
+## 2026-09-04 — FOUNDER — The Shopify development store waits until everything else is done
+Decision: "this is the last piece and blocks nothing, leave it for [when] the rest of the product is 100% done." No development store is procured yet.
+Why, and what it costs, stated so the consequence is not rediscovered: `T10.4` cannot run, one of `T5.2`'s done-whens stays **not met**, and every claim about how the product behaves against Shopify rests on a fake that cannot rate-limit, cannot reject a token, cannot rewrite a colliding address, cannot paginate and cannot refuse a metafield — and the fall-back-to-a-tag design existed for that last case. The `R-PUBLISH` card now removes the tag, so the metafield path becomes the only marker and is still untested against a real store.
+Nearest spec: build plan §6 `T10.4`, §10 (kickoff checklist).
