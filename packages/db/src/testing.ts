@@ -189,7 +189,11 @@ const WAVE_3_TABLES = [
   'deletion_confirmation_emails',
 ] as const
 
+/** Schema mini-wave 5 (T-WAVE5). One table, which references `accounts`. */
+const WAVE_5_TABLES = ['sessions'] as const
+
 const ALL_TABLES = [
+  ...WAVE_5_TABLES,
   ...WAVE_3_TABLES,
   ...WAVE_2B_TABLES,
   ...WAVE_2_TABLES,

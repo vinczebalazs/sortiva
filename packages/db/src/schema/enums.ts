@@ -317,13 +317,29 @@ export const topicStateEnum = pgEnum('topic_state', [
   'vetoed',
 ])
 
-/** An article's own lifecycle, main §13 `articles`. */
+/**
+ * An article's own lifecycle, main §13 `articles`.
+ *
+ * `cleared_to_deliver` is the schema mini-wave `T-WAVE5` addition, and means
+ * exactly what it says: a merchant has overruled the quality rejection and the
+ * article is to go out. It exists because `draft` meant three different things
+ * at once — written but not yet graded, graded and sent back, and overruled —
+ * so anything asking "which articles go out today" had to join the
+ * gate-decision table to tell them apart, or quietly include un-graded work.
+ * The `published_via_override` flag does not answer that question: its meaning
+ * is "keep this out of the learning data", not "cleared to publish".
+ *
+ * Appended rather than slotted after `in_review`, so no existing row's stored
+ * value or sort position moves. Nothing writes it yet — see `DECISIONS.md`,
+ * 2026-09-04.
+ */
 export const articleStateEnum = pgEnum('article_state', [
   'draft',
   'in_review',
   'published',
   'rejected',
   'discarded',
+  'cleared_to_deliver',
 ])
 
 /** The four kinds of assertion a claim plan may contain — main content-pointers.md §1. Collapsing these is how a generated article ends up stating an opinion as a specification. */
