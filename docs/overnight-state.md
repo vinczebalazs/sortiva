@@ -768,8 +768,8 @@ behaviour of that mechanism, but worth knowing at merge time.
 
 ## Right now
 
-**Status at 2026-09-04, 09:30 — the founder answered five questions this morning and the build
-is moving again.** Two lanes are running; nothing is merged yet from today. What was decided,
+**Status at 2026-09-04, 09:50 — two cards landed and gated, and `T5.3` is now dispatchable.**
+`main` is at `8a399f3`, clean. Tests **3,271**, up from 3,265. No lane is running. What was decided,
 what it unblocked, and what is still stopped is in the section **"2026-09-04 morning — five
 founder answers, and what checking them changed"** at the end of this file. **Read that before
 anything else.** The night's end state, which everything below still describes, follows.
@@ -5264,6 +5264,68 @@ original, read the superseding one.
 inside a log record, not a name anything dispatches on; nothing in the tree references it, and
 renaming it would break any saved log search for nothing. The codebase already keeps the two
 vocabularies apart elsewhere.
+
+### `R-STREAM-WIRE` LANDED — a merchant's edit reaches the product in minutes, not overnight
+
+**Merged as `12e09f7`, with the integrator's own three pieces on top as `8a399f3`. Full gate
+re-run on the merged tree: green, nine of eleven, with `eval` not run and the one named chaos
+scenario red for their documented reasons and nothing else.** Tests **3,271**, up from 3,265.
+
+**What changed for a merchant.** Before: when they fixed a product title, rewrote a collection
+or edited a page, we wrote the fact down and nobody read it. Our copy of that page — and every
+recommendation resting on it — stayed stale until the nightly walk, so a fix made at nine in the
+morning was still being recommended against at five. Now the edit is recorded and immediately
+followed by a request to act on it: within minutes the pages they actually touched are re-read
+and the store gets a full market analysis, so the notice about the thing they just fixed
+disappears rather than waiting for Monday.
+
+**A burst of edits does not become a burst of passes, and this was proved rather than asserted.**
+The request carries a job key of the account alone, so a second ask while one is still waiting
+replaces it instead of adding to it — forty edits leave one waiting pass. The lane deliberately
+added no second guard in the handler, on the reasoning that two mechanisms answering one question
+disagree the first time either changes. Its test delivers five product edits through the real
+receiver, checks all five were recorded as five separate changes, and asserts exactly one pass
+is waiting. **It then showed the test was not vacuous** by making the key unique per request and
+watching it go red with five jobs. A webhook whose content turns out to match what we already
+hold queues nothing, also tested.
+
+**What the integrator applied, and why the lane could not.** Three files, held back deliberately:
+the composition root builds the real change reader and registers the drain job
+(`apps/web/instrumentation-node.ts`, integrator-resolved); and the `CatalogEvents` seam leaves
+the stand-in report, which cannot pass in a worktree that lacks the composition-root line, since
+the test `R-STREAM` built asserts the real implementation is *constructed outside a test*.
+`pnpm stubs:report` is now **4**, down from 5, honestly for the first time. The note left in the
+report's place is the **third** written there — the first two were wrong — so it records what was
+checked end to end rather than what a card claimed, and the test that used to assert this seam
+was unwired now asserts the thing itself is built rather than the bookkeeping around it.
+
+**Verified independently, not taken from the report.** Started the built application on the
+merged tree and read the worker's own start-up line: `[worker] started with 30 task(s), cron
+enabled` — 29 before this merge, so the drain handler really is in the registry. Read the diff
+in full: the webhook change is two call sites and one helper, and the cross-lane edit in the
+reader's file is confined to the dependency's shape, its one call site, and three stale comments.
+Checked the job-key claim against `packages/jobs/src/inventory/queue.ts` directly rather than
+from the report.
+
+**A loose end the lane found, journalled, and correctly left alone — it belongs with `T5.3`.**
+The request carries no marker for how far through the change record a previous pass had got,
+because the webhook side has no way to know one. So in the seconds between a pass finding
+changes and re-running itself, a new webhook can replace it and cost it its place, and the pass
+then re-reads that store's changes from the beginning. **Wasteful, never wrong, self-correcting,
+and it buys no extra paid scans** — the scan's key is derived from where the pass ended, so a
+repeat converges on the same key and de-duplicates. The clean fix is one word: ask under
+`unsafe_dedupe`, which leaves an already-waiting pass alone, correct here because that pass will
+read the new change anyway. It is in Lane C's file and outside the card's authorised edit.
+
+**One report claim that was wrong, and harmlessly so.** The lane reported that `R-STREAM-WIRE`
+was absent from the build plan and that no `2026-09-04` change-stream entries existed in
+`DECISIONS.md`. Both are true *of its own worktree*, which was fast-forwarded before those docs
+were committed. Both exist on `main`. The lane was right to flag it rather than assume.
+
+**Also fixed on the way, by the lane, and it was not a flake.** `pnpm test` went red first time
+with two genuine failures in the existing webhook suite: its test database had no queue tables,
+because until now nothing in that path queued anything. Fixed with the shared helper the
+domain-claim suite already uses.
 
 ### Verification done this morning, so it is not re-done
 
