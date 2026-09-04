@@ -2,13 +2,20 @@ import {
   ACCOUNT_OPTIMIZE_PAUSED_FLAG,
   EntitlementInactiveError,
   assertEntitled,
+  blockingPreconditionsFor,
+  buildConsolidationRecommendation,
+  consolidationInputFromEvidence,
   detectApplied,
+  optimizeRouteFor,
   packFacts,
+  renderConsolidationView,
   renderRecommendationHtml,
   renderRecommendationMarkdown,
   type ConflictCode,
+  type FixRecommendationView,
   type OptimizeEvidencePack,
   type OptimizeRecommendation,
+  normalisePageUrl,
   type RecommendationLabels,
 } from '@sortiva/core'
 import {
@@ -18,6 +25,7 @@ import {
   findOptimizeRecommendation,
   isAccountFlagActive,
   latestOptimizeRecommendation,
+  listOpenOpportunities,
   listOptimizeTasks,
   listStorePages,
   markOpportunityApplied,
@@ -28,7 +36,9 @@ import {
   readLifecycleState,
   type AccountScope,
   type Db,
+  type OpportunityRow,
   type OptimizeRecommendationRow,
+  type StorePageRow,
 } from '@sortiva/db'
 // Deep import to the file, not the `@sortiva/jobs` barrel — the barrel pulls the
 // worker runtime and the threshold config's file loader into a route bundle
@@ -119,6 +129,81 @@ async function releaseAbandoned(deps: RecommendationsDeps, scope: AccountScope, 
   )
 }
 
+/** The store's own record of this page, if we hold one. Addresses that differ only by a trailing slash are the same page. */
+async function storePageFor(
+  db: Db,
+  scope: AccountScope,
+  url: string,
+): Promise<StorePageRow | undefined> {
+  const wanted = normalisePageUrl(url)
+  const pages = await listStorePages(db, scope)
+  return pages.find((page) => normalisePageUrl(page.url) === wanted)
+}
+
+/**
+ * Something on this page has to be sorted out before writing for it is worth
+ * anything — Google is not indexing it, or is treating another address as the
+ * real one.
+ *
+ * The weekly scan already writes that onto the row when it re-measures. This
+ * asks again, live, because the press is what commits the store's daily
+ * allowance and its model spend, and a blocker found in the same pass as the
+ * suggestion does not reach the row until the following week. The row is moved
+ * to `blocked` as well as refused: a card that still says "Generate
+ * recommendations" invites the merchant to press again, and a blocked
+ * suggestion is information they need rather than something to hide.
+ */
+async function blockedByTechnicalObstacle(
+  deps: RecommendationsDeps,
+  scope: AccountScope,
+  opportunity: OpportunityRow,
+  now: Date,
+): Promise<Response | undefined> {
+  const open = await listOpenOpportunities(deps.db, scope)
+  const preconditions = blockingPreconditionsFor(
+    opportunity.entityRef,
+    opportunity.recommendedAction,
+    open,
+  )
+  if (preconditions.length === 0) return undefined
+
+  await transitionOpportunityStatus(
+    deps.db,
+    scope,
+    opportunity.id,
+    { from: ['new', 'accepted'], to: 'blocked' },
+    now,
+  )
+  return conflict(
+    'opportunity_not_open',
+    'Something has to be resolved on this page first.',
+  )
+}
+
+/**
+ * The FIX recommendation, rebuilt from the row rather than looked up.
+ *
+ * Nothing about it was ever stored: it is worked out from the same measurements
+ * the card already shows, so a second copy in a table could only disagree with
+ * the row the moment the next scan re-measures the search. Null where the row's
+ * evidence is not a cannibalization — the one FIX shape this product produces a
+ * recommendation for today — so the drawer shows the evidence and tasks it
+ * already has rather than an empty section.
+ */
+async function fixViewFor(
+  deps: RecommendationsDeps,
+  scope: AccountScope,
+  opportunity: OpportunityRow,
+): Promise<FixRecommendationView | null> {
+  const pages = await listStorePages(deps.db, scope)
+  const input = consolidationInputFromEvidence(
+    (opportunity.evidenceJson ?? []) as Parameters<typeof consolidationInputFromEvidence>[0],
+    pages.map((page) => ({ url: page.url, outboundInternalLinks: page.outboundInternalLinks })),
+  )
+  if (!input) return null
+  return renderConsolidationView(buildConsolidationRecommendation(input))
+}
+
 /**
  * `POST /api/recommendations` — "Generate recommendations", main §10.2.
  *
@@ -170,6 +255,22 @@ export function makeGenerateRecommendationHandler(deps: RecommendationsDeps): Ac
     // locked the page out of ever being asked about again.
     if (opportunity.status === 'executing') {
       return Response.json({ state: 'generating', opportunityId: opportunity.id, generated: false })
+    }
+
+    const obstructed = await blockedByTechnicalObstacle(deps, scope, opportunity, now)
+    if (obstructed) return obstructed
+
+    // An article we published for this store is not something we hand the
+    // merchant a list of edits for: we can rewrite it ourselves, through the
+    // same evidence and the same quality bar the first draft went through. The
+    // pool those rewrites wait in is not built yet, so this refuses rather than
+    // producing the thing the product says it should not produce.
+    const page = await storePageFor(deps.db, scope, opportunity.entityRef)
+    if (page && optimizeRouteFor(page.pageType) === 'refresh_pool') {
+      return conflict(
+        'opportunity_not_open',
+        'We published this article, so we rewrite it rather than hand you edits for it.',
+      )
     }
 
     // Main §10.2: regeneration is allowed once the evidence has changed, and
@@ -332,6 +433,15 @@ export function makeReadRecommendationHandler(deps: RecommendationsDeps): Accoun
 
     const opportunity = await findOpportunityById(deps.db, scope, opportunityId)
     if (!opportunity) return notFound()
+
+    if (opportunity.recommendedAction === 'fix') {
+      return Response.json({
+        recommendation: null,
+        fix: await fixViewFor(deps, scope, opportunity),
+        tasks: [],
+        looksApplied: null,
+      })
+    }
 
     const row = await latestOptimizeRecommendation(deps.db, scope, opportunityId)
     if (!row) {
