@@ -12,6 +12,7 @@ import {
 } from '@sortiva/core'
 import {
   accountScope,
+  dismissOpportunityGuarded,
   insertMinimalOpportunity,
   latestOptimizeRecommendation,
   listOptimizeTasks,
@@ -609,6 +610,65 @@ describe.skipIf(!available)('a generation that does not finish', () => {
     expect(outcome.reason).toBe('our_own_article_goes_to_the_refresh_pool')
     expect(f.llm.requests).toEqual([])
     expect(await statusOf(opportunity.id)).toBe('accepted')
+  })
+
+  /**
+   * The founder's decision: a merchant may say "not interested" about work we
+   * are in the middle of, and the work is abandoned — a model call we have
+   * already paid for is our cost to absorb rather than their reason to be
+   * blocked. Two moments matter, because they cost different amounts.
+   */
+  it('buys nothing at all when the merchant dismissed the page before the work started', async () => {
+    const opportunity = await optimizeOpportunity()
+    await dismissOpportunityGuarded(db, accountScope(accountId), opportunity.id)
+
+    const f = fixtures([withProductId(goodRecommendation())])
+    const outcome = await generateOptimizeRecommendation(f.deps, {
+      accountId,
+      opportunityId: opportunity.id,
+    })
+
+    expect(outcome).toEqual({ status: 'skipped', reason: 'no_longer_being_worked_on' })
+    expect(f.llm.requests).toHaveLength(0)
+    expect(await latestOptimizeRecommendation(db, accountScope(accountId), opportunity.id)).toBeUndefined()
+    expect(await statusOf(opportunity.id)).toBe('dismissed')
+  })
+
+  it('absorbs the call and announces nothing when the merchant dismisses the page mid-run', async () => {
+    const opportunity = await optimizeOpportunity()
+    const f = fixtures([withProductId(goodRecommendation())])
+
+    // The merchant presses "not interested" while the model is answering.
+    const dismissing: LlmClient = {
+      complete: async <T,>(request: LlmRequest) => {
+        if (request.callType === 'optimize_reco') {
+          await dismissOpportunityGuarded(db, accountScope(accountId), opportunity.id)
+        }
+        return f.llm.complete<T>(request)
+      },
+    }
+    const announced: string[] = []
+    const notifications = {
+      emit: async (type: string) => {
+        announced.push(type)
+        return { created: true }
+      },
+    }
+
+    const outcome = await generateOptimizeRecommendation(
+      { ...f.deps, llm: dismissing, notifications: notifications as never },
+      { accountId, opportunityId: opportunity.id },
+    )
+
+    expect(outcome).toEqual({ status: 'skipped', reason: 'abandoned_while_generating' })
+    // The call was made and paid for — that is the cost the decision accepts.
+    expect(f.llm.countOf('optimize_reco')).toBe(1)
+    // What it must not do is write advice, or tell them it is ready, for
+    // something they have already said no to.
+    expect(await latestOptimizeRecommendation(db, accountScope(accountId), opportunity.id)).toBeUndefined()
+    expect(await listOptimizeTasks(db, accountScope(accountId), opportunity.id)).toEqual([])
+    expect(announced).toEqual([])
+    expect(await statusOf(opportunity.id)).toBe('dismissed')
   })
 
   it('hands the page back when the opportunity is not one this can act on', async () => {

@@ -1,6 +1,13 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { fixtureCreateOpportunity, type Opportunity, type OpportunitySource } from '@sortiva/core'
-import { accountScope, insertMinimalOpportunity, insertTopic, listTopicsInRange, type Db } from '@sortiva/db'
+import {
+  accountScope,
+  findOpportunityById,
+  insertMinimalOpportunity,
+  insertTopic,
+  listTopicsInRange,
+  type Db,
+} from '@sortiva/db'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
 import { rules, type SignalType } from '@sortiva/rules'
 import { replenishCalendarForAccount, REPLENISHMENT_COMPLETED_EVENT } from './replenish'
@@ -173,6 +180,28 @@ describe.skipIf(!available)('replenishment against real data', () => {
 
     expect(afterFirst).toEqual(pinned)
     expect(afterSecond).toEqual(pinned)
+  })
+
+  /**
+   * The claim is made before the placement is attempted, on purpose: a crash
+   * between the two costs one candidate rather than putting two articles on
+   * one subject. That only holds if a refused placement can give the claim
+   * back — a candidate left marked as being on the calendar with no day is
+   * one no later run will ever offer again.
+   */
+  it('gives the claim back when the placement is refused, instead of stranding the candidate', async () => {
+    const scope = accountScope(accountId)
+    const stray = await acceptedOpportunity({ entityRef: 'q-no-intent' })
+    // Nothing may guess what an article is *for*, so a candidate carrying no
+    // intent is refused a day rather than placed on a guessed template.
+    const refused: Opportunity = { ...stray, evidence: [] }
+
+    const result = await replenishCalendarForAccount(deps([refused]), accountId)
+    expect(result.status).toBe('filled')
+    expect(await placedTopics()).toHaveLength(0)
+
+    const row = await findOpportunityById(db, scope, stray.id)
+    expect(row?.status).toBe('accepted')
   })
 
   it('does not hand the same opportunity a second day on a second run', async () => {

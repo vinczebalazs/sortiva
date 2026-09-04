@@ -234,6 +234,22 @@ async function runGeneration(
     return { status: 'skipped', reason: 'not_an_optimize_opportunity' }
   }
 
+  // A merchant can say "not interested" about a page while we are working on
+  // it, and their answer is not made to wait for us. The row leaves "being
+  // worked on" the instant they press, so a run that no longer holds it stops
+  // here — before anything is bought — rather than finishing work nobody
+  // wants. The same check catches a redelivered job whose first delivery
+  // already finished: the queue promises at-least-once, and paying twice for
+  // one press is exactly what that promise costs if nobody looks.
+  if (opportunity.status !== 'executing') {
+    log.info('optimize_reco.no_longer_ours', {
+      account_id: input.accountId,
+      opportunity_id: opportunity.id,
+      status: opportunity.status,
+    })
+    return { status: 'skipped', reason: 'no_longer_being_worked_on' }
+  }
+
   // Asked again here, not only at the press. A run waits in the queue, and in
   // that time a scan can find that Google is not indexing this page or is
   // treating another address as the real one — at which point better copy on it
@@ -368,6 +384,20 @@ async function runGeneration(
       now,
       log,
     })
+  }
+
+  // Asked once more, because the model call is where the time goes and a
+  // merchant can have dismissed the page during it. Nothing is written and
+  // nothing is announced over an answer they have already given; the call we
+  // paid for is ours to absorb.
+  const stillOurs = await findOpportunityById(deps.db, scope, opportunity.id)
+  if (stillOurs?.status !== 'executing') {
+    log.info('optimize_reco.abandoned_mid_run', {
+      account_id: input.accountId,
+      opportunity_id: opportunity.id,
+      status: stillOurs?.status ?? 'gone',
+    })
+    return { status: 'skipped', reason: 'abandoned_while_generating' }
   }
 
   const row = await storeOptimizeRecommendation(
