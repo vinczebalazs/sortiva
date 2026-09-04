@@ -3,7 +3,9 @@ import {
   accountAttribution,
   autoPublishReadiness,
   intentExternalId,
+  isTokenRejected,
   publishMarker,
+  sendDisposition,
   BundleNotBuildable,
   type AutoPublishBlocker,
   type ExportBundle,
@@ -20,10 +22,12 @@ import {
   markArticleAutoPublished,
   openPublishIntent,
   readPublishTarget,
+  releasePublishIntent,
   type Db,
 } from '@sortiva/db'
 import { runtimeLogger } from '../runtime/logging'
 import { buildBundleForArticle } from './bundle'
+import { raiseShopifyReconnect } from './reconnect'
 
 /**
  * Posting a finished article to the merchant's own shop.
@@ -88,8 +92,17 @@ export type AutoPublishOutcome =
     }
   | {
       readonly status: 'failed'
-      /** The article names a product the store no longer has. */
-      readonly reason: 'product_gone' | 'article_incomplete'
+      readonly reason:
+        /** The article names a product the store no longer has. */
+        | 'product_gone'
+        | 'article_incomplete'
+        /** The shop turned the post away. Nothing was written; this can be tried again. */
+        | 'shop_refused'
+        /**
+         * We could not tell whether the post landed. The claim is deliberately
+         * kept so the recovery sweep asks the shop before anything is re-sent.
+         */
+        | 'shop_unreachable'
       readonly detail: string
     }
 
@@ -113,6 +126,8 @@ interface PublishContext {
   readonly shop: string
   readonly accessToken: string
   readonly blogId: string
+  /** The blog's name in its own web address — what a post's public address is built from. */
+  readonly blogHandle: string
   readonly publishAs: 'live' | 'draft'
   readonly title: string
   readonly slug: string
@@ -185,6 +200,7 @@ async function preparePublish(
       shop: target.shopHandle,
       accessToken: deps.cipher.decrypt(target.accessTokenCipher),
       blogId: target.targetBlogId as string,
+      blogHandle: target.targetBlogHandle ?? '',
       publishAs: target.publishAs,
       title: article.title,
       slug: article.slug,
@@ -226,17 +242,23 @@ async function sendAndAdopt(
 ): Promise<AutoPublishOutcome> {
   // Step 2 — send it, carrying our marker, so the shop is searchable for this
   // post even if we never learn that it landed.
-  const remote = await deps.shopify.createArticle({
-    shop: context.shop,
-    accessToken: context.accessToken,
-    blogId: context.blogId,
-    title: context.title,
-    bodyHtml: context.bodyHtml,
-    handle: context.slug,
-    summary: context.summary,
-    marker: publishMarker(input.articleId),
-    publishAs: context.publishAs,
-  })
+  let remote
+  try {
+    remote = await deps.shopify.createArticle({
+      shop: context.shop,
+      accessToken: context.accessToken,
+      blogId: context.blogId,
+      blogHandle: context.blogHandle,
+      title: context.title,
+      bodyHtml: context.bodyHtml,
+      handle: context.slug,
+      summary: context.summary,
+      marker: publishMarker(input.articleId),
+      publishAs: context.publishAs,
+    })
+  } catch (error) {
+    return handleSendFailure(deps, input, externalId, error, now, log)
+  }
 
   // The single most dangerous instant in the product: the post exists on the
   // merchant's shop and nothing of ours records it. A worker that dies here is
@@ -360,6 +382,70 @@ export async function publishArticleToShopify(
   deps.checkpoint?.('publish:claimed')
 
   return sendAndAdopt(deps, input, externalId, prepared.context, now, log)
+}
+
+/**
+ * A post that did not go out, and what may be assumed about it.
+ *
+ * Before this existed, any hiccup at the moment of posting — a rate limit, a
+ * five-hundred, a dropped connection, a withdrawn permission — left the claim
+ * on the publication open and threw. Every later attempt then collided with
+ * that claim, reported "already claimed" and stopped, and the merchant saw an
+ * article that never appeared and never would.
+ *
+ * The response depends entirely on one question: could the post have landed?
+ *
+ * If the shop **refused** it — a dead token, a rate limit, a request it would
+ * not accept — nothing was written, so the claim is handed back and the article
+ * is simply due again on the next run. A dead token additionally raises the
+ * reconnect the rest of the product raises, because the merchant is the only
+ * person who can fix it and silence is the one response that guarantees it
+ * stays broken.
+ *
+ * If we **cannot tell** — the connection broke, or the shop answered with its
+ * own fault — the article may be on the merchant's blog right now. The claim
+ * stays exactly where it is, and the recovery sweep settles it by asking the
+ * shop. Handing the claim back here is the shape of the bug that posts somebody
+ * the same article twice.
+ */
+async function handleSendFailure(
+  deps: AutoPublishDeps,
+  input: AutoPublishInput,
+  externalId: string,
+  error: unknown,
+  now: Date,
+  log: Logger,
+): Promise<AutoPublishOutcome> {
+  const detail = error instanceof Error ? error.message : String(error)
+
+  if (sendDisposition(error) === 'unknown') {
+    log.error('auto_publish_send_uncertain', {
+      account_id: input.accountId,
+      article_id: input.articleId,
+      error: detail,
+    })
+    return { status: 'failed', reason: 'shop_unreachable', detail }
+  }
+
+  await releasePublishIntent(deps.db, accountScope(input.accountId), externalId)
+
+  if (isTokenRejected(error)) {
+    await raiseShopifyReconnect(deps.db, {
+      accountId: input.accountId,
+      at: now,
+      ...(deps.notifications ? { notifications: deps.notifications } : {}),
+      logger: log,
+    })
+    log.warn('auto_publish_skipped', { account_id: input.accountId, reason: 'connection_lost' })
+    return { status: 'skipped', reason: 'connection_lost' }
+  }
+
+  log.warn('auto_publish_send_refused', {
+    account_id: input.accountId,
+    article_id: input.articleId,
+    error: detail,
+  })
+  return { status: 'failed', reason: 'shop_refused', detail }
 }
 
 /**

@@ -41,6 +41,14 @@ export interface ShopifyStoreCredentials {
 
 export interface CreateArticleInput extends ShopifyStoreCredentials {
   readonly blogId: string
+  /**
+   * The blog's name as it appears in its own web address. Shopify addresses a
+   * post by the blog's *name*, not by its number, so this is what an article's
+   * public address is built from — and therefore what Search Console has to
+   * match a click against. Recorded alongside the id when the merchant picks
+   * the blog.
+   */
+  readonly blogHandle: string
   readonly title: string
   /** The article body, already resolved against the store and stripped of internal markers. */
   readonly bodyHtml: string
@@ -101,7 +109,42 @@ export interface ShopifyPublishProvider {
    * "Did our post actually land?" — the question the recovery sweep exists to
    * ask before it considers writing again.
    */
-  findArticleByMarker(
-    input: ShopifyStoreCredentials & { blogId: string; marker: string },
-  ): Promise<RemoteArticle | undefined>
+  findArticleByMarker(input: FindArticleByMarkerInput): Promise<RemoteArticle | undefined>
+}
+
+export interface FindArticleByMarkerInput extends ShopifyStoreCredentials {
+  readonly blogId: string
+  /** Needed for the same reason as on a create: an article's address is built from it. */
+  readonly blogHandle: string
+  readonly marker: string
+  /**
+   * Nothing posted before this moment can be ours: the claim on this
+   * publication was opened here, and the post — if it happened at all —
+   * happened after it.
+   *
+   * It is required rather than optional because without it the only honest
+   * search is every article the blog has ever held, one request each. With it,
+   * an established blog of thousands of posts is narrowed to the handful
+   * written since we started, which is what makes asking the shop cheap enough
+   * to do every five minutes.
+   */
+  readonly notBefore: Date
+}
+
+/**
+ * We asked the shop and could not finish asking.
+ *
+ * Its own class, and thrown rather than swallowed, because of what the caller
+ * would otherwise conclude. "Not found" is the answer that authorises sending
+ * the article again; an incomplete search that reported "not found" would post
+ * a second copy on a merchant's own site. So a search that ran out of pages
+ * says so, and the sweep tries again rather than deciding.
+ */
+export class MarkerLookupIncomplete extends Error {
+  override readonly name = 'MarkerLookupIncomplete'
+  readonly retryable = true
+  readonly errorClass = 'marker_lookup_incomplete'
+  constructor(readonly marker: string) {
+    super(`we could not finish asking the shop whether ${marker} is already there`)
+  }
 }

@@ -115,12 +115,12 @@ export function recoveryDecision(input: RecoveryInput): RecoveryAction {
  * The metafield the marker is written into: Shopify's own place for data that
  * belongs to an app rather than to the merchant's content.
  *
- * The same value is also written as a tag on every post. A tag is visible to
- * the merchant, so it is not the first choice — but a store or an API version
- * can refuse a metafield write, and a post with no marker leaves a crash with
- * no way to ask the shop what happened. The tag also travels in a plain list
- * response, where the same value in a metafield costs one extra request per
- * article on a blog that may hold hundreds.
+ * It is the only marker. The same value used to be written as a tag as well,
+ * because a tag travels in a plain list response and a metafield has to be
+ * asked for separately — but a tag is the merchant's own vocabulary, shown in
+ * their admin and capable of appearing in a storefront tag list their shoppers
+ * see. Nothing we add to a merchant's shop should be visible to their
+ * customers, so the tag is gone and the extra request is the price of that.
  */
 export const PUBLISH_MARKER_NAMESPACE = 'sortiva'
 export const PUBLISH_MARKER_KEY = 'external_id'

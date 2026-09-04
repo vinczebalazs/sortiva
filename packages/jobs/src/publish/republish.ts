@@ -2,6 +2,7 @@ import {
   accountAttribution,
   autoPublishReadiness,
   intentExternalId,
+  isTokenRejected,
   publishMarker,
   BundleNotBuildable,
   RemoteArticleGone,
@@ -15,10 +16,12 @@ import {
   findArticleById,
   openPublishIntent,
   readPublishTarget,
+  releasePublishIntent,
 } from '@sortiva/db'
 import { runtimeLogger } from '../runtime/logging'
 import { buildBundleForArticle } from './bundle'
 import type { AutoPublishDeps, AutoPublishInput } from './auto-publish'
+import { raiseShopifyReconnect } from './reconnect'
 
 /**
  * Revising an article we already put on a merchant's shop.
@@ -132,6 +135,7 @@ export async function republishArticleToShopify(
       shop: target.shopHandle,
       accessToken: deps.cipher.decrypt(target.accessTokenCipher),
       blogId: target.targetBlogId as string,
+      blogHandle: target.targetBlogHandle ?? '',
       remoteArticleId,
       title: article.title,
       bodyHtml,
@@ -156,6 +160,20 @@ export async function republishArticleToShopify(
     })
     return { status: 'updated', remoteArticleId: remote.id, revisionN: input.revisionN }
   } catch (error) {
+    if (isTokenRejected(error)) {
+      // Nothing was written — Shopify refused us at the door. The claim on this
+      // revision goes back so the repair is due again once the merchant has
+      // reconnected, and the merchant is actually told, rather than the article
+      // quietly ceasing to be maintained.
+      await releasePublishIntent(deps.db, scope, externalId)
+      await raiseShopifyReconnect(deps.db, {
+        accountId: input.accountId,
+        at: now,
+        ...(deps.notifications ? { notifications: deps.notifications } : {}),
+        logger: log,
+      })
+      return { status: 'skipped', reason: 'connection_lost' }
+    }
     if (error instanceof RemoteArticleGone) {
       // The merchant deleted it. The claim is closed so no sweep retries it,
       // and nothing creates a replacement.

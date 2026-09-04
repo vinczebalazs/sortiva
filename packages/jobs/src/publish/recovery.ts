@@ -1,6 +1,7 @@
 import {
   articleIdFromIntentExternalId,
   autoPublishReadiness,
+  isTokenRejected,
   publishMarker,
   recoveryDecision,
   revisionFromIntentExternalId,
@@ -20,6 +21,7 @@ import { deadLetter } from '../runtime/dlq'
 import { tryWithAccountLock } from '../runtime/lock'
 import { runtimeLogger } from '../runtime/logging'
 import { adoptRemoteArticle, executePublish, type AutoPublishDeps } from './auto-publish'
+import { raiseShopifyReconnect } from './reconnect'
 import { republishArticleToShopify } from './republish'
 
 /**
@@ -74,9 +76,33 @@ export async function sweepPublishRecovery(deps: AutoPublishDeps): Promise<Recov
   let skipped = 0
 
   for (const claim of claims) {
-    const outcome = await tryWithAccountLock(deps.pool, claim.accountId, () =>
-      recoverOneClaim(deps, claim, now, log),
-    )
+    // One store's failure is one store's failure. A dead token or a shop that
+    // will not answer used to throw out of here and end the pass, so every
+    // other store's interrupted publication went unsettled for as long as the
+    // first store stayed broken.
+    const outcome = await tryWithAccountLock(deps.pool, claim.accountId, async () => {
+      try {
+        return await recoverOneClaim(deps, claim, now, log)
+      } catch (error) {
+        if (isTokenRejected(error)) {
+          await raiseShopifyReconnect(deps.db, {
+            accountId: claim.accountId,
+            at: now,
+            ...(deps.notifications ? { notifications: deps.notifications } : {}),
+            logger: log,
+          })
+        } else {
+          log.error('publish_recovery_claim_failed', {
+            account_id: claim.accountId,
+            article_external_id: claim.articleExternalId,
+            error: error instanceof Error ? error.message : String(error),
+          })
+        }
+        // Left pending on purpose. The claim is only ever settled by an answer
+        // from the shop, and we did not get one.
+        return 'skipped' as ClaimOutcome
+      }
+    })
     if (outcome === undefined || outcome === 'skipped') skipped += 1
     else if (outcome === 'adopted') adopted += 1
     else if (outcome === 're_executed') reExecuted += 1
@@ -147,7 +173,12 @@ async function recoverOneClaim(
     shop: target.shopHandle,
     accessToken: deps.cipher.decrypt(target.accessTokenCipher),
     blogId: target.targetBlogId as string,
+    blogHandle: target.targetBlogHandle ?? '',
     marker: publishMarker(articleId),
+    // Nothing posted before the claim was opened can be ours, which is what
+    // lets the shop narrow a blog of thousands of posts to the few written
+    // since. Without it the only honest search is the whole blog.
+    notBefore: claim.createdAt,
   })
 
   const decision = recoveryDecision({ ageMs, remoteArticleId: found?.id })
