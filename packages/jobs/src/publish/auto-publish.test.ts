@@ -64,6 +64,9 @@ describe.skipIf(!available)('posting an article to the merchant`s shop', () => {
       publishHour: 9,
       delivery: 'export',
     })
+    // The domain the merchant claimed at signup — the host their shoppers
+    // visit, and the one a published address is recorded under.
+    await db.insert(schema.domains).values({ accountId, domainNormalized: 'acme.com' })
     await db.insert(schema.shopifyConns).values({
       accountId,
       shopHandle: 'acme',
@@ -568,6 +571,22 @@ describe.skipIf(!available)('posting an article to the merchant`s shop', () => {
       expect(url).toContain('/blogs/news/')
       expect(url).not.toContain('/blogs/blog-1/')
     })
+
+    /**
+     * The address has to be the one shoppers use, or Search Console can never
+     * match the article to the clicks it earns and a ranking article looks
+     * like it earned nothing for ever.
+     */
+    it('records the store`s own domain rather than its myshopify host', async () => {
+      const productId = await seedProduct(49.99)
+      await seedArticle(productId)
+
+      await runExportDeliveryForAccount(deps(), { accountId, date: TODAY })
+
+      const url = (await articleRow()).publishedUrl
+      expect(url).toBe('https://acme.com/blogs/news/best-bottles')
+      expect(url).not.toContain('myshopify')
+    })
   })
 
   describe('revising an article we already posted', () => {
@@ -610,6 +629,27 @@ describe.skipIf(!available)('posting an article to the merchant`s shop', () => {
       // The revision's claim is closed, so no sweep tries it again.
       const revision = (await intents()).find((row) => row.revisionN === 1)
       expect(revision!.state).toBe('abandoned')
+    })
+
+    /**
+     * Articles posted before the address changed keep the address they were
+     * posted under. Re-addressing them would silently move where a merchant
+     * believes their article lives, on no evidence that the new address is the
+     * one that was ever served.
+     */
+    it('never re-addresses an article that was published before', async () => {
+      const { articleId, productId } = await publishOnce()
+      const oldAddress = 'https://acme.myshopify.com/blogs/news/best-bottles'
+      await db
+        .update(schema.articles)
+        .set({ publishedUrl: oldAddress })
+        .where(eq(schema.articles.id, articleId))
+      await setPrice(productId, 61)
+
+      const result = await republishArticleToShopify(deps(), { accountId, articleId, revisionN: 1 })
+
+      expect(result.status).toBe('updated')
+      expect((await articleRow()).publishedUrl).toBe(oldAddress)
     })
 
     it('refuses to revise an article that was never posted', async () => {

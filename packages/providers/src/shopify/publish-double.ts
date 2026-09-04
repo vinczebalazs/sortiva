@@ -42,6 +42,8 @@ import {
 interface FakeArticle extends RemoteArticle {
   readonly blogId: string
   readonly blogHandle: string
+  /** The host this shop's articles are addressed under, as the caller gave it. */
+  readonly storefrontDomain: string
   readonly bodyHtml: string
   readonly title: string
   /** When the shop says it was created — what the creation-time filter reads. */
@@ -125,6 +127,7 @@ export class FakeShopifyPublishClient implements ShopifyPublishProvider {
       handle: input.handle,
       blogId: input.blogId,
       blogHandle: input.blogHandle,
+      storefrontDomain: input.storefrontDomain,
       shop: input.shop,
       title: input.title,
       bodyHtml: input.bodyHtml,
@@ -185,6 +188,8 @@ export class FakeShopifyPublishClient implements ShopifyPublishProvider {
     blogHandle: string
     shop: string
     handle: string
+    /** Defaults to the shop's own host, which is where a merchant's own posts sit. */
+    storefrontDomain?: string
     title?: string
     marker?: string
     createdAt?: Date
@@ -194,6 +199,7 @@ export class FakeShopifyPublishClient implements ShopifyPublishProvider {
       handle: input.handle,
       blogId: input.blogId,
       blogHandle: input.blogHandle,
+      storefrontDomain: input.storefrontDomain ?? `${input.shop}.myshopify.com`,
       shop: input.shop,
       title: input.title ?? input.handle,
       bodyHtml: '',
@@ -208,6 +214,7 @@ export class FakeShopifyPublishClient implements ShopifyPublishProvider {
     handle: string
     blogId: string
     blogHandle: string
+    storefrontDomain: string
     shop: string
     title: string
     bodyHtml: string
@@ -218,15 +225,16 @@ export class FakeShopifyPublishClient implements ShopifyPublishProvider {
     const article: FakeArticle = {
       id: input.id,
       handle: input.handle,
-      // The address Shopify actually serves a post at: the blog's *name*, not
-      // its number.
+      // The address a shopper would open: the store's own domain, and the
+      // blog's *name* rather than its number.
       url: input.published
-        ? `https://${input.shop}.myshopify.com/blogs/${input.blogHandle}/${input.handle}`
+        ? `https://${input.storefrontDomain}/blogs/${input.blogHandle}/${input.handle}`
         : null,
       marker: input.marker,
       published: input.published,
       blogId: input.blogId,
       blogHandle: input.blogHandle,
+      storefrontDomain: input.storefrontDomain,
       bodyHtml: input.bodyHtml,
       title: input.title,
       createdAt: input.createdAt ?? this.now(),

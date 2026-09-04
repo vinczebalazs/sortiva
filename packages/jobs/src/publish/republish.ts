@@ -19,6 +19,7 @@ import {
   releasePublishIntent,
 } from '@sortiva/db'
 import { runtimeLogger } from '../runtime/logging'
+import { storefrontDomainFor } from './address'
 import { buildBundleForArticle } from './bundle'
 import type { AutoPublishDeps, AutoPublishInput } from './auto-publish'
 import { raiseShopifyReconnect } from './reconnect'
@@ -136,6 +137,7 @@ export async function republishArticleToShopify(
       accessToken: deps.cipher.decrypt(target.accessTokenCipher),
       blogId: target.targetBlogId as string,
       blogHandle: target.targetBlogHandle ?? '',
+      storefrontDomain: await storefrontDomainFor(deps.db, input.accountId, target.shopHandle),
       remoteArticleId,
       title: article.title,
       bodyHtml,

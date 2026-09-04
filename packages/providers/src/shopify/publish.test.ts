@@ -114,6 +114,7 @@ const article = {
   ...SHOP,
   blogId: '77',
   blogHandle: 'news',
+  storefrontDomain: 'acme.com',
   title: 'Best bottles',
   bodyHtml: '<p>Hello</p>',
   handle: 'best-bottles',
@@ -161,9 +162,24 @@ describe('what we put on a merchant`s blog', () => {
 
   it('records the address Shopify actually serves the post at — the blog`s name, not its number', async () => {
     const remote = await client().createArticle(article)
-    expect(remote.url).toBe(`${base}/blogs/news/best-bottles`)
+    expect(remote.url).toBe('https://acme.com/blogs/news/best-bottles')
     expect(remote.url).not.toContain('/blogs/77/')
   })
+
+  /**
+   * The address a shopper opens and the host we talk to Shopify through are
+   * two different hosts, and only the first can ever be matched to a Search
+   * Console row. The request still went to the shop; the address recorded did
+   * not.
+   */
+  it('records the store`s own domain, while still talking to Shopify`s host', async () => {
+    const remote = await client().createArticle(article)
+
+    expect(remote.url).toBe('https://acme.com/blogs/news/best-bottles')
+    expect(remote.url).not.toContain('myshopify')
+    expect(recorded.find((r) => r.method === 'POST')!.path).toContain('/blogs/77/articles.json')
+  })
+
 })
 
 describe('asking whether our post already landed', () => {
@@ -171,6 +187,7 @@ describe('asking whether our post already landed', () => {
     ...SHOP,
     blogId: '77',
     blogHandle: 'news',
+    storefrontDomain: 'acme.com',
     marker: 'sortiva-abc',
     notBefore: new Date('2026-09-03T09:00:00.000Z'),
   }

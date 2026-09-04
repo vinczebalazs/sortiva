@@ -10,6 +10,7 @@ import {
   PUBLISH_MARKER_NAMESPACE,
   RemoteArticleGone,
   SHOPIFY_PUBLISH_SCOPE_PARAM,
+  type ArticleAddressing,
   type CreateArticleInput,
   type FindArticleByMarkerInput,
   type RemoteArticle,
@@ -257,22 +258,27 @@ export class ShopifyPublishClient implements ShopifyPublishProvider {
   }
 
   private toRemote(
-    input: ShopifyStoreCredentials & { blogHandle?: string },
+    input: ShopifyStoreCredentials & ArticleAddressing,
     article: RestArticle,
     marker: string,
   ): RemoteArticle {
     const handle = article.handle ?? ''
     const published = Boolean(article.published_at)
-    const blogHandle = input.blogHandle ?? ''
+    const { blogHandle, storefrontDomain } = input
     return {
       id: String(article.id),
       handle,
       // An unpublished Shopify draft has no address a reader could open, so
       // reporting one would be a link to a 404 — and so would an address built
       // out of the blog's number, which is not how Shopify addresses a post.
+      //
+      // Built from the store's own domain rather than the host we reach the
+      // Admin API through: this address is what a merchant clicks and what a
+      // Search Console row has to match, and shoppers are never on the
+      // `myshopify.com` one.
       url:
-        published && handle && blogHandle
-          ? `${this.storeBaseUrl(input.shop)}/blogs/${blogHandle}/${handle}`
+        published && handle && blogHandle && storefrontDomain
+          ? `https://${storefrontDomain}/blogs/${blogHandle}/${handle}`
           : null,
       marker,
       published,

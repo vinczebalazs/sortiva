@@ -20,6 +20,7 @@ import {
 import { deadLetter } from '../runtime/dlq'
 import { tryWithAccountLock } from '../runtime/lock'
 import { runtimeLogger } from '../runtime/logging'
+import { storefrontDomainFor } from './address'
 import { adoptRemoteArticle, executePublish, type AutoPublishDeps } from './auto-publish'
 import { raiseShopifyReconnect } from './reconnect'
 import { republishArticleToShopify } from './republish'
@@ -174,6 +175,7 @@ async function recoverOneClaim(
     accessToken: deps.cipher.decrypt(target.accessTokenCipher),
     blogId: target.targetBlogId as string,
     blogHandle: target.targetBlogHandle ?? '',
+    storefrontDomain: await storefrontDomainFor(deps.db, claim.accountId, target.shopHandle),
     marker: publishMarker(articleId),
     // Nothing posted before the claim was opened can be ours, which is what
     // lets the shop narrow a blog of thousands of posts to the few written
