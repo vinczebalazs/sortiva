@@ -31,7 +31,7 @@ export const PUBLISH_DELIVERY_ACCOUNT_TASK = 'publish_delivery_account'
  * and our recording that it did, the app believes the article never went out.
  * Waiting up to an hour to notice would make every crash a visible outage.
  */
-export const PUBLISH_RECOVERY_SWEEP_TASK = 'publish_recovery_sweep'
+export const PUBLISH_INTENT_RECOVERY_SWEEP_TASK = 'publish_intent_recovery_sweep'
 
 export interface PublishDeliveryPayload {
   readonly accountId: string
@@ -90,7 +90,7 @@ export function registerPublishTasks(deps: PublishTaskDeps): void {
     await sweepPublishDeliveries(deps)
   })
 
-  registerTask(PUBLISH_RECOVERY_SWEEP_TASK, async () => {
+  registerTask(PUBLISH_INTENT_RECOVERY_SWEEP_TASK, async () => {
     if (!(deps.shopify && deps.cipher)) {
       // A process with no way to write to a shop has nothing to recover. Said
       // out loud rather than passed over: a silent no-op here would look

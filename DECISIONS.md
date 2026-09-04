@@ -3665,3 +3665,9 @@ Why: that rule stops any code outside `packages/db` importing the raw database h
 The file is integrator-resolved rather than union-merged, so a merge touches it. Flagged here and in the session report so that is expected rather than discovered.
 Nearest spec: build plan §3 ("Ordered code … stays integrator-resolved. If a lane needs to change one, say so in the session report").
 Class (filled by audit):
+
+## 2026-09-04 — R-SCHEDULE — The recovery sweep's constant is renamed with its value, and its log line is left alone
+Decision: two choices the card left open. (1) The exported constant that names the five-minute recovery sweep was renamed `PUBLISH_RECOVERY_SWEEP_TASK` → `PUBLISH_INTENT_RECOVERY_SWEEP_TASK` alongside the string it holds, rather than keeping the old identifier over the new value. (2) The log line the sweep writes when it finishes, `publish_recovery_sweep_complete` (`packages/jobs/src/publish/recovery.ts`), was **not** renamed and keeps its wording.
+Why: on (1) — the bug this card fixes is a name that did not match, and leaving a constant called `..._RECOVERY_SWEEP_TASK` holding `publish_intent_recovery_sweep` would leave a second, smaller mismatch in the same file, inviting the next reader to "correct" the string back. The symbol is exported from `@sortiva/jobs` but has exactly three uses in the whole tree, all in the publishing lane's own two files, so the rename costs nothing outside it. On (2) — that string is a label in a log record, not a task name; nothing dispatches on it, no test or dashboard config mentions it, and the tree already treats the two as separate vocabularies (the weekly scan's task is `signal_scan_weekly` while its finishing line is `weekly_scan_sweep_complete`). Renaming it would break any saved log search for no gain.
+Nearest spec: tech §2 (the schedule and its handlers); main §14.3.7 (what the sweep does).
+Class (filled by audit):
