@@ -5229,6 +5229,42 @@ write any such line into their report instead — the trap `T5.1` hit.
   route table does not know about, and it still blocks Lane F.
 - **`pnpm eval` is still red** and stays red until there is an Anthropic key.
 
+### `R-SCHEDULE` LANDED — the product's clock is running
+
+**Merged as `b3ed2f9`. Full gate re-run on the merged tree: green, nine of eleven, with `eval`
+not run and the one named chaos scenario red for their documented reasons and nothing else.**
+Tests **3,265**, unchanged — a rename with no new test, which is what the card asked for.
+
+**What changed for the product.** All seventeen recurring jobs are now live wherever the
+application starts. Until this morning none of them ran: not the daily article generation cycle,
+not the weekly signal scan, not monthly replenishment, not the nightly sweep that actually
+erases deleted accounts and prunes tables, not the automatic spend brakes, and no scheduled mail
+at all. **The product had no clock.** It has one now.
+
+**The diff is three files and nine lines.** The task name moved; the constant holding it moved
+with it (`PUBLISH_RECOVERY_SWEEP_TASK` → `PUBLISH_INTENT_RECOVERY_SWEEP_TASK`), which the lane
+chose and journalled — leaving a constant named for the old string would have left a smaller
+copy of the same mismatch and invited someone to "correct" it back. No integrator-resolved file
+was touched; the lane was told explicitly and obeyed.
+
+**Verified independently, not taken from the report.** The lane proved the effect by starting
+the built application and reading the worker's own start-up line, and showed the counterfactual
+by putting the old string back. The integrator repeated it on the *merged* tree with his own
+script: `[worker] started with 29 task(s), cron enabled`. Before this morning that line read
+`cron disabled — 1 scheduled task(s) have no handler yet`.
+
+**A live trap the lane found and the integrator has now defused.** The `T5.2` journal entry of
+2026-09-04 says the schedule has no entry for this sweep and supplies a verbatim block to paste
+into `CRON_ENTRIES`. **Both halves are wrong, and pasting it would have created a duplicate
+entry under a name with no handler — switching all seventeen jobs off again.** The journal is
+append-only, so a superseding `INTEGRATOR` entry now sits below it saying so. If you read the
+original, read the superseding one.
+
+**The log event name deliberately stays `publish_recovery_sweep_complete`.** It is a label
+inside a log record, not a name anything dispatches on; nothing in the tree references it, and
+renaming it would break any saved log search for nothing. The codebase already keeps the two
+vocabularies apart elsewhere.
+
 ### Verification done this morning, so it is not re-done
 
 - Resolved every registered task-name constant in the tree and matched it by hand against all
