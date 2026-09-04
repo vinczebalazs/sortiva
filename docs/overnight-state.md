@@ -768,6 +768,10 @@ behaviour of that mechanism, but worth knowing at merge time.
 
 ## Right now
 
+**Status at 2026-09-04, 13:25 — every founder-authorised card has landed, `M5` and `M6` are closed,
+and the improve-this-page feature is switched on end to end.** Tests **3,426**. No lane is running.
+`R-CONTRACT` and `R-NOQUERY` are the two cards still to dispatch. *Superseded line kept below:*
+
 **Status at 2026-09-04, 13:00 — every founder-authorised card has landed and `M6` is closed.**
 Tests **3,422**, up from 3,265 at the start of the day. `main` clean, gate nine of eleven.
 `R-OPTIMIZE-WIRE` is running in Lane E; `R-CONTRACT` is the integrator's and not started. **Six
@@ -5662,6 +5666,55 @@ that direction and force a client argument through every deps factory for no beh
 invariant that matters is one client per process, and exporting achieves it. Carded as
 `R-OPTIMIZE-WIRE`, Lane E, with the single cross-lane export authorised explicitly and the
 composition-root line reserved for the integrator.
+
+### `R-OPTIMIZE-WIRE` LANDED — the button reaches a worker, and a claim I made was wrong
+
+**Merged, with the two integrator lines applied in the same pass. Gate green: nine of eleven.**
+Tests **3,426**. Verified on the merged tree by starting the built application:
+`[worker] started with 35 task(s), cron enabled`, from 32 before.
+
+**What a merchant can now do.** Press "Generate recommendations" on one of their pages and
+actually get recommendations. Before this the press recorded the request, marked the page as being
+worked on, and queued the job under a name nothing in the running product answered to — so they
+watched a spinner for work that would never start. Everything either side of that gap was built
+and tested; only the join was missing.
+
+**The weekly page comparison was wired in the same card.** It was blocked on the identical
+question and needed the identical four things, so wiring it was a second function with no new
+decisions in it. **Neither job gets a crontab entry** — the first is queued by the button, the
+second stays scheduleless by the founder's standing position.
+
+**A done-when is NOT fully met, and the lane led with that rather than redefining it.** "The
+process constructs exactly one Anthropic client" is false for the server, and this card could not
+make it true. **There are four**, in the article generation, Shopify onboarding, calendar-topic and
+preview composition roots — each memoised separately and **each documented in its own file as "the
+one client".** Verified independently by the integrator.
+
+**That makes the integrator's own rationale from this morning wrong, and it is corrected in
+`DECISIONS.md` rather than quietly dropped.** The decision — export the existing client rather than
+move construction to the composition root — was right in direction and added no new client. The
+*reason* given ("what matters is one client per process, and exporting achieves that") was already
+false when it was written, because only the two clients the card named had been checked.
+**What it costs:** spending is recorded from up to four places, and an answer cached by one is not
+found by the others, so onboarding and generation can pay separately for the same question. **It
+breaks no ceiling** — the cache and the ledger are database tables, so the caps still see every
+call. Waste, not a correctness fault. The fix is its own small card, and should take the search
+vendor with it, which is duplicated four ways for the same reason.
+
+**How "one client" was proved for the part that could be.** Not by identity comparison, which can
+show two things share one but never that a third was not built off to the side. The test replaces
+the client class with a subclass that records every construction, builds **every** dependency
+bundle the composition root hands the content engine, and asserts the recorder holds exactly one
+entry. The lane then made the recommendations config build its own and watched the test fail at
+"expected 2 to have a length of 1".
+
+**And "no database connection at registration" was measured, not reasoned.** The test points the
+database address at a port where nothing listens, builds both bundles, registers both tasks, and
+reads the pool's own count of connections made: zero.
+
+**One operational fact worth not rediscovering: `pnpm smoke:dev` replaces the production build.**
+A check that starts the built server must run after `pnpm build`, not after the dev smoke. This
+cost the integrator two confusing runs.
 
 ### Verification done this morning, so it is not re-done
 
