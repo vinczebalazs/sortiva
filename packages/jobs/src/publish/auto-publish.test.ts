@@ -3,7 +3,12 @@ import { eq } from 'drizzle-orm'
 import { publishMarker, silentLogger } from '@sortiva/core'
 import { accountScope, schema, setDeliveryMode, setTargetBlog, type Db } from '@sortiva/db'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
-import { FakeShopifyPublishClient } from '@sortiva/providers'
+import {
+  FakeShopifyPublishClient,
+  ShopifyApiFailure,
+  ShopifyTokenInvalid,
+} from '@sortiva/providers'
+import { DbNotificationEmitter } from '../notify/emitter'
 import { runExportDeliveryForAccount } from './deliver'
 import { publishArticleToShopify } from './auto-publish'
 import { republishArticleToShopify } from './republish'
@@ -160,14 +165,15 @@ describe.skipIf(!available)('posting an article to the merchant`s shop', () => {
     return article!.id
   }
 
-  function deps(over: { now?: () => Date } = {}) {
+  function deps(over: { now?: () => Date; shopify?: FakeShopifyPublishClient; notifications?: DbNotificationEmitter } = {}) {
     return {
       db,
       pool: ctx.pool,
-      shopify: shop,
+      shopify: over.shopify ?? shop,
       cipher,
       logger: silentLogger,
       now: over.now ?? (() => NOW),
+      ...(over.notifications ? { notifications: over.notifications } : {}),
     }
   }
 
@@ -348,10 +354,14 @@ describe.skipIf(!available)('posting an article to the merchant`s shop', () => {
       const productId = await seedProduct(49.99)
       const articleId = await seedArticle(productId)
       shop.failNextWith = new Error('shopify is down')
-      await expect(publishArticleToShopify(deps(), { accountId, articleId })).rejects.toThrow(
-        'shopify is down',
-      )
+      // We do not know whether the post landed, so the claim is kept and the
+      // sweep is left to ask the shop rather than anything deciding here.
+      expect(await publishArticleToShopify(deps(), { accountId, articleId })).toMatchObject({
+        status: 'failed',
+        reason: 'shop_unreachable',
+      })
       expect(shop.articles.size).toBe(0)
+      expect((await intents())[0]!.state).toBe('pending')
 
       const later = new Date(Date.now() + RECOVERY_GRACE_MS + 1000)
       const summary = await sweepPublishRecovery(deps({ now: () => later }))
@@ -376,7 +386,7 @@ describe.skipIf(!available)('posting an article to the merchant`s shop', () => {
       const productId = await seedProduct(49.99)
       const articleId = await seedArticle(productId)
       shop.failNextWith = new Error('shopify is down')
-      await expect(publishArticleToShopify(deps(), { accountId, articleId })).rejects.toThrow()
+      await publishArticleToShopify(deps(), { accountId, articleId })
 
       const later = new Date(Date.now() + RECOVERY_ABANDON_AFTER_MS + 1000)
       const summary = await sweepPublishRecovery(deps({ now: () => later }))
@@ -387,6 +397,176 @@ describe.skipIf(!available)('posting an article to the merchant`s shop', () => {
       expect(dlq).toHaveLength(1)
       expect(dlq[0]!.idempotencyKey).toContain(articleId)
       expect(shop.articles.size).toBe(0)
+    })
+  })
+
+  /**
+   * The four defects `R-PUBLISH` fixed, each proved by the thing it broke.
+   */
+  describe('when the shop is bigger, or slower, or has stopped trusting us', () => {
+    /**
+     * The duplicate post. The recovery sweep asks the shop whether our article
+     * is already there; on a blog holding more posts than fit in one response,
+     * that question used to be asked of the first page only, and the answer
+     * "no" is what authorises posting the article a second time.
+     */
+    it('finds our post on a blog that holds more than one page of articles', async () => {
+      const bigBlog = new FakeShopifyPublishClient(
+        [{ id: 'blog-1', title: 'News', handle: 'news' }],
+        { pageSize: 2 },
+      )
+      const productId = await seedProduct(49.99)
+      const articleId = await seedArticle(productId)
+
+      // The merchant's own posts, written just before ours, so ours is not on
+      // the first page the sweep reads.
+      for (let i = 0; i < 5; i += 1) {
+        bigBlog.plantArticle({
+          blogId: 'blog-1',
+          blogHandle: 'news',
+          shop: 'acme',
+          handle: `merchant-post-${i}`,
+          createdAt: new Date(Date.now() - 60_000),
+        })
+      }
+
+      await expect(
+        publishArticleToShopify(
+          {
+            ...deps({ shopify: bigBlog }),
+            checkpoint: (label: string) => {
+              if (label === 'publish:executed') throw new Error('worker killed')
+            },
+          },
+          { accountId, articleId },
+        ),
+      ).rejects.toThrow('worker killed')
+
+      const later = new Date(Date.now() + RECOVERY_GRACE_MS + 1000)
+      const summary = await sweepPublishRecovery(deps({ shopify: bigBlog, now: () => later }))
+
+      expect(summary).toMatchObject({ adopted: 1, reExecuted: 0 })
+      expect(bigBlog.countByMarker(publishMarker(articleId))).toBe(1)
+      expect(bigBlog.calls.filter((c) => c.op === 'create')).toHaveLength(1)
+      // And it really paged rather than peeking at the first response.
+      expect(bigBlog.calls.filter((c) => c.op === 'list_page').length).toBeGreaterThan(1)
+      expect((await articleRow()).state).toBe('published')
+    })
+
+    /**
+     * The stranded article. A shop that turns us away for a moment used to
+     * leave the claim on the publication open, so every later attempt collided
+     * with it and reported "already claimed" — for ever.
+     */
+    it('leaves the article due again after the shop turns a post away', async () => {
+      const productId = await seedProduct(49.99)
+      const articleId = await seedArticle(productId)
+      shop.failNextWith = new ShopifyApiFailure('Shopify rate-limited us.', { retryAfterMs: 2000 })
+
+      const refused = await publishArticleToShopify(deps(), { accountId, articleId })
+
+      expect(refused).toMatchObject({ status: 'failed', reason: 'shop_refused' })
+      expect(shop.articles.size).toBe(0)
+      // Nothing is holding the publication, which is what makes it retryable.
+      expect(await intents()).toEqual([])
+      expect((await articleRow()).state).toBe('draft')
+
+      const second = await publishArticleToShopify(deps(), { accountId, articleId })
+
+      expect(second).toMatchObject({ status: 'published' })
+      expect(shop.countByMarker(publishMarker(articleId))).toBe(1)
+      expect((await articleRow()).state).toBe('published')
+    })
+
+    /**
+     * The silence. A merchant whose Shopify permission has been withdrawn is
+     * the only person who can fix it, and the product already knows how to ask
+     * them — it just was not asked from here.
+     */
+    it('raises the reconnect the rest of the product raises when the token is rejected', async () => {
+      const productId = await seedProduct(49.99)
+      const articleId = await seedArticle(productId)
+      shop.failNextWith = new ShopifyTokenInvalid('acme', 401)
+
+      const result = await publishArticleToShopify(
+        deps({ notifications: new DbNotificationEmitter(db) }),
+        { accountId, articleId },
+      )
+
+      expect(result).toEqual({ status: 'skipped', reason: 'connection_lost' })
+
+      const [connection] = await db
+        .select()
+        .from(schema.shopifyConns)
+        .where(eq(schema.shopifyConns.accountId, accountId))
+      expect(connection!.invalidatedAt).not.toBeNull()
+
+      const bell = await db
+        .select()
+        .from(schema.notifications)
+        .where(eq(schema.notifications.accountId, accountId))
+      expect(bell.map((row) => row.type)).toContain('connection_lost_shopify')
+
+      // And nothing is left holding the publication, so it goes out once the
+      // merchant has reconnected.
+      expect(await intents()).toEqual([])
+    })
+
+    /**
+     * The same defect from the other side. If the search cannot finish, the
+     * one thing it must not do is answer "not there" — that answer is what
+     * authorises posting the article again.
+     */
+    it('posts nothing a second time when the shop could not be fully asked', async () => {
+      const hugeBlog = new FakeShopifyPublishClient(
+        [{ id: 'blog-1', title: 'News', handle: 'news' }],
+        { pageSize: 2, maxLookupPages: 1 },
+      )
+      const productId = await seedProduct(49.99)
+      const articleId = await seedArticle(productId)
+      for (let i = 0; i < 6; i += 1) {
+        hugeBlog.plantArticle({
+          blogId: 'blog-1',
+          blogHandle: 'news',
+          shop: 'acme',
+          handle: `merchant-post-${i}`,
+          createdAt: new Date(Date.now() - 60_000),
+        })
+      }
+
+      await expect(
+        publishArticleToShopify(
+          {
+            ...deps({ shopify: hugeBlog }),
+            checkpoint: (label: string) => {
+              if (label === 'publish:executed') throw new Error('worker killed')
+            },
+          },
+          { accountId, articleId },
+        ),
+      ).rejects.toThrow('worker killed')
+
+      const later = new Date(Date.now() + RECOVERY_GRACE_MS + 1000)
+      const summary = await sweepPublishRecovery(deps({ shopify: hugeBlog, now: () => later }))
+
+      expect(summary).toMatchObject({ adopted: 0, reExecuted: 0, skipped: 1 })
+      expect(hugeBlog.countByMarker(publishMarker(articleId))).toBe(1)
+      expect(hugeBlog.calls.filter((c) => c.op === 'create')).toHaveLength(1)
+      // The claim is still open, so the sweep will ask again rather than the
+      // question being closed on an answer nobody had.
+      expect((await intents())[0]!.state).toBe('pending')
+    })
+
+    /** The wrong address: Shopify serves a post under the blog\'s name, not its number. */
+    it('records the address the blog is actually served at', async () => {
+      const productId = await seedProduct(49.99)
+      await seedArticle(productId)
+
+      await runExportDeliveryForAccount(deps(), { accountId, date: TODAY })
+
+      const url = (await articleRow()).publishedUrl
+      expect(url).toContain('/blogs/news/')
+      expect(url).not.toContain('/blogs/blog-1/')
     })
   })
 

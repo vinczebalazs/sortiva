@@ -2,14 +2,16 @@ import {
   assertShop,
   SHOPIFY_API_VERSION,
 } from './oauth'
-import { ShopifyApiFailure, ShopifyTokenInvalid } from './admin'
+import { ShopifyApiFailure, ShopifyTokenInvalid, nextPageInfoFrom } from './admin'
 import { ShopifyRateLimiters, type ShopifyRateLimiterOptions } from './limiter'
 import {
+  MarkerLookupIncomplete,
   PUBLISH_MARKER_KEY,
   PUBLISH_MARKER_NAMESPACE,
   RemoteArticleGone,
   SHOPIFY_PUBLISH_SCOPE_PARAM,
   type CreateArticleInput,
+  type FindArticleByMarkerInput,
   type RemoteArticle,
   type ShopifyBlog,
   type ShopifyPublishProvider,
@@ -25,11 +27,12 @@ import {
  * guarded here, but because they are not written anywhere, and this file is the
  * only place they could be.
  *
- * Every write carries our own marker in a metafield, with a tag as the fallback
- * for a store where the metafield write is refused. That marker is what lets a
- * worker that died mid-publish ask the shop "did my post land?" instead of
- * guessing, which is the difference between a crash costing nothing and a crash
- * costing the merchant a duplicate post.
+ * Every write carries our own marker in a metafield — invisible to the
+ * merchant, invisible to their shoppers, and Shopify's own place for data that
+ * belongs to an app. That marker is what lets a worker that died mid-publish
+ * ask the shop "did my post land?" instead of guessing, which is the difference
+ * between a crash costing nothing and a crash costing the merchant a duplicate
+ * post.
  *
  * REST rather than GraphQL, matching the read client this sits beside: the same
  * pinned API version, the same rate limiter, the same treatment of a rejected
@@ -41,15 +44,48 @@ export interface ShopifyPublishClientOptions {
   fetchImpl?: typeof fetch
   storeBaseUrl?: (shop: string) => string
   limiter?: ShopifyRateLimiterOptions
+  /**
+   * How many pages of a blog's articles one "did my post land?" search will
+   * read before giving up and saying so.
+   *
+   * Tests set it small to prove the giving-up path. In production the
+   * creation-time filter means the search sees the handful of posts written
+   * since we claimed the publication, so a real search ends on page one; the
+   * ceiling exists so a filter the shop ignores cannot turn one question into
+   * an unbounded walk of somebody's entire blog.
+   */
+  maxLookupPages?: number
 }
+
+const DEFAULT_MAX_LOOKUP_PAGES = 20
+
+/**
+ * How far back the creation-time filter reaches beyond the moment we claimed
+ * the publication.
+ *
+ * Our clock and Shopify's are not the same clock. If theirs is a little behind
+ * ours, an article we posted could carry a creation time fractionally earlier
+ * than the claim, and a filter set to the exact claim moment would step over
+ * the very post it was looking for — and "not found" is the answer that
+ * authorises posting again. Five minutes is far more skew than either clock
+ * will ever have, and costs nothing: it widens the search by whatever the
+ * merchant themselves posted in those five minutes, which is almost always
+ * nothing.
+ */
+const LOOKUP_CLOCK_SKEW_MS = 5 * 60 * 1000
 
 interface RestArticle {
   id?: number
   handle?: string
   title?: string
   published_at?: string | null
-  tags?: string
   blog_id?: number
+}
+
+interface RestMetafield {
+  namespace?: string
+  key?: string
+  value?: string
 }
 
 export class ShopifyPublishClient implements ShopifyPublishProvider {
@@ -57,6 +93,7 @@ export class ShopifyPublishClient implements ShopifyPublishProvider {
   private readonly fetchImpl: typeof fetch
   private readonly storeBaseUrl: (shop: string) => string
   private readonly limiters: ShopifyRateLimiters
+  private readonly maxLookupPages: number
 
   constructor(options: ShopifyPublishClientOptions = {}) {
     const apiKey = options.apiKey ?? process.env.SHOPIFY_API_KEY
@@ -69,6 +106,7 @@ export class ShopifyPublishClient implements ShopifyPublishProvider {
     this.fetchImpl = options.fetchImpl ?? fetch
     this.storeBaseUrl = options.storeBaseUrl ?? ((shop) => `https://${shop}.myshopify.com`)
     this.limiters = new ShopifyRateLimiters(options.limiter ?? {})
+    this.maxLookupPages = options.maxLookupPages ?? DEFAULT_MAX_LOOKUP_PAGES
   }
 
   /**
@@ -154,38 +192,88 @@ export class ShopifyPublishClient implements ShopifyPublishProvider {
   /**
    * Asks the shop whether an article carrying our marker is already there.
    *
-   * Reads the blog's recent articles and matches on the tag rather than
-   * querying metafields: a metafield search needs one request per article,
-   * which turns a five-minute sweep into a rate-limit problem, while the tag
-   * travels with the article in the list response we already have.
+   * Two things make this answerable on a blog that has been running for years
+   * rather than only on an empty one.
+   *
+   * It asks the shop for the posts written **since we claimed the
+   * publication**, so a blog holding thousands of articles is narrowed to the
+   * handful that could possibly be ours. And it follows Shopify's own paging to
+   * the end of that narrowed list rather than reading the first page and
+   * concluding: a first page is not the list, and treating it as one is exactly
+   * how a store with more than 250 posts gets the same article posted twice.
+   *
+   * The marker itself lives in a metafield, which does not travel in the list
+   * response, so each candidate costs one further request to check. That is why
+   * the narrowing matters and why the ceiling below exists.
+   *
+   * A search that runs out of pages **throws** rather than answering "not
+   * there". Only a completed search may say no, because saying no is what
+   * authorises posting the article again.
    */
-  async findArticleByMarker(
-    input: ShopifyStoreCredentials & { blogId: string; marker: string },
-  ): Promise<RemoteArticle | undefined> {
-    const body = await this.request<{ articles?: RestArticle[] }>(
-      input,
+  async findArticleByMarker(input: FindArticleByMarkerInput): Promise<RemoteArticle | undefined> {
+    const since = new Date(input.notBefore.getTime() - LOOKUP_CLOCK_SKEW_MS).toISOString()
+    let path =
+      `blogs/${encodeURIComponent(input.blogId)}/articles.json` +
+      `?limit=250&fields=id,handle,title,published_at&created_at_min=${encodeURIComponent(since)}`
+
+    for (let page = 0; page < this.maxLookupPages; page += 1) {
+      const { body, link } = await this.requestPage<{ articles?: RestArticle[] }>(input, path)
+      for (const article of body.articles ?? []) {
+        if (!article.id) continue
+        if (await this.carriesMarker(input, article.id, input.marker)) {
+          return this.toRemote(input, article, input.marker)
+        }
+      }
+      const nextPageInfo = nextPageInfoFrom(link)
+      if (!nextPageInfo) return undefined
+      // Shopify's cursor stands alone: a page_info request carries the cursor
+      // and the page size, and nothing else it was first filtered by.
+      path =
+        `blogs/${encodeURIComponent(input.blogId)}/articles.json` +
+        `?limit=250&page_info=${encodeURIComponent(nextPageInfo)}`
+    }
+
+    throw new MarkerLookupIncomplete(input.marker)
+  }
+
+  /** One article's marker, read from where the merchant cannot see it. */
+  private async carriesMarker(
+    credentials: ShopifyStoreCredentials,
+    articleId: number,
+    marker: string,
+  ): Promise<boolean> {
+    const body = await this.request<{ metafields?: RestMetafield[] }>(
+      credentials,
       'GET',
-      `blogs/${encodeURIComponent(input.blogId)}/articles.json?limit=250&fields=id,handle,title,tags,published_at`,
+      `articles/${articleId}/metafields.json` +
+        `?namespace=${encodeURIComponent(PUBLISH_MARKER_NAMESPACE)}&key=${encodeURIComponent(PUBLISH_MARKER_KEY)}`,
     )
-    const found = (body.articles ?? []).find((article) =>
-      splitTags(article.tags).includes(input.marker),
+    return (body.metafields ?? []).some(
+      (field) =>
+        field.namespace === PUBLISH_MARKER_NAMESPACE &&
+        field.key === PUBLISH_MARKER_KEY &&
+        field.value === marker,
     )
-    return found?.id ? this.toRemote(input, found, input.marker) : undefined
   }
 
   private toRemote(
-    input: ShopifyStoreCredentials & { blogId?: string },
+    input: ShopifyStoreCredentials & { blogHandle?: string },
     article: RestArticle,
     marker: string,
   ): RemoteArticle {
     const handle = article.handle ?? ''
     const published = Boolean(article.published_at)
+    const blogHandle = input.blogHandle ?? ''
     return {
       id: String(article.id),
       handle,
       // An unpublished Shopify draft has no address a reader could open, so
-      // reporting one would be a link to a 404.
-      url: published && handle ? `${this.storeBaseUrl(input.shop)}/blogs/${input.blogId ?? ''}/${handle}` : null,
+      // reporting one would be a link to a 404 — and so would an address built
+      // out of the blog's number, which is not how Shopify addresses a post.
+      url:
+        published && handle && blogHandle
+          ? `${this.storeBaseUrl(input.shop)}/blogs/${blogHandle}/${handle}`
+          : null,
       marker,
       published,
     }
@@ -197,6 +285,23 @@ export class ShopifyPublishClient implements ShopifyPublishProvider {
     path: string,
     payload?: unknown,
   ): Promise<T> {
+    return (await this.send<T>(credentials, method, path, payload)).body
+  }
+
+  /** The same read, keeping the cursor Shopify puts in the `Link` header. */
+  private async requestPage<T>(
+    credentials: ShopifyStoreCredentials,
+    path: string,
+  ): Promise<{ body: T; link: string | null }> {
+    return this.send<T>(credentials, 'GET', path)
+  }
+
+  private async send<T>(
+    credentials: ShopifyStoreCredentials,
+    method: 'GET' | 'POST' | 'PUT',
+    path: string,
+    payload?: unknown,
+  ): Promise<{ body: T; link: string | null }> {
     assertShop(credentials.shop)
     // Paced through the same per-store budget the catalogue walk uses, so a
     // publish never arrives in the middle of a sync and gets both throttled.
@@ -232,7 +337,7 @@ export class ShopifyPublishClient implements ShopifyPublishProvider {
         retryable: response.status >= 500,
       })
     }
-    return (await response.json()) as T
+    return { body: (await response.json()) as T, link: response.headers.get('link') }
   }
 }
 
@@ -253,21 +358,19 @@ function retryAfterMsFrom(header: string | null): number | undefined {
   return Math.ceil(seconds * 1000)
 }
 
-function splitTags(tags: string | undefined): string[] {
-  return (tags ?? '')
-    .split(',')
-    .map((tag) => tag.trim())
-    .filter((tag) => tag.length > 0)
-}
-
 /**
- * The article as Shopify wants it, marker included twice.
+ * The article as Shopify wants it.
  *
- * The metafield is the real marker — invisible to the merchant, and Shopify's
- * own place for app-owned data. The tag is the fallback, and it is written
- * every time rather than only when the metafield fails, because the recovery
- * sweep reads it out of a plain list response; a marker that only exists in a
- * metafield would cost one extra request per article to look for.
+ * The marker goes in a metafield and nowhere else. It used to be written as a
+ * tag as well, because a tag comes back in a plain list response and a
+ * metafield has to be asked for separately — but tags are the merchant's own
+ * vocabulary, shown in their admin and capable of turning up in a storefront
+ * tag list their shoppers browse. Nothing we add to somebody's shop should be
+ * visible to their customers.
+ *
+ * There is no `tags` key here at all, rather than an empty one: sending an
+ * empty value on a revision would wipe whatever tags the merchant had put on
+ * the post themselves.
  */
 function articlePayload(input: CreateArticleInput): Record<string, unknown> {
   return {
@@ -278,7 +381,6 @@ function articlePayload(input: CreateArticleInput): Record<string, unknown> {
     // `published: false` is Shopify's own "save as draft": the article exists
     // on the blog and no reader can see it.
     published: input.publishAs === 'live',
-    tags: input.marker,
     metafields: [
       {
         namespace: PUBLISH_MARKER_NAMESPACE,

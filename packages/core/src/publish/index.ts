@@ -1,4 +1,5 @@
 export * from './bundle'
+export * from './failure'
 export * from './grant'
 export * from './intent'
 export * from './ports'

@@ -1,7 +1,9 @@
 import {
+  MarkerLookupIncomplete,
   RemoteArticleGone,
   SHOPIFY_PUBLISH_SCOPE_PARAM,
   type CreateArticleInput,
+  type FindArticleByMarkerInput,
   type RemoteArticle,
   type ShopifyBlog,
   type ShopifyPublishProvider,
@@ -20,23 +22,74 @@ import {
  * leaves exactly one article on the shop — which a live store could show
  * happening but could not show being *impossible*.
  *
+ * **It has to be able to fail the way a real shop fails.** An earlier version
+ * answered "did my post land?" by searching its entire memory in one go, so the
+ * question always got the right answer here and the wrong one against a real
+ * blog with more posts than fit in a single response — which is precisely why a
+ * defect that could post a merchant's article twice sat in the code untested.
+ * So this hands back one page at a time, of a size a test can shrink; it keeps
+ * the marker where a real shop keeps it, in a metafield that has to be asked
+ * for per article rather than in the list; and it refuses to say "not there"
+ * when it ran out of pages before it ran out of articles.
+ *
  * `calls` is the record a test asserts against: two creates for one article is
  * the failure the whole two-phase protocol exists to prevent, and it is visible
- * here as a list rather than inferred from a count.
+ * here as a list rather than inferred from a count. `list_page` and `metafield`
+ * entries are what prove a search really paged rather than peeked.
  */
+
+/** One article on the fake shop, including what a list response would not show. */
+interface FakeArticle extends RemoteArticle {
+  readonly blogId: string
+  readonly blogHandle: string
+  readonly bodyHtml: string
+  readonly title: string
+  /** When the shop says it was created — what the creation-time filter reads. */
+  readonly createdAt: Date
+  /** Where the real marker lives: not in the list response, and not visible to the merchant. */
+  readonly metafieldMarker: string
+}
+
+export type FakeShopCall = {
+  op: 'create' | 'update' | 'find' | 'list' | 'create_blog' | 'list_page' | 'metafield'
+  marker?: string
+}
+
+export interface FakeShopifyPublishClientOptions {
+  /** How many articles one page of the blog's list holds. Shopify's own ceiling is 250. */
+  pageSize?: number
+  /** How many pages one search reads before it refuses to answer. */
+  maxLookupPages?: number
+  /** The shop's clock, for stamping when an article was created. */
+  now?: () => Date
+}
+
+/** Matches the real client's allowance for our clock and the shop's disagreeing. */
+const LOOKUP_CLOCK_SKEW_MS = 5 * 60 * 1000
+
 export class FakeShopifyPublishClient implements ShopifyPublishProvider {
   readonly blogs: ShopifyBlog[] = []
   /** Every article on the fake shop, keyed by its remote id. */
-  readonly articles = new Map<string, RemoteArticle & { blogId: string; bodyHtml: string; title: string }>()
-  readonly calls: { op: 'create' | 'update' | 'find' | 'list' | 'create_blog'; marker?: string }[] = []
+  readonly articles = new Map<string, FakeArticle>()
+  readonly calls: FakeShopCall[] = []
 
   /** Thrown by the next write, whatever it is. Set by a test to simulate a shop that is down. */
   failNextWith?: Error
 
+  readonly pageSize: number
+  readonly maxLookupPages: number
+  private readonly now: () => Date
+
   private nextId = 1
 
-  constructor(blogs: readonly ShopifyBlog[] = [{ id: 'blog-1', title: 'News', handle: 'news' }]) {
+  constructor(
+    blogs: readonly ShopifyBlog[] = [{ id: 'blog-1', title: 'News', handle: 'news' }],
+    options: FakeShopifyPublishClientOptions = {},
+  ) {
     this.blogs.push(...blogs)
+    this.pageSize = options.pageSize ?? 250
+    this.maxLookupPages = options.maxLookupPages ?? 20
+    this.now = options.now ?? (() => new Date())
   }
 
   publishAuthorizeUrl(input: { shop: string; redirectUri: string; state: string }): string {
@@ -67,20 +120,17 @@ export class FakeShopifyPublishClient implements ShopifyPublishProvider {
   async createArticle(input: CreateArticleInput): Promise<RemoteArticle> {
     this.calls.push({ op: 'create', marker: input.marker })
     this.throwIfArmed()
-    const id = `remote-${this.nextId++}`
-    const published = input.publishAs === 'live'
-    const article = {
-      id,
+    return this.put({
+      id: `remote-${this.nextId++}`,
       handle: input.handle,
-      url: published ? `https://${input.shop}.myshopify.com/blogs/${input.blogId}/${input.handle}` : null,
-      marker: input.marker,
-      published,
       blogId: input.blogId,
-      bodyHtml: input.bodyHtml,
+      blogHandle: input.blogHandle,
+      shop: input.shop,
       title: input.title,
-    }
-    this.articles.set(id, article)
-    return article
+      bodyHtml: input.bodyHtml,
+      marker: input.marker,
+      published: input.publishAs === 'live',
+    })
   }
 
   async updateArticle(input: UpdateArticleInput): Promise<RemoteArticle> {
@@ -90,25 +140,106 @@ export class FakeShopifyPublishClient implements ShopifyPublishProvider {
     // The deleted-remotely case. A test that wants it deletes the article from
     // `articles` and calls update; nothing here may answer by creating one.
     if (!existing) throw new RemoteArticleGone(input.remoteArticleId)
-    const updated = { ...existing, title: input.title, bodyHtml: input.bodyHtml, marker: input.marker }
+    const updated: FakeArticle = {
+      ...existing,
+      title: input.title,
+      bodyHtml: input.bodyHtml,
+      marker: input.marker,
+      metafieldMarker: input.marker,
+    }
     this.articles.set(input.remoteArticleId, updated)
     return updated
   }
 
-  async findArticleByMarker(
-    input: ShopifyStoreCredentials & { blogId: string; marker: string },
-  ): Promise<RemoteArticle | undefined> {
+  /**
+   * The search a real shop makes expensive: one page of the blog at a time, and
+   * one request per article to read a marker the list does not carry.
+   */
+  async findArticleByMarker(input: FindArticleByMarkerInput): Promise<RemoteArticle | undefined> {
     this.calls.push({ op: 'find', marker: input.marker })
-    for (const article of this.articles.values()) {
-      if (article.marker === input.marker && article.blogId === input.blogId) return article
+
+    const since = input.notBefore.getTime() - LOOKUP_CLOCK_SKEW_MS
+    const candidates = [...this.articles.values()]
+      .filter((article) => article.blogId === input.blogId && article.createdAt.getTime() >= since)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+
+    for (let page = 0; page < this.maxLookupPages; page += 1) {
+      const offset = page * this.pageSize
+      if (offset >= candidates.length) return undefined
+      this.calls.push({ op: 'list_page' })
+      for (const article of candidates.slice(offset, offset + this.pageSize)) {
+        this.calls.push({ op: 'metafield' })
+        if (article.metafieldMarker === input.marker) return article
+      }
+      if (offset + this.pageSize >= candidates.length) return undefined
     }
-    return undefined
+
+    // More blog than the search was allowed to read. Answering "not there"
+    // would authorise posting the article a second time.
+    throw new MarkerLookupIncomplete(input.marker)
+  }
+
+  /** Puts an article on the shop directly, the way a merchant's own posts got there. */
+  plantArticle(input: {
+    blogId: string
+    blogHandle: string
+    shop: string
+    handle: string
+    title?: string
+    marker?: string
+    createdAt?: Date
+  }): RemoteArticle {
+    return this.put({
+      id: `remote-${this.nextId++}`,
+      handle: input.handle,
+      blogId: input.blogId,
+      blogHandle: input.blogHandle,
+      shop: input.shop,
+      title: input.title ?? input.handle,
+      bodyHtml: '',
+      marker: input.marker ?? '',
+      published: true,
+      ...(input.createdAt ? { createdAt: input.createdAt } : {}),
+    })
+  }
+
+  private put(input: {
+    id: string
+    handle: string
+    blogId: string
+    blogHandle: string
+    shop: string
+    title: string
+    bodyHtml: string
+    marker: string
+    published: boolean
+    createdAt?: Date
+  }): FakeArticle {
+    const article: FakeArticle = {
+      id: input.id,
+      handle: input.handle,
+      // The address Shopify actually serves a post at: the blog's *name*, not
+      // its number.
+      url: input.published
+        ? `https://${input.shop}.myshopify.com/blogs/${input.blogHandle}/${input.handle}`
+        : null,
+      marker: input.marker,
+      published: input.published,
+      blogId: input.blogId,
+      blogHandle: input.blogHandle,
+      bodyHtml: input.bodyHtml,
+      title: input.title,
+      createdAt: input.createdAt ?? this.now(),
+      metafieldMarker: input.marker,
+    }
+    this.articles.set(article.id, article)
+    return article
   }
 
   /** How many articles carry this marker. The number the chaos test asserts is exactly one. */
   countByMarker(marker: string): number {
     let n = 0
-    for (const article of this.articles.values()) if (article.marker === marker) n += 1
+    for (const article of this.articles.values()) if (article.metafieldMarker === marker) n += 1
     return n
   }
 

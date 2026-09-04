@@ -254,6 +254,36 @@ export async function confirmPublishIntent(
   return rows.length > 0
 }
 
+/**
+ * Gives a claim back, so the publication can be attempted again from the start.
+ *
+ * The row is removed rather than marked, because the claim's whole job is to be
+ * the one name that can only be taken once; a row left behind under any state
+ * would block every future attempt at the same publication for ever.
+ *
+ * **Only safe when the shop is known not to have taken the post** — it refused
+ * our token, refused the request, or turned us away at the door. Releasing a
+ * claim after a failure that might have landed is how the same article gets
+ * posted twice, which is the one thing the claim exists to stop.
+ */
+export async function releasePublishIntent(
+  db: Db,
+  scope: AccountScope,
+  articleExternalId: string,
+): Promise<boolean> {
+  const rows = await db
+    .delete(publishIntents)
+    .where(
+      and(
+        eq(publishIntents.accountId, scope.accountId),
+        eq(publishIntents.articleExternalId, articleExternalId),
+        eq(publishIntents.state, 'pending'),
+      ),
+    )
+    .returning({ id: publishIntents.id })
+  return rows.length > 0
+}
+
 /** Stops trying. The work goes to the dead-letter queue, where a person can see it. */
 export async function abandonPublishIntent(
   db: Db,
