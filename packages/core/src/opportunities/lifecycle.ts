@@ -16,18 +16,37 @@ import type { OpportunityAction, OpportunityStatus } from '../contracts/opportun
  * never reopens — a signal detected again after expiry is a **new** row (the
  * partial unique index only covers the statuses below, so an expired row
  * cannot block one), not a revival of the old one.
+ *
+ * Two lifecycles share these statuses and only one of them passes through
+ * `scheduled`. A CREATE/REFRESH is given a calendar topic and the calendar
+ * starts it. An OPTIMIZE is never given a topic: the merchant presses "improve
+ * this page" on a row sitting at `new` or `accepted`, a recommendation is
+ * written, and the row goes back to waiting on them. Written around the
+ * calendar alone, this graph made the merchant-initiated path illegal on paper
+ * while the code performed it every time; the graph was the half that was
+ * wrong, and these edges are what it was missing.
+ *
+ * `completed` is reachable from every open status because the move into it is
+ * the merchant saying they applied the recommendation, and that answer is
+ * legitimate whatever the row happened to be doing when they gave it. The
+ * repository's own guard for that move is "still open" and this mirrors it, so
+ * the two cannot disagree.
  */
 const ALLOWED: Readonly<Record<OpportunityStatus, readonly OpportunityStatus[]>> = {
-  new: ['accepted', 'blocked', 'dismissed', 'expired'],
+  new: ['accepted', 'executing', 'completed', 'blocked', 'dismissed', 'expired'],
   // A resolved precondition returns a blocked row to `new`; only CREATE/REFRESH
   // auto-accept at detection time (`initialStatus` in `build.ts`), so a
   // formerly-blocked CREATE/REFRESH goes back through `accepted`, not `new` —
   // callers pick which by naming the row's `recommendedAction`, this graph
   // only says the edge exists.
-  accepted: ['scheduled', 'blocked', 'dismissed', 'expired'],
-  scheduled: ['executing', 'blocked', 'dismissed', 'expired'],
-  executing: ['completed', 'blocked', 'expired'],
-  blocked: ['new', 'accepted', 'dismissed', 'expired'],
+  accepted: ['scheduled', 'executing', 'completed', 'blocked', 'dismissed', 'expired'],
+  scheduled: ['executing', 'completed', 'blocked', 'dismissed', 'expired'],
+  // Finishing the work is not the merchant having acted on it, so generation
+  // ends back at `accepted` rather than at `completed`. A recommendation that
+  // failed our own quality checks lands in the same place, which is what keeps
+  // the row theirs to press again instead of stranding it mid-flight.
+  executing: ['accepted', 'completed', 'blocked', 'expired'],
+  blocked: ['new', 'accepted', 'completed', 'dismissed', 'expired'],
   // The not-interested list keeps a dismissed signal from ever being
   // re-proposed (main §7.9), but the same section's "show dismissed" view
   // lets the merchant undo one — back to `new`, never straight to `accepted`,
