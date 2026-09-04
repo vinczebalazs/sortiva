@@ -9,6 +9,7 @@ import { AnthropicLlmClient } from '@sortiva/llm/client'
 import { loadPrompt } from '@sortiva/llm/prompts'
 import type { GenerationTaskDeps } from '@sortiva/jobs/generation/tasks'
 import type { PublishTaskDeps } from '@sortiva/jobs/publish/tasks'
+import type { DriftTaskDeps } from '@sortiva/jobs/drift/tasks'
 import type { ReplenishmentTaskDeps } from '@sortiva/jobs/generation/replenish-tasks'
 import { DbOpportunitySource } from '@sortiva/jobs/scan/opportunity-source'
 import { DbNotificationEmitter } from '@sortiva/jobs/notify/emitter'
@@ -107,6 +108,28 @@ export function replenishmentTaskDeps(): ReplenishmentTaskDeps {
  * instead, which would deliver in a mode the merchant did not choose.
  */
 export function publishTaskDeps(): PublishTaskDeps {
+  const shopify = publishProvider()
+  return {
+    getDb: db,
+    getPool: dbPool,
+    ...(shopify ? { shopify, cipher: publishTokenCipher() } : {}),
+    notifications: new DbNotificationEmitter(db),
+    capture: generationCapture(),
+  }
+}
+
+/**
+ * The daily check on articles we have already published.
+ *
+ * The same services the publish hour is given, for the same reason: a repair
+ * that mends an article ends by putting the corrected version back on the
+ * merchant's shop, through the same posting seam and the same token cipher, so
+ * a second client here would be a second place a merchant's credentials are
+ * read. On a deployment with no Shopify write client the pass still runs — it
+ * still finds what has gone wrong and still tells the merchant — and simply
+ * leaves the re-posting owed until one exists.
+ */
+export function driftTaskDeps(): DriftTaskDeps {
   const shopify = publishProvider()
   return {
     getDb: db,
