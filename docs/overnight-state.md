@@ -2599,6 +2599,140 @@ Small, real, and each belongs to a named next card rather than to a sweep.
 
 ## Audit findings, unactioned
 
+### `T5.2` — the scheduled audit, run 2026-09-04, read-only. **One CRITICAL, three HIGH. The CRITICAL is one word long and the integrator verified it end to end.**
+
+Required by build plan §7. Pinned to `1d66186..0681cda`. Expectations written from the spec
+before the diff was opened.
+
+**[CRITICAL] The founder's own condition for switching the recurring schedule on is now ONE
+STRING RENAME from being met — and it looks met when it is not.**
+
+*The integrator verified every step of this himself rather than relaying it, and corrected the
+audit's framing once on the way. The facts:*
+
+- The worker refuses to enable **any** scheduled job unless **every** scheduled entry has code
+  registered under exactly that name (`bootstrap.ts`: `enableCron = missing.length === 0`). One
+  mismatch disables the whole schedule, silently, with a single log line.
+- **Founder question 4, answered 2026-09-03, chose to wait** for the four then-unanswered
+  entries rather than relax that rule: `generation_cycle_daily`, `signal_scan_weekly`,
+  `replenishment_monthly` and `publish_intent_recovery_sweep`. **So the schedule being off is
+  the founder's own decision, not a surprise, and the audit's framing of it as "the product's
+  entire clock is off" overstates the news.**
+- **What is new:** three of those four have since landed. The fourth was `T5.2`'s to fill.
+  `T5.2` built the sweep, tested it and registered it — under the name **`publish_recovery_sweep`**
+  (`packages/jobs/src/publish/tasks.ts:34`), while the schedule has named
+  **`publish_intent_recovery_sweep`** since M0 (`crontab.ts:116`). The two strings do not match.
+- **It is now the only mismatch.** The integrator diffed the full schedule against every
+  registered name and got exactly one — and checked a false positive before reporting it: a
+  first pass suggested `subscription_reconciliation_nightly` was also unanswered, but that
+  handler is registered from `apps/web/app/api/webhooks/stripe/_lib/tasks.ts`, outside the
+  directory the first grep covered. **The audit's "only one" claim is correct.**
+
+*Why this is worse than the lane reported.* `T5.2`'s own journal says the crontab "has no
+entry for it… so nothing goes red; the sweep simply never runs", and offers a verbatim entry
+to add. **Both halves are wrong.** The entry has existed since M0; it is the handler that is
+misnamed. And **adding the suggested line would have made it worse** — two entries, one still
+unanswered, and the schedule still off.
+
+*The fix, when the founder authorises it:* rename the constant at
+`packages/jobs/src/publish/tasks.ts:34` to `publish_intent_recovery_sweep` (the smaller of the
+two directions — that file is Lane D's, while the crontab is integrator-resolved). **Then add
+the check that would have caught it**: today a name mismatch *disables* the schedule; it should
+*fail*. That is a reporter that cannot fail wearing a green tick, and it belongs with `T10.2`.
+
+**[HIGH] The "did my post already land?" check reads one page of the blog, so on an
+established blog it can answer "no" when the answer is yes — and post a second copy.** The
+lookup fetches up to 250 recent articles in a single request, with no paging and no
+server-side filter, and searches that page for our marker. A blog with more than 250 posts —
+ordinary for a store that already blogged, or after a year of this product — may not include
+ours. The sweep then concludes the post never landed and re-sends it: **exactly the duplicate
+the whole two-phase protocol exists to prevent.** No test can see it, because the fake shop
+searches its entire in-memory map with no page limit — **the fake cannot fail the way a real
+shop fails.**
+
+**[HIGH] The sweep looks for the post in whichever blog is the target *today*, not the blog
+the post was sent to.** Main §9.5 explicitly allows changing the target blog later and says
+doing so never moves already-published articles. If a merchant changes it while a publication
+is unsettled, the sweep searches the new blog, finds nothing, and re-sends — a duplicate, in a
+different blog. **The claim row has no column recording which blog the post went to**, so this
+cannot be fixed without a schema wave.
+
+**[HIGH] Any transient Shopify failure at the moment of posting strands that article for
+ever, and a rejected token is never reported to the merchant.** There is no error handling
+around the post itself. A rate-limit, a 500, a network blip or a revoked token throws out
+after the claim row is already open; the retry collides with its own claim, reports
+"already claimed", and does so every day thereafter. Only the recovery sweep could free it —
+and that is the sweep the CRITICAL disables. Separately, the product already has the machinery
+for a rejected Shopify token (it drives the reconnect banner and the 24-hour email) and **the
+publishing path does not use it**, so that merchant gets silence. Invariant 22 requires
+degrading to a *visible* pause.
+
+**Seven MEDIUM.** (1) The address recorded for every published article uses the blog's numeric
+id where Shopify uses its name-slug — **the lane suspected this and was right**; the correct
+value is already stored and unused, and the damage lands later, because that address is what
+Search Console attribution matches traffic against, so a working article would appear to earn
+nothing for ever. **The fake builds the same wrong address**, which is the clearest sign it was
+written from the code rather than from the vendor. (2) When publishing stops — permission
+withdrawn, blog deleted, connection broken — **the merchant is not told**; a store can sit in
+auto-publish mode publishing nothing, indefinitely, with no problem shown. (3) The contract
+divergence is **five endpoints**, not one, and the Settings screen's "grant posting permission"
+button points at the **read-only install flow**, which would loop for ever without ever
+granting write access. (4) A live post can end up with no record of it, if the merchant
+discards the article in the window between sending and recording. (5) **A republish overwrites
+what the merchant did to the post** — their tags, the article's address, and their choice to
+unpublish it. Latent until `T5.3`, which is the next card. (6)/(7) as recorded in the full
+report.
+
+**Seven LOW**, including: "give up after three tries" is derived from a clock rather than a
+counter, so a slower sweep abandons after one look; a signing key falls back to a literal
+string in source; and **46 spec citations in code comments across four lanes**, which
+`CLAUDE.md` forbids — systemic, not this card's.
+
+**The chaos case is sound and the auditor proved it rather than assuming.** It genuinely kills
+the worker at the one instant that matters — the post is on the merchant's site and nothing of
+ours has recorded it — the kill is deterministic and cannot be seeded somewhere safer, and the
+assertions count creates on the fake shop so a duplicate would fail loudly. **But the suite
+around it discards `result.kills`**, so a scenario whose kill never fires is indistinguishable
+from one that passes. Pre-existing; another reporter without teeth.
+
+**What it verified sound.** Invariant 21 holds in substance: the install path is untouched and
+still *throws away* a token carrying any write scope; the second grant is a separate route,
+consent screen, callback and signed value with its own purpose stamp; the store name comes
+from the connection the merchant already made, so a signed-in merchant cannot be walked into
+granting access on someone else's store; and auto-publish's two conditions are a `WHERE` clause
+in the database, so it is a property of the data rather than of one code path, while switching
+*off* is always allowed. **Grepped for theme, asset, redirect and script-tag writes: there are
+none anywhere in the provider.** Invariant 19 holds on every path that could be exercised: the
+claim precedes the send, a unique index decides who holds it, the marker is derived from the
+article's id and never random, confirmation is a guarded update, adopting takes precedence over
+giving up, and **there is no create path out of the update function at all**. Invariant 18
+holds. Entitlement, vacation and kill switches are all read from local state with no Stripe
+call in the path. Product values genuinely are re-resolved from the store at publish and again
+at republish, through the same code the download uses, so a download and a post cannot
+disagree.
+
+**What it could not check, stated plainly.** Anything needing a real Shopify store — there is
+no development-store credential in this environment. Its judgement on the fake: **good evidence
+for our own protocol, and no evidence at all about Shopify.** The fake cannot rate-limit,
+cannot reject a token, cannot rewrite a colliding slug, cannot paginate, and cannot refuse a
+metafield — **and the entire "fall back to a tag" design exists for that last case and is
+untested.** Done-when claims resting entirely on the fake: the chaos case, the
+remotely-deleted-article case, and the dev-store smoke, which is simply **not met**. Claims
+that stand on their own, all database-backed: price-changed-before-publish, deleted-product,
+no-blog-no-auto-publish, and the read-only-grant re-assertion.
+
+**Five founder decisions buried here.** (1) **Every article Sortiva posts carries a visible
+`sortiva-<id>` tag in the merchant's own Shopify admin**, which can surface in storefront tag
+lists — journalled as a technical necessity, never put to the founder. (2) **A republish
+overwrites the merchant's own changes** — a "we own this post once we make it" stance nobody
+chose. (3) **Who owns the Settings API** — three cards have now deferred it; it is a question
+of which lane gets the ground, not a coding question. (4) **Whether a Shopify development
+store is procured before M5 closes** — the card's first done-when cannot be met without one.
+(5) **Auto-published articles have no images**, against main §9.2.
+
+**Consequences the integrator took:** none beyond recording. `T5.3` was already blocked on the
+`CatalogEvents` decision, so no new stop was needed. **Nothing here has been acted on.**
+
 ### `T6.2` — the scheduled audit, run 2026-09-04, read-only. **One CRITICAL, four HIGH. It stops `T6.3` and it vindicates not wiring the job.**
 
 Required by build plan §7 before `T6.3`. Pinned to `c46812d~1..6be6f95` so later work on the
