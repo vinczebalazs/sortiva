@@ -14,10 +14,13 @@ import {
 } from '@sortiva/core'
 import {
   accountScope,
+  countOptimizeGenerationsSince,
   findOpportunityById,
   readPersona,
   storeOptimizeRecommendation,
   transitionOpportunityStatus,
+  type AccountScope,
+  type Db,
   type OptimizeTaskWrite,
 } from '@sortiva/db'
 import { rules } from '@sortiva/rules'
@@ -138,12 +141,70 @@ function tasksFor(recommendation: OptimizeRecommendation): OptimizeTaskWrite[] {
   return tasks
 }
 
+/** Midnight UTC, the day the store's allowance is counted over — the same day the API counts. */
+function startOfDay(now: Date): Date {
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+}
+
+/**
+ * Hands the page back to the merchant.
+ *
+ * Guarded on the status it expects, so a run that has already moved the page on
+ * cannot pull it backwards, and calling it twice does nothing the second time.
+ */
+async function handBack(db: Db, scope: AccountScope, opportunityId: string, now: Date): Promise<void> {
+  await transitionOpportunityStatus(db, scope, opportunityId, { from: ['executing'], to: 'accepted' }, now)
+}
+
+/**
+ * The page is marked as being worked on for as long as this runs, and **every**
+ * way out of it has to unmark it.
+ *
+ * There used to be exactly two: finishing, and failing our own checks. A
+ * refusal (this call type switched off for the store), a skip (the page is no
+ * longer in the store's inventory) and any unexpected error all left the page
+ * marked for ever — a spinner that never resolves and a button that refuses
+ * from then on, repairable only by editing the database. So the release lives
+ * out here, where it covers the paths nobody thought of as well as the ones
+ * they did, rather than being repeated at each return.
+ */
 export async function generateOptimizeRecommendation(
   deps: GenerateOptimizeDeps,
   input: GenerateOptimizeInput,
 ): Promise<GenerateOptimizeOutcome> {
   const log = deps.logger ?? runtimeLogger()
   const now = (deps.now ?? (() => new Date()))()
+  const scope = accountScope(input.accountId)
+
+  try {
+    const outcome = await runGeneration(deps, input, now, log)
+    // The finished path moves the page on itself, with the recommendation
+    // attached; everything else leaves it where it was and needs handing back.
+    if (outcome.status !== 'generated') {
+      await handBack(deps.db, scope, input.opportunityId, now)
+    }
+    return outcome
+  } catch (error) {
+    try {
+      await handBack(deps.db, scope, input.opportunityId, now)
+    } catch (releaseError) {
+      // Never let the repair hide what actually went wrong.
+      log.error('optimize_reco.hand_back_failed', {
+        account_id: input.accountId,
+        opportunity_id: input.opportunityId,
+        error_class: releaseError instanceof Error ? releaseError.name : 'unknown',
+      })
+    }
+    throw error
+  }
+}
+
+async function runGeneration(
+  deps: GenerateOptimizeDeps,
+  input: GenerateOptimizeInput,
+  now: Date,
+  log: Logger,
+): Promise<GenerateOptimizeOutcome> {
   const scope = accountScope(input.accountId)
   const config = rules()
   const limits = config.defaults.gates.optimize_recommendation
@@ -166,6 +227,25 @@ export async function generateOptimizeRecommendation(
   if (!opportunity) return { status: 'skipped', reason: 'opportunity_not_found' }
   if (opportunity.recommendedAction !== 'optimize') {
     return { status: 'skipped', reason: 'not_an_optimize_opportunity' }
+  }
+
+  // The store's daily allowance, re-read here rather than trusted from the
+  // request that asked for this. The request's check is a courtesy — it lets a
+  // merchant be told "tomorrow" straight away instead of watching a spinner —
+  // but it cannot be the enforcement, because several presses can be accepted
+  // before any of them has produced anything to count. This runs under the
+  // account's lock, one generation at a time, against the recommendations
+  // actually written today, so the cap holds however many presses arrive.
+  const cap = config.defaults.budgets.optimize.generations_per_account_per_day
+  const spent = await countOptimizeGenerationsSince(deps.db, scope, startOfDay(now))
+  if (spent >= cap) {
+    log.info('optimize_reco.daily_cap_reached', {
+      account_id: input.accountId,
+      opportunity_id: opportunity.id,
+      spent,
+      cap,
+    })
+    return { status: 'paused', reason: 'daily_cap_reached' }
   }
 
   const assembled = await assembleOptimizePack(deps, {
@@ -351,14 +431,6 @@ async function failValidation(
     rulesVersion: input.rulesVersion,
     state: 'failed_validation',
   })
-
-  await transitionOpportunityStatus(
-    deps.db,
-    scope,
-    input.opportunity.id,
-    { from: ['executing'], to: 'accepted' },
-    input.now,
-  )
 
   input.log.warn('optimize_reco.failed_validation', {
     account_id: input.accountId,
