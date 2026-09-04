@@ -1,5 +1,6 @@
 import type pg from 'pg'
 import {
+  readRepairOutcome,
   repairOutcome,
   type DriftKind,
   type Logger,
@@ -14,6 +15,7 @@ import {
   closeRepairTasks,
   completeRepair,
   highestPublishedRevision,
+  openRepairs,
   recordRepairProgress,
   repointArticleProductRef,
   type Db,
@@ -41,6 +43,16 @@ import { runtimeLogger } from '../runtime/logging'
  * nothing sent anywhere: its copy here is corrected so the download is the
  * repaired one, and the card on its dashboard is what asks it to replace the
  * live page.
+ *
+ * **The two halves are deliberately separate calls, and this is the file's one
+ * real design decision.** Mending our copy is what makes the article stop
+ * naming a product that has gone — and the moment it is mended, nothing looking
+ * at current state can tell that a repair was ever needed. So a worker that
+ * died between mending and republishing would leave a corrected copy here, a
+ * stale article on the merchant's blog, and no way for the next pass to notice.
+ * The second half is therefore driven by the open repair record rather than by
+ * looking at the store again: the record says a mend happened and no
+ * publication followed, and that survives any crash.
  */
 
 export interface RepairExecutionDeps {
@@ -56,32 +68,30 @@ export interface RepairExecutionDeps {
   readonly checkpoint?: (label: string) => void
 }
 
-export interface RepairExecutionInput {
+export interface RepairMendInput {
   readonly accountId: string
   readonly opportunityId: string
-  readonly articleId: string
   readonly kind: DriftKind
   readonly route: RepairRoute
   readonly swaps: readonly PlannedSwap[]
   readonly now: Date
 }
 
-export type RepairExecutionResult =
-  /** Mended, and where the store publishes for itself, waiting for the merchant to replace the live page. */
-  | { readonly status: 'repaired'; readonly references: readonly RepairedReference[] }
-  /** Mended here but not put back on the shop, and why. */
-  | { readonly status: 'card'; readonly reason: string }
-  /** Nothing to do — another worker got here first. */
-  | { readonly status: 'noop' }
-
-export async function applyMechanicalRepair(
+/**
+ * The first half: point every broken mention at its stand-in, and write down
+ * what was changed.
+ *
+ * The record is written whether or not anything is going to be published,
+ * because it is the record of what happened to the merchant's article — and,
+ * for a store we publish for, it is also what tells the next pass that a
+ * publication is still owed.
+ */
+export async function mendArticleReferences(
   deps: RepairExecutionDeps,
-  input: RepairExecutionInput,
-): Promise<RepairExecutionResult> {
-  const log = deps.logger ?? runtimeLogger()
+  input: RepairMendInput,
+): Promise<readonly RepairedReference[]> {
   const scope = accountScope(input.accountId)
-
-  if (input.swaps.length === 0) return { status: 'noop' }
+  if (input.swaps.length === 0) return []
 
   const repaired: RepairedReference[] = []
   for (const swap of input.swaps) {
@@ -105,109 +115,132 @@ export async function applyMechanicalRepair(
     }
   }
 
-  deps.checkpoint?.('repair:repointed')
-
-  if (input.route !== 'mechanical_auto') {
-    // The merchant's own copy is corrected and the card stands until they say
-    // they have replaced the live page. Recorded now rather than at completion
-    // so the repair log says what changed even while the card is still open.
-    await writeRepairRecord(deps, scope, input, repaired, undefined, false)
-    return { status: 'card', reason: 'merchant_replaces_the_live_page' }
-  }
-
-  const blocked = await publishingBlocked(deps.db, input.accountId, log)
-  if (blocked) {
-    // Degrade to pause, never to a worse article: the mend stands, and the
-    // corrected version goes out when publishing is allowed again.
-    await writeRepairRecord(deps, scope, input, repaired, undefined, false)
-    log.info('repair_publish_deferred', { account_id: input.accountId, article_id: input.articleId, reason: blocked })
-    return { status: 'card', reason: blocked }
-  }
-
-  if (!(deps.shopify && deps.cipher)) {
-    await writeRepairRecord(deps, scope, input, repaired, undefined, false)
-    log.warn('repair_publish_unconfigured', { account_id: input.accountId, article_id: input.articleId })
-    return { status: 'card', reason: 'publishing_unconfigured' }
-  }
-
-  // One number per revision, taken from the claims rather than from a counter
-  // of our own: a claim is written before anything is sent, so a crashed
-  // attempt has already used its number and the next repair takes the one
-  // after — which is what stops two attempts colliding on the claim's key.
-  const revisionN = (await highestPublishedRevision(deps.db, scope, input.articleId)) + 1
-
-  const outcome = await republishArticleToShopify(
-    {
-      db: deps.db,
-      pool: deps.pool,
-      shopify: deps.shopify,
-      cipher: deps.cipher,
-      ...(deps.notifications ? { notifications: deps.notifications } : {}),
-      ...(deps.capture ? { capture: deps.capture } : {}),
-      ...(deps.checkpoint ? { checkpoint: deps.checkpoint } : {}),
-      now: () => input.now,
-      logger: log,
-    },
-    { accountId: input.accountId, articleId: input.articleId, revisionN },
+  await recordRepairProgress(
+    deps.db,
+    scope,
+    input.opportunityId,
+    repairOutcome({
+      kind: input.kind,
+      route: input.route,
+      repairedAt: input.now.toISOString(),
+      references: repaired,
+    }),
+    input.now,
   )
 
-  if (outcome.status === 'updated') {
-    await writeRepairRecord(deps, scope, input, repaired, outcome.revisionN, true)
-    log.info('article_repaired', {
-      account_id: input.accountId,
-      article_id: input.articleId,
-      revision: outcome.revisionN,
-      references: repaired.length,
-    })
-    return { status: 'repaired', references: repaired }
-  }
+  deps.checkpoint?.('repair:mended')
+  return repaired
+}
 
-  // The mend stands and the merchant is told; the article on the shop is not
-  // ours to force. `republishArticleToShopify` has already raised its own
-  // notification for the cases a merchant has to act on.
-  await writeRepairRecord(deps, scope, input, repaired, undefined, false)
-  log.warn('repair_republish_failed', {
-    account_id: input.accountId,
-    article_id: input.articleId,
-    status: outcome.status,
-    reason: outcome.status === 'skipped' || outcome.status === 'failed' ? outcome.reason : 'unknown',
-  })
-  return { status: 'card', reason: outcome.status }
+export interface SettleResult {
+  /** Repairs whose corrected article is now back on the merchant's shop. */
+  readonly published: number
+  /** Repairs still owed a publication, and left open so the next pass tries again. */
+  readonly deferred: number
 }
 
 /**
- * Writes down what the repair changed.
+ * The second half: for every repair that mended an article and never got the
+ * corrected version back onto the shop, do that now.
  *
- * `finished` says whether the repair is over. It is over when the corrected
- * article is back on the merchant's shop; it is not over while a card is
- * waiting for them to replace the live page themselves, and closing it then
- * would take the card off their dashboard before they had done anything.
+ * Driven by the open repair records rather than by re-reading the store,
+ * because a mended copy looks exactly like a copy that never needed mending. A
+ * repair left half-done by a crash is therefore picked up by the next pass, and
+ * one that has already been published is not touched again — the record carries
+ * the revision it produced, and a record with a revision is finished.
  */
-async function writeRepairRecord(
+export async function settlePendingRepairs(
   deps: RepairExecutionDeps,
-  scope: ReturnType<typeof accountScope>,
-  input: RepairExecutionInput,
-  references: readonly RepairedReference[],
-  revisionN: number | undefined,
-  finished: boolean,
-): Promise<void> {
-  const record = repairOutcome({
-    kind: input.kind,
-    route: input.route,
-    repairedAt: input.now.toISOString(),
-    references,
-    ...(revisionN === undefined ? {} : { revisionN }),
-  })
+  input: { readonly accountId: string; readonly now: Date },
+): Promise<SettleResult> {
+  const log = deps.logger ?? runtimeLogger()
+  const scope = accountScope(input.accountId)
+  const open = await openRepairs(deps.db, scope)
 
-  if (finished) {
-    const closed = await completeRepair(deps.db, scope, input.opportunityId, record, input.now)
-    if (closed) await closeRepairTasks(deps.db, scope, input.opportunityId, input.now)
-    return
+  let published = 0
+  let deferred = 0
+
+  for (const repair of open) {
+    const record = readRepairOutcome(repair.outcome)
+    if (!record || record.route !== 'mechanical_auto' || record.revisionN !== undefined) continue
+
+    const blocked = await publishingBlocked(deps.db, input.accountId, log)
+    if (blocked) {
+      // Degrade to pause, never to a worse article: the mend stands, the repair
+      // stays open, and the corrected version goes out when publishing is
+      // allowed again.
+      deferred += 1
+      log.info('repair_publish_deferred', {
+        account_id: input.accountId,
+        article_id: repair.articleId,
+        reason: blocked,
+      })
+      continue
+    }
+
+    if (!(deps.shopify && deps.cipher)) {
+      deferred += 1
+      log.warn('repair_publish_unconfigured', {
+        account_id: input.accountId,
+        article_id: repair.articleId,
+      })
+      continue
+    }
+
+    // One number per revision, taken from the claims rather than from a counter
+    // of our own: a claim is written before anything is sent, so a crashed
+    // attempt has already used its number and the next try takes the one after
+    // — which is what stops two attempts colliding on the claim's key.
+    const revisionN = (await highestPublishedRevision(deps.db, scope, repair.articleId)) + 1
+
+    const outcome = await republishArticleToShopify(
+      {
+        db: deps.db,
+        pool: deps.pool,
+        shopify: deps.shopify,
+        cipher: deps.cipher,
+        ...(deps.notifications ? { notifications: deps.notifications } : {}),
+        ...(deps.capture ? { capture: deps.capture } : {}),
+        ...(deps.checkpoint ? { checkpoint: deps.checkpoint } : {}),
+        now: () => input.now,
+        logger: log,
+      },
+      { accountId: input.accountId, articleId: repair.articleId, revisionN },
+    )
+
+    if (outcome.status !== 'updated') {
+      // The mend stands and the repair stays open; the article on the shop is
+      // not ours to force. `republishArticleToShopify` has already raised its
+      // own notification for the cases a merchant has to act on.
+      deferred += 1
+      log.warn('repair_republish_failed', {
+        account_id: input.accountId,
+        article_id: repair.articleId,
+        status: outcome.status,
+        reason:
+          outcome.status === 'skipped' || outcome.status === 'failed' ? outcome.reason : 'unknown',
+      })
+      continue
+    }
+
+    const closed = await completeRepair(
+      deps.db,
+      scope,
+      repair.opportunityId,
+      repairOutcome({ ...record, revisionN: outcome.revisionN }),
+      input.now,
+    )
+    if (closed) await closeRepairTasks(deps.db, scope, repair.opportunityId, input.now)
+    published += 1
+    log.info('article_repaired', {
+      account_id: input.accountId,
+      article_id: repair.articleId,
+      revision: outcome.revisionN,
+      references: record.references.length,
+    })
   }
 
-  // The repair log without the repair being over: the card stays on the
-  // merchant's dashboard until they say they have replaced the live page.
-  await recordRepairProgress(deps.db, scope, input.opportunityId, record)
+  return { published, deferred }
 }
 
 /** Why publishing may not happen right now, or nothing. */

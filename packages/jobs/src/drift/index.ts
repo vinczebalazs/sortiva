@@ -6,10 +6,11 @@ export {
 } from './detect'
 
 export {
-  applyMechanicalRepair,
+  mendArticleReferences,
+  settlePendingRepairs,
   type RepairExecutionDeps,
-  type RepairExecutionInput,
-  type RepairExecutionResult,
+  type RepairMendInput,
+  type SettleResult,
 } from './repair'
 
 export {

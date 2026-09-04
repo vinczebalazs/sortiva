@@ -28,7 +28,7 @@ import {
   type ReferencedProductRow,
 } from '@sortiva/db'
 import { detectDrift, anyVariantAvailable } from './detect'
-import { applyMechanicalRepair, type RepairExecutionDeps } from './repair'
+import { mendArticleReferences, settlePendingRepairs, type RepairExecutionDeps } from './repair'
 import { withAccountLock } from '../runtime/lock'
 import { runtimeLogger } from '../runtime/logging'
 
@@ -105,7 +105,12 @@ async function driftPass(deps: DriftSweepDeps, accountId: string): Promise<Drift
 
   const references = await publishedArticleProductRefs(deps.db, scope)
   const articleIds = new Set(references.map((row) => row.articleId))
-  if (references.length === 0) return EMPTY
+  if (references.length === 0) {
+    // Still settle: a repair mended by a pass that was killed before it could
+    // publish is owed a publication, and nothing about current state says so.
+    const settled = await settlePendingRepairs(deps, { accountId, now })
+    return { ...EMPTY, repairedAutomatically: settled.published, cardsRaised: settled.deferred }
+  }
 
   const shopifyIds = references
     .map((row) => row.shopifyProductId)
@@ -142,8 +147,15 @@ async function driftPass(deps: DriftSweepDeps, accountId: string): Promise<Drift
   })
 
   if (observations.length === 0) {
-    log.info('drift_pass_complete', { account_id: accountId, articles: articleIds.size, drift: 0 })
-    return { ...EMPTY, articlesChecked: articleIds.size }
+    const settled = await settlePendingRepairs(deps, { accountId, now })
+    const quiet: DriftPassResult = {
+      ...EMPTY,
+      articlesChecked: articleIds.size,
+      repairedAutomatically: settled.published,
+      cardsRaised: settled.deferred,
+    }
+    log.info('drift_pass_complete', { account_id: accountId, ...quiet })
+    return quiet
   }
 
   const settings = await readRepairSettings(deps.db, scope)
@@ -182,7 +194,6 @@ async function driftPass(deps: DriftSweepDeps, accountId: string): Promise<Drift
     config.defaults.scoring.impact,
   )
 
-  let repairedAutomatically = 0
   let cardsRaised = 0
   let rewritesQueued = 0
 
@@ -193,41 +204,29 @@ async function driftPass(deps: DriftSweepDeps, accountId: string): Promise<Drift
 
     if (entry.routing.route === 'gate3_refresh') {
       rewritesQueued += 1
-      await tellTheMerchant(deps, accountId, entry.observation, entry.routing, log)
-      continue
-    }
-
-    if (routeWritesToShop(entry.routing.route)) {
-      const repaired = await applyMechanicalRepair(deps, {
+    } else {
+      // Both remaining routes mend the store's own copy. What separates them is
+      // only whether the corrected article is then put back on the merchant's
+      // shop by us or by them, and that is settled below.
+      await mendArticleReferences(deps, {
         accountId,
         opportunityId: row.id,
-        articleId: entry.observation.articleId,
         kind: entry.observation.kind,
         route: entry.routing.route,
         swaps: entry.swaps,
         now,
       })
-      if (repaired.status === 'repaired') repairedAutomatically += 1
-      else cardsRaised += 1
-      await tellTheMerchant(deps, accountId, entry.observation, entry.routing, log)
-      continue
+      if (!routeWritesToShop(entry.routing.route)) cardsRaised += 1
     }
 
-    // A card. Our own copy is still mended, so the download the card offers is
-    // genuinely the repaired article — what the merchant is spared is an edit
-    // to their own site, not the repair.
-    await applyMechanicalRepair(deps, {
-      accountId,
-      opportunityId: row.id,
-      articleId: entry.observation.articleId,
-      kind: entry.observation.kind,
-      route: entry.routing.route,
-      swaps: entry.swaps,
-      now,
-    })
-    cardsRaised += 1
     await tellTheMerchant(deps, accountId, entry.observation, entry.routing, log)
   }
+
+  // Everything mended and not yet published, including anything a previous
+  // pass mended and was killed before it could publish.
+  const settled = await settlePendingRepairs(deps, { accountId, now })
+  const repairedAutomatically = settled.published
+  cardsRaised += settled.deferred
 
   const result: DriftPassResult = {
     articlesChecked: articleIds.size,

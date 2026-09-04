@@ -294,6 +294,8 @@ export interface OpenRepairRow {
   readonly signalType: string
   readonly recommendedAction: string
   readonly since: Date
+  /** What this repair has already changed, where it has changed anything yet. */
+  readonly outcome: unknown
 }
 
 /** Every repair this store has open, whether it is waiting on us or on them. */
@@ -308,6 +310,7 @@ export async function openRepairs(
       signalType: opportunities.signalType,
       recommendedAction: opportunities.recommendedAction,
       since: opportunities.detectedAt,
+      outcome: opportunities.outcomeJson,
     })
     .from(opportunities)
     .where(

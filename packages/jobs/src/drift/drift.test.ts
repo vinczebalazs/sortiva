@@ -1,8 +1,14 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { and, eq } from 'drizzle-orm'
-import { readRepairOutcome, silentLogger } from '@sortiva/core'
+import {
+  attentionSourcesFor,
+  buildAttentionList,
+  readRepairOutcome,
+  silentLogger,
+} from '@sortiva/core'
 import {
   accountScope,
+  makeNotificationStore,
   openRepairs,
   repairHistory,
   schema,
@@ -488,6 +494,63 @@ describe.skipIf(!available)('the daily check on published articles', () => {
     // Nothing was swapped: the mention still names the product that went, and
     // the rewrite is what will deal with it.
     expect((await refRow(articleId)).productId).toBe(goneId)
+  })
+
+  it("puts the open repair on the dashboard's needs-you list", async () => {
+    const familyId = await seedFamily()
+    const goneId = await seedProduct({ shopifyId: 'shopify-gone', title: 'Steel bottle 750', familyId })
+    await seedProduct({ shopifyId: 'shopify-alt', title: 'Steel bottle 1000', familyId })
+    const articleId = await seedPublishedArticle({ productId: goneId })
+    await recordChange({ kind: 'product_deleted', entityId: 'shopify-gone', occurredAt: '2026-09-19T00:00:00.000Z' })
+
+    await runDriftPassForAccount(deps(), { accountId })
+
+    const store = makeNotificationStore({ database: db })
+    const items = await buildAttentionList(attentionSourcesFor(store, accountId), NOW)
+    const repair = items.find((item) => item.kind === 'repair_pending')
+    expect(repair?.refs.article_id).toBe(articleId)
+  })
+
+  it('finishes a repair a crash interrupted after the mend and before the post', async () => {
+    await grantPublishing()
+    const familyId = await seedFamily()
+    const goneId = await seedProduct({ shopifyId: 'shopify-gone', title: 'Steel bottle 750', familyId })
+    await seedProduct({ shopifyId: 'shopify-alt', title: 'Steel bottle 1000', familyId })
+    const remote = await shop.createArticle({
+      shop: 'acme',
+      accessToken: 'token',
+      blogId: 'blog-1',
+      title: 'Best bottles',
+      bodyHtml: '<p>The Steel bottle 750 is the one to buy.</p>',
+      handle: 'best-bottles',
+      summary: 'How to choose a bottle.',
+      marker: 'seeded',
+      publishAs: 'live',
+    })
+    const articleId = await seedPublishedArticle({ productId: goneId, remoteArticleId: remote.id })
+    await recordChange({ kind: 'product_deleted', entityId: 'shopify-gone', occurredAt: '2026-09-19T00:00:00.000Z' })
+    shop.calls.length = 0
+
+    // The worker dies the instant our copy is mended. From here on nothing
+    // looking at the store can tell a repair was ever needed: the mention names
+    // a product that is still on sale.
+    await expect(
+      runDriftPassForAccount(
+        { ...deps(), checkpoint: (label: string) => { if (label === 'repair:mended') throw new Error('killed') } },
+        { accountId },
+      ),
+    ).rejects.toThrow('killed')
+    expect(shop.calls.filter((call) => call.op === 'update')).toEqual([])
+    expect((await refRow(articleId)).productId).not.toBe(goneId)
+
+    // The next pass finds no drift at all, and still publishes what it owes.
+    const result = await runDriftPassForAccount(deps(), { accountId })
+
+    expect(result.driftFound).toBe(0)
+    expect(result.repairedAutomatically).toBe(1)
+    expect(shop.calls.filter((call) => call.op === 'update')).toHaveLength(1)
+    expect(shop.articles.get(remote.id)?.bodyHtml).toContain('Steel bottle 1000')
+    expect(await openRepairs(db, accountScope(accountId))).toEqual([])
   })
 
   it('leaves a store with nothing published entirely alone', async () => {

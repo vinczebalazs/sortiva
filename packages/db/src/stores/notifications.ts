@@ -9,6 +9,7 @@ import {
   unappliedOptimizeRecommendations,
 } from '../repositories/notifications'
 import { articlesAwaitingReview, unconfirmedExportedArticles } from '../repositories/articles'
+import { openRepairs } from '../repositories/repair'
 import { accountScope } from '../scope'
 
 /**
@@ -66,6 +67,14 @@ export function makeNotificationStore(options: NotificationStoreOptions = {}): N
         publishedBefore,
       )
       return rows.map((row) => ({ refs: { article_id: row.articleId }, since: row.since }))
+    },
+
+    async pendingRepairs(accountId) {
+      const rows = await openRepairs(database(), accountScope(accountId))
+      return rows.map((row) => ({
+        refs: { article_id: row.articleId, opportunity_id: row.opportunityId },
+        since: row.since,
+      }))
     },
 
     openMerchantTasks(accountId) {
