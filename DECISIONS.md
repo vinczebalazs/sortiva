@@ -3665,3 +3665,37 @@ Why: that rule stops any code outside `packages/db` importing the raw database h
 The file is integrator-resolved rather than union-merged, so a merge touches it. Flagged here and in the session report so that is expected rather than discovered.
 Nearest spec: build plan §3 ("Ordered code … stays integrator-resolved. If a lane needs to change one, say so in the session report").
 Class (filled by audit):
+
+## 2026-09-04 — R-STREAM-WIRE — A burst of edits collapses in the queue, not in the handler
+Decision: the webhook handler asks for a pass over the change record every time it records a change, and does nothing to combine those asks. Nothing counts, debounces, or checks whether a pass is already waiting.
+Why: the ask (`enqueueCatalogEventDrain`, `packages/jobs/src/inventory/queue.ts`) already carries a job key naming the account and nothing else, and the queue treats a second ask under an existing key as a replacement rather than an addition. A merchant re-tagging forty products therefore leaves one waiting pass, not forty. Adding a second guard in the handler would be a second answer to a question already answered, and the two would disagree the first time either changed.
+Proved rather than asserted: `apps/web/app/api/webhooks/shopify/[topic]/_lib/stream-wire.test.ts` delivers five edits through the receiver, checks all five were recorded as separate changes, and asserts exactly one pass is waiting with that account's key. Confirmed non-vacuous by making the key unique per ask and watching the test go red with five.
+Nearest spec: main §14.3.1 (a worker is effectively-once), §14.1.
+Class (filled by audit):
+
+## 2026-09-04 — R-STREAM-WIRE — The ask names no place to resume from, and can cost a waiting pass its place
+Decision: the ask carries only the account. It never carries a cursor — the marker saying how far through the change record the last pass got.
+Why: the webhook handler has no way to know one. The marker lives in the waiting pass's own payload, which is where a previous card deliberately put it to avoid a schema change.
+Consequence, stated: when a pass is already waiting *and* it carried a marker (which happens only in the seconds between a pass finding changes and re-running itself), the new ask replaces it and the marker is lost. That pass then re-reads the store's changes from the beginning and re-requests a read of every page ever changed. Wasteful, never wrong — a re-read writes the same rows — and self-correcting on the next pass. The window is small because a pass that asks for itself again runs immediately.
+What would close it: asking under a job-key mode that leaves an already-waiting job alone instead of replacing it (`unsafe_dedupe`), which is correct here because the waiting pass will read the new change anyway. That is a change to `packages/jobs/src/inventory/queue.ts`, which is Lane C's and outside this card's authorised edit. Flagged in the session report instead of taken.
+Nearest spec: main §14.3.1; DECISIONS 2026-09-02 T3.2 (the marker travels in the payload).
+Class (filled by audit):
+
+## 2026-09-04 — R-STREAM-WIRE — A delivery that changed nothing asks for nothing
+Decision: a `products/update` whose words, prices and stock all match what we already hold records no change and queues no pass. A duplicate or reordered delivery is likewise silent, because the handler stops before recording. Every delivery that *does* record a change queues a pass, even if that exact change was already in the record.
+Why: the first half is the point — Shopify sends `products/update` for edits to fields we do not track at all, and a pass per touch would be a paid market analysis per touch. The second half is deliberate slack in the safe direction: refusing to ask when the change record already held the row would leave a change the nightly sweep found (the sweep is deliberately not a trigger) waiting for a trigger that never comes. The cost of asking anyway is one job that collapses into the one already waiting.
+Nearest spec: main §14.1, §14.3.1.
+Class (filled by audit):
+
+## 2026-09-04 — R-STREAM-WIRE — Authorised cross-lane edit: the drain takes the scan as a factory, not a handle
+Decision: `CatalogEventDrainDeps.signalScan` in `packages/jobs/src/inventory/drain.ts` (Lane C's file) changes from `RunSignalScanDeps` to `() => RunSignalScanDeps`, and the one call site inside the drain calls it. Three comments in the same file that said the producing half of the change stream "does not exist yet" were rewritten; that has been false since `T2.2`.
+Why: the founder placed this card and the change is unavoidable. `RunSignalScanDeps` cannot be built without opening a database connection and taking the shared pool, and the composition root registers tasks while the server is starting — every other registration there is handed factories for exactly that reason. Leaving it eager would mean either opening a connection at start-up or leaving the scan unwired, which is the behaviour the card exists to add.
+Nothing else in Lane C's directories changed. `packages/jobs/src/inventory/drain.test.ts` never set `signalScan`, so no test needed adjusting.
+Nearest spec: build plan §3 (lane ownership); DECISIONS 2026-09-03 T3.7 (the event-driven scan).
+Class (filled by audit):
+
+## 2026-09-04 — R-STREAM-WIRE — NOT DONE, and the exact line it needs: the reader is still registered by nothing
+Decision: `registerCatalogEventTasks` still has no production caller. The composition-root line that would give it one belongs in `apps/web/instrumentation-node.ts`, which is integrator-resolved, so it is written into the session report rather than applied. `scripts/stub-report.mjs` and `packages/core/src/contracts/seams-wired.test.ts` are untouched for the same reason: they should change when the seam is genuinely wired, and that is the same moment.
+Consequence, stated: until the integrator applies the line, a merchant's edit queues a pass and nothing answers to the pass's name, so the inventory is still only as fresh as the nightly walk. Everything that runs once the line lands is built and proved.
+Nearest spec: build plan §3, §6 `R-STREAM`.
+Class (filled by audit):

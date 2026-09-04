@@ -9,12 +9,18 @@ import {
   unprocessedWebhooks,
 } from '@sortiva/db'
 import {
+  TEST_DATABASE_URL,
   databaseAvailable,
   insertAccount,
   setupTestDb,
   truncateAll,
   type TestDb,
 } from '@sortiva/db/testing'
+import {
+  TRUNCATE_QUEUE_SQL,
+  installQueueSchema,
+  type WorkerUtils,
+} from '../runtime/testing'
 import { verifyWebhookHmac } from '@sortiva/providers'
 import type { ConnectionStore, IngestionDeps } from './deps'
 import { drainShopifyWebhooks } from './webhooks'
@@ -32,6 +38,7 @@ import { DatabaseCatalogEvents } from './stream'
  */
 
 let harness: TestDb
+let queue: WorkerUtils
 let accountId: string
 const system = systemScope('the webhook tests read across accounts')
 
@@ -123,15 +130,22 @@ const available = await databaseAvailable()
 describe.skipIf(!available)('acting on what Shopify told us', () => {
   beforeAll(async () => {
     harness = await setupTestDb('shopify_webhooks')
+    // Recording a change now also asks for it to be read, and the ask goes on
+    // the queue — whose tables the worker installs, not our migrations.
+    const url = new URL(TEST_DATABASE_URL)
+    url.pathname = `/${harness.databaseName}`
+    queue = await installQueueSchema(url.toString())
   }, 60_000)
 
   afterAll(async () => {
+    await queue?.release()
     await harness?.close()
   })
 
   beforeEach(async () => {
     await truncateAll(harness.pool)
     await harness.pool.query('truncate webhook_events')
+    await harness.pool.query(TRUNCATE_QUEUE_SQL)
     accountId = await insertAccount(harness.pool, `hook-${Date.now()}@example.com`)
     await harness.pool.query(
       `insert into domains (account_id, domain_normalized, platform, state)
