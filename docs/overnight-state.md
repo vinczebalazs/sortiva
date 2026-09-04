@@ -5444,6 +5444,57 @@ running?* Journalled.
 **Two stale comments left in place**, both drawing only the calendar's path and now narrower than
 the graph beneath them. One is another lane's file, one is the database schema.
 
+### `R-OPTIMIZE-STUCK` LANDED — pressing the button no longer breaks the account
+
+**Merged. Gate green on the merged tree: nine of eleven.** Tests **3,339**, up from 3,330.
+`rules_version` moved to `c278e2af…` — **every lane inherits that.**
+
+**What changed for a merchant.** Before: the first press marked the page as being worked on, and
+that mark was counted as if a recommendation had been produced. After two presses the store's
+allowance of two a day was gone — **not for the day, for good** — and both pages were refused from
+then on with an error describing a scan that had never happened. Only a database edit could undo
+it. Now the mark costs nothing, the allowance counts recommendations actually written, a second
+press answers "still going" instead of an error, and every way the work can end hands the page
+back instead of freezing it.
+
+**The lane did the harder, right thing rather than the easy one.** Deleting the marked-row count
+on its own would have weakened a real spend control — several presses arriving before any
+finishes could all get past the request-time check. So the cap is **also re-read at dequeue**,
+under the account's lock, against the same meter, which is where spend caps belong anyway. The
+consequence was stated rather than hidden: a press accepted in such a burst and then refused by
+the job is answered "generating" and quietly handed back a moment later, with nothing shown. Only
+reachable when presses arrive faster than a generation completes.
+
+**One API answer changed, flagged rather than buried.** A second press now returns 200 "generating"
+where it returned 409. Nothing is pinned to the old answer — the frozen route table does not
+declare these four endpoints at all, which is `R-CONTRACT`'s subject — so no generated fake server
+and no screen is built against it.
+
+**Every new test was proved non-vacuous.** The lane restored the old behaviour and watched them
+fail: 3 with the old allowance count, 6 with the hand-back disabled. A **pre-existing** test also
+failed under the old counter, which is incidental proof the old count was already interfering with
+legitimate work.
+
+**Recovery is on the merchant's next read or press, not a background sweep — a judgement call the
+lane explained.** A scheduled reaper would need both a composition-root registration and a crontab
+entry, both integrator-resolved and both currently held, so it would have been code that runs
+nowhere: the exact shape of defect this card exists to remove. **What it costs:** a page nobody
+looks at again stays marked. It costs the store nothing now that the allowance ignores marks, and
+no merchant sees it, but an operator counting in-progress rows would over-count.
+
+**Registering the OPTIMIZE job is now SAFE on stuck-state grounds — and it is still not one line.**
+It needs a dependency bundle whose model client is **the same unresolved choice `R-INTENTGAP-JOB`
+reported and refused to pre-empt**: the generation lane memoises its own Anthropic client privately
+in `apps/web/app/api/articles/_lib/config.ts` and does not export it, and building a second client
+in one process is what that file's own comment warns against. **The lane did not guess, which was
+right.** The integrator's call, and it cannot be taken while Lane D is running in that same file.
+
+### `T6.3` DISPATCHED — the last card in M6
+
+Sent to Lane E the moment `R-OPTIMIZE-STUCK` merged, with the `R-GRAPH` history it needs: that the
+audit's list of missing transitions was one short, and that nothing consults the graph at write
+time so the graph informs rather than enforces.
+
 ### Verification done this morning, so it is not re-done
 
 - Resolved every registered task-name constant in the tree and matched it by hand against all
