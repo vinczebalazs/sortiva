@@ -9,7 +9,7 @@ export {
 export {
   PUBLISH_DELIVERY_ACCOUNT_TASK,
   PUBLISH_DELIVERY_SWEEP_TASK,
-  PUBLISH_RECOVERY_SWEEP_TASK,
+  PUBLISH_INTENT_RECOVERY_SWEEP_TASK,
   enqueuePublishDelivery,
   registerPublishTasks,
   resetPublishTaskRegistration,
