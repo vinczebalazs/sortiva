@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import {
+  AccountMenu,
   AppShell,
   bannerContextFromAccount,
   navContextFromAccount,
@@ -51,11 +52,23 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         banners={bannerContextFromAccount(account as ShellAccount, {
           vacationMode: settings?.vacationMode ?? false,
         })}
-        // `NotificationBell` is a Client Component; it takes the language
-        // code and builds its own translator rather than receiving this
-        // Server Component's `t` closure, which React cannot serialise
-        // across that boundary (see the component's own comment).
-        toolbar={account.accountId ? <NotificationBell language={language} /> : null}
+        // Both of these are Client Components; they take the language code and
+        // build their own translator rather than receiving this Server
+        // Component's `t` closure, which React cannot serialise across that
+        // boundary (see the bell's own comment).
+        //
+        // The account menu carries the only sign-out in the product. It hangs
+        // off the frame rather than off Settings, whose own list of controls is
+        // closed and does not include one — an inventory test holds the
+        // Settings screens to exactly that list.
+        toolbar={
+          account.accountId ? (
+            <>
+              <NotificationBell language={language} />
+              <AccountMenu language={language} />
+            </>
+          ) : null
+        }
       >
         {children}
       </AppShell>
