@@ -6,6 +6,7 @@ import {
   buildConsolidationRecommendation,
   consolidationInputFromEvidence,
   detectApplied,
+  fieldRationale,
   optimizeRouteFor,
   packFacts,
   renderConsolidationView,
@@ -392,13 +393,13 @@ function viewOf(row: OptimizeRecommendationRow): RecommendationView {
         field: 'title_tag',
         current: recommendation.title_tag.current,
         suggested: recommendation.title_tag.suggested,
-        evidence: recommendation.title_tag.rationale_key,
+        evidence: fieldRationale(recommendation.title_tag),
       },
       {
         field: 'meta_description',
         current: recommendation.meta_description.current,
         suggested: recommendation.meta_description.suggested,
-        evidence: recommendation.meta_description.rationale_key,
+        evidence: fieldRationale(recommendation.meta_description),
       },
     ],
     sections: recommendation.sections.map((section) => ({

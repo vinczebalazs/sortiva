@@ -19,9 +19,10 @@ import { runtimeLogger } from '../runtime/logging'
  * them.
  *
  * Deliberately not every page. The free filter picks the ones already sitting
- * where editing could move them, and the store's own daily allowance caps how
- * many of those get compared in one pass, so a large store's scan cannot spend
- * its whole day of analyses in one run.
+ * where editing could move them, and a ceiling below the store's own daily
+ * allowance of paid comparisons caps how many of those get compared in one
+ * pass, so a large store's scan leaves room for the comparisons the merchant
+ * buys themselves by pressing "improve this page".
  *
  * This returns signals rather than writing opportunities. Reconciling a
  * detection onto the `opportunities` table — the upsert on the partial unique
@@ -82,10 +83,12 @@ export async function scanIntentGaps(
     pages: indexPages(pageFacts),
     config,
     ...(input.competitorGapTargets ? { competitorGapTargets: input.competitorGapTargets } : {}),
-    // The store's own daily ceiling doubles as the cap on one pass. It is a
-    // spend limit either way, and inventing a second number for the same
-    // question would let the two disagree.
-    limit: rules().defaults.budgets.intent_gap.analyses_per_account_per_day,
+    // Deliberately fewer pages than the store's whole daily allowance of paid
+    // comparisons. The merchant's own "improve this page" button buys one more
+    // each time it is pressed and does not know this pass ran, so a pass that
+    // used the full allowance would leave the button spending past the store's
+    // own brake — on an ordinary day, with nobody doing anything unusual.
+    limit: rules().defaults.budgets.intent_gap.scheduled_shortlist_max,
   })
 
   const byUrl = new Map(inventory.map((row) => [row.url, row]))

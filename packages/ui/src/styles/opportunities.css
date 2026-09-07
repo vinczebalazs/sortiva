@@ -451,6 +451,13 @@
   color: var(--sortiva-text-faint);
 }
 
+.sortiva-rec__model-written {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+}
+
 .sortiva-rec__pair {
   display: grid;
   grid-template-columns: 1fr 1fr;

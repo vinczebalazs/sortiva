@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "rules_version": "c278e2af98a4caa53e5d5ee366de8b8b4c4b760b798d5903671dc3cb1197e8e8",
+  "rules_version": "bf05523957f291fe727af6087a988d54c4135f75e53dea1e5d9b4a958dca633f",
   "defaults": {
     "signals": {
       "striking_distance": {
@@ -281,7 +281,8 @@
         "generations_per_account_per_day": 2
       },
       "intent_gap": {
-        "analyses_per_account_per_day": 10
+        "analyses_per_account_per_day": 10,
+        "scheduled_shortlist_max": 8
       }
     },
     "auto_trips": {
@@ -648,7 +649,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -1014,7 +1016,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -1380,7 +1383,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -1746,7 +1750,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -2112,7 +2117,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -2478,7 +2484,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -2844,7 +2851,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -3210,7 +3218,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -3576,7 +3585,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -3942,7 +3952,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -4308,7 +4319,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -4674,7 +4686,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -5040,7 +5053,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -5406,7 +5420,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -5772,7 +5787,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -6138,7 +6154,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -6504,7 +6521,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -6870,7 +6888,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -7236,7 +7255,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -7602,7 +7622,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {
@@ -7968,7 +7989,8 @@
           "generations_per_account_per_day": 2
         },
         "intent_gap": {
-          "analyses_per_account_per_day": 10
+          "analyses_per_account_per_day": 10,
+          "scheduled_shortlist_max": 8
         }
       },
       "auto_trips": {

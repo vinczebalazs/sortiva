@@ -140,12 +140,12 @@ export function fixtureRecommendation(
     title_tag: {
       current: 'Wide trail running shoes | Example Store',
       suggested: 'Wide trail running shoes for wide feet | Example Store',
-      rationale_key: 'ctr_below_curve',
+      rationale: 'The current title never says the shoes come in wide fittings, which is what people are searching for.',
     },
     meta_description: {
       current: 'Trail shoes with room across the forefoot.',
       suggested: 'Trail shoes in D and 2E widths, with a fitting guide and wet-weather advice.',
-      rationale_key: null,
+      rationale: null,
     },
     headings: [{ op: 'add', level: 2, text: 'How to measure your forefoot', after: 'Our widths' }],
     sections: [

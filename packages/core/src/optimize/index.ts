@@ -62,6 +62,7 @@ export {
 export {
   RECOMMENDATION_RESPONSE_SCHEMA,
   buildRecommendationRequest,
+  fieldRationale,
   generateRecommendation,
   type BuildRecommendationInput,
   type GenerateRecommendationDeps,

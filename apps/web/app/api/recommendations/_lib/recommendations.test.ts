@@ -1,5 +1,10 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import type { OptimizeRecommendation, RecommendationLabels } from '@sortiva/core'
+import {
+  RECOMMENDATION_RESPONSE_SCHEMA,
+  type OptimizeRecommendation,
+  type RecommendationLabels,
+} from '@sortiva/core'
+import { loadPrompt } from '@sortiva/llm/prompts'
 import {
   accountScope,
   insertMinimalOpportunity,
@@ -22,6 +27,7 @@ import {
 } from '@sortiva/jobs/runtime/testing'
 import { rules } from '@sortiva/rules'
 import { withAccount } from '../../auth/_lib/session'
+import { OPTIMIZE_RECO_PROMPT_MAJOR_VERSION } from './config'
 import {
   makeApplyRecommendationHandler,
   makeDownloadRecommendationHandler,
@@ -34,6 +40,32 @@ import {
  * T6.2 done-when: "third request in a day returns the cap error; mark-applied
  * schedules an outcome row at +28 d".
  */
+
+
+/**
+ * The prompt and the schema are two halves of one instruction, and nothing
+ * makes them agree. The first version of this prompt never mentioned the
+ * `rationale` field at all, while the schema refused any answer without it — so
+ * the model filled a field nobody had told it what to put in, and whatever came
+ * out was shown to the merchant. This holds the version the product actually
+ * asks with, not a version named here.
+ */
+describe('the writing prompt against the answer it demands', () => {
+  const prompt = loadPrompt('optimize-reco', OPTIMIZE_RECO_PROMPT_MAJOR_VERSION)
+
+  const demanded = [
+    ...RECOMMENDATION_RESPONSE_SCHEMA.required,
+    ...RECOMMENDATION_RESPONSE_SCHEMA.properties.title_tag.required,
+    ...RECOMMENDATION_RESPONSE_SCHEMA.properties.sections.items.required,
+    ...RECOMMENDATION_RESPONSE_SCHEMA.properties.faq.items.required,
+  ]
+
+  for (const field of new Set(demanded)) {
+    it(`tells the model what belongs in "${field}"`, () => {
+      expect(prompt.text).toContain(field)
+    })
+  }
+})
 
 const available = await databaseAvailable()
 const NOW = new Date('2026-09-03T10:00:00.000Z')
@@ -64,8 +96,8 @@ const PAGE_URL = 'https://example-store.com/collections/wide-trail-shoes'
 
 function recommendation(): OptimizeRecommendation {
   return {
-    title_tag: { current: 'Wide trail shoes', suggested: 'Wide trail running shoes', rationale_key: null },
-    meta_description: { current: null, suggested: 'Trail shoes in two widths.', rationale_key: null },
+    title_tag: { current: 'Wide trail shoes', suggested: 'Wide trail running shoes', rationale: null },
+    meta_description: { current: null, suggested: 'Trail shoes in two widths.', rationale: null },
     headings: [],
     sections: [
       {

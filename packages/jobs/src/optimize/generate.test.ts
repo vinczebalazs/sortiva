@@ -81,12 +81,12 @@ function goodRecommendation(): OptimizeRecommendation {
     title_tag: {
       current: 'Hiking boots',
       suggested: 'Waterproof hiking boots, sized for wide feet',
-      rationale_key: 'ctr_below_curve',
+      rationale: 'The current title never says the shoes come in wide fittings, which is what people are searching for.',
     },
     meta_description: {
       current: 'Our hiking boots',
       suggested: 'Boots in full-grain leather, with a sizing guide and wet-weather advice.',
-      rationale_key: null,
+      rationale: null,
     },
     headings: [{ op: 'add', level: 2, text: 'How waterproof are they', after: 'Our range' }],
     sections: [

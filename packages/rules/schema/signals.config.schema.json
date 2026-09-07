@@ -1204,10 +1204,15 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "analyses_per_account_per_day"
+            "analyses_per_account_per_day",
+            "scheduled_shortlist_max"
           ],
           "properties": {
             "analyses_per_account_per_day": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "scheduled_shortlist_max": {
               "type": "integer",
               "minimum": 0
             }

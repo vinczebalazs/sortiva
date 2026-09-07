@@ -15,8 +15,27 @@ import { packFacts, type OptimizeEvidencePack } from './pack'
 export interface RecommendationField {
   readonly current: string | null
   readonly suggested: string
-  /** Which of the reasons we recognise motivated the change. Rendered from a template, never shown as the model wrote it. */
-  readonly rationale_key: string | null
+  /**
+   * One sentence from the model saying why the suggestion beats what is there.
+   * Free prose, not a key into the copy catalogue, and shown to the merchant
+   * exactly as the model wrote it — so every surface that renders it has to say
+   * it was written by a model. Null when the model had nothing to add.
+   */
+  readonly rationale: string | null
+}
+
+/**
+ * The model's sentence for one field, read from a stored recommendation.
+ *
+ * Recommendations generated before the field was renamed are stored under its
+ * old name, `rationale_key`, and those rows are never rewritten — so anything
+ * reading a recommendation back out of the database has to accept both spellings
+ * or a merchant's older recommendation silently loses its explanation.
+ */
+export function fieldRationale(field: RecommendationField): string | null {
+  if (field.rationale !== undefined) return field.rationale
+  const legacy = (field as { readonly rationale_key?: string | null }).rationale_key
+  return legacy ?? null
 }
 
 export interface RecommendationHeading {
@@ -63,11 +82,11 @@ export interface OptimizeRecommendation {
 const FIELD_SCHEMA = {
   type: 'object',
   additionalProperties: false,
-  required: ['current', 'suggested', 'rationale_key'],
+  required: ['current', 'suggested', 'rationale'],
   properties: {
     current: { type: ['string', 'null'] },
     suggested: { type: 'string', minLength: 1 },
-    rationale_key: { type: ['string', 'null'] },
+    rationale: { type: ['string', 'null'] },
   },
 } as const
 

@@ -250,8 +250,15 @@ export function OpportunityDrawer({
                     <span className="sortiva-rec__field-name">
                       {recommendationFieldLabel(field.field, t)}
                     </span>
+                    {/* The one sentence on this card the model wrote itself and
+                        nobody checked, so it says so where it is read. */}
                     {field.evidence ? (
-                      <span className="sortiva-rec__evidence">{field.evidence}</span>
+                      <span className="sortiva-rec__evidence" data-rec-model-written={field.field}>
+                        <span className="sortiva-rec__model-written">
+                          {t('opportunities.rec.modelWritten')}
+                        </span>{' '}
+                        {field.evidence}
+                      </span>
                     ) : null}
                   </div>
                   <div className="sortiva-rec__pair">

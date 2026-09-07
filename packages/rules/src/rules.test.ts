@@ -137,6 +137,7 @@ const NAMED_THRESHOLDS: ReadonlyArray<readonly [path: string, spec: string]> = [
   // ── Caps & auto-trips ──────────────────────────────────────────────────────
   ['budgets.optimize.generations_per_account_per_day', 'main §10.2 — 2 generations per account per day'],
   ['budgets.intent_gap.analyses_per_account_per_day', 'main §14.5 — per-account daily cap on intent-gap analysis'],
+  ['budgets.intent_gap.scheduled_shortlist_max', 'main §10.3, §14.5 — the scheduled pass shortlists fewer pages than the allowance'],
   ['auto_trips.flag_check_max_staleness_seconds', 'main §14.5 — flags effective within 60s'],
   ['auto_trips.account_llm_spend.trailing_median_multiple_max', 'main §14.5 — > 10× trailing-30-day median'],
   ['auto_trips.account_llm_spend.trailing_median_window_days', 'main §14.5 — trailing-30-day median'],
