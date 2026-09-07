@@ -131,8 +131,9 @@ export async function runExportDeliveryForAccount(
     ])
 
     // Cleared for delivery means graded and passed, approved after review, or
-    // published over a rejection on the merchant's own instruction. The state
-    // alone cannot say which: a draft exists before the writer has run.
+    // published over a rejection on the merchant's own instruction. For the
+    // first two the state alone cannot say which — a draft row exists before
+    // the writer has run — so this read is the only thing that may answer it.
     const ready = await articlesReadyForDelivery(deps.db, scope)
 
     const decision = decideDelivery({ switches, lifecycle, hasArticleReady: ready.length > 0 })

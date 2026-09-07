@@ -4,10 +4,13 @@ import { OVERRIDE_GATE_OUTCOME } from '@sortiva/core'
 import { accountScope } from './scope'
 import type { Db } from './client'
 import {
+  articlesAwaitingReview,
   articlesReadyForDelivery,
   findArticleById,
   gateDecisionsForCalibration,
   insertGateDecision,
+  markArticleDelivered,
+  markArticleInReview,
   markArticleOverridden,
   markArticleRejectedByGate,
 } from './repositories'
@@ -74,7 +77,7 @@ describe.skipIf(!available)('the override path and the calibration exclusion', (
     return { topicId: topic[0]!.id, articleId: article[0]!.id }
   }
 
-  it('flags the article and returns it to the ordinary delivery path', async () => {
+  it('flags the article and moves it to the state that says a person cleared it', async () => {
     const scope = accountScope(accountId)
     const { articleId } = await anArticle('overridden-guide')
 
@@ -83,10 +86,10 @@ describe.skipIf(!available)('the override path and the calibration exclusion', (
 
     const overridden = await markArticleOverridden(db, scope, articleId)
     expect(overridden?.publishedViaOverride).toBe(true)
-    // Back to `draft`: the merchant has already given the deliberate
-    // confirmation, so publishing picks it up exactly as it would a draft that
-    // passed.
-    expect(overridden?.state).toBe('draft')
+    // Not back to `draft`, which is also where an un-graded row sits:
+    // `cleared_to_deliver` is the one state that says a person decided this
+    // goes out.
+    expect(overridden?.state).toBe('cleared_to_deliver')
   })
 
   it('refuses to override an article the gate never rejected', async () => {
@@ -150,11 +153,9 @@ describe.skipIf(!available)('the override path and the calibration exclusion', (
    * The other half of "publish anyway": the article has to be able to go out.
    *
    * `articlesReadyForDelivery` is the single read that answers "which finished
-   * articles go out today", and until this landed it asked only whether the
-   * quality bar had passed the article's topic. An overridden article's only
-   * decision is the rejection, so it could never be returned — the one case
-   * "publish anyway" exists to serve would have been the one case that never
-   * went out.
+   * articles go out today". An overridden article's only recorded decision is
+   * the rejection, so what makes it deliverable is its own state saying a
+   * person cleared it — not the flag, and not a decision row.
    */
   describe('what an override makes deliverable', () => {
     /** A rejection recorded on the topic, so the article's only decision is a refusal. */
@@ -187,13 +188,17 @@ describe.skipIf(!available)('the override path and the calibration exclusion', (
     })
 
     /**
-     * Nothing writes this outcome yet — the override route is not built. The
-     * arm exists so that when it is built and records the decision, delivery
-     * already accepts it. Planted by hand here for exactly that reason.
+     * The whole reason the state exists, planted rather than assumed.
+     *
+     * An un-graded draft is a row a run created and then died before the judge
+     * ever saw it. Give its topic every mark short of the state itself — a
+     * refusal, and an audit row saying an override happened — and it must
+     * still go nowhere. Delivery is decided by the article's own state, not by
+     * anything on the decision trail.
      */
-    it('delivers an article whose override was recorded as a gate 3 decision', async () => {
+    it('never delivers an un-graded draft, whatever is written on its decision trail', async () => {
       const scope = accountScope(accountId)
-      const { topicId, articleId } = await anArticle('recorded-override')
+      const { topicId, articleId } = await anArticle('planted-ungraded')
 
       await reject(topicId)
       await insertGateDecision(db, scope, {
@@ -206,10 +211,58 @@ describe.skipIf(!available)('the override path and the calibration exclusion', (
         modelId: 'claude-sonnet-5',
       })
 
-      // The flag is deliberately not set: this proves the decision row alone
-      // is enough.
-      expect((await findArticleById(db, scope, articleId))?.publishedViaOverride).toBe(false)
-      expect((await articlesReadyForDelivery(db, scope)).map((a) => a.id)).toEqual([articleId])
+      expect((await findArticleById(db, scope, articleId))?.state).toBe('draft')
+      expect(await articlesReadyForDelivery(db, scope)).toEqual([])
+    })
+
+    /**
+     * The flag's meaning is "keep this out of the learning data". It was once
+     * read as "cleared to publish" too, because no state could say that; it no
+     * longer is, and an article carrying it in the wrong state stays put.
+     */
+    it('does not deliver on the override flag alone', async () => {
+      const scope = accountScope(accountId)
+      const { topicId, articleId } = await anArticle('flag-without-state')
+
+      await reject(topicId)
+      await pool.query(`UPDATE articles SET published_via_override = true WHERE id = $1`, [articleId])
+
+      expect((await findArticleById(db, scope, articleId))?.publishedViaOverride).toBe(true)
+      expect(await articlesReadyForDelivery(db, scope)).toEqual([])
+    })
+
+    /**
+     * The second half of the founder's decision: a merchant who has just
+     * overruled the quality bar has already made the call review exists to ask
+     * for, so the article never reaches a review queue — on any account,
+     * whatever their review setting says.
+     */
+    it('never puts an overruled article in front of the merchant for review', async () => {
+      const scope = accountScope(accountId)
+      const overridden = await anArticle('overruled-not-reviewed')
+
+      await reject(overridden.topicId)
+      await markArticleRejectedByGate(db, scope, overridden.articleId)
+      await markArticleOverridden(db, scope, overridden.articleId)
+
+      // The move into review is guarded to `draft` and matches nothing here,
+      // so even a caller that tried would move nothing.
+      expect(await markArticleInReview(db, scope, overridden.articleId)).toBeUndefined()
+      expect(await articlesAwaitingReview(db, scope)).toEqual([])
+      expect((await findArticleById(db, scope, overridden.articleId))?.state).toBe('cleared_to_deliver')
+    })
+
+    /** And it is still handed over, in the same state, by the write the publish hour uses. */
+    it('lets the publish hour hand the overruled article over', async () => {
+      const scope = accountScope(accountId)
+      const overridden = await anArticle('overruled-and-handed-over')
+
+      await reject(overridden.topicId)
+      await markArticleRejectedByGate(db, scope, overridden.articleId)
+      await markArticleOverridden(db, scope, overridden.articleId)
+
+      const delivered = await markArticleDelivered(db, scope, overridden.articleId, 'export')
+      expect(delivered?.state).toBe('published')
     })
 
     /**
