@@ -9,6 +9,7 @@ import {
   markArticleRejectedByGate,
 } from '@sortiva/db'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
+import { renderTemplatedLine, t } from '@sortiva/ui'
 import { withAccount } from '../../auth/_lib/session'
 import { makeGetCalendarHandler } from './handlers'
 
@@ -218,6 +219,141 @@ describe.skipIf(!available)('GET /api/calendar', () => {
     expect(body.topics[0]?.rejection?.gate).toBe('gate_3')
     // Not a gate-1 fallback invented because the override row has no reason.
     expect(body.topics[0]?.rejection?.reason.templateKey).toBe('gate3.below_quality_bar')
+  })
+
+  /**
+   * What a merchant actually reads on a held day.
+   *
+   * The response having a populated `params` object proves nothing on its own:
+   * for the life of this feature the key it was filed under and the key the
+   * catalogue held were different, so a correct bag of values still rendered
+   * "the reasoning for this one isn't available yet". So this drives the real
+   * handler and then puts its answer through the real renderer, and asserts on
+   * the sentence rather than on the shape of the response.
+   */
+  const held = async (
+    scoresJson: unknown,
+    reasonUserFacing: string | null = 'gate3.below_quality_bar',
+  ) => {
+    const scope = accountScope(accountId)
+    const opportunity = await insertMinimalOpportunity(
+      harness.db,
+      scope,
+      {
+        signalType: 'uncovered_commercial_query',
+        entityType: 'query_cluster',
+        entityRef: 'q-held',
+        evidenceJson: [],
+        recommendedAction: 'create',
+        status: 'scheduled',
+        reasonTemplateKey: 'gate1.admitted',
+        reasonParams: {},
+        limitedIntelligence: false,
+        rulesVersion: 'a'.repeat(64),
+      },
+      NOW,
+    )
+    const topic = await insertTopic(
+      harness.db,
+      scope,
+      {
+        opportunityId: opportunity.id,
+        title: 'Sizing a wide-fit trail shoe',
+        targetKeyword: 'wide fit trail shoes',
+        keywordCluster: null,
+        intentClass: 'buying_guide',
+        familyIds: [],
+        kind: 'new',
+        source: 'auto',
+        whyLine: 'topic.auto',
+        scheduledDate: '2026-03-15',
+        pinned: false,
+        state: 'rejected_by_gate',
+      },
+      NOW,
+    )
+    await insertGateDecision(
+      harness.db,
+      scope,
+      {
+        topicId: topic.id,
+        gate: 3,
+        outcome: 'rejected_after_repair',
+        scoresJson,
+        reasonUserFacing,
+        promptVersion: 'judge.v2',
+        modelId: 'claude-test',
+      },
+      NOW,
+    )
+
+    const body = calendarResponseSchema.parse(
+      await (await get(accountId, '?from=2026-03-01&to=2026-03-31')).json(),
+    )
+    const reason = body.topics[0]?.rejection?.reason
+    if (!reason) throw new Error('the held day carried no reason at all')
+    return { reason, line: renderTemplatedLine(reason, t) }
+  }
+
+  // The grader's own objection, written by a model. It is the one sentence in
+  // the product our words do not compose, and it is always English whatever
+  // language the store publishes in.
+  const JUSTIFICATION =
+    'The comparison section restates the specifications already listed on the product pages and adds no measurement a reader could not find there.'
+
+  it('bites: a held day tells the merchant which criteria failed and what the grader wrote', async () => {
+    const { line } = await held({
+      scores: { informationGain: 2, actionability: 3 },
+      justifications: { informationGain: JUSTIFICATION },
+      failed_criteria: ['informationGain'],
+      reason_params: { failed_criteria: 'informationGain', first_justification: JUSTIFICATION },
+    })
+
+    expect(line.known, 'the reason fell through to the "no reasoning yet" line').toBe(true)
+    expect(line.text).not.toBe(t('opportunities.whyUnavailable'))
+    expect(line.text).toContain('informationGain')
+    expect(line.text).toContain(JUSTIFICATION)
+    // Nothing between the grader and the merchant rewrites, truncates or
+    // translates the sentence — which is what makes a Danish store's card carry
+    // an English objection, because English is what the grader was asked for.
+    expect(line.text.endsWith(JUSTIFICATION)).toBe(true)
+    expect(line.text).not.toContain('{')
+  })
+
+  it('bites: a lint rejection names where the draft tripped', async () => {
+    const { line } = await held(
+      {
+        lint_issues: [{ category: 'near_duplicate', kind: 'similar', location: 'Section 2', detail: 'close to an article published in January' }],
+        reason_params: {
+          issue_count: 1,
+          first_location: 'Section 2',
+          first_detail: 'close to an article published in January',
+        },
+      },
+      'gate3.near_duplicate',
+    )
+
+    expect(line.known).toBe(true)
+    expect(line.text).toContain('close to an article published in January')
+    expect(line.text).not.toContain('{')
+  })
+
+  it('does not invent values a decision never recorded', async () => {
+    // An older row, written before the gate stored its parameters. The sentence
+    // renders with its blanks left visible rather than with anything guessed —
+    // the honest failure, and the one the guard in `packages/ui` exists to keep
+    // from becoming permanent.
+    const { reason } = await held({ scores: { informationGain: 2 } })
+    expect(reason.params).toEqual({})
+  })
+
+  it('drops a recorded value that is not a word or a number', async () => {
+    // `scores_json` is free-form, and an object interpolated into a sentence
+    // reads to a merchant as "[object Object]".
+    const { reason } = await held({
+      reason_params: { failed_criteria: 'informationGain', first_justification: { text: 'nested' } },
+    })
+    expect(reason.params).toEqual({ failed_criteria: 'informationGain' })
   })
 
   it('rejects a malformed query', async () => {
