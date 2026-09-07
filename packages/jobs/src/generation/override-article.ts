@@ -8,7 +8,7 @@ import {
 import {
   accountScope,
   findArticleById,
-  findLatestGateDecisionForTopic,
+  gate3DecisionsForTopic,
   insertGateDecision,
   markArticleOverridden,
   type ArticleRow,
@@ -85,7 +85,9 @@ export async function publishAnyway(
 
   // Read before the move: the refusal being overruled is what the audit row
   // has to name, and the override writes a decision of its own on top of it.
-  const rejection = await findLatestGateDecisionForTopic(deps.db, scope, existing.topicId, [3])
+  // Asked for by name rather than as "the most recent gate-3 row", so it stays
+  // the graded decision even once an override sits above it.
+  const { grading: rejection } = await gate3DecisionsForTopic(deps.db, scope, existing.topicId)
 
   const overridden = await markArticleOverridden(deps.db, scope, input.articleId, now)
   // Zero rows means the article is not a rejected draft — it was never held

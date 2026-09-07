@@ -1,6 +1,13 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { calendarResponseSchema } from '@sortiva/core'
-import { accountScope, insertMinimalOpportunity, insertTopic } from '@sortiva/db'
+import {
+  accountScope,
+  insertGateDecision,
+  insertMinimalOpportunity,
+  insertTopic,
+  markArticleOverridden,
+  markArticleRejectedByGate,
+} from '@sortiva/db'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
 import { withAccount } from '../../auth/_lib/session'
 import { makeGetCalendarHandler } from './handlers'
@@ -130,6 +137,87 @@ describe.skipIf(!available)('GET /api/calendar', () => {
     const response = await get(accountId, '?from=2026-03-01&to=2026-03-31')
     const body = calendarResponseSchema.parse(await response.json())
     expect(body.topics).toHaveLength(0)
+  })
+
+  it('bites: a day the merchant published anyway still names the reason we held it', async () => {
+    const scope = accountScope(accountId)
+    const opportunity = await insertMinimalOpportunity(
+      harness.db,
+      scope,
+      {
+        signalType: 'uncovered_commercial_query',
+        entityType: 'query_cluster',
+        entityRef: 'q-3',
+        evidenceJson: [],
+        recommendedAction: 'create',
+        status: 'scheduled',
+        reasonTemplateKey: 'gate1.admitted',
+        reasonParams: {},
+        limitedIntelligence: false,
+        rulesVersion: 'a'.repeat(64),
+      },
+      NOW,
+    )
+    const topic = await insertTopic(
+      harness.db,
+      scope,
+      {
+        opportunityId: opportunity.id,
+        title: 'Held back, then overruled',
+        targetKeyword: 'trail shoe sizing',
+        keywordCluster: null,
+        intentClass: 'buying_guide',
+        familyIds: [],
+        kind: 'new',
+        source: 'auto',
+        whyLine: 'topic.auto',
+        scheduledDate: '2026-03-15',
+        pinned: false,
+        state: 'rejected_by_gate',
+      },
+      NOW,
+    )
+    const { rows: article } = await harness.pool.query<{ id: string }>(
+      'INSERT INTO articles (account_id, topic_id, title, slug) VALUES ($1,$2,$3,$4) RETURNING id',
+      [accountId, topic.id, 'Held back, then overruled', 'held-back'],
+    )
+    await insertGateDecision(
+      harness.db,
+      scope,
+      {
+        topicId: topic.id,
+        gate: 3,
+        outcome: 'rejected_after_repair',
+        scoresJson: { scores: { informationGain: 2 } },
+        reasonUserFacing: 'gate3.below_quality_bar',
+        promptVersion: 'judge.v1',
+        modelId: 'claude-test',
+      },
+      NOW,
+    )
+    await markArticleRejectedByGate(harness.db, scope, article[0]!.id)
+    await markArticleOverridden(harness.db, scope, article[0]!.id)
+    // The override's own row, written a minute later, carries no reason of its
+    // own — the refusal it overrules is where the reason lives.
+    await insertGateDecision(
+      harness.db,
+      scope,
+      {
+        topicId: topic.id,
+        gate: 3,
+        outcome: 'overridden',
+        scoresJson: { scores: { informationGain: 2 } },
+        reasonUserFacing: null,
+        promptVersion: 'judge.v1',
+        modelId: 'claude-test',
+      },
+      new Date(NOW.getTime() + 60_000),
+    )
+
+    const body = calendarResponseSchema.parse(await (await get(accountId, '?from=2026-03-01&to=2026-03-31')).json())
+    expect(body.topics[0]?.rejection?.gate).toBe('gate_3')
+    // Not a gate-1 fallback invented because the override row has no reason.
+    expect(body.topics[0]?.rejection?.reason.templateKey).toBe('gate3.below_quality_bar')
   })
 
   it('rejects a malformed query', async () => {

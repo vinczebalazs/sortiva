@@ -3,12 +3,13 @@ import {
   articleRefreshTimes,
   findArticleById,
   findArticleProductRefs,
-  findLatestGateDecisionForTopic,
   findTopic,
+  gate3DecisionsForTopic,
   liveProductsByIds,
   repairHistory,
   type ArticleRow,
   type Db,
+  type Gate3DecisionsForTopic,
 } from '@sortiva/db'
 import { ArticleHasNoBody, ArticleNotFound, renderArticleForReading } from '../publish/bundle'
 import { BundleNotBuildable } from '@sortiva/core'
@@ -109,15 +110,18 @@ async function historyOf(
   deps: ArticleDetailDeps,
   accountId: string,
   article: ArticleRow,
-  decision: Awaited<ReturnType<typeof findLatestGateDecisionForTopic>>,
+  gate3: Gate3DecisionsForTopic,
 ): Promise<readonly { readonly at: string; readonly event: string }[]> {
   const scope = accountScope(accountId)
   const entries: { at: Date; event: string }[] = [{ at: article.createdAt, event: 'generated' }]
 
-  if (decision) {
-    if (decision.outcome === 'overridden') entries.push({ at: decision.decidedAt, event: 'overridden' })
-    else if (decision.outcome !== 'passed') entries.push({ at: decision.decidedAt, event: 'rejected' })
+  // Both, when both happened. Being overruled does not undo having been held
+  // back, and a story that showed only the override would read as though we
+  // had never objected.
+  if (gate3.grading && gate3.grading.outcome !== 'passed') {
+    entries.push({ at: gate3.grading.decidedAt, event: 'rejected' })
   }
+  if (gate3.override) entries.push({ at: gate3.override.decidedAt, event: 'overridden' })
   if (article.state === 'discarded') entries.push({ at: article.updatedAt, event: 'discarded' })
   if (article.publishedAt) entries.push({ at: article.publishedAt, event: 'published' })
 
@@ -142,7 +146,11 @@ export async function readArticleDetail(
   if (!article) return null
 
   const topic = await findTopic(deps.db, scope, article.topicId)
-  const decision = await findLatestGateDecisionForTopic(deps.db, scope, article.topicId, [3])
+  // The decision that judged the words, never the one recording that a
+  // merchant overruled it: a merchant who has just published past our
+  // objections is exactly who needs to be able to read them.
+  const gate3 = await gate3DecisionsForTopic(deps.db, scope, article.topicId)
+  const decision = gate3.grading
 
   const refs = await findArticleProductRefs(deps.db, scope, input.articleId)
   const productIds = [...new Set(refs.flatMap((ref) => (ref.productId ? [ref.productId] : [])))]
@@ -190,6 +198,6 @@ export async function readArticleDetail(
     },
     evidencePack: products.map((product) => ({ productId: product.id, title: product.title })),
     qualityReport,
-    history: await historyOf(deps, input.accountId, article, decision),
+    history: await historyOf(deps, input.accountId, article, gate3),
   }
 }
