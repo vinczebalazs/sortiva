@@ -5055,3 +5055,22 @@ Why: the two surfaces have different jobs, and the founder chose to let them dif
 What it rests on, verified rather than assumed: the calendar serialiser attaches a rejection only while the topic is still `rejected_by_gate` (`apps/web/app/api/calendar/_lib/handlers.ts`), so moving an overruled topic to `published` removes the rejection card without any change to that code. The decision was put to the founder on that basis and the behaviour was checked before it was written down.
 Held by a test rather than by memory: `calendar.test.ts` asserts a delivered, overruled day reads `published` with a null rejection. The neighbouring case — an overridden article that has *not* yet gone out — still asserts the refusal is named, because that day genuinely is still held.
 Nearest spec: main §8.6 (the override and its audit row), §8.7 (the calendar's states); ui §6.1, §6.3; invariant 12.
+
+## 2026-09-07 — FOUNDER — R-REWRITE-PLACE — A rewrite replaces the article in place
+Decision: when the product rewrites one of its own articles, it updates the existing post — same address, same post, new words — rather than publishing a second one. Confirmed by the founder directly, matching the answer relayed through the `sortiva-a8` session earlier the same day, so the two paths agree and this entry is the decision of record.
+Why: a second post competing with the first for the same search is cannibalization, which the existing-target check (invariant 6) exists to prevent, arriving by the one route that check does not guard. Updating in place also keeps the article's accumulated search history. The cost the founder accepted: a rewrite overwrites words a merchant may have edited themselves.
+The boundary, carried from `R-PUBLISH-2` and not automatic: a republish sends title, body and summary only. A rewrite does the same. It does not touch the post's address, the merchant's own tags, or their choice to unpublish it. The accepted cost is that our words are replaced, not that everything around them is.
+Nearest spec: main §9.6.5, §14.3.7 (the two-phase publish's conditional update, which already exists and never falls back to create); invariants 6 and 19.
+
+## 2026-09-07 — FOUNDER — R-HANDLE-RENAME — We follow a rename by listening for it, not by guessing
+Decision: when a merchant renames one of our published articles on their shop, we learn it from Shopify's notification rather than by matching on title or on the marker metafield. The alternative — a second recognition key — was declined.
+Why: a second key costs a lookup and can be wrong, and being wrong here means claiming a merchant's own writing as ours.
+What this rests on, verified after the decision and cheaper than the question implied: **`articles/update` is already a topic the app subscribes to** (`packages/core/src/catalog/webhooks.ts`) and already arrives as an `article_updated` event. So this is not a new subscription, a new scope or a new failure mode — it is teaching an existing receiver to notice that the address moved and to write the new one down.
+What it does not cover, and this is a real limit rather than a caveat: an export-mode store, where the merchant pastes our article into their own blog, never gives us a Shopify article at all. There is no notification and no id for those, so recognition there stays by address and a rename still detaches. Export is the default delivery mode, so this answer fixes the auto-publish half only.
+Nearest spec: main §9.5, §12.3, §14.3.7; tech §4.
+
+## 2026-09-07 — FOUNDER — R-GONE-SUGGESTION-CLOSES — A suggestion goes when its page goes
+Decision: when a merchant deletes a page, the suggestion to improve that page stops being offered as work.
+Why: it cannot be acted on, and leaving it on the screen asks the merchant to keep deciding about something that no longer exists.
+Two things the answer does not state, taken as follows and flagged in the session report so they can be reversed cheaply: the row moves to a closed status rather than being deleted, because invariant 10 says expiry never deletes and the row is the only record that we ever suggested it; and a page the nightly walk finds again brings its suggestion back, matching what `R-PAGE-GONE-OPTIMIZE` already decided and tested for the improve-this-page button, where a restored page is eligible again with nothing else run.
+Nearest spec: main §7.9 (the opportunity lifecycle), §12.3; invariant 10; `DECISIONS.md` 2026-09-07 R-PAGE-GONE-OPTIMIZE.
