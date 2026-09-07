@@ -779,13 +779,47 @@ back for capacity reasons any more — the queue is worked until it is empty. De
 founder's earlier choice) and `T10.4` still cannot run without the Shopify development store they
 deliberately deferred.
 
+### `R-SCANCOPY` LANDED — the empty state stops promising Monday, and the sentence that replaces it is dormant
+
+Merged `7096a1a`. **Full gate green, eleven of eleven** (`pnpm eval` not run — no Anthropic key, the
+standing red). Tests **3,652** in **290 files**, up from 3,597 in 289. `pnpm chaos` 10 of 10.
+
+**What changed for a merchant:** two screens told a merchant with nothing to act on that "the next scan
+runs Monday". A store is scanned on its own local Monday and a paused or re-queued account moves even
+that, so the sentence was untrue for some stores every week — and on Opportunities it sat one line under
+a header printing the *real* next-scan date, so the two could visibly disagree. Both now count days to
+the date the header names, in the same clock.
+
+**The part that needs carrying forward, because it makes the card's visible effect a removal rather than
+a replacement:** `GET /api/opportunities` returns `nextScanAt: null` unconditionally
+(`apps/web/app/api/opportunities/_lib/handlers.ts:191`) — verified independently at merge, not taken from
+the lane's report. Nothing in the product computes a next-scan date for an account. So the interval is
+built, tested and reaches nobody; what a merchant reads today is "No open opportunities right now" with
+no timing at all. **Carded as `R-NEXTSCAN` (Lane C).** The lane was right to build the merchant-facing
+half rather than guess a cadence in the browser, and the card says so explicitly, because guessing is
+exactly what the founder's decision removed.
+
+**One live falsehood left, deliberately, and it needs a founder answer.** The monthly summary email still
+says "Your next scan runs Monday". The lane's reasoning, which I accept: a screen is drawn when the
+merchant looks at it, so an interval is true as they read it; an email is composed when we send it and
+read whenever it is opened, so "in 3 days" becomes *newly* untrue in the inbox in a way a weekday does
+not. A day-agnostic wording ("at your next weekly scan") is new quoted copy nobody has approved, so the
+lane did not invent one. A test now pins that sentence as the **only** remaining weekday in the whole
+catalogue, so the exemption is on the record rather than a string someone missed.
+
+**Two stale sentences in the specs, which are law and not the integrator's to edit** — flagged for the
+founder: `docs/sortiva-ui-spec.md:138` and `:325` still give the empty state as "next scan runs Monday",
+and `:136` still gives the header as "next: Monday" (already overridden by `T9.4` on 2026-09-02). The
+build plan's own stale copy of that string was corrected at `T9.4`'s done-when. A design mockup
+(`docs/design/sortiva-ui-mockups.html:1027`) also still shows it.
+
 **Three sessions building, at the four-session cap counting the integrator:**
 
 | Session | Worktree | Card |
 |---|---|---|
 | `sortiva-a8 [187d15]` | `sortiva-lane-c` | `R-PAGE-GONE-READ` — dispatched by the previous integrator, mid-card |
 | lane session | `sortiva-lane-d` | `T7.2` — the refresh pool |
-| lane session | `sortiva-lane-f` | `R-SCANCOPY` — the empty state stops promising Monday |
+| lane session | `sortiva-lane-b` | `R-API-PRODUCTS` — the Products screen has no server |
 | this integrator | `sortiva` (main) | `R-CONTRACT` — its own card by rule |
 
 **Still open after those four**: `R-RUNWAY`, `R-QUOTA`, `R-STOREFRONT`, `R-DRAFT-PROMPT` (all Lane D,

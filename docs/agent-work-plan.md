@@ -761,6 +761,13 @@ Done when: the Products screen renders a real store's products and families rath
 Note: `apps/web/app/api/products` was a directory no lane owned. It is Lane B's by the ownership rule added to §3 on 2026-09-07 — a file belongs to the lane that owns the domain it serves, and the catalogue is Lane B's.
 Invariants: 3 (raw HTML never flows downstream), 23.
 
+**R-NEXTSCAN — the product never says when the next scan is, because nothing works it out** · Lane C
+Scope: `GET /api/opportunities` returns `nextScanAt: null` unconditionally (`apps/web/app/api/opportunities/_lib/handlers.ts:191`), and its comment gives the honest reason — nothing anywhere in the product computes when an account's next scan falls, so null beats a guessed cadence. The weekly scan does have a schedule; what is missing is anything that turns it into a date for a particular account and hands it to the screen.
+**Why it is worth a card now:** two screens are built to say it and neither can. The Opportunities header renders "Last scan {date} · next scan {next}", and `R-SCANCOPY` (landed 2026-09-07) built the empty-state sentence that counts days to that same date. Both fall back to saying nothing. **So a merchant who has nothing to act on is told nothing about when that changes** — which is better than the false "Monday" it replaced, and still less than the screen was designed to say.
+Read first: `DECISIONS.md` 2026-09-04 "The empty-state scan line becomes relative" and the `R-SCANCOPY` entries of 2026-09-07; main §7.11 (scan cadence); ui §5.1.
+Done when: an account whose weekly scan is due gets a real next-scan time from the API; a paused or unentitled account is not promised one; the header and the empty state agree because they read the same value; and nothing invents a date from a cadence when the account's own schedule does not say.
+Note: `R-SCANCOPY` deliberately built the merchant-facing half first and left this dormant rather than guessing a weekly cadence in the browser. **Do not resolve this by computing "last scan + 7 days" in the frontend** — that is the guess the founder's decision was made to remove.
+
 **R-API-PERFORMANCE — the Performance screens and the opportunity drawer have no server** · Lane C
 Scope: build `GET /api/performance/overview` (the headline chart, its markers, the results table), `GET /api/performance/search-console` (query and page tables with signal badges), and `GET /api/opportunities/{opportunityId}` (the detail drawer: evidence, tasks, recommendation, history, outcome). All three declared with schemas, none on disk (verified 2026-09-07).
 Read first: main §9.6.2 and §9.6.10 (verdict timing and store-relative labels), §12.2 (Search Console), §7.6 and §7.12; ui §5, §8.
@@ -921,7 +928,7 @@ Done when: stepper mirrors `job_steps` over SSE with the seven labelled steps in
 
 **T9.4 — Opportunities screen**
 Read first: ui §5 (all); main §7.6, §7.9, §7.12, §10.4; Appendix A.
-Done when: card shows all required fields (test asserts action badge, impact, confidence, evidence line, why-line, signal tag, primary action per type); filters + group-by; drawer with evidence table, tasks, OPTIMIZE current-vs-suggested view with copy buttons and download, FIX view, HOLD checklist, history; dismiss with undo; 409 toast; Limited Intelligence header; empty state copy "next scan runs Monday".
+Done when: card shows all required fields (test asserts action badge, impact, confidence, evidence line, why-line, signal tag, primary action per type); filters + group-by; drawer with evidence table, tasks, OPTIMIZE current-vs-suggested view with copy buttons and download, FIX view, HOLD checklist, history; dismiss with undo; 409 toast; Limited Intelligence header; empty state copy. **The empty-state sentence this done-when originally quoted — "next scan runs Monday" — was replaced by the founder's decision of 2026-09-04 and by `R-SCANCOPY`, which landed 2026-09-07. It now counts days to the date the screen's own header names, and says nothing about timing when no date is known.**
 
 **T9.5 — Content: calendar, articles, article detail**
 Read first: ui §6 (all); main §8.6, §8.7, §9.3.
