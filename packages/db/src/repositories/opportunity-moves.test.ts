@@ -93,6 +93,7 @@ describe('no opportunity status write escapes the lifecycle', () => {
       'opportunities.ts:dismissOpportunityGuarded',
       'opportunities.ts:expireOpportunity',
       'opportunities.ts:transitionOpportunityStatus',
+      'opportunity-completion.ts:completeOpportunityForPublishedArticle',
       'optimize.ts:markOpportunityApplied',
       'optimize.ts:releaseAbandonedOptimizeGenerations',
       'repair.ts:completeRepair',

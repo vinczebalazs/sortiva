@@ -3,7 +3,10 @@ import { publishMarker } from '@sortiva/core'
 import type { Db } from '../client'
 import { accountSettings, articles, publishIntents, shopifyConns } from '../schema'
 import type { AccountScope, SystemScope } from '../scope'
-import type { ArticleRow } from './articles'
+import {
+  completeOpportunityForPublishedArticle,
+  type ArticlePublication,
+} from './opportunity-completion'
 
 /**
  * Everything auto-publishing reads and writes: the second Shopify grant, the
@@ -395,31 +398,48 @@ export async function pendingPublishIntents(
  * Called only *after* the remote post is confirmed. An article marked published
  * before the shop has it would tell the merchant something is on their site
  * when a crash may have left it nowhere.
+ *
+ * It also closes the suggestion the article came from, in the same transaction,
+ * for the reason spelled out over `markArticleDelivered`: those two are the
+ * only places an article becomes published, so putting the completion in both
+ * of them covers every path — the publish hour, the recovery sweep re-sending
+ * a post, and the sweep adopting one it found already on the shop.
  */
 export async function markArticleAutoPublished(
   db: Db,
   scope: AccountScope,
   input: { articleId: string; url: string | null; at?: Date },
-): Promise<ArticleRow | undefined> {
+): Promise<ArticlePublication | undefined> {
   const now = input.at ?? new Date()
-  const [row] = await db
-    .update(articles)
-    .set({
-      state: 'published',
-      delivery: 'auto',
-      publishedUrl: input.url,
-      publishedAt: now,
-      updatedAt: now,
-    })
-    .where(
-      and(
-        eq(articles.accountId, scope.accountId),
-        eq(articles.id, input.articleId),
-        inArray(articles.state, ['draft', 'cleared_to_deliver']),
+  return db.transaction(async (tx) => {
+    const [row] = await tx
+      .update(articles)
+      .set({
+        state: 'published',
+        delivery: 'auto',
+        publishedUrl: input.url,
+        publishedAt: now,
+        updatedAt: now,
+      })
+      .where(
+        and(
+          eq(articles.accountId, scope.accountId),
+          eq(articles.id, input.articleId),
+          inArray(articles.state, ['draft', 'cleared_to_deliver']),
+        ),
+      )
+      .returning()
+    if (!row) return undefined
+    return {
+      article: row,
+      completedOpportunity: await completeOpportunityForPublishedArticle(
+        tx,
+        scope,
+        input.articleId,
+        now,
       ),
-    )
-    .returning()
-  return row
+    }
+  })
 }
 
 /**
