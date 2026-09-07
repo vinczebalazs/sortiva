@@ -688,6 +688,19 @@ Read first: the `R-DISMISS-CALENDAR` and `R-STRANDED` entries in `DECISIONS.md` 
 Done when: publishing an article completes the suggestion behind it; the Opportunities screen stops showing finished work as outstanding; and the completion goes through the enforced state graph rather than around it.
 Note: the sibling defect — **a calendar day never leaves `generating` when its article publishes**, so the Content calendar reads "Generating" for every past published day — is the same shape and was reported by `R-STRANDED`. Decide whether they are one card or two before starting; the founder has been asked about the calendar half, which needs a state that does not exist.
 
+**R-PAGE-GONE-WRITE — something notices a merchant deleted a page** · Lane B
+Scope: `store_pages.status` was added by `T4.0a` as **migration only** — the schema's own comment says "nothing sets this to 'gone' yet and nothing reads it", and that is still true. Verified 2026-09-07: no writer anywhere. The store-page walk must mark a page `gone` when the merchant's store stops serving it.
+Read first: `DECISIONS.md` 2026-09-03 "A deleted store page gets a status field" (the founder chose this shape); build plan §6 `T4.0a`, whose note names this follow-up and says explicitly it is **not** a founder question; main §12.3, §14.1.
+Done when: a page the store no longer serves is marked `gone` by the ordinary walk; a page that is merely unreachable once is **not** — the founder's decision rejected inferring deletion from a single pass, because an interrupted walk would mark live pages gone; and the marking is idempotent, since the walk runs nightly.
+Note: this and `R-PAGE-GONE-READ` were expected to become cards when `T4.0a` landed and never did. **Neither needs a founder decision** — the shape was chosen on 2026-09-03.
+
+**R-PAGE-GONE-READ — the existing-target check stops treating deleted pages as live** · Lane C
+Scope: the check that stops the product proposing a new page for something an existing page already covers — **invariant 6, "no CREATE without the existing-target check"** — does not read `store_pages.status` at all (`packages/jobs/src/scan/existing-target.ts`, verified 2026-09-07: zero references). So it cannot tell a deleted page from a live one.
+**The consequence runs both ways, which is why it matters:** a deleted page still blocks a legitimate CREATE, *and* a suggestion to improve a page can land on one the merchant deleted. Which of those happens depends only on which side of the deletion the check falls.
+Read first: `DECISIONS.md` 2026-09-03 "A deleted store page gets a status field"; main §7.7, §12.3; invariant 6.
+Done when: a `gone` page no longer blocks a CREATE for the subject it used to cover; a `live` page still does; and an improve-this-page suggestion is never produced for a `gone` page.
+Note: depends on `R-PAGE-GONE-WRITE` for anything to read. It can be built and tested against planted rows first — the founder's own decision anticipated exactly that split.
+
 **R-CONTRACT — the frozen contract describes the endpoints that exist** · integrator
 Scope: ten endpoints were built at addresses the frozen route table does not declare, while the table declares several with no implementation, and `contracts:check` passes throughout because it compares the table to a generated document and **never to the routes on disk**. The founder delegated the call: amend the contract to the built addresses rather than move ten endpoints; assign `apps/web/app/api/settings` to Lane F for anything genuinely settings-shaped; the missing routes-on-disk check lands with `T10.2`.
 Read first: `DECISIONS.md` 2026-09-04 "The frozen contract moves to the addresses that were built".
@@ -878,6 +891,16 @@ Done when: Playwright against staging: onboarding through activation; opportunit
 >    `LlmJudgeLite` is constructed in production and its line was never removed; the judge-rejection
 >    and publish-failure auto-trips genuinely cannot fire, because the composition root passes
 >    neither counter. A reader who dismisses the stale one dismisses all three.
+> 6. **A refused sign-in answers 200 with an error page**, so any check written against the status
+>    code passes on a completely broken sign-in. That is how the broken Google button shipped and
+>    stayed broken after being recorded.
+> 7. **A check whose *claimed scope* exceeds its real one — a different kind from the six above, and
+>    grepping for weak assertions will not find it.** `apps/web/app/api/auth/_lib/config.ts:67` says
+>    `authWiring.test.ts` asserts the email provider is present "so email sign-in cannot quietly fall
+>    off the sign-in screen". The test exists and passes; it checks the built configuration and can
+>    say nothing about what the screen renders — and email sign-in has done exactly the thing the
+>    comment says it cannot. **Only reading the sentence beside a test finds this class.** Sweep the
+>    comments around load-bearing tests, not just the assertions inside them.
 >
 > Two patterns worth copying, both already in the tree: `R-INTENTGAP-SCAN`'s guard file
 > asserts up front that it found files to check before forbidding anything, and its
