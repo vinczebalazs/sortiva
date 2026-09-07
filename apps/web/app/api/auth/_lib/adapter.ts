@@ -1,19 +1,25 @@
-import type { Adapter, AdapterUser, VerificationToken } from 'next-auth/adapters'
+import type { Adapter, AdapterSession, AdapterUser, VerificationToken } from 'next-auth/adapters'
 import { provisionAccount, type ProvisionAccountDeps } from '@sortiva/core'
+import { sessionTokenDigest } from './sessionToken'
 
 /**
- * What Auth.js needs from our storage before it will run email sign-in.
+ * What Auth.js needs from our storage before it will run email sign-in and keep
+ * sessions where they can be ended.
  *
- * The library refuses to start a magic-link provider without an adapter that
- * can store a single-use link token and look an account up by address. That is
- * the whole reason this file exists — not database sessions, which the library
- * asks for only when the session strategy is `database` and which this app does
- * not have a table for. Sessions stay self-contained tokens; see `config.ts`.
+ * The library refuses to start a magic-link provider without an adapter that can
+ * store a single-use link token and look an account up by address, and it
+ * refuses to keep sessions anywhere but a signed cookie unless the adapter
+ * carries all five session methods at the bottom of this file.
  *
  * Three of the methods here are honest no-ops, and each is a no-op for a reason
  * stated at the method. The rule they follow: **the account's identity is its
  * email address**, which is what the unique index on `accounts.email` already
  * says and what sign-in has always done in practice.
+ *
+ * **What is stored for a session is a digest, never the cookie itself** — see
+ * `sessionToken.ts` for why. Every session method below hashes on the way in and
+ * hands the library back the raw value it was given, because that raw value is
+ * what identifies the session to the browser holding it.
  */
 
 /** Storage for outstanding sign-in links. Bound to `verification_tokens` in `provisioning.ts`. */
@@ -32,9 +38,31 @@ export interface AuthUserStore {
   findById(id: string): Promise<{ id: string; email: string } | undefined>
 }
 
+/**
+ * Storage for signed-in browsers. Bound to the `sessions` table in
+ * `provisioning.ts`.
+ *
+ * Every method takes a digest rather than the browser's own value, and the
+ * parameter is named so, because nothing below this line should ever hold a
+ * working credential.
+ */
+export interface AuthSessionStore {
+  create(input: { accountId: string; tokenDigest: string; expires: Date }): Promise<void>
+  /** The one read that runs on every signed-in request. */
+  findWithAccount(
+    tokenDigest: string,
+  ): Promise<{ accountId: string; email: string; expires: Date } | undefined>
+  touch(input: { tokenDigest: string; expires: Date }): Promise<void>
+  /** Returns whose session it was, so signing out can go on to end the rest of them. */
+  remove(tokenDigest: string): Promise<{ accountId: string; expires: Date } | undefined>
+  /** Every session one account has. "Sign out everywhere", and account deletion. */
+  removeAllForAccount(accountId: string): Promise<number>
+}
+
 export interface AuthAdapterDeps {
   readonly tokens: VerificationTokenStore
   readonly users: AuthUserStore
+  readonly sessions: AuthSessionStore
   /** The same signup path Google sign-in uses, so `signup_completed` fires once and in one place. */
   readonly provisioning: ProvisionAccountDeps
 }
@@ -121,6 +149,65 @@ export function buildAuthAdapter(deps: AuthAdapterDeps): Adapter {
     /** Nothing to record: see `getUserByAccount`. */
     async linkAccount() {
       return undefined
+    },
+
+    /** A browser has just signed in. This row is what makes that session endable. */
+    async createSession(session: AdapterSession) {
+      await deps.sessions.create({
+        accountId: session.userId,
+        tokenDigest: sessionTokenDigest(session.sessionToken),
+        expires: session.expires,
+      })
+      return session
+    },
+
+    /**
+     * The whole cost of revocable sessions: one read, on every signed-in
+     * request. A miss is a session that has been ended — Auth.js treats that
+     * exactly as it treats an unknown cookie, and clears it.
+     *
+     * The session handed back names the browser's own token, not the digest we
+     * looked it up by; the digest is an implementation detail of storage and has
+     * no business travelling any further.
+     */
+    async getSessionAndUser(sessionToken: string) {
+      const found = await deps.sessions.findWithAccount(sessionTokenDigest(sessionToken))
+      if (!found) return null
+      return {
+        session: { sessionToken, userId: found.accountId, expires: found.expires },
+        user: asAdapterUser({ id: found.accountId, email: found.email }),
+      }
+    },
+
+    /**
+     * Pushes a session's lapse date out. Present because Auth.js refuses to run
+     * database sessions without it, and unreachable as configured: sessions have
+     * a fixed lifetime from sign-in, so the library never finds one due to be
+     * extended. See the note on `updateAge` in `config.ts`.
+     */
+    async updateSession(session: Partial<AdapterSession> & Pick<AdapterSession, 'sessionToken'>) {
+      if (!session.expires) return null
+      await deps.sessions.touch({
+        tokenDigest: sessionTokenDigest(session.sessionToken),
+        expires: session.expires,
+      })
+      return null
+    },
+
+    /**
+     * Ends exactly this session and no other.
+     *
+     * Deliberately narrow, even though signing out ends every session the
+     * account has: the library also calls this when a lapsed cookie is cleaned
+     * up, and when somebody follows a sign-in link for a *different* account in
+     * a browser that is already signed in. Widening it here would sign a
+     * stranger out of their other devices. The fan-out belongs to the sign-out
+     * event alone — see `config.ts`.
+     */
+    async deleteSession(sessionToken: string) {
+      const ended = await deps.sessions.remove(sessionTokenDigest(sessionToken))
+      if (!ended) return null
+      return { sessionToken, userId: ended.accountId, expires: ended.expires }
     },
   }
 }

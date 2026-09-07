@@ -42,6 +42,17 @@ export interface AccountLifecycleStore {
     at: Date
     domainReleaseAt: Date
   }): Promise<boolean>
+  /**
+   * Ends every signed-in browser this account has, and answers how many there
+   * were.
+   *
+   * Separate from the erase a week later, and that is the point. The rows do
+   * eventually go with the account row, but a merchant who has just asked to be
+   * deleted has to be signed out *now* — otherwise the browser they clicked in,
+   * and every other one they were ever signed in on, keeps working for another
+   * week.
+   */
+  revokeSessions(accountId: string): Promise<number>
   /** The logged-out preview's row for this domain, which goes too. */
   purgePreviewCache(domainNormalized: string): Promise<void>
   /**

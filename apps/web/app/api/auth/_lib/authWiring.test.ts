@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { AdapterUser } from 'next-auth/adapters'
 import { buildAuthAdapter, type AuthUserStore, type VerificationTokenStore } from './adapter'
 import { buildAuthConfig, SIGN_IN_LINK_MAX_AGE_SECONDS } from './config'
+import { memorySessionStore } from './memorySessions'
 import { authDeps } from './provisioning'
 
 /**
@@ -57,6 +58,7 @@ function adapterOver(existing: Array<{ id: string; email: string }> = []) {
   const adapter = buildAuthAdapter({
     tokens,
     users,
+    sessions: memorySessionStore(users).store,
     provisioning: {
       store: {
         async createOrFindByEmail(email) {

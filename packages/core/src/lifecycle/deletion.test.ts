@@ -46,6 +46,10 @@ function world(
         marked.push(input)
         return faults.markReturns ?? true
       },
+      async revokeSessions() {
+        calls.push('revoke-sessions')
+        return 2
+      },
       async purgePreviewCache(domain) {
         calls.push('preview')
         previewPurged.push(domain)
@@ -83,7 +87,7 @@ describe('the half a merchant waits for', () => {
       accountId: 'acc-1',
     })
 
-    expect(w.calls).toEqual(['mark', 'preview', 'queue-closure'])
+    expect(w.calls).toEqual(['mark', 'revoke-sessions', 'preview', 'queue-closure'])
     expect(result).toEqual({
       kind: 'deleted',
       deletedAt: AT,
@@ -104,7 +108,7 @@ describe('the half a merchant waits for', () => {
       accountId: 'acc-1',
     })
     expect(w.previewPurged).toEqual([])
-    expect(w.calls).toEqual(['mark', 'queue-closure'])
+    expect(w.calls).toEqual(['mark', 'revoke-sessions', 'queue-closure'])
     expect(result).toMatchObject({ domainFreeAt: null })
   })
 

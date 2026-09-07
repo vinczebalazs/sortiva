@@ -1,17 +1,28 @@
 import {
+  SESSION_LOOKUP_REASON,
   accountScope,
   createOrFindAccountByEmail,
+  createSession,
   createVerificationToken,
   db,
+  deleteSession,
+  deleteSessionsForAccount,
   findAccountByEmail,
   findAccountById,
+  findSessionWithAccount,
   systemScope,
+  touchSession,
   useVerificationToken,
   type Db,
 } from '@sortiva/db'
 import type { AccountStore, EmailProvider, ProvisionAccountDeps } from '@sortiva/core'
 import { PosthogServerCapture, ResendEmailProvider } from '@sortiva/providers'
-import { buildAuthAdapter, type AuthUserStore, type VerificationTokenStore } from './adapter'
+import {
+  buildAuthAdapter,
+  type AuthSessionStore,
+  type AuthUserStore,
+  type VerificationTokenStore,
+} from './adapter'
 import { sendSignInLinkVia } from './signInEmail'
 import type { AuthConfigDeps } from './config'
 
@@ -70,6 +81,34 @@ export function makeDbVerificationTokenStore(injectedDatabase?: Db): Verificatio
   }
 }
 
+/**
+ * Signed-in browsers. The lookup is the read that happens on every signed-in
+ * request; the two deletes are how a session ends before it lapses.
+ */
+export function makeDbAuthSessionStore(injectedDatabase?: Db): AuthSessionStore {
+  const database = (): Db => injectedDatabase ?? db()
+  const lookupScope = () => systemScope(SESSION_LOOKUP_REASON)
+  return {
+    async create({ accountId, tokenDigest, expires }) {
+      await createSession(database(), accountScope(accountId), { tokenDigest, expires })
+    },
+    async findWithAccount(tokenDigest) {
+      const row = await findSessionWithAccount(database(), lookupScope(), tokenDigest)
+      return row ? { accountId: row.accountId, email: row.email, expires: row.expires } : undefined
+    },
+    async touch(input) {
+      await touchSession(database(), lookupScope(), input)
+    },
+    async remove(tokenDigest) {
+      const row = await deleteSession(database(), lookupScope(), tokenDigest)
+      return row ? { accountId: row.accountId, expires: row.expires } : undefined
+    },
+    async removeAllForAccount(accountId) {
+      return await deleteSessionsForAccount(database(), accountScope(accountId))
+    },
+  }
+}
+
 let capture: PosthogServerCapture | undefined
 
 /** `signup_completed` is a funnel event, captured server-side. */
@@ -99,15 +138,17 @@ function resendProvider(): EmailProvider {
  */
 export function authDeps(): AuthConfigDeps {
   const provisioning = provisioningDeps()
+  const sessions = makeDbAuthSessionStore()
   return {
-    provisioning,
-    email: {
-      adapter: buildAuthAdapter({
-        tokens: makeDbVerificationTokenStore(),
-        users: makeDbAuthUserStore(),
-        provisioning,
-      }),
-      sendLink: sendSignInLinkVia(resendProvider),
+    adapter: buildAuthAdapter({
+      tokens: makeDbVerificationTokenStore(),
+      users: makeDbAuthUserStore(),
+      sessions,
+      provisioning,
+    }),
+    revokeAllSessions: async (accountId) => {
+      await sessions.removeAllForAccount(accountId)
     },
+    email: { sendLink: sendSignInLinkVia(resendProvider) },
   }
 }
