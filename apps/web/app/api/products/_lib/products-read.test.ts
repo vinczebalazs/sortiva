@@ -7,7 +7,7 @@ import {
 } from '@sortiva/core'
 import {
   accountScope,
-  makeProfileStore,
+  makeProductsStore,
   productIdsByShopifyId,
   reconcileFamilies,
   upsertProductFacts,
@@ -184,13 +184,13 @@ describe.skipIf(!available)('reading the Products screen', () => {
 
   const products = (accountId: string | null) =>
     withAccount(
-      makeGetProductsHandler({ db: harness.db, profile: makeProfileStore({ database: harness.db }) }),
+      makeGetProductsHandler({ store: makeProductsStore({ database: harness.db }) }),
       async () => accountId,
     )(new Request('http://localhost/api/products'), undefined)
 
   const familyList = (accountId: string | null) =>
     withAccount(
-      makeGetFamiliesHandler({ db: harness.db, profile: makeProfileStore({ database: harness.db }) }),
+      makeGetFamiliesHandler({ store: makeProductsStore({ database: harness.db }) }),
       async () => accountId,
     )(new Request('http://localhost/api/products/families'), undefined)
 

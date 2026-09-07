@@ -4620,3 +4620,9 @@ Nearest spec: main §6.2; ui §7.
 Decision: `apps/web/app/api/products/_lib/products-read.test.ts` joins the seven files permitted to name `raw_body_html` — the merchant's own marketing copy, which is stored but never allowed to flow into anything we write.
 Why: the test stores a description on a product and then asserts that none of it appears in the bytes `GET /api/products` sends back. Proving the description never reaches a merchant-facing response requires putting one there first, which is the same reason the distillation test and the chaos scenario are already on that list. The allowlist exists to make each such addition a visible decision rather than an inferred one.
 Nearest spec: main §6.3; invariant 3.
+
+## 2026-09-07 — R-API-PRODUCTS — The Products routes read through a store, so no route file holds a database handle
+Decision: a new `makeProductsStore` in `packages/db` answers the four questions the Products screen asks (the catalogue, the family list, the still-open opportunities, the shop's Shopify handle). The route's composition file builds that store and never names the raw database handle.
+Why: a lint rule forbids reaching the database outside `packages/db`, and the several route folders that do it are each individually exempted in `eslint.config.mjs` — a file only the integrator edits. Following that pattern would have meant asking for an eighth exemption. The profile screen's own store already sets the alternative precedent one directory over, and it costs nothing: the handle is still resolved on the call rather than at construction, which is what keeps a build with no database configured from producing a server whose every route answers 500.
+Consequence: the store returns only the shop's handle, never the connection row, so the encrypted access token has no path to a response serialiser.
+Nearest spec: tech §3; CLAUDE.md code-structure rules (route handlers parse → call core → serialise).

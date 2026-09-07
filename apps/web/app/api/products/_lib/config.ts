@@ -1,14 +1,15 @@
-import { db, makeProfileStore } from '@sortiva/db'
+import { makeProductsStore } from '@sortiva/db'
 import type { ProductsDeps } from './handlers'
 
 /**
  * Built per request, never at module load.
  *
- * `db()` opens a connection pool, and Next's build step evaluates every route
- * module without a database URL necessarily present. Constructing this eagerly
- * turned `pnpm build` into a green build whose every route answered 500. The
- * pool itself is memoized, so building it here costs nothing per request.
+ * The store resolves its database handle on the call rather than on
+ * construction, and Next's build step evaluates every route module without a
+ * database URL necessarily present. Constructing eagerly here is what turns a
+ * green build into one whose every route answers 500. The pool itself is
+ * memoized, so building this per request costs nothing.
  */
 export function productsDeps(): ProductsDeps {
-  return { db: db(), profile: makeProfileStore() }
+  return { store: makeProductsStore() }
 }

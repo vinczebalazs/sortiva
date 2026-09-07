@@ -20,18 +20,13 @@ import {
   type RichnessThresholds,
 } from '@sortiva/core'
 import {
-  findShopifyConnForAccount,
-  listCatalogProducts,
-  listOpenOpportunities,
   makeFamilyStore,
-  productSubstanceForFamilies,
   type AccountScope,
   type CatalogProductRow,
-  type Db,
   type FamilyStore,
   type OpportunityRow,
+  type ProductsStore,
   type ProfileFamily,
-  type ProfileStore,
 } from '@sortiva/db'
 import { rules } from '@sortiva/rules'
 import type { AccountHandler } from '../../auth/_lib/session'
@@ -119,8 +114,7 @@ function badRequest(code: string, message: string): Response {
  * chore they have already done.
  */
 export interface ProductsDeps {
-  readonly db: Db
-  readonly profile: ProfileStore
+  readonly store: ProductsStore
 }
 
 /**
@@ -131,11 +125,11 @@ export interface ProductsDeps {
  */
 export function makeGetProductsHandler(deps: ProductsDeps): AccountHandler {
   return async (_request, { scope }) => {
-    const [catalog, families, open, connection] = await Promise.all([
-      listCatalogProducts(deps.db, scope),
-      deps.profile.families(scope),
-      listOpenOpportunities(deps.db, scope),
-      findShopifyConnForAccount(deps.db, scope),
+    const [catalog, families, open, shopHandle] = await Promise.all([
+      deps.store.catalog(scope),
+      deps.store.families(scope),
+      deps.store.openOpportunities(scope),
+      deps.store.shopHandle(scope),
     ])
 
     const thresholds = substanceThresholds()
@@ -158,7 +152,7 @@ export function makeGetProductsHandler(deps: ProductsDeps): AccountHandler {
       open,
       families,
       catalog,
-      shopHandle: shopHandleOf(connection?.shopHandle ?? null),
+      shopHandle: shopHandleOf(shopHandle),
     })
 
     return Response.json(
@@ -187,7 +181,7 @@ export function makeGetProductsHandler(deps: ProductsDeps): AccountHandler {
  */
 export function makeGetFamiliesHandler(deps: ProductsDeps): AccountHandler {
   return async (_request, { scope }) => {
-    const families = await deps.profile.families(scope)
+    const families = await deps.store.families(scope)
     return Response.json(familiesResponseSchema.parse({ families: families.map(serialiseFamily) }))
   }
 }
@@ -282,7 +276,7 @@ async function buildMerchantTasks(
   // several holds on one store routinely land on the same families, and a query
   // per hold would re-read the same rows.
   const wanted = [...new Set([...familyIdsPerHold.values()].flat())]
-  const substance = await productSubstanceForFamilies(deps.db, scope, wanted)
+  const substance = await deps.store.substanceForFamilies(scope, wanted)
   const byFamily = new Map<string, typeof substance>()
   for (const product of substance) {
     const bucket = byFamily.get(product.familyId) ?? []
