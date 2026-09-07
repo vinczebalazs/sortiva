@@ -97,6 +97,58 @@ describe.skipIf(!available)('GET /api/calendar', () => {
     expect(body.nextReplenishmentAt).toBeNull()
   })
 
+  it('bites: a planned day names the demand behind it, rather than printing the blank', async () => {
+    // The whole of this card, driven end to end. The day stores the key of the
+    // opportunity's reason and nothing else; the values live on the opportunity
+    // row, and until now the route sent an empty bag, so a merchant read
+    // "around {volume} searches a month" with the braces showing.
+    const scope = accountScope(accountId)
+    const opportunity = await insertMinimalOpportunity(
+      harness.db,
+      scope,
+      {
+        signalType: 'uncovered_commercial_query',
+        entityType: 'query_cluster',
+        entityRef: 'q-volume',
+        evidenceJson: [],
+        recommendedAction: 'create',
+        status: 'scheduled',
+        reasonTemplateKey: 'uncovered_commercial_query.create',
+        reasonParams: { volume: 1900 },
+        limitedIntelligence: false,
+        rulesVersion: 'a'.repeat(64),
+      },
+      NOW,
+    )
+    await insertTopic(
+      harness.db,
+      scope,
+      {
+        opportunityId: opportunity.id,
+        title: 'Wide-fit trail shoes',
+        targetKeyword: 'wide fit trail shoes',
+        keywordCluster: null,
+        intentClass: 'buying_guide',
+        familyIds: [],
+        kind: 'new',
+        source: 'auto',
+        whyLine: 'uncovered_commercial_query.create',
+        scheduledDate: '2026-03-15',
+        pinned: false,
+        state: 'planned',
+      },
+      NOW,
+    )
+
+    const body = calendarResponseSchema.parse(
+      await (await get(accountId, '?from=2026-03-01&to=2026-03-31')).json(),
+    )
+    const line = renderTemplatedLine(body.topics[0]?.why, t)
+    expect(line.known).toBe(true)
+    expect(line.text).toContain('1900')
+    expect(line.text).not.toContain('{')
+  })
+
   it('excludes topics outside the requested range', async () => {
     const scope = accountScope(accountId)
     const opportunity = await insertMinimalOpportunity(

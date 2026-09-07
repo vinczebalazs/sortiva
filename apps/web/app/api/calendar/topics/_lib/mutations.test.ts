@@ -2,6 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { okSchema, topicSchema } from '@sortiva/core'
 import { accountScope, insertMinimalOpportunity, insertTopic } from '@sortiva/db'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
+import { renderTemplatedLine, t } from '@sortiva/ui'
 import { withAccount } from '../../../auth/_lib/session'
 import { makeMoveTopicHandler, makePinTopicHandler, makeVetoTopicHandler } from './mutations'
 
@@ -25,7 +26,15 @@ describe.skipIf(!available)('calendar topic mutations', () => {
     accountId = await insertAccount(harness.pool, 'calendar-mutations@example.com')
   })
 
-  async function seedTopic(date: string, opts: { pinned?: boolean; state?: 'planned' | 'published' } = {}) {
+  async function seedTopic(
+    date: string,
+    opts: {
+      pinned?: boolean
+      state?: 'planned' | 'published'
+      reasonTemplateKey?: string
+      reasonParams?: Record<string, string | number>
+    } = {},
+  ) {
     const scope = accountScope(accountId)
     const opportunity = await insertMinimalOpportunity(
       harness.db,
@@ -37,8 +46,8 @@ describe.skipIf(!available)('calendar topic mutations', () => {
         evidenceJson: [],
         recommendedAction: 'create',
         status: 'scheduled',
-        reasonTemplateKey: 'gate1.admitted',
-        reasonParams: {},
+        reasonTemplateKey: opts.reasonTemplateKey ?? 'gate1.admitted',
+        reasonParams: opts.reasonParams ?? {},
         limitedIntelligence: false,
         rulesVersion: 'a'.repeat(64),
       },
@@ -56,7 +65,7 @@ describe.skipIf(!available)('calendar topic mutations', () => {
         familyIds: [],
         kind: 'new',
         source: 'auto',
-        whyLine: 'topic.auto',
+        whyLine: opts.reasonTemplateKey ?? 'topic.auto',
         scheduledDate: date,
         pinned: opts.pinned ?? false,
         state: opts.state ?? 'planned',
@@ -104,6 +113,23 @@ describe.skipIf(!available)('calendar topic mutations', () => {
     expect(response.status).toBe(200)
     const body = topicSchema.parse(await response.json())
     expect(body.scheduledFor).toBe('2026-03-25')
+  })
+
+  it('bites: the moved day keeps its numbers, so dragging a chip does not blank its sentence', async () => {
+    // The screen re-renders the chip from this response. Sending the key with
+    // an empty bag replaced a filled sentence with "around {volume} searches a
+    // month" the instant a merchant dragged a day.
+    const topic = await seedTopic('2026-03-20', {
+      reasonTemplateKey: 'uncovered_commercial_query.create',
+      reasonParams: { volume: 1900 },
+    })
+    const handler = withAccount(makeMoveTopicHandler({ db: harness.db, now: () => NOW }), async () => accountId)
+
+    const body = topicSchema.parse(await (await post(handler, accountId, topic.id, { date: '2026-03-25' })).json())
+    const line = renderTemplatedLine(body.why, t)
+    expect(line.known).toBe(true)
+    expect(line.text).toContain('1900')
+    expect(line.text).not.toContain('{')
   })
 
   it('409s a drag onto a pinned day', async () => {
