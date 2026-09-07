@@ -3,6 +3,7 @@ import { driftPolicies } from '@sortiva/core'
 import { renderTemplatedLine } from '../opportunities/why'
 import { t } from './index'
 import {
+  ADMISSION_REASON_PARAMS,
   GATE_REASON_KEYS,
   GATE_REASON_PARAMS,
   OPPORTUNITY_REASON_KEYS,
@@ -183,6 +184,88 @@ describe('the quality gate reasons', () => {
       'gate3.no_information_gain',
       'gate3.below_quality_bar',
     ])
+  })
+})
+
+/**
+ * The topic-admission reasons: Gate 1, Gate 2, and why a day holds the topic it
+ * holds.
+ *
+ * These eleven were produced by the product and answered by nothing. The
+ * loudest was `topic.auto`, which is the why-line on **every** chip in the
+ * content calendar, so a merchant looking at their plan read "The reasoning for
+ * this one isn't available yet." against every planned day.
+ *
+ * The tests below are stricter than their siblings in one way, and deliberately
+ * so: these sentences must survive being rendered with **no** parameters,
+ * because that is what the calendar sends. See `ADMISSION_REASON_PARAMS`.
+ */
+describe('the topic admission reasons', () => {
+  it('reach the merchant as words rather than as the renderer giving up', () => {
+    for (const key of Object.keys(ADMISSION_REASON_PARAMS)) {
+      const line = renderTemplatedLine({ templateKey: key, params: {} })
+      expect(line.known, `${key} fell through to the "no reasoning yet" line`).toBe(true)
+      expect(line.text).not.toBe(t('opportunities.whyUnavailable'))
+      expect(line.text.trim().length).toBeGreaterThan(0)
+    }
+  })
+
+  it('survive the empty bag of values every calendar chip sends', () => {
+    // Not a stylistic rule. The calendar hands the renderer `params: {}` for
+    // every chip's why-line, Gate 1 stores its measurements under a shape the
+    // read-back does not look at, and Gate 2 stores none — so a blank in one of
+    // these sentences reaches a merchant as the literal text `{keyword}`. This
+    // is what stops a well-meant edit adding one before the values arrive.
+    const leaking: string[] = []
+    for (const key of Object.keys(ADMISSION_REASON_PARAMS)) {
+      const placeholders = placeholdersIn(key)
+      if (placeholders.length > 0) leaking.push(`${key} asks for {${placeholders.join('}, {')}}`)
+    }
+    expect(
+      leaking,
+      'these would print a raw placeholder on a calendar chip, which sends no values at all',
+    ).toEqual([])
+  })
+
+  it('ask only for values one of the two gates actually measures', () => {
+    for (const [key, params] of Object.entries(ADMISSION_REASON_PARAMS)) {
+      for (const placeholder of placeholdersIn(key)) {
+        expect(
+          params,
+          `"${key}" asks for {${placeholder}}, which its producer does not supply — it would print literally`,
+        ).toContain(placeholder)
+      }
+    }
+  })
+
+  it('covers every Gate 1 outcome and both calendar why-lines, so a new one cannot arrive wordless', () => {
+    // Mirrors the keys `runGate1` and `runGate2` build, plus the two the
+    // calendar routes fall back to. An outcome added to a gate and not to this
+    // list is the fault this file exists to catch.
+    expect(Object.keys(ADMISSION_REASON_PARAMS)).toEqual([
+      'gate1.admitted',
+      'gate1.admitted_pinned_despite_zero_volume',
+      'gate1.rejected_zero_volume',
+      'gate1.rejected_not_winnable',
+      'gate1.rejected_off_catalog',
+      'gate1.converted_existing_target_optimize',
+      'gate1.converted_existing_target_refresh',
+      'gate1.held_insufficient_substance',
+      'gate2.held_thin_pack',
+      'topic.auto',
+      'topic.manual_addition',
+    ])
+  })
+
+  it('uses the canonical wording where the spec already approved one', () => {
+    // Two of these say exactly what a pinned Appendix A string says, so they
+    // point at it rather than paraphrasing it on a second screen.
+    expect(renderTemplatedLine({ templateKey: 'gate1.held_insufficient_substance', params: {} }).text).toBe(
+      t('appendixA.qualityRejectionRichness'),
+    )
+    expect(
+      renderTemplatedLine({ templateKey: 'gate1.converted_existing_target_optimize', params: {} }).text,
+    ).toBe(t('appendixA.existingPageWhyLine'))
   })
 })
 

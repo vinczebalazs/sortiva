@@ -1134,6 +1134,16 @@
   "gate3.no_information_gain": "The draft didn't add anything the pages already ranking don't cover. That's a research problem rather than a writing one, so we stopped rather than rewriting it.",
   "gate3.below_quality_bar": "The draft didn't meet our bar on {failed_criteria}, and a revision didn't fix it. Our grader wrote: {first_justification}",
 
+  "gate1.admitted": "We checked this topic before planning it: people search for it, you sell into it, and nothing you have already covers it.",
+  "gate1.admitted_pinned_despite_zero_volume": "Almost nobody searches for this, so it isn't something we would have planned on our own. You pinned it, so it stays on the calendar.",
+  "gate1.rejected_zero_volume": "Hardly anyone searches for this — it sits below the level of demand we plan articles for.",
+  "gate1.rejected_not_winnable": "The pages already ranking for this are further ahead than your site can realistically catch at the moment, so we haven't planned an article for it.",
+  "gate1.rejected_off_catalog": "This doesn't match anything we can see you selling, so we haven't planned an article for it.",
+  "gate1.converted_existing_target_refresh": "You already rank for this. Rewriting the article we published is safer than creating another page.",
+  "gate2.held_thin_pack": "Before writing, we gather everything your store says about the products a topic covers. What came back repeated the same few points, so we stopped rather than draft an article with little to say.",
+  "topic.auto": "We planned this one from your growth opportunities.",
+  "topic.manual_addition": "You added this topic yourself.",
+
   "content.override.action": "Publish anyway",
   "content.override.heading": "Publish against our recommendation?",
   "content.override.body": "This draft scored low on: {failed_criteria}. Publishing content below our quality bar can hurt rather than help your rankings.",
