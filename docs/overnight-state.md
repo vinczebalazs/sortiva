@@ -5928,6 +5928,65 @@ lies outside `packages/db/src/testing.ts`.
    decision, so the sweep excludes it, and nothing else looks at it. Rarer, and a different shape
    of fix.
 
+### `R-TESTDB` LANDED — **the gate was silently not running 574 tests**
+
+**Merged, and the integrator did the database recreation the lane was blocked from.** A full
+`pnpm test` on `main` now runs in **26 seconds** and reports **283 files, 3,547 tests, all
+passing** — it was taking over 200 seconds and failing dozens of files at a time.
+
+**The diagnosis, which is better than anything guessed at it before.** Every database-backed suite
+created its own database and replayed the **entire migration set** into it — about a hundred times
+per run, times however many runs were going at once. That alone often exceeded the ten seconds a
+file's setup is allowed. And it produced enough writing to trigger the real killer: **Postgres
+implements "delete a database" by flushing the whole server to disk and waiting.** Under three
+concurrent runs, single deletions were measured at **up to 42 seconds** against a ten-second
+teardown budget. A suite stuck in one held a connection the whole time, so those piled up until the
+server hit its 100-client ceiling and began refusing outright — 135 refusals in one measurement.
+**Self-amplifying**: a deletion abandoned at the timeout leaves the database behind, so the backlog
+grows, which is exactly why the immediate re-run was always worse than the first.
+
+**Proved rather than inferred:** an explicit `CHECKPOINT` dropped the very next deletion from
+**13.8 seconds to 59 milliseconds.** It is the flush, not the count.
+
+**The worst finding, and it changes how to read every past gate run.** The harness read a refused
+connection as "no database here" and **silently skipped whole suites**. One measured run **skipped
+49 of 279 files and 574 tests and reported nothing wrong.** So a green `pnpm test` under load has
+not been proof that the tests ran. That is the fourth reporter in this project found failing towards
+"fine", and the most consequential.
+
+**It corrected the integrator, with evidence.** Two messages had been sent to that lane pointing at
+the 126-then-138 leftover databases as the likely cause. **They are a symptom.** With 137 leftovers
+present but the server freshly flushed, create was 106 ms and delete 59 ms. The exhaustion came from
+suites holding connections across 40-second deletions, not from leftovers consuming resources.
+
+**What changed:** one migrated database is built once per run and each suite copies it; one server
+connection per test process, handed back within half a second; a leaking suite is **failed by
+name** rather than landing an unexplained failure on an unrelated file; a server that is present
+but refusing no longer counts as absent; and the local Postgres turns off crash-safety
+(`fsync`, `synchronous_commit`, `full_page_writes`) — **the one change that reaches zero**, and a
+setting rather than code because the flush is inside Postgres.
+
+**Measured A/B, three concurrent runs, failed files each:** code changes only **15–16**; code plus
+a raised connection limit **36–37** (*worse* — the old limit was throttling how many deletions could
+pile up, so that change was dropped); code plus durability off **0**.
+
+**The ten-round result, honestly reported as unmet.** Thirty runs: zero setup or teardown timeouts,
+zero connection refusals, **zero skipped suites**, and one database left on the server each round.
+But 20 of 30 runs failed one or two individual **assertions**, always from four files that measure
+elapsed wall-clock time and exceed their budget when thirty workers share twelve cores. The lane
+called the done-when unmet as literally written rather than claiming success, and did not touch
+those tests because fixing them means changing an assertion or raising a timeout.
+
+**Integrator actions taken after the merge:** recreated the shared database so the compose settings
+apply (`fsync` confirmed `off`), and dropped **112 stale test databases**, leaving the dev database
+intact. Full suite then green in 26 seconds.
+
+**One thing for the founder:** `fsync=off` is a deliberate trade on a container holding only
+throwaway test databases and a dev database `pnpm db:seed` rebuilds — a crash means recreating it.
+Without it the code changes still cut failing files from ~67 to ~15 per run, but not to zero. **CI
+is unaffected** (its Postgres cannot take these flags, and it runs one suite at a time) and is
+faster anyway, since the template removes ~100 migration replays per run.
+
 ### Verification done this morning, so it is not re-done
 
 - Resolved every registered task-name constant in the tree and matched it by hand against all
