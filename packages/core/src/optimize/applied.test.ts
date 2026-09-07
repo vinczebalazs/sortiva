@@ -9,6 +9,7 @@ const recommendation = fixtureRecommendation()
 describe('heuristic applied detection', () => {
   it('says nothing about a page that has not changed', () => {
     const detection = detectApplied(recommendation, {
+      status: 'live',
       seoTitle: 'Wide trail running shoes | Example Store',
       seoDescription: 'Trail shoes with room across the forefoot.',
       headings: ['Wide trail running shoes', 'Our widths'],
@@ -20,6 +21,7 @@ describe('heuristic applied detection', () => {
 
   it('notices the suggested search-result title now on the page', () => {
     const detection = detectApplied(recommendation, {
+      status: 'live',
       seoTitle: '  wide TRAIL running shoes for wide feet | Example Store ',
       seoDescription: 'Trail shoes with room across the forefoot.',
       headings: ['Wide trail running shoes'],
@@ -31,6 +33,7 @@ describe('heuristic applied detection', () => {
 
   it('notices a suggested heading that has since appeared', () => {
     const detection = detectApplied(recommendation, {
+      status: 'live',
       seoTitle: null,
       seoDescription: null,
       headings: ['Wide trail running shoes', 'How to measure your forefoot'],
@@ -42,11 +45,46 @@ describe('heuristic applied detection', () => {
 
   it('does not read a merchant\'s own rewording as an application', () => {
     const detection = detectApplied(recommendation, {
+      status: 'live',
       seoTitle: 'Wide-fit trail shoes for runners | Example Store',
       seoDescription: 'Trail shoes for wide feet, in two widths.',
       headings: ['Measuring your feet'],
     })
 
     expect(detection.looksApplied).toBe(false)
+  })
+
+  /**
+   * The exact page state the second test above calls an application — same
+   * title, same headings — with only the store no longer serving the address.
+   * Written that way on purpose: a deleted row keeps every field compared, so
+   * nothing else in this function can tell the two apart, and a test built on
+   * a page that had also changed would pass with the check taken out.
+   */
+  it('asks nothing about a page the store no longer serves', () => {
+    const detection = detectApplied(recommendation, {
+      status: 'gone',
+      seoTitle: '  wide TRAIL running shoes for wide feet | Example Store ',
+      seoDescription: 'Trail shoes with room across the forefoot.',
+      headings: ['Wide trail running shoes', 'How to measure your forefoot'],
+    })
+
+    expect(detection.looksApplied).toBe(false)
+    expect(detection.signals).toEqual([])
+    expect(detection.headingsFound).toEqual([])
+  })
+
+  it('asks again once the page is back in the store', () => {
+    const page = {
+      seoTitle: '  wide TRAIL running shoes for wide feet | Example Store ',
+      seoDescription: 'Trail shoes with room across the forefoot.',
+      headings: ['Wide trail running shoes'],
+    }
+
+    // Nothing rewrites the row when a deleted page comes back — the walk moves
+    // the status and the fields are the ones it always had — so this is the
+    // whole of what restoration takes.
+    expect(detectApplied(recommendation, { ...page, status: 'gone' }).looksApplied).toBe(false)
+    expect(detectApplied(recommendation, { ...page, status: 'live' }).looksApplied).toBe(true)
   })
 })

@@ -538,6 +538,7 @@ export function makeReadRecommendationHandler(deps: RecommendationsDeps): Accoun
       const page = pages.find((candidate) => candidate.url === row.pageUrl)
       if (page) {
         const detection = detectApplied(row.recommendationJson as OptimizeRecommendation, {
+          status: page.status,
           seoTitle: page.seoTitle,
           seoDescription: page.seoDescription,
           headings: (page.headingsJson as string[] | null) ?? [],
@@ -695,6 +696,13 @@ async function targetQueryFor(
  * completes, the moment is stamped, and the measurement of whether it worked is
  * booked for 28 days later — the first date on which there is anything honest
  * to say (main §9.6.10).
+ *
+ * The mark itself is accepted whatever became of the page, including a page the
+ * merchant has since taken down. Somebody who did the work and then deleted the
+ * page did the work, and refusing them would leave the product claiming they
+ * never acted. Only the measurement is withheld: "we cannot measure this" and
+ * "this never happened" are different sentences, and the merchant reads the
+ * difference on the Opportunities screen.
  */
 export function makeApplyRecommendationHandler(
   deps: RecommendationsDeps,
@@ -738,22 +746,38 @@ export function makeApplyRecommendationHandler(
       }
     }
 
-    const maturityDays = rules().defaults.learning.outcomes.maturity_days
-    const dueAt = new Date(now.getTime() + maturityDays * 24 * 60 * 60 * 1000)
-    await enqueueOpportunityOutcomeMeasurement(
-      deps.db,
-      {
-        accountId: scope.accountId,
-        opportunityId: found.recommendation.opportunityId,
-        appliedAt: now.toISOString(),
-      },
-      dueAt,
-    )
+    // A measurement is a promise to look at this address again in four weeks
+    // and say what changed. There is nothing to look at if the store no longer
+    // serves it, and the whole comparison — Search Console's figures for the
+    // 28 days before against the 28 after — would read as a collapse caused by
+    // our advice. Read after the mark, so the window in which the walk could
+    // delete the page underneath us is as small as the two statements allow.
+    // A page we hold no row for at all gets the same answer, for the same
+    // reason — there is nothing here to measure either way.
+    const page = await storePageFor(deps.db, scope, found.recommendation.pageUrl)
 
+    const maturityDays = rules().defaults.learning.outcomes.maturity_days
+    const dueAt = page?.status === 'live'
+      ? new Date(now.getTime() + maturityDays * 24 * 60 * 60 * 1000)
+      : null
+    if (dueAt) {
+      await enqueueOpportunityOutcomeMeasurement(
+        deps.db,
+        {
+          accountId: scope.accountId,
+          opportunityId: found.recommendation.opportunityId,
+          appliedAt: now.toISOString(),
+        },
+        dueAt,
+      )
+    }
+
+    // No `outcomeDueAt` is the drawer's cue that no date was promised. The
+    // contract has always allowed it to be absent.
     return Response.json({
       ok: true,
       appliedAt: now.toISOString(),
-      outcomeDueAt: dueAt.toISOString(),
+      ...(dueAt ? { outcomeDueAt: dueAt.toISOString() } : {}),
     })
   }
 }
