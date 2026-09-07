@@ -15,6 +15,7 @@ import {
   findLiveTopicForOpportunity,
   hasPendingPublishForArticle,
   insertNotInterested,
+  lockDayForWrite,
   vetoTopicGuarded,
   type AccountScope,
   type Db,
@@ -121,6 +122,14 @@ async function cancelDay(
 ): Promise<CancellationOutcome | { readonly refused: CancellationRefusal }> {
   try {
     return await db.transaction(async (tx) => {
+      // Every row this transaction can write, taken up front in the one order
+      // all of them are taken in — read `lockDayForWrite` before adding a write
+      // here. Without it, this and the publish hour reach the same three rows
+      // from opposite ends and Postgres kills one of them, which arrives at the
+      // merchant as a server error on the button this path exists to answer
+      // cleanly.
+      await lockDayForWrite(tx, scope, { topicId: input.topicId })
+
       const updated = await vetoTopicGuarded(tx, scope, input.topicId, input.reason, now)
       if (!updated) throw new CancellationLost('topic_resolved')
 
