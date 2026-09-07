@@ -144,3 +144,25 @@ run yet, and one of `T5.2`'s done-whens stays unmet because of it.
 What landed with test counts. What each audit found, unactioned. Which lanes stopped and the exact
 question that stopped them. What is still running. Anything you assumed. **Report nothing as done
 that is not merged and green** — and "green" now means ten of eleven, with only `eval` red.
+
+---
+
+## Current state, replacing anything stale above. Written 2026-09-07 by sortiva-a8.
+
+- The previous integrator session (sortiva-d4) has ended. Nobody holds the
+  integrator role — you do now. Run ListAgents to confirm before assuming
+  otherwise.
+- main is at 71b3beb, clean. All six lane worktrees are clean.
+- R-PAGE-GONE-WRITE has LANDED and is merged. The text above still calls it
+  running.
+- sortiva-a8 is alive and is mid-card on R-PAGE-GONE-READ in
+  /Users/balazs/Desktop/sortiva-lane-c. DO NOT dispatch that card to another
+  lane. It works under the arrangement in "Who else is writing" above: you
+  inspect, merge and gate; it does not, and it writes nothing in the main
+  worktree. It will send you a report when the card is done. Reply to it by
+  name with SendMessage.
+- One building session is running and load is low, so under the four-session
+  cap there is room for two or three more lanes. Check uptime first, as the
+  rules require, and dispatch from the queue rather than letting a lane pick.
+- R-CONTRACT and R-REFUSAL are the integrator's own cards, so they are yours
+  to build rather than to dispatch.

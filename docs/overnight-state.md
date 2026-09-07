@@ -768,6 +768,57 @@ behaviour of that mechanism, but worth knowing at merge time.
 
 ## Right now
 
+**Status at 2026-09-07, 13:55 — a new integrator session (`sortiva-a8 [57107b]`) took the role over
+from `sortiva-d4`, which ended about half an hour earlier.** `main` at `71b3beb`, clean; all six lane
+worktrees clean and none carrying an unmerged commit, so nothing was lost in the handover. **Twenty-four
+cards merged, 3,597 tests, `pnpm chaos` 10 of 10.** `M2`–`M6`, `M8`, `M9` closed.
+
+**The founder's instruction this session, and it changes what "done" means:** *finish everything in
+code, and defer only the blank `.env` credentials to the last step.* So there is no card being held
+back for capacity reasons any more — the queue is worked until it is empty. Deployment stays out (the
+founder's earlier choice) and `T10.4` still cannot run without the Shopify development store they
+deliberately deferred.
+
+**Three sessions building, at the four-session cap counting the integrator:**
+
+| Session | Worktree | Card |
+|---|---|---|
+| `sortiva-a8 [187d15]` | `sortiva-lane-c` | `R-PAGE-GONE-READ` — dispatched by the previous integrator, mid-card |
+| lane session | `sortiva-lane-d` | `T7.2` — the refresh pool |
+| lane session | `sortiva-lane-f` | `R-SCANCOPY` — the empty state stops promising Monday |
+| this integrator | `sortiva` (main) | `R-CONTRACT` — its own card by rule |
+
+**Still open after those four**: `R-RUNWAY`, `R-QUOTA`, `R-STOREFRONT`, `R-DRAFT-PROMPT` (all Lane D,
+so they serialise behind `T7.2` unless separately authorised), `R-REJECTION-REASON` (Lane C params +
+Lane F key), `R-PAGE-GONE-OPTIMIZE` (Lane E, new — see below), the Lane F half of `R-REFUSAL` which
+waits on the integrator's contract half, and `T10.1`–`T10.3`.
+
+### The scope decision taken on `R-PAGE-GONE-READ`, and the third call site the lane had not found
+
+The lane asked whether to fix only its named file, or also the two places in its own lane that produce
+improve-this-page suggestions from every store page including deleted ones. **Answered: the wider
+scope** — the card's third done-when says a suggestion is never produced for a deleted page, and a
+done-when is the card. It stays inside Lane C and changes no other lane's behaviour.
+
+**Verifying the lane's report before answering found a third call site it had not named**:
+`packages/jobs/src/scan/assemble.ts:550`, inside `assembleFamilyCoverageInput`. That one feeds the
+signal that proposes a *new* page for a product family nothing covers — so a deleted page still counts
+as coverage there and the product stays quiet about a family it should now be told to cover. **Note the
+direction is opposite to the other two**: those produce a suggestion that should not exist, this one
+suppresses one that should. Three call sites in that file: lines 130, 550 and 630.
+
+This is the third time in two days that a report naming "two" or "three" of something has undercounted
+it. The rule that keeps working: verify anything whose truth would change what you do next.
+
+### A new card, from a finding the lane correctly refused to fix
+
+**`R-PAGE-GONE-OPTIMIZE`** (Lane E) — the improve-a-page machinery reads deleted pages too, in three
+files of Lane E's ground, so a merchant can press "improve this page" on a page that is gone and we
+spend a paid model call writing advice about nothing. Verified independently before carding it. The
+lane found it, stopped at its lane boundary, and was right to.
+
+*Superseded status lines kept below for the sequence:*
+
 **Status — twelve cards merged, `M5` and `M6` closed, and every founder decision has been taken.**
 Tests **3,488**, from 3,265 at the start. Gate green: nine of eleven, with `eval` red for want of a
 key and one named chaos scenario red — **and a lane is fixing that one now, so the chaos suite may
