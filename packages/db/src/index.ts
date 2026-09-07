@@ -25,6 +25,7 @@ export {
   type SettingsStore,
   type SettingsStoreOptions,
 } from './stores/settings'
+export {
   makePerformanceStore,
   type PerformanceStore,
   type PerformanceStoreOptions,
