@@ -8,6 +8,8 @@ import { loadPrompt } from '@sortiva/llm/prompts'
 import {
   accountScope,
   insertMinimalOpportunity,
+  markStorePagesGoneNotSeenSince,
+  markStorePagesSeen,
   storeOptimizeRecommendation,
   upsertStorePages,
   type OpportunityRow,
@@ -689,6 +691,66 @@ describe.skipIf(!available)('/api/recommendations', () => {
   })
 
   /**
+   * A merchant presses "improve this page" on a page they have since deleted.
+   *
+   * The screen was drawn before the page came down, so this is not something
+   * the card could have hidden. They are told at the press, while they are
+   * looking at the button, rather than watching it spin and come back having
+   * changed nothing — and rather than being charged a model call for advice
+   * about a page nobody can visit.
+   */
+  describe('a page the merchant has deleted since the screen was drawn', () => {
+    async function deletePage(): Promise<void> {
+      // The store served nothing on its last walk, so the one page in this
+      // fixture is the one marked deleted.
+      await markStorePagesGoneNotSeenSince(
+        harness.db,
+        accountScope(accountId),
+        new Date(Date.now() + 60_000),
+      )
+    }
+
+    it('is refused at the press, with its own machine-readable reason', async () => {
+      const opportunity = await optimizeOpportunity()
+      await deletePage()
+
+      const response = await post({ opportunityId: opportunity.id })
+
+      const body = (await response.json()) as { error: { code: string } }
+      expect(body.error.code).toBe('optimize_page_gone')
+      expect(response.status).toBe(422)
+    })
+
+    it('enqueues nothing and leaves the suggestion where it was', async () => {
+      const opportunity = await optimizeOpportunity()
+      await deletePage()
+
+      await post({ opportunityId: opportunity.id })
+
+      const { rows } = await harness.pool.query(
+        "SELECT 1 FROM graphile_worker._private_jobs j JOIN graphile_worker._private_tasks t ON t.id = j.task_id WHERE t.identifier = 'optimize_recommendation_generate'",
+      )
+      expect(rows, 'a refusal must not spend the day or buy anything').toHaveLength(0)
+
+      const status = await harness.pool.query<{ status: string }>(
+        'SELECT status FROM opportunities WHERE id = $1',
+        [opportunity.id],
+      )
+      // Left open rather than blocked: the walk can find the page again, and
+      // then the button works with nothing else done.
+      expect(status.rows[0]?.status).toBe('new')
+    })
+
+    it('works again once the walk finds the page back in the store', async () => {
+      const opportunity = await optimizeOpportunity()
+      await deletePage()
+      await markStorePagesSeen(harness.db, accountScope(accountId), [PAGE_URL], new Date())
+
+      expect((await post({ opportunityId: opportunity.id })).status).toBe(200)
+    })
+  })
+
+  /**
    * T6.3's own done-when: an open technical obstacle on a collection stops the
    * improve-this-page button on that collection, and says so on the card rather
    * than removing it.
@@ -808,24 +870,9 @@ describe.skipIf(!available)('/api/recommendations', () => {
   })
 
   describe('the FIX recommendation the drawer reads', () => {
-    it('names the primary page, the links to move and where a canonical would be wrong', async () => {
-      await upsertStorePages(harness.db, accountScope(accountId), [
-        {
-          url: 'https://example-store.com/pages/shoe-guide',
-          pageType: 'page',
-          handle: 'shoe-guide',
-          shopifyId: 'gid://shopify/Page/3',
-          title: 'Shoe guide',
-          seoTitle: null,
-          seoDescription: null,
-          headings: [],
-          bodyHtml: '<p>Guide.</p>',
-          outboundInternalLinks: ['https://example-store.com/products/trail-1'],
-          familyIds: [],
-          checksum: 'checksum-guide',
-        },
-      ])
-      const fix = await insertMinimalOpportunity(
+    /** Two of the store's own pages splitting one search between them. */
+    async function cannibalizationOpportunity(): Promise<OpportunityRow> {
+      return insertMinimalOpportunity(
         harness.db,
         accountScope(accountId),
         {
@@ -856,6 +903,26 @@ describe.skipIf(!available)('/api/recommendations', () => {
         },
         NOW,
       )
+    }
+
+    it('names the primary page, the links to move and where a canonical would be wrong', async () => {
+      await upsertStorePages(harness.db, accountScope(accountId), [
+        {
+          url: 'https://example-store.com/pages/shoe-guide',
+          pageType: 'page',
+          handle: 'shoe-guide',
+          shopifyId: 'gid://shopify/Page/3',
+          title: 'Shoe guide',
+          seoTitle: null,
+          seoDescription: null,
+          headings: [],
+          bodyHtml: '<p>Guide.</p>',
+          outboundInternalLinks: ['https://example-store.com/products/trail-1'],
+          familyIds: [],
+          checksum: 'checksum-guide',
+        },
+      ])
+      const fix = await cannibalizationOpportunity()
 
       const body = (await (await read(fix.id)).json()) as {
         recommendation: null
@@ -878,6 +945,46 @@ describe.skipIf(!available)('/api/recommendations', () => {
       expect(canonical?.lines.map((line) => line.templateKey)).toEqual([
         'fix.consolidation.canonical.notAdvised',
       ])
+    })
+
+    it('never asks the merchant to go and edit a page they have deleted', async () => {
+      await upsertStorePages(harness.db, accountScope(accountId), [
+        {
+          url: 'https://example-store.com/pages/shoe-guide',
+          pageType: 'page',
+          handle: 'shoe-guide',
+          shopifyId: 'gid://shopify/Page/3',
+          title: 'Shoe guide',
+          seoTitle: null,
+          seoDescription: null,
+          headings: [],
+          bodyHtml: '<p>Guide.</p>',
+          outboundInternalLinks: ['https://example-store.com/products/trail-1'],
+          familyIds: [],
+          checksum: 'checksum-guide',
+        },
+      ])
+      // The store still serves the collection and no longer serves the guide.
+      // The guide holding the link is the only difference from the test above.
+      const walk = new Date(Date.now() + 60_000)
+      await markStorePagesSeen(harness.db, accountScope(accountId), [PAGE_URL], walk)
+      await markStorePagesGoneNotSeenSince(harness.db, accountScope(accountId), walk)
+      const fix = await cannibalizationOpportunity()
+
+      const body = (await (await read(fix.id)).json()) as {
+        fix: {
+          sections: { kind: string; lines: { templateKey: string; params: Record<string, unknown> }[] }[]
+        }
+      }
+
+      const lines = body.fix.sections.flatMap((section) => section.lines)
+      // The recommendation is still made — the pages it is about are still
+      // there — and only the instruction to edit a deleted page is gone.
+      expect(lines.some((line) => line.params.url === PAGE_URL)).toBe(true)
+      expect(
+        lines.map((line) => line.params.fromUrl).filter(Boolean),
+        'a link to move can only be moved on a page that still exists',
+      ).toEqual([])
     })
   })
 })

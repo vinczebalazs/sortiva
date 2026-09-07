@@ -18,6 +18,8 @@ import {
   insertTopic,
   latestOptimizeRecommendation,
   listOptimizeTasks,
+  markStorePagesGoneNotSeenSince,
+  markStorePagesSeen,
   storeOptimizeRecommendation,
   tripAccountFlag,
   upsertGscQueryDaily,
@@ -36,6 +38,7 @@ import {
 import { MockPageFetcher, MockSeoDataProvider } from '@sortiva/providers'
 import { rules } from '@sortiva/rules'
 import { generateOptimizeRecommendation } from './generate'
+import { assembleOptimizePack } from './pack'
 
 /**
  * The whole OPTIMIZE pipeline against a real database: the merchant's page and
@@ -553,6 +556,55 @@ describe.skipIf(!available)('a generation that does not finish', () => {
     expect(await statusOf(opportunity.id)).toBe('accepted')
   })
 
+  it('buys nothing for a page the merchant has deleted since it was suggested', async () => {
+    const scope = accountScope(accountId)
+    // Deliberately the opportunity that carries no search of its own. Every
+    // other refusal in this pipeline has its own answer, and this one comes
+    // first: with the deleted-page check gone, this same run answers
+    // `no_target_query` instead, so the check is what this test is measuring
+    // rather than the pipeline refusing for some other reason.
+    const opportunity = await metadataOpportunity()
+    // The store served every page but this one on its last walk, so this one
+    // and only this one is marked deleted. Everything else about the run is the
+    // run that succeeds.
+    const walk = new Date(Date.now() + 60_000)
+    await markStorePagesSeen(db, scope, ['https://shop.example/pages/boot-care'], walk)
+    await markStorePagesGoneNotSeenSince(db, scope, walk)
+    const f = fixtures([withProductId(goodRecommendation())])
+
+    const outcome = await generateOptimizeRecommendation(f.deps, {
+      accountId,
+      opportunityId: opportunity.id,
+    })
+
+    expect(outcome.status).toBe('skipped')
+    if (outcome.status !== 'skipped') return
+    expect(outcome.reason).toBe('page_no_longer_in_store')
+    expect(f.llm.requests, 'nothing may be asked of a model about a page that is gone').toEqual([])
+    expect(f.seo.calls, 'and no search may be bought for it either').toEqual([])
+    expect(await latestOptimizeRecommendation(db, scope, opportunity.id)).toBeUndefined()
+    expect(await statusOf(opportunity.id)).toBe('accepted')
+  })
+
+  it('offers the page again once the walk finds it back in the store', async () => {
+    const scope = accountScope(accountId)
+    const opportunity = await optimizeOpportunity()
+    const walk = new Date(Date.now() + 60_000)
+    await markStorePagesSeen(db, scope, ['https://shop.example/pages/boot-care'], walk)
+    await markStorePagesGoneNotSeenSince(db, scope, walk)
+    // The merchant put the page back, and the next walk saw it. Nothing else
+    // happens — the row keeps the checksum and the body it always had.
+    await markStorePagesSeen(db, scope, [PAGE], new Date(walk.getTime() + 60_000))
+    const f = fixtures([withProductId(goodRecommendation())])
+
+    const outcome = await generateOptimizeRecommendation(f.deps, {
+      accountId,
+      opportunityId: opportunity.id,
+    })
+
+    expect(outcome.status).toBe('generated')
+  })
+
   it('buys nothing for a page Google is not indexing, even once the work has been queued', async () => {
     const opportunity = await optimizeOpportunity()
     await insertMinimalOpportunity(
@@ -1001,5 +1053,93 @@ describe.skipIf(!available)('a page whose detection recorded no search', () => {
     expect(f.seo.billableCalls).toBeGreaterThan(0)
     const { rows } = await harness.pool.query<{ query: string }>('SELECT query FROM serp_snapshots')
     expect(rows.map((row) => row.query)).toEqual([CLUSTER_QUERY])
+  })
+})
+
+/**
+ * The evidence pack, assembled straight rather than through a generation.
+ *
+ * Two separate things about a deleted page: the page being improved, and the
+ * store's other pages offered as somewhere to link. The first is also refused
+ * one step earlier, in the generation; the second has nowhere else it could be
+ * caught, and a recommendation carrying it tells the merchant to add a link
+ * that breaks the page they add it to.
+ */
+describe.skipIf(!available)('the evidence pack for a page', () => {
+  const LOCALE = { language: 'en', country: 'GB' }
+
+  it('is refused for a page the merchant has deleted', async () => {
+    const scope = accountScope(accountId)
+    const opportunity = await optimizeOpportunity()
+    const walk = new Date(Date.now() + 60_000)
+    await markStorePagesSeen(db, scope, ['https://shop.example/pages/boot-care'], walk)
+    await markStorePagesGoneNotSeenSince(db, scope, walk)
+    const f = fixtures([withProductId(goodRecommendation())])
+
+    const outcome = await assembleOptimizePack(f.deps, {
+      accountId,
+      opportunityId: opportunity.id,
+      pageUrl: PAGE,
+      targetQuery: QUERY,
+      locale: LOCALE,
+    })
+
+    expect(outcome.status).toBe('unavailable')
+    if (outcome.status !== 'unavailable') return
+    expect(outcome.reason).toBe('page_no_longer_in_store')
+    expect(f.seo.calls, 'the refusal comes before anything is bought').toHaveLength(0)
+  })
+
+  it('never offers a deleted page as somewhere to link', async () => {
+    const scope = accountScope(accountId)
+    const opportunity = await optimizeOpportunity()
+    // The page being improved is untouched and still live. The only difference
+    // from a pack that carries a link candidate is that this one candidate has
+    // been taken down.
+    const walk = new Date(Date.now() + 60_000)
+    await markStorePagesSeen(db, scope, [PAGE], walk)
+    await markStorePagesGoneNotSeenSince(db, scope, walk)
+    const f = fixtures([withProductId(goodRecommendation())])
+
+    const outcome = await assembleOptimizePack(f.deps, {
+      accountId,
+      opportunityId: opportunity.id,
+      pageUrl: PAGE,
+      targetQuery: QUERY,
+      locale: LOCALE,
+    })
+
+    expect(outcome.status).toBe('assembled')
+    if (outcome.status !== 'assembled') return
+    expect(outcome.pack.linkCandidates.map((candidate) => candidate.url)).toEqual([])
+  })
+
+  it('offers it again once the walk finds it back in the store', async () => {
+    const scope = accountScope(accountId)
+    const opportunity = await optimizeOpportunity()
+    const walk = new Date(Date.now() + 60_000)
+    await markStorePagesSeen(db, scope, [PAGE], walk)
+    await markStorePagesGoneNotSeenSince(db, scope, walk)
+    await markStorePagesSeen(
+      db,
+      scope,
+      ['https://shop.example/pages/boot-care'],
+      new Date(walk.getTime() + 60_000),
+    )
+    const f = fixtures([withProductId(goodRecommendation())])
+
+    const outcome = await assembleOptimizePack(f.deps, {
+      accountId,
+      opportunityId: opportunity.id,
+      pageUrl: PAGE,
+      targetQuery: QUERY,
+      locale: LOCALE,
+    })
+
+    expect(outcome.status).toBe('assembled')
+    if (outcome.status !== 'assembled') return
+    expect(outcome.pack.linkCandidates.map((candidate) => candidate.url)).toEqual([
+      'https://shop.example/pages/boot-care',
+    ])
   })
 })

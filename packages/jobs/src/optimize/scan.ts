@@ -9,7 +9,7 @@ import {
   type IntentGapCandidate,
   type PageFact,
 } from '@sortiva/core'
-import { accountScope, listStorePages, readStorePageBody, type Db } from '@sortiva/db'
+import { accountScope, listLiveStorePages, readStorePageBody, type Db } from '@sortiva/db'
 import { rules } from '@sortiva/rules'
 import { analyseIntentGap, type AnalyseIntentGapDeps } from './analyse'
 import { runtimeLogger } from '../runtime/logging'
@@ -70,7 +70,10 @@ export async function scanIntentGaps(
   const now = (deps.now ?? (() => new Date()))()
   const config = rules().defaults.signals.existing_page_intent_gap
 
-  const inventory = await listStorePages(deps.db, accountScope(input.accountId))
+  // Only the pages the store still serves. A page the merchant has deleted
+  // cannot be improved, and comparing it against the pages ranking above it
+  // spends a search purchase and a model call on advice nobody can apply.
+  const inventory = await listLiveStorePages(deps.db, accountScope(input.accountId))
   const pageFacts: PageFact[] = inventory.map((row) => ({
     url: row.url,
     pageType: row.pageType,

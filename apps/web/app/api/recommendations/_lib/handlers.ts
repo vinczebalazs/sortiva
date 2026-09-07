@@ -33,6 +33,7 @@ import {
   listOpenOpportunities,
   listOptimizeTasks,
   listQueryClusters,
+  listLiveStorePages,
   listStorePages,
   markOpportunityApplied,
   markOptimizeTask,
@@ -88,6 +89,29 @@ export type RecommendationRouteCtx = { readonly params: Promise<{ id: string }> 
 
 function conflict(code: ConflictCode, message: string): Response {
   return Response.json({ error: { code, message } }, { status: 409 })
+}
+
+/**
+ * The merchant pressed the button on a page that is no longer in their store.
+ *
+ * Its own code, because the screen picks its sentence from the code and ignores
+ * the message we send here — one of the existing codes would tell the merchant
+ * something untrue. It is not one of the frozen conflict codes: that list is
+ * the integrator's to add to, and a route answering with a code the contract
+ * does not declare is the defect this shape avoids. Answered the way the
+ * article refresh route answers its own out-of-vocabulary refusals, and the
+ * client reads `error.code` whatever the status is.
+ */
+function pageGone(): Response {
+  return Response.json(
+    {
+      error: {
+        code: 'optimize_page_gone',
+        message: 'This page is no longer in your store, so there is nothing to improve.',
+      },
+    },
+    { status: 422 },
+  )
 }
 
 function notFound(): Response {
@@ -208,7 +232,9 @@ async function fixViewFor(
   scope: AccountScope,
   opportunity: OpportunityRow,
 ): Promise<FixRecommendationView | null> {
-  const pages = await listStorePages(deps.db, scope)
+  // The link realignment this produces is a list of pages for the merchant to
+  // go and edit, so a page they have deleted must not be on it.
+  const pages = await listLiveStorePages(deps.db, scope)
   const input = consolidationInputFromEvidence(
     (opportunity.evidenceJson ?? []) as Parameters<typeof consolidationInputFromEvidence>[0],
     pages.map((page) => ({ url: page.url, outboundInternalLinks: page.outboundInternalLinks })),
@@ -284,6 +310,15 @@ export function makeGenerateRecommendationHandler(deps: RecommendationsDeps): Ac
     // ordinary replenishment pass, under the cap that stops rewrites crowding
     // out new coverage.
     const page = await storePageFor(deps.db, scope, opportunity.entityRef)
+
+    // Refused here rather than in the generation step, because this is a person
+    // waiting on an answer: the screen was drawn before the page was taken down,
+    // and a press that enqueued would spin and come back having changed nothing.
+    // Nothing is enqueued, nothing is bought, and the day's allowance is
+    // untouched. The row is left as it is rather than blocked — the walk can
+    // find the page again, and then this stops refusing on its own.
+    if (page?.status === 'gone') return pageGone()
+
     if (page && optimizeRouteFor(page.pageType) === 'refresh_pool') {
       const admitted = page.articleId
         ? await requestArticleRefresh(
