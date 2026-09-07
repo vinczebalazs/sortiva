@@ -36,7 +36,7 @@ import {
   type Db,
   type OpportunityRow,
 } from '@sortiva/db'
-import { rules as loadRules, type SignalType } from '@sortiva/rules'
+import { rules as loadRules, type RulesOverrideReader, type SignalType } from '@sortiva/rules'
 import { withAccountLock } from '../runtime/lock'
 import { mayAccountWorkRun } from '../runtime/gate'
 import { runtimeLogger } from '../runtime/logging'
@@ -53,6 +53,7 @@ import {
   type AssembleDeps,
 } from './assemble'
 import { readIntentGapSignals } from './intent-gap'
+import { TableRulesOverrideReader } from './rules-overrides'
 
 /**
  * The whole decision pipeline (main §7.5 steps 1–7) run for one account: read
@@ -95,6 +96,8 @@ export interface RunSignalScanDeps {
    * construction of every write being naturally idempotent.
    */
   readonly onOpportunityPersisted?: (entityRef: string) => void
+  /** Where the thresholds an operator has moved for this store come from. Defaults to the table. */
+  readonly rulesOverrides?: RulesOverrideReader
 }
 
 export type SignalRunKind = 'onboarding' | 'weekly' | 'event'
@@ -195,8 +198,32 @@ async function runSignalScanLocked(
   const scope = accountScope(accountId)
 
   const persona = await readPersona(deps.db, scope)
-  const layer = loadRules().forLocale(persona?.language)
-  const rulesVersion = loadRules().rulesVersion
+  // An operator can move a threshold for one store without a deploy, and this
+  // is where that takes effect. The version stamped on everything below comes
+  // back from the same call, so a row whose numbers were moved says so and a
+  // row on the repo file's numbers is stamped exactly as it was before.
+  // A malformed override throws rather than being skipped: a threshold that
+  // quietly fails to apply is worse than one that was never set.
+  const overrideReader = deps.rulesOverrides ?? new TableRulesOverrideReader(deps.db)
+  const overrides = await overrideReader.read({
+    accountId,
+    ...(persona?.language ? { locale: persona.language } : {}),
+  })
+  const resolvedRules = loadRules().resolve({
+    accountId,
+    ...(persona?.language ? { locale: persona.language } : {}),
+    overrides,
+  })
+  const layer = resolvedRules.layer
+  const rulesVersion = resolvedRules.rulesVersion
+  if (resolvedRules.appliedOverrides.length > 0) {
+    log.info('signal_scan.rules_overridden', {
+      account_id: accountId,
+      run_id: runId,
+      rules_version: rulesVersion,
+      keys: resolvedRules.appliedOverrides.map((applied) => applied.key),
+    })
+  }
   const assembleDeps: AssembleDeps = {
     db: deps.db,
     seo: deps.seo,
