@@ -5,6 +5,7 @@ import {
   insertGateDecision,
   insertMinimalOpportunity,
   insertTopic,
+  markArticleDelivered,
   markArticleOverridden,
   markArticleRejectedByGate,
 } from '@sortiva/db'
@@ -138,6 +139,76 @@ describe.skipIf(!available)('GET /api/calendar', () => {
     const response = await get(accountId, '?from=2026-03-01&to=2026-03-31')
     const body = calendarResponseSchema.parse(await response.json())
     expect(body.topics).toHaveLength(0)
+  })
+
+  it('reads as published, not as a refusal, once the overruled article has gone out', async () => {
+    const scope = accountScope(accountId)
+    const opportunity = await insertMinimalOpportunity(
+      harness.db,
+      scope,
+      {
+        signalType: 'uncovered_commercial_query',
+        entityType: 'query_cluster',
+        entityRef: 'q-4',
+        evidenceJson: [],
+        recommendedAction: 'create',
+        status: 'scheduled',
+        reasonTemplateKey: 'gate1.admitted',
+        reasonParams: {},
+        limitedIntelligence: false,
+        rulesVersion: 'a'.repeat(64),
+      },
+      NOW,
+    )
+    const topic = await insertTopic(
+      harness.db,
+      scope,
+      {
+        opportunityId: opportunity.id,
+        title: 'Overruled and delivered',
+        targetKeyword: 'trail shoe sizing',
+        keywordCluster: null,
+        intentClass: 'buying_guide',
+        familyIds: [],
+        kind: 'new',
+        source: 'auto',
+        whyLine: 'topic.auto',
+        scheduledDate: '2026-03-16',
+        pinned: false,
+        state: 'rejected_by_gate',
+      },
+      NOW,
+    )
+    const { rows: article } = await harness.pool.query<{ id: string }>(
+      "INSERT INTO articles (account_id, topic_id, title, slug, state) VALUES ($1,$2,$3,$4,'cleared_to_deliver') RETURNING id",
+      [accountId, topic.id, 'Overruled and delivered', 'overruled-delivered'],
+    )
+    await insertGateDecision(
+      harness.db,
+      scope,
+      {
+        topicId: topic.id,
+        gate: 3,
+        outcome: 'rejected_after_repair',
+        scoresJson: { scores: { informationGain: 2 } },
+        reasonUserFacing: 'gate3.below_quality_bar',
+        promptVersion: 'judge.v1',
+        modelId: 'claude-test',
+      },
+      NOW,
+    )
+    await markArticleDelivered(harness.db, scope, article[0]!.id, 'export')
+
+    const body = calendarResponseSchema.parse(
+      await (await get(accountId, '?from=2026-03-01&to=2026-03-31')).json(),
+    )
+    const day = body.topics[0]
+
+    // The founder's call, 2026-09-07: the calendar says what happened to the
+    // day, and the article page keeps the fuller story — that we objected and
+    // the merchant went ahead. Two surfaces, two jobs.
+    expect(day?.state).toBe('published')
+    expect(day?.rejection).toBeNull()
   })
 
   it('bites: a day the merchant published anyway still names the reason we held it', async () => {
