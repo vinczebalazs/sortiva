@@ -1,7 +1,7 @@
-import { and, count, desc, eq, gte, inArray, isNotNull, isNull, lt, or } from 'drizzle-orm'
+import { and, count, desc, eq, gte, inArray, isNotNull, isNull, lt, notInArray, or } from 'drizzle-orm'
 import { OVERRIDE_GATE_OUTCOME } from '@sortiva/core'
 import type { Db } from '../client'
-import { articles, gateDecisions } from '../schema'
+import { articles, gateDecisions, topics } from '../schema'
 import type { AccountScope, SystemScope } from '../scope'
 
 export type ArticleRow = typeof articles.$inferSelect
@@ -212,6 +212,13 @@ export async function discardArticleGuarded(
  * quality bar is tuned against, out of pattern learning and out of every
  * claim we make about how our articles perform; those exclusions live in
  * their own queries and this changes none of them.
+ *
+ * **A day the merchant called off is never delivered, whatever else is true of
+ * it.** Cancelling a day discards the draft that exists at that moment, but a
+ * run already under way can write its article minutes later — after the
+ * cancellation — and that article would otherwise arrive here with a passing
+ * grade and go out. The merchant said no; this is the single place that has to
+ * hold for that to be true, whichever of the two landed first.
  */
 export async function articlesReadyForDelivery(
   db: Db,
@@ -229,6 +236,11 @@ export async function articlesReadyForDelivery(
       ),
     )
 
+  const calledOff = db
+    .select({ topicId: topics.id })
+    .from(topics)
+    .where(and(eq(topics.accountId, scope.accountId), eq(topics.state, 'vetoed')))
+
   return db
     .select()
     .from(articles)
@@ -236,11 +248,33 @@ export async function articlesReadyForDelivery(
       and(
         eq(articles.accountId, scope.accountId),
         eq(articles.state, 'draft'),
+        notInArray(articles.topicId, calledOff),
         or(inArray(articles.topicId, cleared), eq(articles.publishedViaOverride, true)),
       ),
     )
     .orderBy(desc(articles.updatedAt))
     .limit(limit)
+}
+
+/**
+ * The article a calendar day produced, if it has produced one yet.
+ *
+ * A day holds at most one; the pipeline creates the row once, early, and works
+ * on it in place. `undefined` means the writing has not reached the point of
+ * having something to store — which is a real state a cancellation has to cope
+ * with, not an error.
+ */
+export async function findArticleForTopic(
+  db: Db,
+  scope: AccountScope,
+  topicId: string,
+): Promise<ArticleRow | undefined> {
+  const [row] = await db
+    .select()
+    .from(articles)
+    .where(and(eq(articles.accountId, scope.accountId), eq(articles.topicId, topicId)))
+    .limit(1)
+  return row
 }
 
 export async function findArticleById(

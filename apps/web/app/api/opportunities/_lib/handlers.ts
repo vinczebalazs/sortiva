@@ -10,7 +10,6 @@ import {
   type Opportunity,
 } from '@sortiva/core'
 import {
-  dismissOpportunityGuarded,
   findOpportunityById,
   listOpenOpportunities,
   listSignalRuns,
@@ -23,6 +22,7 @@ import {
 // hit already (its own note explains why); `TopicScheduler` and
 // `TopicSchedulingError` live behind the same barrel chain.
 import { DbTopicScheduler, TopicSchedulingError } from '@sortiva/jobs/generation/topic-scheduler'
+import { dismissOpportunity } from '@sortiva/jobs/generation/veto-topic'
 import { rules } from '@sortiva/rules'
 import type { AccountHandler } from '../../auth/_lib/session'
 
@@ -200,15 +200,31 @@ export function makeListOpportunitiesHandler(deps: OpportunitiesDeps): AccountHa
   }
 }
 
+/**
+ * "Not interested" — and the article it had already booked never appears.
+ *
+ * The suggestion and the calendar day it produced are called off together, by
+ * the calendar's own operation rather than by this route reaching into the
+ * calendar's rows. Dismissing used to touch only the suggestion, so the daily
+ * writing cycle — which works off the calendar day and never looks at the
+ * suggestion — went on and published anyway.
+ *
+ * A publication landing at the same moment wins: the whole cancellation is
+ * rolled back and this answers with a conflict, rather than telling the
+ * merchant it dropped something that is already on their site. The frozen
+ * contract gives this route two conflict codes and neither names a
+ * publication, so that lost race is reported as the closest of them — the
+ * suggestion is no longer something we can act on.
+ */
 export function makeDismissOpportunityHandler(deps: OpportunitiesDeps): AccountHandler<OpportunityRouteCtx> {
   return async (_request, { scope, route }) => {
     const { id } = await route.params
-    const result = await dismissOpportunityGuarded(deps.db, scope, id)
-    if (!result) {
+    const result = await dismissOpportunity({ db: deps.db }, { accountId: scope.accountId, opportunityId: id })
+    if (!result.ok) {
       const existing = await findOpportunityById(deps.db, scope, id)
       return existing ? conflict('opportunity_not_open') : notFound()
     }
-    return Response.json({ ok: true, status: result.row.status })
+    return Response.json({ ok: true, status: result.status })
   }
 }
 

@@ -156,4 +156,26 @@ describe.skipIf(!available)('/api/opportunities — the route against real rows,
     const row = await findOpportunityById(harness.db, accountScope(accountId), opportunity.id)
     expect(row?.status).toBe('scheduled')
   })
+
+  it('dismiss: the day the suggestion booked goes with it, and stays empty', async () => {
+    const opportunity = await seedOpportunity({
+      evidenceJson: [
+        { key: 'keyword', value: 'best trail running shoes', source: 'content_inventory', fetchedAt: NOW.toISOString() },
+        { key: 'intent_class', value: 'buying_guide', source: 'content_inventory', fetchedAt: NOW.toISOString() },
+      ],
+    })
+    const booked = await (await scheduleRoute(opportunity.id)).json()
+    expect(booked.topicId).toBeTruthy()
+
+    const response = await dismissRoute(opportunity.id)
+    expect(response.status).toBe(200)
+
+    const { findPlannedTopicOnDate, findTopic } = await import('@sortiva/db')
+    const scope = accountScope(accountId)
+    const day = await findTopic(harness.db, scope, booked.topicId)
+    expect(day?.state).toBe('vetoed')
+    // The writing cycle takes the topic planned for that exact day and no
+    // other, so an empty day is a day nothing is written on.
+    expect(await findPlannedTopicOnDate(harness.db, scope, booked.scheduledFor)).toBeUndefined()
+  })
 })

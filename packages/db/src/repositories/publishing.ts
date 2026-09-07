@@ -1,4 +1,5 @@
-import { and, asc, eq, lt, sql } from 'drizzle-orm'
+import { and, asc, eq, like, lt, sql } from 'drizzle-orm'
+import { publishMarker } from '@sortiva/core'
 import type { Db } from '../client'
 import { accountSettings, articles, publishIntents, shopifyConns } from '../schema'
 import type { AccountScope, SystemScope } from '../scope'
@@ -203,6 +204,38 @@ export async function openPublishIntent(
     .onConflictDoNothing({ target: publishIntents.articleExternalId })
     .returning()
   return row
+}
+
+/**
+ * Whether a publication of *this* article is claimed and unconfirmed.
+ *
+ * The claim is written before anything is sent, and confirmed after the shop
+ * answers, so a pending claim means the post may already be on the merchant's
+ * site while our own row still calls the article a draft. Anything that would
+ * tell a merchant the article was called off has to ask this first, or it
+ * risks saying so about a post that is already public.
+ *
+ * Matched by prefix because a republication claims the same article under a
+ * later revision (`sortiva-<id>#r1`); the id is fixed-length, so the prefix
+ * cannot reach another article.
+ */
+export async function hasPendingPublishForArticle(
+  db: Db,
+  scope: AccountScope,
+  articleId: string,
+): Promise<boolean> {
+  const [row] = await db
+    .select({ id: publishIntents.id })
+    .from(publishIntents)
+    .where(
+      and(
+        eq(publishIntents.accountId, scope.accountId),
+        eq(publishIntents.state, 'pending'),
+        like(publishIntents.articleExternalId, `${publishMarker(articleId)}%`),
+      ),
+    )
+    .limit(1)
+  return row !== undefined
 }
 
 /** The claim as it stands, whoever holds it. */

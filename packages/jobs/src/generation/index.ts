@@ -32,7 +32,16 @@ export {
   type ReplenishmentTaskDeps,
   type ReplenishmentAccountPayload,
 } from './replenish-tasks'
-export { vetoTopic, type VetoTopicDeps, type VetoTopicInput, type VetoTopicResult } from './veto-topic'
+export {
+  dismissOpportunity,
+  vetoTopic,
+  type CancellationRefusal,
+  type DismissOpportunityInput,
+  type DismissOpportunityResult,
+  type VetoTopicDeps,
+  type VetoTopicInput,
+  type VetoTopicResult,
+} from './veto-topic'
 export { moveTopic, type MoveTopicDeps, type MoveTopicInput, type MoveTopicResult } from './move-topic'
 export { pinTopic, type PinTopicDeps, type PinTopicInput, type PinTopicResult } from './pin-topic'
 export {

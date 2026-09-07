@@ -1,6 +1,7 @@
 import { eq, and, desc, gte, lt, lte, ne, inArray, notExists, sql } from 'drizzle-orm'
+import { VETOABLE_STATES } from '@sortiva/core'
 import type { Db } from '../client'
-import { gateDecisions, topics } from '../schema'
+import { articles, gateDecisions, topics } from '../schema'
 import type { AccountScope } from '../scope'
 
 export type TopicRow = typeof topics.$inferSelect
@@ -420,4 +421,53 @@ export async function strandedGeneratingTopicsBefore(
       ),
     )
     .orderBy(desc(topics.scheduledDate))
+}
+
+/**
+ * The calendar day a suggestion booked, while there is still something to call
+ * off.
+ *
+ * A suggestion books at most one day at a time — the move onto the calendar is
+ * guarded on the suggestion still being `accepted`, so a second day cannot be
+ * booked while the first is live — and a day that has been rejected by the
+ * quality bar or already called off has nothing left to cancel.
+ *
+ * A day whose article has already gone out is excluded too, and that exclusion
+ * is doing real work rather than tidying: nothing in the product moves a
+ * calendar day out of `generating` when its article publishes, so on state
+ * alone a day that published a fortnight ago is indistinguishable from one
+ * being written right now. Without this, a merchant could never say "not
+ * interested" to a suggestion whose article had already appeared — the
+ * cancellation would be refused for ever. The article's own row is what
+ * separates the two.
+ */
+export async function findLiveTopicForOpportunity(
+  db: Db,
+  scope: AccountScope,
+  opportunityId: string,
+): Promise<TopicRow | undefined> {
+  const [row] = await db
+    .select()
+    .from(topics)
+    .where(
+      and(
+        eq(topics.accountId, scope.accountId),
+        eq(topics.opportunityId, opportunityId),
+        inArray(topics.state, [...VETOABLE_STATES]),
+        notExists(
+          db
+            .select({ one: sql`1` })
+            .from(articles)
+            .where(
+              and(
+                eq(articles.accountId, scope.accountId),
+                eq(articles.topicId, topics.id),
+                eq(articles.state, 'published'),
+              ),
+            ),
+        ),
+      ),
+    )
+    .limit(1)
+  return row
 }
