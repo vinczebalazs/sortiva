@@ -6,7 +6,7 @@ import {
   buildConsolidationRecommendation,
   consolidationInputFromEvidence,
   detectApplied,
-  fieldRationale,
+  isFailedRecommendation,
   optimizeRouteFor,
   packFacts,
   renderConsolidationView,
@@ -15,6 +15,7 @@ import {
   resolveTargetQueryFromClusters,
   targetQueryFromEvidence,
   toIsoDate,
+  toRecommendationView,
   type ConflictCode,
   type FixRecommendationView,
   type OptimizeEvidencePack,
@@ -44,7 +45,6 @@ import {
   type AccountScope,
   type Db,
   type OpportunityRow,
-  type OptimizeRecommendationRow,
   type StorePageRow,
 } from '@sortiva/db'
 // Deep import to the file, not the `@sortiva/jobs` barrel — the barrel pulls the
@@ -409,87 +409,6 @@ export function makeGenerateRecommendationHandler(deps: RecommendationsDeps): Ac
   }
 }
 
-interface RecommendationView {
-  readonly id: string
-  readonly state: 'generating' | 'ready' | 'failed_validation'
-  readonly pageUrl: string
-  readonly fields: readonly {
-    field: string
-    current: string | null
-    suggested: string
-    evidence: string | null
-  }[]
-  readonly sections: readonly { heading: string; copy: string; evidence: readonly string[] }[]
-  readonly faq: readonly { q: string; a: string; evidence: readonly string[] }[]
-  readonly internalLinksIn: readonly { fromUrl: string; anchor: string }[]
-  readonly internalLinksOut: readonly { toUrl: string; anchor: string }[]
-  readonly intentNote: string | null
-  readonly failureReason: { templateKey: string; params: Record<string, string> } | null
-  readonly generatedAt: string
-}
-
-function isFailed(row: OptimizeRecommendationRow): boolean {
-  return row.state === 'failed_validation'
-}
-
-function viewOf(row: OptimizeRecommendationRow): RecommendationView {
-  if (isFailed(row)) {
-    return {
-      id: row.id,
-      state: 'failed_validation',
-      pageUrl: row.pageUrl,
-      fields: [],
-      sections: [],
-      faq: [],
-      internalLinksIn: [],
-      internalLinksOut: [],
-      intentNote: null,
-      // A template key, never the model's own words and never the lint text:
-      // the merchant gets one sentence written by us. Invariant 8.
-      failureReason: { templateKey: 'optimize.failedValidation.reason', params: {} },
-      generatedAt: row.generatedAt.toISOString(),
-    }
-  }
-
-  const recommendation = row.recommendationJson as OptimizeRecommendation
-  return {
-    id: row.id,
-    state: 'ready',
-    pageUrl: row.pageUrl,
-    fields: [
-      {
-        field: 'title_tag',
-        current: recommendation.title_tag.current,
-        suggested: recommendation.title_tag.suggested,
-        evidence: fieldRationale(recommendation.title_tag),
-      },
-      {
-        field: 'meta_description',
-        current: recommendation.meta_description.current,
-        suggested: recommendation.meta_description.suggested,
-        evidence: fieldRationale(recommendation.meta_description),
-      },
-    ],
-    sections: recommendation.sections.map((section) => ({
-      heading: section.heading,
-      copy: section.suggested_copy,
-      evidence: section.facts_used,
-    })),
-    faq: recommendation.faq.map((entry) => ({ q: entry.q, a: entry.a, evidence: entry.facts_used })),
-    internalLinksIn: recommendation.internal_links.add_from.map((link) => ({
-      fromUrl: link.url,
-      anchor: link.anchor,
-    })),
-    internalLinksOut: recommendation.internal_links.add_to.map((link) => ({
-      toUrl: link.url,
-      anchor: link.anchor,
-    })),
-    intentNote: recommendation.intent_note,
-    failureReason: null,
-    generatedAt: row.generatedAt.toISOString(),
-  }
-}
-
 /**
  * `GET /api/recommendations?opportunityId=…` — the drawer's own read.
  *
@@ -530,10 +449,10 @@ export function makeReadRecommendationHandler(deps: RecommendationsDeps): Accoun
     }
 
     const tasks = await listOptimizeTasks(deps.db, scope, opportunityId)
-    const view = viewOf(row)
+    const view = toRecommendationView(row)
 
     let looksApplied: { signals: readonly string[]; headings: readonly string[] } | null = null
-    if (!isFailed(row)) {
+    if (!isFailedRecommendation(row)) {
       const pages = await listStorePages(deps.db, scope)
       const page = pages.find((candidate) => candidate.url === row.pageUrl)
       if (page) {
@@ -609,7 +528,7 @@ export function makeDownloadRecommendationHandler(
   return async (request, { scope, route }) => {
     const { id } = await route.params
     const found = await findOptimizeRecommendation(deps.db, scope, id)
-    if (!found || isFailed(found.recommendation)) return notFound()
+    if (!found || isFailedRecommendation(found.recommendation)) return notFound()
 
     const format = new URL(request.url).searchParams.get('format') ?? 'md'
     if (format !== 'md' && format !== 'html') return badRequest('Ask for md or html.')
@@ -710,7 +629,7 @@ export function makeApplyRecommendationHandler(
   return async (request, { scope, route }) => {
     const { id } = await route.params
     const found = await findOptimizeRecommendation(deps.db, scope, id)
-    if (!found || isFailed(found.recommendation)) return notFound()
+    if (!found || isFailedRecommendation(found.recommendation)) return notFound()
 
     let body: unknown = {}
     try {

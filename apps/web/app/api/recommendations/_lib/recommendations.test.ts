@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import {
   RECOMMENDATION_RESPONSE_SCHEMA,
+  opportunityDetailResponseSchema,
   type OptimizeRecommendation,
   type RecommendationLabels,
 } from '@sortiva/core'
@@ -29,6 +30,7 @@ import {
 } from '@sortiva/jobs/runtime/testing'
 import { rules } from '@sortiva/rules'
 import { withAccount } from '../../auth/_lib/session'
+import { makeOpportunityDetailHandler } from '../../opportunities/_lib/handlers'
 import { OPTIMIZE_RECO_PROMPT_MAJOR_VERSION } from './config'
 import {
   makeApplyRecommendationHandler,
@@ -1059,6 +1061,132 @@ describe.skipIf(!available)('/api/recommendations', () => {
         lines.map((line) => line.params.fromUrl).filter(Boolean),
         'a link to move can only be moved on a page that still exists',
       ).toEqual([])
+    })
+  })
+  /**
+   * The merchant reads this advice on two screens: the opportunity drawer and
+   * the recommendation card. They used to be built by two functions holding
+   * the same thirty lines, and two copies of one mapping are two answers
+   * waiting to disagree — one merchant, one page, two different pieces of
+   * advice. This drives both screens from one stored row and holds them to the
+   * same words.
+   */
+  describe('the drawer and the recommendation card describe the same advice', () => {
+    /**
+     * The drawer serialises the whole opportunity, so its evidence has to be
+     * complete — every fact stamped with where it came from and when. The
+     * shared fixture above carries only what the recommendation endpoint
+     * reads, which is less.
+     */
+    const opportunityOnBothScreens = () =>
+      insertMinimalOpportunity(
+        harness.db,
+        accountScope(accountId),
+        {
+          signalType: 'existing_page_intent_gap',
+          entityType: 'url',
+          entityRef: PAGE_URL,
+          evidenceJson: [
+            {
+              key: 'query_cluster',
+              value: 'trail running shoes for wide feet',
+              source: 'gsc',
+              window: '28d',
+              fetchedAt: NOW.toISOString(),
+            },
+          ],
+          recommendedAction: 'optimize',
+          status: 'new',
+          reasonTemplateKey: 'opportunity.existing_page_intent_gap',
+          reasonParams: {},
+          limitedIntelligence: false,
+          rulesVersion: rules().rulesVersion,
+        },
+        NOW,
+      )
+
+    const drawer = (opportunityId: string) =>
+      withAccount(
+        makeOpportunityDetailHandler({ db: harness.db, now: () => NOW }),
+        async () => accountId,
+      )(new Request(`http://localhost/api/opportunities/${opportunityId}`), {
+        params: Promise.resolve({ id: opportunityId }),
+      })
+
+    it('agrees on every word of a generated recommendation', async () => {
+      const opportunity = await opportunityOnBothScreens()
+      await storedRecommendation(opportunity.id)
+
+      const card = (await (await read(opportunity.id)).json()) as {
+        recommendation: {
+          state: string
+          fields: unknown[]
+          internalLinksIn: unknown[]
+          internalLinksOut: unknown[]
+          intentNote: string | null
+          failureReason: unknown
+        }
+      }
+      const detail = opportunityDetailResponseSchema.parse(
+        await (await drawer(opportunity.id)).json(),
+      )
+
+      expect(card.recommendation.state).toBe('ready')
+      // The drawer has nowhere to put the sections, the questions or the row's
+      // own address, so it carries less. Everything it does carry has to be
+      // the same, field for field.
+      expect(detail.recommendation).toEqual({
+        state: card.recommendation.state,
+        fields: card.recommendation.fields,
+        internalLinksIn: card.recommendation.internalLinksIn,
+        internalLinksOut: card.recommendation.internalLinksOut,
+        intentNote: card.recommendation.intentNote,
+        failureReason: card.recommendation.failureReason,
+      })
+      expect(detail.recommendation?.fields.map((field) => field.field)).toEqual([
+        'title_tag',
+        'meta_description',
+      ])
+    })
+
+    it('agrees that a refused recommendation is one sentence and no draft', async () => {
+      const opportunity = await opportunityOnBothScreens()
+      await storeOptimizeRecommendation(harness.db, accountScope(accountId), {
+        opportunityId: opportunity.id,
+        pageUrl: PAGE_URL,
+        recommendationJson: { failed: true, reasons: ['sections[0]: cites "product:x/y"'] },
+        judgeScoresJson: null,
+        promptVersion: 'optimize-reco.v1',
+        modelId: 'claude-sonnet-5',
+        rulesVersion: rules().rulesVersion,
+        state: 'failed_validation',
+      })
+
+      const card = (await (await read(opportunity.id)).json()) as {
+        recommendation: {
+          state: string
+          fields: unknown[]
+          internalLinksIn: unknown[]
+          internalLinksOut: unknown[]
+          intentNote: string | null
+          failureReason: unknown
+        }
+      }
+      const detail = opportunityDetailResponseSchema.parse(
+        await (await drawer(opportunity.id)).json(),
+      )
+
+      expect(card.recommendation.state).toBe('failed_validation')
+      expect(detail.recommendation).toEqual({
+        state: card.recommendation.state,
+        fields: card.recommendation.fields,
+        internalLinksIn: card.recommendation.internalLinksIn,
+        internalLinksOut: card.recommendation.internalLinksOut,
+        intentNote: card.recommendation.intentNote,
+        failureReason: card.recommendation.failureReason,
+      })
+      // Neither screen shows the model's own words about why it was refused.
+      expect(JSON.stringify([card, detail])).not.toContain('product:x/y')
     })
   })
 })
