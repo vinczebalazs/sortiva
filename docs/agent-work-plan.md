@@ -748,6 +748,33 @@ none of these cards is designing an interface, only implementing one.
 
 ### Live on merchant screens right now — found 2026-09-07, highest priority in the queue
 
+### From `R-PRODUCT-ATTRIBUTES`, landed 2026-09-07 late evening — including the largest structural gap found all day
+
+**R-RESTUDY — a store's understanding of itself is computed once, at signup, and never again** · **needs a founder decision on cost, then Lane B**
+Scope: distillation (what each product actually is), family grouping (turning forty shoes into four subjects worth writing about) and persona are steps of **one run, created from exactly one place** — the domain claim (`apps/web/app/api/domain/_lib/store.ts:174`, `createRun`). **Nothing re-runs any of them, ever.** A store that adds a product line, rewrites its catalogue, or changes what it sells keeps the understanding we formed on the day it signed up.
+**How it was found, and why nobody had seen it:** `R-PRODUCT-ATTRIBUTES` filled two long-empty columns and then asked the honest question — what changes for a store that is already onboarded? The answer is that the column fills and the families do not change, because nothing regroups them. The card's own value is bounded by it.
+**A second-order version of the same thing**, journalled by that lane: even if grouping were re-run, its "have the inputs changed" key is built from the product fingerprint and the distillation timestamp, and **neither moves when an option or a metafield changes** — so a re-run would decide there was nothing to do.
+**The founder decision, and it is about money rather than correctness:** re-studying a store costs a model call per changed product. Options are (a) never, as today, and say so somewhere a merchant can see; (b) on a schedule; (c) when the catalogue has changed by more than some amount — which needs the change to be visible to the key, i.e. the second-order fix above. **Nobody should choose between these on a lane's authority.**
+Read first: `DECISIONS.md` 2026-09-07 `R-PRODUCT-ATTRIBUTES` entries (seven, and the fingerprint one bears directly); main §6.3, §6.4, §6.5, §14.1.
+Done when: the founder has chosen, and a store's understanding either refreshes on a stated trigger or is deliberately known to be fixed at signup.
+
+**R-FINGERPRINT-BLAST — whether the two new columns count as the product changing** · **a founder question, same subject as `R-RESTUDY`**
+Scope: the content fingerprint decides whether a product is re-distilled. `R-PRODUCT-ATTRIBUTES` **deliberately left options and metafields out of it**, and the lane asked for this to be looked at rather than deciding it. Adding them would give every product in every store a new fingerprint on the first pass after deploy — **which reads as "the whole catalogue changed": a model call per product per store, a change event per product, and a regrouping for everyone, all at once.**
+Against that: with them out, a merchant who fixes their size axis or adds a material metafield changes nothing we notice, for ever.
+**The two questions are one question** — see `R-RESTUDY`. A sensible answer to both together may be cheaper than either alone.
+Read first: the same journal entries; main §6.3, §14.1.
+Done when: the founder has said, and the fingerprint either counts these fields or is recorded as deliberately blind to them.
+
+**R-OPTIMIZE-AXES — an article may not cite the axis names it now has** · Lane E, small
+Scope: `packages/core/src/optimize/pack.ts:109` excludes the "ways this product varies" field from what a recommendation may cite. **The reasoning was written when that field was always empty.** It now carries the merchant's own axis names — the most trustworthy attribute data in the product, because nothing about it was inferred. Whether it should be citable is a live question that has never been asked with a real value in the field.
+Read first: `DECISIONS.md` 2026-09-07 `R-PRODUCT-ATTRIBUTES` entries; main §10.3.
+Done when: the exclusion is either lifted or restated with a reason that is true of a populated field.
+
+**R-NUL-BYTE — a source file git treats as binary** · Lane B, small
+Scope: `packages/core/src/families/splitVariants.ts:151` contains a literal NUL byte inside a template literal, used as a key prefix that cannot collide with a real product title. **The intent is correct and the trick works.** The costs are that it is invisible in every editor, undocumented, and **makes git treat the whole file as binary** — tonight's merge showed it as `Bin 9457 -> 9930 bytes` instead of a diff, so no reviewer can read a change to that file.
+Read first: the surrounding code; nothing else.
+Done when: the same collision-proof prefix is achieved without a byte that makes the file unreviewable, or the byte stays and is documented *and* git is told the file is text.
+
 ### From `R-OPPS-WIRE`, landed 2026-09-07 late evening, plus an integrator finding that corrects an earlier one
 
 **R-SIGNIN-SLOW — the sign-in test is not a load flake, and nobody knows what it is** · Lane F · **and it corrects this plan**
