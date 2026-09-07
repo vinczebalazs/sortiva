@@ -14,6 +14,38 @@ Class (filled by audit): a: fine as-is | b: promote to spec | c: contradicts spe
 
 ---
 
+## 2026-09-07 — R-REJECTION-REASON — Gate and calendar keys are looked up under their own names, and gate1/gate2/topic are claimed too
+Decision: `catalogKeyFor` — the one function deciding where a sentence for an engine key lives in `packages/ui/strings/en.json` — now returns keys beginning `gate1.`, `gate2.`, `gate3.` and `topic.` unchanged instead of prefixing them with `template.`. Only `gate3.` had to change to fix the card; the other three are claimed at the same time.
+Why: the eleven sentences explaining a quality rejection were written under their bare names (`gate3.below_quality_bar`) while every lookup asked for `template.gate3.below_quality_bar`, so finished copy sat in the catalogue that no screen could ever reach. Claiming the other three namespaces changes nothing a merchant sees — they have no sentences at all — but it decides *now* where those sentences go, rather than leaving the next person to guess `template.gate1.x` and repeat the same invisible mismatch. The guard below fails if that guess is ever made.
+Nearest spec: main §8.6 (per-rejection card: plain-language reason); ui §6.1; invariant 8.
+
+## 2026-09-07 — R-REJECTION-REASON — The values a rejection sentence needs are read back in the repository, not in each screen
+Decision: a new `reasonParamsOf` in `packages/db/src/repositories/gate-decisions.ts` pulls a decision's reason parameters out of `scores_json.reason_params`. Values that are not a string or a number are dropped.
+Why: the table has no column for these — the key of the sentence is stored, and the values it needs are folded into the free-form audit column beside the scores. Knowing that is knowing a storage shape, and putting it in the calendar's route handler would have put it wherever the next screen asks too. The drop rather than coerce is because `scores_json` is free-form: an object interpolated into a merchant's sentence prints as "[object Object]", which is worse than the blank it replaces.
+Nearest spec: main §8.5 (the gate decision log), §8.6; CLAUDE.md code-structure rules (route handlers carry no domain logic).
+
+## 2026-09-07 — R-REJECTION-REASON — The eleven wordless gate and calendar keys are recorded as known gaps rather than written or left to fail
+Decision: extending the existing copy guard (`packages/ui/src/strings/reason-copy.ts`) to gate keys surfaced eleven keys the product can produce today that have no sentence anywhere — all eight Gate 1 outcomes, Gate 2's thin-pack hold, and `topic.auto` / `topic.manual_addition`. They are listed in `REASON_KEYS_AWAITING_COPY`, which the guard already keeps honest, rather than being given copy here or left to turn the build red.
+Why: writing eleven merchant-facing sentences is a separate piece of work and the catalogue belongs to another lane, so inventing them in this card would be new product copy nobody asked for. Leaving them unrecorded would have kept them invisible, which is exactly the fault this card exists to close. Recorded, a *new* gate key still fails loudly instead of joining them unnoticed.
+**This is a live, visible hole and is flagged in the session report:** a topic stopped at Gate 1 or Gate 2 shows a merchant nothing about why, and `topic.auto` is the why-line on **every** chip in the calendar, so every one of them reads "The reasoning for this one isn't available yet."
+Nearest spec: main §8.6; ui §6.1; invariant 8.
+
+## 2026-09-07 — R-REJECTION-REASON — `gate3.lint` is deliberately not on the guarded list
+Decision: the fallback key `gate3.lint`, which `lintReason` would build if a draft failed the deterministic checks without naming a category, is not listed among the keys that must have copy.
+Why: it cannot be reached. The check reports failure only when it has at least one fault to report, and the fault carries the category, so the key is always `gate3.<category>`. Demanding a sentence for a key nothing produces is the second half of the fault this guard exists to catch — the one that let good copy sit under `missing_metadata` while the engine built `missing_or_weak_metadata`.
+Nearest spec: main §8.4.
+
+## 2026-09-07 — R-REJECTION-REASON — FLAGGED: the criteria a merchant now reads are the code's own names for them
+Decision: not changed. The sentence fills `{failed_criteria}` with what Gate 3 recorded, which is the judge's internal criterion identifiers joined with commas — so a held day reads "The draft didn't meet our bar on informationGain, and a revision didn't fix it."
+Why it is not fixed here: the product already has English names for these (`content.article.quality.criterion.informationGain` → "Information gain") and the override dialog maps them before showing them. Doing the same on the calendar needs two things this card does not have: the gate to record the criteria as a list rather than a pre-joined string, and the renderer to map a named parameter through the label catalogue — a change to the shared why-line renderer that every lane uses, in another lane's package. Translating them in the API handler instead would put merchant copy in a route handler with no language in hand, which the constitution forbids for good reason.
+Nearest spec: main §8.4, §8.6; ui §6.1; CLAUDE.md code-structure rules (copy lives in `packages/ui/strings` only).
+
+## 2026-09-07 — R-REJECTION-REASON — FLAGGED: the grader's own sentence now reaches the calendar with nothing marking it as model-written
+Decision: not changed, and it needs a copy edit only the founder or Lane F can make. The sentence `gate3.below_quality_bar` ends with `{first_justification}` — the quality grader's own written objection, which the founder ruled on 2026-09-04 may reach a merchant. Until this card it never did, because the reason rendered as a placeholder. Now it does, and the card around it does not say a model wrote it.
+Why it matters: invariant 8 makes this the single deliberate exception to "every explanation renders from our template", and the exception is only safe while a merchant can tell which half is which. The product already has the pattern — an OPTIMIZE recommendation's model-written line is introduced with "A model wrote this line." The proposed fix is one string, quoted in the session report; it needs no code change.
+Nearest spec: main §8.4, §8.6, Appendix A; invariant 8.
+
+
 ## 2026-09-07 — R-OVERRIDE-JUSTIFICATION — Two gate-3 rows, two meanings, and the lookup now says which one it wants
 Decision: a new repository read, `gate3DecisionsForTopic`, returns the topic's gate-3 rows as two named fields — `grading`, the decision that judged the draft's words, and `override`, the row a merchant's "publish anyway" writes on top of it. The article page and the override writer both ask by name. The old "most recent gate-3 decision" read stays, and its remaining caller (Gate 1's link task) genuinely wants the most recent.
 Why: the two questions have the same answer until a merchant overrules a refusal, and different answers afterwards — so the bug could not be seen by reading either call site. Naming the two meanings in the repository puts the distinction where it can only be got wrong once, rather than in each screen that asks.
