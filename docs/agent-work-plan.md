@@ -746,6 +746,20 @@ carries the shape it must satisfy, which already exists as a zod schema in
 `packages/core/src/api/schemas.ts` — the contract described these endpoints correctly all along, so
 none of these cards is designing an interface, only implementing one.
 
+**R-GATE-COPY — every chip on the content calendar explains itself with a placeholder** · Lane F
+Scope: eleven reason keys the product produces today have **no sentence anywhere in the catalogue** — the `gate1.*`, `gate2.*` and `topic.*` namespaces, confirmed empty by `R-REJECTION-REASON` while it fixed the `gate3.*` ones. So a topic stopped before it was ever written — too little demand, off the store's catalogue, a catalogue too thin to write from, or converted into an improve-this-page suggestion instead — says nothing about why.
+**And `topic.auto` is the why-line on _every_ calendar chip**, so the Content calendar currently explains every single planned day with "The reasoning for this one isn't available yet."
+Read first: `DECISIONS.md` 2026-09-07 `R-REJECTION-REASON` entries; main §8.2 (Gate 1), §8.3 (Gate 2), §8.7; ui §6; invariant 8 (every user-facing "why" renders from a template over the record, never from a model) and 24.
+Done when: all eleven produce a sentence a merchant can read; the guard's known-gap list is empty; and a gate reason with no sentence still fails by name, which it already does.
+Note: **the guard already exists and already knows these eleven** — `GATE_REASON_PARAMS` and `GATE_REASON_KEYS` in `packages/ui/src/strings/reason-copy.ts`, added by `R-REJECTION-REASON`, which recorded them as known gaps rather than inventing eleven merchant-facing sentences or turning the build red. **Extend it; do not build a second one**, and write the sentences from the parameters the producer actually sends, which that file pins.
+Note: `gate3.lint` is deliberately outside the guarded list — it is unreachable, and demanding copy for a key nothing builds is the other half of the fault this guard catches.
+
+**R-CRITERIA-LABELS — a rejection names the criteria in the code's own words** · Lane F
+Scope: the quality-rejection sentence now reads "didn't meet our bar on **informationGain**" — the grader's internal field name, shown to a merchant. The product already holds English labels for all six criteria and the override dialog uses them.
+**Why `R-REJECTION-REASON` did not fix it**: the gate records the failed criteria as one pre-joined string rather than a list, so mapping them through the label catalogue needs the gate to record them differently **and** a renderer that can map a named parameter through a second catalogue — a change to the why-line renderer every lane shares. Translating in the route handler was rejected because it would put copy in a handler that has no idea what language the store reads.
+Read first: `DECISIONS.md` 2026-09-07 `R-REJECTION-REASON` entries; main §8.4; ui §6.2.
+Done when: a merchant reads "information gain", not "informationGain", wherever a criterion is named; and the labels come from the catalogue rather than a second list.
+
 ### From `R-PAGE-GONE-OPTIMIZE`, landed 2026-09-07 — including one against the integrator's own work
 
 **R-TOAST-CODES — the screen has copy for one refusal out of three, so `R-REFUSAL` does not meet its own done-when** · Lane F
