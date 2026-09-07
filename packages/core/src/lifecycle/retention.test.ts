@@ -25,11 +25,14 @@ describe('retention policy', () => {
     expect(retentionCutoff('email_sends', now)).toEqual(new Date(now.getTime() - 365 * DAY))
   })
 
-  it('leaves the two self-expiring tables to their own dates', () => {
-    // A cache row and a sign-in link each carry the moment they stop being
-    // valid, and those two lifetimes are not the same number.
+  it('leaves the self-expiring tables to their own dates', () => {
+    // A cache row, a sign-in link and a signed-in browser each carry the moment
+    // they stop being valid, and those lifetimes are not the same number. A
+    // session in particular has to go by its own date rather than by age: an
+    // age rule would sign a merchant out with days of their month still to run.
     expect(retentionCutoff('request_cache', now)).toBeUndefined()
     expect(retentionCutoff('verification_tokens', now)).toBeUndefined()
+    expect(retentionCutoff('sessions', now)).toBeUndefined()
   })
 
   it('keeps Search Console history for sixteen months', () => {

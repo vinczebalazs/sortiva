@@ -17,6 +17,7 @@ import {
   productFamilies,
   products,
   requestCache,
+  sessions,
   shopifyConns,
   storePages,
   subscriptions,
@@ -379,6 +380,28 @@ export async function pruneExpiredVerificationTokens(
     .delete(verificationTokens)
     .where(lt(verificationTokens.expires, now))
     .returning({ token: verificationTokens.token })
+  return rows.length
+}
+
+/**
+ * Sessions that lapsed on their own, with nobody having signed out.
+ *
+ * Strictly `<`, matching the sign-in links above: a session whose lapse date has
+ * not yet arrived is still a session somebody is using, and one whose date is
+ * exactly now is already refused at sign-in, so deleting it changes nothing a
+ * merchant sees. Counting the deleted rows rather than returning the tokens is
+ * deliberate — a token is the credential itself, and a nightly job has no
+ * reason to carry a list of them around.
+ */
+export async function pruneExpiredSessions(
+  db: Db,
+  _scope: SystemScope,
+  now: Date,
+): Promise<number> {
+  const rows = await db
+    .delete(sessions)
+    .where(lt(sessions.expires, now))
+    .returning({ accountId: sessions.accountId })
   return rows.length
 }
 
