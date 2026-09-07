@@ -51,7 +51,6 @@ const K = {
   heading: 'email.monthlySummary.heading',
   intro: 'email.monthlySummary.intro',
   publishedSome: 'email.monthlySummary.publishedSome',
-  publishedOne: 'email.monthlySummary.publishedOne',
   publishedNone: 'email.monthlySummary.publishedNone',
   heldHeading: 'email.monthlySummary.heldHeading',
   heldNone: 'email.monthlySummary.heldNone',
@@ -72,10 +71,14 @@ const K = {
  * Zero is said in words, not as a number, because "0 articles" reads as a score
  * and "no articles went live" reads as what happened. A month with nothing in
  * it is a normal month for a store whose quality bar held.
+ *
+ * One and many used to be a third branch and a third key. They are not any more:
+ * the sentence states both forms and the number chooses, which is the renderer's
+ * job everywhere else in the product. Zero stays a branch because it is a
+ * different thing to say, not a different shape of the same thing.
  */
 function publishedLine(count: number) {
   if (count === 0) return { key: K.publishedNone }
-  if (count === 1) return { key: K.publishedOne }
   return { key: K.publishedSome, params: { count } }
 }
 
