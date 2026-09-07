@@ -1,6 +1,9 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import type pg from 'pg'
 import { accountScope, listStorePages, readStorePageBody } from '@sortiva/db'
+import { optimizeRouteFor } from '@sortiva/core'
+import { DbOpportunitySource } from '../scan/opportunity-source'
+import { requestArticleRefresh } from '../generation/request-refresh'
 import {
   databaseAvailable,
   insertAccount,
@@ -351,6 +354,128 @@ describe.skipIf(!available)('a whole store into the inventory', () => {
 
     expect(outcome.status).toBe('done')
     expect(outcome.status === 'done' && outcome.result.changed).toBe(0)
+  })
+
+  /**
+   * The one article on this fixture shop that we published for the merchant,
+   * inserted the long way round because an article only exists at the end of a
+   * chain — a piece of work, then a calendar day, then the article itself.
+   */
+  async function ourPublishedArticle(url: string): Promise<string> {
+    const opportunity = await pool.query<{ id: string }>(
+      `INSERT INTO opportunities
+         (account_id, signal_type, entity_type, entity_ref, evidence_json, impact,
+          impact_score, confidence, reason_template_key, recommended_action, rules_version)
+       VALUES ($1,'uncovered_commercial_query','query_cluster','cluster:boot-care','[]'::jsonb,
+         'high', 80, 70, 'uncovered_commercial_query.default', 'create', 'test')
+       RETURNING id`,
+      [accountId],
+    )
+    const topic = await pool.query<{ id: string }>(
+      `INSERT INTO topics (account_id, opportunity_id, title, intent_class, source, scheduled_date)
+       VALUES ($1,$2,'Caring for boots','buying_guide','auto','2026-08-01') RETURNING id`,
+      [accountId, opportunity.rows[0]!.id],
+    )
+    const article = await pool.query<{ id: string }>(
+      `INSERT INTO articles
+         (account_id, topic_id, title, slug, state, published_url, published_at)
+       VALUES ($1,$2,'Caring for boots','boot-care','published',$3,'2026-08-01T09:00:00Z')
+       RETURNING id`,
+      [accountId, topic.rows[0]!.id, url],
+    )
+    return article.rows[0]!.id
+  }
+
+  /**
+   * The two behaviours this whole card exists to make reachable, driven against
+   * a page **the walk itself recognised** rather than one planted by a test.
+   *
+   * That distinction is the point. Both behaviours were finished, merged and
+   * green, and neither could ever have happened on a real shop, because nothing
+   * wrote the marking they read — and every test of them planted it by hand,
+   * which is exactly why nobody noticed.
+   */
+  it('recognises the article we published, refuses to hand the merchant edits for it, and queues it to be rewritten', async () => {
+    const OURS = 'https://shop.example/blogs/guides/boot-care'
+    const articleId = await ourPublishedArticle(OURS)
+
+    await walkWholeStore()
+
+    // The read both refusal sites make, on the row the walk left behind.
+    const rows = await listStorePages(ctx.db, accountScope(accountId))
+    const ours = rows.find((row) => row.url === OURS)
+    expect(ours?.pageType).toBe('article_ours')
+    expect(ours?.articleId).toBe(articleId)
+
+    // The merchant's own posts on the same blog are untouched by this. If the
+    // walk marked by shape rather than by our record of what we published, this
+    // is where it would show.
+    const theirs = rows.filter((row) => row.url !== OURS && row.url.includes('/blogs/'))
+    expect(theirs.map((row) => row.pageType)).toEqual(['blog_article', 'blog_article'])
+
+    // What the improve-this-page press does with that row: no list of edits.
+    expect(optimizeRouteFor(ours!.pageType)).toBe('refresh_pool')
+
+    // And where it goes instead — the pool of rewrites waiting for a calendar
+    // day, named by the article the walk linked the page to.
+    const admitted = await requestArticleRefresh(
+      { db: ctx.db, now: () => new Date('2026-09-07T09:00:00Z'), logger: silentLogger },
+      { accountId, articleId: ours!.articleId!, source: 'optimize_on_our_own_article' },
+    )
+    expect(admitted).toMatchObject({ ok: true, created: true })
+
+    const waiting = await new DbOpportunitySource(ctx.db).acceptedContentOpportunities(accountId)
+    expect(waiting).toHaveLength(1)
+    expect(waiting[0]).toMatchObject({ recommendedAction: 'REFRESH' })
+  })
+
+  it('keeps recognising it on a night when nothing about it changed', async () => {
+    const OURS = 'https://shop.example/blogs/guides/boot-care'
+    const articleId = await ourPublishedArticle(OURS)
+
+    await walkWholeStore()
+    const second = await walkWholeStore()
+
+    // The second walk writes no page at all — nothing on this shop moved — and
+    // the marking is still there. Were recognition part of the page write, it
+    // would have happened once and then quietly stopped.
+    expect(second.changed).toBe(0)
+    const again = (await listStorePages(ctx.db, accountScope(accountId))).find((r) => r.url === OURS)
+    expect(again?.pageType).toBe('article_ours')
+    expect(again?.articleId).toBe(articleId)
+  })
+
+  it('never marks the article we published gone, even after the merchant deletes it from the shop', async () => {
+    const OURS = 'https://shop.example/blogs/guides/boot-care'
+    await ourPublishedArticle(OURS)
+    await walkWholeStore()
+
+    // The post leaves the shop. For an export-delivery store our articles live
+    // somewhere this walk cannot look at all, so a walk not finding one is
+    // evidence of nothing — and this row is our record of what we delivered.
+    store.blogs[1]!.articles = store.blogs[1]!.articles.filter((a) => a.handle !== 'boot-care')
+    await walkWholeStore()
+
+    const rows = await listStorePages(ctx.db, accountScope(accountId))
+    expect(rows.find((row) => row.url === OURS)?.status).toBe('live')
+  })
+
+  it('recognises an article whose address the merchant only told us about later', async () => {
+    const OURS = 'https://shop.example/blogs/guides/boot-care'
+
+    // Export delivery: they download the article, publish it themselves, and
+    // confirm the address days after the walk has filed the post as their own.
+    await walkWholeStore()
+    expect(
+      (await listStorePages(ctx.db, accountScope(accountId))).find((r) => r.url === OURS)?.pageType,
+    ).toBe('blog_article')
+
+    const articleId = await ourPublishedArticle(OURS)
+    await walkWholeStore()
+
+    const row = (await listStorePages(ctx.db, accountScope(accountId))).find((r) => r.url === OURS)
+    expect(row?.pageType).toBe('article_ours')
+    expect(row?.articleId).toBe(articleId)
   })
 
   it('records nothing at all for a store whose connection is gone', async () => {
