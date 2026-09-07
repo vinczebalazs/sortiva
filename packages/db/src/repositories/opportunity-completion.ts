@@ -2,6 +2,7 @@ import { and, eq, inArray, sql } from 'drizzle-orm'
 import type { Db } from '../client'
 import { OPEN_OPPORTUNITY_STATUSES, articles, opportunities, refreshLog, topics } from '../schema'
 import type { AccountScope } from '../scope'
+import type { TopicRow } from './topics'
 import type { ArticleRow } from './articles'
 import type { OpportunityRow } from './opportunities'
 import { assertMoveIsDrawn } from './opportunity-moves'
@@ -97,8 +98,16 @@ async function startRefreshCooldownIfRewrite(
  *
  * `completedOpportunity` is `undefined` when the suggestion had already moved
  * on, which is worth a log line and nothing more.
+ *
+ * `publishedTopic` is `undefined` when the calendar day was not in a state an
+ * article can publish out of — which today means it was vetoed. That is worth
+ * more than a log line: the veto was supposed to stop this. It is reported
+ * rather than raised, because by the time either of these runs the article may
+ * already be on the merchant's shop, and rolling the record back would leave us
+ * disagreeing with their store rather than with ourselves.
  */
 export interface ArticlePublication {
   readonly article: ArticleRow
   readonly completedOpportunity: OpportunityRow | undefined
+  readonly publishedTopic: TopicRow | undefined
 }
