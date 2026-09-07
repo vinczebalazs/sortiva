@@ -4,6 +4,8 @@ import {
   accountScope,
   accountsWithLiveShopifyConnection,
   familyIdsByShopifyProductId,
+  markStorePagesGoneNotSeenSince,
+  markStorePagesSeen,
   storePageChecksums,
   systemScope,
   upsertStorePages,
@@ -171,11 +173,16 @@ function inventoryDeps(
           (deps.now ?? (() => new Date()))(),
         )
       },
+      markSeen: (accountId, urls, at) =>
+        markStorePagesSeen(db, accountScope(accountId), urls, at),
+      markGoneNotSeenSince: (accountId, since) =>
+        markStorePagesGoneNotSeenSince(db, accountScope(accountId), since),
     },
     families: {
       familiesForProducts: (accountId, ids) =>
         familyIdsByShopifyProductId(db, accountScope(accountId), ids),
     },
+    ...(deps.now ? { now: deps.now } : {}),
   }
 }
 
@@ -191,6 +198,10 @@ function logResult(
     seen: result.seen,
     changed: result.changed,
     finished: mode === 'walk' ? result.next === undefined : true,
+    // Only the batch that finished a walk carries this, and a sudden large
+    // number is the shape of a walk that went wrong rather than a merchant
+    // clearing out their store.
+    ...(result.markedGone === undefined ? {} : { marked_gone: result.markedGone }),
   })
 }
 

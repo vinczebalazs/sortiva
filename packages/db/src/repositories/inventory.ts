@@ -102,6 +102,64 @@ export async function upsertStorePages(
   return values.length
 }
 
+/**
+ * Records that the store served these addresses at `at`.
+ *
+ * This is the only thing that distinguishes "we looked and it was there" from
+ * "nothing about it changed": `upsertStorePages` runs only for pages whose
+ * content moved, so an unchanged page's `last_synced_at` would otherwise sit
+ * still while the page is served every day.
+ *
+ * Serving a page is also what makes it live again, so a row that had been
+ * marked gone comes back here. It cannot come back through the upsert: a
+ * restored page has the checksum it always had, so nothing would write it.
+ */
+export async function markStorePagesSeen(
+  db: Db,
+  scope: AccountScope,
+  urls: readonly string[],
+  at: Date,
+): Promise<void> {
+  if (urls.length === 0) return
+  await db
+    .update(storePages)
+    .set({ lastSyncedAt: at, status: 'live' })
+    .where(and(eq(storePages.accountId, scope.accountId), inArray(storePages.url, [...urls])))
+}
+
+/**
+ * Marks the pages a completed walk did not find as gone, and answers how many.
+ *
+ * `since` must be the moment a walk that reached the end of the store began —
+ * anything else and this marks pages the walk simply had not got to yet. The
+ * caller owns that guarantee; there is nothing in a timestamp that can check it.
+ *
+ * Two exclusions. Rows already gone are skipped, which is what lets the nightly
+ * walk run this every night without re-marking or miscounting. And our own
+ * published articles are never marked gone: they are our record of what we
+ * delivered, and a store on export delivery has them nowhere the walk can see,
+ * so absence from the store is not evidence that they went anywhere.
+ */
+export async function markStorePagesGoneNotSeenSince(
+  db: Db,
+  scope: AccountScope,
+  since: Date,
+): Promise<number> {
+  const marked = await db
+    .update(storePages)
+    .set({ status: 'gone' })
+    .where(
+      and(
+        eq(storePages.accountId, scope.accountId),
+        eq(storePages.status, 'live'),
+        sql`${storePages.pageType} <> 'article_ours'`,
+        sql`${storePages.lastSyncedAt} < ${since}`,
+      ),
+    )
+    .returning({ id: storePages.id })
+  return marked.length
+}
+
 export async function listStorePages(
   db: Db,
   scope: AccountScope,

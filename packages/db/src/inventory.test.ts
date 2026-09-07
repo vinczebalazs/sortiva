@@ -6,6 +6,8 @@ import {
   familyIdsByShopifyProductId,
   listStorePages,
   readStorePageBody,
+  markStorePagesGoneNotSeenSince,
+  markStorePagesSeen,
   storePageChecksums,
   upsertStorePages,
   type StorePageInput,
@@ -149,5 +151,96 @@ describe.skipIf(!available)('the store content inventory', () => {
       systemScope('the nightly inventory sweep chooses which stores to work for'),
     )
     expect(live).toEqual([accountId])
+  })
+})
+
+describe.skipIf(!available)('marking a page the store stopped serving', () => {
+  let ctx: TestDb
+  let pool: pg.Pool
+  let accountId: string
+
+  const T0 = new Date('2026-09-07T03:00:00Z')
+  const T1 = new Date('2026-09-08T03:00:00Z')
+
+  beforeAll(async () => {
+    ctx = await setupTestDb('inventory_gone')
+    pool = ctx.pool
+  })
+
+  afterAll(async () => {
+    await ctx?.close()
+  })
+
+  beforeEach(async () => {
+    await truncateAll(pool)
+    accountId = await insertAccount(pool, 'gone@example.com')
+  })
+
+  it('marks what the walk did not see and leaves what it did', async () => {
+    const scope = accountScope(accountId)
+    await upsertStorePages(ctx.db, scope, [page(), page({ url: 'https://shop.example/collections/hats', shopifyId: '2' })], T0)
+
+    await markStorePagesSeen(ctx.db, scope, ['https://shop.example/collections/boots'], T1)
+    const marked = await markStorePagesGoneNotSeenSince(ctx.db, scope, T1)
+
+    expect(marked).toBe(1)
+    const byUrl = new Map((await listStorePages(ctx.db, scope)).map((r) => [r.url, r.status]))
+    expect(byUrl.get('https://shop.example/collections/boots')).toBe('live')
+    expect(byUrl.get('https://shop.example/collections/hats')).toBe('gone')
+  })
+
+  it('counts each absent page once, so a nightly walk does not re-mark it', async () => {
+    const scope = accountScope(accountId)
+    await upsertStorePages(ctx.db, scope, [page()], T0)
+
+    expect(await markStorePagesGoneNotSeenSince(ctx.db, scope, T1)).toBe(1)
+    expect(await markStorePagesGoneNotSeenSince(ctx.db, scope, T1)).toBe(0)
+  })
+
+  it('records a page as seen without disturbing its change detector', async () => {
+    const scope = accountScope(accountId)
+    await upsertStorePages(ctx.db, scope, [page({ checksum: 'checksum-1' })], T0)
+
+    await markStorePagesSeen(ctx.db, scope, ['https://shop.example/collections/boots'], T1)
+
+    const [row] = await listStorePages(ctx.db, scope)
+    // The checksum is what everything downstream watches for an edit. Being
+    // looked at is not an edit.
+    expect(row?.checksum).toBe('checksum-1')
+    expect(row?.lastSyncedAt).toEqual(T1)
+  })
+
+  it('brings a restored page back to live', async () => {
+    const scope = accountScope(accountId)
+    await upsertStorePages(ctx.db, scope, [page()], T0)
+    await markStorePagesGoneNotSeenSince(ctx.db, scope, T1)
+
+    await markStorePagesSeen(ctx.db, scope, ['https://shop.example/collections/boots'], T1)
+
+    const [row] = await listStorePages(ctx.db, scope)
+    expect(row?.status).toBe('live')
+  })
+
+  it('never marks one of our own published articles gone', async () => {
+    const scope = accountScope(accountId)
+    await upsertStorePages(ctx.db, scope, [
+      page({ url: 'https://shop.example/blogs/journal/ours', shopifyId: '9', pageType: 'article_ours' }),
+    ], T0)
+
+    // An export-mode store has our articles nowhere the walk can see, so the
+    // walk not finding one says nothing about whether it exists.
+    expect(await markStorePagesGoneNotSeenSince(ctx.db, scope, T1)).toBe(0)
+    const [row] = await listStorePages(ctx.db, scope)
+    expect(row?.status).toBe('live')
+  })
+
+  it('never reaches another account’s pages', async () => {
+    const other = await insertAccount(pool, 'other@example.com')
+    await upsertStorePages(ctx.db, accountScope(other), [page()], T0)
+    await upsertStorePages(ctx.db, accountScope(accountId), [page()], T0)
+
+    expect(await markStorePagesGoneNotSeenSince(ctx.db, accountScope(accountId), T1)).toBe(1)
+    const [theirs] = await listStorePages(ctx.db, accountScope(other))
+    expect(theirs?.status).toBe('live')
   })
 })
