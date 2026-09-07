@@ -748,6 +748,12 @@ none of these cards is designing an interface, only implementing one.
 
 ### Live on merchant screens right now — found 2026-09-07, highest priority in the queue
 
+**R-SLEEPY-RACE — a test that changes its answer under load, not just its timing** · Lane D
+Scope: `packages/jobs/src/generation/dismiss-opportunity.test.ts:306` — "loses to a publication that commits underneath it, and rolls back every part" — failed once during `R-PUBLISH-DEADLOCK`'s runs with a **wrong answer** (`expected true to be false`), then passed 12 of 12 in isolation. The cause is a 150 ms sleep inside the test: if the dismissal's first read is delayed past it, that read legitimately sees a different world and the dismissal takes a different — also correct — branch. The test asserts one of the two.
+**Why this is worth its own card rather than a seventh line on `R-TESTDB`'s list:** those six go red with *timeouts*, which read as machine noise. This one goes red with a **failed assertion**, which reads as a real regression. A suite that cries wolf in the shape of a genuine failure is worse than one that cries wolf in the shape of a timeout, because the correct response to each is the opposite.
+Read first: `DECISIONS.md` 2026-09-07 `R-PUBLISH-DEADLOCK` entries; the `R-TESTDB` card and its named six.
+Done when: the test drives the interleaving it means to test rather than sleeping and hoping — `R-PUBLISH-DEADLOCK`'s new race test is the worked example, holding a row on a third connection so the order is forced rather than wished for — and it asserts what is true of *both* legitimate branches, or forces the one it means.
+
 ### Found by `R-TOAST-CODES` and `R-GONE-SUGGESTION-CLOSES`, 2026-09-07 late evening
 
 **R-OPPS-WIRE — three buttons on the Opportunities screen post to addresses that do not exist** · Lane F · **live on the product's central screen, and the eleventh instance of the pattern**
