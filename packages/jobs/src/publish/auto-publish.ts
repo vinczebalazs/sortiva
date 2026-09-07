@@ -313,6 +313,14 @@ export async function adoptRemoteArticle(
       article_id: input.articleId,
       shopify_article_id: remoteArticleId,
     })
+  } else if (!moved.completedOpportunity) {
+    // Same shape one level down: the post is on the shop, but the suggestion it
+    // came from had already been dismissed or expired, so there was nothing
+    // open left to finish.
+    log.info('auto_publish_opportunity_moved', {
+      account_id: input.accountId,
+      article_id: input.articleId,
+    })
   }
 
   deps.capture?.capture({
