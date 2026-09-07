@@ -10,6 +10,12 @@ import type { ConflictCode } from '../api/errors'
  * throw it away. **There is deliberately no editor** — someone who wants to
  * reword a sentence does it in their own store after it is published, which
  * keeps review a one-decision surface rather than a text-editing product.
+ *
+ * One article never comes here at all, review setting or not: one the merchant
+ * published over a quality rejection. They have just made the decision review
+ * exists to ask for, so asking it again would be asking twice. That article
+ * goes to `cleared_to_deliver` instead, and the move into review is guarded to
+ * `draft`, which is what keeps it out.
  */
 
 /** The pair of states a Gate-3 pass writes: one for the article, one for the calendar entry it came from. */
@@ -27,23 +33,28 @@ export function landingForPass(draftReview: boolean): PassLanding {
 }
 
 /**
- * `draft` means "delivery may take this" and nothing more.
+ * The two states delivery may take an article from, and what each of them
+ * still leaves unanswered.
  *
- * It is worth stating because `draft` is also the state an article sits in
- * *before* it has been graded — the row is created early so the claim plan can
- * hang off it. What separates the two is not the article at all: it is whether
- * a Gate 3 decision exists for its topic. So anything asking "is this ready to
- * publish" must ask both questions, and `articlesReadyForDelivery`
- * (`packages/db`) is the one read that does. A crash between the writer and
- * the judge therefore leaves a row that looks unfinished, which is what it is,
- * rather than one that looks ready to publish.
+ * `cleared_to_deliver` answers on its own: a merchant overruled the quality
+ * rejection and said it goes out.
  *
- * An approved article and an override-published one both land back in `draft`
- * for the same reason: the merchant has already given their answer, and asking
- * again at the publish hour would be asking twice. See DECISIONS 2026-09-03
- * T4.5.
+ * `draft` does not, and cannot. It is where a passing article lands, where an
+ * approved one comes back to, and also where a row sits *before* anything has
+ * graded it — the row is created early so the claim plan can hang off it. What
+ * separates a graded draft from an un-graded one is not the article at all: it
+ * is whether a Gate 3 pass exists for its topic. So anything asking "is this
+ * ready to publish" about a draft must ask both questions, and
+ * `articlesReadyForDelivery` (`packages/db`) is the one read that does. A crash
+ * between the writer and the judge therefore leaves a row that looks
+ * unfinished, which is what it is, rather than one that looks ready to publish.
+ *
+ * An approved article comes back to `draft` and an overruled one goes to
+ * `cleared_to_deliver`, but for the same reason in both cases: the merchant has
+ * already given their answer, and asking again at the publish hour would be
+ * asking twice.
  */
-export const READY_FOR_DELIVERY_ARTICLE_STATE = 'draft' as const
+export const READY_FOR_DELIVERY_ARTICLE_STATES = ['draft', 'cleared_to_deliver'] as const
 
 /** The merchant's two answers, and nothing else. Adding a third here would be adding an editor. */
 export type ReviewDecision = 'approve' | 'discard'

@@ -131,8 +131,9 @@ export async function runExportDeliveryForAccount(
     ])
 
     // Cleared for delivery means graded and passed, approved after review, or
-    // published over a rejection on the merchant's own instruction. The state
-    // alone cannot say which: a draft exists before the writer has run.
+    // published over a rejection on the merchant's own instruction. For the
+    // first two the state alone cannot say which — a draft row exists before
+    // the writer has run — so this read is the only thing that may answer it.
     const ready = await articlesReadyForDelivery(deps.db, scope)
 
     const decision = decideDelivery({ switches, lifecycle, hasArticleReady: ready.length > 0 })
@@ -198,15 +199,26 @@ export async function runExportDeliveryForAccount(
       log.info('delivery_lost_race', { account_id: input.accountId, article_id: next.id })
       return { status: 'skipped', reason: 'lost_race' } as const
     }
+    if (!delivered.completedOpportunity) {
+      // The article went out; the suggestion behind it had already moved on —
+      // dismissed, or expired by a scan. Not a failed delivery, so it is said
+      // here rather than raised.
+      log.info('delivery_opportunity_moved', {
+        account_id: input.accountId,
+        article_id: delivered.article.id,
+      })
+    }
 
-    await recordCompletedWork(deps.db, key, { articleId: delivered.id } satisfies DeliveryRecord)
+    await recordCompletedWork(deps.db, key, {
+      articleId: delivered.article.id,
+    } satisfies DeliveryRecord)
     log.info('article_delivered', {
       account_id: input.accountId,
       date: input.date,
-      article_id: delivered.id,
+      article_id: delivered.article.id,
       delivery: 'export',
     })
-    return { status: 'delivered', articleId: delivered.id, delivery: 'export' } as const
+    return { status: 'delivered', articleId: delivered.article.id, delivery: 'export' } as const
   })
 
   // Auto-publish reports itself, from the moment the shop confirmed the post.

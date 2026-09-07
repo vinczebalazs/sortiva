@@ -257,7 +257,9 @@ describe.skipIf(!available)('dismissing a suggestion calls off its calendar day'
       // on their site.
       expect(storedArticle?.state).toBe('published')
       expect(storedTopic?.state).toBe('generating')
-      expect(storedOpportunity?.status).toBe('scheduled')
+      // The publication finishes the suggestion on its way out, so the losing
+      // dismissal finds nothing of its own left behind.
+      expect(storedOpportunity?.status).toBe('completed')
       const notInterested = await db
         .select()
         .from(schema.notInterested)
@@ -376,7 +378,15 @@ describe.skipIf(!available)('dismissing a suggestion calls off its calendar day'
       { topicId: topic.id, title: topic.title, slug: 'best-trail-running-shoes', targetKeyword: topic.targetKeyword, state: 'draft' },
       NOW,
     )
-    await markArticleDelivered(db, scope, article.id, 'export', NOW)
+    // Written straight to the row rather than through the publish hand-over,
+    // because the hand-over now finishes the suggestion itself. What this test
+    // is about is the *lookup* — that a day whose article is already out is not
+    // treated as still bookable — and the only rows that can still reach it are
+    // ones published before publication started closing suggestions.
+    await db
+      .update(schema.articles)
+      .set({ state: 'published', delivery: 'export', publishedAt: NOW, updatedAt: NOW })
+      .where(eq(schema.articles.id, article.id))
 
     const result = await dismissOpportunity({ db, now: () => NOW }, { accountId, opportunityId: opportunity.id })
 

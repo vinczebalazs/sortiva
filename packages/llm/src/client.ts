@@ -16,10 +16,9 @@ import {
 } from '@sortiva/core'
 import { llmCacheKey } from './key'
 import {
-  CALL_TYPE_TIER,
   estimateTokens,
   overrideModel,
-  resolveModel,
+  resolveModelForCallType,
   usdCost,
   type ModelSpec,
 } from './models'
@@ -157,13 +156,15 @@ export class AnthropicLlmClient implements LlmClient {
   }
 
   private modelFor(request: LlmRequest): ModelSpec {
-    const tier = CALL_TYPE_TIER[request.callType]
-    const spec = resolveModel(tier, this.env)
+    // Every route by which the judge's model could be moved closes here: the
+    // resolver ignores the environment for it, and the per-call override below
+    // is refused.
+    const spec = resolveModelForCallType(request.callType, this.env)
     if (request.model === undefined || request.model === spec.id) return spec
     // The judge is never run on a smaller model than the writer — a grader that
     // thinks less hard than the thing it is grading is not a check on anything.
     // A per-call override is exactly the mechanism that would permit it, so the
-    // judge's model is settled by the tier map and the environment, full stop.
+    // judge's model is settled by the tier map in `models.ts`, full stop.
     if (request.callType === 'judge') {
       throw new Error(
         `The draft judge's model cannot be overridden per call: it is fixed at "${spec.id}", and "${request.model}" was requested.`,

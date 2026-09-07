@@ -3,6 +3,10 @@ import type { Db } from '../client'
 import { articleProductRefs, articles, products, storePages } from '../schema'
 import type { AccountScope } from '../scope'
 import type { ArticleRow } from './articles'
+import {
+  completeOpportunityForPublishedArticle,
+  type ArticlePublication,
+} from './opportunity-completion'
 
 /**
  * Everything the publish hour and the export bundle read and write.
@@ -22,15 +26,25 @@ import type { ArticleRow } from './articles'
 /**
  * The article goes out.
  *
- * Guarded to `draft`, which after `T4.5`'s landing rules is where every article
- * cleared for delivery sits — one that passed the quality bar, one the merchant
- * approved, one they published over a rejection. A zero-row result means
- * somebody else already delivered it, or it was discarded in between, and the
- * caller must stop rather than retry.
+ * Guarded to the two states an article cleared for delivery can be in: `draft`
+ * for one the quality bar passed or the merchant approved after review, and
+ * `cleared_to_deliver` for one they published over a rejection. Whether a given
+ * `draft` was ever actually graded is not this write's question —
+ * `articlesReadyForDelivery` is the read that settles that, and this is only
+ * the hand-over. A zero-row result means somebody else already delivered it, or
+ * it was discarded in between, and the caller must stop rather than retry.
  *
  * For an export account this is not a write to anybody's shop: it is the moment
  * the finished article becomes downloadable in the app. Nothing here touches
  * Shopify.
+ *
+ * It also closes the suggestion the article came from, in the same transaction.
+ * That belongs here rather than at the call site because this and
+ * `markArticleAutoPublished` are the only two places in the product where an
+ * article becomes published: a completion attached to whichever call site was
+ * in front of us would leave every other publishing path with the original
+ * defect, and a completion in a second transaction would leave a window in
+ * which the article is out and the suggestion still says it is not.
  */
 export async function markArticleDelivered(
   db: Db,
@@ -38,19 +52,25 @@ export async function markArticleDelivered(
   articleId: string,
   delivery: ArticleRow['delivery'],
   now: Date = new Date(),
-): Promise<ArticleRow | undefined> {
-  const [row] = await db
-    .update(articles)
-    .set({ state: 'published', delivery, publishedAt: now, updatedAt: now })
-    .where(
-      and(
-        eq(articles.accountId, scope.accountId),
-        eq(articles.id, articleId),
-        eq(articles.state, 'draft'),
-      ),
-    )
-    .returning()
-  return row
+): Promise<ArticlePublication | undefined> {
+  return db.transaction(async (tx) => {
+    const [row] = await tx
+      .update(articles)
+      .set({ state: 'published', delivery, publishedAt: now, updatedAt: now })
+      .where(
+        and(
+          eq(articles.accountId, scope.accountId),
+          eq(articles.id, articleId),
+          inArray(articles.state, ['draft', 'cleared_to_deliver']),
+        ),
+      )
+      .returning()
+    if (!row) return undefined
+    return {
+      article: row,
+      completedOpportunity: await completeOpportunityForPublishedArticle(tx, scope, articleId, now),
+    }
+  })
 }
 
 /**

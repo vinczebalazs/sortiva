@@ -7,8 +7,10 @@ export {
   estimateTokens,
   overrideModel,
   resolveModel,
+  resolveModelForCallType,
   specForModelId,
   usdCost,
+  type LlmCallTypeWithTier,
   type ModelSpec,
   type ModelTier,
 } from './models'

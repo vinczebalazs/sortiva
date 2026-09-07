@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { loadPrompt, renderPrompt, type Prompt } from './prompts'
-import { MODELS, resolveModel, usdCost } from './models'
+import { MODELS, resolveModel, resolveModelForCallType, usdCost } from './models'
 import { extractJson, validateCompletion } from './validate'
 import { MockLlmClient } from './mock'
 import { accountAttribution } from '@sortiva/core'
@@ -43,6 +43,16 @@ describe('model registry', () => {
     expect(() => resolveModel('sonnet', { ANTHROPIC_MODEL_SONNET: 'claude-sonnet-latest' })).toThrow(
       /alias/,
     )
+  })
+
+  it('pins the judge in code, so no environment can point it at the cheap model', () => {
+    // What an operator would set to move the strong tier wholesale.
+    const env = { ANTHROPIC_MODEL_SONNET: MODELS.haiku.id, ANTHROPIC_MODEL_HAIKU: 'claude-haiku-4-4' }
+
+    expect(resolveModelForCallType('judge', env).id).toBe(MODELS.sonnet.id)
+    // Everything else still follows the variable for its tier.
+    expect(resolveModelForCallType('draft', env).id).toBe(MODELS.haiku.id)
+    expect(resolveModelForCallType('distill', env).id).toBe('claude-haiku-4-4')
   })
 
   it('prices a call at six decimals, so a fraction of a cent is not reported as zero', () => {
@@ -100,7 +110,7 @@ describe('MockLlmClient', () => {
     await expect(
       mock.complete({
         callType: 'judge',
-        promptVersion: 'judge.v1',
+        promptVersion: 'judge.v2',
         messages: [{ role: 'user', content: 'grade this' }],
         maxTokens: 256,
         schema: { type: 'object', required: ['information_gain'] },

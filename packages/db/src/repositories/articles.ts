@@ -1,5 +1,4 @@
 import { and, count, desc, eq, gte, inArray, isNotNull, isNull, lt, notInArray, or } from 'drizzle-orm'
-import { OVERRIDE_GATE_OUTCOME } from '@sortiva/core'
 import type { Db } from '../client'
 import { articles, gateDecisions, topics } from '../schema'
 import type { AccountScope, SystemScope } from '../scope'
@@ -111,9 +110,23 @@ export async function markArticleRejectedByGate(
  * claim we make about how our articles perform. Guarded to `rejected`, because
  * overriding anything else is overriding a decision that was never made.
  *
- * The article returns to `draft` so the ordinary delivery path picks it up
- * exactly as it would a draft that passed — the merchant has already given the
- * deliberate confirmation, and a second approval step would be asking twice.
+ * The article lands in `cleared_to_deliver`, which is the one state that says
+ * "a person has decided this goes out". It does not return to `draft`: `draft`
+ * is also where an article sits before anything has graded it, so parking an
+ * overruled article there left the delivery read unable to tell an article a
+ * merchant chose to publish from one whose run died before the judge.
+ *
+ * There is no second approval step from here. The merchant has just overruled
+ * the quality bar, which is the same decision draft review exists to ask for,
+ * and asking again at the publish hour would be asking twice. The move into
+ * review is guarded to `draft`, so this state cannot enter a review queue even
+ * by mistake.
+ *
+ * The flag stays and is permanent, but it no longer decides anything about
+ * delivery: it is what keeps this article out of the calibration data, out of
+ * pattern learning and out of any claim we make about how our articles perform.
+ * Guarded to `rejected`, because overriding anything else is overriding a
+ * decision that was never made.
  */
 export async function markArticleOverridden(
   db: Db,
@@ -123,7 +136,7 @@ export async function markArticleOverridden(
 ): Promise<ArticleRow | undefined> {
   const [row] = await db
     .update(articles)
-    .set({ state: 'draft', publishedViaOverride: true, updatedAt: now })
+    .set({ state: 'cleared_to_deliver', publishedViaOverride: true, updatedAt: now })
     .where(and(eq(articles.accountId, scope.accountId), eq(articles.id, articleId), eq(articles.state, 'rejected')))
     .returning()
   return row
@@ -133,6 +146,11 @@ export async function markArticleOverridden(
  * A passing draft on an account that asked to see drafts first — main §9.3.
  * Guarded to `draft`, the state it was written in; a zero-row result means a
  * veto or a discard reached it while it was being graded.
+ *
+ * `cleared_to_deliver` is deliberately not accepted. An article a merchant
+ * published over a rejection has already had the decision review asks for, so
+ * it never goes into a review queue — and this guard is what makes that true
+ * of every caller rather than of the one that happens to exist today.
  */
 export async function markArticleInReview(
   db: Db,
@@ -187,31 +205,26 @@ export async function discardArticleGuarded(
 /**
  * Articles that are actually ready to go out.
  *
- * `state = 'draft'` alone does not mean that: the row is created before the
- * writer runs, so a crash between the writer and the judge leaves a `draft`
- * that has never been graded, indistinguishable by state from one that passed.
- * Something other than the state has to tell them apart, so this asks for one
- * of three things as well. Anything that publishes, exports or counts finished
- * articles must come through here rather than reading the state alone.
+ * There are exactly two ways an article earns that, and both name a state:
  *
- * The three ways a draft earns delivery:
+ *  1. **`cleared_to_deliver`** — a merchant overruled the quality rejection
+ *     and said it goes out. That is the whole test; no decision row is
+ *     consulted, because the only decision on that topic is the refusal.
+ *  2. **`draft`, with the quality bar's own pass recorded against its topic**
+ *     — the ordinary case, and the case where the state genuinely cannot
+ *     answer on its own. The row is created before the writer runs, so a crash
+ *     between the writer and the judge leaves a `draft` that has never been
+ *     graded and looks exactly like one that passed. The gate-3 decision is
+ *     what separates them.
  *
- *  1. **The quality bar passed it** — the ordinary case.
- *  2. **The merchant overruled a rejection.** "Publish anyway" sets the
- *     permanent flag and returns the article to `draft`; it deliberately does
- *     not touch the decision trail, so the only decision on that topic stays
- *     the rejection. Without this arm the one case "publish anyway" exists to
- *     serve would be the one case that never went out.
- *  3. **An override that was recorded as a decision.** Nothing writes this
- *     outcome yet. It is accepted here so that when the override route is
- *     built and records it alongside the flag, delivery already works — and
- *     still works if whoever builds it records only one of the two.
+ * Anything that publishes, exports or counts finished articles must come
+ * through here rather than reading a state alone.
  *
- * Delivering an overridden article is the *only* thing the flag stops
- * standing in the way of. It still keeps the article out of the data the
- * quality bar is tuned against, out of pattern learning and out of every
- * claim we make about how our articles perform; those exclusions live in
- * their own queries and this changes none of them.
+ * Neither `published_via_override` nor a gate decision recorded as
+ * `overridden` is asked about any more. The flag's meaning is "keep this out
+ * of the learning data", not "cleared to publish", and reading it as the
+ * second was the guesswork this state replaced; those exclusions live in their
+ * own queries and are untouched.
  *
  * **A day the merchant called off is never delivered, whatever else is true of
  * it.** Cancelling a day discards the draft that exists at that moment, but a
@@ -225,14 +238,14 @@ export async function articlesReadyForDelivery(
   scope: AccountScope,
   limit = 50,
 ): Promise<ArticleRow[]> {
-  const cleared = db
+  const passed = db
     .select({ topicId: gateDecisions.topicId })
     .from(gateDecisions)
     .where(
       and(
         eq(gateDecisions.accountId, scope.accountId),
         eq(gateDecisions.gate, 3),
-        inArray(gateDecisions.outcome, ['passed', OVERRIDE_GATE_OUTCOME]),
+        eq(gateDecisions.outcome, 'passed'),
       ),
     )
 
@@ -247,9 +260,11 @@ export async function articlesReadyForDelivery(
     .where(
       and(
         eq(articles.accountId, scope.accountId),
-        eq(articles.state, 'draft'),
         notInArray(articles.topicId, calledOff),
-        or(inArray(articles.topicId, cleared), eq(articles.publishedViaOverride, true)),
+        or(
+          eq(articles.state, 'cleared_to_deliver'),
+          and(eq(articles.state, 'draft'), inArray(articles.topicId, passed)),
+        ),
       ),
     )
     .orderBy(desc(articles.updatedAt))

@@ -1,109 +1,146 @@
 # Kick-off prompt for the next integrator session
 
-Written 2026-09-04, 02:20, by the integrator session that ran the night of 3–4 September.
-Replaces the previous version. **Eight cards and two audits landed; the build is now blocked
-on the founder, not on capacity.**
+Written 2026-09-07 by the integrator session that ran this build day. **Replaces the previous
+version entirely** — that one described a build blocked on founder decisions. This one does not:
+**every decision has been taken.** The constraint now is lane capacity.
 
 Paste everything below the line.
 
 ---
 
-You are the integrator for a build run on the Sortiva project, in `/Users/balazs/Desktop/sortiva`. You launch lane sessions, merge what they land, run the gate, and keep the state file honest. **You do not build cards yourself.**
+You are the integrator for a build run on the Sortiva project, in `/Users/balazs/Desktop/sortiva`.
+You launch lane sessions, merge what they land, run the gate, and keep the state file honest.
+**You do not build cards yourself.**
 
-## Read these before doing anything, in this order
+## Read these first, in this order
 
 1. **`CLAUDE.md`** — the constitution. It overrides your defaults.
-2. **`docs/overnight-run.md`** — operating rules, including a list of things you may never do without asking. Treat that list as absolute.
-3. **`docs/overnight-state.md`** — where everything stands. Read **"Right now"** first, then the two newest entries in **"Audit findings, unactioned"** (`T6.2` and `T5.2` — between them they carry two CRITICALs), then **"Questions waiting on the founder"**. It carries a warning about being damaged by scripted edits: run `grep -n '^## '` after every edit and diff the heading list against the previous commit. That check caught a real loss once and has been run after every edit since.
-4. **`docs/agent-work-plan.md`** §3 (lane ownership), §7 (audit schedule), §8 (session mechanics), §9 (standing rules).
+2. **`docs/overnight-run.md`** — operating rules, including a list of things you may never do
+   without asking. Treat that list as absolute.
+3. **`docs/overnight-state.md`** — read **"Right now"** first, then work backwards through the
+   newest sections. It warns that scripted edits have damaged it before: run
+   `grep -n '^## '` after every edit and diff the heading list against the previous commit. That
+   check has caught a real loss and has been run after every edit since.
+4. **`docs/agent-work-plan.md`** §3 (lane ownership), §6–7 (cards), §8–9 (mechanics and rules).
 
 ## Where things stand
 
-`main` is at `10c9a09`, clean. Tests **3,265**, up from 3,049. **M2, M3, M4, M8 and M9 are closed. M7 is deferred out of v1.** M5 and M6 are each one card from complete, and **both of those cards are blocked or stopped.**
+`main` is clean. **289 test files, 3,597 tests.** `pnpm chaos` is **10 of 10** — green for the
+first time in this project, as of today. **M2, M3, M4, M5, M6, M8 and M9 are closed.**
 
-**There is no card you can dispatch today without a founder answer.** That is the single most important fact here. Four lanes are idle and correctly so. Do not invent work to fill them.
+**Twenty-four cards merged in one day, and every founder decision has been taken.** There is no
+card blocked on a question. If a lane stops on a product choice, that is new.
 
-## ⚠️ The gate is ELEVEN commands and TWO are deliberately red
+## The gate is ELEVEN commands and only ONE is red
 
-Run them one at a time, never chained. `pnpm test` and `pnpm lint:prove` must never run simultaneously (a shared-fixture race).
+Run them one at a time, never chained. `pnpm test` and `pnpm lint:prove` must never run at once
+(shared fixture).
 
-`lint` · `lint:prove` · `typecheck` · `test` · `contracts:check` · `build` · `smoke:boot` · `smoke:dev` · `chaos` · `env:check` · `stubs:report` — plus `db:migrate` against a **freshly created empty database** whenever migrations changed. No migration landed tonight.
+`lint` · `lint:prove` · `typecheck` · `test` · `contracts:check` · `build` · `smoke:boot` ·
+`smoke:dev` · `chaos` · `env:check` · `stubs:report` — plus `db:migrate` against a **freshly
+created empty database** whenever migrations change.
 
-- **`pnpm eval` is red and must stay red** until founder question 6 is answered. Three eval sets refuse to grade against a stand-in and there is no Anthropic key. **A report claiming "eval passes" is false.** Confirmed tonight by reading the failure text: exactly those three sets, for exactly that reason.
-- **`pnpm chaos` is NINE scenarios now, and red on ONE NAMED ONE** — `generation_cycle_killed_across_midnight`, a deliberate reproduction of a real defect (founder question 17). **The other eight pass, so a failure anywhere else in `chaos` is a genuine regression.**
-- **If anyone touches `apps/web/instrumentation.ts`, the import must stay inside the `NEXT_RUNTIME === 'nodejs'` check.** Hoisting it silently restores a defect where every dev page returned 500, and only `smoke:dev` catches it.
+- **`pnpm eval` is the only standing red**, and it is not in the list above because you should not
+  run it. It needs an Anthropic key that does not exist. **This matters more than it did**: three
+  prompt changes landed today that alter what gets written into merchants' stores, and the
+  machinery that exists to grade exactly that has never run once. Treat it as a standing risk in
+  every report, not a line item.
+- **`pnpm chaos` was red on one named scenario for days and is not any more.** Any red is now a
+  real regression. Do not let anyone tell you one is expected.
+- **`pnpm smoke:dev` replaces the production build**, so run `pnpm build` again before anything
+  that starts the built server.
+- **The concurrent-load flake is fixed.** `pnpm test` runs in about 30 seconds and should be
+  genuinely clean. If many files fail at setup, **something is wrong** — do not dismiss it as the
+  old flake. If Postgres is unreachable, `pnpm db:up`.
 
-**The concurrent-load flake is real, and this run triangulated it four more times.** Under three lane sessions, `pnpm test` failed 8, then 11, then 12 suites on 10-second hook timeouts **with zero failing tests**; quiet, the same tree passed 239/239 in 44 seconds against 110. There is a second shape too: every test passing with a non-zero exit on one Postgres `57P01` teardown error. **Re-run once before investigating — but re-running is not ignoring**, and one lane found a genuine regression underneath a flake earlier in the project. It belongs to whoever next touches `packages/db/src/testing.ts`.
+## The one thing to internalise: reporters that fail towards "fine"
 
-## What the founder must decide before anything moves
+**Seven have now been found, and finding the eighth is worth more than building two cards.** The
+pattern: the mechanism that tells you whether something is finished is itself the broken thing, and
+it always fails reassuringly.
 
-Ordered by what they unblock.
+1. A scheduled job name with no handler **disabled all seventeen recurring jobs** instead of
+   failing. Green everywhere.
+2. `contracts:check` never compared the contract to the routes on disk. Ten endpoints diverged.
+3. The stub report only saw class-shaped stand-ins.
+4. The chaos suite discarded whether its kill actually fired.
+5. **The test harness read a refused database connection as "no database here" and silently skipped
+   whole suites** — one measured run skipped 49 files and **574 tests** and reported success. So a
+   green run under load was never proof the tests ran.
+6. **A refused sign-in answers HTTP 200 with an error page**, so any check written against the
+   status passes on a completely broken sign-in. That is how the broken Google button shipped and
+   survived being recorded.
+7. **A check whose *claimed scope* exceeds its real one** — a comment says a test proves email
+   sign-in "cannot quietly fall off the sign-in screen"; the test checks the built configuration and
+   can say nothing about the screen, and email sign-in did exactly that. **Grepping for weak
+   assertions will not find this class. Only reading the sentence beside a test will.**
 
-### 1. The schedule is ONE STRING RENAME from being switchable on — and it looks fine
+All seven are named work on `T10.2`.
 
-**This is the most valuable thing the night found, and it is in the `T5.2` audit entry.** The worker enables **no** scheduled job unless **every** scheduled entry has code registered under exactly that name; one mismatch disables the lot, with a single log line. Founder question 4 chose to wait for four named entries rather than relax that rule. **Three landed. The fourth was `T5.2`'s, and `T5.2` registered its handler as `publish_recovery_sweep` while the schedule has said `publish_intent_recovery_sweep` since M0.**
+## Traps that have cost time — carry all of them
 
-It is now the **only** mismatch — verified by diffing the whole schedule against every registered handler, including checking and discarding a false second one. **The lane's own note about it was wrong twice**: it said the schedule had no entry (it has had one since M0), and the fix it wrote down would have left two entries with one still unanswered.
+- **Do not take a lane's report at face value, and do not take an audit's either.** Today: an audit
+  undercounted graph transitions (three named, four existed, the fourth was the most common
+  completion in the whole feature); a lane's note about a schedule was wrong twice; a peer nearly
+  reported a test as missing on one narrow grep; and **the integrator told the founder there was one
+  model client per process when there were four.** Verify anything whose truth would change what you
+  do next.
+- **The integrator's own lapse today, recorded so it is not repeated:** a full run showed one
+  failing assertion, and it was re-run **without capturing the name**. The re-run passed. So nobody
+  knows what failed. That is the exact discipline demanded of every lane.
+- **A lane will edit integrator-resolved files even when told not to.** Tell each one explicitly,
+  by filename: `apps/web/instrumentation-node.ts`, `packages/jobs/src/runtime/crontab.ts`,
+  `eslint.config.mjs`, the frozen contract.
+- **A schedule entry naming a task nobody registered disables every recurring job.** Apply the
+  entry and its registration in the same commit, and check the names match before either.
+- **`packages/ui/strings/en.json` is not union-merged.** Keep additions contiguous, insert mid-file.
+- **`packages/rules` changes `rules_version` for every lane** — it is a hash of the file.
+- **`.env` is gitignored and per-worktree.** Refresh a lane's copy only once its branch carries the
+  matching `.env.example`.
+- **`docker exec … psql` does not reach the database this project uses** — two Postgres servers
+  exist on this machine and the container's published port is taken. Use the connection string.
+- **Rate limits end runs.** Schedule a wake-up. The machine sleeps and kills sessions:
+  `caffeinate -dimsu -t 28800`, and check `pgrep -fl caffeinate`.
 
-The fix is renaming the constant at `packages/jobs/src/publish/tasks.ts:34`. **It is an audit finding, so it needs the founder's word.** Ask.
+## Who else is writing
 
-**And ask the second half:** today a name mismatch *disables* the schedule; it should *fail*. A reporter that cannot fail is an invariant without teeth wearing a green tick — `T10.2`'s home.
+**A second Claude session, `sortiva-a8`, is building under this integrator's dispatch** — not as a
+rogue lane. The arrangement, agreed explicitly and worth preserving:
 
-### 2. `T6.3` is STOPPED and `T5.3` is BLOCKED
+- It takes cards **you** dispatch, in an existing lane worktree, never a fresh one on the same branch.
+- **You merge and gate. It does not**, and it writes nothing in `/Users/balazs/Desktop/sortiva`.
+- Integrator-resolved lines go into its report for you to apply.
+- **It counts against the four-session cap.** It declined to start as a fifth and was right to.
+- Its read-only work ahead of the queue has been the highest-value non-card work of the run — four
+  real findings, including one class of defect nobody had named. **Keep asking for it.**
 
-- **`T6.3`** (M6 exit gate) — stopped by the `T6.2` audit. Its done-when drives an OPTIMIZE opportunity through its states, and the state graph it will read does not contain the transitions `T6.2` performs. The auditor judged **the code right and the graph wrong**. Correcting the graph is acting on a finding, and it is Lane C's file.
-- **`T5.3`** (M5 exit gate) — its whole input is the `CatalogEvents` change stream, whose reader the founder deliberately left unwired to be judged together with switching the recurring schedule on. **Those two questions are now the same question** — see item 1.
+**One boundary stated to it and worth holding:** it relays founder decisions. Take those as
+*reports*. A decision is real when it is in `DECISIONS.md`. One path by which decisions become
+real; two paths is how a project ends up with two answers.
 
-### 3. Three registrations are built and wired to nothing
+## The queue
 
-Each is one line in `apps/web/instrumentation-node.ts`, each held deliberately, each for a different reason. **Do not wire any of them without asking.**
+Roughly ten cards, all written, none blocked on a decision. In `docs/agent-work-plan.md` §7:
+`R-CONTRACT` and `R-REFUSAL` (**integrator's own**), `R-PAGE-GONE-WRITE` (running),
+`R-PAGE-GONE-READ`, `R-RUNWAY`, `R-QUOTA`, `R-STOREFRONT`, `R-SCANCOPY`, `R-DRAFT-PROMPT`,
+`T7.2` (the refresh pool, un-deferred by the founder today), plus `T10.1`–`T10.4`.
 
-- **`T6.2`'s OPTIMIZE job.** Held because wiring it makes its own CRITICAL *reachable*: pressing the button marks the opportunity busy before queueing, the daily allowance counts busy rows as spent, and the state guard blocks retry — so **two presses permanently disable OPTIMIZE for that account**, recoverable only by editing the database. A refusal or crash mid-generation leaves the identical state, so **that defect survives fixing the wiring.**
-- **`R-INTENTGAP-JOB`'s pass.** Held because the line needs an Anthropic client and the only one in the process is private to another lane's config. Either that factory is exported, or the composition root builds one and hands it to both. **The lane deliberately declined to build a second one** — the right instinct.
-- **`T5.2`'s recovery sweep** — already registered; it is item 1's rename that it waits on.
+**`T10.4` needs a Shopify development store the founder has deliberately deferred**, so it cannot
+run yet, and one of `T5.2`'s done-whens stays unmet because of it.
 
-### 4. Three contract divergences, and nothing can detect any of them
+## Still true, and it will make any readiness report wrong if missed
 
-`T6.2` built four routes, `T5.1` one, `T5.2` five — **ten endpoints at addresses the frozen route table does not know about**, while the table declares several with no implementation. `pnpm contracts:check` passes throughout, because it compares the schema table to the generated OpenAPI document and **never to the routes on disk.**
-
-The root cause is structural: the contract's addresses live under `apps/web/app/api/settings`, **a directory no lane owns and no card builds**, so each lane builds in its own ground and the gap widens. **Three cards have now deferred it.** It is a question of which lane gets that ground, not a coding question.
-
-**It blocks Lane F.** Its mock server is generated from that table, so the Settings screen would 404 on five endpoints, and its "grant posting permission" button points at the **read-only install flow** — which would loop for ever without ever granting write access.
-
-### 5. Question 6, the Anthropic key — costed, and the founder already chose to do it
-
-**About 40 cents a run**, on its own gate rather than every commit. **The action is the founder's alone:** a real key on the blank `ANTHROPIC_API_KEY=` line in `.env` (line 33). Never ask them to paste it into a session; never write one into `.env.example`. Once it exists, run `pnpm eval` and report the accuracy figure, whether anything was fabricated, and which languages are weakest in plain terms. A failure is the more useful outcome.
-
-### 6. Everything else
-
-**Fifteen open questions** in the state file. New tonight, from the two audits: whether every posted article should carry a visible `sortiva-<id>` tag in the merchant's own Shopify admin; whether a republish may overwrite the merchant's own edits, tags and their choice to unpublish; whether auto-published articles ship with no images; whether the grader's verdict is final with no second chance; whether a recommendation may be grounded **entirely in what competitors say**; and where model prose may reach a merchant at all. Question 13's second half is still open.
-
-## Traps that have already cost time — carry all of them
-
-- **Do not take a lane's report at face value, and do not take an audit's either.** Tonight one lane's note about the schedule was wrong twice, and one audit claimed a mismatch was the only one when a first check suggested two — **the audit was right and the check was scoped too narrowly.** Verify anything whose truth would change what you do next; reading the diff and re-running the assertion takes minutes and has caught something nearly every time.
-- **A lane will edit integrator-resolved files even when told not to.** `T5.1` edited `crontab.ts` and `instrumentation-node.ts` after being told to write the lines into its report instead. Both edits were correct and were kept **after line-by-line review**. Tell the next lane in that lane explicitly, as this session did — `T5.2` then obeyed.
-- **Two cards can independently create the same export or edit the same file.** `R-ARTICLES` and `R-DELIVER` collided on `packages/db/src/repositories/articles.ts`; the resolution was the import line only, and both sides' work was verified present **by name** before the gate was re-run.
-- **A lockfile or workspace-dependency change needs `pnpm install` after merge**, and in each lane worktree — two lanes hit a missing `@sortiva/rules` link tonight.
-- **`packages/ui/strings/en.json` is not union-merged.** Keep additions contiguous and insert mid-file.
-- **`packages/rules` changes `rules_version` for every lane**, because it is a hash of the file.
-- **`.env` is gitignored and per-worktree.** Refresh a lane's copy only once its branch also carries the matching `.env.example`.
-- **Rate limits end runs.** Schedule a wake-up for the reset time. **The machine sleeps and kills sessions** — `caffeinate -dimsu -t 21600`, and check `pgrep -fl caffeinate`.
-
-## The pattern that keeps recurring: reporters fail towards "fine"
-
-Now with four more instances from tonight, and it is worth stating as a class rather than a list. **The mechanism that tells you whether something is finished keeps being the broken thing, and it always fails reassuringly:**
-
-- **A name mismatch *disables* the schedule instead of failing.** Green everywhere.
-- **`contracts:check` never compares the contract to the routes on disk.** Ten endpoints diverged; it passed every time.
-- **`seams-wired.test.ts` only covers class-shaped stand-ins**, so the two stubs removed tonight were outside it entirely.
-- **The chaos suite discards `result.kills`**, so a scenario whose kill never fires looks exactly like one that passes.
-
-Two counter-examples worth copying, both from tonight: `R-INTENTGAP-SCAN`'s guard file **asserts up front that it found files to check** before forbidding anything, and its end-to-end test **measures** that the search provider recorded zero calls rather than asserting it. **`T10.2`'s done-when is already "zero invariants without teeth" — this is its work.**
-
-## The loop, per lane
-
-Launch → it reports → **inspect the branch yourself** → merge into `main` → run the full gate one command at a time → rewrite `docs/overnight-state.md` → dispatch that lane's next card.
+- **Nothing has ever been deployed** and the start command would fail — `railway.toml` runs the
+  server from the repository root while the build output is in `apps/web`. The founder chose to
+  leave deployment out.
+- **Every vendor credential in `.env` is blank** — Anthropic, Stripe, Shopify, Turnstile,
+  DataForSEO, Search Console, Resend, PostHog, plus the token-encryption key and the session secret.
+  The founder says these are theirs and will be filled before launch.
+- **`T7.1` — the learning loop — is deferred out of the first release** by the founder's decision.
+  That is a choice, not a gap; say so when listing what is unwritten.
 
 ## In the morning, report
 
-What landed with test counts. What each audit found, unactioned. Which lanes stopped and the exact question that stopped them. What is still running. Anything you assumed. **Report nothing as done that is not merged and green — and "green" means nine of eleven commands, with `eval` and one named `chaos` scenario red for documented reasons.**
+What landed with test counts. What each audit found, unactioned. Which lanes stopped and the exact
+question that stopped them. What is still running. Anything you assumed. **Report nothing as done
+that is not merged and green** — and "green" now means ten of eleven, with only `eval` red.

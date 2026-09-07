@@ -4,7 +4,7 @@ import { silentLogger, type SeoDataProvider } from '@sortiva/core'
 import { schema, type Db } from '@sortiva/db'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
 import { loadPrompt, MockLlmClient } from '@sortiva/llm'
-import { DRAFT_PROMPT_MAJOR_VERSION } from './prompts'
+import { DRAFT_PROMPT_MAJOR_VERSION, JUDGE_PROMPT_MAJOR_VERSION } from './prompts'
 import type { PageFetcher } from '@sortiva/providers'
 import { DbOpportunitySource } from '../scan/opportunity-source'
 import { replenishCalendarForAccount } from './replenish'
@@ -294,7 +294,7 @@ describe.skipIf(!available)('M4 end to end: an opportunity becomes an article wa
         pageFetcher,
         claimPlanPrompt: loadPrompt('claim-plan', 1),
         draftPrompt: loadPrompt('draft', DRAFT_PROMPT_MAJOR_VERSION),
-        judgePrompt: loadPrompt('judge', 1),
+        judgePrompt: loadPrompt('judge', JUDGE_PROMPT_MAJOR_VERSION),
         contradictionPrompt: loadPrompt('contradiction', 1),
         revisePrompt: loadPrompt('revise', 1),
         now: () => GENERATION_DAY,
