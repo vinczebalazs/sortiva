@@ -75,6 +75,18 @@ export {
   type RecommendationPrompt,
   type RecommendationSection,
 } from './recommendation'
+// The drawer's narrower names — `toDrawerRecommendation` and its constants —
+// are published by the opportunities barrel instead, so the package's single
+// top-level barrel never sees one name arriving from two places.
+export {
+  isFailedRecommendation,
+  toRecommendationView,
+  type RecommendationView,
+  type RecommendationViewFaq,
+  type RecommendationViewField,
+  type RecommendationViewReason,
+  type RecommendationViewSection,
+} from './recommendation-view'
 export {
   resolveTargetQueryFromClusters,
   targetQueryFromEvidence,
