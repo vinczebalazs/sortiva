@@ -667,10 +667,22 @@ Scope: with sessions living thirty days rather than one, dead rows sit thirty ti
 Read first: `DECISIONS.md` 2026-09-07 `R-REVOKE` entries; main §14.6 (retention).
 Done when: a session past its expiry is removed by the nightly sweep; a live one is untouched; and no crontab entry or task registration is added.
 
+**R-DRAFT-PROMPT — the writing prompt names the fields its schema demands** · Lane D
+Scope: the article-writing prompt never mentions `metaDescription`, `sections`, `productId` or `refType`, all of which its answer schema requires. The model fills four fields nobody told it what to put in. **Add the same test `R-RECO-QUALITY` added** — holding the prompt the product actually loads against every field its schema demands — and then make it pass by explaining the fields.
+Read first: `DECISIONS.md` 2026-09-07 "The writing prompt must name the fields its own answer schema demands"; the `R-RECO-QUALITY` and `R-GATE-LANG` entries; main §9.2.
+Done when: the prompt names every field its schema requires; the test that would have caught this exists and passes; and the prompt is a **new version file**, since a version stamped on a stored article has to keep meaning what it said.
+Note: **this changes the articles the product writes** — that is why the lane that found it removed its own test rather than fix it. It is also **ungraded**: `pnpm eval` is the machinery for grading a prompt change and cannot run without an Anthropic key.
+
+**R-SIGNIN-CSRF — the Google sign-in button does not work** · Lane F
+Scope: the button on `/signin` posts a bare form with no anti-forgery token, which the sign-in library rejects. Recorded in `DECISIONS.md` by an earlier card and never fixed. The fix is the one `R-SIGNOUT` just used — fetch the token first — and **it would fix email sign-in on the same screen at the same time.**
+Read first: the `R-SIGNOUT` entries in `DECISIONS.md` dated 2026-09-07, which contain the working pattern.
+Done when: signing in with Google works end to end against the real library configuration; email sign-in on the same screen works; and a refused attempt is judged by where the library says to go rather than by its status code — **the library answers 200 with an error page for a refused request**, so anything trusting the status reports success.
+
 **R-CONTRACT — the frozen contract describes the endpoints that exist** · integrator
 Scope: ten endpoints were built at addresses the frozen route table does not declare, while the table declares several with no implementation, and `contracts:check` passes throughout because it compares the table to a generated document and **never to the routes on disk**. The founder delegated the call: amend the contract to the built addresses rather than move ten endpoints; assign `apps/web/app/api/settings` to Lane F for anything genuinely settings-shaped; the missing routes-on-disk check lands with `T10.2`.
 Read first: `DECISIONS.md` 2026-09-04 "The frozen contract moves to the addresses that were built".
 Done when: the table names every route that exists and no route that does not; the frontend's generated fake server answers on every address the Settings screen calls; and the "grant posting permission" button points at the **write** grant rather than the read-only install flow.
+Exact line, verified 2026-09-07: `packages/ui/src/settings/PublishingSettings.tsx:64` defaults `writeGrantEndpoint` to `/api/shopify/oauth/start` — the **read-only install flow** — and `apps/web/app/(app)/settings/publishing/page.tsx` renders the component without overriding it. **`T5.2` did build the real routes** (`/api/publish/grant/start` and `/api/publish/grant/callback`) and they work, so this is one prop away from correct, not a missing feature. A stale note at `packages/ui/src/fixtures/screen-contract.ts:216` still says no such route exists anywhere; correct it while you are here.
 
 **R-STREAM-WIRE — a merchant's edit actually reaches the product** · Lane B, placed by the integrator 2026-09-04
 Scope: `R-STREAM` took its own second branch — it restored the stand-in report line and built the test that stops the report lying again, and left the consumer unwired on the founder's instruction that wiring it and switching the recurring schedule on should be judged together. Both are now decided (`DECISIONS.md`, 2026-09-04). This card takes the first branch. **Three things, in three different grounds:** (a) the Shopify webhook handler queues a pass over the change stream immediately after it records what changed, so a collection rewritten at nine in the morning is re-read minutes later instead of at the next nightly walk — Lane B's file, and this card's real work; (b) the reader is registered in the composition root and handed the real change stream and the signal-scan dependencies, so a catalogue change also triggers a full market scan for that store — **integrator-resolved, so the lane writes the line into its report and does not apply it**; (c) the `CatalogEvents` seam leaves the stand-in report and gains its entry in `seams-wired.test.ts`, which is what `R-STREAM` built that file to require.
@@ -852,6 +864,10 @@ Done when: Playwright against staging: onboarding through activation; opportunit
 >    outside it entirely.
 > 4. **The chaos suite discards `result.kills`**, so a scenario whose kill never fires is
 >    indistinguishable from one that passes.
+> 5. **`pnpm stubs:report` mixes one stale entry with two real ones and nothing tells them apart.**
+>    `LlmJudgeLite` is constructed in production and its line was never removed; the judge-rejection
+>    and publish-failure auto-trips genuinely cannot fire, because the composition root passes
+>    neither counter. A reader who dismisses the stale one dismisses all three.
 >
 > Two patterns worth copying, both already in the tree: `R-INTENTGAP-SCAN`'s guard file
 > asserts up front that it found files to check before forbidding anything, and its
