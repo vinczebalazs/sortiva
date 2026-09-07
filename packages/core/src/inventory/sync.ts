@@ -25,6 +25,8 @@ export interface InventorySyncDeps {
   readonly source: StoreContentSource
   readonly writer: StorePageWriter
   readonly families: FamilyLookup
+  /** Overridable so a test can walk a store at a time it chooses. */
+  readonly now?: () => Date
 }
 
 export interface InventorySyncResult {
@@ -36,6 +38,29 @@ export interface InventorySyncResult {
   readonly changedUrls: readonly string[]
   /** Absent once the whole store has been walked. */
   readonly next?: InventoryCursor
+  /**
+   * Pages marked gone, present only on the batch that finished a walk. Absent
+   * and zero say different things: absent means we have not finished looking.
+   */
+  readonly markedGone?: number
+}
+
+/**
+ * When the walk in progress started, carried in the cursor the queue hands back.
+ *
+ * It has to survive being handed to the queue and read again, because a store is
+ * walked across many separate job runs and nothing else on this side lives that
+ * long. The source ignores cursor keys it does not know and builds a fresh
+ * cursor for each following batch, so this is re-attached every time rather than
+ * expected to come back on its own.
+ */
+const WALK_STARTED_AT = 'walkStartedAt'
+
+function walkStartOf(cursor: InventoryCursor | undefined, fallback: Date): Date {
+  const carried = cursor?.[WALK_STARTED_AT]
+  if (carried === undefined) return fallback
+  const parsed = new Date(carried)
+  return Number.isNaN(parsed.getTime()) ? fallback : parsed
 }
 
 export async function syncInventoryBatch(
@@ -44,15 +69,41 @@ export async function syncInventoryBatch(
   cursor: InventoryCursor | undefined,
   limit: number,
 ): Promise<InventorySyncResult> {
+  const now = (deps.now ?? (() => new Date()))()
+  const walkStartedAt = walkStartOf(cursor, now)
   const origin = await deps.source.storefrontOrigin(accountId)
   const batch = await deps.source.next(accountId, cursor, limit)
   const rows = await toRows(deps, accountId, batch.records, origin)
+  // Ahead of the write, so a batch that dies partway has still recorded what it
+  // saw. The two mistakes are not equal: recording a page as seen when it was
+  // not delays noticing a deletion by a day, while missing one marks a page the
+  // merchant still serves as deleted.
+  if (rows.length > 0) {
+    await deps.writer.markSeen(
+      accountId,
+      rows.map((row) => row.url),
+      now,
+    )
+  }
   const changed = await writeChanged(deps, accountId, rows)
+
+  if (batch.next) {
+    return {
+      seen: batch.records.length,
+      changed: changed.length,
+      changedUrls: changed.map((row) => row.url),
+      next: { ...batch.next, [WALK_STARTED_AT]: walkStartedAt.toISOString() },
+    }
+  }
+
+  // Reaching the end of the store is the only thing that makes an absence mean
+  // anything, so this is the one place a page may be marked gone.
+  const markedGone = await deps.writer.markGoneNotSeenSince(accountId, walkStartedAt)
   return {
     seen: batch.records.length,
     changed: changed.length,
     changedUrls: changed.map((row) => row.url),
-    ...(batch.next ? { next: batch.next } : {}),
+    markedGone,
   }
 }
 
@@ -61,6 +112,11 @@ export async function syncInventoryBatch(
  *
  * The same mapping and the same checksum diff as a sweep batch: a webhook is a
  * reason to look now rather than a different way of looking.
+ *
+ * It records what it saw, and never concludes anything is missing. Reading a
+ * handful of named pages says nothing whatever about the ones nobody asked
+ * about, so only the walk that reaches the end of the store may mark a page
+ * gone.
  */
 export async function syncInventoryRecords(
   deps: InventorySyncDeps,
@@ -69,6 +125,13 @@ export async function syncInventoryRecords(
 ): Promise<InventorySyncResult> {
   const origin = await deps.source.storefrontOrigin(accountId)
   const rows = await toRows(deps, accountId, records, origin)
+  if (rows.length > 0) {
+    await deps.writer.markSeen(
+      accountId,
+      rows.map((row) => row.url),
+      (deps.now ?? (() => new Date()))(),
+    )
+  }
   const changed = await writeChanged(deps, accountId, rows)
   return {
     seen: records.length,

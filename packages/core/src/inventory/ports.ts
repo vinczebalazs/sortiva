@@ -100,6 +100,30 @@ export interface StorePageWriter {
   /** The checksums we already hold, keyed by URL, for the URLs asked about. */
   knownChecksums(accountId: string, urls: readonly string[]): Promise<ReadonlyMap<string, string | null>>
   upsert(accountId: string, rows: readonly StorePageRow[]): Promise<void>
+  /**
+   * Records that the store served these addresses just now, whether or not
+   * anything about them moved.
+   *
+   * Separate from `upsert`, which runs only for pages whose content changed —
+   * an unchanged page is deliberately left alone so it does not look edited to
+   * everything watching its checksum. That leaves "when did this row last
+   * change" as the only thing the row knows, so answering "when did we last see
+   * it" needs a write of its own.
+   *
+   * A page the walk found is by definition still served, so this also brings a
+   * row back from `gone`. Without that, a page deleted and then restored would
+   * stay marked gone for ever: the restored page carries the checksum it always
+   * had, so nothing would upsert it.
+   */
+  markSeen(accountId: string, urls: readonly string[], at: Date): Promise<void>
+  /**
+   * Marks every page the walk did not find as gone, and answers how many.
+   *
+   * Only ever called with the start time of a walk that reached the end of the
+   * store. A walk that ran out of budget, lost its connection or died has not
+   * established that anything is missing — only that we stopped looking.
+   */
+  markGoneNotSeenSince(accountId: string, since: Date): Promise<number>
 }
 
 /**
