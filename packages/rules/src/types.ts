@@ -339,7 +339,11 @@ export interface GenerationConfig {
 
 export interface BudgetsConfig {
   optimize: { generations_per_account_per_day: number }
-  intent_gap: { analyses_per_account_per_day: number }
+  intent_gap: {
+    analyses_per_account_per_day: number
+    /** Most pages the weekly scheduled comparison may shortlist — below the allowance, so a merchant's own click still has room. */
+    scheduled_shortlist_max: number
+  }
 }
 
 export interface AutoTripsConfig {

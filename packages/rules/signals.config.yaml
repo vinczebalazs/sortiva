@@ -641,6 +641,17 @@ defaults:
       # a paid SERP read plus an LLM call, so this is a per-account spend
       # ceiling wearing a feature's name. UNSIGNED — no number was stated.
       analyses_per_account_per_day: 10
+      # How many pages the weekly scheduled comparison pass may shortlist in
+      # one run. Deliberately below the allowance above, so a merchant who
+      # presses "improve this page" later that same day still has comparisons
+      # left to spend: the two spenders do not share a counter, and a button
+      # whose availability depended on what a background job did earlier could
+      # not be explained to the merchant it refused. Lowering it makes the pass
+      # drop its least promising candidates first, which are the ones least
+      # worth paying for; raising it back to the allowance is what let wholly
+      # ordinary use — one full pass plus both of the day's generations — spend
+      # more than the store is allowed and trip its own brake.
+      scheduled_shortlist_max: 8
 
   auto_trips:
     # How stale a kill-switch reading may be when a job checks it. This is the

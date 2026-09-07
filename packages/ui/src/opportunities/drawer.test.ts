@@ -142,6 +142,19 @@ describe('the OPTIMIZE recommendation view', () => {
     expect(html).toContain(t('opportunities.rec.neverApplies'))
   })
 
+  /**
+   * The rationale is the one sentence on this card a model wrote in its own
+   * words and nobody checked. Every other line is either the merchant's own
+   * text, a quoted suggestion, or wording of ours from the catalogue — so it
+   * has to say where it came from, or it reads as ours.
+   */
+  it('marks the model\'s own sentence as model-written', () => {
+    expect(html).toContain(t('opportunities.rec.modelWritten'))
+    expect(html).toContain('data-rec-model-written="title_tag"')
+    // Null on the other field, so no label appears where there is no sentence.
+    expect(html).not.toContain('data-rec-model-written="meta_description"')
+  })
+
   it('refuses to regenerate until the evidence has moved', () => {
     expect(html).toContain('data-rec-action="regenerate"')
     expect(html).toContain(t('opportunities.rec.regenerateUnavailable'))
@@ -243,6 +256,19 @@ describe('the downloadable recommendation', () => {
 
   it('says "nothing there today" rather than leaving a field blank', () => {
     expect(recommendationMarkdown(detail)).toContain(t('opportunities.rec.currentEmpty'))
+  })
+
+  /** The file outlives the screen, so the label travels with the sentence. */
+  it('carries the model-written label into both files', () => {
+    const sentence = 'Three of the top five results name the fit'
+    const label = t('opportunities.rec.modelWritten')
+
+    const markdown = recommendationMarkdown(detail)
+    expect(markdown).toContain(`${label} ${sentence}`)
+
+    const html = recommendationHtml(detail)
+    expect(html).toContain(label)
+    expect(html.indexOf(label)).toBeLessThan(html.indexOf(sentence))
   })
 
   it('escapes the store’s own words on the way into HTML', () => {

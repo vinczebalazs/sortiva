@@ -58,7 +58,11 @@ export function recommendationMarkdown(
     lines.push(field.current ?? t('opportunities.rec.currentEmpty'), '')
     lines.push(`**${t('opportunities.rec.suggested')}**`, '')
     lines.push(field.suggested, '')
-    if (field.evidence) lines.push(`> ${field.evidence}`, '')
+    // The file outlives the screen, so the one line a model wrote itself
+    // carries its label with it rather than reading as ours.
+    if (field.evidence) {
+      lines.push(`> ${t('opportunities.rec.modelWritten')} ${field.evidence}`, '')
+    }
   }
 
   const linksIn = recommendation?.internalLinksIn ?? []
@@ -114,7 +118,13 @@ export function recommendationHtml(
         field.suggested,
       )}</p>`,
     )
-    if (field.evidence) parts.push(`<blockquote>${escapeHtml(field.evidence)}</blockquote>`)
+    if (field.evidence) {
+      parts.push(
+        `<blockquote><strong>${escapeHtml(t('opportunities.rec.modelWritten'))}</strong> ${escapeHtml(
+          field.evidence,
+        )}</blockquote>`,
+      )
+    }
     parts.push('</section>')
   }
 

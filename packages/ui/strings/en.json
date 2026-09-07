@@ -905,6 +905,7 @@
   "opportunities.rec.current": "Current",
   "opportunities.rec.suggested": "Suggested",
   "opportunities.rec.currentEmpty": "Nothing there today",
+  "opportunities.rec.modelWritten": "A model wrote this line.",
   "opportunities.rec.copy": "Copy",
   "opportunities.rec.copied": "Copied",
   "opportunities.rec.copyLabel": "Copy the suggested text",

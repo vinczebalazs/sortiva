@@ -32,6 +32,16 @@ import { processLlm } from '../../articles/_lib/config'
 import type { RecommendationsDeps } from './handlers'
 
 /**
+ * Which version of the writing prompt this process asks with.
+ *
+ * Named rather than written into the call, so a test can hold the very prompt
+ * the product uses to the schema it will be graded against. The field the
+ * schema demands and the prompt never mentioned went unnoticed for exactly as
+ * long as those two had no way to be compared.
+ */
+export const OPTIMIZE_RECO_PROMPT_MAJOR_VERSION = 2
+
+/**
  * Every word in the downloaded document, read from the one catalogue all
  * user-facing copy lives in. The renderer in `packages/core` takes them as an
  * argument precisely so that it holds no copy of its own.
@@ -137,7 +147,7 @@ export function optimizeTaskDeps(): OptimizeTaskDeps {
       pageFetcher: new GuardedPageFetcher(),
       llm: processLlm(),
       coveragePrompt: loadPrompt('intent-gap', 1),
-      recommendationPrompt: loadPrompt('optimize-reco', 1),
+      recommendationPrompt: loadPrompt('optimize-reco', OPTIMIZE_RECO_PROMPT_MAJOR_VERSION),
       judge: (accountId: string) =>
         new LlmJudgeLite({
           llm: processLlm(),

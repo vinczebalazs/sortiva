@@ -117,11 +117,11 @@ describe('OPTIMIZE lints', () => {
   it('fails a title or description past the length the search result shows', () => {
     const result = lintRecommendation(
       fixtureRecommendation({
-        title_tag: { current: null, suggested: 'x'.repeat(config.title_max_chars + 1), rationale_key: null },
+        title_tag: { current: null, suggested: 'x'.repeat(config.title_max_chars + 1), rationale: null },
         meta_description: {
           current: null,
           suggested: 'y'.repeat(config.meta_description_max_chars + 1),
-          rationale_key: null,
+          rationale: null,
         },
       }),
       { pack: fixturePack(), config },

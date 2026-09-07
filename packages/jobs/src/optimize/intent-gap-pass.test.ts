@@ -28,7 +28,8 @@ import {
 } from '@sortiva/db/testing'
 import { MockPageFetcher, MockSeoDataProvider } from '@sortiva/providers'
 import { rules } from '@sortiva/rules'
-import { installKillSwitchReader, resetKillSwitchReader } from '../runtime/gate'
+import { installKillSwitchReader, mayCallTypeRun, resetKillSwitchReader } from '../runtime/gate'
+import { analyseIntentGap } from './analyse'
 import { deriveIdempotencyKey, inputVersion } from '../runtime/idempotency'
 import { lookupCompletedWork } from '../runtime/ledger'
 import { clearTasks, taskList } from '../runtime/tasks'
@@ -221,9 +222,18 @@ async function seedStore(id: string, timezone: string): Promise<void> {
   await upsertGscQueryDaily(db, scope, rows)
 }
 
-function fixtures(failAfter?: number) {
+/** A page seeded on top of the two every case starts with, to crowd the shortlist. */
+interface ExtraPage {
+  readonly url: string
+  readonly handle: string
+  readonly query: string
+}
+
+function fixtures(failAfter?: number, extra: readonly ExtraPage[] = []) {
   const seo = new MockSeoDataProvider({
-    serp: Object.fromEntries(PAGES.map((page) => [page.query, RIVALS])),
+    serp: Object.fromEntries(
+      [...PAGES, ...extra].map((page) => [page.query, RIVALS]),
+    ),
   })
   const pageFetcher = new MockPageFetcher()
   for (const rival of RIVALS) {
@@ -397,6 +407,161 @@ describe.skipIf(!available)('a pass whose worker dies half-way through', () => {
     expect(resumed.seo.billableCalls).toBe(0)
   })
 })
+
+describe.skipIf(!available)('a pass on a store with more candidates than it may pay to compare', () => {
+  const SHORTLIST_MAX = BUDGETS.intent_gap.scheduled_shortlist_max
+  const ALLOWANCE = BUDGETS.intent_gap.analyses_per_account_per_day
+  const GENERATIONS_A_DAY = BUDGETS.optimize.generations_per_account_per_day
+
+  it('stops short of the store\'s whole daily allowance', async () => {
+    const extra = await seedCrowdedStore()
+    const f = fixtures(Number.POSITIVE_INFINITY, extra)
+
+    const outcome = await runIntentGapPassForAccount(passDeps(f), accountId)
+
+    expect(outcome.status).toBe('completed')
+    expect(SHORTLIST_MAX).toBeLessThan(ALLOWANCE)
+    // Asserted on what was bought, not on what the pass says it did.
+    expect(f.seo.billableCalls).toBe(SHORTLIST_MAX)
+    expect(f.llm.requests).toHaveLength(SHORTLIST_MAX)
+  })
+
+  /**
+   * The case the shrunk shortlist exists for, end to end and with nothing
+   * unusual in it: the scheduled pass runs in full on Sunday morning, and the
+   * merchant then presses "improve this page" as many times as their allowance
+   * permits. Both spend from the same daily allowance and neither knows the
+   * other ran, so the only thing that keeps the merchant's click from being
+   * refused is the pass having left room for it.
+   */
+  it('leaves the merchant every generation their allowance permits', async () => {
+    const extra = await seedCrowdedStore()
+    const f = fixtures(Number.POSITIVE_INFINITY, extra)
+
+    const outcome = await runIntentGapPassForAccount(passDeps(f), accountId)
+    expect(outcome.status).toBe('completed')
+    await recordComparisonsBilled(outcome.analysed)
+
+    for (let generation = 0; generation < GENERATIONS_A_DAY; generation += 1) {
+      // The nightly brake reads the ledger; run it before every click, as the
+      // real one would have between a background pass and a merchant's morning.
+      await evaluateAutoTrips(db, { now: () => NOW, log: silentLogger })
+      expect(await mayCallTypeRun(db, accountId, 'intent_gap', silentLogger)).toEqual({
+        allowed: true,
+      })
+
+      const page = extra[generation]!
+      const pressed = await analyseIntentGap(
+        { db, ...f, prompt: PROMPT, now: () => NOW, logger: silentLogger },
+        {
+          accountId,
+          page: {
+            url: page.url,
+            title: page.handle,
+            headings: ['Our range'],
+            excerpt: `Browse our ${page.handle}.`,
+            checksum: `checksum-${page.handle}-v1`,
+          },
+          query: page.query,
+          locale: { language: 'en', country: 'GB' },
+        },
+      )
+      expect(pressed.status).toBe('analysed')
+      await recordComparisonsBilled(1)
+    }
+
+    await evaluateAutoTrips(db, { now: () => NOW, log: silentLogger })
+    expect(await mayCallTypeRun(db, accountId, 'intent_gap', silentLogger)).toEqual({ allowed: true })
+  })
+
+  /**
+   * The same arithmetic against the ceiling this card removed. Without it the
+   * assertions above would pass whatever the shortlist did, because they would
+   * be testing a brake that never fires.
+   */
+  it('would have refused that merchant if the pass had shortlisted the whole allowance', async () => {
+    await recordComparisonsBilled(ALLOWANCE + GENERATIONS_A_DAY)
+    await evaluateAutoTrips(db, { now: () => NOW, log: silentLogger })
+
+    const decision = await mayCallTypeRun(db, accountId, 'intent_gap', silentLogger)
+    expect(decision.allowed).toBe(false)
+  })
+})
+
+/**
+ * What one paid comparison costs the store in the ledger the brake reads, at
+ * the worst the model wrapper's single re-ask allows. Written by hand because
+ * these cases run against a mock model client, which bills nobody.
+ */
+async function recordComparisonsBilled(comparisons: number): Promise<void> {
+  for (let call = 0; call < comparisons * MODEL_CALLS_PER_PAID_ANALYSIS_MAX; call += 1) {
+    await appendSpendEvent(db, accountScope(accountId), {
+      vendor: 'anthropic',
+      callType: 'intent_gap',
+      usdCost: 0.01,
+      cacheHit: false,
+      outcome: 'succeeded',
+      occurredAt: NOW,
+    })
+  }
+}
+
+/** More pages sitting where an edit could move them than the store could pay to compare in a day. */
+async function seedCrowdedStore(): Promise<readonly ExtraPage[]> {
+  const extra: ExtraPage[] = []
+  for (let n = 0; n < BUDGETS.intent_gap.analyses_per_account_per_day + 4; n += 1) {
+    extra.push({
+      url: `https://shop.example/collections/range-${n}`,
+      handle: `range-${n}`,
+      query: `walking gear ${n}`,
+    })
+  }
+
+  const scope = accountScope(accountId)
+  await upsertStorePages(
+    db,
+    scope,
+    extra.map((page, index) => ({
+      url: page.url,
+      pageType: 'collection' as const,
+      handle: page.handle,
+      shopifyId: `gid://shopify/Collection/${100 + index}`,
+      title: page.handle,
+      seoTitle: page.handle,
+      seoDescription: `Our ${page.handle}`,
+      headings: ['Our range'],
+      bodyHtml: `<p>Browse our ${page.handle}. Free delivery over £50.</p>`,
+      outboundInternalLinks: [],
+      familyIds: [],
+      checksum: `checksum-${page.handle}-v1`,
+    })),
+  )
+  await upsertQueryClusters(
+    db,
+    scope,
+    extra.map((page) => ({ headQuery: page.query, memberQueries: [page.query] })),
+  )
+
+  const rows = []
+  for (let back = 0; back < 90; back += 1) {
+    const day = new Date(NOW)
+    day.setUTCDate(day.getUTCDate() - back)
+    for (const page of extra) {
+      rows.push({
+        date: day.toISOString().slice(0, 10),
+        page: page.url,
+        query: page.query,
+        device: 'desktop',
+        country: 'gbr',
+        clicks: 3,
+        impressions: 200,
+        position: 11,
+      })
+    }
+  }
+  await upsertGscQueryDaily(db, scope, rows)
+  return extra
+}
 
 async function queuedKeys(): Promise<string[]> {
   const { rows } = await harness.pool.query<{ key: string }>(
