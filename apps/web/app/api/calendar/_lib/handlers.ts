@@ -12,6 +12,7 @@ import {
   findOpportunitiesByIds,
   latestGateDecisionsForTopics,
   listTopicsInRange,
+  reasonParamsOf,
   type ArticleRow,
   type Db,
   type GateDecisionRow,
@@ -104,7 +105,15 @@ function serialiseTopic(
       topic.state === 'rejected_by_gate' && gateDecision
         ? {
             gate: (`gate_${gateDecision.gate}` as const),
-            reason: { templateKey: gateDecision.reasonUserFacing ?? 'gate1.held_insufficient_substance', params: {} },
+            reason: {
+              templateKey: gateDecision.reasonUserFacing ?? 'gate1.held_insufficient_substance',
+              // The values the gate measured, which the sentence has blanks
+              // for: the criteria the draft failed and the grader's own written
+              // objection. Sending an empty bag here left every quality
+              // rejection reading "the reasoning for this one isn't available
+              // yet" while the row held both.
+              params: reasonParamsOf(gateDecision),
+            },
           }
         : null,
   }
