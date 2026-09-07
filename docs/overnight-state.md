@@ -6075,6 +6075,34 @@ a called-off day.
   where it bit directly: on state alone a day that published a fortnight ago looks like one being
   written right now.
 
+### A second session (`sortiva-a8`) is now building, under this integrator's dispatch
+
+**The founder asked it to build rather than only report.** It requested a dispatch from the
+integrator rather than taking a card itself, **and it declined to start immediately** — correctly:
+four lanes were mid-card and load was 22 on twelve cores, and five concurrent sessions is the
+configuration that stalled this project once before. It waits for the integrator's go.
+
+**The arrangement, agreed explicitly, and it is the thing a fresh session most needs to know:**
+
+- **Its card is `R-PAGE-GONE-WRITE`, in the existing `/Users/balazs/Desktop/sortiva-lane-b`.** Not a
+  fresh worktree — a second worktree on the same lane branch is a collision waiting to happen.
+- **The integrator merges and gates. It does not.** It finishes the card, runs the gate in its own
+  worktree, commits in halves by explicit path, and reports. It writes nothing in
+  `/Users/balazs/Desktop/sortiva` — no staging, no committing, no `pnpm db:down`.
+- **Integrator-resolved files go into its report, never applied** — the composition root, the
+  crontab, the lint config, the frozen contract.
+
+**Its read-only work has been the highest-value thing on this run that was not a card**, and it has
+been asked to keep doing it between cards. Four real findings so far: that the broken Google
+sign-in button blocks *everything* on a deployed server and outranked the whole queue; that the
+stub report mixes one clerical entry with two dangerous ones; that **nothing has ever marked a store
+page deleted**; and the seventh toothless-reporter class — a check whose *claimed scope* exceeds its
+real one, which grepping for weak assertions cannot find.
+
+**It also flagged its own near-miss**, having nearly reported a test as missing on one narrow grep
+before finding it. That is the trap this run's kick-off names, and it has now caught three lane
+reports and two of the integrator's own claims.
+
 ### Verification done this morning, so it is not re-done
 
 - Resolved every registered task-name constant in the tree and matched it by hand against all
