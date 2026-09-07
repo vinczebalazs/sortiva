@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, sql } from 'drizzle-orm'
+import { and, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm'
 import type {
   ExpiryReason,
   OpportunityTaskDraft,
@@ -583,4 +583,23 @@ export async function dismissOpportunityGuarded(
     if (!row) return undefined
     return { row, from: before.status }
   })
+}
+
+/**
+ * Every opportunity the merchant has told us they carried out, newest first.
+ *
+ * `applied_at` rather than the status, because the date is the point: it is the
+ * day a marker goes on the performance chart and the day the twenty-eight-day
+ * measurement is counted from. A row with no `applied_at` has nothing that
+ * could be drawn or measured, whatever its status says.
+ */
+export async function listAppliedOpportunities(
+  db: Db,
+  scope: AccountScope,
+): Promise<OpportunityRow[]> {
+  return db
+    .select()
+    .from(opportunities)
+    .where(and(eq(opportunities.accountId, scope.accountId), isNotNull(opportunities.appliedAt)))
+    .orderBy(desc(opportunities.appliedAt))
 }

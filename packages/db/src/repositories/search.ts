@@ -489,3 +489,149 @@ export async function confirmedKeywordTerms(db: Db, scope: AccountScope): Promis
     .where(and(eq(keywords.accountId, scope.accountId), eq(keywords.confirmed, true)))
   return rows.map((row) => row.term)
 }
+
+// ── What the Performance screens read ───────────────────────────────────────
+
+export interface GscDayTotal {
+  /** `YYYY-MM-DD`. */
+  readonly date: string
+  readonly clicks: number
+  readonly impressions: number
+}
+
+/**
+ * One row per day the store has any search data for, oldest first.
+ *
+ * Days the store was shown on nothing are simply absent rather than returned as
+ * noughts, because the two are different facts and the chart draws them
+ * differently: a day with no row is a day Search Console never reported, and
+ * filling it with a nought would draw a collapse in traffic that never
+ * happened.
+ */
+export async function gscDayTotals(
+  db: Db,
+  scope: AccountScope,
+  window: GscWindow,
+): Promise<GscDayTotal[]> {
+  const rows = await db
+    .select({
+      date: gscDaily.date,
+      clicks: sql<string>`sum(${gscDaily.clicks})`,
+      impressions: sql<string>`sum(${gscDaily.impressions})`,
+    })
+    .from(gscDaily)
+    .where(
+      and(
+        eq(gscDaily.accountId, scope.accountId),
+        gte(gscDaily.date, window.startDate),
+        lte(gscDaily.date, window.endDate),
+      ),
+    )
+    .groupBy(gscDaily.date)
+    .orderBy(gscDaily.date)
+
+  return rows.map((row) => ({
+    date: row.date,
+    clicks: Number(row.clicks),
+    impressions: Number(row.impressions),
+  }))
+}
+
+/** The last day this store has any search data for, or null when it has none. */
+export async function latestGscDay(db: Db, scope: AccountScope): Promise<string | null> {
+  const [row] = await db
+    .select({ date: sql<string | null>`max(${gscDaily.date})` })
+    .from(gscDaily)
+    .where(eq(gscDaily.accountId, scope.accountId))
+    .limit(1)
+  return row?.date ?? null
+}
+
+export interface GscKeyTotal {
+  /** The page address, or the search itself — whichever the caller asked to group by. */
+  readonly key: string
+  readonly clicks: number
+  readonly impressions: number
+  /** Impression-weighted, so a page shown ten thousand times is not averaged against one shown twice. */
+  readonly position: number | null
+}
+
+/**
+ * Every page the store was shown for over a window, busiest first.
+ *
+ * Read from the page-level totals rather than the page × search table, because
+ * summing the finer table would double-count nothing but would cost a great
+ * deal more for an answer Google already gave us at this grain.
+ */
+export async function gscPageTotals(
+  db: Db,
+  scope: AccountScope,
+  window: GscWindow,
+): Promise<GscKeyTotal[]> {
+  const rows = await db
+    .select({
+      key: gscDaily.page,
+      clicks: sql<string>`sum(${gscDaily.clicks})`,
+      impressions: sql<string>`sum(${gscDaily.impressions})`,
+      position: sql<
+        string | null
+      >`sum(${gscDaily.position} * ${gscDaily.impressions}) / nullif(sum(${gscDaily.impressions}), 0)`,
+    })
+    .from(gscDaily)
+    .where(
+      and(
+        eq(gscDaily.accountId, scope.accountId),
+        gte(gscDaily.date, window.startDate),
+        lte(gscDaily.date, window.endDate),
+      ),
+    )
+    .groupBy(gscDaily.page)
+    // The address breaks ties so the order is total, which is what lets a
+    // caller page through the result without a row appearing twice or not at all.
+    .orderBy(sql`sum(${gscDaily.impressions}) desc, ${gscDaily.page} asc`)
+
+  return rows.map(toKeyTotal)
+}
+
+/** Every search the store was shown for over a window, busiest first. */
+export async function gscQueryTotals(
+  db: Db,
+  scope: AccountScope,
+  window: GscWindow,
+): Promise<GscKeyTotal[]> {
+  const rows = await db
+    .select({
+      key: gscQueryDaily.query,
+      clicks: sql<string>`sum(${gscQueryDaily.clicks})`,
+      impressions: sql<string>`sum(${gscQueryDaily.impressions})`,
+      position: sql<
+        string | null
+      >`sum(${gscQueryDaily.position} * ${gscQueryDaily.impressions}) / nullif(sum(${gscQueryDaily.impressions}), 0)`,
+    })
+    .from(gscQueryDaily)
+    .where(
+      and(
+        eq(gscQueryDaily.accountId, scope.accountId),
+        gte(gscQueryDaily.date, window.startDate),
+        lte(gscQueryDaily.date, window.endDate),
+      ),
+    )
+    .groupBy(gscQueryDaily.query)
+    .orderBy(sql`sum(${gscQueryDaily.impressions}) desc, ${gscQueryDaily.query} asc`)
+
+  return rows.map(toKeyTotal)
+}
+
+function toKeyTotal(row: {
+  key: string
+  clicks: string
+  impressions: string
+  position: string | null
+}): GscKeyTotal {
+  return {
+    key: row.key,
+    clicks: Number(row.clicks),
+    impressions: Number(row.impressions),
+    position: row.position === null ? null : Number(row.position),
+  }
+}

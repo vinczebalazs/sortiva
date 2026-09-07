@@ -25,6 +25,10 @@ export {
   type SettingsStore,
   type SettingsStoreOptions,
 } from './stores/settings'
+  makePerformanceStore,
+  type PerformanceStore,
+  type PerformanceStoreOptions,
+} from './stores/performance'
 export {
   makeIngestionStatusStore,
   type IngestionRunView,
