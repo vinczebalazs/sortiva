@@ -748,6 +748,37 @@ none of these cards is designing an interface, only implementing one.
 
 ### Live on merchant screens right now — found 2026-09-07, highest priority in the queue
 
+### From `R-RULES-OVERRIDES` and `R-GATE-PARAMS`, both landed 2026-09-07 late evening
+
+**R-OVERRIDE-REACH — the override command accepts more than the product honours** · one card per lane · **read this before setting an override on anything**
+Scope: `R-RULES-OVERRIDES` wired the real reader into the weekly signal scan (`packages/jobs/src/scan/run.ts:197`) and nowhere else. **The topic-admission gate and the draft gates (Lane D), the OPTIMIZE passes (Lane E) and the catalogue jobs (Lane B) still read the config file directly.** So an override can be set today on a gate threshold and the gate will not apply it — silently, which is the shape of failure this whole day has been about.
+**The immediate, cheap half, and it should not wait for the lanes:** `pnpm rules set` should refuse — or at minimum say loudly — when the key being overridden is one nobody honours yet. A command that accepts a setting the product ignores is worse than one that refuses it.
+**The per-lane half is not a copy-paste**: each lane has to answer for the version *it* stamps. `rules_version` is what lets a decision be explained later by the numbers behind it, so a gate decision made under an override must stamp a version that says so, exactly as the scan now does. That is the substantive work and it cannot be done from another lane's directory.
+Read first: `DECISIONS.md` 2026-09-07 `R-RULES-OVERRIDES` entries (all seven; the version-stamp one is the load-bearing one); main §7.10; invariant 9.
+Done when: every path that reads a threshold either honours overrides and stamps a version that reflects them, or the command refuses to set a key that path would ignore — and which is which is written down rather than discovered.
+
+**R-GATE-NUMBERS — the nine freed sentences get their numbers** · Lane F
+Scope: `R-GATE-PARAMS` made the values arrive and took the guard down for nine of the eleven gate sentences. **The sentences themselves have no slot for a number yet**, and that is Lane F's file. Seven can gain numbers today; the values each may use are pinned in `ADMISSION_REASON_PARAMS` and a sentence asking for anything outside them fails a test by name.
+| Sentence | Values available |
+|---|---|
+| `gate1.rejected_zero_volume` | `keyword`, `monthly_search_volume`, `monthly_search_volume_min` |
+| `gate1.rejected_not_winnable` | `keyword`, `winnability`, `minimum` |
+| `gate1.rejected_off_catalog` | `keyword` |
+| `gate1.admitted_pinned_despite_zero_volume` | `keyword` |
+| `gate1.converted_existing_target_refresh` | `keyword`, `url`, `via` |
+| `gate2.held_thin_pack` | `distinct_claims`, `distinct_claims_min`, `boilerplate_ratio`, `boilerplate_ratio_max` |
+| `gate1.admitted` | none — it has nothing to say |
+**Two traps, both named by the lane that built the plumbing:** `winnability` and `boilerplate_ratio` are **fractions, not percentages** — 0.83, not 83 — so a sentence wanting "83%" needs the producer changed, not the copy; and a countable number needs a plural form, which the renderer now supports and `rendering.test.ts` refuses to go without.
+**Half of a test is waiting for you.** `gate-reason-params.test.ts` already asserts that every blank a sentence declares is filled with the gate's own value. It cannot bite until a sentence has a blank. It goes live on your first edit rather than needing a third card.
+**And a comment in your own files is now false and is costing ten sentences their numbers:** `packages/ui/src/strings/reason-copy.ts:79-104` says the catalogue has no plural forms and keeps a list of ten counts (`COUNTS_PHRASED_AROUND`) deliberately phrased around for that reason. **The renderer gained plural forms since** (`packages/ui/src/strings/translate.ts`). Those ten are avoiding numbers for a reason that no longer holds. Fix the comment; say in your report whether the ten should now be rewritten, and do not rewrite them in this card.
+Read first: `DECISIONS.md` 2026-09-07 `R-GATE-PARAMS` and `R-GATE-COPY` entries; main §8.2, §8.3, Appendix A; ui §6; invariants 8, 23 and 24.
+Done when: every sentence that has a number to give gives it; the dormant half of the existing test is live; and no sentence prints a fraction where a merchant expects a percentage.
+
+**R-WRONG-GATE-REASON — a held day can be labelled with the wrong gate's reason** · Lane D, small
+Scope: `apps/web/app/api/calendar/_lib/handlers.ts:110` falls back to `gate1.held_insufficient_substance` when a decision row carries no recorded reason. A Gate 2 or Gate 3 row missing its reason therefore shows a **Gate 1 sentence beside a "gate 2" label**. Reachable rows are few after `R-OVERRIDE-JUSTIFICATION`, but the fallback is a guess dressed as a fact.
+Read first: `DECISIONS.md` 2026-09-07 `R-GATE-PARAMS` entries; main §8.6.
+Done when: a decision with no recorded reason says so rather than borrowing another gate's sentence.
+
 **R-SLEEPY-RACE — a test that changes its answer under load, not just its timing** · Lane D
 Scope: `packages/jobs/src/generation/dismiss-opportunity.test.ts:306` — "loses to a publication that commits underneath it, and rolls back every part" — failed once during `R-PUBLISH-DEADLOCK`'s runs with a **wrong answer** (`expected true to be false`), then passed 12 of 12 in isolation. The cause is a 150 ms sleep inside the test: if the dismissal's first read is delayed past it, that read legitimately sees a different world and the dismissal takes a different — also correct — branch. The test asserts one of the two.
 **Why this is worth its own card rather than a seventh line on `R-TESTDB`'s list:** those six go red with *timeouts*, which read as machine noise. This one goes red with a **failed assertion**, which reads as a real regression. A suite that cries wolf in the shape of a genuine failure is worse than one that cries wolf in the shape of a timeout, because the correct response to each is the opposite.
@@ -817,7 +848,8 @@ Note: quarantine still applies — `raw_body_html` is not an input to anything d
 **T-WAVE6 — schema mini-wave: the claim staleness column goes** · integrator
 Scope: `article_claims.staleness` and its enum `claim_staleness` are dropped. The surrounding table is real and working — every article we write stores its plan of assertions and the evidence behind each — but this one column would have marked each assertion stable, seasonal or volatile so the repair sweep knew which articles rot fastest, and **nothing has ever set it**, so every claim is filed as "stable" by its own default. **The founder decided on 2026-09-07 to drop it rather than build it**, which authorises the migration; schema waves are otherwise closed.
 Read first: `CLAUDE.md` (migrations are forward-only, live in `packages/db/migrations`, and are added only by schema-wave cards); the precedents `T4.0a`, `T4.0b` and `T-WAVE5`; main §6.3.
-Done when: the column and its enum are gone, the schema file matches the migration, no code references either, and the decision is journalled so the next person to want a staleness marker finds out it was considered and dropped rather than overlooked.
+**Also in this wave, requested by `R-RULES-OVERRIDES` and cheap to carry:** a unique index on `rules_overrides (account_id, locale, page_type, key)`. Without it "set an override" is delete-then-insert inside a transaction rather than a single upsert, and a row written by hand in SQL can duplicate one written by the command — the fold then applies whichever sorts last instead of refusing. **It needs `NULLS NOT DISTINCT` or a `coalesce` expression index**, because three of the four columns are nullable and Postgres treats nulls as distinct, so the obvious index would not prevent the duplicate it exists to prevent.
+Done when: the column and its enum are gone, the override index exists and actually refuses a duplicate, the schema file matches the migration, no code references the dropped column, and the decision is journalled so the next person to want a staleness marker finds out it was considered and dropped rather than overlooked.
 Note: re-checking a published article stays time-based rather than content-aware. That is the cost of the drop and it belongs in the journal entry, not in a comment.
 
 ### Found by the integrator's own gate, 2026-09-07 evening — a regression from a card that landed tonight
