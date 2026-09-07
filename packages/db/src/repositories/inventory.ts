@@ -1,7 +1,7 @@
 import { gzipSync, gunzipSync } from 'node:zlib'
-import { and, eq, inArray, isNotNull, sql } from 'drizzle-orm'
+import { and, asc, eq, inArray, isNotNull, sql } from 'drizzle-orm'
 import type { Db } from '../client'
-import { products, shopifyConns, storePages } from '../schema'
+import { articles, products, shopifyConns, storePages } from '../schema'
 import type { AccountScope, SystemScope } from '../scope'
 
 export type StorePageRow = typeof storePages.$inferSelect
@@ -125,6 +125,73 @@ export async function markStorePagesSeen(
     .update(storePages)
     .set({ lastSyncedAt: at, status: 'live' })
     .where(and(eq(storePages.accountId, scope.accountId), inArray(storePages.url, [...urls])))
+}
+
+/**
+ * Records that these addresses hold articles we published, and which article
+ * each one is.
+ *
+ * A write of its own rather than part of the page write, for the same reason
+ * "we saw it" is: `upsertStorePages` runs only for pages whose words moved, and
+ * one of our own articles sitting untouched on a merchant's blog never moves.
+ * A merchant who tells us weeks later where they published a downloaded article
+ * would otherwise never have that row recognised at all.
+ *
+ * It does not touch the checksum, so being recognised is not an edit and does
+ * not re-run the paid analyses that hang off one.
+ */
+export async function markStorePagesOurs(
+  db: Db,
+  scope: AccountScope,
+  pages: readonly { readonly url: string; readonly articleId: string }[],
+): Promise<number> {
+  if (pages.length === 0) return 0
+  const urls = pages.map((page) => page.url)
+  // One statement rather than one per article: a store that has been with us
+  // for a year has hundreds of these, and a walk batch can hold any number of
+  // them.
+  const branches = sql.join(
+    pages.map((page) => sql`when ${storePages.url} = ${page.url} then ${page.articleId}::uuid`),
+    sql` `,
+  )
+  const marked = await db
+    .update(storePages)
+    .set({
+      pageType: 'article_ours',
+      articleId: sql`case ${branches} end`,
+    })
+    .where(and(eq(storePages.accountId, scope.accountId), inArray(storePages.url, urls)))
+    .returning({ id: storePages.id })
+  return marked.length
+}
+
+/**
+ * Every article we published for this store, with the address it went to.
+ *
+ * The walk compares this against the addresses the store served it, which is
+ * the only way it can tell an article we wrote from one the merchant wrote:
+ * the store hands ours back as an ordinary blog post with nothing on it that
+ * says whose it is.
+ *
+ * Oldest first, so that if two articles somehow claim one address the walk
+ * settles on the same one every night rather than alternating.
+ */
+export async function publishedArticleAddresses(
+  db: Db,
+  scope: AccountScope,
+): Promise<readonly { readonly articleId: string; readonly url: string }[]> {
+  const rows = await db
+    .select({ articleId: articles.id, url: articles.publishedUrl })
+    .from(articles)
+    .where(
+      and(
+        eq(articles.accountId, scope.accountId),
+        eq(articles.state, 'published'),
+        isNotNull(articles.publishedUrl),
+      ),
+    )
+    .orderBy(asc(articles.publishedAt))
+  return rows.flatMap((row) => (row.url ? [{ articleId: row.articleId, url: row.url }] : []))
 }
 
 /**

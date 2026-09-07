@@ -1,8 +1,10 @@
+import { canonicalStoreUrl } from './html'
 import { toStorePageRow } from './pages'
 import type {
   FamilyLookup,
   InventoryCursor,
   InventoryTarget,
+  OurArticleLookup,
   StoreContentRecord,
   StoreContentSource,
   StorePageRow,
@@ -25,6 +27,7 @@ export interface InventorySyncDeps {
   readonly source: StoreContentSource
   readonly writer: StorePageWriter
   readonly families: FamilyLookup
+  readonly ourArticles: OurArticleLookup
   /** Overridable so a test can walk a store at a time it chooses. */
   readonly now?: () => Date
 }
@@ -43,6 +46,8 @@ export interface InventorySyncResult {
    * and zero say different things: absent means we have not finished looking.
    */
   readonly markedGone?: number
+  /** Pages in this batch recognised as articles we published. */
+  readonly markedOurs: number
 }
 
 /**
@@ -86,12 +91,17 @@ export async function syncInventoryBatch(
     )
   }
   const changed = await writeChanged(deps, accountId, rows)
+  // After the write, because a page seen for the first time has no row to mark
+  // until the write has made one. Before the sweep below, because a page we
+  // recognise as ours is one the sweep must leave alone.
+  const markedOurs = await markOurArticles(deps, accountId, rows, origin)
 
   if (batch.next) {
     return {
       seen: batch.records.length,
       changed: changed.length,
       changedUrls: changed.map((row) => row.url),
+      markedOurs,
       next: { ...batch.next, [WALK_STARTED_AT]: walkStartedAt.toISOString() },
     }
   }
@@ -103,6 +113,7 @@ export async function syncInventoryBatch(
     seen: batch.records.length,
     changed: changed.length,
     changedUrls: changed.map((row) => row.url),
+    markedOurs,
     markedGone,
   }
 }
@@ -133,10 +144,12 @@ export async function syncInventoryRecords(
     )
   }
   const changed = await writeChanged(deps, accountId, rows)
+  const markedOurs = await markOurArticles(deps, accountId, rows, origin)
   return {
     seen: records.length,
     changed: changed.length,
     changedUrls: changed.map((row) => row.url),
+    markedOurs,
   }
 }
 
@@ -151,7 +164,7 @@ export async function resyncInventoryTargets(
   accountId: string,
   targets: readonly InventoryTarget[],
 ): Promise<InventorySyncResult> {
-  if (targets.length === 0) return { seen: 0, changed: 0, changedUrls: [] }
+  if (targets.length === 0) return { seen: 0, changed: 0, changedUrls: [], markedOurs: 0 }
   const records = await deps.source.read(accountId, targets)
   return syncInventoryRecords(deps, accountId, records)
 }
@@ -232,4 +245,60 @@ async function writeChanged(
   const changed = rows.filter((row) => known.get(row.url) !== row.checksum)
   if (changed.length > 0) await deps.writer.upsert(accountId, changed)
   return changed
+}
+
+/**
+ * Marks the pages in this batch that are articles we published for this store.
+ *
+ * This is the only thing in the product that ever writes that marking, and two
+ * finished behaviours wait on it. An improve-this-page suggestion landing on a
+ * page we wrote is refused a list of edits and sent to be rewritten instead —
+ * both of which read the marking off the row, so an unmarked article is one the
+ * product treats as the merchant's own and hands them busywork about.
+ *
+ * The match is by address, and both sides are put through the same
+ * normalisation before comparing: the walk builds an address out of a handle,
+ * while the address on an exported article was typed by a merchant and can
+ * carry a trailing slash or a tracking parameter that means nothing.
+ *
+ * A store whose articles we deliver by export publishes them wherever it
+ * likes. Where that is a blog this walk can see, they are recognised here like
+ * any other. Where it is not — another site, a platform we have no connection
+ * to — the walk never meets them, and they stay unrecognised. That is also why
+ * nothing here is allowed to conclude the reverse: a page we do not recognise
+ * is never un-marked, because absence from a store is not evidence about an
+ * article delivered somewhere else entirely.
+ */
+async function markOurArticles(
+  deps: InventorySyncDeps,
+  accountId: string,
+  rows: readonly StorePageRow[],
+  origin: string,
+): Promise<number> {
+  if (rows.length === 0) return 0
+  const published = await deps.ourArticles.publishedArticles(accountId)
+  if (published.length === 0) return 0
+
+  const byUrl = new Map<string, string>()
+  for (const article of published) {
+    let url: string
+    try {
+      url = canonicalStoreUrl(article.url, origin)
+    } catch {
+      // One unreadable address is one article that goes unrecognised. It is
+      // never a reason to abandon the walk and leave the whole store unread.
+      continue
+    }
+    // First wins, and the lookup hands them over oldest first: if two articles
+    // ever claim one address, the walk settles on the same one every night
+    // instead of alternating between them.
+    if (!byUrl.has(url)) byUrl.set(url, article.articleId)
+  }
+
+  const ours = rows.flatMap((row) => {
+    const articleId = byUrl.get(row.url)
+    return articleId ? [{ url: row.url, articleId }] : []
+  })
+  if (ours.length > 0) await deps.writer.markOurs(accountId, ours)
+  return ours.length
 }

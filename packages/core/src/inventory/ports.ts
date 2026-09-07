@@ -124,6 +124,45 @@ export interface StorePageWriter {
    * established that anything is missing — only that we stopped looking.
    */
   markGoneNotSeenSince(accountId: string, since: Date): Promise<number>
+  /**
+   * Records that these addresses hold articles we published, naming the article
+   * each one came from.
+   *
+   * A write of its own for the same reason `markSeen` is one: `upsert` runs
+   * only for pages whose words moved, and one of our own articles sitting
+   * untouched on a merchant's blog never moves again after the night it
+   * appeared. Riding on the content write would mean an article whose address
+   * we learn late — a merchant telling us where they put a downloaded one — is
+   * never recognised at all.
+   */
+  markOurs(
+    accountId: string,
+    pages: readonly { readonly url: string; readonly articleId: string }[],
+  ): Promise<void>
+}
+
+/** One article we published for this store, and the address we hold for it. */
+export interface PublishedArticleAddress {
+  readonly articleId: string
+  /**
+   * Auto-publish records the address it posted to. Export mode records the
+   * address the merchant told us they published at, which may be anywhere on
+   * their own domain — including somewhere the walk never looks.
+   */
+  readonly url: string
+}
+
+/**
+ * Which of a store's pages we wrote.
+ *
+ * There is nothing on a page that says whose it is: the store hands one of our
+ * articles back as an ordinary blog post, with the merchant's own posts beside
+ * it and no marking to tell them apart. Our record of where we published is the
+ * only thing that can answer, so the walk asks it rather than inspecting the
+ * page.
+ */
+export interface OurArticleLookup {
+  publishedArticles(accountId: string): Promise<readonly PublishedArticleAddress[]>
 }
 
 /**

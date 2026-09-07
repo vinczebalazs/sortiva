@@ -21,6 +21,8 @@ export type {
   FamilyLookup,
   InventoryTarget,
   InventoryCursor,
+  OurArticleLookup,
+  PublishedArticleAddress,
   StoreContentBatch,
   StoreContentKind,
   StoreContentRecord,
