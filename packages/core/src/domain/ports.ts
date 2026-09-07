@@ -46,6 +46,12 @@ export interface DomainClaimStore {
    *    that committed without its run would leave the
    *    merchant on a progress screen nothing will ever advance, and no code
    *    path re-checks.
+   * 4. A row left behind by a deleted account carries the date its hold on the
+   *    domain ends. Once that date has passed the row no longer blocks anyone,
+   *    and the claim must act on it itself instead of waiting for the nightly
+   *    clean-up to remove it — otherwise a clean-up that never runs holds the
+   *    domain for ever. Doing this must not turn the claim into a read that
+   *    decides whether to insert; obligation 1 still stands.
    */
   claimWithIngestionRun(request: ClaimRequest): Promise<StoreClaimResult>
 }

@@ -123,6 +123,11 @@ export function retentionCutoff(target: RetentionTarget, now: Date): Date | unde
  * How long a deleted account's domain stays blocked before anyone else may
  * claim it, so a mistaken deletion does not hand the domain to a squatter the
  * same hour.
+ *
+ * The window is turned into a date on the domain row at the moment of
+ * deletion, and that date is what frees the domain. The sweep below tidies the
+ * rows away; it is not what keeps the promise, so a sweep that stops running
+ * cannot block a domain for ever.
  */
 export const DOMAIN_RELEASE_GRACE_DAYS = 7
 
@@ -142,7 +147,7 @@ export function domainReleaseAt(deletedAt: Date): Date {
 /**
  * When a deleted account's rows are actually erased.
  *
- * The same instant the domain is released, and that is forced rather than
+ * The same instant the domain's hold ends, and that is forced rather than
  * chosen: the domain row is a child of the account row, so erasing the account
  * any earlier takes the domain with it and frees it immediately — the opposite
  * of the grace window. Seven days is well inside the thirty the obligation
