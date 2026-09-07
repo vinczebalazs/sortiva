@@ -30,6 +30,14 @@ const ALIASES: Readonly<Record<string, StringKey>> = {
   // product may not reword, so the calendar day and the held article both reach
   // the single copy of it rather than each holding one.
   'quality_rejection.insufficient_richness': 'appendixA.qualityRejectionRichness' as StringKey,
+  // Gate 1 stops a topic for the same two things the two sentences above were
+  // approved for, so it points at them rather than saying the same thing in
+  // slightly different words on a second screen. `held_insufficient_substance`
+  // is the store not yet describing its products in enough detail to write
+  // from; `converted_existing_target_optimize` is a page of the merchant's own
+  // already ranking, which is the exact case that why-line was written for.
+  'gate1.held_insufficient_substance': 'appendixA.qualityRejectionRichness' as StringKey,
+  'gate1.converted_existing_target_optimize': 'appendixA.existingPageWhyLine' as StringKey,
 }
 
 /**
@@ -45,10 +53,8 @@ const ALIASES: Readonly<Record<string, StringKey>> = {
  * one isn't available yet".
  *
  * `gate1.`, `gate2.` and `topic.` are listed alongside `gate3.` because they
- * come from the same producers and belong in the same place. They have no
- * sentences yet, so naming them here changes nothing a merchant sees today; it
- * decides where those sentences go when they are written, rather than leaving
- * the next person to guess and repeat this.
+ * come from the same producers and belong in the same place. Their sentences
+ * are written now too, so all four namespaces resolve to real copy.
  */
 const CATALOG_NAMESPACES: readonly string[] = ['gate1.', 'gate2.', 'gate3.', 'topic.']
 
