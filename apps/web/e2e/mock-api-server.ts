@@ -1,6 +1,7 @@
 import { createServer, request as httpRequest, type IncomingMessage, type ServerResponse } from 'node:http'
 import { RESPONSE_FIXTURES } from '@sortiva/ui/msw/fixtures'
 import { ContentState, articleDetail, articlesList } from './content-state'
+import { declare, match, scaffolding, type MockRoute } from './contract-dispatch'
 import { OnboardingState } from './onboarding-state'
 
 /**
@@ -113,60 +114,67 @@ const onboarding = new OnboardingState()
 const GENERATE_DELAY_MS = 400
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-async function dynamicAnswer(
-  response: ServerResponse,
-  method: string,
-  pathname: string,
-  rawBody: string,
-): Promise<boolean> {
-  const parsed = (): Record<string, unknown> => {
-    try {
-      return JSON.parse(rawBody === '' ? '{}' : rawBody) as Record<string, unknown>
-    } catch {
-      return {}
-    }
+function parsedBody(rawBody: string): Record<string, unknown> {
+  try {
+    return JSON.parse(rawBody === '' ? '{}' : rawBody) as Record<string, unknown>
+  } catch {
+    return {}
   }
+}
 
-  if (method === 'GET' && pathname === '/api/calendar') {
+/**
+ * Every answer this server gives from run state, each declared with the address
+ * the contract gives it. `declare` refuses at start-up any address the route
+ * table does not hold, so a screen wired to a path nobody built cannot be made
+ * to pass here — which is exactly how three invented addresses on the
+ * Opportunities screen survived to a deployed product.
+ *
+ * Order matters where a fixed segment could be read as a parameter: the two
+ * scan-progress reads and every named opportunity action come before
+ * `/api/opportunities/{id}`, for the same reason the route table itself is
+ * ordered that way.
+ */
+const answers: readonly MockRoute[] = [
+  declare('GET', '/api/calendar', (response) => {
     json(response, 200, content.calendar())
     return true
-  }
+  }),
 
   // Test scaffolding, not a product route: what the screens actually sent, so a
   // flow can assert that vetoing a topic also dismissed the opportunity behind
   // it — which is a second request the screen makes and nothing on the page
   // shows.
-  if (method === 'GET' && pathname === '/api/_e2e/calls') {
+  scaffolding('GET', '/api/_e2e/calls', (response) => {
     json(response, 200, { calls: content.calls })
     return true
-  }
+  }),
 
   // Also scaffolding: each flow starts from the same calendar and the same
   // fresh account, so the suite does not pass or fail by the order it ran in.
   // `onboarding.reset()` here leaves onboarding *inactive*: every flow but the
   // onboarding spec itself wants `GET /api/account` to answer as the ordinary,
   // already-set-up merchant the frozen fixtures describe.
-  if (method === 'POST' && pathname === '/api/_e2e/reset') {
+  scaffolding('POST', '/api/_e2e/reset', (response) => {
     content.reset()
     onboarding.reset()
     json(response, 200, { ok: true })
     return true
-  }
+  }),
 
   // The onboarding spec's own reset: a merchant on their first day, with no
   // domain claimed yet. `content` is reset too — activation lands on the same
   // `GET /api/opportunities` the Opportunities screen's own spec drives, and
   // the headline count it asserts has to be the same every run regardless of
   // what another spec file left behind in a shared worker.
-  if (method === 'POST' && pathname === '/api/_e2e/onboarding-reset') {
+  scaffolding('POST', '/api/_e2e/onboarding-reset', (response) => {
     content.reset()
     onboarding.begin()
     json(response, 200, { ok: true })
     return true
-  }
+  }),
 
-  if (method === 'POST' && pathname === '/api/calendar/topics') {
-    const input = parsed()
+  declare('POST', '/api/calendar/topics', (response, { body: rawBody }) => {
+    const input = parsedBody(rawBody)
     const answer = content.add({
       title: String(input.title ?? ''),
       date: String(input.date ?? ''),
@@ -174,25 +182,29 @@ async function dynamicAnswer(
     })
     json(response, answer.status, answer.body)
     return true
-  }
+  }),
 
-  const topicAction = /^\/api\/calendar\/topics\/([^/]+)\/(veto|move|pin)$/.exec(pathname)
-  if (method === 'POST' && topicAction) {
-    const id = topicAction[1]!
-    const input = parsed()
-    const answer =
-      topicAction[2] === 'veto'
-        ? content.veto(id)
-        : topicAction[2] === 'move'
-          ? content.move(id, String(input.date ?? ''))
-          : content.pin(id, Boolean(input.pinned))
+  declare('POST', '/api/calendar/topics/{topicId}/veto', (response, { params }) => {
+    const answer = content.veto(params[0]!)
     json(response, answer.status, answer.body)
     return true
-  }
+  }),
+
+  declare('POST', '/api/calendar/topics/{topicId}/move', (response, { params, body: rawBody }) => {
+    const answer = content.move(params[0]!, String(parsedBody(rawBody).date ?? ''))
+    json(response, answer.status, answer.body)
+    return true
+  }),
+
+  declare('POST', '/api/calendar/topics/{topicId}/pin', (response, { params, body: rawBody }) => {
+    const answer = content.pin(params[0]!, Boolean(parsedBody(rawBody).pinned))
+    json(response, answer.status, answer.body)
+    return true
+  }),
 
   // ── Opportunities ──────────────────────────────────────────────────────
 
-  if (method === 'GET' && pathname === '/api/opportunities') {
+  declare('GET', '/api/opportunities', (response) => {
     // The onboarding wait card polls this same route: while a run has just
     // been confirmed and the first scan has not "finished" yet, it must keep
     // answering with nothing, or the wait card would skip straight to
@@ -221,126 +233,160 @@ async function dynamicAnswer(
         : list,
     )
     return true
-  }
+  }),
 
-  const dismiss = /^\/api\/opportunities\/([^/]+)\/dismiss$/.exec(pathname)
-  if (method === 'POST' && dismiss) {
-    const answer = content.dismissOpportunity(dismiss[1]!)
+  declare('POST', '/api/opportunities/{id}/dismiss', (response, { params }) => {
+    const answer = content.dismissOpportunity(params[0]!)
     json(response, answer.status, answer.body)
     return true
-  }
+  }),
 
-  const generate = /^\/api\/opportunities\/([^/]+)\/recommendations$/.exec(pathname)
-  if (method === 'POST' && generate) {
+  declare('POST', '/api/opportunities/{id}/undismiss', (response, { params }) => {
+    const answer = content.undismissOpportunity(params[0]!)
+    json(response, answer.status, answer.body)
+    return true
+  }),
+
+  declare('POST', '/api/opportunities/{id}/schedule', (response, { params }) => {
+    const answer = content.scheduleOpportunity(params[0]!)
+    json(response, answer.status, answer.body)
+    return true
+  }),
+
+  // Named by what it produces rather than by the opportunity it is produced
+  // for, which is where this endpoint was actually built; the opportunity
+  // travels in the body.
+  declare('POST', '/api/recommendations', async (response, { body: rawBody }) => {
     await sleep(GENERATE_DELAY_MS)
-    const answer = content.generateRecommendation(generate[1]!)
+    const answer = content.generateRecommendation(String(parsedBody(rawBody).opportunityId ?? ''))
     json(response, answer.status, answer.body)
     return true
-  }
+  }),
 
-  const schedule = /^\/api\/opportunities\/([^/]+)\/schedule$/.exec(pathname)
-  if (method === 'POST' && schedule) {
-    const answer = content.scheduleOpportunity(schedule[1]!)
+  declare('GET', '/api/recommendations', (response, { query }) => {
+    const answer = content.readRecommendation(query.get('opportunityId') ?? '')
     json(response, answer.status, answer.body)
     return true
-  }
+  }),
 
-  const task = /^\/api\/opportunities\/([^/]+)\/tasks\/([^/]+)$/.exec(pathname)
-  if (method === 'POST' && task) {
-    const input = parsed()
-    const state = input.state === 'skipped' ? 'skipped' : 'applied'
-    const answer = content.markOpportunityTask(task[1]!, task[2]!, state)
+  declare('POST', '/api/recommendations/{id}/apply', (response, { params, body: rawBody }) => {
+    const taskId = parsedBody(rawBody).taskId
+    const answer = content.applyRecommendation(
+      params[0]!,
+      typeof taskId === 'string' && taskId !== '' ? taskId : null,
+    )
     json(response, answer.status, answer.body)
     return true
-  }
+  }),
 
-  const opportunityDetail = /^\/api\/opportunities\/([^/]+)$/.exec(pathname)
-  if (method === 'GET' && opportunityDetail) {
-    const detail = content.opportunityDetail(opportunityDetail[1]!)
+  declare('GET', '/api/opportunities/{id}', (response, { params }) => {
+    const detail = content.opportunityDetail(params[0]!)
     json(response, detail ? 200 : 404, detail ?? { error: { code: 'not_found', message: 'gone' } })
     return true
-  }
+  }),
 
   // ── Articles ───────────────────────────────────────────────────────────
 
-  if (method === 'GET' && pathname === '/api/articles') {
+  declare('GET', '/api/articles', (response) => {
     json(response, 200, articlesList())
     return true
-  }
+  }),
 
-  const article = /^\/api\/articles\/([^/]+)$/.exec(pathname)
-  if (method === 'GET' && article) {
-    const detail = articleDetail(article[1]!)
+  declare('GET', '/api/articles/{articleId}', (response, { params }) => {
+    const detail = articleDetail(params[0]!)
     json(response, detail ? 200 : 404, detail ?? { error: { code: 'not_found', message: 'gone' } })
     return true
-  }
+  }),
 
-  const articleAction = /^\/api\/articles\/([^/]+)\/([a-z-]+)$/.exec(pathname)
-  if (method === 'POST' && articleAction) {
-    content.calls.push(`article ${articleAction[2]} ${articleAction[1]}`)
-    json(response, 200, { ok: true })
-    return true
-  }
+  ...(['approve', 'discard', 'publish-anyway', 'published-url', 'refresh'] as const).map((action) =>
+    declare('POST', `/api/articles/{articleId}/${action}`, (response, { params }) => {
+      content.calls.push(`article ${action} ${params[0]!}`)
+      json(response, 200, { ok: true })
+      return true
+    }),
+  ),
+]
 
-  // ── Onboarding ─────────────────────────────────────────────────────────
-  // Every other browser flow wants the ordinary, already-set-up account the
-  // frozen fixtures describe; only once the onboarding spec has called
-  // `begin()` do these routes answer from a run in progress instead.
-  if (!onboarding.active) return false
-
-  if (method === 'GET' && pathname === '/api/account') {
+/**
+ * Answers that only stand in while the onboarding spec is walking a store from
+ * no domain to its first scan. Every other browser flow wants the ordinary,
+ * already-set-up account the frozen fixtures describe, so these are consulted
+ * only once that spec has called `begin()`, and several of them decline
+ * outright when the run has moved past the step they belong to.
+ */
+const onboardingAnswers: readonly MockRoute[] = [
+  declare('GET', '/api/account', (response) => {
     json(response, 200, onboarding.account())
     return true
-  }
+  }),
 
-  if (method === 'POST' && pathname === '/api/domain/claim') {
-    const input = parsed()
-    const answer = onboarding.claim(String(input.domain ?? ''))
+  declare('POST', '/api/domain/claim', (response, { body: rawBody }) => {
+    const answer = onboarding.claim(String(parsedBody(rawBody).domain ?? ''))
     json(response, answer.status, answer.body)
     return true
-  }
+  }),
 
-  if (method === 'GET' && pathname === '/api/ingestion/status') {
+  declare('GET', '/api/ingestion/status', (response) => {
     const status = onboarding.ingestionStatus()
     json(response, status ? 200 : 404, status ?? { error: { code: 'not_found', message: 'no run' } })
     return true
-  }
+  }),
 
   // The blocking card asks for an OAuth URL exactly the way the settings
   // screen's write-scope grant does; while the run is actually waiting on it,
   // this hands back our own address instead of Shopify's, so the click has
   // somewhere real to land — the same trick `signInAnswer` above plays for
   // Google.
-  if (method === 'POST' && pathname === '/api/shopify/oauth/start' && onboarding.domain?.state === 'awaiting_shopify_auth') {
+  declare('POST', '/api/shopify/oauth/start', (response) => {
+    if (onboarding.domain?.state !== 'awaiting_shopify_auth') return false
     json(response, 200, { url: `http://localhost:${PORT}/api/_e2e/shopify-callback` })
     return true
-  }
+  }),
 
-  if (method === 'GET' && pathname === '/api/_e2e/shopify-callback') {
+  scaffolding('GET', '/api/_e2e/shopify-callback', (response) => {
     onboarding.connectShopify()
     response.writeHead(302, { location: '/dashboard' })
     response.end()
     return true
-  }
+  }),
 
-  if (method === 'POST' && pathname === '/api/gsc/skip') {
+  declare('POST', '/api/gsc/skip', (response) => {
     onboarding.skipSearchConsole()
     json(response, 200, { ok: true })
     return true
-  }
+  }),
 
-  if (method === 'GET' && pathname === '/api/profile' && onboarding.domain?.state === 'needs_confirmation') {
+  declare('GET', '/api/profile', (response) => {
+    if (onboarding.domain?.state !== 'needs_confirmation') return false
     json(response, 200, onboarding.profileDraft())
     return true
-  }
+  }),
 
-  if (method === 'POST' && pathname === '/api/profile/confirm' && onboarding.domain?.state === 'needs_confirmation') {
+  declare('POST', '/api/profile/confirm', (response) => {
+    if (onboarding.domain?.state !== 'needs_confirmation') return false
     onboarding.confirmProfile()
     json(response, 200, { ok: true })
     return true
+  }),
+]
+
+async function dynamicAnswer(
+  response: ServerResponse,
+  method: string,
+  pathname: string,
+  query: URLSearchParams,
+  body: string,
+): Promise<boolean> {
+  const found = match(answers, method, pathname)
+  if (found && (await found.route.handler(response, { params: found.params, body, query }))) {
+    return true
   }
 
-  return false
+  if (!onboarding.active) return false
+
+  const inRun = match(onboardingAnswers, method, pathname)
+  if (!inRun) return false
+  return await inRun.route.handler(response, { params: inRun.params, body, query })
 }
 
 async function handle(request: IncomingMessage, response: ServerResponse): Promise<void> {
@@ -352,7 +398,7 @@ async function handle(request: IncomingMessage, response: ServerResponse): Promi
   if (url.pathname === '/api/auth/signin/google' && method === 'POST') {
     return signInAnswer(request, response, body)
   }
-  if (await dynamicAnswer(response, method, url.pathname, body)) return
+  if (await dynamicAnswer(response, method, url.pathname, url.searchParams, body)) return
 
   const fixture = RESPONSE_FIXTURES[`${method} ${url.pathname}`]
   if (fixture !== undefined) return json(response, 200, fixture)
