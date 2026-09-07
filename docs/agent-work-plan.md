@@ -746,6 +746,31 @@ carries the shape it must satisfy, which already exists as a zod schema in
 `packages/core/src/api/schemas.ts` — the contract described these endpoints correctly all along, so
 none of these cards is designing an interface, only implementing one.
 
+### From `R-API-PERFORMANCE`, landed 2026-09-07 — the last of the six serverless screens
+
+**R-LABELS-OR-DASHES — the Performance results table shows dashes for every article** · **needs a founder decision**
+Scope: `article_labels` — the table holding an article's verdict, "winner / neutral / underperformer" — is **declared, written by nothing and read by nothing.** The learning loop that fills it is `T7.1`, deferred out of the first release by the founder on 2026-09-02. So every article comes back `unrated`, and the screen's own rule is that a row with no verdict shows dashes rather than figures — deliberately, so a nought is never read as "nobody came".
+**The consequence, stated plainly because it is a product one:** the Performance screen's results table renders as a list of article titles with dashes beside them, for every store, until something computes labels. The chart above it — the screen's main content — is real throughout, and the real per-article figures are already in the response, so the table fills in the day a verdict exists.
+**The decision:** this is a visible cost of deferring `T7.1` that the deferral decision did not name. Either it ships as dashes, or the label computation alone is pulled forward — which is a slice of `T7.1`, not the whole of it, in the same way `T7.2` was pulled forward.
+Read first: `DECISIONS.md` 2026-09-02 (the `T7.1` deferral) and 2026-09-04 "The refresh pool comes forward"; main §9.6.2, §9.6.10; ui §8; invariant 13 (no verdict before 28 days; labels relative to the store's own median).
+Done when: the founder has chosen, and the table either shows verdicts or is deliberately known to show dashes.
+
+**R-DRAWER-GAPS — three things the opportunity drawer cannot say** · Lane C (two of them) + a schema wave (one)
+Scope: found by `R-API-PERFORMANCE` while building the drawer, each verified, none fixed. (a) **No status-history table exists**, so the drawer's history can only carry the three moments the row itself has a date for — detected, applied, expired — with no `from` state and no reason, because the status a row moved *out of* was never written down. A real history needs a migration and therefore a schema wave. (b) **No expiry copy**: the row records why it expired and the catalogue has no sentence for any reason, so the drawer shows the date without the cause. (c) **The Search Console tables have no "show more"** — the endpoint answers 250 rows at a time with a working cursor and the screen has no control to ask for page two. **That is the same shape as the defect this card repaired: a screen that looks complete while it is not showing everything.**
+Read first: `DECISIONS.md` 2026-09-07 `R-API-PERFORMANCE` entries; main §7.9; ui §5.3, §8.2.
+Done when: (b) and (c) are built — (c) is Lane F's — and (a) is either scheduled into a schema wave or recorded as deliberately absent, with the drawer saying so rather than showing a history that looks whole.
+
+**R-CONFIRM-URL-ROW — a row the spec asks for cannot be built** · integrator (the contract) + Lane C
+Scope: `ui §8.1` asks the Performance results table to show a greyed row prompting a merchant to confirm the address of an export-delivered article. **The frozen response shape carries no field that can say it**, so `R-API-PERFORMANCE` left those articles out of the table entirely rather than show noughts that would read as failure. A merchant who exports their articles therefore sees nothing about them on the Performance screen at all.
+Read first: `DECISIONS.md` 2026-09-07 `R-API-PERFORMANCE` entries; main §9.5, §12.2; ui §8.1.
+Done when: an export-delivered article whose address nobody confirmed appears on the Performance screen as something the merchant can act on, and the contract carries a field that can say so.
+Note: contract change is the integrator's by rule.
+
+**R-RECO-VIEW-ONE — the drawer and the download can drift apart** · Lane E
+Scope: `packages/core/src/opportunities/recommendation-view.ts` (added by `R-API-PERFORMANCE`) mirrors about thirty lines of `viewOf` in `apps/web/app/api/recommendations/_lib/handlers.ts`, which is Lane E's and not exported. The lane copied rather than shared **because reaching into another lane's directory is a review failure**, and said so. The drawer and the recommendation download are meant to show a merchant the same advice; two copies of that mapping will eventually disagree.
+Read first: `DECISIONS.md` 2026-09-07 `R-API-PERFORMANCE` entries; main §10.4.
+Done when: one function produces that view and both surfaces use it.
+
 ### From `R-OVERRIDE-JUSTIFICATION` and `R-API-SETTINGS`, both landed 2026-09-07
 
 **R-OVERRIDE-TOPIC — a merchant who published anyway is told weeks later that we held it back** · Lane D

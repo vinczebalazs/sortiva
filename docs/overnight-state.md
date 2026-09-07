@@ -779,6 +779,39 @@ back for capacity reasons any more — the queue is worked until it is empty. De
 founder's earlier choice) and `T10.4` still cannot run without the Shopify development store they
 deliberately deferred.
 
+### Thirteen cards landed. `main` at 303 test files, 3,836 tests, gate eleven of eleven. **All six serverless screens now have servers.**
+
+`R-API-PERFORMANCE` was the thirteenth and closed the set found this afternoon: the Performance screen,
+its Search Console tables and the opportunity drawer all read endpoints that did not exist.
+
+### A merge broke `main` into invalid TypeScript without ever conflicting — read this before the next merge
+
+`packages/db/src/index.ts` is marked `merge=union` in `.gitattributes`, deliberately, so two lanes adding
+different exports both survive rather than colliding. **Two lanes added adjacent blocks and the union
+deduplicated the `export {` line they shared**, leaving one block with no opening statement.
+
+- The lane was **green in its own worktree**. Nothing before the merge could have caught it.
+- It **never conflicted**, so there was nothing to hand-resolve and nothing to review.
+- The gate caught it loudly: lint could not parse the file, typecheck gave four errors, and **94 test
+  files failed at setup while every test that did run passed** — 2,928 passed, 0 failed, 94 files dead.
+  **That shape is the tell**: passing tests and failing files means a module is broken, not a behaviour.
+
+**The general point, worth carrying:** union merge is chosen so lanes never collide on an append-only
+list, and its price is that it can produce a file nobody wrote and nobody reviewed. It is not a reason to
+stop using it — hand-resolving these merges is what dropped work in wave 1 — but **after any merge that
+touches two barrels, the gate is the only thing standing between that and `main`.**
+
+### Three copy strings owed, held deliberately until `lane-f` merges
+
+`R-API-PERFORMANCE` needs three sentences in `packages/ui/strings/en.json` for the drawer's HOLD section;
+only one of the four blocker codes has copy today and the rest fall back to a generic line. **Not applied
+yet, because a session is building in `lane-f` right now and that file is not union-merged** — the trap
+above is the reason for the caution. Apply after that merge:
+
+- `template.precondition.catalog_richness_gap` — "add material, dimensions, use case and compatibility to the products on the Products page"
+- `template.precondition.indexing_issue` — "fix the indexing problem on this page before we write about it"
+- `template.precondition.pending_repair` — "a repair is already running on this page — we'll pick this up once it finishes"
+
 ### Twelve cards landed and merged green. `main` at 301 test files, 3,809 tests, gate eleven of eleven
 
 `R-OVERRIDE-JUSTIFICATION` and `R-API-SETTINGS` were the eleventh and twelfth.
