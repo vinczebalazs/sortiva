@@ -44,7 +44,7 @@ const topic = (over: Partial<CalendarTopic> = {}): CalendarTopic => ({
   pinned: false,
   targetKeyword: 'wide fit trail running shoes',
   monthlySearchVolume: 1900,
-  why: { templateKey: 'uncovered_commercial_query.no_suitable_url', params: { volume: 1900 } },
+  why: { templateKey: 'uncovered_commercial_query.create', params: { volume: 1900 } },
   opportunityId: '33333333-3333-4333-8333-333333333333',
   signalType: 'uncovered_commercial_query',
   articleId: null,
@@ -312,7 +312,7 @@ describe('next up, and what today came to', () => {
     const html = render()
     expect(html).toContain('data-dashboard-why')
     // The template key never reaches the screen; the sentence does.
-    expect(html).not.toContain('uncovered_commercial_query.no_suitable_url')
+    expect(html).not.toContain('uncovered_commercial_query.create')
   })
 })
 

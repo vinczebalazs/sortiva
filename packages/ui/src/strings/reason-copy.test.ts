@@ -5,6 +5,9 @@ import { t } from './index'
 import {
   OPPORTUNITY_REASON_KEYS,
   REASON_KEYS_AWAITING_COPY,
+  SCAN_REASON_PARAMS,
+  signalNamesWithoutCopy,
+  signalNamesNothingBuilds,
   REPAIR_REASON_PARAMS,
   placeholdersIn,
   reasonKeysWithoutCopy,
@@ -76,5 +79,47 @@ describe('the rest of the reason vocabulary', () => {
       written,
       `these now have copy and should be removed from REASON_KEYS_AWAITING_COPY: ${written.join(', ')}`,
     ).toEqual([])
+  })
+})
+
+describe('what a merchant sees a signal called', () => {
+  it('has a name for every signal that can put a card on screen', () => {
+    const missing = signalNamesWithoutCopy()
+    expect(
+      missing,
+      `these render a machine-generated name instead — "missing_or_weak_metadata" came out as "Missing Or Weak Metadata": ${missing.join(', ')}`,
+    ).toEqual([])
+  })
+
+  it('holds no name under a key the engine never builds', () => {
+    // The half that hid the fault: `missing_metadata` and `wrong_canonical`
+    // held good copy no card could reach, because the engine builds
+    // `missing_or_weak_metadata` and `wrong_canonical_or_duplicate`.
+    expect(
+      signalNamesNothingBuilds().filter((type) =>
+        ['missing_metadata', 'wrong_canonical'].includes(type),
+      ),
+    ).toEqual([])
+  })
+})
+
+describe('the scan reasons, now that they have words', () => {
+  it('reach the merchant as words rather than as the renderer giving up', () => {
+    for (const key of OPPORTUNITY_REASON_KEYS) {
+      const line = renderTemplatedLine({ templateKey: key, params: {} })
+      expect(line.known, `${key} fell through to the "no reasoning yet" line`).toBe(true)
+      expect(line.text.trim().length).toBeGreaterThan(0)
+    }
+  })
+
+  it('ask only for numbers the scan actually sends', () => {
+    for (const [key, params] of Object.entries(SCAN_REASON_PARAMS)) {
+      for (const placeholder of placeholdersIn(key)) {
+        expect(
+          params,
+          `"${key}" asks for {${placeholder}}, which the scan does not supply — it would print literally`,
+        ).toContain(placeholder)
+      }
+    }
   })
 })

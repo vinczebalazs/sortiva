@@ -54,7 +54,7 @@ const optimize: OpportunityRow = {
     { key: 'average_position', value: 8.6, source: 'gsc', window: '28d', fetchedAt: AT },
     { key: 'matching_products', value: 14, source: 'catalog', fetchedAt: AT },
   ],
-  why: { templateKey: 'striking_distance.page_one_intent_mismatch', params: {} },
+  why: { templateKey: 'striking_distance.optimize', params: { position: 12.4, impressions: 320 } },
   preconditions: [],
   rulesVersion: 'a'.repeat(64),
   limitedIntelligence: false,
@@ -74,7 +74,7 @@ const create: OpportunityRow = {
   impactScore: 64,
   confidence: 'medium',
   confidenceScore: 55,
-  why: { templateKey: 'uncovered_commercial_query.no_suitable_url', params: { volume: 880 } },
+  why: { templateKey: 'uncovered_commercial_query.create', params: { volume: 880 } },
 }
 
 const hold: OpportunityRow = {
@@ -154,7 +154,8 @@ describe('an opportunity card', () => {
   })
 
   it('renders the why-line from the catalogue, not from a model', () => {
-    expect(html).toContain(t('template.striking_distance.page_one_intent_mismatch'))
+    // The sentence carries a number, so only the fixed half can be matched whole.
+    expect(html).toContain('close enough that answering the search more fully')
     expect(html).toContain('data-why-known="true"')
   })
 
@@ -483,7 +484,7 @@ describe('what this screen may report', () => {
       // Neither of these is a declared property of the event, and neither is
       // expressible as any kind the table has.
       title: optimize.entityRef.label,
-      why: t('template.striking_distance.page_one_intent_mismatch'),
+      why: t('template.striking_distance.optimize'),
     } as never)
 
     expect(recorder.events[0]?.properties).toEqual({

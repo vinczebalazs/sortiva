@@ -47,7 +47,7 @@ export interface RenderedLine {
  * A key we have no sentence for renders a plain admission rather than the raw
  * key or an empty space. A new signal type shipping before its wording does is
  * a real possibility — the engine and this catalogue are different lanes — and
- * `striking_distance.page_one_intent_mismatch` on screen would be worse than
+ * a raw key such as `striking_distance.optimize` on screen would be worse than
  * saying nothing useful honestly.
  */
 export function renderTemplatedLine(

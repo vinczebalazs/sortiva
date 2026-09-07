@@ -49,6 +49,61 @@ export function repairReasonKeys(): readonly string[] {
   )
 }
 
+/**
+ * The numbers the weekly scan hands the renderer, per reason.
+ *
+ * Mirrors `reasonFor` in `packages/core/src/opportunities/reasons.ts`, which is
+ * the only producer of these keys. A sentence that asks for anything outside
+ * this prints the placeholder to a merchant verbatim — `{position}` on screen —
+ * so the test below is what stops a well-meant edit doing that.
+ *
+ * A sentence need not use every number offered. Several deliberately do not:
+ * see the note on plurals below.
+ */
+export const SCAN_REASON_PARAMS: Readonly<Record<string, readonly string[]>> = {
+  'striking_distance.optimize': ['position', 'impressions'],
+  'striking_distance.refresh_ours': ['position', 'impressions'],
+  'low_ctr_at_strong_rank.optimize': ['position', 'ctr_ratio', 'impressions'],
+  'content_decay.refresh': ['from_position', 'to_position', 'clicks_before', 'clicks_after'],
+  'cannibalization.fix': ['competing_urls', 'leader_changes'],
+  'uncovered_commercial_query.create': ['volume'],
+  'uncovered_commercial_query.create_with_link': ['volume'],
+  'competitor_coverage_gap.create': ['competitors', 'best_competitor_position'],
+  'product_family_coverage_gap.create': ['family', 'revenue_share'],
+  'missing_or_weak_metadata.optimize': ['missing_fields', 'duplicate_fields'],
+  'existing_page_intent_gap.optimize': ['position', 'missing_subtopics'],
+  'indexing_issue.fix': ['reason'],
+}
+
+/**
+ * Why several of those numbers go unused, which is a deliberate limit rather
+ * than an oversight.
+ *
+ * The catalogue has no singular and plural forms, so a sentence reading
+ * "{competing_urls} pages" prints "1 pages" the day a count is one. Two
+ * sentences already shipped with that fault. Rather than add two more, the
+ * counts that can legitimately be one are phrased around — "more than one of
+ * your pages is competing" carries the same meaning and cannot read wrong —
+ * and only numbers that are safe at any value are printed: positions,
+ * percentages, and a monthly search volume that is never one for a query that
+ * cleared the demand floor.
+ *
+ * Fixing it properly means giving the catalogue plural forms, which is a change
+ * to the renderer every lane shares.
+ */
+export const COUNTS_PHRASED_AROUND: readonly string[] = [
+  'impressions',
+  'clicks_before',
+  'clicks_after',
+  'competing_urls',
+  'leader_changes',
+  'competitors',
+  'missing_fields',
+  'duplicate_fields',
+  'missing_subtopics',
+  'reason',
+]
+
 /** The only two numbers the repair path hands the renderer. */
 export const REPAIR_REASON_PARAMS: readonly string[] = ['article_id', 'references']
 
@@ -85,26 +140,59 @@ export const OPPORTUNITY_REASON_KEYS: readonly string[] = [
 /**
  * Reasons the product can produce today that still have no words.
  *
- * Every one of these is a card on the Opportunities screen — the store's
- * central surface — whose explanation currently reads "the reasoning for this
- * one isn't available yet". They are listed rather than silently tolerated:
- * the test below fails if anything joins them without being written down, and
- * fails again when one of them is finally given a sentence and left here.
- *
- * Writing these is not this card's work: they belong to the weekly scan's
- * signals, not the repair path.
+ * Empty, and the test below is what keeps it that way: a new signal arriving
+ * without a sentence fails there rather than reaching a merchant as "the
+ * reasoning for this one isn't available yet". Every entry that used to be
+ * here was a card on the Opportunities screen — the store's central surface —
+ * explaining itself with that placeholder.
  */
-export const REASON_KEYS_AWAITING_COPY: readonly string[] = [
-  'striking_distance.refresh_ours',
-  'striking_distance.optimize',
-  'low_ctr_at_strong_rank.optimize',
-  'content_decay.refresh',
-  'cannibalization.fix',
-  'uncovered_commercial_query.create_with_link',
-  'uncovered_commercial_query.create',
-  'competitor_coverage_gap.create',
-  'product_family_coverage_gap.create',
-  'missing_or_weak_metadata.optimize',
-  'existing_page_intent_gap.optimize',
-  'indexing_issue.fix',
-]
+export const REASON_KEYS_AWAITING_COPY: readonly string[] = []
+
+/**
+ * What a merchant sees a signal *called*, which is a second family of copy with
+ * the same failure and a quieter one.
+ *
+ * A missing sentence renders an honest admission. A missing *name* renders a
+ * machine-generated one — `missing_or_weak_metadata` came out as "Missing Or
+ * Weak Metadata" — because the lookup falls back to humanising the key. That
+ * degrades so gracefully nobody noticed for the life of the project, and the
+ * two that were wrong had real copy sitting under abbreviated keys the engine
+ * never builds (`missing_metadata`, `wrong_canonical`).
+ *
+ * So the list is derived from the reason keys rather than typed out: a signal
+ * that can put a card on screen is a signal whose name that card shows, and a
+ * hand-written list here would have the same blind spot the copy did. Derived
+ * rather than imported from the rules package because `packages/ui` does not
+ * depend on it, and adding that dependency costs every other lane a reinstall.
+ */
+export function signalTypesOnCards(): readonly string[] {
+  // Two reason keys borrow a pinned Appendix A sentence through an alias
+  // (`existing_target.prefer_optimize`, `quality_rejection.insufficient_richness`),
+  // so their first segment names the borrowed copy rather than the signal that
+  // produced the card. Keys that resolve to `template.` are the ones whose
+  // prefix really is a signal type.
+  const own = OPPORTUNITY_REASON_KEYS.filter((key) => catalogKeyFor(key).startsWith('template.'))
+  return [...new Set(own.map((key) => key.split('.')[0]!))]
+}
+
+export function signalNamesWithoutCopy(): readonly string[] {
+  return signalTypesOnCards().filter(
+    (type) => (en as Record<string, string>)[`opportunities.signal.${type}`] === undefined,
+  )
+}
+
+/**
+ * Names sitting in the catalogue under a key nothing produces.
+ *
+ * The half that hid the fault: `missing_metadata` and `wrong_canonical` held
+ * perfectly good copy that no card could ever reach, because the engine builds
+ * `missing_or_weak_metadata` and `wrong_canonical_or_duplicate`. Written copy
+ * and a missing name looked identical from every direction anyone checked.
+ */
+export function signalNamesNothingBuilds(): readonly string[] {
+  const onCards = new Set(signalTypesOnCards())
+  return Object.keys(en as Record<string, string>)
+    .filter((key) => key.startsWith('opportunities.signal.'))
+    .map((key) => key.replace('opportunities.signal.', ''))
+    .filter((type) => !onCards.has(type))
+}
