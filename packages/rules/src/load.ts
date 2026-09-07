@@ -4,6 +4,16 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import Ajv, { type ErrorObject } from 'ajv'
 import { parse as parseYaml } from 'yaml'
+import {
+  RulesOverrideError,
+  assertOverrideValue,
+  describeScope,
+  overrideApplies,
+  patchFromKey,
+  sortOverrides,
+  type RulesOverrideRow,
+  type RulesOverrideScope,
+} from './overrides'
 import type { DeepPartial, RulesDocument, RulesLayer } from './types'
 
 /**
@@ -90,6 +100,37 @@ export class RulesConfigError extends Error {
   }
 }
 
+/** One override that survived the fold: the number it changed, and where the winning row was aimed. */
+export interface AppliedOverride {
+  readonly key: string
+  readonly value: unknown
+  readonly scope: RulesOverrideScope
+  readonly updatedBy: string
+}
+
+export interface ResolvedRules {
+  /** The numbers this store is actually judged by. */
+  readonly layer: RulesLayer
+  /**
+   * What to stamp on the decisions this layer produces. The bare file hash when
+   * nothing was overridden; the file hash plus a marker for the overrides when
+   * something was. See `resolve` for why.
+   */
+  readonly rulesVersion: string
+  /** Empty when the store is on the repo file's numbers. Ordered by key. */
+  readonly appliedOverrides: readonly AppliedOverride[]
+}
+
+export interface ResolveOptions {
+  locale?: string | null
+  /** Only rows aimed at this page type, plus the rows that name none, are folded in. */
+  pageType?: string | null
+  /** Rows read from `rules_overrides`. Order does not matter; `resolve` sorts them. */
+  overrides?: readonly RulesOverrideRow[]
+  /** The store the rows were read for. Rows aimed at a different account are refused rather than dropped. */
+  accountId?: string | null
+}
+
 export interface RulesConfig {
   /** sha256 of the config file's bytes. Stamped on every opportunity and gate decision, so any result can be traced back to the exact numbers that produced it. */
   readonly rulesVersion: string
@@ -103,6 +144,25 @@ export interface RulesConfig {
    * language subtag ("da"), then global defaults.
    */
   forLocale(locale?: string | null): RulesLayer
+  /**
+   * The locale layer with `rules_overrides` rows folded on top, and the version
+   * to stamp on whatever it decides.
+   *
+   * **Why the version is not always the file hash.** `rules_version` exists so a
+   * decision can be explained later by the numbers that produced it, and the
+   * learning loop and every audit read it as exactly that. The file hash covers
+   * the repo file — defaults and every locale layer. It cannot cover a database
+   * row, so a store carrying an override that stamped the plain file hash would
+   * be claiming it was judged by numbers it was not judged by. So an overridden
+   * store stamps `<file hash>+ov.<16 hex of the overrides>`: the base stays
+   * legible and comparable, and two stores given the same overrides stamp the
+   * same string, which keeps a breakdown by `rules_version` meaningful. A store
+   * on the repo file's numbers stamps exactly what it stamps today.
+   *
+   * Throws `RulesOverrideError` if any row is malformed. Refusing is deliberate:
+   * a threshold that quietly fails to apply is worse than one never set.
+   */
+  resolve(options?: ResolveOptions): ResolvedRules
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -188,23 +248,113 @@ export function loadRulesConfig(options: LoadOptions = {}): RulesConfig {
 
   const rulesVersion = createHash('sha256').update(raw, 'utf8').digest('hex')
 
+  function forLocale(locale?: string | null): RulesLayer {
+    if (!locale) return doc.defaults
+    const exact = resolved.get(locale)
+    if (exact) return exact
+    const language = locale.split(/[-_]/)[0]?.toLowerCase()
+    if (language) {
+      const byLanguage = resolved.get(language)
+      if (byLanguage) return byLanguage
+    }
+    return doc.defaults
+  }
+
+  function resolve(options: ResolveOptions = {}): ResolvedRules {
+    const base = forLocale(options.locale)
+    const rows = options.overrides ?? []
+    if (rows.length === 0) {
+      return { layer: base, rulesVersion, appliedOverrides: [] }
+    }
+
+    const wanted: RulesOverrideScope = {
+      ...(options.accountId ? { accountId: options.accountId } : {}),
+      ...(options.locale ? { locale: options.locale } : {}),
+      ...(options.pageType ? { pageType: options.pageType } : {}),
+    }
+
+    // A row that does not apply here is a mistake in the read, not a row to
+    // skip: the caller asked the table for this store's rows and got somebody
+    // else's. Ignoring it would hide a scoping bug behind correct-looking
+    // behaviour.
+    const misaimed = rows.filter((row) => !overrideApplies(row.scope, wanted))
+    if (misaimed.length > 0) {
+      throw new RulesOverrideError(
+        `rules_overrides rows were supplied that do not apply to ${describeScope(wanted)}`,
+        misaimed.map((row) => `${row.key} (aimed at ${describeScope(row.scope)})`),
+      )
+    }
+
+    // Least specific first, so the narrowest row is the one left standing.
+    const winners = new Map<string, AppliedOverride>()
+    let layer = base
+    for (const row of sortOverrides(rows)) {
+      const path = assertOverrideValue(doc.defaults, row.key, row.value)
+      layer = deepMerge(layer, patchFromKey(path, row.value) as DeepPartial<RulesLayer>)
+      winners.set(row.key, {
+        key: row.key,
+        value: row.value,
+        scope: row.scope,
+        updatedBy: row.updatedBy,
+      })
+    }
+
+    // The same reasoning as the locale layers above: a row can be individually
+    // well-formed and still produce a layer the product cannot run on — a ratio
+    // above 1, a position band that starts after it ends, a click curve with a
+    // hole in it. Refusing here is what stops a store being judged by numbers
+    // nobody checked.
+    if (!layerValidate(layer)) {
+      throw new RulesOverrideError(
+        `rules_overrides for ${describeScope(wanted)} produce an invalid set of thresholds`,
+        formatErrors(layerValidate.errors, ''),
+      )
+    }
+    try {
+      assertStandardCurveComplete(layer, `overrides for ${describeScope(wanted)}`)
+    } catch (error) {
+      throw new RulesOverrideError(
+        `rules_overrides for ${describeScope(wanted)} produce an invalid set of thresholds`,
+        [error instanceof Error ? error.message : String(error)],
+      )
+    }
+
+    const appliedOverrides = [...winners.values()].sort((a, b) => (a.key < b.key ? -1 : 1))
+
+    // Hashed over what actually applied — the winning key/value pairs — and not
+    // over the rows, so two stores given the same override stamp the same
+    // version and a breakdown by `rules_version` groups them together.
+    const fingerprint = createHash('sha256')
+      .update(
+        appliedOverrides.map((applied) => `${applied.key}=${JSON.stringify(applied.value)}`).join('\n'),
+        'utf8',
+      )
+      .digest('hex')
+      .slice(0, OVERRIDE_FINGERPRINT_CHARS)
+
+    return { layer, rulesVersion: `${rulesVersion}+ov.${fingerprint}`, appliedOverrides }
+  }
+
   return {
     rulesVersion,
     version: doc.version,
     defaults: doc.defaults,
     localeKeys: Object.keys(locales),
-    forLocale(locale) {
-      if (!locale) return doc.defaults
-      const exact = resolved.get(locale)
-      if (exact) return exact
-      const language = locale.split(/[-_]/)[0]?.toLowerCase()
-      if (language) {
-        const byLanguage = resolved.get(language)
-        if (byLanguage) return byLanguage
-      }
-      return doc.defaults
-    },
+    forLocale,
+    resolve,
   }
+}
+
+/**
+ * How much of the override hash goes into the stamp. Long enough that two
+ * different override sets colliding is not a thing that happens; short enough
+ * that an operator can read the stamp off a row and compare it by eye.
+ */
+const OVERRIDE_FINGERPRINT_CHARS = 16
+
+/** True for a version stamped on a decision made with `rules_overrides` in play. */
+export function versionCarriesOverrides(version: string): boolean {
+  return version.includes('+ov.')
 }
 
 let cached: RulesConfig | undefined
