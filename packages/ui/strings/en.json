@@ -1133,7 +1133,7 @@
   "gate3.near_duplicate": "The draft was too close to something already published — {first_detail}.",
   "gate3.contradiction": "The draft said two different things about the same point — {first_detail}.",
   "gate3.no_information_gain": "The draft didn't add anything the pages already ranking don't cover. That's a research problem rather than a writing one, so we stopped rather than rewriting it.",
-  "gate3.below_quality_bar": "The draft didn't meet our bar on {failed_criteria}, and a revision didn't fix it. {first_justification}",
+  "gate3.below_quality_bar": "The draft didn't meet our bar on {failed_criteria}, and a revision didn't fix it. Our grader wrote: {first_justification}",
 
   "content.override.action": "Publish anyway",
   "content.override.heading": "Publish against our recommendation?",
