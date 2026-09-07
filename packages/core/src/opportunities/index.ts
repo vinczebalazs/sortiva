@@ -83,3 +83,13 @@ export {
 } from './events'
 
 export { toContractOpportunity, type StoredOpportunity } from './contract-mapping'
+
+export {
+  GENERATING,
+  NO_RECOMMENDATION,
+  OPTIMIZE_FAILED_VALIDATION_KEY,
+  toDrawerRecommendation,
+  type DrawerRecommendation,
+  type DrawerRecommendationField,
+  type StoredRecommendation,
+} from './recommendation-view'

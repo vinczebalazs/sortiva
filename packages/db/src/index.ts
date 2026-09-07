@@ -21,6 +21,11 @@ export {
   type ProductsStoreOptions,
 } from './stores/products'
 export {
+  makePerformanceStore,
+  type PerformanceStore,
+  type PerformanceStoreOptions,
+} from './stores/performance'
+export {
   makeIngestionStatusStore,
   type IngestionRunView,
   type IngestionStatusStore,
