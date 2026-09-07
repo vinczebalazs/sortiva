@@ -6103,6 +6103,58 @@ real one, which grepping for weak assertions cannot find.
 before finding it. That is the trap this run's kick-off names, and it has now caught three lane
 reports and two of the integrator's own claims.
 
+### `R-SIGNIN-CSRF` LANDED — **a merchant can sign in**
+
+**Merged and verified: 289 files, 3,597 tests, `pnpm chaos` 10 of 10.** This was the single largest
+blocker in the product and nobody had ranked it as one: the Google button posted a form carrying no
+anti-forgery token, the sign-in library refuses that, and **everything else sits behind sign-in**.
+An earlier card recorded the defect and it stayed broken.
+
+**The trap is now a permanent test of its own.** Posting the exact request the old form sent
+returns **HTTP 200 with `ok === true`** — only the destination says it failed. So the lane wrote a
+test that records precisely that, meaning nobody can later reduce the assertions to a status check
+without reading why it would prove nothing. It also proved its own refusal test bites, by removing
+the destination check and watching exactly that one test fail.
+
+**Email sign-in, corrected.** Earlier notes said no screen renders it. Nearly right: the sign-in
+library's own fallback page at `GET /api/auth/signin` does offer it and a test asserts so — but
+**nothing in the product links to that page**, so a merchant cannot reach it. Unreachable in
+practice, not absent.
+
+**A no-JavaScript visitor now presses a button that does nothing**, where before they pressed one
+that failed visibly. Not a loss of function — signing in without scripts never worked — but the
+failure looks different. Journalled; the alternative was a second mechanism for the same job.
+
+**An integrator lapse, recorded because it is the discipline being demanded of every lane.** The
+first full run after this merge showed **one failing assertion**. I re-ran without capturing its
+name, and the re-run passed 3,597 of 3,597. So I cannot say what failed, only that it did not
+reproduce. **That is the exact gap I have been telling lanes to close, and I did it myself.**
+
+### `sortiva-a8` is building, and its pre-read found a trap that would have sunk its card
+
+Given the go once Lane F freed, so four sessions are running, not five. **Before writing a line it
+read the card's cited sections and found this:** the obvious way to mark a deleted page — compare
+`store_pages.last_synced_at` against the walk's start — is wrong, because **that column means
+*last changed*, not *last seen***. The sync deliberately skips restamping an unchanged page, since
+restamping would look like an edit to everything watching the checksum and re-run the paid analyses
+hanging off it. **The obvious build would have marked every unchanged page in every store as
+deleted, plausibly.** It is now in the card text.
+
+**Two things it flagged outside its card, both worth keeping:**
+
+- **`last_synced_at` is shown to merchants as "Last synced"** while holding a last-*changed* value —
+  pre-existing and user-visible. The chosen mechanism makes the label true as a side effect, so
+  **nobody should later "fix" the stamping as a regression.**
+- **`runInventorySync` already returns `status: 'done'`**, distinguishing a completed resumable walk
+  from a targeted re-sync and a disconnected store. It lives in memory and nothing records it — the
+  completion signal the founder was told was missing exists and is unread.
+
+**A boundary the integrator stated to it, and it matters for anyone reading this file.** It relayed
+a founder decision on the mechanism. That relay is taken at face value as a *report*, but **this
+integrator treats a decision as real when it is in `DECISIONS.md`** — so it will journal it, and
+that entry is what will be reviewed. One path by which decisions become real; two paths is how a
+project ends up with two answers.
+
 ### Verification done this morning, so it is not re-done
 
 - Resolved every registered task-name constant in the tree and matched it by hand against all
