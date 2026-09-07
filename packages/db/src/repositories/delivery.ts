@@ -3,6 +3,7 @@ import type { Db } from '../client'
 import { articleProductRefs, articles, products, storePages } from '../schema'
 import type { AccountScope } from '../scope'
 import type { ArticleRow } from './articles'
+import { lockDayForWrite } from './day-lock'
 import {
   completeOpportunityForPublishedArticle,
   type ArticlePublication,
@@ -55,6 +56,12 @@ export async function markArticleDelivered(
   now: Date = new Date(),
 ): Promise<ArticlePublication | undefined> {
   return db.transaction(async (tx) => {
+    // Every row this transaction can write, taken up front in the one order all
+    // of them are taken in — read `lockDayForWrite` before adding a write here.
+    // Without it, this and a merchant's "not interested" arrive at the same
+    // three rows from opposite ends and Postgres kills one of them.
+    await lockDayForWrite(tx, scope, { articleId })
+
     const [row] = await tx
       .update(articles)
       .set({ state: 'published', delivery, publishedAt: now, updatedAt: now })
@@ -67,11 +74,6 @@ export async function markArticleDelivered(
       )
       .returning()
     if (!row) return undefined
-    // Topic before opportunity, and the order is load bearing: cancelling a day
-    // takes the same two locks the other way round (`veto-topic.ts` walks
-    // topics, then the draft, then the opportunity). Taking them in a different
-    // order here is a deadlock the moment a publish and a dismissal meet, which
-    // is exactly what the race test drives.
     const publishedTopic = await markTopicPublishedForArticle(tx, scope, articleId, now)
     const completedOpportunity = await completeOpportunityForPublishedArticle(
       tx,

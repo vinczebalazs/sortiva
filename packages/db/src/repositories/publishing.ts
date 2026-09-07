@@ -3,6 +3,7 @@ import { publishMarker } from '@sortiva/core'
 import type { Db } from '../client'
 import { accountSettings, articles, publishIntents, shopifyConns } from '../schema'
 import type { AccountScope, SystemScope } from '../scope'
+import { lockDayForWrite } from './day-lock'
 import {
   completeOpportunityForPublishedArticle,
   type ArticlePublication,
@@ -413,6 +414,10 @@ export async function markArticleAutoPublished(
 ): Promise<ArticlePublication | undefined> {
   const now = input.at ?? new Date()
   return db.transaction(async (tx) => {
+    // Every row this transaction can write, taken up front in the one order all
+    // of them are taken in — read `lockDayForWrite` before adding a write here.
+    await lockDayForWrite(tx, scope, { articleId: input.articleId })
+
     const [row] = await tx
       .update(articles)
       .set({
@@ -431,8 +436,6 @@ export async function markArticleAutoPublished(
       )
       .returning()
     if (!row) return undefined
-    // Topic before opportunity — same lock order as every other path that
-    // touches both, see the note over `markArticleDelivered`.
     const publishedTopic = await markTopicPublishedForArticle(tx, scope, input.articleId, now)
     const completedOpportunity = await completeOpportunityForPublishedArticle(
       tx,

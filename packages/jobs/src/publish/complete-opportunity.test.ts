@@ -5,6 +5,7 @@ import {
   accountScope,
   dismissOpportunityGuarded,
   listOpenOpportunities,
+  markArticleAutoPublished,
   markArticleDelivered,
   schema,
   setDeliveryMode,
@@ -37,6 +38,12 @@ import { sweepPublishRecovery } from './recovery'
 
 const available = await databaseAvailable()
 const NOW = new Date('2026-09-03T09:00:00.000Z')
+/**
+ * What the race tests below are allowed to take. Far more than they need,
+ * because the thing they test for is a deadlock and the thing that makes them
+ * slow is a loaded machine, and those must never be confused for each other.
+ */
+const RACE_TEST_BUDGET_MS = 120_000
 const TODAY = '2026-09-03'
 
 describe.skipIf(!available)('publishing finishes the suggestion behind the article', () => {
@@ -278,27 +285,20 @@ describe.skipIf(!available)('publishing finishes the suggestion behind the artic
     expect(await statusOf(opportunityId)).toBe('dismissed')
   })
 
-  /**
-   * The race the card names: a merchant pressing "not interested" at the moment
-   * the publish hour hands the article over. Both are guarded, both are one
-   * transaction, so exactly one of them moves anything.
-   */
-  it('settles a publication racing a dismissal one way or the other, never half of each', async () => {
-    const { opportunityId, articleId } = await seedDay()
-
-    const [dismissal, delivered] = await Promise.all([
-      dismissOpportunity({ db, now: () => NOW }, { accountId, opportunityId }),
-      markArticleDelivered(db, accountScope(accountId), articleId, 'export', NOW),
-    ])
-
-    const status = await statusOf(opportunityId)
+  /** Whichever of the two won, the store is left in one of the two whole outcomes. */
+  async function expectSettledOneWay(
+    ids: { opportunityId: string; articleId: string },
+    dismissal: Awaited<ReturnType<typeof dismissOpportunity>>,
+    published: { completedOpportunity?: { id: string } | undefined } | undefined,
+  ): Promise<void> {
+    const status = await statusOf(ids.opportunityId)
     const [article] = await db
       .select()
       .from(schema.articles)
-      .where(eq(schema.articles.id, articleId))
+      .where(eq(schema.articles.id, ids.articleId))
 
     // Exactly one of them moved anything: never both, never neither.
-    expect(dismissal.ok).not.toBe(delivered !== undefined)
+    expect(dismissal.ok).not.toBe(published !== undefined)
 
     if (dismissal.ok) {
       // The merchant got there first. The article was discarded rather than
@@ -309,8 +309,146 @@ describe.skipIf(!available)('publishing finishes the suggestion behind the artic
       // The publication got there first, and finished the suggestion on its
       // way out; the whole dismissal rolled back.
       expect(status).toBe('completed')
-      expect(delivered?.completedOpportunity?.id).toBe(opportunityId)
+      expect(published?.completedOpportunity?.id).toBe(ids.opportunityId)
       expect(article?.state).toBe('published')
     }
+  }
+
+  /**
+   * The race the card names: a merchant pressing "not interested" at the moment
+   * the publish hour hands the article over. Both are guarded, both are one
+   * transaction, so exactly one of them moves anything.
+   */
+  it('settles a publication racing a dismissal one way or the other, never half of each', async () => {
+    const ids = await seedDay()
+
+    const [dismissal, delivered] = await Promise.all([
+      dismissOpportunity({ db, now: () => NOW }, { accountId, opportunityId: ids.opportunityId }),
+      markArticleDelivered(db, accountScope(accountId), ids.articleId, 'export', NOW),
+    ])
+
+    await expectSettledOneWay(ids, dismissal, delivered)
   })
+
+  /**
+   * How many of this database's connections are stopped dead waiting for a lock
+   * somebody else holds. Scoped to our own database because the whole suite
+   * shares one Postgres server, and another suite's waiting query is none of
+   * this test's business.
+   */
+  async function backendsWaitingOnALock(): Promise<number> {
+    const { rows } = await ctx.pool.query<{ waiting: number }>(
+      `SELECT count(*)::int AS waiting
+         FROM pg_stat_activity
+        WHERE datname = current_database()
+          AND wait_event_type = 'Lock'`,
+    )
+    return rows[0]?.waiting ?? 0
+  }
+
+  /** Waits until exactly that many of our connections are queued on a lock, or fails saying so. */
+  async function waitForBackendsWaiting(count: number): Promise<void> {
+    for (let attempt = 0; attempt < 400; attempt++) {
+      if ((await backendsWaitingOnALock()) >= count) return
+      await new Promise((resolve) => setTimeout(resolve, 25))
+    }
+    throw new Error(`waited ten seconds for ${count} connections to queue on a lock and they never did`)
+  }
+
+  /**
+   * The interleaving that produced the deadlock, forced rather than hoped for.
+   *
+   * Running the two sides concurrently and hoping only reproduces this about
+   * twice in five attempts, which is no use for proving a fix. So the test
+   * holds the calendar day's row from a connection of its own and lets each
+   * side queue up behind it in a known order:
+   *
+   *  1. the dismissal starts and stops on the calendar day, which we hold;
+   *  2. the publication starts, takes whatever it takes first, and stops;
+   *  3. we let go of the day.
+   *
+   * If the two sides disagree about which row to take first, step 3 releases a
+   * cycle — each holding what the other is waiting for — and Postgres kills one
+   * of them with "deadlock detected". A merchant sees that as a server error on
+   * a button whose whole purpose is to answer "this has already moved on"
+   * cleanly. If they agree, the second one simply queues behind the first and
+   * both finish.
+   */
+  const publicationRoutes = [
+    {
+      name: 'the publish hour hands the article over',
+      publish: (articleId: string) =>
+        markArticleDelivered(db, accountScope(accountId), articleId, 'export', NOW),
+    },
+    {
+      name: 'the article is written down as posted to the shop',
+      publish: (articleId: string) =>
+        markArticleAutoPublished(db, accountScope(accountId), {
+          articleId,
+          url: 'https://acme.com/blogs/news/best-bottles',
+          at: NOW,
+        }),
+    },
+  ] as const
+
+  for (const route of publicationRoutes) {
+    it(`never deadlocks when a dismissal and a publication meet head-on: ${route.name}`, async () => {
+      const ids = await seedDay()
+
+      const held = await ctx.pool.connect()
+      let settled: readonly PromiseSettledResult<unknown>[] = []
+      try {
+        await held.query('BEGIN')
+        await held.query('SELECT id FROM topics WHERE id = $1 FOR UPDATE', [ids.topicId])
+
+        const dismissal = dismissOpportunity(
+          { db, now: () => NOW },
+          { accountId, opportunityId: ids.opportunityId },
+        )
+        await waitForBackendsWaiting(1)
+        const publication = route.publish(ids.articleId)
+        await waitForBackendsWaiting(2)
+
+        await held.query('COMMIT')
+        settled = await Promise.allSettled([dismissal, publication])
+      } finally {
+        held.release()
+      }
+
+      const failures = settled
+        .filter((outcome) => outcome.status === 'rejected')
+        .map((outcome) => String((outcome as PromiseRejectedResult).reason))
+      expect(failures).toEqual([])
+
+      const [dismissal, publication] = settled as [
+        PromiseFulfilledResult<Awaited<ReturnType<typeof dismissOpportunity>>>,
+        PromiseFulfilledResult<{ completedOpportunity?: { id: string } | undefined } | undefined>,
+      ]
+      await expectSettledOneWay(ids, dismissal.value, publication.value)
+    },
+    // Generous on purpose. This test waits for connections to queue on locks,
+    // and a machine with every lane's suite running makes that slow; it must
+    // fail because two transactions deadlocked, never because the machine was
+    // busy. A red here is real.
+    RACE_TEST_BUDGET_MS)
+  }
+
+  /**
+   * The same race left to chance, many times over. The forced version above
+   * proves the one interleaving we know about; this one is here for the
+   * orderings nobody has thought of, and it is the shape of run that found the
+   * original defect.
+   */
+  it('settles a publication racing a dismissal every time, over twenty-five unforced rounds', async () => {
+    for (let round = 0; round < 25; round++) {
+      const ids = await seedDay({ entityRef: `race round ${round}` })
+
+      const [dismissal, delivered] = await Promise.all([
+        dismissOpportunity({ db, now: () => NOW }, { accountId, opportunityId: ids.opportunityId }),
+        markArticleDelivered(db, accountScope(accountId), ids.articleId, 'export', NOW),
+      ])
+
+      await expectSettledOneWay(ids, dismissal, delivered)
+    }
+  }, RACE_TEST_BUDGET_MS)
 })
