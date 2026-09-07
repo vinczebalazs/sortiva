@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest'
 import { catalogEventsToTargets } from './events'
 import { canonicalStoreUrl, extractHeadings, extractInternalLinks } from './html'
 import { contentChecksum, storeUrlFor, toStorePageRow } from './pages'
-import { syncInventoryBatch, syncInventoryRecords, type InventorySyncDeps } from './sync'
+import {
+  resyncInventoryTargets,
+  syncInventoryBatch,
+  syncInventoryRecords,
+  type InventorySyncDeps,
+  type InventorySyncResult,
+} from './sync'
 import type {
   FamilyLookup,
   InventoryCursor,
@@ -140,6 +146,11 @@ describe('one inventory row', () => {
 class RecordingWriter implements StorePageWriter {
   readonly rows = new Map<string, StorePageRow>()
   readonly writes: StorePageRow[][] = []
+  /** When each address was last seen — what the real table now records. */
+  readonly seenAt = new Map<string, Date>()
+  readonly gone = new Set<string>()
+  /** Every sweep asked for, so a test can prove one never happened. */
+  readonly sweeps: Date[] = []
 
   async knownChecksums(_accountId: string, urls: readonly string[]) {
     const out = new Map<string, string | null>()
@@ -153,6 +164,24 @@ class RecordingWriter implements StorePageWriter {
   async upsert(_accountId: string, rows: readonly StorePageRow[]) {
     this.writes.push([...rows])
     for (const row of rows) this.rows.set(row.url, row)
+  }
+
+  async markSeen(_accountId: string, urls: readonly string[], at: Date) {
+    for (const url of urls) {
+      this.seenAt.set(url, at)
+      this.gone.delete(url)
+    }
+  }
+
+  async markGoneNotSeenSince(_accountId: string, since: Date) {
+    this.sweeps.push(since)
+    let marked = 0
+    for (const [url, at] of this.seenAt) {
+      if (at.getTime() >= since.getTime() || this.gone.has(url)) continue
+      this.gone.add(url)
+      marked += 1
+    }
+    return marked
   }
 }
 
@@ -202,7 +231,10 @@ describe('walking a store into the inventory', () => {
 
     expect(result.seen).toBe(2)
     expect(result.changed).toBe(2)
-    expect(result.next).toEqual({ stage: 'page', sinceId: '2' })
+    // The resume point, plus when this walk began — carried so the batch that
+    // finishes the walk knows what "not seen on it" means.
+    expect(result.next).toMatchObject({ stage: 'page', sinceId: '2' })
+    expect(result.next?.['walkStartedAt']).toBeDefined()
     expect([...writer.rows.keys()].sort()).toEqual([
       'https://shop.example/collections/boots',
       'https://shop.example/pages/about',
@@ -396,5 +428,132 @@ describe('reacting to what the store says changed', () => {
     ])
     expect(fanout.resync).toEqual([])
     expect(fanout.removed).toEqual([{ kind: 'product', shopifyId: 'p1' }])
+  })
+})
+
+describe('noticing that a merchant deleted a page', () => {
+  const on = (iso: string) => new Date(iso)
+  const T0 = on('2026-09-07T03:00:00Z')
+  const T1 = on('2026-09-08T03:00:00Z')
+
+  /** A walk of `records`, run to its end, at the given moment. */
+  async function walk(
+    writer: RecordingWriter,
+    records: readonly StoreContentRecord[],
+    now: Date,
+  ): Promise<InventorySyncResult> {
+    const { source } = sourceOf([{ records }])
+    return syncInventoryBatch({ source, writer, families: noFamilies, now: () => now }, 'acc', undefined, 50)
+  }
+
+  it('marks a page the store has stopped serving, and leaves the rest alone', async () => {
+    const writer = new RecordingWriter()
+    await walk(
+      writer,
+      [record({ shopifyId: '1', handle: 'boots' }), record({ shopifyId: '2', handle: 'hats' })],
+      T0,
+    )
+    expect([...writer.gone]).toEqual([])
+
+    const result = await walk(writer, [record({ shopifyId: '1', handle: 'boots' })], T1)
+
+    expect(result.markedGone).toBe(1)
+    expect([...writer.gone]).toEqual(['https://shop.example/collections/hats'])
+  })
+
+  it('marks nothing when the walk did not reach the end of the store', async () => {
+    const writer = new RecordingWriter()
+    await walk(writer, [record({ shopifyId: '1', handle: 'boots' })], T0)
+    const sweepsAfterSetup = writer.sweeps.length
+
+    const { source } = sourceOf([
+      { records: [record({ shopifyId: '2', handle: 'hats' })], next: { stage: 'page' } },
+    ])
+    const result = await syncInventoryBatch(
+      { source, writer, families: noFamilies, now: () => T1 },
+      'acc',
+      undefined,
+      50,
+    )
+
+    // The founder's own reason for rejecting single-pass inference: an
+    // interrupted walk has not looked at the rest of the store, so the boots
+    // collection it never reached is not evidence of anything.
+    expect(result.markedGone).toBeUndefined()
+    expect(writer.sweeps).toHaveLength(sweepsAfterSetup)
+    expect([...writer.gone]).toEqual([])
+  })
+
+  it('judges absence against when the walk started, not when it ended', async () => {
+    const writer = new RecordingWriter()
+    await walk(writer, [record({ shopifyId: '1', handle: 'boots' })], T0)
+    const sweepsAfterSetup = writer.sweeps.length
+
+    // A walk begun on one day and finished on the next — a large store, or one
+    // whose walk was interrupted. The clock moves between the two batches, so
+    // reading the finish time instead of the start time gives a different and
+    // wrong answer.
+    const clock = { now: T1 }
+    const { source } = sourceOf([
+      { records: [record({ shopifyId: '1', handle: 'boots' })], next: { stage: 'page' } },
+      { records: [record({ shopifyId: '2', handle: 'hats' })] },
+    ])
+    const deps = { source, writer, families: noFamilies, now: () => clock.now }
+
+    const first = await syncInventoryBatch(deps, 'acc', undefined, 50)
+    clock.now = on('2026-09-09T03:00:00Z')
+    const second = await syncInventoryBatch(deps, 'acc', first.next, 50)
+
+    // The boots collection was read on the first batch and stamped then. Judged
+    // against the walk's start it is present; judged against the finish it looks
+    // a day stale and would be wrongly marked gone.
+    expect(second.markedGone).toBe(0)
+    expect([...writer.gone]).toEqual([])
+    expect(writer.sweeps).toHaveLength(sweepsAfterSetup + 1)
+    expect(writer.sweeps.at(-1)).toEqual(T1)
+  })
+
+  it('marks the same absent page once, however often the walk runs', async () => {
+    const writer = new RecordingWriter()
+    await walk(writer, [record({ shopifyId: '1', handle: 'boots' })], T0)
+
+    const first = await walk(writer, [], T1)
+    const second = await walk(writer, [], on('2026-09-09T03:00:00Z'))
+
+    expect(first.markedGone).toBe(1)
+    expect(second.markedGone).toBe(0)
+    expect([...writer.gone]).toEqual(['https://shop.example/collections/boots'])
+  })
+
+  it('brings a page back when the merchant restores it unchanged', async () => {
+    const writer = new RecordingWriter()
+    await walk(writer, [record({ shopifyId: '1', handle: 'boots' })], T0)
+    await walk(writer, [], T1)
+    expect([...writer.gone]).toEqual(['https://shop.example/collections/boots'])
+
+    // Restored with the body it always had, so nothing about it has changed and
+    // the checksum diff writes nothing. Being served is what makes it live.
+    const restored = await walk(writer, [record({ shopifyId: '1', handle: 'boots' })], on('2026-09-09T03:00:00Z'))
+
+    expect(restored.changed).toBe(0)
+    expect([...writer.gone]).toEqual([])
+  })
+
+  it('never concludes anything is missing from a webhook re-read', async () => {
+    const writer = new RecordingWriter()
+    await walk(writer, [record({ shopifyId: '1', handle: 'boots' }), record({ shopifyId: '2', handle: 'hats' })], T0)
+    const sweepsAfterSetup = writer.sweeps.length
+
+    const { source } = sourceOf([], [record({ shopifyId: '1', handle: 'boots' })])
+    const result = await resyncInventoryTargets(
+      { source, writer, families: noFamilies, now: () => T1 },
+      'acc',
+      [{ kind: 'collection', shopifyId: '1' }],
+    )
+
+    // Reading one named page says nothing about the pages nobody asked about.
+    expect(result.markedGone).toBeUndefined()
+    expect(writer.sweeps).toHaveLength(sweepsAfterSetup)
+    expect([...writer.gone]).toEqual([])
   })
 })
