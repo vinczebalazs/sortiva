@@ -723,6 +723,57 @@ Read first: `DECISIONS.md` 2026-09-04 "The judge's own sentences may reach a mer
 Done when: a held article shows which criteria it failed and the grader's own sentence; a Danish store's card carries an **English** justification, which is what `R-JUDGE-COPY` made true at the source; and the renderer's "no sentence for this key" path is exercised by a test so a future key mismatch fails loudly instead of showing the placeholder.
 Note: **this is why `R-JUDGE-COPY` could not meet its third done-when.** It made the justification English where it is produced; nothing carries it to the screen. The other surface that would show it — the article page's quality panel — has no server behind it at all: there is no `GET /api/articles/{id}` route and the panel renders from fixtures.
 
+### Screens with no server behind them — found 2026-09-07 by the integrator while building `R-CONTRACT`
+
+**What was found.** Lane F built every screen against a fake server (build plan §6 `M9`: "starts Wave 1
+on MSW mocks; integration cards follow backends"). For six screens the integration card never followed.
+The screens call `/api/…` addresses that **have no route file anywhere in the repository**, and nothing
+reports it, for three compounding reasons: the fake server is generated from the frozen route table, so
+it answers every declared address whether or not anything was built; `pnpm contracts:check` compares
+the table only to a generated document and never to the routes on disk; and `getJson`
+(`apps/web/app/(app)/_lib/api.ts:38`) deliberately returns `null` on any failure rather than throwing —
+so a 404 from a route that does not exist is indistinguishable from an account with no data. **On a
+deployed server these screens render their empty state and nothing anywhere goes red.** This is the
+eighth "reporter that fails towards fine" and the widest of them.
+
+**Method, so it can be repeated:** every `route.ts` under `apps/web/app/api` was enumerated with its
+exported HTTP methods and compared against the route table and against every `/api/…` string in
+`apps/web/app/(app)` and `packages/ui/src`. The one file that exports its handlers by destructuring
+(`api/auth/[...nextauth]/route.ts`) was checked by hand; the table omits `/api/auth/*` deliberately.
+
+The four cards below build the missing servers. **Each is scoped to one lane's own directories** and
+carries the shape it must satisfy, which already exists as a zod schema in
+`packages/core/src/api/schemas.ts` — the contract described these endpoints correctly all along, so
+none of these cards is designing an interface, only implementing one.
+
+**R-API-ARTICLES — the articles library and the article page have no server** · Lane D
+Scope: build `GET /api/articles` (the library list), `GET /api/articles/{articleId}` (read-only detail with its quality report), and `POST /api/articles/{articleId}/publish-anyway` (publish a draft the quality gate rejected). All three are declared in the frozen route table with response schemas and none exists on disk (verified 2026-09-07).
+**The third one matters most and is the reason this card is Lane D's first:** `packages/ui/src/content/ArticleDetail.tsx:275` posts to `publish-anyway` when a merchant overrules a quality rejection, and there is nothing at that address. `R-OVERRIDE-STATE` landed the state the override writes and `R-JUDGE-COPY` landed the words it shows — **the button between them reaches nothing.**
+Read first: `DECISIONS.md` 2026-09-04 "An overridden article gets its own state, and is never reviewed again"; main §8.6, §9.3; ui §6.
+Done when: the articles library lists a store's articles; the article page renders from the server rather than from fixtures; the override button publishes and stamps `published_via_override`; and an article that is not in the rejected state refuses the override rather than publishing it.
+Note: `POST /api/articles/{articleId}/refresh` is the fourth missing article route and belongs to `T7.2`, which is building it now. Do not build it here.
+Invariants: 12 (override articles excluded from learning and shown segmented), 23.
+
+**R-API-PRODUCTS — the Products screen has no server** · Lane B
+Scope: build `GET /api/products` (richness, merchant tasks from open HOLDs, the product table) and `GET /api/products/families` (the read-only family list with its differentiation axes). Both declared with schemas, neither on disk (verified 2026-09-07). `apps/web/app/api/products/families/report` — the "this grouping is wrong" endpoint — is built, so the directory exists and only the two reads are missing.
+Read first: main §6.3 (richness), §6.4 (families and grouping guardrails); ui §7.
+Done when: the Products screen renders a real store's products and families rather than an empty state; the family list is read-only, with no editing affordance; and richness is the figure the distillation actually produced.
+Note: `apps/web/app/api/products` was a directory no lane owned. It is Lane B's by the ownership rule added to §3 on 2026-09-07 — a file belongs to the lane that owns the domain it serves, and the catalogue is Lane B's.
+Invariants: 3 (raw HTML never flows downstream), 23.
+
+**R-API-PERFORMANCE — the Performance screens and the opportunity drawer have no server** · Lane C
+Scope: build `GET /api/performance/overview` (the headline chart, its markers, the results table), `GET /api/performance/search-console` (query and page tables with signal badges), and `GET /api/opportunities/{opportunityId}` (the detail drawer: evidence, tasks, recommendation, history, outcome). All three declared with schemas, none on disk (verified 2026-09-07).
+Read first: main §9.6.2 and §9.6.10 (verdict timing and store-relative labels), §12.2 (Search Console), §7.6 and §7.12; ui §5, §8.
+Done when: the Performance screen draws a real store's search data with its connect, publish and applied markers and the lag note; the Search Console tables carry signal badges that link into Opportunities; the opportunity drawer renders its evidence from the stored record; and a store with no Search Console connection gets the Limited Intelligence treatment rather than an error.
+Invariants: 8 (every user-facing "why" renders from a template, never from a model), 13, 23.
+
+**R-API-SETTINGS — the Settings screens call three addresses that do not exist** · Lane F
+Scope: two halves. **(a)** Build `GET /api/settings` and `PATCH /api/settings` at `apps/web/app/api/settings`, the directory the founder assigned to this lane on 2026-09-04. These are genuinely settings-shaped — they span several lanes' settings — which is why they are not being moved elsewhere. **(b)** Repoint the blog picker: `packages/ui/src/settings/PublishingSettings.tsx:63-66` defaults to `/api/settings`, `/api/settings/blogs` and `/api/settings/blog`; the last two **are built**, at `/api/publish/blogs` and `/api/publish/target`, and the auto-publish toggle's own endpoint is `/api/publish/mode`. The frozen contract moves to those built addresses in `R-CONTRACT`; this card moves the screen with it.
+Read first: `DECISIONS.md` 2026-09-04 "The frozen contract moves to the addresses that were built, and Lane F gets the settings ground"; main §9.4, §9.5; ui §9.
+Done when: both Settings screens load from a real server; the blog picker lists a store's blogs and sets a target through the built publishing endpoints; auto-publish cannot enable without a resolved target blog; and every control ui §9 lists still exists with none that it does not.
+Note: **sequence after `R-CONTRACT`**, which moves the table entries this card's screen follows. The write-grant flow (`/api/publish/grant/start`) is already built and is not this card's to change.
+Invariants: 21 (read and write are separate consents; auto-publish cannot enable without a resolved target blog), 16 (we render no card form, ever).
+
 **R-CONTRACT — the frozen contract describes the endpoints that exist** · integrator
 Scope: ten endpoints were built at addresses the frozen route table does not declare, while the table declares several with no implementation, and `contracts:check` passes throughout because it compares the table to a generated document and **never to the routes on disk**. The founder delegated the call: amend the contract to the built addresses rather than move ten endpoints; assign `apps/web/app/api/settings` to Lane F for anything genuinely settings-shaped; the missing routes-on-disk check lands with `T10.2`.
 Read first: `DECISIONS.md` 2026-09-04 "The frozen contract moves to the addresses that were built".
