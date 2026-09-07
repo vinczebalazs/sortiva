@@ -308,7 +308,15 @@ export async function transitionOpportunityStatus(
 /**
  * Expiry never deletes (invariant 10, main §7.9) — it stamps a reason and
  * leaves the row for the learning loop to read later. Any open status may
- * expire; `transitionOpportunityStatus`'s own guard covers the race.
+ * expire by default.
+ *
+ * `from` narrows that. A caller that has already decided it will only touch a
+ * row sitting in particular statuses must say so here rather than filter in
+ * its own code and then issue a wider update: between reading a row and
+ * writing it, another worker can have moved it into a status this caller was
+ * deliberately keeping its hands off — a suggestion the calendar has since
+ * taken over, say. Naming the statuses makes that a zero-row answer the caller
+ * can stop on instead of an overwrite nobody notices.
  */
 export async function expireOpportunity(
   db: Db,
@@ -316,8 +324,9 @@ export async function expireOpportunity(
   id: string,
   reason: ExpiryReason,
   now: Date = new Date(),
+  from: readonly OpportunityRow['status'][] = OPEN_OPPORTUNITY_STATUSES,
 ): Promise<OpportunityRow | undefined> {
-  assertMoveIsDrawn(OPEN_OPPORTUNITY_STATUSES, 'expired')
+  assertMoveIsDrawn(from, 'expired')
   const [row] = await db
     .update(opportunities)
     .set({ status: 'expired', expiredReason: reason, updatedAt: now })
@@ -325,7 +334,7 @@ export async function expireOpportunity(
       and(
         eq(opportunities.id, id),
         eq(opportunities.accountId, scope.accountId),
-        inArray(opportunities.status, [...OPEN_OPPORTUNITY_STATUSES]),
+        inArray(opportunities.status, [...from]),
       ),
     )
     .returning()
