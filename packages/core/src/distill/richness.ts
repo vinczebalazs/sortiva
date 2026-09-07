@@ -92,10 +92,28 @@ export function rollUpRichness(
   }
 }
 
-function bandFor(median: number, thresholds: RichnessThresholds): RichnessBand {
-  if (median < thresholds.populatedFieldsPerProductMin) return 'sparse'
-  if (median >= thresholds.populatedFieldsPerProductMin * thresholds.marginMultiple) return 'rich'
+/**
+ * The same three words applied to one product rather than to the whole store.
+ *
+ * Deliberately the function the store's own band is read off, so a table full
+ * of products labelled sparse can never sit under a header calling the
+ * catalogue rich. A product nothing has been distilled from yet scores zero and
+ * therefore reads as sparse — we know nothing about it, which is what the word
+ * says.
+ */
+export function richnessBandFor(
+  populatedFields: number,
+  thresholds: RichnessThresholds,
+): RichnessBand {
+  if (populatedFields < thresholds.populatedFieldsPerProductMin) return 'sparse'
+  if (populatedFields >= thresholds.populatedFieldsPerProductMin * thresholds.marginMultiple) {
+    return 'rich'
+  }
   return 'okay'
+}
+
+function bandFor(median: number, thresholds: RichnessThresholds): RichnessBand {
+  return richnessBandFor(median, thresholds)
 }
 
 /** An even-sized catalogue takes the lower of the two middle products, so a band is never awarded on half a field. */

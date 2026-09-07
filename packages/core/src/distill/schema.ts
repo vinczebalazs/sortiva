@@ -152,3 +152,21 @@ export function countPopulatedFields(facts: ExtractedFacts): number {
   }
   return count
 }
+
+/**
+ * Which of the ten extractable fields the description never supported — the
+ * merchant's own to-do list for one product, written out.
+ *
+ * The inverse of `countPopulatedFields`, and it must stay the inverse: a field
+ * counted as populated here but missing there would show a merchant a product
+ * marked well-described alongside a list of what it is missing.
+ */
+export function missingFactFields(
+  facts: ExtractedFacts,
+): readonly (typeof EXTRACTED_FIELDS)[number][] {
+  return EXTRACTED_FIELDS.filter((field) => {
+    const value = facts[field]
+    if (Array.isArray(value)) return !value.some((entry) => entry.trim() !== '')
+    return !(typeof value === 'string' && value.trim() !== '')
+  })
+}
