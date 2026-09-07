@@ -166,6 +166,7 @@ function toGroupingInput(product: GroupableProduct): GroupingInput {
     tags: product.tags,
     productType: product.productType,
     options: product.options,
+    metafields: product.metafields,
   }
 }
 

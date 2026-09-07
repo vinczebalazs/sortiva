@@ -26,6 +26,7 @@ import {
   type Db,
 } from '@sortiva/db'
 import { RetryableFailure, TerminalFailure, TokenInvalidFailure } from '../runtime/errors'
+import { readProductMetafields } from './metafields'
 import { inputVersion } from '../runtime/idempotency'
 import type { StepContext } from '../runtime/runStep'
 import type { IngestionDeps } from './deps'
@@ -54,13 +55,19 @@ import type { StepDefinition } from './steps'
 const PAGE_SIZE = 250
 
 /**
- * How many pages one run of the step reads before handing the rest back.
+ * How many Shopify requests one run of the step makes before handing the rest
+ * back.
  *
  * At one request a second this is about eight minutes of work, which is inside
  * the step's lease with room to spare. Raising it makes a large store finish in
  * fewer runs and each run longer; it decides nothing a merchant sees.
+ *
+ * Counted in requests rather than pages because a page of products is no longer
+ * one request: each product we have not seen before costs a second one for its
+ * metafields, so a page can be two hundred and fifty-one requests and a budget
+ * in pages would have promised eight minutes and taken hours.
  */
-const PAGES_PER_RUN = 500
+const REQUESTS_PER_RUN = 500
 
 /** Only what we read. Asking for less is also the first line of the customer-data defence. */
 const PRODUCT_FIELDS =
@@ -188,8 +195,9 @@ async function syncProducts(
     })
   }
   const shopHandle = args.auth.shop
+  let requests = 0
 
-  for (let page = 0; page < PAGES_PER_RUN; page += 1) {
+  while (requests < REQUESTS_PER_RUN) {
     stopIfShuttingDown(ctx)
 
     const path = state.productPage
@@ -201,6 +209,7 @@ async function syncProducts(
     const answer = await withTokenInvalidRouting(() =>
       args.admin.getPage<{ products?: ShopifyProduct[] }>(args.auth, path),
     )
+    requests += 1
     const batch = (answer.body.products ?? []).map(toProductRow)
 
     const changes = batch.flatMap((row) =>
@@ -211,7 +220,28 @@ async function syncProducts(
       ),
     )
 
-    await upsertProducts(deps.db, args.scope, batch, deps.now?.() ?? new Date())
+    // Only for products we have not seen before or that have changed, because
+    // each one is a request of its own and a store's unchanged products have
+    // nothing new to tell us.
+    const enriched: ProductRow[] = []
+    for (const row of batch) {
+      if (!wantsMetafields(known.get(row.shopifyProductId), row)) {
+        enriched.push(row)
+        continue
+      }
+      const metafields = await withTokenInvalidRouting(() =>
+        readProductMetafields(args.admin, args.auth, row.shopifyProductId, (reason) =>
+          ctx.log.info('catalog_sync.metafields_skipped', {
+            shopify_product_id: row.shopifyProductId,
+            reason,
+          }),
+        ),
+      )
+      requests += 1
+      enriched.push(metafields === undefined ? row : { ...row, metafields })
+    }
+
+    await upsertProducts(deps.db, args.scope, enriched, deps.now?.() ?? new Date())
     const recorded = await recordCatalogChanges(deps.db, args.system, changes)
 
     // Refresh what we hold, so a product appearing twice inside one walk is
@@ -259,7 +289,7 @@ async function syncOrders(
   let aggregate = state.aggregate ?? emptyAggregate()
   const since = new Date((deps.now?.() ?? new Date()).getTime() - ORDER_WINDOW_DAYS * 86_400_000)
 
-  for (let page = 0; page < PAGES_PER_RUN; page += 1) {
+  for (let page = 0; page < REQUESTS_PER_RUN; page += 1) {
     stopIfShuttingDown(ctx)
 
     const path = state.orderPage
@@ -346,6 +376,21 @@ function toLandingRows(
     revenue: row.revenue,
     currency: row.currency,
   }))
+}
+
+/**
+ * Whether this product's metafields are worth a request of their own.
+ *
+ * A product whose fingerprint has not moved cannot have changed its attributes
+ * in any way we would read, so asking again would be a request per product per
+ * night that always came back with what we already hold. The consequence, and
+ * it is the one worth knowing: a product whose metafields we have never read
+ * stays that way until the merchant next edits it, because "we never asked" and
+ * "the store has none" look the same from here.
+ */
+function wantsMetafields(stored: ComparableProduct | undefined, row: ProductRow): boolean {
+  if (!stored) return true
+  return stored.checksum !== row.checksum
 }
 
 /** What the change comparison needs to know about a product we already hold. */

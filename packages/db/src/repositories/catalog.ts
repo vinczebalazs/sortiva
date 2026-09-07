@@ -1,6 +1,11 @@
 import { gzipSync, gunzipSync } from 'node:zlib'
 import { and, asc, eq, gt, inArray, isNull, lt, notInArray, sql } from 'drizzle-orm'
-import { descriptionText, type FactSheet, type ProductOption } from '@sortiva/core'
+import {
+  descriptionText,
+  type FactSheet,
+  type ProductMetafield,
+  type ProductOption,
+} from '@sortiva/core'
 import type { Db } from '../client'
 import {
   landingRevenueDaily,
@@ -550,6 +555,30 @@ export async function productsForDistillation(
  * further in, where the damage would be an invented comparison heading on a
  * merchant's screen.
  */
+/**
+ * The metafield column, read back defensively, for the same reason as the
+ * options one: the database validates nothing about what Shopify sent.
+ */
+export function storedMetafields(value: unknown): readonly ProductMetafield[] {
+  if (!Array.isArray(value)) return []
+  const out: ProductMetafield[] = []
+  for (const entry of value) {
+    if (typeof entry !== 'object' || entry === null) continue
+    const record = entry as Record<string, unknown>
+    const key = record['key']
+    const raw = record['value']
+    if (typeof key !== 'string' || key.trim() === '') continue
+    if (typeof raw !== 'string' || raw.trim() === '') continue
+    out.push({
+      namespace: typeof record['namespace'] === 'string' ? record['namespace'] : '',
+      key: key.trim(),
+      value: raw.trim(),
+      type: typeof record['type'] === 'string' && record['type'] !== '' ? record['type'] : null,
+    })
+  }
+  return out
+}
+
 export function storedOptions(value: unknown): readonly ProductOption[] {
   if (!Array.isArray(value)) return []
   const out: ProductOption[] = []

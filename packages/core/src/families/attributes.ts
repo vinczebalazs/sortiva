@@ -1,4 +1,8 @@
-import { namedOptionAxes, type ProductOption } from '../catalog/products'
+import {
+  namedOptionAxes,
+  type ProductMetafield,
+  type ProductOption,
+} from '../catalog/products'
 import type { FactSheet } from '../distill/schema'
 
 /**
@@ -14,6 +18,10 @@ import type { FactSheet } from '../distill/schema'
  *  - **the store's own option definitions** — "Size: S/M/L" — where the axis
  *    name and its values are both the merchant's, stated in a structured field
  *    rather than inferred from anything. The strongest source there is;
+ *  - **the store's own metafields**, where a merchant keeps attributes Shopify
+ *    has no field for. Only the ones the store itself declared to be a line of
+ *    text are read, for the reason above: an app's stored rating count is not
+ *    an axis and would make a nonsense of a comparison table;
  *  - **the fact sheet**, whose ten fields we named ourselves and whose values
  *    were extracted from the merchant's own description;
  *  - **the merchant's own tags**, where they are written `terrain:trail` — the
@@ -48,7 +56,12 @@ export const AXIS_FACT_FIELDS = [
 ] as const
 
 /** Where one attribute name came from, kept so a wrong axis can be traced to what named it. */
-export type AttributeSource = 'fact_sheet' | 'tag' | 'variant_token' | 'product_option'
+export type AttributeSource =
+  | 'fact_sheet'
+  | 'tag'
+  | 'variant_token'
+  | 'product_option'
+  | 'metafield'
 
 export interface AttributeValue {
   readonly name: string
@@ -88,6 +101,86 @@ export interface ProductAttributeInput {
    * began asking Shopify for them.
    */
   readonly options?: readonly ProductOption[]
+  /** The store's own metafields, unfiltered — the filtering happens here. */
+  readonly metafields?: readonly ProductMetafield[]
+}
+
+/**
+ * The metafield types whose value is a line of text a person wrote.
+ *
+ * Shopify's metafield types say how to read a value, and most of them are not
+ * attributes at all: a `json` is a document, a `rating` and a `dimension` are
+ * objects with their own fields, a `*_reference` is an internal id, a
+ * `rich_text_field` is a formatted tree. Reading those as attribute values
+ * would put `{"value":4.7,"scale_max":5}` or `gid://shopify/Product/12` on a
+ * merchant's comparison table. So the list is the two that are text and
+ * nothing else, and a metafield whose store did not declare a type at all is
+ * skipped rather than guessed at.
+ */
+const ATTRIBUTE_METAFIELD_TYPES: Readonly<Record<string, 'one' | 'list'>> = {
+  single_line_text_field: 'one',
+  'list.single_line_text_field': 'list',
+}
+
+/**
+ * How long a metafield value may be before it stops being an attribute.
+ *
+ * An axis value is a word or a short phrase — "trail", "wide fit", "made in
+ * Portugal". Past this it is a sentence, and a sentence as a comparison-table
+ * heading value is the same failure `verifiable_claims` is kept out of axes
+ * for: true, unique to one product, and useless to compare. Raising it lets
+ * longer values through and makes family axes wordier; lowering it drops
+ * legitimate two- or three-word values. UNCALIBRATED.
+ */
+const METAFIELD_VALUE_MAX_CHARS = 60
+
+/**
+ * How many metafield-named attributes one product may contribute.
+ *
+ * Similarity is measured over the *names* two products share as a fraction of
+ * all the names either holds, so a store that keeps fifty metafields on every
+ * product would drown out the handful of facts we read from its descriptions
+ * and every product would look like every other. The merchant's own ordering
+ * is kept, so the ones they defined first survive. UNCALIBRATED.
+ */
+const METAFIELD_ATTRIBUTES_MAX = 12
+
+/** One metafield read as an attribute, or nothing if it is not one. */
+export function metafieldAttribute(
+  metafield: ProductMetafield,
+): { name: string; values: readonly string[] } | undefined {
+  const shape = metafield.type === null ? undefined : ATTRIBUTE_METAFIELD_TYPES[metafield.type]
+  if (shape === undefined) return undefined
+
+  const name = normalizeAttributeName(metafield.key)
+  if (name === '') return undefined
+
+  const values = shape === 'list' ? parseTextList(metafield.value) : [metafield.value]
+  const usable = values
+    .map((value) => value.trim())
+    .filter(
+      (value) =>
+        value !== '' && value.length <= METAFIELD_VALUE_MAX_CHARS && !value.includes('\n'),
+    )
+  if (usable.length === 0) return undefined
+  return { name, values: usable }
+}
+
+/**
+ * A list metafield's value, which Shopify stores as a JSON array in a string.
+ *
+ * A value that does not parse is not an error worth raising: it is one
+ * merchant's field we cannot read, and the honest result is to know nothing
+ * about it rather than to store the raw JSON as though it were a word.
+ */
+function parseTextList(value: string): readonly string[] {
+  try {
+    const parsed: unknown = JSON.parse(value)
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter((entry): entry is string => typeof entry === 'string')
+  } catch {
+    return []
+  }
 }
 
 /**
@@ -144,6 +237,18 @@ export function productAttributes(input: ProductAttributeInput): ProductAttribut
     // shoe offered in three sizes is all three, and picking one would be
     // choosing a variant on the merchant's behalf.
     add(normalizeAttributeName(option.name), option.values, 'product_option')
+  }
+
+  let fromMetafields = 0
+  for (const metafield of input.metafields ?? []) {
+    if (fromMetafields >= METAFIELD_ATTRIBUTES_MAX) break
+    const attribute = metafieldAttribute(metafield)
+    // The key alone names the axis, not the namespace: `custom.terrain` reads
+    // as "terrain" on a comparison table, which is what a merchant meant by it.
+    // Two namespaces using one key therefore collide, and the first wins.
+    if (!attribute || attributes.has(attribute.name)) continue
+    add(attribute.name, attribute.values, 'metafield')
+    fromMetafields += 1
   }
 
   for (const value of input.variantTokens ?? []) {

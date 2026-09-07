@@ -44,6 +44,30 @@ export interface ShopifyOption {
   readonly values?: readonly (string | null)[] | null
 }
 
+/**
+ * One metafield as the Admin API states it.
+ *
+ * `type` is the half that matters. A metafield's value can be a line of text, a
+ * number, a JSON document, a rich-text tree or a pointer to another record, and
+ * only the type says which — so a reader that ignored it would put a JSON blob
+ * or an internal id where a merchant expects to read an attribute.
+ */
+export interface ShopifyMetafield {
+  readonly namespace?: string | null
+  readonly key?: string | null
+  readonly value?: string | number | null
+  readonly type?: string | null
+}
+
+/** One metafield as we keep it. */
+export interface ProductMetafield {
+  readonly namespace: string
+  readonly key: string
+  readonly value: string
+  /** Shopify's own type name, kept because it is what says how to read the value. */
+  readonly type: string | null
+}
+
 export interface ShopifyVariant {
   readonly id?: number | string
   readonly title?: string | null
@@ -96,6 +120,12 @@ export interface ProductRow {
    * really states none. The write path treats the two differently on purpose.
    */
   readonly options: readonly ProductOption[] | undefined
+  /**
+   * The store's own metafields, on the same undefined-means-unread rule. They
+   * never travel with the product: they cost a request of their own, so most
+   * paths that write a product leave this alone.
+   */
+  readonly metafields?: readonly ProductMetafield[]
   readonly priceRange: { readonly min: number; readonly max: number; readonly currency?: string } | null
   /** Shopify's own last-modified stamp. */
   readonly updatedAt: Date | null
@@ -182,6 +212,30 @@ export function namedOptionAxes(
       option.values[0]!.trim().toLowerCase() === SHOPIFY_PLACEHOLDER_OPTION.value
     return !isPlaceholder
   })
+}
+
+/**
+ * The metafields, kept as the merchant wrote them.
+ *
+ * Nothing is filtered on the way in. Which metafields describe a product and
+ * which are an app's bookkeeping is a judgement, and making it here would mean
+ * throwing away the evidence for it — so the column holds what the store holds
+ * and the judgement is made where the values are used.
+ */
+export function toProductMetafields(
+  raw: readonly ShopifyMetafield[] | null | undefined,
+): readonly ProductMetafield[] {
+  if (raw === null || raw === undefined) return []
+  const out: ProductMetafield[] = []
+  for (const field of raw) {
+    const namespace = (field.namespace ?? '').trim()
+    const key = (field.key ?? '').trim()
+    if (key === '') continue
+    const value = field.value === null || field.value === undefined ? '' : String(field.value).trim()
+    if (value === '') continue
+    out.push({ namespace, key, value, type: emptyToNull(field.type ?? null) })
+  }
+  return out
 }
 
 function toStoredVariant(variant: ShopifyVariant): StoredVariant {
