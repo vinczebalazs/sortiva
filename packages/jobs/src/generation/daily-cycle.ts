@@ -31,10 +31,11 @@ import {
 import { rules } from '@sortiva/rules'
 import { withAccountLock } from '../runtime/lock'
 import { lookupCompletedWork, recordCompletedWork } from '../runtime/ledger'
-import { deriveIdempotencyKey, inputVersion } from '../runtime/idempotency'
 import { accountLifecycleGate, mayAccountWorkRun } from '../runtime/gate'
 import { runtimeLogger } from '../runtime/logging'
 import { generateArticle, type GenerateArticleDeps } from './generate-article'
+import { DAILY_GENERATION_STEP, dailyGenerationKey } from './day-key'
+import { sweepStrandedRuns } from './stranded-sweep'
 
 /**
  * One store's day.
@@ -63,8 +64,7 @@ import { generateArticle, type GenerateArticleDeps } from './generate-article'
  * parallel.
  */
 
-/** The step name the day's idempotency key is derived under. Never random; see `deriveIdempotencyKey`. */
-export const DAILY_GENERATION_STEP = 'daily_generation'
+export { DAILY_GENERATION_STEP }
 
 /** Main §14.7's observability: one event per day that actually produced work. Ids and outcomes only, never article text. */
 export const GENERATION_CYCLE_EVENT = 'generation_cycle_completed'
@@ -168,6 +168,12 @@ export async function runDailyGenerationForAccount(
       hasPlannedTopicToday: planned !== undefined || stranded !== undefined,
     })
 
+    // Every reason but "nothing planned today" stops the store's work
+    // altogether, and that has to include looking behind it: finishing an
+    // interrupted run is still writing an article, and an operator's brake, an
+    // unpaid subscription, a merchant on holiday or a store we can no longer
+    // reach each say don't. A day with no topic on it is different — it is the
+    // ordinary quiet day, and it is exactly when there is room to catch up.
     if (!decision.allowed) {
       log.info('generation_cycle_skipped', {
         account_id: accountId,
@@ -175,71 +181,37 @@ export async function runDailyGenerationForAccount(
         reason: decision.reason,
         ...(decision.flag ? { flag: decision.flag } : {}),
       })
-      return { status: 'skipped', reason: decision.reason } as const
+      if (decision.reason !== 'no_topic_today') return { status: 'skipped', reason: decision.reason } as const
     }
 
-    const topic = (planned ?? stranded) as TopicRow
+    const today = decision.allowed
+      ? await runTodaysTopic(deps, {
+          scope,
+          accountId,
+          settings,
+          publishDate,
+          topic: (planned ?? stranded) as TopicRow,
+          isDequeue: planned !== undefined,
+          now,
+          log,
+        })
+      : ({ status: 'skipped', reason: decision.reason } as const)
 
-    // Derived from the day and the topic, never random, so the retry of a run
-    // arrives at the same key as the run it is retrying.
-    const key = deriveIdempotencyKey(
+    // Then, and only then, the days behind this one. Today's article is what
+    // the store is owed today; recovering an older one can wait a pass, and a
+    // recovery that fails must never be what stops today going out.
+    await sweepStrandedRuns({
+      db: deps.db,
+      scope,
       accountId,
-      DAILY_GENERATION_STEP,
-      inputVersion({ topicId: topic.id, date: publishDate }),
-    )
-    const done = await lookupCompletedWork(deps.db, key)
-    if (done) {
-      const record = (done.outputRef ?? { articleId: null, outcome: 'unknown' }) as DayRecord
-      log.info('generation_cycle_already_done', { account_id: accountId, date: publishDate, topic_id: topic.id })
-      return { status: 'already_done', articleId: record.articleId, outcome: record.outcome } as const
-    }
-
-    if (planned) {
-      const claimed = await beginGenerating(deps.db, scope, topic.id, now)
-      // Zero rows: a veto or another worker moved this topic between the read
-      // and the write. Stop, per invariant 15 — never retry into someone
-      // else's transition.
-      if (!claimed) {
-        log.info('generation_cycle_lost_dequeue_race', { account_id: accountId, topic_id: topic.id })
-        return { status: 'skipped', reason: 'lost_race' } as const
-      }
-    } else {
-      log.info('generation_cycle_resuming', { account_id: accountId, topic_id: topic.id, date: publishDate })
-    }
-
-    const result = await generateArticle(deps, await generationInputFor(deps.db, scope, accountId, topic))
-
-    let awaitsReview = false
-    if (result.outcome === 'graded') {
-      const landing = landingForPass(settings.draftReview)
-      if (landing.awaitsReview) {
-        // Both halves, in this order: the article first, because the calendar
-        // entry's state is what the merchant's screen reads and it must never
-        // say "waiting for you" about an article that is not.
-        const moved = await markArticleInReview(deps.db, scope, result.articleId, now)
-        await markTopicInReviewGuarded(deps.db, scope, topic.id, now)
-        awaitsReview = true
-        await announceDraftForReview(deps, accountId, result.articleId, moved !== undefined, log)
-      }
-    }
-
-    const record: DayRecord = { articleId: result.articleId, outcome: result.outcome }
-    await recordCompletedWork(deps.db, key, record)
-
-    log.info('generation_cycle_complete', {
-      account_id: accountId,
-      date: publishDate,
-      topic_id: topic.id,
-      outcome: result.outcome,
-      awaits_review: awaitsReview,
+      publishDate,
+      now,
+      log,
+      finish: (topic) =>
+        runStrandedTopic(deps, { scope, accountId, settings, topic, now, log }),
     })
 
-    return {
-      status: 'generated',
-      articleId: result.articleId,
-      outcome: result.outcome,
-      awaitsReview,
-    } as const
+    return today
   })
 
   if (outcome.status !== 'skipped') {
@@ -251,6 +223,128 @@ export async function runDailyGenerationForAccount(
   }
 
   return outcome
+}
+
+/** Everything one topic's run needs that is the same whether it is today's or a day being caught up. */
+interface TopicRunContext {
+  readonly scope: ReturnType<typeof accountScope>
+  readonly accountId: string
+  readonly settings: Awaited<ReturnType<typeof readAccountSettings>>
+  readonly topic: TopicRow
+  readonly now: Date
+  readonly log: Logger
+}
+
+/**
+ * The store's own day: claim the topic if it is a fresh one, then write it.
+ *
+ * The claim is what makes "at most one article a day" true under a queue that
+ * delivers at least once — a second dispatch matches no rows and stops. A topic
+ * already `generating` on this date is a previous attempt that died earlier
+ * today; it is finished rather than claimed again, and it does not consume a
+ * second day.
+ */
+async function runTodaysTopic(
+  deps: DailyGenerationDeps,
+  ctx: TopicRunContext & { readonly publishDate: string; readonly isDequeue: boolean },
+): Promise<DailyGenerationOutcome> {
+  const { accountId, log, now, scope, topic } = ctx
+
+  const key = dailyGenerationKey(accountId, topic.id, topic.scheduledDate)
+  const done = await lookupCompletedWork(deps.db, key)
+  if (done) {
+    const record = (done.outputRef ?? { articleId: null, outcome: 'unknown' }) as DayRecord
+    log.info('generation_cycle_already_done', { account_id: accountId, date: ctx.publishDate, topic_id: topic.id })
+    return { status: 'already_done', articleId: record.articleId, outcome: record.outcome }
+  }
+
+  if (ctx.isDequeue) {
+    const claimed = await beginGenerating(deps.db, scope, topic.id, now)
+    // Zero rows: a veto or another worker moved this topic between the read
+    // and the write. Stop, per invariant 15 — never retry into someone
+    // else's transition.
+    if (!claimed) {
+      log.info('generation_cycle_lost_dequeue_race', { account_id: accountId, topic_id: topic.id })
+      return { status: 'skipped', reason: 'lost_race' }
+    }
+  } else {
+    log.info('generation_cycle_resuming', { account_id: accountId, topic_id: topic.id, date: ctx.publishDate })
+  }
+
+  const landed = await generateAndLand(deps, ctx, key)
+
+  log.info('generation_cycle_complete', {
+    account_id: accountId,
+    date: ctx.publishDate,
+    topic_id: topic.id,
+    outcome: landed.outcome,
+    awaits_review: landed.awaitsReview,
+  })
+
+  return {
+    status: 'generated',
+    articleId: landed.articleId,
+    outcome: landed.outcome,
+    awaitsReview: landed.awaitsReview,
+  }
+}
+
+/**
+ * A day being caught up: the same pipeline, on a topic already flipped to
+ * `generating` by the attempt that died. There is nothing to claim — the claim
+ * happened on the day itself — and the article stays attached to its own past
+ * date, so no calendar day is handed an article it was not scheduled for.
+ */
+async function runStrandedTopic(
+  deps: DailyGenerationDeps,
+  ctx: TopicRunContext,
+): Promise<{ articleId: string | null; outcome: string }> {
+  const key = dailyGenerationKey(ctx.accountId, ctx.topic.id, ctx.topic.scheduledDate)
+  const landed = await generateAndLand(deps, ctx, key)
+  ctx.log.info('generation_stranded_finished', {
+    account_id: ctx.accountId,
+    topic_id: ctx.topic.id,
+    date: ctx.topic.scheduledDate,
+    outcome: landed.outcome,
+    awaits_review: landed.awaitsReview,
+  })
+  return { articleId: landed.articleId, outcome: landed.outcome }
+}
+
+/**
+ * Write the article, put it where the store's own review setting says it goes,
+ * and record the day as done.
+ *
+ * The ledger entry is last and covers the whole of it, so a crash anywhere
+ * before it leaves the day open to be finished rather than recorded as work
+ * that never happened.
+ */
+async function generateAndLand(
+  deps: DailyGenerationDeps,
+  ctx: TopicRunContext,
+  key: string,
+): Promise<{ articleId: string | null; outcome: string; awaitsReview: boolean }> {
+  const { accountId, log, now, scope, topic } = ctx
+  const result = await generateArticle(deps, await generationInputFor(deps.db, scope, accountId, topic))
+
+  let awaitsReview = false
+  if (result.outcome === 'graded') {
+    const landing = landingForPass(ctx.settings.draftReview)
+    if (landing.awaitsReview) {
+      // Both halves, in this order: the article first, because the calendar
+      // entry's state is what the merchant's screen reads and it must never
+      // say "waiting for you" about an article that is not.
+      const moved = await markArticleInReview(deps.db, scope, result.articleId, now)
+      await markTopicInReviewGuarded(deps.db, scope, topic.id, now)
+      awaitsReview = true
+      await announceDraftForReview(deps, accountId, result.articleId, moved !== undefined, log)
+    }
+  }
+
+  const record: DayRecord = { articleId: result.articleId, outcome: result.outcome }
+  await recordCompletedWork(deps.db, key, record)
+
+  return { articleId: result.articleId, outcome: result.outcome, awaitsReview }
 }
 
 /**

@@ -4215,3 +4215,39 @@ Nearest spec: main §7.9, §8.7; invariant 15 (guarded transitions), 14.
 Decision: carded. A store's claimed domain is stored bare (`acme.com`), but its real storefront may be `www.acme.com` or `shop.acme.com`. Shopify knows each store's primary domain and we can read it with the scope we already hold; that is the address Search Console reports under, so it is the one to record.
 Why: `R-PUBLISH-2` moved the recorded address from the `myshopify.com` host to the claimed domain, which was the founder's decision and is a large improvement. But recording a host the storefront only redirects *from* risks the same attribution mismatch one level down — and the symptom is the expensive one this whole thread has been about: a ranking article that appears to have earned nothing. The lane recorded it and did not invent a lookup, correctly.
 Nearest spec: main §12.2 (attribution), §2 (the claimed domain), §6.2 (Shopify scopes).
+
+## 2026-09-07 — R-STRANDED — The sweep for interrupted days runs inside each store's own daily pass
+Decision: there is no new scheduled job. Every store's daily generation pass — the one that already runs once a day, at that store's own writing hour — now also looks behind it for days whose writing started and never finished. Today's own article is written first; the catching-up happens after it.
+Why: the only thing that can strand a day is that store's own daily pass dying, so the same pass is the natural place to notice — it already holds the per-account lock, already knows the store's timezone and its publish day, and already read every reason not to write. A separate hourly sweep would find a stranded day sooner (within an hour instead of within a day), but it needs a recurring-schedule entry, which is integrator-resolved in this build, and it would take the account lock outside the store's own writing window for work that has already missed its day by hours. Ordering: today's article is what the store is owed today, a recovery can wait a pass, and a recovery that fails must never be the reason today's article did not go out.
+Nearest spec: main §8.7, §9.1, §14.3.
+Class (filled by audit):
+
+## 2026-09-07 — R-STRANDED — "Furthest along" means the most money already spent, and the more recent day breaks a tie
+Decision: among interrupted days, the one finished is the one whose article already has a stored draft; failing that, the one that at least has an article row; failing that, any of them. Two that got equally far are separated by date, most recent first.
+Why: the writer's model call is by far the most expensive step in the pipeline and its output is stored before anything grades it, so a run that reached that point can be finished for the price of the checks alone — that is the work worth rescuing. The tie-break is about staleness rather than cost: a run stranded three weeks ago was written against search results and a catalogue that have since moved, and grading it now grades it against evidence that no longer describes the store.
+Nearest spec: main §9.1, §14.3.6.
+Class (filled by audit):
+
+## 2026-09-07 — R-STRANDED — An interrupted day is recognised by never having been graded, not by its calendar state
+Decision: a day counts as interrupted when its calendar entry is still `generating`, its date has passed, and no Gate 3 decision was ever recorded against it.
+Why: the calendar state alone cannot answer the question. Nothing in the product moves a calendar entry out of `generating` when its article is published — both publishing paths update the article row and leave the calendar entry alone — so a perfectly healthy article waiting its turn to go out is, on state alone, indistinguishable from one nobody ever came back for. Sweeping on state would have written those stores a second article for a day they already had one for. Reaching Gate 3 is the moment a day is actually decided, and a run that reached it has either resolved already or resolves down a path that is not this one. (**That the calendar entry never leaves `generating` is a separate defect, reported rather than fixed here** — see the session report.)
+Nearest spec: main §8.7 (the calendar's state machine), §8.4.
+Class (filled by audit):
+
+## 2026-09-07 — R-STRANDED — Both finishing and giving up are recorded under the interrupted day's own idempotency key
+Decision: the sweep keys everything it does on `(account, "daily_generation", topic + the topic's own scheduled date)` — the same key the run that died would have recorded had it finished. Giving up writes that key with the outcome `abandoned_stranded`.
+Why: it is the one derivation that makes the sweep and the day it is recovering the same piece of work rather than two. A day the killed run somehow did finish is never re-entered; a day the sweep finishes is never finished twice; and a day given up on is never rediscovered the following morning, dead-lettered a second time, and left occupying the single place the sweep has for finishing something. This also tidies an inconsistency: the day's key was previously derived from the *publish date the pass computed*, which is always equal to the topic's own scheduled date for a topic the pass may take, so nothing changes but the derivation now says so.
+Nearest spec: main §14.3.1–14.3.4.
+Class (filled by audit):
+
+## 2026-09-07 — R-STRANDED — A stopped store is not swept at all
+Decision: when an operator brake, an unpaid subscription, a merchant on holiday or a lost Shopify connection stops a store's day, the sweep does not run either. A day with nothing planned on it is not one of those reasons — that is the ordinary quiet day, and it is where the sweep gets its room.
+Why: finishing an interrupted run is writing an article, and every one of those reasons says do not write. The cost is that a store on a three-week holiday holds its dead letter for three weeks; that was preferred to spending a stopped store's money, and to filing an operator alert about work the product is deliberately not doing.
+Nearest spec: main §14.5, §14.6; invariant 16.
+Class (filled by audit):
+
+## 2026-09-07 — R-STRANDED — A recovery that fails for a fixable reason is left to the next pass; one that cannot be fixed is given up on
+Decision: if finishing an interrupted day throws, the failure is classified by the runtime's existing rule. A retryable one is re-thrown and the day is found again by the next pass. A terminal one — a topic whose own inputs cannot be resolved, say — is dead-lettered and closed.
+Why: the two failures deserve opposite answers. An outage that ends in an hour should not permanently cost a store a day it had already paid for; a topic that can never be generated should not be retried every morning for ever with nobody told. The runtime already classifies every failure this way and defaults an unrecognised one to retryable, which is the safe side here.
+Nearest spec: main §14.3.5, §14.4.
+Class (filled by audit):

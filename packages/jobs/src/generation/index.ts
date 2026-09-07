@@ -46,6 +46,12 @@ export {
   type GenerateArticleInput,
   type GenerateArticleResult,
 } from './generate-article'
+export { dailyGenerationKey } from './day-key'
+export {
+  sweepStrandedRuns,
+  type StrandedSweepArgs,
+  type StrandedSweepResult,
+} from './stranded-sweep'
 export {
   runDailyGenerationForAccount,
   TopicNotGeneratable,
