@@ -5987,6 +5987,30 @@ Without it the code changes still cut failing files from ~67 to ~15 per run, but
 is unaffected** (its Postgres cannot take these flags, and it runs one suite at a time) and is
 faster anyway, since the template removes ~100 migration replays per run.
 
+### `R-SESSION-PRUNE` LANDED, and another session is sharing the main worktree
+
+**Merged. Verified directly by the integrator — the suite is cheap enough now to check in place:
+283 files, 3,550 tests, `pnpm chaos` 10 of 10.**
+
+The nightly retention sweep now deletes sessions past **their own lapse date**, not by age — forced
+rather than preferred, because a session lasts a month from sign-in and "older than N days" would
+sign merchants out with days still to run. Tested from both sides.
+
+**Its failure handling is the interesting part.** The sweep's steps are plain sequential awaits and
+**none catches its own failure**, so the lane matched that rather than inventing a swallow in one
+step, and put the prune **last** — after the two obligations with real deadlines (erasing a deleted
+account, honouring a store redaction request). A test makes the session delete throw and checks the
+deleted account was erased anyway. It rejected a `try`/`catch` explicitly: it would be the only
+step in the file hiding its own error, and a prune failing silently every night is a table growing
+with nobody told.
+
+**⚠️ Another Claude session (`sortiva-a8`) is working in `/Users/balazs/Desktop/sortiva` — the same
+physical directory this integrator merges and gates in.** It asked for a status report for a
+deploy-readiness document and was given one, along with an explicit warning: do not commit, stage,
+or run `pnpm db:down` there, and take a fresh worktree instead. **This is the hazard already
+written up in this file from an earlier run.** If a stray commit or a dropped database appears on
+`main` without an entry here, that session is the first place to look.
+
 ### Verification done this morning, so it is not re-done
 
 - Resolved every registered task-name constant in the tree and matched it by hand against all
