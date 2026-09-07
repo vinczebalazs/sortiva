@@ -196,9 +196,11 @@ describe('the quality gate reasons', () => {
  * content calendar, so a merchant looking at their plan read "The reasoning for
  * this one isn't available yet." against every planned day.
  *
- * The tests below are stricter than their siblings in one way, and deliberately
- * so: these sentences must survive being rendered with **no** parameters,
- * because that is what the calendar sends. See `ADMISSION_REASON_PARAMS`.
+ * These sentences carried no numbers at all until now, because none of their
+ * values reached a screen. They do now — the calendar's routes send a day's own
+ * explanation, and both gates record their measurements where the read-back
+ * looks — so the only sentences here still barred from a blank are the two the
+ * calendar composes itself, which have no measurement behind them.
  */
 describe('the topic admission reasons', () => {
   it('reach the merchant as words rather than as the renderer giving up', () => {
@@ -210,23 +212,19 @@ describe('the topic admission reasons', () => {
     }
   })
 
-  it('survive a held day, whose second sentence still gets no values', () => {
-    // Not a stylistic rule. Gate 1 stores its measurements under a shape the
-    // read-back does not look at, and Gate 2 stores none — so a blank in one of
-    // these sentences reaches a merchant as the literal text `{keyword}`. The
-    // calendar's routes now do send their values, but a held day renders two
-    // sentences — why the day was planned, and why it was stopped — and only
-    // the first comes from the calendar. This is what stops a well-meant edit
-    // adding a blank to the second before the values arrive.
+  it('stay free of blanks where the calendar composes the sentence itself', () => {
+    // These two are the calendar's own words about the calendar — that a day
+    // was planned from the merchant's opportunities, or typed in by hand — and
+    // there is no measurement behind either, so nothing could ever fill a blank
+    // in them. Every other sentence here may now carry one: the values reach
+    // the screen, proved by rendering in
+    // `apps/web/app/api/calendar/_lib/gate-reason-params.test.ts`.
     const leaking: string[] = []
-    for (const key of Object.keys(ADMISSION_REASON_PARAMS)) {
+    for (const key of ['topic.auto', 'topic.manual_addition']) {
       const placeholders = placeholdersIn(key)
       if (placeholders.length > 0) leaking.push(`${key} asks for {${placeholders.join('}, {')}}`)
     }
-    expect(
-      leaking,
-      'these would print a raw placeholder on a calendar chip, which sends no values at all',
-    ).toEqual([])
+    expect(leaking, 'nothing measures a value for these, so a blank would print raw').toEqual([])
   })
 
   it('ask only for values one of the two gates actually measures', () => {

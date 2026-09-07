@@ -183,18 +183,18 @@ export const GATE_REASON_PARAMS: Readonly<Record<string, readonly string[]>> = {
  * whether the research gathered for it is worth drafting from; the last two are
  * why a day holds the topic it holds, written by the calendar routes.
  *
- * **Every sentence for these is deliberately free of `{placeholders}`, and the
- * numbers below are all listed as offered-but-unused.** The values exist and are
- * measured, but they still do not reach the screen that would print them: Gate 1
- * folds its values into an audit column under a shape the read-back does not
- * look at, and Gate 2 stores none at all. The calendar's own half of this was
- * fixed — its routes now send the values with every chip's why-line — but a
- * held day shows *two* sentences, why it was planned and why it was stopped,
- * and only the first of those is fed. A blank in one of these would therefore
- * still print — a merchant reading the literal text `{keyword}` — on the
- * second. They are recorded here so that the sentences can be given their
- * numbers the day the values actually arrive, and so the test below still
- * catches a sentence that asks for something nothing anywhere measures.
+ * **These sentences may now carry `{placeholders}`, and until recently could
+ * not.** The values were always measured and never arrived anywhere they could
+ * be printed: the calendar sent every chip an empty bag, Gate 1 folded its
+ * measurements into an audit column one level below where the read-back looks,
+ * and Gate 2 recorded none at all. All three are fixed, so a held day now fills
+ * both of its sentences — why it was planned, and why it was stopped — from the
+ * same measurements. The sentences themselves are still written without numbers
+ * and gaining them is a copy edit, not a plumbing one.
+ *
+ * The table stays because it is the contract the copy is written against: a
+ * sentence asking for something no producer sends still fails the test below,
+ * which is how eleven wordless keys survived unnoticed in the first place.
  */
 export const ADMISSION_REASON_PARAMS: Readonly<Record<string, readonly string[]>> = {
   'gate1.admitted': [],
