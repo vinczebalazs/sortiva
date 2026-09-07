@@ -748,6 +748,27 @@ none of these cards is designing an interface, only implementing one.
 
 ### Live on merchant screens right now — found 2026-09-07, highest priority in the queue
 
+### Found by `R-TOAST-CODES` and `R-GONE-SUGGESTION-CLOSES`, 2026-09-07 late evening
+
+**R-OPPS-WIRE — three buttons on the Opportunities screen post to addresses that do not exist** · Lane F · **live on the product's central screen, and the eleventh instance of the pattern**
+Scope: the screen posts five addresses and **three of them exist nowhere** — verified against the frozen route table and against every route file on disk.
+- **Undo, after dismissing a card** posts `/{id}/restore`; the route is `/{id}/undismiss` (`packages/ui/src/opportunities/actions.ts:156`). **Live today: press Undo, read "That didn't go through", and the card disappears anyway** — the screen hides it optimistically and only restores it on a refusal it understands.
+- **"Generate recommendations"** posts `/{id}/recommendations`; the route is `POST /api/recommendations` (`actions.ts:185`). **This is the press that produces the two newest refusal sentences**, so on the deployed product those sentences are correct and unreachable.
+- **Marking a task applied, in the drawer**, posts `/{id}/tasks/{taskId}`; the nearest real route is `POST /api/recommendations/{id}/apply` (`actions.ts:188`).
+**Why nothing is red:** the browser test's stand-in server implements the invented addresses itself (`apps/web/e2e/mock-api-server.ts:233`, `:248`). **That is the same defect one layer further out** — the thing is checked against its own idea of itself, never against what serves it. Eleventh instance today.
+**Where it came from, stated because it is the integrator's own residue:** `R-CONTRACT` amended the frozen route table to the addresses that were actually built, and `R-API-SETTINGS` repointed the settings screens to match. **Nobody did the same for the Opportunities screen.** The contract and the routes agree; the screen was left behind.
+Read first: `DECISIONS.md` 2026-09-07 `R-CONTRACT` and `R-TOAST-CODES` entries; `packages/core/src/api/routes.ts` (the built addresses); ui §5.
+Done when: every address the screen posts is one the contract declares **and** a route file serves; the stand-in server stops implementing addresses the product does not have — it should be generated from or checked against the route table, not hand-written beside it; and a test fails by name if a screen ever posts an address no route serves, because that is the check whose absence let all three through.
+
+**R-EXPIRY-GAPS — three things the weekly expiry pass still cannot do** · Lane C
+Scope: three findings from `R-GONE-SUGGESTION-CLOSES`, all in `packages/jobs/src/scan/run.ts`, all deliberately left because that card was sent to close deleted-page suggestions and nothing else.
+- **`:376-390` — the same wide guard the walk's new pass just tightened.** The expiry pass filters statuses in its own code and then issues an update that would accept **any** open status, so a row another worker moves between the read and the write is expired anyway. One line: name the statuses in the update, so a race becomes a zero-row answer instead of a wrong write. Invariant 15.
+- **`:355` — when a store's Search Console connection goes away, the scan drops the four Search-Console signal types from the set it will expire.** Open cards of those types then **never expire at all**, whatever happens to their evidence. The intent was surely "do not expire on missing data", but the effect is a permanent card. The deleted-page pass rescues the ones whose page is gone and nothing else.
+- **`:369` — an intent-gap card is never expired without a fresh comparison.** Right for a page that still exists and has not been compared again; now answered for a deleted page; **no answer for a live page whose gap has genuinely closed.**
+**A fourth, and it is a small product choice rather than a defect:** after a merchant renames one of our published posts, the walk marks the **old** address gone, so an open suggestion keyed on that old address is now closed by the next walk rather than moved to the new address (`packages/db/src/repositories/inventory.ts:283`). Closing it is defensible; moving it is better. **Recommendation: move it**, since the page did not go away and the merchant did not act on the suggestion — but say what you did, because nobody has decided.
+Read first: `DECISIONS.md` 2026-09-07 `R-GONE-SUGGESTION-CLOSES` and `R-HANDLE-RENAME` entries; main §7.9, §7.11; invariants 10 and 15.
+Done when: the expiry update names the statuses it may act on; a card whose evidence source has gone away has a stated fate rather than an accidental immortality; and each of the three has either a fix or a written reason it stays.
+
 ### The four unused storage things — FOUNDER ANSWERED 2026-09-07: finish the first three, drop the fourth
 
 The read-only audit of 2026-09-07 found two tables and two columns that nothing writes and
