@@ -14,7 +14,7 @@ import {
 import {
   accountScope,
   findFreshSerpSnapshot,
-  listStorePages,
+  listLiveStorePages,
   readCachedRequest,
   resultsOf,
   systemScope,
@@ -92,7 +92,7 @@ export async function readIntentGapSignals(
   const config = rules().defaults.signals.existing_page_intent_gap
   const limit = rules().defaults.budgets.intent_gap.analyses_per_account_per_day
 
-  const inventory = await listStorePages(deps.db, accountScope(input.accountId))
+  const inventory = await listLiveStorePages(deps.db, accountScope(input.accountId))
   const byUrl = new Map(inventory.map((row) => [row.url, row]))
 
   const shortlist = shortlistIntentGapPages({

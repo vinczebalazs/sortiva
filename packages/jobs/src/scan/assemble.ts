@@ -46,7 +46,7 @@ import {
   listCompetitors,
   listFamilies,
   listQueryClusters,
-  listStorePages,
+  listLiveStorePages,
   listTopProducts,
   productSubstanceForFamilies,
   readPersona,
@@ -127,7 +127,7 @@ export function computeScanWindows(deps: AssembleDeps, windowDays: number): Scan
 
 async function pageFacts(db: Db, accountId: string): Promise<{ pages: readonly PageFact[]; index: ReturnType<typeof indexPages> }> {
   const scope = accountScope(accountId)
-  const rows = await listStorePages(db, scope)
+  const rows = await listLiveStorePages(db, scope)
   const pages: PageFact[] = rows.map((row) => ({
     url: row.url,
     pageType: row.pageType,
@@ -547,7 +547,7 @@ export async function assembleFamilyCoverageInput(
   const [families, topProducts, storePagesRows] = await Promise.all([
     listFamilies(deps.db, scope),
     listTopProducts(deps.db, scope),
-    listStorePages(deps.db, scope),
+    listLiveStorePages(deps.db, scope),
   ])
 
   const productFamilyById = new Map<string, string>()
@@ -627,7 +627,7 @@ export async function assembleRichnessGapInput(
 
 /** `missing_or_weak_metadata`'s input: the content inventory's collections and products, as they stand today. */
 export async function assembleMetadataInput(deps: AssembleDeps, accountId: string): Promise<MetadataInput> {
-  const rows = await listStorePages(deps.db, accountScope(accountId))
+  const rows = await listLiveStorePages(deps.db, accountScope(accountId))
   const now = (deps.now ?? (() => new Date()))().toISOString()
   const pages: MetadataPage[] = rows.map((row) => ({
     url: row.url,

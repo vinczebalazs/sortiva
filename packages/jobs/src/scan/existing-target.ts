@@ -90,17 +90,18 @@ function toRankedPages(
 /**
  * Whether the store still publishes each address.
  *
- * Every row answers `unknown`, and that is the honest answer rather than a
- * placeholder: a merchant who deletes a collection leaves its inventory row
- * behind and nothing records that it went. Recording it needs a database
- * column, which only a schema wave may add, and the shape of that column is an
- * open question for the founder (DECISIONS, `T3.2` and `T8.0`). The moment a
- * marker exists this is the one line that reads it; until then the check treats
- * `unknown` as still published, which is the direction that never produces a
- * second page competing with a live one.
+ * The walk records this now: it stamps every page the store served it and, on
+ * reaching the end of the store, marks whatever it did not find. So a merchant
+ * who deletes a collection is finally visible here, and the check can stop
+ * treating a page that no longer exists as a reason not to write a new one.
+ *
+ * A row is only ever `published` or `removed`, never `unknown` — but `unknown`
+ * remains the type's safe middle, and the rule still reads it as published,
+ * because treating a live page as gone is what produces two of our pages
+ * competing for one search.
  */
-function presenceOf(): ExistingTargetPage['presence'] {
-  return 'unknown'
+function presenceOf(row: { status: 'live' | 'gone' }): ExistingTargetPage['presence'] {
+  return row.status === 'gone' ? 'removed' : 'published'
 }
 
 export async function existingTargetInputFor(
@@ -124,13 +125,18 @@ export async function existingTargetInputFor(
   const start = new Date(end)
   start.setUTCDate(start.getUTCDate() - config.window_days + 1)
 
+  // Every row, deleted ones included, and deliberately not `listLiveStorePages`.
+  // The rule needs to *see* a removed page to rule it out: it reads presence off
+  // the row, and a page missing from this list is one it holds no opinion about,
+  // which it treats as still published. Filtering here would turn every deletion
+  // back into a live page — the opposite of this card.
   const inventory = await listStorePages(deps.db, scope)
   const pages: ExistingTargetPage[] = inventory.map((row) => ({
     url: row.url,
     pageType: row.pageType,
     intentClass: row.intentClass,
     familyIds: row.familyIds,
-    presence: presenceOf(),
+    presence: presenceOf(row),
   }))
 
   const rankedPages = limited
