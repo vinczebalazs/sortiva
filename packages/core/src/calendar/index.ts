@@ -43,3 +43,16 @@ export {
   type ScoringRecord,
   type TemplatedWhyLine,
 } from './replenishment'
+export {
+  MERCHANT_REQUEST_BLOCKERS,
+  isRefreshCandidate,
+  merchantRefreshBlockers,
+  rankRefreshCandidates,
+  refreshBlockers,
+  refreshExpectedGain,
+  withinRefreshCooldown,
+  type RefreshBlocker,
+  type RefreshCandidateFacts,
+  type RefreshEligibilityConfig,
+  type RefreshRanking,
+} from './refresh'

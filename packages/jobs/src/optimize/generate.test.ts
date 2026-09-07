@@ -13,7 +13,9 @@ import {
 import {
   accountScope,
   dismissOpportunityGuarded,
+  insertArticleStub,
   insertMinimalOpportunity,
+  insertTopic,
   latestOptimizeRecommendation,
   listOptimizeTasks,
   storeOptimizeRecommendation,
@@ -614,6 +616,91 @@ describe.skipIf(!available)('a generation that does not finish', () => {
     expect(outcome.reason).toBe('our_own_article_goes_to_the_refresh_pool')
     expect(f.llm.requests).toEqual([])
     expect(await statusOf(opportunity.id)).toBe('accepted')
+  })
+
+  it('sends that article to the rewrite pool, so the press is not a dead end', async () => {
+    const scope = accountScope(accountId)
+    const seed = await insertMinimalOpportunity(
+      db,
+      scope,
+      {
+        signalType: 'uncovered_commercial_query',
+        entityType: 'query_cluster',
+        entityRef: 'hiking boots seed',
+        evidenceJson: [],
+        recommendedAction: 'create',
+        status: 'completed',
+        reasonTemplateKey: 'gate1.admitted',
+        reasonParams: {},
+        limitedIntelligence: false,
+        rulesVersion: 'a'.repeat(64),
+      },
+      NOW,
+    )
+    const topic = await insertTopic(
+      db,
+      scope,
+      {
+        opportunityId: seed.id,
+        title: 'Hiking boots',
+        targetKeyword: 'hiking boots',
+        keywordCluster: null,
+        intentClass: 'buying_guide',
+        familyIds: [],
+        kind: 'new',
+        source: 'auto',
+        whyLine: 'topic.auto',
+        scheduledDate: '2026-01-01',
+        pinned: false,
+        state: 'published',
+      },
+      NOW,
+    )
+    const article = await insertArticleStub(
+      db,
+      scope,
+      { topicId: topic.id, title: 'Hiking boots', slug: 'hiking-boots-ours', targetKeyword: 'hiking boots', state: 'draft' },
+      NOW,
+    )
+    await harness.pool.query(`UPDATE articles SET state = 'published' WHERE id = $1`, [article.id])
+
+    await upsertStorePages(db, scope, [
+      {
+        url: PAGE,
+        pageType: 'article_ours',
+        handle: 'hiking-boots',
+        shopifyId: 'gid://shopify/Article/7',
+        title: 'Hiking boots',
+        seoTitle: 'Hiking boots',
+        seoDescription: null,
+        headings: [],
+        bodyHtml: '<p>Ours.</p>',
+        outboundInternalLinks: [],
+        familyIds: [],
+        checksum: 'checksum-ours',
+      },
+    ])
+    // The link from a page we published back to the article behind it. Nothing
+    // in the product writes this column yet, which is why it is set here — see
+    // the session report for T7.2.
+    await harness.pool.query(`UPDATE store_pages SET article_id = $1 WHERE account_id = $2 AND url = $3`, [
+      article.id,
+      accountId,
+      PAGE,
+    ])
+
+    const opportunity = await optimizeOpportunity()
+    const f = fixtures([withProductId(goodRecommendation())])
+
+    await generateOptimizeRecommendation(f.deps, { accountId, opportunityId: opportunity.id })
+
+    const { rows } = await harness.pool.query<{ recommended_action: string; entity_ref: string }>(
+      `SELECT recommended_action, entity_ref FROM opportunities
+       WHERE account_id = $1 AND signal_type = 'freshness_opportunity'`,
+      [accountId],
+    )
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toMatchObject({ recommended_action: 'refresh', entity_ref: article.id })
   })
 
   /**

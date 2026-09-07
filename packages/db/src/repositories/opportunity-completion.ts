@@ -1,6 +1,6 @@
-import { and, eq, inArray } from 'drizzle-orm'
+import { and, eq, inArray, sql } from 'drizzle-orm'
 import type { Db } from '../client'
-import { OPEN_OPPORTUNITY_STATUSES, articles, opportunities, topics } from '../schema'
+import { OPEN_OPPORTUNITY_STATUSES, articles, opportunities, refreshLog, topics } from '../schema'
 import type { AccountScope } from '../scope'
 import type { ArticleRow } from './articles'
 import type { OpportunityRow } from './opportunities'
@@ -51,7 +51,45 @@ export async function completeOpportunityForPublishedArticle(
       ),
     )
     .returning()
+  if (!row) return undefined
+
+  await startRefreshCooldownIfRewrite(db, row, now)
   return row
+}
+
+/**
+ * A rewrite that has gone live starts the article's cooldown.
+ *
+ * The cooldown exists because Google takes weeks to re-read a page and form a
+ * new opinion of it; rewriting again before then is churn we pay for and the
+ * merchant sees nothing from. It is measured from the moment the rewrite is
+ * actually on their site, not from when it was asked for or scheduled — a
+ * request that is vetoed, or a draft held back for quality, must not lock the
+ * article out of being rewritten for two months.
+ *
+ * The row recorded is the article that was *rewritten*, which is the one the
+ * piece of work named when it entered the pool — not whichever article row the
+ * pipeline produced. Those are the same thing today only by accident of how a
+ * rewrite is produced, and the cooldown is about the published page.
+ */
+async function startRefreshCooldownIfRewrite(
+  db: Db,
+  completed: OpportunityRow,
+  now: Date,
+): Promise<void> {
+  if (completed.recommendedAction !== 'refresh') return
+  if (completed.entityType !== 'article') return
+  // Written from the articles table rather than from the reference directly:
+  // a piece of work naming an article that no longer exists records nothing,
+  // instead of failing a key check and rolling back a publication that has
+  // already happened on the merchant's shop.
+  await db.execute(sql`
+    INSERT INTO ${refreshLog} (article_id, refreshed_at)
+    SELECT ${articles.id}, ${now}
+    FROM ${articles}
+    WHERE ${articles.id} = ${completed.entityRef}::uuid
+      AND ${articles.accountId} = ${completed.accountId}
+  `)
 }
 
 /**
