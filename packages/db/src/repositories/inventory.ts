@@ -171,6 +171,27 @@ export async function listStorePages(
     .orderBy(storePages.url)
 }
 
+/**
+ * The pages the store still serves.
+ *
+ * What almost every reader wants. `listStorePages` returns deleted pages too,
+ * which is right for erasing an account and wrong for anything that asks what
+ * the store covers: a page the merchant took down cannot be improved, cannot be
+ * compared against a competitor, and must not go on counting as coverage that
+ * stops us proposing a replacement.
+ *
+ * A deleted row is kept rather than removed, because the walk can find the page
+ * again and put it straight back to live — so this filters rather than the
+ * inventory forgetting.
+ */
+export async function listLiveStorePages(db: Db, scope: AccountScope): Promise<StorePageRow[]> {
+  return db
+    .select()
+    .from(storePages)
+    .where(and(eq(storePages.accountId, scope.accountId), eq(storePages.status, 'live')))
+    .orderBy(storePages.url)
+}
+
 /** The page's body as it was published. Stored compressed; read back as text. */
 export function readStorePageBody(row: Pick<StorePageRow, 'bodyCompressed'>): string | null {
   if (!row.bodyCompressed) return null

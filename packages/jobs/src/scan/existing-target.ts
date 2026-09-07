@@ -125,6 +125,11 @@ export async function existingTargetInputFor(
   const start = new Date(end)
   start.setUTCDate(start.getUTCDate() - config.window_days + 1)
 
+  // Every row, deleted ones included, and deliberately not `listLiveStorePages`.
+  // The rule needs to *see* a removed page to rule it out: it reads presence off
+  // the row, and a page missing from this list is one it holds no opinion about,
+  // which it treats as still published. Filtering here would turn every deletion
+  // back into a live page — the opposite of this card.
   const inventory = await listStorePages(deps.db, scope)
   const pages: ExistingTargetPage[] = inventory.map((row) => ({
     url: row.url,

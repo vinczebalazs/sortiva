@@ -6,6 +6,7 @@ import {
   familyIdsByShopifyProductId,
   listStorePages,
   readStorePageBody,
+  listLiveStorePages,
   markStorePagesGoneNotSeenSince,
   markStorePagesSeen,
   storePageChecksums,
@@ -232,6 +233,20 @@ describe.skipIf(!available)('marking a page the store stopped serving', () => {
     expect(await markStorePagesGoneNotSeenSince(ctx.db, scope, T1)).toBe(0)
     const [row] = await listStorePages(ctx.db, scope)
     expect(row?.status).toBe('live')
+  })
+
+  it('lists only the pages the store still serves', async () => {
+    const scope = accountScope(accountId)
+    await upsertStorePages(ctx.db, scope, [page(), page({ url: 'https://shop.example/collections/hats', shopifyId: '2' })], T0)
+    await markStorePagesSeen(ctx.db, scope, ['https://shop.example/collections/boots'], T1)
+    await markStorePagesGoneNotSeenSince(ctx.db, scope, T1)
+
+    expect((await listLiveStorePages(ctx.db, scope)).map((r) => r.url)).toEqual([
+      'https://shop.example/collections/boots',
+    ])
+    // The deleted row is filtered, not forgotten — the walk can find the page
+    // again and put it straight back.
+    expect(await listStorePages(ctx.db, scope)).toHaveLength(2)
   })
 
   it('never reaches another account’s pages', async () => {
