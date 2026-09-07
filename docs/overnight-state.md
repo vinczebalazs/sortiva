@@ -779,6 +779,60 @@ back for capacity reasons any more — the queue is worked until it is empty. De
 founder's earlier choice) and `T10.4` still cannot run without the Shopify development store they
 deliberately deferred.
 
+### Four cards landed and merged green in one pass — `R-SCANCOPY`, `R-PAGE-GONE-READ`, `T7.2`, `R-API-PRODUCTS`
+
+`main` at `8b9644e`+. **Full gate eleven of eleven after every one of the four merges** (`pnpm eval`
+not run — no Anthropic key, the standing red). **296 test files, 3,718 tests**, up from 289/3,597 at the
+handover. `pnpm chaos` 10 of 10 throughout.
+
+**On test counts, because two reported numbers did not reconcile and it is worth knowing why.** Lane C
+reported 3,639 tests in its own worktree; the merged tree gained exactly 9 from its files, which is
+exactly what its two changed files contain (8 + 1, counted directly). So nothing was lost in the merge —
+one of the *reported baselines* is simply wrong, not the tree. The measured numbers on `main` are the
+only ones anyone should quote.
+
+**What each card did, in one line:**
+
+- **`R-SCANCOPY`** — the empty state stops promising Monday. Its own section below.
+- **`R-PAGE-GONE-READ`** — a page the merchant deleted stops attracting work: it no longer blocks a new
+  article on the subject it covered, is no longer suggested for a rewrite, is no longer **bought and
+  compared against a competitor at our expense**, and stops counting as coverage that suppresses a
+  replacement. Four call sites, all Lane C: the lane named two, this integrator found a third while
+  checking the report, and the lane found the fourth itself (`scan/intent-gap.ts:95`, the paid
+  comparison shortlist). One reader deliberately still sees deleted rows, with a comment saying why —
+  the existing-target rule decides by reading presence *off* the row, so filtering there would have
+  turned every deletion back into a live page and silently undone the card.
+- **`T7.2`** — an article we published can be sent back to be rewritten, and an improve-this-page press
+  landing on one of our own articles stops being a dead end. **The correction underneath is the
+  important part: nothing in the product wrote the rewrite history the sixty-day cooldown reads.** The
+  rule was right in tests and could never have been true in production, with no way to notice from
+  outside.
+- **`R-API-PRODUCTS`** — the first of the six serverless screens gets its server.
+
+**Two integrator-applied lines**, both on lane reports: the `template.freshness_opportunity.*` sentences
+`T7.2` needed in `packages/ui/strings/en.json` (Lane F's file, Lane F idle at the time), without which a
+queued rewrite renders a blank why-line.
+
+### Four findings from those four cards, all carded, none acted on
+
+- **`R-REWRITE-PLACE` — BLOCKED on a founder decision, and it is the one that matters.** A rewrite
+  currently publishes a **second article competing with the first** for the same search, because nothing
+  downstream reads that a topic is a rewrite. That is cannibalization — the exact thing invariant 6
+  exists to prevent — arriving by the one route the existing-target check does not guard. Pre-existing,
+  but `T7.2` makes it the ordinary path rather than a corner. **No rewrite should reach a live merchant
+  until the founder answers whether a rewrite replaces the article in place or goes out as a new post.**
+  The in-place machinery already exists (`R-PUBLISH-2` built a conditional update that never falls back
+  to create), so neither answer is a large build.
+- **`R-ARTICLE-OURS`** (Lane C, dispatched) — nothing anywhere marks a store page as one we published,
+  so `T6.3`'s refusal and `T7.2`'s pool routing are both **correct, tested, green and unreachable for a
+  real merchant**. The single thing between `T7.2`'s founder done-when and being true live.
+- **`R-TASK-DONE`** (Lane C) — the Products screen's completed-tasks section can never fill: a merchant
+  who fixes their thin product pages leaves an expiry whose recorded reason is indistinguishable from a
+  keyword losing its search volume. The endpoint returns null deliberately rather than congratulating
+  merchants for work they never did.
+- **`R-REPAIR-COPY`** (Lane F, dispatched) — the repair path's explanations render blank, and the
+  renderer answers a missing key with silence, which is how they went unnoticed.
+
 ### `R-SCANCOPY` LANDED — the empty state stops promising Monday, and the sentence that replaces it is dormant
 
 Merged `7096a1a`. **Full gate green, eleven of eleven** (`pnpm eval` not run — no Anthropic key, the
@@ -817,9 +871,9 @@ build plan's own stale copy of that string was corrected at `T9.4`'s done-when. 
 
 | Session | Worktree | Card |
 |---|---|---|
-| `sortiva-a8 [187d15]` | `sortiva-lane-c` | `R-PAGE-GONE-READ` — dispatched by the previous integrator, mid-card |
-| lane session | `sortiva-lane-d` | `T7.2` — the refresh pool |
-| lane session | `sortiva-lane-b` | `R-API-PRODUCTS` — the Products screen has no server |
+| lane session | `sortiva-lane-c` | `R-ARTICLE-OURS` — nothing marks a page as one we published |
+| lane session | `sortiva-lane-d` | `R-API-ARTICLES` — the articles screens and the override button have no server |
+| lane session | `sortiva-lane-f` | `R-REPAIR-COPY` — the repair path's explanations render blank |
 | this integrator | `sortiva` (main) | `R-CONTRACT` — its own card by rule |
 
 **Still open after those four**: `R-RUNWAY`, `R-QUOTA`, `R-STOREFRONT`, `R-DRAFT-PROMPT` (all Lane D,
