@@ -64,7 +64,7 @@ const PAGES_PER_RUN = 500
 
 /** Only what we read. Asking for less is also the first line of the customer-data defence. */
 const PRODUCT_FIELDS =
-  'id,title,body_html,handle,product_type,vendor,tags,status,updated_at,variants,images'
+  'id,title,body_html,handle,product_type,vendor,tags,status,updated_at,variants,options,images'
 
 /**
  * The order fields we ask for, and the list is short on purpose.

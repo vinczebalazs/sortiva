@@ -1,3 +1,4 @@
+import type { ProductOption } from '../catalog/products'
 import { productAttributes, type ProductAttributes, type ProductAttributeInput } from './attributes'
 import {
   clusterByAttributes,
@@ -43,6 +44,8 @@ export interface GroupingInput {
   readonly populatedFields: number
   readonly tags?: readonly string[]
   readonly productType?: string | null
+  /** The store's own option definitions, where it publishes any. */
+  readonly options?: readonly ProductOption[]
 }
 
 export interface GroupingPlan {
@@ -86,6 +89,7 @@ export function groupProducts(
       factSheet: product.factSheet,
       populatedFields: product.populatedFields,
       ...(product.tags ? { tags: product.tags } : {}),
+      ...(product.options ? { options: product.options } : {}),
       taxonomyKey: taxonomyKeyFor({
         ...(product.productType === undefined ? {} : { productType: product.productType }),
       }),

@@ -1,6 +1,7 @@
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm'
-import type { FactSheet } from '@sortiva/core'
+import type { FactSheet, ProductOption } from '@sortiva/core'
 import type { Db } from '../client'
+import { storedOptions } from './catalog'
 import { productFacts, productFamilies, products } from '../schema'
 import type { AccountScope } from '../scope'
 
@@ -23,6 +24,11 @@ export interface GroupableProduct {
   readonly title: string
   readonly productType: string | null
   readonly tags: readonly string[]
+  /**
+   * The store's own option axes. Empty for a store that defines none and for a
+   * product last read before the sync began asking for them.
+   */
+  readonly options: readonly ProductOption[]
   /** Null for a product distillation has not reached yet. */
   readonly factSheet: FactSheet | null
   readonly checksum: string | null
@@ -50,6 +56,7 @@ export async function productsForGrouping(
       title: products.title,
       productType: products.productType,
       tags: products.tags,
+      options: products.options,
       checksum: products.checksum,
       factsJson: productFacts.factsJson,
       distilledAt: productFacts.distilledAt,
@@ -65,6 +72,7 @@ export async function productsForGrouping(
     title: row.title,
     productType: row.productType,
     tags: row.tags ?? [],
+    options: storedOptions(row.options),
     factSheet: (row.factsJson ?? null) as FactSheet | null,
     checksum: row.checksum,
     distilledAt: row.distilledAt,

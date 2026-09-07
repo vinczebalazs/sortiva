@@ -240,6 +240,36 @@ describe.skipIf(!available)('reading a whole store', () => {
     ])
   })
 
+  it("asks the store for its own option axes and keeps them", async () => {
+    const shopify = new FakeShopify([
+      shopifyProduct(1, {
+        options: [
+          { name: 'Size', position: 1, values: ['UK 8', 'UK 9'] },
+          { name: 'Colour', position: 2, values: ['Black', 'Tan'] },
+        ],
+      }),
+    ])
+    const { outcome } = await runCatalogSync(deps(shopify))
+    expect(outcome.status).toBe('succeeded')
+
+    // Asked for by name: without it in the field list Shopify sends the product
+    // back with no options at all and the store's best-organised data is lost.
+    expect(shopify.requested[0]).toContain('options')
+
+    const { rows } = await harness.pool.query<{ options: unknown }>('select options from products')
+    expect(rows[0]?.options).toEqual([
+      { name: 'Size', values: ['UK 8', 'UK 9'] },
+      { name: 'Colour', values: ['Black', 'Tan'] },
+    ])
+  })
+
+  it('leaves a store that publishes no options exactly as it was', async () => {
+    const shopify = new FakeShopify([shopifyProduct(1)])
+    await runCatalogSync(deps(shopify))
+    const { rows } = await harness.pool.query<{ options: unknown }>('select options from products')
+    expect(rows[0]?.options).toEqual([])
+  })
+
   it('resumes at the page it reached rather than at the first one', async () => {
     // Three pages of two products. The store dies after the second request,
     // which is part-way through the walk.

@@ -162,6 +162,58 @@ describe('distillProduct', () => {
     expect(result.populatedFields).toBe(2)
   })
 
+  it("names the axes a product varies along from the store's own option fields", async () => {
+    const llm = new StubLlmClient(facts({ material: 'mesh' }))
+
+    const result = await distillProduct(
+      { llm, prompt: PROMPT },
+      {
+        accountId: 'acc-1',
+        product: {
+          productId: 'p1',
+          title: 'Trail Shoe',
+          descriptionText: 'A mesh trail shoe built for long days on rough ground.',
+          priceRange: { min: 120, max: 120 },
+          options: [
+            { name: 'Size', values: ['UK 8', 'UK 9'] },
+            { name: 'Colour', values: ['Black', 'Tan'] },
+          ],
+        },
+      },
+    )
+
+    expect(result.factSheet.variant_axes).toEqual(['Size', 'Colour'])
+    // Names, not values: every value belongs to this one product, so listing
+    // them would say a shoe is black and tan at once.
+    expect(result.factSheet.variant_axes).not.toContain('Black')
+    // The axes are merged, not extracted, so they do not count as facts the
+    // description supported — otherwise every product in every store would look
+    // better described than it is.
+    expect(result.factSheet.fact_count).toBe(1)
+    expect(result.populatedFields).toBe(1)
+    // Nothing about the axes reaches the model.
+    const sent = llm.requests.map((r) => r.messages.map((m) => m.content).join('\n')).join('\n')
+    expect(sent).not.toContain('Colour')
+  })
+
+  it('leaves the axes empty for a store that publishes none, rather than guessing', async () => {
+    const llm = new StubLlmClient(facts({ material: 'mesh' }))
+    const result = await distillProduct(
+      { llm, prompt: PROMPT },
+      {
+        accountId: 'acc-1',
+        product: {
+          productId: 'p1',
+          title: 'Trail Shoe',
+          descriptionText: 'A mesh trail shoe built for long days on rough ground.',
+          priceRange: null,
+          options: [{ name: 'Title', values: ['Default Title'] }],
+        },
+      },
+    )
+    expect(result.factSheet.variant_axes).toEqual([])
+  })
+
   it('never carries the description into the fact sheet', async () => {
     const marketing = 'Effortlessly elevate your everyday carry with this stunning leather tote.'
     const llm = new StubLlmClient(facts({ material: 'leather', fluff_discarded: true }))

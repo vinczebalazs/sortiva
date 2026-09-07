@@ -60,6 +60,80 @@ describe('attribute names', () => {
   })
 })
 
+describe("the store's own option definitions", () => {
+  it('names an axis the merchant chose, with every value they offer', () => {
+    const attributes = productAttributes({
+      productId: 'p1',
+      title: 'Trail Shoe',
+      factSheet: emptyFactSheet(),
+      populatedFields: 4,
+      options: [{ name: 'Terrain', values: ['Trail', 'Road'] }],
+    })
+    expect(attributes.attributes.get('terrain')).toEqual(['road', 'trail'])
+    expect(attributes.sources.get('terrain')).toBe('product_option')
+  })
+
+  it('wins the name over a tag and over the sheet, being the only one nothing inferred', () => {
+    const attributes = productAttributes({
+      productId: 'p1',
+      title: 'Boot',
+      factSheet: { ...emptyFactSheet(), material: 'suede' },
+      populatedFields: 4,
+      tags: ['material:full-grain leather'],
+      options: [{ name: 'Material', values: ['Nubuck'] }],
+    })
+    expect(attributes.attributes.get('material')).toEqual(['nubuck'])
+    expect(attributes.sources.get('material')).toBe('product_option')
+  })
+
+  it('ignores the option Shopify invents for a product with nothing to choose', () => {
+    // Left in, every product in every store would carry one attribute they all
+    // share and agree on, and two unrelated products would look identical.
+    const bare = (id: string) =>
+      productAttributes({
+        productId: id,
+        title: id,
+        factSheet: emptyFactSheet(),
+        populatedFields: 0,
+        options: [{ name: 'Title', values: ['Default Title'] }],
+      })
+    expect(bare('a').attributes.size).toBe(0)
+    expect(attributeSimilarity(bare('a'), bare('b')).nameOverlap).toBe(0)
+  })
+
+  it('still merges split variants that differ on an option, which is the whole premise', () => {
+    const shoe = (id: string, colour: string) =>
+      productAttributes({
+        productId: id,
+        title: `Trailblazer Shoe — ${colour}`,
+        factSheet: { ...emptyFactSheet(), material: 'mesh', care: 'wipe clean', origin: 'vietnam' },
+        populatedFields: 5,
+        options: [{ name: 'Colour', values: [colour] }],
+      })
+    const groups = detectLogicalProducts([shoe('p1', 'Red'), shoe('p2', 'Blue')])
+    expect(groups).toHaveLength(1)
+    expect(groups[0]?.memberIds).toEqual(['p1', 'p2'])
+  })
+
+  it('becomes a differentiation axis for a family whose members offer different values', () => {
+    const shoe = (id: string, terrain: string) =>
+      productAttributes({
+        productId: id,
+        title: `Shoe ${id}`,
+        factSheet: { ...emptyFactSheet(), material: 'mesh' },
+        populatedFields: 5,
+        options: [{ name: 'Terrain', values: [terrain] }],
+      })
+    const { axes, sources } = differentiationAxes([
+      shoe('a', 'Trail'),
+      shoe('b', 'Road'),
+      shoe('c', 'Fell'),
+    ])
+    expect(axes).toContain('terrain')
+    expect(sources['terrain']).toBe('product_option')
+  })
+})
+
 describe('the promo blocklist', () => {
   it('rejects a name that is only about when we are selling something', () => {
     for (const name of ['Summer Sale', 'New Arrivals', 'Featured', 'Best Sellers', 'All Products']) {

@@ -165,6 +165,7 @@ function toGroupingInput(product: GroupableProduct): GroupingInput {
     populatedFields: countPopulatedFields(factSheet),
     tags: product.tags,
     productType: product.productType,
+    options: product.options,
   }
 }
 

@@ -1,3 +1,4 @@
+import { namedOptionAxes, type ProductOption } from '../catalog/products'
 import type { FactSheet } from '../distill/schema'
 
 /**
@@ -10,6 +11,9 @@ import type { FactSheet } from '../distill/schema'
  * research. An axis called `option_2` would be worse than no axis at all, so
  * every name here comes from somewhere that named it:
  *
+ *  - **the store's own option definitions** — "Size: S/M/L" — where the axis
+ *    name and its values are both the merchant's, stated in a structured field
+ *    rather than inferred from anything. The strongest source there is;
  *  - **the fact sheet**, whose ten fields we named ourselves and whose values
  *    were extracted from the merchant's own description;
  *  - **the merchant's own tags**, where they are written `terrain:trail` — the
@@ -44,7 +48,7 @@ export const AXIS_FACT_FIELDS = [
 ] as const
 
 /** Where one attribute name came from, kept so a wrong axis can be traced to what named it. */
-export type AttributeSource = 'fact_sheet' | 'tag' | 'variant_token'
+export type AttributeSource = 'fact_sheet' | 'tag' | 'variant_token' | 'product_option'
 
 export interface AttributeValue {
   readonly name: string
@@ -78,6 +82,12 @@ export interface ProductAttributeInput {
   readonly taxonomyKey?: string | null
   /** Variant token classes and values the split-variant merge stripped out of the title. */
   readonly variantTokens?: readonly AttributeValue[]
+  /**
+   * The store's own option definitions. Empty for a store that keeps its
+   * attributes elsewhere, and for a product last read before the catalogue sync
+   * began asking Shopify for them.
+   */
+  readonly options?: readonly ProductOption[]
 }
 
 /**
@@ -110,6 +120,8 @@ export function normalizeAttributeName(raw: string): string {
  * The merchant's tags win a name collision with the fact sheet: a store that
  * has tagged `material:leather` has said so deliberately and in their own
  * vocabulary, where the sheet's `material` was read out of prose by a model.
+ * The store's own option definitions win over everything, for the same reason
+ * one step further: nothing about them was inferred at all.
  */
 export function productAttributes(input: ProductAttributeInput): ProductAttributes {
   const attributes = new Map<string, string[]>()
@@ -125,6 +137,13 @@ export function productAttributes(input: ProductAttributeInput): ProductAttribut
     }
     attributes.set(name, [...new Set([...(existing ?? []), ...cleaned])].sort())
     sources.set(name, source)
+  }
+
+  for (const option of namedOptionAxes(input.options)) {
+    // Every value of the axis, because they are all true of this one product: a
+    // shoe offered in three sizes is all three, and picking one would be
+    // choosing a variant on the merchant's behalf.
+    add(normalizeAttributeName(option.name), option.values, 'product_option')
   }
 
   for (const value of input.variantTokens ?? []) {

@@ -61,7 +61,7 @@ const PAGE_SIZE = 250
 const PAGES_PER_RUN = 120
 
 const PRODUCT_FIELDS =
-  'id,title,body_html,handle,product_type,vendor,tags,status,updated_at,variants,images'
+  'id,title,body_html,handle,product_type,vendor,tags,status,updated_at,variants,options,images'
 const ORDER_FIELDS = 'id,created_at,currency,total_price,landing_site,cancelled_at,test,line_items'
 
 export interface SweepDeps {

@@ -1,6 +1,6 @@
 import { gzipSync, gunzipSync } from 'node:zlib'
 import { and, asc, eq, gt, inArray, isNull, lt, notInArray, sql } from 'drizzle-orm'
-import { descriptionText, type FactSheet } from '@sortiva/core'
+import { descriptionText, type FactSheet, type ProductOption } from '@sortiva/core'
 import type { Db } from '../client'
 import {
   landingRevenueDaily,
@@ -33,6 +33,14 @@ export interface ProductInput {
   readonly tags: readonly string[]
   readonly variants: unknown
   readonly priceRange: unknown
+  /**
+   * The store's own option axes. `undefined` means this caller did not read
+   * them and the stored value is to be left alone; an empty list means the
+   * store states none, which is a fact and is written.
+   */
+  readonly options?: unknown
+  /** The store's own metafields, on the same undefined-means-unread rule. */
+  readonly metafields?: unknown
   readonly updatedAt: Date | null
   readonly checksum: string
 }
@@ -48,6 +56,14 @@ export interface ProductInput {
  * `family_id` and `logical_product_id` are deliberately left alone on conflict.
  * They are decided by the grouping step, not by Shopify, and a nightly re-read
  * that cleared them would un-group the catalogue every night.
+ *
+ * Options and metafields are left alone too, but for a different reason and only
+ * when the caller did not read them. They cost an extra request or an extra
+ * field to fetch, so not every path that writes a product has them in hand — a
+ * webhook delivery carries options but never metafields. A caller that did not
+ * ask must not be able to erase what a caller that did asked for, so the batch
+ * is split by which of the two it actually holds and each group is written with
+ * its own conflict clause.
  */
 export async function upsertProducts(
   db: Db,
@@ -56,40 +72,58 @@ export async function upsertProducts(
   now: Date = new Date(),
 ): Promise<number> {
   if (batch.length === 0) return 0
-  const values = batch.map((product) => ({
-    accountId: scope.accountId,
-    shopifyProductId: product.shopifyProductId,
-    title: product.title,
-    // Bulky, rarely read, and quarantined from everything downstream — so it is
-    // stored compressed rather than as text.
-    rawBodyHtml: compressBody(product.rawBodyHtml),
-    productType: product.productType,
-    tags: [...product.tags],
-    variants: product.variants as never,
-    priceRange: product.priceRange as never,
-    updatedAt: product.updatedAt,
-    checksum: product.checksum,
-    syncedAt: now,
-  }))
 
-  await db
-    .insert(products)
-    .values(values)
-    .onConflictDoUpdate({
-      target: [products.accountId, products.shopifyProductId],
-      set: {
-        title: sql`excluded.title`,
-        rawBodyHtml: sql`excluded.raw_body_html`,
-        productType: sql`excluded.product_type`,
-        tags: sql`excluded.tags`,
-        variants: sql`excluded.variants`,
-        priceRange: sql`excluded.price_range`,
-        updatedAt: sql`excluded.updated_at`,
-        checksum: sql`excluded.checksum`,
-        syncedAt: sql`excluded.synced_at`,
-      },
-    })
-  return values.length
+  const groups = new Map<string, ProductInput[]>()
+  for (const product of batch) {
+    const key = `${product.options === undefined ? '-' : 'o'}${product.metafields === undefined ? '-' : 'm'}`
+    const bucket = groups.get(key) ?? []
+    bucket.push(product)
+    groups.set(key, bucket)
+  }
+
+  for (const bucket of groups.values()) {
+    const hasOptions = bucket[0]!.options !== undefined
+    const hasMetafields = bucket[0]!.metafields !== undefined
+
+    const values = bucket.map((product) => ({
+      accountId: scope.accountId,
+      shopifyProductId: product.shopifyProductId,
+      title: product.title,
+      // Bulky, rarely read, and quarantined from everything downstream — so it is
+      // stored compressed rather than as text.
+      rawBodyHtml: compressBody(product.rawBodyHtml),
+      productType: product.productType,
+      tags: [...product.tags],
+      variants: product.variants as never,
+      priceRange: product.priceRange as never,
+      ...(hasOptions ? { options: product.options as never } : {}),
+      ...(hasMetafields ? { metafields: product.metafields as never } : {}),
+      updatedAt: product.updatedAt,
+      checksum: product.checksum,
+      syncedAt: now,
+    }))
+
+    await db
+      .insert(products)
+      .values(values)
+      .onConflictDoUpdate({
+        target: [products.accountId, products.shopifyProductId],
+        set: {
+          title: sql`excluded.title`,
+          rawBodyHtml: sql`excluded.raw_body_html`,
+          productType: sql`excluded.product_type`,
+          tags: sql`excluded.tags`,
+          variants: sql`excluded.variants`,
+          priceRange: sql`excluded.price_range`,
+          ...(hasOptions ? { options: sql`excluded.options` } : {}),
+          ...(hasMetafields ? { metafields: sql`excluded.metafields` } : {}),
+          updatedAt: sql`excluded.updated_at`,
+          checksum: sql`excluded.checksum`,
+          syncedAt: sql`excluded.synced_at`,
+        },
+      })
+  }
+  return batch.length
 }
 
 /** What we already hold for a product, as the change comparison needs it. */
@@ -456,6 +490,8 @@ export interface DistillableProductRecord {
   /** The description as plain text, ready for the model. Empty when the product has none. */
   readonly descriptionText: string
   readonly priceRange: { readonly min: number; readonly max: number } | null
+  /** The store's own option axes, merged into the sheet rather than extracted from prose. */
+  readonly options: readonly ProductOption[]
   /** The two halves of the distillation key: re-running an unchanged product is a no-op by construction. */
   readonly updatedAt: Date | null
   readonly checksum: string | null
@@ -480,6 +516,7 @@ export async function productsForDistillation(
       title: products.title,
       rawBodyHtml: products.rawBodyHtml,
       priceRange: products.priceRange,
+      options: products.options,
       updatedAt: products.updatedAt,
       checksum: products.checksum,
     })
@@ -498,9 +535,35 @@ export async function productsForDistillation(
     title: row.title,
     descriptionText: descriptionText(readProductBody(row)),
     priceRange: (row.priceRange ?? null) as DistillableProductRecord['priceRange'],
+    options: storedOptions(row.options),
     updatedAt: row.updatedAt,
     checksum: row.checksum,
   }))
+}
+
+/**
+ * The option column, read back defensively.
+ *
+ * The column takes whatever Shopify sent and the database validates none of it,
+ * so a reader that trusted the shape would hand a malformed row straight into
+ * grouping. Anything that is not a named axis is dropped here rather than
+ * further in, where the damage would be an invented comparison heading on a
+ * merchant's screen.
+ */
+export function storedOptions(value: unknown): readonly ProductOption[] {
+  if (!Array.isArray(value)) return []
+  const out: ProductOption[] = []
+  for (const entry of value) {
+    if (typeof entry !== 'object' || entry === null) continue
+    const name = (entry as { name?: unknown }).name
+    if (typeof name !== 'string' || name.trim() === '') continue
+    const raw = (entry as { values?: unknown }).values
+    const values = Array.isArray(raw)
+      ? raw.filter((v): v is string => typeof v === 'string' && v.trim() !== '').map((v) => v.trim())
+      : []
+    out.push({ name: name.trim(), values })
+  }
+  return out
 }
 
 /** The product's quarantined description, read back as text. */
