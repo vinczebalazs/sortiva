@@ -114,12 +114,30 @@ const article = {
   ...SHOP,
   blogId: '77',
   blogHandle: 'news',
+  storefrontDomain: 'acme.com',
   title: 'Best bottles',
   bodyHtml: '<p>Hello</p>',
   handle: 'best-bottles',
   summary: 'A summary.',
   marker: 'sortiva-abc',
   publishAs: 'live' as const,
+}
+
+/**
+ * What a revision is allowed to carry. Spelled out rather than spread from
+ * `article`, because the fields it leaves behind — the address, the published
+ * state — are the point of the card: `UpdateArticleInput` has nowhere to put
+ * them.
+ */
+const revision = {
+  ...SHOP,
+  blogId: '77',
+  blogHandle: 'news',
+  storefrontDomain: 'acme.com',
+  title: 'Best bottles',
+  bodyHtml: '<p>Hello</p>',
+  summary: 'A summary.',
+  marker: 'sortiva-abc',
 }
 
 describe('what we put on a merchant`s blog', () => {
@@ -135,7 +153,7 @@ describe('what we put on a merchant`s blog', () => {
   })
 
   it('sends no tag on a revision either, so the merchant`s own tags survive', async () => {
-    await client().updateArticle({ ...article, remoteArticleId: '991' })
+    await client().updateArticle({ ...revision, remoteArticleId: '991' })
 
     const sent = recorded.find((r) => r.method === 'PUT')!
     const payload = sent.body!['article'] as Record<string, unknown>
@@ -161,8 +179,77 @@ describe('what we put on a merchant`s blog', () => {
 
   it('records the address Shopify actually serves the post at — the blog`s name, not its number', async () => {
     const remote = await client().createArticle(article)
-    expect(remote.url).toBe(`${base}/blogs/news/best-bottles`)
+    expect(remote.url).toBe('https://acme.com/blogs/news/best-bottles')
     expect(remote.url).not.toContain('/blogs/77/')
+  })
+
+  /**
+   * The address a shopper opens and the host we talk to Shopify through are
+   * two different hosts, and only the first can ever be matched to a Search
+   * Console row. The request still went to the shop; the address recorded did
+   * not.
+   */
+  it('records the store`s own domain, while still talking to Shopify`s host', async () => {
+    const remote = await client().createArticle(article)
+
+    expect(remote.url).toBe('https://acme.com/blogs/news/best-bottles')
+    expect(remote.url).not.toContain('myshopify')
+    expect(recorded.find((r) => r.method === 'POST')!.path).toContain('/blogs/77/articles.json')
+  })
+
+  describe('a revision sends the words we wrote and nothing else', () => {
+    /** Exactly the keys a revision may carry. A new one added here is a new thing we overwrite. */
+    it('sends the title, the body, the summary and our own hidden marker — and no more', async () => {
+      await client().updateArticle({ ...revision, remoteArticleId: '991' })
+
+      const payload = recorded.find((r) => r.method === 'PUT')!.body!['article'] as Record<
+        string,
+        unknown
+      >
+      expect(Object.keys(payload).sort()).toEqual([
+        'body_html',
+        'id',
+        'metafields',
+        'summary_html',
+        'title',
+      ])
+    })
+
+    it('sends no address, so a post the merchant renamed keeps its name', async () => {
+      await client().updateArticle({ ...revision, remoteArticleId: '991' })
+
+      const payload = recorded.find((r) => r.method === 'PUT')!.body!['article'] as Record<
+        string,
+        unknown
+      >
+      expect(Object.keys(payload)).not.toContain('handle')
+    })
+
+    it('sends no published state, so a post the merchant took down stays down', async () => {
+      await client().updateArticle({ ...revision, remoteArticleId: '991' })
+
+      const payload = recorded.find((r) => r.method === 'PUT')!.body!['article'] as Record<
+        string,
+        unknown
+      >
+      expect(Object.keys(payload)).not.toContain('published')
+      expect(Object.keys(payload)).not.toContain('published_at')
+    })
+
+    /**
+     * The other half of the same decision: the store's live-or-draft setting is
+     * how a *new* post should arrive, so it is still sent on a create.
+     */
+    it('still sends the address and the published state when the article is new', async () => {
+      await client().createArticle({ ...article, publishAs: 'draft' })
+
+      const payload = recorded.find((r) => r.method === 'POST')!.body!['article'] as Record<
+        string,
+        unknown
+      >
+      expect(payload['handle']).toBe('best-bottles')
+      expect(payload['published']).toBe(false)
+    })
   })
 })
 
@@ -171,6 +258,7 @@ describe('asking whether our post already landed', () => {
     ...SHOP,
     blogId: '77',
     blogHandle: 'news',
+    storefrontDomain: 'acme.com',
     marker: 'sortiva-abc',
     notBefore: new Date('2026-09-03T09:00:00.000Z'),
   }

@@ -26,6 +26,7 @@ import {
   type Db,
 } from '@sortiva/db'
 import { runtimeLogger } from '../runtime/logging'
+import { storefrontDomainFor } from './address'
 import { buildBundleForArticle } from './bundle'
 import { raiseShopifyReconnect } from './reconnect'
 
@@ -128,6 +129,8 @@ interface PublishContext {
   readonly blogId: string
   /** The blog's name in its own web address — what a post's public address is built from. */
   readonly blogHandle: string
+  /** The store's own domain, which is the host the address is recorded under. */
+  readonly storefrontDomain: string
   readonly publishAs: 'live' | 'draft'
   readonly title: string
   readonly slug: string
@@ -201,6 +204,7 @@ async function preparePublish(
       accessToken: deps.cipher.decrypt(target.accessTokenCipher),
       blogId: target.targetBlogId as string,
       blogHandle: target.targetBlogHandle ?? '',
+      storefrontDomain: await storefrontDomainFor(deps.db, input.accountId, target.shopHandle),
       publishAs: target.publishAs,
       title: article.title,
       slug: article.slug,
@@ -249,6 +253,7 @@ async function sendAndAdopt(
       accessToken: context.accessToken,
       blogId: context.blogId,
       blogHandle: context.blogHandle,
+      storefrontDomain: context.storefrontDomain,
       title: context.title,
       bodyHtml: context.bodyHtml,
       handle: context.slug,

@@ -39,16 +39,32 @@ export interface ShopifyStoreCredentials {
   readonly accessToken: string
 }
 
-export interface CreateArticleInput extends ShopifyStoreCredentials {
-  readonly blogId: string
+/**
+ * The two per-store facts an article's public address is built from.
+ *
+ * Both are per account and the client that talks to Shopify is one per
+ * process, so they travel with each call rather than being held anywhere.
+ */
+export interface ArticleAddressing {
   /**
    * The blog's name as it appears in its own web address. Shopify addresses a
-   * post by the blog's *name*, not by its number, so this is what an article's
-   * public address is built from — and therefore what Search Console has to
-   * match a click against. Recorded alongside the id when the merchant picks
-   * the blog.
+   * post by the blog's *name*, not by its number. Recorded alongside the id
+   * when the merchant picks the blog.
    */
   readonly blogHandle: string
+  /**
+   * The host the merchant's shoppers actually visit — the domain claimed at
+   * signup, not the `myshopify.com` handle we talk to the Admin API through.
+   *
+   * Search Console reports a store's traffic under that host, so an article
+   * recorded under the `myshopify` one can never be matched to the clicks it
+   * earns: it would look like it had earned nothing, permanently.
+   */
+  readonly storefrontDomain: string
+}
+
+export interface CreateArticleInput extends ShopifyStoreCredentials, ArticleAddressing {
+  readonly blogId: string
   readonly title: string
   /** The article body, already resolved against the store and stripped of internal markers. */
   readonly bodyHtml: string
@@ -63,9 +79,31 @@ export interface CreateArticleInput extends ShopifyStoreCredentials {
   readonly publishAs: 'live' | 'draft'
 }
 
-export interface UpdateArticleInput extends CreateArticleInput {
+/**
+ * A revision of an article already on the merchant's blog — and deliberately
+ * **not** a create with an id added to it.
+ *
+ * Shopify's update is partial: a field we do not send is left as the merchant
+ * left it. So this carries only what we wrote — the title, the body and the
+ * summary — and has no field for the article's address, its tags or its
+ * published state. A merchant who renamed our post, tagged it themselves or
+ * took it down keeps all three through every later repair, because there is no
+ * way to express sending them.
+ *
+ * The consequence, and it is intended: the store's live-or-draft preference
+ * applies when an article is created and never again. It says how a new post
+ * should arrive, not that a post the merchant unpublished should come back.
+ */
+export interface UpdateArticleInput extends ShopifyStoreCredentials, ArticleAddressing {
+  readonly blogId: string
   /** The remote article we are revising. An update names it or does not happen. */
   readonly remoteArticleId: string
+  readonly title: string
+  /** The article body, already resolved against the store and stripped of internal markers. */
+  readonly bodyHtml: string
+  readonly summary: string
+  /** Our marker for this article — the same one every revision of it carries. */
+  readonly marker: string
 }
 
 /**
@@ -112,10 +150,8 @@ export interface ShopifyPublishProvider {
   findArticleByMarker(input: FindArticleByMarkerInput): Promise<RemoteArticle | undefined>
 }
 
-export interface FindArticleByMarkerInput extends ShopifyStoreCredentials {
+export interface FindArticleByMarkerInput extends ShopifyStoreCredentials, ArticleAddressing {
   readonly blogId: string
-  /** Needed for the same reason as on a create: an article's address is built from it. */
-  readonly blogHandle: string
   readonly marker: string
   /**
    * Nothing posted before this moment can be ours: the claim on this

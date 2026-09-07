@@ -19,6 +19,7 @@ import {
   releasePublishIntent,
 } from '@sortiva/db'
 import { runtimeLogger } from '../runtime/logging'
+import { storefrontDomainFor } from './address'
 import { buildBundleForArticle } from './bundle'
 import type { AutoPublishDeps, AutoPublishInput } from './auto-publish'
 import { raiseShopifyReconnect } from './reconnect'
@@ -131,18 +132,21 @@ export async function republishArticleToShopify(
   deps.checkpoint?.('republish:claimed')
 
   try {
+    // Only the words. No address, no tags, no published state: Shopify leaves
+    // an unsent field alone, so the merchant's rename, their own tags and their
+    // decision to take the post down all survive this. There is no field for
+    // them on an update to pass even by accident.
     const remote = await deps.shopify.updateArticle({
       shop: target.shopHandle,
       accessToken: deps.cipher.decrypt(target.accessTokenCipher),
       blogId: target.targetBlogId as string,
       blogHandle: target.targetBlogHandle ?? '',
+      storefrontDomain: await storefrontDomainFor(deps.db, input.accountId, target.shopHandle),
       remoteArticleId,
       title: article.title,
       bodyHtml,
-      handle: article.slug,
       summary: article.metaDescription ?? '',
       marker: publishMarker(input.articleId),
-      publishAs: target.publishAs,
     })
 
     deps.checkpoint?.('republish:executed')
