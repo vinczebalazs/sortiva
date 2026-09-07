@@ -18,6 +18,7 @@ import { DbNotificationEmitter } from '@sortiva/jobs/notify/emitter'
 // Shopify write client and which token cipher exist in this process.
 import { publishProvider, publishTokenCipher } from '../../publish/_lib/config'
 import type { DeliveryDeps } from './delivery'
+import type { RefreshRouteDeps } from './refresh'
 import type { ReviewDeps } from './review'
 
 /**
@@ -78,6 +79,11 @@ function generationSeoProvider(): SeoDataProvider {
 }
 
 export function reviewDeps(): ReviewDeps {
+  return { db: db() }
+}
+
+/** What "Request refresh" is built from: the database, and nothing else — admitting a request spends on no vendor. */
+export function refreshRouteDeps(): RefreshRouteDeps {
   return { db: db() }
 }
 
