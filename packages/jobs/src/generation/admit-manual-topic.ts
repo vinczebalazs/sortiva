@@ -222,6 +222,12 @@ export async function admitManualTopic(
       outcome: gate1.outcome,
       scoresJson: {
         reasonCard: gate1.reasonCard,
+        // The same values again, one level up and under the name the read-back
+        // asks for. The screens that show a held day fill the blanks in its
+        // sentence from `scores_json.reason_params`; nested inside the reason
+        // card they were invisible, so the sentence rendered with its blanks
+        // showing. Gate 2 and Gate 3 write the same key beside their own audit.
+        reason_params: gate1.reasonCard?.params ?? {},
         linkTask: gate1.linkTask,
         substance: { distinctFacts: substance.distinctFacts, contributingProducts: substance.contributingProducts, passes: substance.passes },
         winnability: winnabilityFor(gates),

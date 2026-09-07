@@ -194,22 +194,32 @@ describe('the sentence under a calendar day, as a merchant reads it', () => {
       expect(leaking).toEqual([])
     })
 
-    it('bites: renders with nothing at all, which is what Gate 1 and Gate 2 still supply here', () => {
-      // Gate 3 writes its values where the read-back looks. Gate 1 buries them a
-      // level down in the same column and Gate 2 writes none, so a held day's
-      // second sentence gets an empty bag from either of them. Until that is
-      // fixed, a number added to one of those sentences prints as a brace on
-      // this surface even though the day's *first* sentence could fill it — so
-      // this fails the day someone adds one, rather than a merchant meeting it.
+    it('renders with what the two admission gates recorded, and no blank', () => {
+      // All three gates now record their measurements where the read-back
+      // looks, so this sentence is filled from the gate's own decision row
+      // whichever gate wrote it. That the values genuinely make that journey —
+      // gate, to database, to the calendar's response — is proved against a
+      // real database in `gate-reason-params.test.ts`; this checks the sentence
+      // each set of values has to fill.
       const leaking: string[] = []
-      for (const key of Object.keys(ADMISSION_REASON_PARAMS)) {
-        const line = renderTemplatedLine({ templateKey: key, params: {} }, t)
-        if (line.text.includes('{')) leaking.push(`${key} rendered as "${line.text}"`)
+      for (const [key, names] of Object.entries(ADMISSION_REASON_PARAMS)) {
+        const params = Object.fromEntries(names.map((name) => [name, 1]))
+        const line = renderTemplatedLine({ templateKey: key, params }, t)
+        if (!line.known) leaking.push(`${key} has no sentence at all`)
+        else if (line.text.includes('{')) leaking.push(`${key} rendered as "${line.text}"`)
       }
-      expect(
-        leaking,
-        'a held day fills this sentence from the gate decision, and Gate 1 and Gate 2 record nothing it can read',
-      ).toEqual([])
+      expect(leaking).toEqual([])
+    })
+
+    it('bites: the two lines the calendar writes itself carry no blank, having nothing to fill one with', () => {
+      // These two are the calendar's own words about the calendar. Nothing
+      // measures a value for either, so a blank in one would print raw on every
+      // chip — which is what `topic.auto` did for the life of the feature.
+      for (const key of ['topic.auto', 'topic.manual_addition']) {
+        const line = renderTemplatedLine({ templateKey: key, params: {} }, t)
+        expect(line.known).toBe(true)
+        expect(line.text, `${key} rendered as "${line.text}"`).not.toContain('{')
+      }
     })
   })
 })
