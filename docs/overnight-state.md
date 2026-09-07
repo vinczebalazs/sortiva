@@ -768,9 +768,13 @@ behaviour of that mechanism, but worth knowing at merge time.
 
 ## Right now
 
-**Status at 2026-09-04, 13:25 — every founder-authorised card has landed, `M5` and `M6` are closed,
-and the improve-this-page feature is switched on end to end.** Tests **3,426**. No lane is running.
-`R-CONTRACT` and `R-NOQUERY` are the two cards still to dispatch. *Superseded line kept below:*
+**Status — twelve cards merged, `M5` and `M6` closed, and every founder decision has been taken.**
+Tests **3,488**, from 3,265 at the start. Gate green: nine of eleven, with `eval` red for want of a
+key and one named chaos scenario red — **and a lane is fixing that one now, so the chaos suite may
+go fully green for the first time in this project.** **Four lanes running**: `R-STRANDED` (D),
+`R-REVOKE` (G), `R-RECO-QUALITY` (E), `R-HOLD` (B). **Twelve cards queued**, two of them the
+integrator's (`R-CONTRACT`, `R-REFUSAL`). **Nothing is blocked on a decision** — the constraint is
+lane capacity, which the operating rules cap at four. *Superseded lines kept below for the sequence:*
 
 **Status at 2026-09-04, 13:00 — every founder-authorised card has landed and `M6` is closed.**
 Tests **3,422**, up from 3,265 at the start of the day. `main` clean, gate nine of eleven.
