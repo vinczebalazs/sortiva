@@ -31,6 +31,14 @@ const NOW = new Date('2026-09-07T07:00:00Z')
 const searchConsole = rules().defaults.search_console
 const system = systemScope('rules_overrides holds rows that belong to every store')
 
+/**
+ * Every test here runs two whole signal scans against real Postgres, twice what
+ * the scan suite next door does. The default five seconds is enough alone and
+ * not enough with the rest of the suite running beside it, which is a slow test
+ * rather than a broken one.
+ */
+const SCAN_PAIR_TIMEOUT = 30_000
+
 function deps(ctx: TestDb): RunSignalScanDeps {
   return {
     db: ctx.db,
@@ -121,7 +129,7 @@ describe.skipIf(!available)('a threshold moved for one store', () => {
     control = await insertAccount(pool, 'control@example.com')
     await seedStoreWithSearchData(ctx, overridden)
     await seedStoreWithSearchData(ctx, control)
-  })
+  }, SCAN_PAIR_TIMEOUT)
 
   it('changes that store\'s decisions and leaves every other store alone', async () => {
     await setRulesOverride(ctx.db, system, {
@@ -141,7 +149,7 @@ describe.skipIf(!available)('a threshold moved for one store', () => {
 
     expect(theirs.some((row) => row.signalType === 'striking_distance')).toBe(false)
     expect(others.some((row) => row.signalType === 'striking_distance')).toBe(true)
-  })
+  }, SCAN_PAIR_TIMEOUT)
 
   it('stamps a version on the overridden store\'s rows that says so, and the plain one on everybody else\'s', async () => {
     // Widened rather than narrowed, so the overridden store still has rows to
@@ -166,7 +174,7 @@ describe.skipIf(!available)('a threshold moved for one store', () => {
       expect(row.rulesVersion.startsWith(rules().rulesVersion)).toBe(true)
     }
     for (const row of others) expect(row.rulesVersion).toBe(rules().rulesVersion)
-  })
+  }, SCAN_PAIR_TIMEOUT)
 
   it('applies a row aimed at every store to every store', async () => {
     await setRulesOverride(ctx.db, system, {
@@ -184,7 +192,7 @@ describe.skipIf(!available)('a threshold moved for one store', () => {
       expect(open.some((row) => row.signalType === 'striking_distance')).toBe(false)
       expect(open.every((row) => versionCarriesOverrides(row.rulesVersion))).toBe(true)
     }
-  })
+  }, SCAN_PAIR_TIMEOUT)
 
   it('refuses to scan a store whose override is malformed rather than scanning it on the old numbers', async () => {
     await setRulesOverride(ctx.db, system, {
@@ -202,5 +210,5 @@ describe.skipIf(!available)('a threshold moved for one store', () => {
     // And only that store: the bad row is aimed at one account.
     await runSignalScan(deps(ctx), control, 'weekly', 'weekly-2026-W36')
     expect((await listOpenOpportunities(ctx.db, accountScope(control))).length).toBeGreaterThan(0)
-  })
+  }, SCAN_PAIR_TIMEOUT)
 })
