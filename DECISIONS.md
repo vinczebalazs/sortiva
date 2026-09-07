@@ -4435,3 +4435,24 @@ Nearest spec: main §8.7, §9.1.
 Decision: when a publication wins the race, `POST /api/opportunities/{id}/dismiss` answers 409 `opportunity_not_open`.
 Why: the frozen route table gives this endpoint two conflict codes, `opportunity_already_updated` and `opportunity_not_open`, and neither names a publication. `opportunity_already_updated` would be actively wrong — the screen renders it as "updated by the latest scan", which is untrue. `opportunity_not_open` is the closer of the two: the suggestion is no longer something we can act on. **Flagged for the integrator**: the truthful code is `topic_already_published`, which exists in the shared enum but is not declared for this route, and amending the frozen contract is the integrator's by rule (`R-CONTRACT`).
 Nearest spec: main §7.9; tech §3.
+
+## 2026-09-07 — R-SIGNIN-CSRF — Signing in with Google is two requests from a button, not a form post
+Decision: the "Continue with Google" control on `/signin` is a button that runs an exchange — `GET /api/auth/csrf` for the anti-forgery token, then `POST /api/auth/signin/google` spending it — and then sends the browser to the address the library names. It is no longer a `<form>` that posts to the library directly. The exchange lives in `packages/ui/src/public/signin-exchange.ts`, apart from the component, so it can be driven against the real sign-in handlers without a browser.
+Why: the form did not work. The sign-in library refuses a post carrying no anti-forgery token, so every press on a deployed server landed the visitor on the library's own error page and nobody could get into the product at all. A form submission cannot fetch a token first, so the control has to be a button. This is the identical shape `R-SIGNOUT` chose two entries above, for the identical reason, and its entries there give the fuller argument against reaching for the library's own browser helper instead.
+Cost, stated plainly: a visitor whose scripts never arrived now presses a button that does nothing, where before they pressed one that failed visibly. That is not a regression in what works — signing in without scripts did not work either — but it is a change in how the failure looks. The alternative that would preserve a no-JavaScript sign-in is rendering the token into a hidden field from the server, which is a second, different mechanism for the same job; the card ruled that out explicitly.
+Nearest spec: main §4.1; ui §2 (the sign-in screen) writes no wording or mechanism for this.
+
+## 2026-09-07 — R-SIGNIN-CSRF — The sign-in exchange is its own module rather than shared with sign-out
+Decision: `signin-exchange.ts` repeats the two-request shape that `packages/ui/src/shell/signout.ts` already has, rather than both calling one shared helper.
+Why: the two exchanges answer differently — signing out succeeds by staying on our own site, signing in succeeds by leaving it for Google — so a shared helper would be a function with the interesting part passed in, which is not obviously smaller than two readable modules. Weighed against that: factoring one out means editing a file another card landed hours ago, and this card was told to change nothing that landed with it. **Flagged, not settled**: if a third such exchange appears, the shared helper is the right answer and this note is the reason to do it then.
+Nearest spec: none — code organisation.
+
+## 2026-09-07 — R-SIGNIN-CSRF — Two new sentences on the sign-in screen
+Decision: new copy in `packages/ui/strings/en.json` — "Taking you to Google…" while the handshake starts, and "We could not start sign-in. Please try again." when it does not. Proposed by this card; the specs write no wording for either.
+Why: the press now does something that takes a moment and can fail, where a form post either navigated or did not. Without the first the button looks unresponsive; without the second a failure is completely silent, which is what the old broken behaviour effectively was. Wording follows the sign-out control's failure line rather than inventing a register.
+Nearest spec: main Appendix A holds no string for either; ui §2.
+
+## 2026-09-07 — R-SIGNIN-CSRF — The fixture-backed sign-in stub answers in JSON, because the real library's refusal is a destination
+Decision: the browser-flow mock server (`apps/web/e2e/mock-api-server.ts`) now answers `POST /api/auth/signin/google` with `{ url }` when the request asks for an answer rather than a redirect, and keeps its old redirect for anything that does not.
+Why: the mock stands in for Google, which this repository has no credentials for. The screen now has to read *where* the library says to go in order to know whether the press worked — a refusal is a 200 naming an error page — so a stub that only ever redirected would leave the screen unable to tell success from failure. That would be a difference from the real thing rather than a shortcut past it.
+Nearest spec: none — test fixture.

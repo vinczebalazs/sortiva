@@ -75,10 +75,21 @@ function previewAnswer(response: ServerResponse, rawBody: string): void {
  * Google's half of signing in, which we cannot run: it answers the way the
  * identity provider does, by sending the browser onward to where the sign-in
  * screen asked it to land.
+ *
+ * The screen asks in JSON rather than following a redirect, because the real
+ * library refuses a sign-in with no anti-forgery token and says so by *naming a
+ * destination* rather than by failing — so the press has to read the
+ * destination to know whether it worked. Answering with a plain redirect here
+ * would leave the screen unable to tell, which is a difference from the real
+ * thing rather than a shortcut past it.
  */
-function signInAnswer(response: ServerResponse, rawBody: string): void {
+function signInAnswer(request: IncomingMessage, response: ServerResponse, rawBody: string): void {
   const callback = new URLSearchParams(rawBody).get('callbackUrl') ?? '/'
-  response.writeHead(302, { location: callback.startsWith('/') ? callback : '/' })
+  const destination = callback.startsWith('/') ? callback : '/'
+  if (request.headers['x-auth-return-redirect']) {
+    return json(response, 200, { url: destination })
+  }
+  response.writeHead(302, { location: destination })
   response.end()
 }
 
@@ -339,7 +350,7 @@ async function handle(request: IncomingMessage, response: ServerResponse): Promi
 
   if (url.pathname === '/api/preview' && method === 'POST') return previewAnswer(response, body)
   if (url.pathname === '/api/auth/signin/google' && method === 'POST') {
-    return signInAnswer(response, body)
+    return signInAnswer(request, response, body)
   }
   if (await dynamicAnswer(response, method, url.pathname, body)) return
 

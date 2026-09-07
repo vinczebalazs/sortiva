@@ -261,6 +261,8 @@
   "signin.heading": "Sign in to Sortiva",
   "signin.body": "One account per store. We'll ask for your store's address next.",
   "signin.google": "Continue with Google",
+  "signin.googleStarting": "Taking you to Google…",
+  "signin.failed": "We could not start sign-in. Please try again.",
   "signin.previewedDomain": "We'll suggest {domain} when you connect your store — nothing is claimed until you confirm it.",
 
   "plan.heading": "Confirm your plan",
