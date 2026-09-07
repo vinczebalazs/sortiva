@@ -678,6 +678,12 @@ Scope: the button on `/signin` posts a bare form with no anti-forgery token, whi
 Read first: the `R-SIGNOUT` entries in `DECISIONS.md` dated 2026-09-07, which contain the working pattern.
 Done when: signing in with Google works end to end against the real library configuration; email sign-in on the same screen works; and a refused attempt is judged by where the library says to go rather than by its status code — **the library answers 200 with an error page for a refused request**, so anything trusting the status reports success.
 
+**R-CREATE-COMPLETE — a suggestion whose article was published stays open for ever** · Lane C
+Scope: when a CREATE suggestion's article is published, nothing moves the suggestion to `completed`. It sits on the merchant's Opportunities screen indefinitely, indistinguishable from work still to do. Found by `R-DISMISS-CALENDAR`, which had to work around it: on state alone, a day that published a fortnight ago looks the same as one being written right now.
+Read first: the `R-DISMISS-CALENDAR` and `R-STRANDED` entries in `DECISIONS.md` dated 2026-09-07; main §7.9.
+Done when: publishing an article completes the suggestion behind it; the Opportunities screen stops showing finished work as outstanding; and the completion goes through the enforced state graph rather than around it.
+Note: the sibling defect — **a calendar day never leaves `generating` when its article publishes**, so the Content calendar reads "Generating" for every past published day — is the same shape and was reported by `R-STRANDED`. Decide whether they are one card or two before starting; the founder has been asked about the calendar half, which needs a state that does not exist.
+
 **R-CONTRACT — the frozen contract describes the endpoints that exist** · integrator
 Scope: ten endpoints were built at addresses the frozen route table does not declare, while the table declares several with no implementation, and `contracts:check` passes throughout because it compares the table to a generated document and **never to the routes on disk**. The founder delegated the call: amend the contract to the built addresses rather than move ten endpoints; assign `apps/web/app/api/settings` to Lane F for anything genuinely settings-shaped; the missing routes-on-disk check lands with `T10.2`.
 Read first: `DECISIONS.md` 2026-09-04 "The frozen contract moves to the addresses that were built".

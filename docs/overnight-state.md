@@ -6011,6 +6011,70 @@ or run `pnpm db:down` there, and take a fresh worktree instead. **This is the ha
 written up in this file from an earlier run.** If a stray commit or a dropped database appears on
 `main` without an entry here, that session is the first place to look.
 
+### `R-GATE-LANG`, `R-SIGNOUT` and `R-DISMISS-CALENDAR` LANDED
+
+**All merged and verified on the combined tree: 287 files, 3,583 tests, `pnpm chaos` 10 of 10,
+`contracts:check` 56 routes.**
+
+**`R-GATE-LANG`.** "The most waterproof boot we stock" and "den mest vandtætte støvle vi har" now
+get the identical verdict — proved by running both through the real gate and asserting the same
+outcome, the same model-call counts and the same failure list. Nothing in the product matches a
+word list any more.
+**Two checks were lost with those lists and the founder accepted it** (2026-09-07): the
+assertion-strength check no longer refuses an absolute resting on a middling claim, and the
+self-contradiction pass no longer catches an article that recommends a product early and advises
+against it late. Both already did nothing for a non-English store, so this levels English down
+rather than opening a new gap; those drafts now reach the paid judge instead of failing for free.
+**The lane surfaced this rather than absorbing it, which is why it could be decided.**
+**And it found the same defect `R-RECO-QUALITY` fixed, in a different prompt:** the writing prompt
+never names four fields its schema requires. It wrote the test, watched it fail, and **removed the
+test rather than smuggle in the fix**, because telling the writer more changes the articles.
+Carded as `R-DRAFT-PROMPT`. **Ungraded, like every prompt change today.**
+
+**`R-SIGNOUT`.** There was no way to sign out of this product. An account menu now sits in the
+toolbar on every signed-in screen and says, **before** the button is pressed, that signing out ends
+the session in every browser — a merchant signing out on a phone is also signing their desktop out,
+and told afterwards that is a surprise rather than a choice. **Settings was the wrong place and a
+test says so**: the spec declares its control list closed and does not name a sign-out.
+**It found that the sign-in library answers 200 with an error page for a refused sign-out**, so
+anything trusting the status would tell a merchant they were signed out everywhere while every
+session still stood. Our code judges by where the library says to go. **And the Google sign-in
+button on `/signin` is broken for exactly that reason** — a bare form with no anti-forgery token,
+recorded by an earlier card and never fixed. Carded as `R-SIGNIN-CSRF`; the same fix repairs email
+sign-in on that screen.
+**One honest caveat:** no test drives the actual React click, because this repository has no
+browser-DOM test environment and adding one is a dependency decision. The handler is a single call
+to the function the wire test does drive.
+
+**`R-DISMISS-CALENDAR`, and its race proof is the best in the run.** "Not interested" now cancels
+the article the suggestion had booked; the day stays empty rather than being back-filled. **It
+called something the calendar owns rather than reaching in** — the calendar already had a
+delete-this-day operation that already dismissed the suggestion behind it, so the two were
+half-merged and only the other direction was missing; both entry points now run one shared
+implementation. **No new graph edge was needed**, checked before writing rather than after.
+**The race was forced, not hoped for**: a second database connection publishes the article inside
+an open uncommitted transaction, the dismissal blocks on the held row, the publication commits, and
+the dismissal's guard comes back with zero rows and **the whole cancellation rolls back** — day
+still generating, suggestion still open, article published. Non-vacuity proved by removing the
+guard and watching exactly that test fail.
+**A run already under way needed two mechanisms**, because the article row is created minutes in:
+an existing draft is discarded and the day leaves `generating` so the interrupted-day sweeper does
+not try to rescue it; and where no draft exists yet, the publish hour's "what is ready" query skips
+a called-off day.
+
+### Three things these cards found and left alone
+
+- **A CREATE suggestion whose article published stays open for ever** — nothing completes it, so it
+  sits on the Opportunities screen indistinguishable from work still to do. Carded as
+  `R-CREATE-COMPLETE`.
+- **The 409 a dismissal returns when a publication wins the race carries the wrong name.** The
+  truthful code exists in the shared list but is not declared for that route, and amending the
+  table is the integrator's. Same shape as `R-REFUSAL`.
+- **A calendar day never leaves `generating` when its article publishes**, so the calendar reads
+  "Generating" for every past published day. Reported twice now, by `R-STRANDED` and again here,
+  where it bit directly: on state alone a day that published a fortnight ago looks like one being
+  written right now.
+
 ### Verification done this morning, so it is not re-done
 
 - Resolved every registered task-name constant in the tree and matched it by hand against all
