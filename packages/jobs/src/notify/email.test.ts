@@ -2,7 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { sql } from 'drizzle-orm'
 import type pg from 'pg'
 import { accountAttribution, EmailSendFailure, monthlySummaryContent } from '@sortiva/core'
-import { makeEmailStore } from '@sortiva/db'
+import { accountScope, makeEmailStore, markArticleDelivered } from '@sortiva/db'
 import {
   databaseAvailable,
   insertAccount,
@@ -347,6 +347,34 @@ describe.skipIf(!available)('the email pipeline', () => {
       expect(text).toContain('One article went live on your store.')
       expect(text).toContain('Merino care, step by step')
       expect(text).toContain("The draft didn't clear our quality bar")
+    })
+
+    it('stops counting a topic the merchant overruled and published', async () => {
+      await holdTopic('Merino care, step by step', 3, inAugust(12))
+      await holdTopic('Wool versus down', 3, inAugust(14))
+
+      // One of the two is overruled: the merchant reads the refusal, decides
+      // anyway, and the article goes out. The refusal itself stays on the
+      // record — being overruled does not undo having been held back — but the
+      // month's tally is about what never went out.
+      const { rows: topicRows } = await pool.query<{ id: string }>(
+        `SELECT id FROM topics WHERE title = 'Merino care, step by step'`,
+      )
+      const overruledTopic = topicRows[0]!.id
+      const { rows: articleRows } = await pool.query<{ id: string }>(
+        `INSERT INTO articles (account_id, topic_id, title, slug, state)
+         VALUES ($1,$2,'Merino care, step by step','merino-care','cleared_to_deliver')
+         RETURNING id`,
+        [accountId, overruledTopic],
+      )
+      await markArticleDelivered(ctx.db, accountScope(accountId), articleRows[0]!.id, 'export', new Date())
+
+      const august = await facts()
+      expect(august.heldBack.map((topic) => topic.title)).toEqual(['Wool versus down'])
+
+      const text = await readOut()
+      expect(text).toContain('Wool versus down')
+      expect(text).not.toContain('Merino care, step by step')
     })
 
     it('says the same month was quiet when it was, rather than reporting nothing at all', async () => {
