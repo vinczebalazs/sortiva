@@ -746,6 +746,32 @@ carries the shape it must satisfy, which already exists as a zod schema in
 `packages/core/src/api/schemas.ts` — the contract described these endpoints correctly all along, so
 none of these cards is designing an interface, only implementing one.
 
+### From `R-PAGE-GONE-OPTIMIZE`, landed 2026-09-07 — including one against the integrator's own work
+
+**R-TOAST-CODES — the screen has copy for one refusal out of three, so `R-REFUSAL` does not meet its own done-when** · Lane F
+Scope: `conflictMessage` (`packages/ui/src/opportunities/actions.ts:54`) maps exactly one machine-readable refusal, `opportunity_not_open`, to its own sentence. **Everything else falls through to a generic toast** — including `optimize_no_target_query`, added by `R-REFUSAL` today, and `optimize_page_gone`, added by `R-PAGE-GONE-OPTIMIZE`.
+**This means `R-REFUSAL` did not deliver its own done-when**, which was "a store with no Search Console connection sees why the button cannot act, **in its own words rather than a generic error**". The refusal reaches the browser correctly and the browser then shows a generic sentence. **The integrator built that card and missed this**, which is the same defect the whole day has been about: the producing side was checked and the consuming side was not.
+Read first: `DECISIONS.md` 2026-09-07 `R-REFUSAL` and `R-PAGE-GONE-OPTIMIZE` entries; main §7.11, §10.1; ui §5; invariant 22 (degrade visibly, never silently).
+Done when: every conflict code a route in the contract can return has a sentence a merchant can read; a code with no sentence **fails a test by name** rather than showing a generic toast — the contract already exposes the full list, so the check can be exhaustive rather than a list someone maintains; and the two new codes read correctly on the Opportunities screen.
+Suggested copy, from the lane that found it: `opportunities.toast.pageGone` — "This page is no longer in your store, so there is nothing to improve."
+
+**R-APPLIED-ON-GONE — the product offers to confirm advice was applied to a page that no longer exists** · Lane E
+Scope: the "looks like you applied this — confirm?" check compares stored advice against a page's current title and headings. **A deleted row still holds both**, so the product can offer that prompt for a page the merchant has taken down — and confirming stamps the opportunity applied and books a 28-day outcome measurement on a page that is gone. Found by `R-PAGE-GONE-OPTIMIZE`, deliberately left because it is not a recommendation being produced, which is what that card's done-when covered.
+Read first: `DECISIONS.md` 2026-09-07 `R-PAGE-GONE-OPTIMIZE` entries; main §10.4, §9.6.10; invariant 13.
+Done when: no merchant is asked to confirm work on a page the store no longer serves, and no outcome measurement is booked against one.
+
+**R-EXPORT-LINKS-GONE — a downloaded article can send a reader to a deleted product page** · Lane D
+Scope: `productPageUrlsByShopifyId` (`packages/db/src/repositories/delivery.ts:168`) resolves a product's address for an export bundle and **does not look at whether the store still serves it**. So an article a merchant downloads can link a reader to a product page that has been deleted. The eighth reader of the store's pages found today, and the only one outside the lanes that were fixing them.
+Read first: `DECISIONS.md` 2026-09-07 `R-PAGE-GONE-READ` and `R-PAGE-GONE-OPTIMIZE` entries; main §9.4, §9.5, §12.3.
+Done when: an exported article never links to a page the store no longer serves; and what happens instead — the link dropped, or the article refused — is a stated choice rather than whatever falls out.
+Note: **`R-EXPORT-FALLBACK` is the neighbouring founder question** and may answer this one too. Read it first.
+
+**R-GONE-SUGGESTION-CLOSES — a suggestion for a deleted page stays on the screen for ever** · Lane C
+Scope: when a merchant deletes a page, the suggestion to improve it stays open on the Opportunities screen, still saying the page could be improved. The merchant can press it as often as they like and is now told no each time — better than the paid work it used to cause, and still a card that cannot be acted on.
+**Why it was not done inside `R-PAGE-GONE-OPTIMIZE`:** closing it means deciding which status such a row moves to and whether it returns if the page does, which is opportunity-lifecycle ground and a **product decision under invariant 10 — expiry never deletes.** The lane flagged it and did not attempt it.
+Read first: `DECISIONS.md` 2026-09-07 `R-PAGE-GONE-OPTIMIZE` entries; main §7.9; invariant 10.
+Done when: a suggestion whose page is gone stops being offered as work; and a page the walk restores brings its suggestion back, or deliberately does not, with the choice recorded.
+
 **R-EXPORT-FALLBACK — should a merchant get the old file, or nothing?** · **a founder question, not yet a card**
 Scope: `R-EXPORT-WIRE` made the download buttons ask the route that builds downloads, so an article naming a product the store no longer sells now **refuses with a reason** instead of silently handing over a file containing a title and nothing else. That is strictly better. **It may not be the right final answer.**
 The alternative, which `R-API-ARTICLES` named and `R-EXPORT-WIRE` deliberately did not assume: render the article from the **last recorded values** — the prices and product details as they were when the article was written — so the merchant gets something rather than nothing, clearly marked as of a date.
