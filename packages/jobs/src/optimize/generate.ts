@@ -105,8 +105,11 @@ export type GenerateOptimizeOutcome =
  * The window is the one the clusters were themselves pooled over, so a page is
  * matched against the same rows that decided what the store's intents are.
  */
-async function resolveTargetQuery(
-  deps: GenerateOptimizeDeps,
+export async function resolveTargetQuery(
+  // Only the database, so the recommendation route can make this same call
+  // without assembling the whole generation dependency set for a question it
+  // answers before deciding whether to enqueue anything.
+  deps: Pick<GenerateOptimizeDeps, 'db'>,
   scope: AccountScope,
   opportunity: { readonly evidenceJson: unknown; readonly entityRef: string },
   now: Date,

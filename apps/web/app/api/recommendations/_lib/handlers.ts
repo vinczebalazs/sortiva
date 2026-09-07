@@ -58,6 +58,9 @@ import {
 // for the same reason: an improve-this-page press that lands on an article we
 // published becomes a rewrite waiting for a calendar day.
 import { requestArticleRefresh } from '@sortiva/jobs/generation/request-refresh'
+// The same judgement the generation step makes, made here instead so the
+// merchant hears the answer while they are still looking at the button.
+import { resolveTargetQuery } from '@sortiva/jobs/optimize/generate'
 import { rules } from '@sortiva/rules'
 import type { AccountHandler } from '../../auth/_lib/session'
 
@@ -297,6 +300,20 @@ export function makeGenerateRecommendationHandler(deps: RecommendationsDeps): Ac
         admitted?.ok
           ? 'We published this article, so we rewrite it rather than hand you edits for it. It is queued for a rewrite.'
           : 'We published this article, so we rewrite it rather than hand you edits for it.',
+      )
+    }
+
+    // A page can be shortlisted for an improvement without our knowing which
+    // search it competes for — the listing-text detection records none, and a
+    // store with no Search Console has no pooled searches to fall back on.
+    // The generation step already refuses in that case; making the same call
+    // here means the merchant is told now, rather than watching the button
+    // spin and come back with nothing changed. Nothing is enqueued, nothing is
+    // bought, and the day's allowance is untouched.
+    if ((await resolveTargetQuery({ db: deps.db }, scope, opportunity, now)) === null) {
+      return conflict(
+        'optimize_no_target_query',
+        'We cannot tell which search this page competes for, so there is nothing we can safely improve it against.',
       )
     }
 

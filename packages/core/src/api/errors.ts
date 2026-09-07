@@ -43,6 +43,11 @@ export const CONFLICT_CODES = [
   // blog to publish into; neither is assumed from the initial connection.
   'write_scope_required',
   'target_blog_unresolved',
+  // We cannot tell which search this page competes for, so there is nothing to
+  // improve it against. Its own code rather than the nearest existing one,
+  // because the screen maps a code to its own sentence and ignores the message
+  // we send: reusing another would tell the merchant something untrue.
+  'optimize_no_target_query',
   // We paused rather than continue with lower-quality or stale data.
   'service_paused',
 ] as const

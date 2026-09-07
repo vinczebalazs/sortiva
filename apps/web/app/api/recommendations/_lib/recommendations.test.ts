@@ -621,6 +621,74 @@ describe.skipIf(!available)('/api/recommendations', () => {
   })
 
   /**
+   * The founder's decision of 2026-09-07: a merchant whose store has no Search
+   * Console connection may still be shown a page worth improving — the signal
+   * that its Google listing text is missing or duplicated is true either way —
+   * but pressing the button can only ever refuse, and it used to refuse in
+   * silence. It now refuses with a code of its own, at the press.
+   */
+  describe('a page whose search we cannot name', () => {
+    /** The listing-text detection records no search of its own, by design. */
+    async function metadataOpportunity(): Promise<OpportunityRow> {
+      return insertMinimalOpportunity(
+        harness.db,
+        accountScope(accountId),
+        {
+          signalType: 'missing_or_weak_metadata',
+          entityType: 'url',
+          entityRef: PAGE_URL,
+          evidenceJson: [{ key: 'seo_title', value: 'missing', source: 'store' }],
+          recommendedAction: 'optimize',
+          status: 'new',
+          reasonTemplateKey: 'opportunity.missing_or_weak_metadata',
+          reasonParams: {},
+          limitedIntelligence: true,
+          rulesVersion: rules().rulesVersion,
+        },
+        NOW,
+      )
+    }
+
+    it('says so at the press, rather than spinning and coming back unchanged', async () => {
+      const opportunity = await metadataOpportunity()
+
+      const response = await post({ opportunityId: opportunity.id })
+
+      expect(response.status).toBe(409)
+      const body = (await response.json()) as { error: { code: string } }
+      // Its own code, not the nearest existing one: the screen renders its own
+      // sentence per code and ignores the message, so reusing another would
+      // tell the merchant something untrue.
+      expect(body.error.code).toBe('optimize_no_target_query')
+    })
+
+    it('spends nothing and leaves the suggestion where it was', async () => {
+      const opportunity = await metadataOpportunity()
+
+      await post({ opportunityId: opportunity.id })
+
+      const { rows } = await harness.pool.query(
+        "SELECT 1 FROM graphile_worker._private_jobs j JOIN graphile_worker._private_tasks t ON t.id = j.task_id WHERE t.identifier = 'optimize_recommendation_generate'",
+      )
+      expect(rows, 'a refusal must not buy anything or spend the day').toHaveLength(0)
+
+      const status = await harness.pool.query<{ status: string }>(
+        'SELECT status FROM opportunities WHERE id = $1',
+        [opportunity.id],
+      )
+      // Still offered. The merchant keeps the signal; what they gain is the
+      // reason the button cannot act on it yet.
+      expect(status.rows[0]?.status).toBe('new')
+    })
+
+    it('still acts when the store does have a search for the page', async () => {
+      const opportunity = await optimizeOpportunity()
+
+      expect((await post({ opportunityId: opportunity.id })).status).toBe(200)
+    })
+  })
+
+  /**
    * T6.3's own done-when: an open technical obstacle on a collection stops the
    * improve-this-page button on that collection, and says so on the card rather
    * than removing it.

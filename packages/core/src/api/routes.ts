@@ -368,7 +368,12 @@ export const ROUTES: readonly RouteDefinition[] = [
     auth: 'session',
     body: s.generateRecommendationRequestSchema,
     response: s.generateRecommendationResponseSchema,
-    conflicts: ['optimize_daily_cap_reached', 'opportunity_not_open', 'service_paused'],
+    conflicts: [
+      'optimize_daily_cap_reached',
+      'opportunity_not_open',
+      'optimize_no_target_query',
+      'service_paused',
+    ],
     requiresEntitlement: true,
   },
   {
