@@ -5751,6 +5751,45 @@ passed; the harness is what breaks. It has been folklore in this file for days; 
 because a gate that goes red for its own reasons trains people to re-run instead of read, and
 this project has already had one genuine regression hide underneath exactly that.
 
+### `R-NOQUERY`, `R-PUBLISH-2` and `R-GRAPH-ENFORCE` LANDED
+
+**All merged and gated. Gate on the combined tree: 3,488 tests, zero failures, zero harness
+errors, chaos 9 of 10 with only the named scenario red.** The flake vanished entirely once no
+lanes were contending, which supports `R-TESTDB` being about contention rather than a leak.
+
+**`R-NOQUERY`.** We stop paying the search vendor for a page's own web address as though a shopper
+had typed it. The search is now resolved from the store's own pooled searches, or the
+recommendation is refused and **nothing is bought**. Proved by *measuring* the vendor's own ledger
+— calls, billable calls and dollars all zero — with a positive control alongside proving the meter
+works. It also fixed the same substitution reaching a person: the download printed the page's
+address under the heading "Search".
+**Its consequence became two founder decisions** (2026-09-07): a store with no Search Console
+connection has no pooled searches at all, so every suggestion of this kind was left permanently
+un-actionable and refusing in silence. Carded as `R-REFUSAL`.
+
+**`R-PUBLISH-2`.** A repair now sends the title, body and summary and nothing else, so a post the
+merchant renamed stays renamed and one they took down stays down. **The proof is at the wire**: the
+test drives the real Shopify client against a local server and asserts the update body has
+**exactly five keys**, so a sixth added later fails the test rather than quietly overwriting
+something of theirs. And the type makes it inexpressible — the update input no longer extends the
+create input. A published article is now recorded under the merchant's claimed domain; articles
+published before are **not** re-addressed and there is no backfill, which a test holds.
+**It flagged one thing that became a card:** the claimed domain is stored bare, so a store whose
+storefront is `www.` or `shop.` is recorded at an address Shopify only redirects from — the same
+attribution mismatch one level down. `R-STOREFRONT`.
+
+**`R-GRAPH-ENFORCE`, and it found two more forbidden moves.** The six database functions that write
+a suggestion's status now consult the list of legal moves and **raise** when the move is not drawn.
+The check sits inside those six rather than at the eleven call sites, and asks about every status
+each guard will move a row out of — so an undrawn move fails in a test rather than at 3am.
+**The two new findings were in neither the audit nor the previous card's four**: replenishment
+giving a claim back when a placement is refused, and the improve-this-page press putting a page
+back when the queue write fails. Both are code undoing itself, **and neither path had a test.**
+That is **five** graph disagreements found in total, every one by somebody going looking.
+Proved non-vacuous by removing the three edges and watching seven tests fail.
+**Its half-met done-when became a founder decision** (2026-09-07): dismissing a suggestion whose
+article is already booked leaves the article to appear anyway. Carded as `R-DISMISS-CALENDAR`.
+
 ### Verification done this morning, so it is not re-done
 
 - Resolved every registered task-name constant in the tree and matched it by hand against all
