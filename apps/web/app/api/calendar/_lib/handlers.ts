@@ -20,6 +20,7 @@ import {
   type TopicRow,
 } from '@sortiva/db'
 import type { AccountHandler } from '../../auth/_lib/session'
+import { calendarWhyLine } from './why'
 
 /**
  * `GET /api/calendar` — the calendar's own read, ui spec §6.1. Everything
@@ -80,7 +81,7 @@ function serialiseTopic(
   gateDecision: GateDecisionRow | null,
   opportunity: OpportunityRow | null,
 ) {
-  const why = { templateKey: topic.whyLine ?? 'topic.auto', params: {} }
+  const why = calendarWhyLine(topic.whyLine, opportunity, 'topic.auto')
 
   return {
     id: topic.id,

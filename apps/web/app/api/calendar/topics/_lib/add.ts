@@ -9,12 +9,21 @@ import {
   type Logger,
   type PosthogCapture,
 } from '@sortiva/core'
-import { findTopicOnDate, readLifecycleState, type Db, type TopicRow } from '@sortiva/db'
+import {
+  findOpportunityById,
+  findTopicOnDate,
+  readLifecycleState,
+  type AccountScope,
+  type Db,
+  type OpportunityRow,
+  type TopicRow,
+} from '@sortiva/db'
 // Deep import, not the `@sortiva/jobs` barrel — see the identical note in
 // `apps/web/app/api/calendar/_lib/handlers.ts`, which hit the build failure
 // this avoids.
 import { addManualTopic, type AddManualTopicResult } from '@sortiva/jobs/generation/add-manual-topic'
 import type { AccountHandler } from '../../../auth/_lib/session'
+import { calendarWhyLine } from '../../_lib/why'
 
 /**
  * `POST /api/calendar/topics` — the manual-add path in full, main §8.7.
@@ -85,21 +94,29 @@ export function makeAddTopicHandler(deps: AddTopicDeps): AccountHandler {
       },
     )
 
-    return Response.json(addTopicResponseSchema.parse(serialise(result)))
+    return Response.json(addTopicResponseSchema.parse(await serialise(deps.db, scope, result)))
   }
 }
 
-function serialise(result: AddManualTopicResult) {
+async function serialise(db: Db, scope: AccountScope, result: AddManualTopicResult) {
   return {
     outcome: result.outcome,
-    topic: result.topic ? serialiseTopic(result.topic) : null,
+    topic: result.topic ? await serialiseTopic(db, scope, result.topic) : null,
     warning: result.warning,
     convertedToOpportunityId: result.convertedToOpportunityId,
     rejection: result.rejection,
   }
 }
 
-function serialiseTopic(topic: TopicRow) {
+/**
+ * The new chip goes straight onto the calendar from this response, so its
+ * sentence has to arrive filled. Gate 1's verdict is written onto the topic's
+ * own opportunity row as the reason — key and measurements together — so the
+ * row is read back rather than the values being re-derived here.
+ */
+async function serialiseTopic(db: Db, scope: AccountScope, topic: TopicRow) {
+  const opportunity: OpportunityRow | null =
+    (await findOpportunityById(db, scope, topic.opportunityId)) ?? null
   return {
     id: topic.id,
     title: topic.title,
@@ -111,7 +128,7 @@ function serialiseTopic(topic: TopicRow) {
     pinned: topic.pinned,
     targetKeyword: topic.targetKeyword,
     monthlySearchVolume: null,
-    why: { templateKey: topic.whyLine ?? 'topic.manual_addition', params: {} },
+    why: calendarWhyLine(topic.whyLine, opportunity, 'topic.manual_addition'),
     opportunityId: topic.opportunityId,
     signalType: null,
     articleId: null,

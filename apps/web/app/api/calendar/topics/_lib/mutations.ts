@@ -4,7 +4,7 @@ import {
   topicSchema,
   type ConflictCode,
 } from '@sortiva/core'
-import { findTopic, type Db } from '@sortiva/db'
+import { findOpportunityById, findTopic, type AccountScope, type Db, type OpportunityRow } from '@sortiva/db'
 // Deep imports, not the `@sortiva/jobs` barrel — see the identical note in
 // `apps/web/app/api/calendar/_lib/handlers.ts`, which hit the build failure
 // this avoids.
@@ -12,6 +12,7 @@ import { moveTopic } from '@sortiva/jobs/generation/move-topic'
 import { pinTopic } from '@sortiva/jobs/generation/pin-topic'
 import { vetoTopic } from '@sortiva/jobs/generation/veto-topic'
 import type { AccountHandler } from '../../../auth/_lib/session'
+import { calendarWhyLine } from '../../_lib/why'
 
 /**
  * Veto, move and pin — the three guarded mutations on an existing topic,
@@ -79,7 +80,7 @@ export function makeMoveTopicHandler(deps: TopicMutationDeps): AccountHandler<Ro
       { accountId: scope.accountId, topicId, toDate: parsed.data.date },
     )
     if (!result.ok) return result.code === 'not_found' ? notFound() : conflict(result.code)
-    return Response.json(topicSchema.parse(serialiseTopicForResponse(result.topic)))
+    return Response.json(topicSchema.parse(await serialiseTopicForResponse(deps.db, scope, result.topic)))
   }
 }
 
@@ -102,20 +103,31 @@ export function makePinTopicHandler(deps: TopicMutationDeps): AccountHandler<Rou
       { accountId: scope.accountId, topicId, pinned: parsed.data.pinned },
     )
     if (!result.ok) return result.code === 'not_found' ? notFound() : conflict(result.code)
-    return Response.json(topicSchema.parse(serialiseTopicForResponse(result.topic)))
+    return Response.json(topicSchema.parse(await serialiseTopicForResponse(deps.db, scope, result.topic)))
   }
 }
 
 /**
- * `topicSchema` carries fields (`why`, `signalType`, `articleId`,
+ * `topicSchema` carries fields (`signalType`, `articleId`,
  * `monthlySearchVolume`, `rejection`) a move/pin response has no reason to
  * re-fetch — the merchant dragged or pinned a chip they can already see, and
  * this response's whole job is confirming where it landed. Filled with the
  * same "nothing new to say" defaults `GET /api/calendar` uses for the fields
  * it cannot cheaply answer either.
+ *
+ * `why` is not among them. The moved chip is re-rendered from this response, so
+ * a placeholder here replaces a filled sentence on screen the moment a merchant
+ * drags a day — which is why the opportunity behind it is read back, the one
+ * extra query this response pays for.
  */
-function serialiseTopicForResponse(topic: Awaited<ReturnType<typeof findTopic>>) {
+async function serialiseTopicForResponse(
+  db: Db,
+  scope: AccountScope,
+  topic: Awaited<ReturnType<typeof findTopic>>,
+) {
   if (!topic) throw new Error('serialiseTopicForResponse called with no topic')
+  const opportunity: OpportunityRow | null =
+    (await findOpportunityById(db, scope, topic.opportunityId)) ?? null
   return {
     id: topic.id,
     title: topic.title,
@@ -127,7 +139,7 @@ function serialiseTopicForResponse(topic: Awaited<ReturnType<typeof findTopic>>)
     pinned: topic.pinned,
     targetKeyword: topic.targetKeyword,
     monthlySearchVolume: null,
-    why: { templateKey: topic.whyLine ?? 'topic.auto', params: {} },
+    why: calendarWhyLine(topic.whyLine, opportunity, 'topic.auto'),
     opportunityId: topic.opportunityId,
     signalType: null,
     articleId: null,

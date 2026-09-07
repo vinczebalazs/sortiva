@@ -1,4 +1,3 @@
-import type { EvidenceFact } from '../contracts/opportunities'
 import {
   REPLENISHMENT_WHY_COMPETITOR,
   REPLENISHMENT_WHY_EXPLORATION,
@@ -21,11 +20,19 @@ import {
  * replaced by one it can — never left with a blank in it.
  */
 
-/** The opportunity a calendar day was planned from, as much of it as an explanation needs. */
+/**
+ * The opportunity a calendar day was planned from, as much of it as an
+ * explanation needs.
+ *
+ * Both bags arrive straight off a stored row and are free-form there, so
+ * nothing guarantees a value is a word or a number. Anything else is dropped
+ * rather than coerced: an object interpolated into a merchant's sentence reads
+ * as "[object Object]", which is worse than the blank it replaced.
+ */
 export interface TopicWhyOpportunity {
   readonly reasonTemplateKey: string
-  readonly reasonParams: Readonly<Record<string, string | number>>
-  readonly evidence: readonly EvidenceFact[]
+  readonly reasonParams: Readonly<Record<string, unknown>>
+  readonly evidence: readonly { readonly key: string; readonly value: unknown }[]
 }
 
 export interface TopicWhyInput {
@@ -58,7 +65,7 @@ export function topicWhyLine(input: TopicWhyInput): TemplatedWhyLine {
   // A topic added by hand lands here as well — Gate 1's verdict is written onto
   // the opportunity row as its reason, key and values together.
   if (opportunity && key === opportunity.reasonTemplateKey) {
-    return { templateKey: key, params: opportunity.reasonParams }
+    return { templateKey: key, params: scalarsOnly(opportunity.reasonParams) }
   }
 
   if (key === REPLENISHMENT_WHY_REFRESH_POSITION) {
@@ -74,8 +81,16 @@ export function topicWhyLine(input: TopicWhyInput): TemplatedWhyLine {
   // always be filled. That is the same last resort the planner uses when
   // nothing more specific applies.
   return opportunity
-    ? { templateKey: opportunity.reasonTemplateKey, params: opportunity.reasonParams }
+    ? { templateKey: opportunity.reasonTemplateKey, params: scalarsOnly(opportunity.reasonParams) }
     : { templateKey: input.fallbackKey, params: {} }
+}
+
+function scalarsOnly(params: Readonly<Record<string, unknown>>): Readonly<Record<string, string | number>> {
+  const out: Record<string, string | number> = {}
+  for (const [name, value] of Object.entries(params)) {
+    if (typeof value === 'string' || typeof value === 'number') out[name] = value
+  }
+  return out
 }
 
 /**
@@ -83,13 +98,13 @@ export function topicWhyLine(input: TopicWhyInput): TemplatedWhyLine {
  * the detectors record it under; the replenishment planner reads exactly these
  * when it decides a day is explained by a ranking position.
  */
-function ourPosition(evidence: readonly EvidenceFact[]): number | null {
+function ourPosition(evidence: TopicWhyOpportunity['evidence']): number | null {
   return numericFact(evidence, 'mean_position') ?? numericFact(evidence, 'our_position')
 }
 
-function numericFact(evidence: readonly EvidenceFact[], key: string): number | null {
+function numericFact(evidence: TopicWhyOpportunity['evidence'], key: string): number | null {
   const fact = evidence.find((f) => f.key === key)
   if (!fact) return null
-  const value = typeof fact.value === 'number' ? fact.value : Number(fact.value)
+  const value = typeof fact.value === 'number' ? fact.value : Number(fact.value as string)
   return Number.isFinite(value) ? value : null
 }

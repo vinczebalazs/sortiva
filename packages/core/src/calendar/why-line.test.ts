@@ -128,6 +128,20 @@ describe('the sentence under a calendar day', () => {
     ).toEqual({ templateKey: 'topic.manual_addition', params: {} })
   })
 
+  it('drops a recorded value that is not a word or a number', () => {
+    // `reason_params_json` is free-form. An object interpolated into a
+    // merchant's sentence reads as "[object Object]".
+    expect(
+      topicWhyLine({
+        whyLineKey: 'uncovered_commercial_query.create',
+        fallbackKey: 'topic.auto',
+        opportunity: opportunity({
+          reasonParams: { volume: 1900, sources: ['gsc', 'dataforseo'] },
+        }),
+      }).params,
+    ).toEqual({ volume: 1900 })
+  })
+
   it('falls back to the screen’s own line for a day that recorded no reason at all', () => {
     expect(topicWhyLine({ whyLineKey: null, fallbackKey: 'topic.auto', opportunity: opportunity() })).toEqual({
       templateKey: 'topic.auto',
