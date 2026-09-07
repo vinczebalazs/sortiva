@@ -184,6 +184,11 @@ export async function generateArticle(
           distinctClaimCount: gate2.distinctClaimCount,
           boilerplateRatio: gate2.boilerplateRatio,
           boilerplateEntries: gate2.boilerplateEntries,
+          // What the sentence a merchant reads has blanks for. The numbers
+          // above are the audit trail and are shaped for us; these are the
+          // same measurements under the names the copy interpolates, which is
+          // the only place the screens look.
+          reason_params: gate2.reasonParams,
         },
         reasonUserFacing: gate2.reasonTemplateKey,
       },
