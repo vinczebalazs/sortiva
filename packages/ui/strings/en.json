@@ -1183,6 +1183,7 @@
   "content.articles.urlMalformed": "That doesn't look like a web address.",
   "content.articles.urlSaved": "Saved. We'll attribute its search performance from here.",
   "content.articles.export.gone": "That article is gone.",
+  "content.articles.export.failed": "We could not put that download together just now. Try again in a moment.",
   "content.articles.export.notWritten": "This article has not been written yet.",
   "content.articles.export.notPublished": "This article has not been published yet.",
   "content.articles.export.needsDomain": "Connect your website before confirming where an article was published.",

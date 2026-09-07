@@ -7,13 +7,14 @@ import { formatDate } from '../opportunities/list'
 import type { PostOutcome } from '../opportunities/actions'
 import {
   articleActions,
-  articleFiles,
   articleEventLabel,
   articleStateLabel,
   criterionLabel,
   failingCriteria,
 } from './articles'
 import { saveFile } from './ArticlesScreen'
+import { fetchArticleExport, type ArticleExport } from './export'
+import type { DownloadFile } from '../opportunities/download'
 import { PublishedUrlField } from './PublishedUrlField'
 import type { ArticleDetailResponse, QualityReport } from './types'
 
@@ -42,6 +43,8 @@ export interface ArticleDetailProps {
   readonly opportunityHref?: string
   /** Posts to `/api/articles/{id}/{action}`; swapped for a double in tests. */
   readonly post?: (path: string, body?: unknown) => Promise<PostOutcome>
+  /** Fetches the download from `/api/articles/{id}/export`; swapped for a double in tests. */
+  readonly loadExport?: (articleId: string) => Promise<ArticleExport>
   readonly onDone?: () => void
 }
 
@@ -51,6 +54,7 @@ export function ArticleDetail({
   t = defaultTranslate,
   opportunityHref = '/opportunities',
   post = defaultPost,
+  loadExport = (articleId) => fetchArticleExport(articleId, t),
   onDone,
 }: ArticleDetailProps) {
   const analytics = useUiAnalytics()
@@ -61,7 +65,27 @@ export function ArticleDetail({
 
   const actions = useMemo(() => articleActions(article), [article])
   const failing = useMemo(() => failingCriteria(detail.qualityReport), [detail.qualityReport])
-  const files = useMemo(() => articleFiles(detail), [detail])
+  /**
+   * Fetched once and kept, rather than per button. The route builds all three
+   * files from a single reading of the store, which is what stops the Markdown
+   * and the HTML disagreeing about a price the merchant changed between clicks.
+   */
+  const [files, setFiles] = useState<readonly DownloadFile[] | null>(null)
+
+  async function download(extension: string) {
+    setBusy(true)
+    const ready = files ?? (await loadExport(article.id).then((result) => {
+      if (result.ok) {
+        setFiles(result.files)
+        return result.files
+      }
+      setNotice(result.message)
+      return null
+    }))
+    setBusy(false)
+    const file = ready?.find((candidate) => candidate.filename.endsWith(`.${extension}`))
+    if (file) saveFile(file)
+  }
 
   async function send(path: string, body?: unknown, success?: StringKey) {
     setBusy(true)
@@ -138,15 +162,16 @@ export function ArticleDetail({
             </a>
           ) : null}
           {actions.includes('download')
-            ? files.map((file) => (
+            ? (['md', 'html', 'json'] as const).map((extension) => (
                 <button
-                  key={file.filename}
+                  key={extension}
                   type="button"
                   className="sortiva-content-button"
-                  data-article-download={file.filename.split('.').pop()}
-                  onClick={() => saveFile(file)}
+                  data-article-download={extension}
+                  disabled={busy}
+                  onClick={() => void download(extension)}
                 >
-                  {t(downloadKeyFor(file.filename))}
+                  {t(downloadKeyFor(`article.${extension}`))}
                 </button>
               ))
             : null}

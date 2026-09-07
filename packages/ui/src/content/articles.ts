@@ -1,7 +1,5 @@
 import { t as defaultTranslate, type StringKey, type Translate } from '../strings'
-import type { DownloadFile } from '../opportunities/download'
 import type {
-  ArticleDetailResponse,
   ArticleState,
   ArticleSummary,
   DeliveryMode,
@@ -172,87 +170,6 @@ export function failingCriteria(report: QualityReport | null): readonly string[]
 }
 
 // ── What leaves the screen as a file ────────────────────────────────────────
-
-function slugify(title: string): string {
-  return (
-    title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .slice(0, 60) || 'article'
-  )
-}
-
-export function articleFilename(title: string, extension: string): string {
-  return `sortiva-${slugify(title)}.${extension}`
-}
-
-/**
- * A very small HTML-to-text pass, enough to make a Markdown file that reads.
- *
- * The article arrives as rendered HTML because that is what will publish, and
- * an export merchant needs the same thing in a form they can paste into a
- * different editor. This is not a converter and does not pretend to be: it
- * keeps headings, paragraphs and list items and drops the rest, which is what
- * the article's own structure is made of.
- */
-export function articleMarkdown(detail: ArticleDetailResponse): string {
-  const lines: string[] = [`# ${detail.article.title}`, '']
-  const blocks = detail.html.matchAll(/<(h[1-6]|p|li)[^>]*>([\s\S]*?)<\/\1>/gi)
-  for (const block of blocks) {
-    const tag = block[1]!.toLowerCase()
-    const text = block[2]!
-      .replace(/<[^>]+>/g, '')
-      .replace(/\s+/g, ' ')
-      .trim()
-    if (text === '') continue
-    if (tag === 'li') lines.push(`- ${text}`, '')
-    else if (tag === 'p') lines.push(text, '')
-    else lines.push(`${'#'.repeat(Number(tag[1]))} ${text}`, '')
-  }
-  return lines.join('\n').trimEnd().concat('\n')
-}
-
-/**
- * The metadata block: everything that has to be set on the page besides its
- * body, in one file, because an export merchant is setting it by hand in
- * another system and a field they never saw is a field they never set.
- */
-export function articleMetadataBlock(detail: ArticleDetailResponse): string {
-  return `${JSON.stringify(
-    {
-      title: detail.article.title,
-      slug: detail.metadata.slug,
-      targetKeyword: detail.metadata.targetKeyword,
-      metaDescription: detail.metadata.metaDescription,
-      families: detail.metadata.familyIds,
-      products: detail.evidencePack.map((entry) => entry.productId),
-    },
-    null,
-    2,
-  )}\n`
-}
-
-export function articleFiles(detail: ArticleDetailResponse): readonly DownloadFile[] {
-  const title = detail.article.title
-  return [
-    {
-      filename: articleFilename(title, 'md'),
-      mimeType: 'text/markdown',
-      content: articleMarkdown(detail),
-    },
-    {
-      filename: articleFilename(title, 'html'),
-      mimeType: 'text/html',
-      content: detail.html,
-    },
-    {
-      filename: articleFilename(title, 'json'),
-      mimeType: 'application/json',
-      content: articleMetadataBlock(detail),
-    },
-  ]
-}
 
 /** The action bar an article's state earns. There is no `edit` in this union, and that is the point. */
 export type ArticleAction =
