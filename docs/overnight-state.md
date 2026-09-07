@@ -779,6 +779,32 @@ back for capacity reasons any more — the queue is worked until it is empty. De
 founder's earlier choice) and `T10.4` still cannot run without the Shopify development store they
 deliberately deferred.
 
+### Fourteen cards landed. `main` at 304 test files, 3,840 tests, gate eleven of eleven
+
+`R-EXPORT-WIRE` was the fourteenth, and the three held copy strings are now applied — the merge it was
+waiting for has happened, and this file went in cleanly.
+
+**The pattern is now named four times over, and it is the single most useful thing found today.**
+`R-EXPORT-WIRE` found that **nothing tested the download buttons at all** — no test touched the handler
+or the browser-side file builder. That is why a screen could build a file out of a response designed to
+answer empty, with nothing anywhere going red. The lane put it best: *the producer was tested, the
+consumer was not, and the defect lived in the join.*
+
+The four instances, all found today, all the same shape:
+
+1. **Ten endpoints** declared in the contract, called by finished screens, built nowhere.
+2. **A signal explanation** filed under a key the engine never produces, so written copy sat unreachable.
+3. **An error envelope** written flat by a lane while every screen reads `{error:{code}}` — caught by
+   that lane on itself, by writing the test against the screen's reader rather than its own handler.
+4. **The download buttons**, untested end to end.
+
+**The method that finds it**: check the consumer, never the producer's own account of itself. Every one
+of the four looks correct from the producing side.
+
+`R-EXPORT-WIRE` also deleted 81 lines of a **second implementation of the export format** that nothing
+called once both screens stopped using it — reachable only from its own tests, and certain to drift from
+the server's. Callers verified by name before removal.
+
 ### Thirteen cards landed. `main` at 303 test files, 3,836 tests, gate eleven of eleven. **All six serverless screens now have servers.**
 
 `R-API-PERFORMANCE` was the thirteenth and closed the set found this afternoon: the Performance screen,

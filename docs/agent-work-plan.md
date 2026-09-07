@@ -746,6 +746,14 @@ carries the shape it must satisfy, which already exists as a zod schema in
 `packages/core/src/api/schemas.ts` — the contract described these endpoints correctly all along, so
 none of these cards is designing an interface, only implementing one.
 
+**R-EXPORT-FALLBACK — should a merchant get the old file, or nothing?** · **a founder question, not yet a card**
+Scope: `R-EXPORT-WIRE` made the download buttons ask the route that builds downloads, so an article naming a product the store no longer sells now **refuses with a reason** instead of silently handing over a file containing a title and nothing else. That is strictly better. **It may not be the right final answer.**
+The alternative, which `R-API-ARTICLES` named and `R-EXPORT-WIRE` deliberately did not assume: render the article from the **last recorded values** — the prices and product details as they were when the article was written — so the merchant gets something rather than nothing, clearly marked as of a date.
+**The tension is real in both directions.** Handing over a document quoting a price the store no longer offers is how a merchant publishes something wrong on our advice. Handing over nothing is how a merchant who paid for an article never receives it because one product went out of stock.
+Read first: `DECISIONS.md` 2026-09-07 `R-EXPORT-WIRE` and `R-API-ARTICLES` entries; main §9.4, §9.5.
+Done when: the founder has said which, and the download does it.
+Note: raised by the lane that built the refusal, which said plainly that its own answer should not be assumed to be the final one.
+
 ### From `R-API-PERFORMANCE`, landed 2026-09-07 — the last of the six serverless screens
 
 **R-LABELS-OR-DASHES — the Performance results table shows dashes for every article** · **needs a founder decision**
