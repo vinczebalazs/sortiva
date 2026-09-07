@@ -746,6 +746,31 @@ carries the shape it must satisfy, which already exists as a zod schema in
 `packages/core/src/api/schemas.ts` — the contract described these endpoints correctly all along, so
 none of these cards is designing an interface, only implementing one.
 
+### Four findings from `R-ARTICLE-OURS` and `R-API-ARTICLES`, both landed 2026-09-07
+
+**R-HANDLE-RENAME — a merchant renaming our article's address breaks the link for ever** · **needs a founder decision**
+Scope: the walk recognises our own articles **by address**. If a merchant renames the post's handle on their shop, the address changes, our record still names the old one, and the link breaks permanently — a recognised row is never marked `gone`, so the stale row sits `live` for ever while the real page reads as the merchant's own writing. Found and flagged by `R-ARTICLE-OURS`'s own lane as the sharpest edge in its work; journalled, not fixed.
+**Why address rather than the id Shopify gives the post:** that id exists only for articles we posted ourselves, and export delivery — where the merchant pastes our article onto their own blog — is the default. So the id is absent for exactly the stores that need recognising.
+**The decision:** fixing it means a second key or a rename webhook. A second key (matching on title, or on the marker metafield the publish path already writes) costs a lookup and can be wrong; a rename webhook is a new Shopify subscription and a new failure mode. **Neither is a lane's to choose.**
+Read first: `DECISIONS.md` 2026-09-07 `R-ARTICLE-OURS` entries; main §9.5, §12.3, §14.3.7 (the marker the two-phase publish already writes).
+Done when: renaming a published article's handle on the store does not permanently detach it from the article that produced it, or the founder has accepted that it does and the stale row is handled deliberately.
+
+**R-EXPORT-WIRE — the download buttons do not use the download endpoint** · Lane F
+Scope: `GET /api/articles/{articleId}/export` is built, tested, correct — **and called by no screen.** Both Content screens build their download from the article-detail response instead. The consequence is quiet and real: an article naming a product the store no longer sells downloads as a title and nothing else, with no explanation, because the detail endpoint answers with an empty body by design so that the same page can still carry the quality report and the override. The export endpoint refuses honestly for exactly this case, and nothing points at it. Found by `R-API-ARTICLES`, which caused half of it and said so.
+Read first: `DECISIONS.md` 2026-09-07 `R-API-ARTICLES` entries; main §9.4, §9.5; ui §6.
+Done when: both download buttons fetch the export endpoint; an article that cannot be built into files tells the merchant why instead of handing them an empty document; and the article page still renders its quality report and override for that same article.
+
+**R-OVERRIDE-JUSTIFICATION — overriding a quality rejection hides the reasons it was rejected** · Lane D
+Scope: publishing over a quality rejection writes a second gate-3 decision row with outcome `overridden`, which main §8.6 requires. But the read takes the **latest** gate-3 decision, so after an override the latest is the override itself — and the article page then shows the override row's scores rather than the refusal's written objections. A merchant who overrode a rejection can no longer see what it said. Found by `R-API-ARTICLES`, which left the write as specified and flagged the read.
+Read first: `DECISIONS.md` 2026-09-04 "The judge's own sentences may reach a merchant" and 2026-09-07 `R-API-ARTICLES`; main §8.4, §8.6; invariant 12.
+Done when: the article page shows the objections the judge actually wrote, for an overridden article as much as a rejected one; the override row is still written as the spec requires; and nothing reads "latest gate-3 decision" where it means "the decision that judged the words".
+
+**R-STATE-FIVE — the contract cannot say that a person cleared an article** · integrator (the contract) + Lane D
+Scope: storage has six article states; the frozen contract names five and has no value for `cleared_to_deliver`, the state `R-OVERRIDE-STATE` added for an article a merchant published over a rejection. `R-API-ARTICLES` maps it to `draft` for the screens, so **an overridden article and an ordinary approved one read identically except for the override badge.**
+**Whether that is wrong is a product question**, not an oversight: the badge may be the right amount of distinction, or the state may deserve to be visible in filters and counts. Invariant 12 requires override articles to be *shown segmented*, which the badge arguably satisfies and a state would satisfy more strongly.
+Read first: `DECISIONS.md` 2026-09-04 "An overridden article gets its own state" and 2026-09-07 `R-API-ARTICLES`; main §8.6, §9.3; ui §6.2; invariant 12.
+Done when: the decision is taken and the contract either gains the sixth state or records deliberately that it does not.
+
 ### The ninth reporter: the Opportunities screen cannot explain almost any of its own cards
 
 Found 2026-09-07 by `R-REPAIR-COPY`'s lane, which enumerated every explanation an opportunity row can

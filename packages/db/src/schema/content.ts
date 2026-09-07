@@ -27,10 +27,16 @@ export const storePages = pgTable(
     url: text('url').notNull(),
     pageType: storePageTypeEnum('page_type').notNull(),
     /**
-     * Whether the store still serves this URL. Added by T4.0a, migration
-     * only: nothing sets this to 'gone' yet and nothing reads it — the
-     * producer and the existing-target check (§7.7) that will consume it
-     * are separate follow-up cards.
+     * Whether the store still serves this URL.
+     *
+     * A 'gone' row is kept rather than deleted, because the walk can find the
+     * page again and put it straight back to live — a restored page keeps the
+     * checksum it always had, so nothing else would mark it live again. A
+     * reader that deletes or archives on seeing 'gone' breaks that.
+     *
+     * Our own published articles are never marked 'gone': for a store we
+     * deliver by export they may live somewhere the walk cannot see, so
+     * absence is evidence of nothing.
      */
     status: storePageStatusEnum('status').notNull().default('live'),
     handle: text('handle'),

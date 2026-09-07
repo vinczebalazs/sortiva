@@ -680,9 +680,9 @@ describe.skipIf(!available)('a generation that does not finish', () => {
         checksum: 'checksum-ours',
       },
     ])
-    // The link from a page we published back to the article behind it. Nothing
-    // in the product writes this column yet, which is why it is set here — see
-    // the session report for T7.2.
+    // The link from a page we published back to the article behind it. The
+    // nightly store walk writes this now; it is set by hand here so the case
+    // under test does not depend on a walk having run.
     await harness.pool.query(`UPDATE store_pages SET article_id = $1 WHERE account_id = $2 AND url = $3`, [
       article.id,
       accountId,

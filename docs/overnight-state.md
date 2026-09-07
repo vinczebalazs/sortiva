@@ -779,6 +779,36 @@ back for capacity reasons any more — the queue is worked until it is empty. De
 founder's earlier choice) and `T10.4` still cannot run without the Shopify development store they
 deliberately deferred.
 
+### Nine cards landed and merged green. `main` at 300 test files, 3,790 tests, gate eleven of eleven
+
+Landed since the handover, each merged and gated separately: `R-SCANCOPY`, `R-PAGE-GONE-READ`, `T7.2`,
+`R-API-PRODUCTS`, `R-CONTRACT`, `R-REPAIR-COPY`, `R-REFUSAL`, `R-ARTICLE-OURS`, `R-API-ARTICLES`.
+From 289 files / 3,597 tests at the handover. `pnpm chaos` 10 of 10 throughout. `pnpm eval` never run —
+no Anthropic key, the standing red.
+
+### The gate caught a real invariant violation, and this is what it looked like
+
+`R-API-ARTICLES` merged clean on lint, typecheck and its own targeted tests, and **failed the full gate
+on invariant 3** — the guard that keeps a merchant's own marketing copy out of everything downstream. A
+new test had seeded a real product description to give an article something to rest on. It never
+asserted on it and passes with the field null, so the copy is gone and the file is on the exemption list
+with the honest reason: the product input requires the key even when it holds nothing.
+**Worth keeping as the example of why lanes do not gate their own work.** Nothing about that test looked
+wrong, the lane had no reason to suspect it, and the check that caught it runs only on the merged tree.
+
+### Three test failures that were load, not regression — and how that was established rather than assumed
+
+A full run during the `R-ARTICLE-OURS` merge failed three tests: `providers/shopify` "paces real requests
+and carries the cursor from one page to the next", and both of `apps/web/app/(public)/_lib/signin-wire.test.ts`
+"pressing Continue with Google…". **Names captured before anything was re-run**, which is the discipline
+a previous integrator broke and recorded.
+Established by three separate observations rather than one re-run: both files pass in isolation in under
+a second against a five-second timeout; a second full run passed all 3,753 under a load average of 27;
+and both files are wall-clock-sensitive by construction. **`signin-wire.test.ts` is now confirmed as the
+fifth member of `R-TESTDB`'s named residue** — Lane B reported it as a candidate earlier the same day and
+this is the second independent sighting. Treat a failure in these five as unproven; anything else is a
+regression.
+
 ### Four cards landed and merged green in one pass — `R-SCANCOPY`, `R-PAGE-GONE-READ`, `T7.2`, `R-API-PRODUCTS`
 
 `main` at `8b9644e`+. **Full gate eleven of eleven after every one of the four merges** (`pnpm eval`
