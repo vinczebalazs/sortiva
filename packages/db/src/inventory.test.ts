@@ -8,7 +8,9 @@ import {
   readStorePageBody,
   listLiveStorePages,
   markStorePagesGoneNotSeenSince,
+  markStorePagesOurs,
   markStorePagesSeen,
+  publishedArticleAddresses,
   storePageChecksums,
   upsertStorePages,
   type StorePageInput,
@@ -257,5 +259,189 @@ describe.skipIf(!available)('marking a page the store stopped serving', () => {
     expect(await markStorePagesGoneNotSeenSince(ctx.db, accountScope(accountId), T1)).toBe(1)
     const [theirs] = await listStorePages(ctx.db, accountScope(other))
     expect(theirs?.status).toBe('live')
+  })
+})
+
+describe.skipIf(!available)('recognising an article we published', () => {
+  let ctx: TestDb
+  let pool: pg.Pool
+  let accountId: string
+
+  const T0 = new Date('2026-09-07T03:00:00Z')
+  const T1 = new Date('2026-09-08T03:00:00Z')
+
+  beforeAll(async () => {
+    ctx = await setupTestDb('inventory_ours')
+    pool = ctx.pool
+  })
+
+  afterAll(async () => {
+    await ctx?.close()
+  })
+
+  beforeEach(async () => {
+    await truncateAll(pool)
+    accountId = await insertAccount(pool, 'ours@example.com')
+  })
+
+  /**
+   * One article of ours, published. Raw SQL because the chain an article hangs
+   * off — a piece of work, then a calendar topic — belongs to another part of
+   * the product, and none of it is what these tests are about.
+   */
+  async function publishedArticle(
+    slug: string,
+    over: {
+      readonly owner?: string
+      readonly url?: string | null
+      readonly state?: string
+      readonly publishedAt?: string
+    } = {},
+  ): Promise<string> {
+    const owner = over.owner ?? accountId
+    const opportunity = await pool.query<{ id: string }>(
+      `INSERT INTO opportunities
+         (account_id, signal_type, entity_type, entity_ref, evidence_json, impact,
+          impact_score, confidence, reason_template_key, recommended_action, rules_version)
+       VALUES ($1,'uncovered_commercial_query','query_cluster',$2,'[]'::jsonb,'high',
+          80, 70, 'uncovered_commercial_query.default', 'create', 'test')
+       RETURNING id`,
+      [owner, `cluster:${slug}`],
+    )
+    const topic = await pool.query<{ id: string }>(
+      `INSERT INTO topics (account_id, opportunity_id, title, intent_class, source, scheduled_date)
+       VALUES ($1,$2,$3,'buying_guide','auto','2026-10-01') RETURNING id`,
+      [owner, opportunity.rows[0]!.id, slug],
+    )
+    const article = await pool.query<{ id: string }>(
+      `INSERT INTO articles (account_id, topic_id, title, slug, state, published_url, published_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
+      [
+        owner,
+        topic.rows[0]!.id,
+        slug,
+        slug,
+        over.state ?? 'published',
+        over.url === undefined ? `https://shop.example/blogs/news/${slug}` : over.url,
+        over.publishedAt ?? '2026-03-01T00:00:00Z',
+      ],
+    )
+    return article.rows[0]!.id
+  }
+
+  it('marks a page as ours and names the article behind it, without disturbing its change detector', async () => {
+    const scope = accountScope(accountId)
+    const articleId = await publishedArticle('best-trail-shoes')
+    const url = 'https://shop.example/blogs/news/best-trail-shoes'
+    await upsertStorePages(ctx.db, scope, [page({ url, shopifyId: '61', pageType: 'blog_article' })], T0)
+
+    expect(await markStorePagesOurs(ctx.db, scope, [{ url, articleId }])).toBe(1)
+
+    const [row] = await listStorePages(ctx.db, scope)
+    expect(row?.pageType).toBe('article_ours')
+    expect(row?.articleId).toBe(articleId)
+    // Recognising a page is not editing it. The checksum is what everything
+    // downstream watches for an edit, and paid analyses hang off one.
+    expect(row?.checksum).toBe('checksum-1')
+    expect(row?.lastSyncedAt).toEqual(T0)
+  })
+
+  it('marks several pages at once, each against its own article', async () => {
+    const scope = accountScope(accountId)
+    const first = await publishedArticle('first')
+    const second = await publishedArticle('second')
+    const urlA = 'https://shop.example/blogs/news/first'
+    const urlB = 'https://shop.example/blogs/news/second'
+    await upsertStorePages(
+      ctx.db,
+      scope,
+      [
+        page({ url: urlA, shopifyId: '61', pageType: 'blog_article' }),
+        page({ url: urlB, shopifyId: '62', pageType: 'blog_article' }),
+      ],
+      T0,
+    )
+
+    await markStorePagesOurs(ctx.db, scope, [
+      { url: urlA, articleId: first },
+      { url: urlB, articleId: second },
+    ])
+
+    const byUrl = new Map((await listStorePages(ctx.db, scope)).map((r) => [r.url, r.articleId]))
+    expect(byUrl.get(urlA)).toBe(first)
+    expect(byUrl.get(urlB)).toBe(second)
+  })
+
+  it('never reaches another account’s page at the same address', async () => {
+    const other = await insertAccount(pool, 'ours-other@example.com')
+    const url = 'https://shop.example/blogs/news/best-trail-shoes'
+    const articleId = await publishedArticle('best-trail-shoes')
+    await upsertStorePages(ctx.db, accountScope(other), [page({ url, pageType: 'blog_article' })], T0)
+    await upsertStorePages(ctx.db, accountScope(accountId), [page({ url, pageType: 'blog_article' })], T0)
+
+    await markStorePagesOurs(ctx.db, accountScope(accountId), [{ url, articleId }])
+
+    const [theirs] = await listStorePages(ctx.db, accountScope(other))
+    expect(theirs?.pageType).toBe('blog_article')
+    expect(theirs?.articleId).toBeNull()
+  })
+
+  it('keeps the marking when the nightly read finds the post edited', async () => {
+    const scope = accountScope(accountId)
+    const articleId = await publishedArticle('best-trail-shoes')
+    const url = 'https://shop.example/blogs/news/best-trail-shoes'
+    await upsertStorePages(ctx.db, scope, [page({ url, pageType: 'blog_article' })], T0)
+    await markStorePagesOurs(ctx.db, scope, [{ url, articleId }])
+
+    // The store hands our article back as an ordinary blog post. A nightly read
+    // that demoted it would lose the only thing recording whose it is.
+    await upsertStorePages(
+      ctx.db,
+      scope,
+      [page({ url, pageType: 'blog_article', checksum: 'checksum-2' })],
+      T1,
+    )
+
+    const [row] = await listStorePages(ctx.db, scope)
+    expect(row?.pageType).toBe('article_ours')
+    expect(row?.articleId).toBe(articleId)
+  })
+
+  it('never marks a page we recognised as ours gone', async () => {
+    const scope = accountScope(accountId)
+    const articleId = await publishedArticle('best-trail-shoes')
+    const url = 'https://shop.example/blogs/news/best-trail-shoes'
+    await upsertStorePages(ctx.db, scope, [page({ url, pageType: 'blog_article' })], T0)
+    await markStorePagesOurs(ctx.db, scope, [{ url, articleId }])
+
+    // The store on export delivery has our articles nowhere this walk can look,
+    // so a walk not finding one is evidence of nothing at all. The marking is
+    // what tells the sweep to leave it alone, and this is the marking the walk
+    // itself writes rather than one a test planted.
+    expect(await markStorePagesGoneNotSeenSince(ctx.db, scope, T1)).toBe(0)
+    const [row] = await listStorePages(ctx.db, scope)
+    expect(row?.status).toBe('live')
+  })
+
+  it('hands the walk every article we published, oldest first, and nothing else', async () => {
+    const scope = accountScope(accountId)
+    const older = await publishedArticle('older', { publishedAt: '2026-01-01T00:00:00Z' })
+    const newer = await publishedArticle('newer', { publishedAt: '2026-06-01T00:00:00Z' })
+    // A draft has no address to compare against, and an article that reached
+    // nobody has not been published anywhere for the walk to find.
+    await publishedArticle('unwritten', { state: 'draft', url: null })
+    await publishedArticle('undelivered', { url: null })
+
+    expect(await publishedArticleAddresses(ctx.db, scope)).toEqual([
+      { articleId: older, url: 'https://shop.example/blogs/news/older' },
+      { articleId: newer, url: 'https://shop.example/blogs/news/newer' },
+    ])
+  })
+
+  it('never hands the walk another account’s articles', async () => {
+    const other = await insertAccount(pool, 'ours-articles-other@example.com')
+    await publishedArticle('theirs', { owner: other })
+
+    expect(await publishedArticleAddresses(ctx.db, accountScope(accountId))).toEqual([])
   })
 })
