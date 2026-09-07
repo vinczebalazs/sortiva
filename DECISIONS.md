@@ -5048,3 +5048,10 @@ Why: without it a merchant reading the screen on Monday afternoon, hours after t
 Consequence: a Monday whose scan has *not* run yet is answered with the next wake-up, which is later the same day. That is correct — it is genuinely still coming — and the empty-state sentence renders its "today" form for it.
 Nearest spec: main §7.5, §14.3.1 (derived idempotency keys); ui §5.1.
 Class (filled by audit):
+
+## 2026-09-07 — FOUNDER — R-OVERRIDE-TOPIC — The calendar says what happened to the day; the article page keeps the fuller story
+Decision: once a merchant overrules a quality refusal and the article goes out, the calendar draws that day as **published** and shows no rejection. The article page continues to show both facts — that we objected, and that the merchant published anyway.
+Why: the two surfaces have different jobs, and the founder chose to let them differ rather than reconcile them. The calendar answers "what happened on this day", and what happened is that an article went out; drawing a refusal there contradicts the merchant's own store. The article page answers "what is the story of this piece", where being overruled does not undo having been objected to — `R-OVERRIDE-JUSTIFICATION` deliberately kept both events in that history for the same reason.
+What it rests on, verified rather than assumed: the calendar serialiser attaches a rejection only while the topic is still `rejected_by_gate` (`apps/web/app/api/calendar/_lib/handlers.ts`), so moving an overruled topic to `published` removes the rejection card without any change to that code. The decision was put to the founder on that basis and the behaviour was checked before it was written down.
+Held by a test rather than by memory: `calendar.test.ts` asserts a delivered, overruled day reads `published` with a null rejection. The neighbouring case — an overridden article that has *not* yet gone out — still asserts the refusal is named, because that day genuinely is still held.
+Nearest spec: main §8.6 (the override and its audit row), §8.7 (the calendar's states); ui §6.1, §6.3; invariant 12.
