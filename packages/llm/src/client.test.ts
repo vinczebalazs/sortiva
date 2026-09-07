@@ -370,9 +370,55 @@ describe('AnthropicLlmClient', () => {
       const anthropic = fakeAnthropic(['{"summary":"x"}'])
       await expect(
         client({ anthropic: anthropic.client }).complete(
-          request({ callType: 'judge', promptVersion: 'judge.v1', model: MODELS.haiku.id }),
+          request({ callType: 'judge', promptVersion: 'judge.v2', model: MODELS.haiku.id }),
         ),
       ).rejects.toThrow(/judge's model cannot be overridden/)
+    })
+  })
+
+  /**
+   * The other way the judge could have been downgraded, and the reason it is
+   * tested by *doing* it rather than by reading the resolver: an operator who
+   * sets this variable is not calling a function, they are starting the
+   * process, and what matters is the model id that leaves for Anthropic and
+   * the price the spend ledger records against it.
+   */
+  describe('the environment model override', () => {
+    /** What an operator would set to point the strong tier at the cheap model. */
+    const DOWNGRADE = { ANTHROPIC_MODEL_SONNET: MODELS.haiku.id }
+
+    it('does not move the judge, and does not make the judge cheaper on paper either', async () => {
+      const anthropic = fakeAnthropic(['{"summary":"graded"}'])
+      const result = await client({ anthropic: anthropic.client, env: DOWNGRADE }).complete(
+        request({ callType: 'judge', promptVersion: 'judge.v2' }),
+      )
+
+      expect(result.modelId).toBe(MODELS.sonnet.id)
+      expect((anthropic.calls[0] as { model: string }).model).toBe(MODELS.sonnet.id)
+      // Sonnet's own rates on Sonnet's own tokens: the ledger and the model
+      // agree, which is what would have come apart had the id moved and the
+      // price list stayed.
+      expect(ledger.rows[0]!.usdCost).toBeCloseTo((100 * 2) / 1e6 + (50 * 10) / 1e6, 9)
+    })
+
+    it('still pins every other call type on the same tier', async () => {
+      const anthropic = fakeAnthropic(['{"summary":"written"}'])
+      const result = await client({ anthropic: anthropic.client, env: DOWNGRADE }).complete(
+        request({ callType: 'draft', promptVersion: 'draft.v2' }),
+      )
+
+      expect(result.modelId).toBe(MODELS.haiku.id)
+      expect((anthropic.calls[0] as { model: string }).model).toBe(MODELS.haiku.id)
+    })
+
+    it('leaves the cheaper tier variable working', async () => {
+      const anthropic = fakeAnthropic(['{"summary":"distilled"}'])
+      const result = await client({
+        anthropic: anthropic.client,
+        env: { ANTHROPIC_MODEL_HAIKU: 'claude-haiku-4-4' },
+      }).complete(request())
+
+      expect(result.modelId).toBe('claude-haiku-4-4')
     })
   })
 

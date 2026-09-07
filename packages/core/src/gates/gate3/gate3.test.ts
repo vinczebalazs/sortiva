@@ -331,6 +331,46 @@ describe('runGate3 — the judge, the floors and the single repair loop', () => 
     expect(result.calls).toEqual({ judge: 1, contradiction: 0, repair: 0 })
   })
 
+  /**
+   * The sentence a merchant is shown when we hold their article back is the
+   * grader's own, copied across untouched — no summarising, no rewriting, no
+   * template around the words themselves.
+   *
+   * That is the whole reason the grading prompt has to settle the language.
+   * There is nowhere downstream that could translate this, and the copy it is
+   * dropped into is English, so a Danish sentence here would reach the merchant
+   * as an English sentence with a Danish one inside it.
+   */
+  it("hands the merchant the judge's own sentence, unchanged", async () => {
+    const judged = {
+      scores: {
+        informationGain: 4,
+        factualGrounding: 4,
+        searchIntentMatch: 3,
+        actionability: 2,
+        languageQuality: 3,
+        ecommerceUsefulness: 3,
+      },
+      justifications: {
+        informationGain: 'Says more about fit than the ranking pages do.',
+        factualGrounding: 'Every figure traces to a product record.',
+        searchIntentMatch: 'Answers the question the search asks.',
+        actionability: 'The advice never names a pack or a load, so nobody can act on it.',
+        languageQuality: 'Reads naturally.',
+        ecommerceUsefulness: 'The trade-off is stated.',
+      },
+    }
+    const llm = new RecordingLlmClient({ 'judge.v1': judged })
+
+    const result = await runGate3(
+      { llm, judgePrompt: JUDGE_PROMPT, contradictionPrompt: CONTRADICTION_PROMPT },
+      input(passingDraft(plan)),
+    )
+
+    expect(result.reasonTemplateKey).toBe('gate3.below_quality_bar')
+    expect(result.reasonParams.first_justification).toBe(judged.justifications.actionability)
+  })
+
   it('a draft failing only information gain is rejected with zero repair calls (call-count assertion)', async () => {
     const llm = new RecordingLlmClient({ 'judge.v1': verdict({ informationGain: 2 }) })
     let repairs = 0

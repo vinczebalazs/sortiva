@@ -11,7 +11,7 @@ import {
 import { accountScope, schema, type Db } from '@sortiva/db'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
 import { loadPrompt, MockLlmClient } from '@sortiva/llm'
-import { DRAFT_PROMPT_MAJOR_VERSION } from './prompts'
+import { DRAFT_PROMPT_MAJOR_VERSION, JUDGE_PROMPT_MAJOR_VERSION } from './prompts'
 import type { PageFetcher } from '@sortiva/providers'
 import { generateArticle } from './generate-article'
 
@@ -29,7 +29,7 @@ const available = await databaseAvailable()
 const NOW = new Date('2026-09-03T07:00:00.000Z')
 const CLAIM_PLAN_PROMPT = loadPrompt('claim-plan', 1)
 const DRAFT_PROMPT = loadPrompt('draft', DRAFT_PROMPT_MAJOR_VERSION)
-const JUDGE_PROMPT = loadPrompt('judge', 1)
+const JUDGE_PROMPT = loadPrompt('judge', JUDGE_PROMPT_MAJOR_VERSION)
 const CONTRADICTION_PROMPT = loadPrompt('contradiction', 1)
 const REVISE_PROMPT = loadPrompt('revise', 1)
 
@@ -374,7 +374,7 @@ describe.skipIf(!available)('generateArticle against real data', () => {
       .where(and(eq(schema.gateDecisions.topicId, topicId), eq(schema.gateDecisions.gate, 3)))
     expect(gate3Rows).toHaveLength(1)
     expect(gate3Rows[0]!.outcome).toBe('passed')
-    expect(gate3Rows[0]!.promptVersion).toBe('judge.v1')
+    expect(gate3Rows[0]!.promptVersion).toBe(JUDGE_PROMPT.version)
     expect(gate3Rows[0]!.modelId).toBeTruthy()
     const claimRows = await db
       .select()

@@ -4,7 +4,7 @@ import { silentLogger, type LlmClient, type SeoDataProvider } from '@sortiva/cor
 import { accountScope, articlesReadyForDelivery, schema, type Db } from '@sortiva/db'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
 import { loadPrompt, MockLlmClient } from '@sortiva/llm'
-import { DRAFT_PROMPT_MAJOR_VERSION } from './prompts'
+import { DRAFT_PROMPT_MAJOR_VERSION, JUDGE_PROMPT_MAJOR_VERSION } from './prompts'
 import type { PageFetcher } from '@sortiva/providers'
 import { DbNotificationEmitter } from '../notify/emitter'
 import { runDailyGenerationForAccount } from './daily-cycle'
@@ -31,7 +31,7 @@ const at = (date: string) => new Date(`${date}T07:00:00.000Z`)
 
 const CLAIM_PLAN_PROMPT = loadPrompt('claim-plan', 1)
 const DRAFT_PROMPT = loadPrompt('draft', DRAFT_PROMPT_MAJOR_VERSION)
-const JUDGE_PROMPT = loadPrompt('judge', 1)
+const JUDGE_PROMPT = loadPrompt('judge', JUDGE_PROMPT_MAJOR_VERSION)
 const CONTRADICTION_PROMPT = loadPrompt('contradiction', 1)
 const REVISE_PROMPT = loadPrompt('revise', 1)
 

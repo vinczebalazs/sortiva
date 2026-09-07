@@ -8,7 +8,7 @@ import { DataForSeoProvider } from '@sortiva/providers'
 import { AnthropicLlmClient } from '@sortiva/llm/client'
 import { loadPrompt } from '@sortiva/llm/prompts'
 import type { GenerationTaskDeps } from '@sortiva/jobs/generation/tasks'
-import { DRAFT_PROMPT_MAJOR_VERSION } from '@sortiva/jobs/generation/prompts'
+import { DRAFT_PROMPT_MAJOR_VERSION, JUDGE_PROMPT_MAJOR_VERSION } from '@sortiva/jobs/generation/prompts'
 import type { PublishTaskDeps } from '@sortiva/jobs/publish/tasks'
 import type { DriftTaskDeps } from '@sortiva/jobs/drift/tasks'
 import type { ReplenishmentTaskDeps } from '@sortiva/jobs/generation/replenish-tasks'
@@ -164,7 +164,7 @@ export function generationTaskDeps(): GenerationTaskDeps {
     seo: generationSeoProvider(),
     claimPlanPrompt: loadPrompt('claim-plan', 1),
     draftPrompt: loadPrompt('draft', DRAFT_PROMPT_MAJOR_VERSION),
-    judgePrompt: loadPrompt('judge', 1),
+    judgePrompt: loadPrompt('judge', JUDGE_PROMPT_MAJOR_VERSION),
     contradictionPrompt: loadPrompt('contradiction', 1),
     revisePrompt: loadPrompt('revise', 1),
     // The bell, for the one thing this cycle has to tell a merchant: a draft
