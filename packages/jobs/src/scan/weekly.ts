@@ -1,4 +1,10 @@
-import { type NotificationEmitter, accountAttribution } from '@sortiva/core'
+import {
+  accountAttribution,
+  isScanWeekday,
+  scanLocalDay,
+  weeklyScanRunId,
+  type NotificationEmitter,
+} from '@sortiva/core'
 import { accountsWithTimezone, systemScope } from '@sortiva/db'
 import { runtimeLogger } from '../runtime/logging'
 import { runSignalScan, type RunSignalScanDeps } from './run'
@@ -15,33 +21,17 @@ import { runSignalScan, type RunSignalScanDeps } from './run'
  * Monday date>`, so every hourly pass after the one that matched finds the
  * run already finished (`runSignalScan`'s own idempotency) and does
  * nothing.
+ *
+ * The local day and the run id are both worked out by `packages/core`
+ * (`signals/next-scan.ts`) rather than here, because the Opportunities screen
+ * tells the merchant when their next scan falls and has to reach that answer
+ * by asking the same question this sweep asks. Two copies of "is it Monday
+ * there?" would let the promise and the work drift apart without either side
+ * failing.
  */
 
 export interface WeeklyScanDeps extends RunSignalScanDeps {
   readonly notifications: NotificationEmitter
-}
-
-interface LocalDay {
-  readonly date: string
-  readonly weekday: string
-}
-
-/** The account's own calendar date and weekday name, read the same way `localClock` does for the monthly summary — an unreadable zone falls back to UTC rather than skipping the store. */
-function localDay(now: Date, timeZone: string): LocalDay {
-  const format = (zone: string) =>
-    new Intl.DateTimeFormat('en-CA', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' }).formatToParts(now)
-  let parts
-  try {
-    parts = format(timeZone)
-  } catch {
-    parts = format('UTC')
-  }
-  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? ''
-  return { date: `${get('year')}-${get('month')}-${get('day')}`, weekday: get('weekday') }
-}
-
-function weeklyRunId(accountId: string, localMondayDate: string): string {
-  return `weekly-${accountId}-${localMondayDate}`
 }
 
 export async function sweepWeeklyScans(
@@ -56,10 +46,10 @@ export async function sweepWeeklyScans(
 
   let scanned = 0
   for (const { accountId, timezone } of accounts) {
-    const day = localDay(now, timezone)
-    if (day.weekday !== 'Mon') continue
+    const day = scanLocalDay(now, timezone)
+    if (!isScanWeekday(day)) continue
 
-    const outcome = await runSignalScan(deps, accountId, 'weekly', weeklyRunId(accountId, day.date))
+    const outcome = await runSignalScan(deps, accountId, 'weekly', weeklyScanRunId(accountId, day.date))
     if (outcome.status !== 'completed') continue
     scanned += 1
 
@@ -77,4 +67,4 @@ export async function sweepWeeklyScans(
   return { considered: accounts.length, scanned }
 }
 
-export { weeklyRunId }
+export { weeklyScanRunId as weeklyRunId }

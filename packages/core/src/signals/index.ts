@@ -118,3 +118,12 @@ export {
   mapKeywordToFamilies,
   type FamilyMappingCandidate,
 } from './keyword-classify'
+
+export {
+  isScanWeekday,
+  nextWeeklyScanAt,
+  scanLocalDay,
+  weeklyScanRunId,
+  type NextWeeklyScanInput,
+  type ScanLocalDay,
+} from './next-scan'
