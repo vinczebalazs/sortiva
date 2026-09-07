@@ -912,6 +912,7 @@
   "opportunities.drawer.outcome": "Outcome",
   "opportunities.drawer.outcomeMeasured": "{label} · measured {date}",
   "opportunities.drawer.outcomeNumbers": "{before} → {after}",
+  "opportunities.drawer.outcomeUnmeasurable": "You marked this applied, but the page is no longer in your store, so there is no result for us to read.",
   "opportunities.drawer.outcomePending": "Nothing measurable yet. We read the result 28 days after this is applied.",
 
   "opportunities.rec.heading": "Recommendation · current vs suggested",

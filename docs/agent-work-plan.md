@@ -746,6 +746,35 @@ carries the shape it must satisfy, which already exists as a zod schema in
 `packages/core/src/api/schemas.ts` — the contract described these endpoints correctly all along, so
 none of these cards is designing an interface, only implementing one.
 
+### Live on merchant screens right now — found 2026-09-07, highest priority in the queue
+
+**R-CALENDAR-PARAMS — the calendar prints `{volume}` and `{position}` to merchants, braces and all** · Lane D
+Scope: three routes build a calendar chip's why-line with an empty bag of values — `apps/web/app/api/calendar/_lib/handlers.ts:83`, `topics/_lib/mutations.ts:130`, `topics/_lib/add.ts:114`. An auto-planned chip stores the **opportunity's** reason key, and those sentences have carried numbers for months. **So a chip today renders "There is steady demand here — around `{volume}` searches a month" with the braces showing, and a replenishment chip renders "Update: this article sits at position `{position}`."**
+**This is on merchant screens now, in copy nobody touched.** Found by `R-GATE-COPY` while writing the eleven missing sentences; it is the reason that card shipped all eleven without a single number in them.
+The shape is already settled: **the opportunities route does this correctly.** The calendar needs the same read.
+Read first: `DECISIONS.md` 2026-09-07 `R-GATE-COPY` and `R-REJECTION-REASON` entries; main §8.7; ui §6; invariant 8.
+Done when: every calendar chip renders its sentence with real values; no screen can render a brace to a merchant, proved by a test over the rendered output rather than the template.
+Note: **`R-GATE-COPY` left a deliberate tripwire.** Its test forbids adding numbers to the eleven new sentences until the plumbing is fixed, so the order cannot be reversed — someone will have to step over it on purpose. That is the signal that this card is done, not a failure.
+
+**R-GATE-PARAMS — Gate 1 and Gate 2 store their reasons where the reader cannot find them** · Lane D
+Scope: `reasonParamsOf` looks for `reason_params` in a gate decision's audit column. **Gate 3 writes exactly that** — `R-REJECTION-REASON` fixed it today. **Gate 1 writes them nested under `reasonCard`** (`packages/jobs/src/generation/admit-manual-topic.ts:223`) and **Gate 2 writes none** (`generate-article.ts:184`, though it already has `gate2.reasonParams` in hand). Same defect, two gates, still live.
+Read first: `DECISIONS.md` 2026-09-07 `R-REJECTION-REASON` and `R-GATE-COPY` entries; main §8.2, §8.3.
+Done when: all three gates write their reason values where the reader looks, and a test proves each gate's sentence renders with its numbers.
+Note: **sequence with `R-CALENDAR-PARAMS`** — that card fixes the delivery, this one the storage, and neither shows a merchant a number without the other.
+
+**R-SCAN-DATE-ZONE — the next-scan date is a day early for every store east of UTC** · integrator (the contract) + Lane F
+Scope: `R-NEXTSCAN` made the next-scan time real, and the header formats it in UTC. A Berlin store's scan is `2026-09-13T22:00Z`, which the header renders as 13 September — **a Sunday**, though it is their Monday the 14th. The header and the empty-state count agree with each other, which was that card's done-when, but **both are systematically a day early for eastern stores.**
+`R-SCANCOPY` journalled this approximation as acceptable **when `nextScanAt` was always null**. It is live now and one-directional.
+Read first: `DECISIONS.md` 2026-09-07 `R-SCANCOPY` and `R-NEXTSCAN` entries; main §6.5 (locale and timezone), §9.4.
+Done when: a store reads its next scan as the day it actually falls in their own calendar.
+Note: needs the store's timezone in the response, which is a **contract change and therefore the integrator's**, plus formatting in `packages/ui`.
+
+**R-SWEEP-LIFECYCLE — unpaid and paused stores are still scanned every Monday** · **a founder question about cost**
+Scope: found by `R-NEXTSCAN` and stated plainly by its lane. The weekly scan sweep consults the kill switches but **not** the lifecycle gate, so a store that is unpaid, on vacation, or awaiting deletion **is still scanned every Monday**. The new next-scan prediction deliberately tells those merchants nothing — silence being the safe error — so **the product is quieter than the machinery actually is.**
+**The question is cost, not correctness:** should the scan itself skip a store nobody is paying for? Scanning costs vendor money per store per week. Against that: billing state gates generation and publishing only, and read access is never revoked, so a lapsed subscriber's screens still work — and a store that returns has fresher data if we never stopped.
+Read first: `DECISIONS.md` 2026-09-07 `R-NEXTSCAN` entries; main §4.2, §7.11, §14.5; invariant 16.
+Done when: the founder has said, and the sweep and the prediction agree with each other.
+
 **R-GATE-COPY — every chip on the content calendar explains itself with a placeholder** · Lane F
 Scope: eleven reason keys the product produces today have **no sentence anywhere in the catalogue** — the `gate1.*`, `gate2.*` and `topic.*` namespaces, confirmed empty by `R-REJECTION-REASON` while it fixed the `gate3.*` ones. So a topic stopped before it was ever written — too little demand, off the store's catalogue, a catalogue too thin to write from, or converted into an improve-this-page suggestion instead — says nothing about why.
 **And `topic.auto` is the why-line on _every_ calendar chip**, so the Content calendar currently explains every single planned day with "The reasoning for this one isn't available yet."

@@ -779,6 +779,49 @@ back for capacity reasons any more — the queue is worked until it is empty. De
 founder's earlier choice) and `T10.4` still cannot run without the Shopify development store they
 deliberately deferred.
 
+### Twenty-one cards landed. `main` at 309 test files, 3,916 tests, gate eleven of eleven
+
+Since the handover: 289 files / 3,597 tests → **309 / 3,916**. Every merge gated separately, chaos 10 of
+10 throughout. `pnpm eval` was run once for the first time in this project and fails for exactly one
+reason — no Anthropic key. One of its four sets passes, so the harness works; it is unrun, not broken.
+
+### The tenth instance, and the one that best explains the whole day
+
+`R-OVERRIDE-TOPIC` was carded as "the monthly email says we held back an article the merchant published".
+The lane found the cause was that **a topic state meaning `published` was declared in the schema, named
+in the spec's own state chain, and already guarded against in two places — and no code path had ever
+written it.** Declared, guarded, never produced.
+
+That is the same shape as the other nine, and it explains why they were all invisible: **every one of
+them looks correct from whichever side you happen to be reading.** The schema says the state exists. The
+guards say it is handled. Only asking "what actually writes this?" finds it.
+
+Fixing it also closed something nobody had named — **a topic whose article was already live could still
+be vetoed**, because the state it never left is a vetoable one.
+
+### Two defects that are on merchant screens right now
+
+Both found sideways, by lanes doing something else. Both carded as the top of the queue.
+
+1. **The calendar prints `{volume}` and `{position}` to merchants, braces and all.** Three routes build a
+   chip's why-line with an empty bag of values, and an auto-planned chip carries the opportunity's reason
+   key — whose sentences have had numbers in them for months. **This is live, in copy nobody touched.**
+   Found by `R-GATE-COPY`, and it is why that card shipped all eleven of its new sentences without a
+   single number in them.
+2. **The next-scan date is a day early for every store east of UTC.** `R-NEXTSCAN` made the date real and
+   the header formats it in UTC, so a Berlin store reads its Monday scan as Sunday. `R-SCANCOPY`
+   journalled that approximation as acceptable **while the value was always null**; it is live now.
+
+### A lane wrote a guarantee nothing tested, and found it by mutating
+
+`R-OVERRIDE-TOPIC` deliberately excluded `vetoed` from the states a topic may publish out of — if an
+article reaches publication for a vetoed topic, the veto failed, and relabelling the day as published
+would hide it. The lane wrote that, believed it, mutated it, **and the mutation passed: no test covered
+it.** There is one now.
+**Worth keeping as the pattern from the other side.** Every other instance today was a test claiming more
+than it checked. This was code that was right with nothing holding it there — which fails the same way,
+silently, the moment someone edits it.
+
 ### Fourteen cards landed. `main` at 304 test files, 3,840 tests, gate eleven of eleven
 
 `R-EXPORT-WIRE` was the fourteenth, and the three held copy strings are now applied — the merge it was
