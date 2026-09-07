@@ -225,6 +225,10 @@ async function syncProducts(
     // nothing new to tell us.
     const enriched: ProductRow[] = []
     for (const row of batch) {
+      // Checked here as well as once a page, because a page of two hundred and
+      // fifty products we have never seen is four minutes of paced reads and a
+      // shutdown should not have to wait them out.
+      stopIfShuttingDown(ctx)
       if (!wantsMetafields(known.get(row.shopifyProductId), row)) {
         enriched.push(row)
         continue
