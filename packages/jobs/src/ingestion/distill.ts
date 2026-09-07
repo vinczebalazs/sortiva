@@ -136,6 +136,7 @@ export const distillStep: StepDefinition = {
               title: product.title,
               descriptionText: product.descriptionText,
               priceRange: product.priceRange,
+              options: product.options,
             },
           },
         )

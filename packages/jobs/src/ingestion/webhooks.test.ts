@@ -176,6 +176,36 @@ describe.skipIf(!available)('acting on what Shopify told us', () => {
     expect(stream.changes.map((c) => [c.kind, c.entityId])).toEqual([['product_created', '700']])
   })
 
+  it("keeps the store's option axes from a delivery, and does not clear its metafields", async () => {
+    // A delivery carries the product's options and never its metafields, which
+    // cost a request of their own. Writing "no metafields" from here would lose
+    // what the catalogue sync went and fetched, every time a merchant edited a
+    // price.
+    await deliver({ webhookId: 'w1', topic: 'products/update', body: productBody() })
+    await drainShopifyWebhooks({ ingestion: () => world().deps })
+    await harness.pool.query(
+      `update products set metafields = '[{"namespace":"custom","key":"terrain","value":"Trail","type":"single_line_text_field"}]'::jsonb`,
+    )
+
+    await deliver({
+      webhookId: 'w2',
+      topic: 'products/update',
+      body: productBody({
+        options: [{ name: 'Size', values: ['UK 8', 'UK 9'] }],
+        updated_at: '2026-06-15T10:00:00Z',
+      }),
+    })
+    await drainShopifyWebhooks({ ingestion: () => world().deps })
+
+    const { rows } = await harness.pool.query<{ options: unknown; metafields: unknown }>(
+      'select options, metafields from products',
+    )
+    expect(rows[0]?.options).toEqual([{ name: 'Size', values: ['UK 8', 'UK 9'] }])
+    expect(rows[0]?.metafields).toEqual([
+      { namespace: 'custom', key: 'terrain', value: 'Trail', type: 'single_line_text_field' },
+    ])
+  })
+
   it('treats a duplicate delivery as a no-op', async () => {
     const body = productBody()
     expect(await deliver({ webhookId: 'w1', topic: 'products/update', body })).toBeDefined()

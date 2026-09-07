@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   classifyProductChange,
+  namedOptionAxes,
   productContentChecksum,
   isStaleUpdate,
   toProductRow,
@@ -39,6 +40,39 @@ describe('reading a product', () => {
       { id: '1', title: 'UK 8', sku: 'RTS-8', price: 120, compareAtPrice: 150, available: true },
       { id: '2', title: 'UK 9', sku: 'RTS-9', price: 120, compareAtPrice: null, available: false },
     ])
+  })
+
+  it('keeps the store\'s own option axes, names and values', () => {
+    const row = toProductRow(
+      product({
+        options: [
+          { name: 'Size', position: 1, values: ['UK 8', ' UK 9 ', ''] },
+          { name: ' ', values: ['ignored'] },
+        ],
+      }),
+    )
+    expect(row.options).toEqual([{ name: 'Size', values: ['UK 8', 'UK 9'] }])
+  })
+
+  it('says nothing about options when the read did not ask for them', () => {
+    // Undefined and empty must stay different all the way to the write: a
+    // webhook or a page read that carried no option field must not be able to
+    // erase the options a full sync went and fetched.
+    expect(toProductRow(product()).options).toBeUndefined()
+    expect(toProductRow(product({ options: [] })).options).toEqual([])
+  })
+
+  it('drops the option Shopify invents for a product that has none', () => {
+    const axes = namedOptionAxes([
+      { name: 'Title', values: ['Default Title'] },
+      { name: 'Colour', values: ['Black'] },
+    ])
+    expect(axes.map((axis) => axis.name)).toEqual(['Colour'])
+  })
+
+  it('keeps a real option that happens to be called Title', () => {
+    const axes = namedOptionAxes([{ name: 'Title', values: ['Mr', 'Mrs'] }])
+    expect(axes).toHaveLength(1)
   })
 
   it('treats a made-to-order variant as available whatever the count says', () => {

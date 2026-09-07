@@ -27,6 +27,45 @@ export interface ShopifyProduct {
   readonly status?: string | null
   readonly variants?: readonly ShopifyVariant[]
   readonly images?: readonly { src?: string | null }[]
+  /**
+   * The merchant's own option definitions — "Size: S/M/L".
+   *
+   * Absent means the caller did not ask for them, which is not the same as the
+   * product having none: writing "none" over options we already hold would lose
+   * a store's best-organised data on the first read that forgot to ask.
+   */
+  readonly options?: readonly ShopifyOption[]
+}
+
+/** One option definition as the Admin API states it: an axis name and its values. */
+export interface ShopifyOption {
+  readonly name?: string | null
+  readonly position?: number | null
+  readonly values?: readonly (string | null)[] | null
+}
+
+/**
+ * One metafield as the Admin API states it.
+ *
+ * `type` is the half that matters. A metafield's value can be a line of text, a
+ * number, a JSON document, a rich-text tree or a pointer to another record, and
+ * only the type says which — so a reader that ignored it would put a JSON blob
+ * or an internal id where a merchant expects to read an attribute.
+ */
+export interface ShopifyMetafield {
+  readonly namespace?: string | null
+  readonly key?: string | null
+  readonly value?: string | number | null
+  readonly type?: string | null
+}
+
+/** One metafield as we keep it. */
+export interface ProductMetafield {
+  readonly namespace: string
+  readonly key: string
+  readonly value: string
+  /** Shopify's own type name, kept because it is what says how to read the value. */
+  readonly type: string | null
 }
 
 export interface ShopifyVariant {
@@ -51,6 +90,20 @@ export interface StoredVariant {
   readonly available: boolean
 }
 
+/**
+ * One option axis as we keep it: the merchant's own name for a way their
+ * products differ, and the values they gave it.
+ *
+ * This is the one place a store states an axis *by name*. Variant titles carry
+ * the values — "Red", "Wide" — but never say what they are values of, so an
+ * axis reconstructed from titles alone can only ever be called something we
+ * invented. A comparison heading a merchant did not choose is worse than none.
+ */
+export interface ProductOption {
+  readonly name: string
+  readonly values: readonly string[]
+}
+
 /** One product, ready to be written. */
 export interface ProductRow {
   readonly shopifyProductId: string
@@ -61,6 +114,18 @@ export interface ProductRow {
   readonly productType: string | null
   readonly tags: readonly string[]
   readonly variants: readonly StoredVariant[]
+  /**
+   * Undefined when the description we were handed carried no option field at
+   * all — a read that did not ask for them. An empty array means the store
+   * really states none. The write path treats the two differently on purpose.
+   */
+  readonly options: readonly ProductOption[] | undefined
+  /**
+   * The store's own metafields, on the same undefined-means-unread rule. They
+   * never travel with the product: they cost a request of their own, so most
+   * paths that write a product leave this alone.
+   */
+  readonly metafields?: readonly ProductMetafield[]
   readonly priceRange: { readonly min: number; readonly max: number; readonly currency?: string } | null
   /** Shopify's own last-modified stamp. */
   readonly updatedAt: Date | null
@@ -83,11 +148,94 @@ export function toProductRow(product: ShopifyProduct): ProductRow {
     productType: emptyToNull(product.product_type),
     tags: splitTags(product.tags),
     variants,
+    options: toProductOptions(product.options),
     priceRange:
       prices.length > 0 ? { min: Math.min(...prices), max: Math.max(...prices) } : null,
     updatedAt: parseDate(product.updated_at),
     checksum: productContentChecksum(product),
   }
+}
+
+/**
+ * The option definitions, kept as the merchant wrote them.
+ *
+ * Nothing is renamed or lower-cased here: this is the store's own vocabulary
+ * and the place it is shown to a merchant reads it back verbatim. Options with
+ * no name are dropped — an axis with no name is not an axis — and so are the
+ * duplicate names Shopify's own admin does not allow but its API does not
+ * forbid, because two axes with one name would let the later one silently
+ * replace the earlier one further downstream.
+ */
+export function toProductOptions(
+  raw: readonly ShopifyOption[] | null | undefined,
+): readonly ProductOption[] | undefined {
+  if (raw === null || raw === undefined) return undefined
+  const byName = new Map<string, ProductOption>()
+  for (const option of raw) {
+    const name = (option.name ?? '').trim()
+    if (name === '') continue
+    if (byName.has(name.toLowerCase())) continue
+    const values = (option.values ?? [])
+      .map((value) => (value ?? '').trim())
+      .filter((value) => value !== '')
+    byName.set(name.toLowerCase(), { name, values })
+  }
+  return [...byName.values()]
+}
+
+/**
+ * Shopify's stand-in for "this product has no options at all".
+ *
+ * A product with nothing to choose still gets one option back from the API,
+ * called `Title` with the single value `Default Title`, because every product
+ * must have at least one variant and a variant must belong to an option. It
+ * says nothing about the product. Left in, it would be an attribute every
+ * product in every store shares and agrees on, which is exactly the shape that
+ * makes two unrelated products look like the same thing.
+ */
+const SHOPIFY_PLACEHOLDER_OPTION = { name: 'title', value: 'default title' } as const
+
+/**
+ * The option axes that actually name something, placeholder removed.
+ *
+ * An option with no values is kept: a merchant who defined "Width" and has not
+ * filled it in has still told us the axis exists, and the name is the half we
+ * could not get anywhere else.
+ */
+export function namedOptionAxes(
+  options: readonly ProductOption[] | null | undefined,
+): readonly ProductOption[] {
+  return (options ?? []).filter((option) => {
+    const isPlaceholder =
+      option.name.trim().toLowerCase() === SHOPIFY_PLACEHOLDER_OPTION.name &&
+      option.values.length === 1 &&
+      option.values[0]!.trim().toLowerCase() === SHOPIFY_PLACEHOLDER_OPTION.value
+    return !isPlaceholder
+  })
+}
+
+/**
+ * The metafields, kept as the merchant wrote them.
+ *
+ * Nothing is filtered on the way in. Which metafields describe a product and
+ * which are an app's bookkeeping is a judgement, and making it here would mean
+ * throwing away the evidence for it — so the column holds what the store holds
+ * and the judgement is made where the values are used.
+ */
+export function toProductMetafields(
+  raw: readonly ShopifyMetafield[] | null | undefined,
+): readonly ProductMetafield[] {
+  if (raw === null || raw === undefined) return []
+  const out: ProductMetafield[] = []
+  for (const field of raw) {
+    const namespace = (field.namespace ?? '').trim()
+    const key = (field.key ?? '').trim()
+    if (key === '') continue
+    const value = field.value === null || field.value === undefined ? '' : String(field.value).trim()
+    if (value === '') continue
+    out.push({ namespace, key, value, type: emptyToNull(field.type ?? null) })
+  }
+  return out
 }
 
 function toStoredVariant(variant: ShopifyVariant): StoredVariant {
