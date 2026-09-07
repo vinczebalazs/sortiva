@@ -748,6 +748,51 @@ none of these cards is designing an interface, only implementing one.
 
 ### Live on merchant screens right now — found 2026-09-07, highest priority in the queue
 
+### The four unused storage things — FOUNDER ANSWERED 2026-09-07: finish the first three, drop the fourth
+
+The read-only audit of 2026-09-07 found two tables and two columns that nothing writes and
+nothing reads. The founder was given what each was for and answered: **keep and finish
+`rules_overrides`, `incident_findings` and the product attribute columns; drop the claim
+staleness column.** Four cards follow, one each.
+
+**A fact that removes the question all three "finish" cards would otherwise have had to ask:**
+the product already has an operator surface, and it is the command line, not a screen —
+`pnpm switch` (raise and lower the brakes), `pnpm diagnose` (why is this store stuck),
+`pnpm dlq` (replay dead work). So "somebody must be able to write these rows" has an
+established, in-keeping answer that needs no new UI decision. **Follow those scripts'
+conventions rather than inventing a second style**; read `scripts/kill-switch.mjs` first —
+its rules about who may lower a switch and why an automatic trip cannot be cleared by the
+product are the house style for operator tools.
+
+**R-RULES-OVERRIDES — a threshold can be moved for one store without a deploy** · Lane C (`packages/rules` is Lane C's after M0)
+Scope: every number the product judges by — how much search demand is enough, how thin a catalogue is too thin — lives in one config file with global and per-language layers. `rules_overrides` is the table for the layers above that: one store, one language, one page type. **The reading code exists and is deliberately wired to a stub that always returns nothing** (`NullRulesOverrideReader`, `packages/rules/src/overrides.ts`), so this is an empty socket rather than forgotten work. Nothing writes rows and nothing reads them.
+Two halves: a real reader that reads the table and folds the rows in least-specific-first order, wired where the null one is used today; and an operator command to set, list and clear an override.
+**The consequence that must be answered, not discovered later:** invariant 9 stamps `rules_version` — the hash of the rules — on every opportunity and every gate decision, so that a decision can be explained by the numbers that produced it. **A store with an override is being judged by different numbers than a store without one.** If both stamp the same version, that record becomes a lie, and it is the record the learning loop and every audit read. Say what your fix does about that: the version must reflect the layers actually applied.
+**Second consequence, cheaper but real:** a threshold read becomes a database read. Say where it is cached and what happens when the cache is stale, or say plainly that it is read every time and what that costs.
+Read first: main §7.10 (no threshold literal outside `packages/rules`); `packages/rules/src/overrides.ts` and its comment, which states the intent better than this card can; `scripts/kill-switch.mjs` for the operator-tool house style; invariant 9.
+Done when: an override set for one store changes that store's decisions and no other store's; the version stamped on a decision distinguishes a store judged by an override from one judged by the defaults; an operator can list what is overridden and remove it; and a malformed override is refused rather than silently ignored, because a threshold that quietly fails to apply is worse than one that was never set.
+
+**R-INCIDENT-NOTES — what an operator learned about a trip is written down** · Lane G
+Scope: when a safety switch trips — we spent too much, a vendor started failing — the product already records **what tripped and when**, because an open incident *is* an active flag row. `incident_findings` is the other half: **what a person found out afterwards**, which may arrive days later and may be several notes as an investigation continues. It has a foreign key to the flag, an author, the finding and a time. Nothing writes it.
+The surface is the command line, where the switches already live: an operator adds a note against an open incident, and listing switches shows the notes with it. Deliberately not append-only — the schema comment says why: correcting a typo in your own note is not the same hazard as revising a financial record.
+**One thing to check rather than assume**, and it decides the shape: a flag is *reset* when the incident ends. Find out whether the row survives the reset or is replaced, because if it does not survive, notes attached to it disappear with the incident they explain — which would make this table write-only in a different way.
+Read first: main §14.5 (kill switches and incidents); the schema comment on `incident_findings` in `packages/db/src/schema/jobs.ts`, which states the original intent in full; `scripts/kill-switch.mjs`; `DECISIONS.md` 2026-09-02 `T8.4a`.
+Done when: an operator can record a finding against an incident and read it back later; the finding survives whatever happens to the flag when the incident closes, or the report says plainly that it does not and why that is acceptable; and an author name is required, as it is for lowering a switch.
+
+**R-PRODUCT-ATTRIBUTES — the store's own product attributes are finally read** · Lane B
+Scope: **the audit under-reported this one and the missed half is the more valuable.** Two columns on `products` are declared and never written: `metafields`, and its sibling `options`. `options` is Shopify's own structured attribute definitions — "Size: S/M/L", "Colour: black/tan" — and the family-grouping card called it **"the single highest-value schema-wave addition"**: it is how the product tells what actually differentiates one item from another when a store keeps that in structured fields rather than in prose. The sync writes titles, tags, variants and prices and silently skips both (`upsertProduct`, `packages/db/src/repositories/catalog.ts`).
+**A store that keeps its attributes in metafields rather than in the description yields fewer differentiation axes than it should, and nothing anywhere says so.**
+**The cost the schema comment already names, and the report must repeat:** these arrive only from each store's next full sync. Existing rows stay empty until re-synced. Say what that means for a store already onboarded — whether anything triggers the re-read or whether it waits for the ordinary walk.
+Read first: main §6.3 (distillation and fact sheets), §6.4 (families and differentiation axes); the schema comments on `products.options` and `products.metafields` in `packages/db/src/schema/catalog.ts`; `DECISIONS.md` 2026-09-03 `T4.0`.
+Done when: both columns are filled by the ordinary sync; the fact-sheet and family paths that would use them either use them or the report says exactly which does not and why; and a product whose store publishes nothing in either field is unchanged rather than degraded.
+Note: quarantine still applies — `raw_body_html` is not an input to anything downstream (invariant 3), and nothing here changes that. Metafields are structured store-authored data, which is a different thing from the marketing copy in a product body.
+
+**T-WAVE6 — schema mini-wave: the claim staleness column goes** · integrator
+Scope: `article_claims.staleness` and its enum `claim_staleness` are dropped. The surrounding table is real and working — every article we write stores its plan of assertions and the evidence behind each — but this one column would have marked each assertion stable, seasonal or volatile so the repair sweep knew which articles rot fastest, and **nothing has ever set it**, so every claim is filed as "stable" by its own default. **The founder decided on 2026-09-07 to drop it rather than build it**, which authorises the migration; schema waves are otherwise closed.
+Read first: `CLAUDE.md` (migrations are forward-only, live in `packages/db/migrations`, and are added only by schema-wave cards); the precedents `T4.0a`, `T4.0b` and `T-WAVE5`; main §6.3.
+Done when: the column and its enum are gone, the schema file matches the migration, no code references either, and the decision is journalled so the next person to want a staleness marker finds out it was considered and dropped rather than overlooked.
+Note: re-checking a published article stays time-based rather than content-aware. That is the cost of the drop and it belongs in the journal entry, not in a comment.
+
 ### Found by the integrator's own gate, 2026-09-07 evening — a regression from a card that landed tonight
 
 **R-PUBLISH-DEADLOCK — publishing an article and calling off its day can deadlock in the database** · Lane D · **highest priority: it is a regression, and it is on a merchant path**
