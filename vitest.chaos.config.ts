@@ -11,6 +11,9 @@ export default defineConfig({
     environment: 'node',
     globals: false,
     testTimeout: 120_000,
+    // Same reason as the unit run: build the migrated database the suites are
+    // copied from before any of them starts, so no setup hook is charged for it.
+    globalSetup: ['packages/db/src/testing.global-setup.ts'],
     // Scenarios share one database and kill workers; running them in parallel
     // would produce interference that looks exactly like a convergence failure.
     fileParallelism: false,

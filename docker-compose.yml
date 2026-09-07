@@ -7,6 +7,28 @@ services:
       POSTGRES_USER: sortiva
       POSTGRES_PASSWORD: sortiva
       POSTGRES_DB: sortiva
+    # Deleting a database makes Postgres flush everything the whole server is
+    # holding to disk, and wait for it. The test suite deletes about a hundred
+    # databases per run — one per suite — so with several build sessions running
+    # at once that wait was measured at up to forty seconds, which blows the
+    # ten-second budget a test file's clean-up gets and fails the file while
+    # every assertion in it passes. With these three off the same delete costs
+    # milliseconds.
+    #
+    # The trade is crash-safety this server does not need. It holds only
+    # throwaway databases the suite creates and deletes, and a local development
+    # database that `pnpm db:migrate` and `pnpm db:seed` rebuild from scratch. A
+    # crash or power cut can leave it unreadable; recreate it with
+    # `docker compose down -v`, then `pnpm db:up`, `pnpm db:migrate`,
+    # `pnpm db:seed`. Never set these on a database whose contents matter.
+    command:
+      - postgres
+      - '-c'
+      - 'fsync=off'
+      - '-c'
+      - 'synchronous_commit=off'
+      - '-c'
+      - 'full_page_writes=off'
     ports:
       - '54329:5432'
     volumes:
