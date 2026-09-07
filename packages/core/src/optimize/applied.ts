@@ -15,6 +15,17 @@ import type { OptimizeRecommendation } from './recommendation'
  */
 
 export interface CurrentPageState {
+  /**
+   * Whether the store still serves this address.
+   *
+   * Part of the state rather than something the caller checks first, because
+   * every field compared below survives the page being taken down — the title
+   * and the headings are kept so a page the merchant puts back is restored
+   * untouched — so the comparison goes on matching a page nobody can visit. A
+   * caller left to work this out would work it out from the row being there,
+   * and the row is always there.
+   */
+  readonly status: 'live' | 'gone'
   readonly seoTitle: string | null
   readonly seoDescription: string | null
   readonly headings: readonly string[]
@@ -41,6 +52,11 @@ export function detectApplied(
   recommendation: OptimizeRecommendation,
   page: CurrentPageState,
 ): AppliedDetection {
+  // Asking someone to confirm they improved a page they have taken down is a
+  // question with no true answer, and saying yes to it would start a
+  // twenty-eight-day measurement of a page that serves nothing.
+  if (page.status !== 'live') return { looksApplied: false, signals: [], headingsFound: [] }
+
   const signals: AppliedSignal[] = []
 
   const title = normalise(recommendation.title_tag.suggested)
