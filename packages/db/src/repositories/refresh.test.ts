@@ -9,6 +9,7 @@ import {
 import { insertMinimalOpportunity } from './opportunities'
 import { insertTopic } from './topics'
 import { insertArticleStub } from './articles'
+import { markArticleDelivered } from './delivery'
 import { accountScope } from '../scope'
 import type { Db } from '../client'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '../testing'
@@ -204,5 +205,76 @@ describe.skipIf(!available)('article refresh history', () => {
     )
     await db.execute(sql`update opportunities set status = 'completed' where id = ${opportunity.id}`)
     expect(await articleRefreshFacts(db, scope, articleId)).toMatchObject({ repairPending: false })
+  })
+
+  it('starts the cooldown when a rewrite actually reaches the merchant, not when it is asked for', async () => {
+    const scope = accountScope(accountId)
+    const original = await publishedArticle(accountId)
+
+    const rewriteWork = await insertMinimalOpportunity(
+      db,
+      scope,
+      {
+        signalType: 'freshness_opportunity',
+        entityType: 'article',
+        entityRef: original,
+        evidenceJson: [],
+        recommendedAction: 'refresh',
+        status: 'accepted',
+        reasonTemplateKey: 'freshness_opportunity.requested',
+        reasonParams: {},
+        limitedIntelligence: false,
+        rulesVersion: 'test',
+      },
+      NOW,
+    )
+    const topic = await insertTopic(
+      db,
+      scope,
+      {
+        opportunityId: rewriteWork.id,
+        title: 'Best trail shoes for wide feet',
+        targetKeyword: 'trail shoes wide feet',
+        keywordCluster: null,
+        intentClass: 'buying_guide',
+        familyIds: [],
+        kind: 'refresh',
+        source: 'auto',
+        whyLine: 'x',
+        scheduledDate: '2026-09-20',
+        pinned: false,
+        state: 'planned',
+      },
+      NOW,
+    )
+    const rewrite = await insertArticleStub(
+      db,
+      scope,
+      {
+        topicId: topic.id,
+        title: 'Best trail shoes for wide feet',
+        slug: `trail-shoes-rewrite-${Math.random()}`,
+        targetKeyword: 'trail shoes wide feet',
+        state: 'draft',
+      },
+      NOW,
+    )
+
+    // Scheduled and written, but not yet out: nothing has started.
+    expect(await lastArticleRefreshAt(db, scope, original)).toBeNull()
+
+    await markArticleDelivered(db, scope, rewrite.id, 'export', NOW)
+
+    // The cooldown is recorded against the article that was rewritten, not
+    // against whatever row the pipeline produced.
+    expect((await lastArticleRefreshAt(db, scope, original))?.toISOString()).toBe(NOW.toISOString())
+    expect(await articleRefreshCount(db, scope, rewrite.id)).toBe(0)
+  })
+
+  it('records nothing when the published article was new coverage rather than a rewrite', async () => {
+    const scope = accountScope(accountId)
+    const articleId = await publishedArticle(accountId, { state: 'draft' })
+    await markArticleDelivered(db, scope, articleId, 'export', NOW)
+    expect(await articleRefreshCount(db, scope, articleId)).toBe(0)
   })
 })
