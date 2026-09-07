@@ -162,6 +162,10 @@
   "shell.bell.heading": "Notifications",
   "shell.bell.empty": "Nothing yet.",
   "shell.bell.close": "Close",
+  "shell.accountMenu.signOut": "Sign out",
+  "shell.accountMenu.signOutEverywhere": "Signing out ends your session in every browser you are signed in on, not only this one.",
+  "shell.accountMenu.signingOut": "Signing out…",
+  "shell.accountMenu.signOutFailed": "We could not sign you out. Please try again.",
 
   "landing.nav.label": "Site sections",
   "landing.nav.howItWorks": "How it works",

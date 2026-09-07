@@ -150,6 +150,84 @@
   color: var(--sortiva-text-muted);
 }
 
+/* ── Account menu ────────────────────────────────────────────────────────── */
+
+.sortiva-account {
+  position: relative;
+}
+
+.sortiva-account__button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--sortiva-line-strong);
+  background: var(--sortiva-surface);
+  color: var(--sortiva-text-secondary);
+  cursor: pointer;
+  list-style: none;
+}
+
+.sortiva-account__button::-webkit-details-marker {
+  display: none;
+}
+
+.sortiva-account__panel {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  width: 300px;
+  background: var(--sortiva-surface);
+  border-radius: var(--sortiva-radius-inner);
+  box-shadow: var(--sortiva-shadow-raised);
+  padding: 12px;
+  z-index: 20;
+}
+
+.sortiva-account__heading {
+  margin: 0 0 8px;
+  padding: 0 4px;
+  font-family: var(--sortiva-font-heading);
+  font-size: 14px;
+}
+
+.sortiva-account__note {
+  margin: 0 0 10px;
+  padding: 0 4px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--sortiva-text-muted);
+}
+
+.sortiva-account__signout {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--sortiva-line-strong);
+  border-radius: var(--sortiva-radius-inner);
+  background: var(--sortiva-surface-sunken);
+  color: var(--sortiva-text);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.sortiva-account__signout:hover:not(:disabled) {
+  background: var(--sortiva-line);
+}
+
+.sortiva-account__signout:disabled {
+  color: var(--sortiva-text-muted);
+  cursor: default;
+}
+
+.sortiva-account__failed {
+  margin: 8px 0 0;
+  padding: 0 4px;
+  font-size: 13px;
+  color: var(--sortiva-critical);
+}
+
 .sortiva-shell__main {
   display: flex;
   flex-direction: column;

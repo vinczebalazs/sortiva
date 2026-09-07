@@ -4370,3 +4370,27 @@ Decision: `DRAFT_PROMPT_MAJOR_VERSION` lives in `packages/jobs/src/generation/pr
 Why: `draft.v1.md` stays on disk for ever, so a bump that misses a call site does not fail — it quietly leaves that caller writing with the old prompt, and a test or chaos scenario exercising a prompt the product no longer ships proves nothing about the product. It sits in the jobs package rather than beside the web config (where the equivalent constant for the recommendation prompt sits) only because the tests and chaos scenarios that need it cannot import from `apps/web`.
 Nearest spec: tech §1.4 (prompts are versioned files, every artefact stamped); `packages/llm/prompts/README.md`.
 Class (filled by audit):
+## 2026-09-07 — R-SIGNOUT — The sign-out lives in the app frame's account menu, not in Settings
+Decision: the control that signs a merchant out sits in the toolbar at the top of every signed-in screen, in a small account menu beside the notification bell. It is not on any Settings screen.
+Why: ui §9 opens by saying its own list of settings controls is exhaustive — "if a control isn't here, it doesn't exist" — and it does not name a sign-out. A test transcribed that list from the spec by hand and asserts the Settings screens render exactly it, so adding a sign-out there would have had to break that test to land, and the test is right. §1, which describes the frame around every signed-in screen, is not written as a closed list, and the frame's toolbar already exists for exactly this ("the bell, the avatar and anything else a screen wants in the top strip"). The string catalogue has also carried an unused `shell.account` — "Account" — since the shell was built, which is where that label now goes. **This is a placement decision the specs do not make, and it is user-visible.**
+Nearest spec: ui §1 (the shell), ui §9 (Settings, exhaustive).
+
+## 2026-09-07 — R-SIGNOUT — The panel says sign-out reaches every browser, before the button is pressed
+Decision: the account menu opens onto one sentence and then the button: "Signing out ends your session in every browser you are signed in on, not only this one." New copy, in `packages/ui/strings/en.json`, proposed by this card — the specs write no wording for it.
+Why: `R-REVOKE` decided yesterday that pressing sign out ends every session the account has, which is not what a sign-out button usually does. A merchant signing out on a phone is also signing their desktop out, and told nothing, would discover that by accident later. Saying it afterwards in a toast is too late to be a choice, so it is said before. Deliberately plain rather than reassuring: it is a capability ("my laptop is gone — stop") as much as a warning.
+Nearest spec: main Appendix A holds no string for this; ui §9.4 and main §4.1 are silent on sign-out entirely.
+
+## 2026-09-07 — R-SIGNOUT — The menu opens with no JavaScript; only the sign-out itself needs scripts
+Decision: the account menu is a native `details`/`summary` disclosure rather than a panel opened by React state. The sign-out button inside it does need scripts.
+Why: the same reason the navigation rail's "More" control gives — a control that is invisible until a bundle loads is worse than one that opens and does nothing. It also means the sentence above is in the page's markup whether or not the panel is open, so a test can read it without a browser, which matters here because this repository has no browser-DOM test environment. The sign-out is two requests (fetch the anti-forgery token, then spend it), so it cannot be a plain form post; a merchant whose scripts never arrived sees the explanation and an inert button.
+Nearest spec: ui §1.
+
+## 2026-09-07 — R-SIGNOUT — The two sign-out requests are ours, not the sign-in library's browser helper
+Decision: `packages/ui/src/shell/signout.ts` performs the exchange itself — `GET /api/auth/csrf`, then `POST /api/auth/signout` with the token — instead of calling `signOut()` from `next-auth/react`.
+Why: the library's helper needs a `window` and the global `fetch` before it can be called at all, which makes the exchange impossible to drive in a test, and it would put the sign-in library inside the shared component package that every screen imports. Fifteen lines against those two costs. The addresses and the shapes are still entirely the library's; nothing here decides anything about them.
+Nearest spec: tech §3 (session-cookie auth); main §4.1.
+
+## 2026-09-07 — R-SIGNOUT — A refused sign-out is detected by where it says to go, not by its status
+Decision: `requestSignOut` reports failure when the library answers with a destination inside its own `/api/auth/` routes, as well as on a bad status or a dead network.
+Why: Auth.js does not use an error status when it rejects a sign-out — an anti-forgery token that does not match its cookie produces **200** and names its own error page as where to go next. Code that trusted the status would tell a merchant they had been signed out of every browser while every session still stood, which is the worst possible thing to be wrong about here. A sign-out that actually happened never lands back inside the sign-in routes. (The library's own browser helper has this blind spot; ours does not.) Two tests hold it: one against a canned answer, one against the real handlers with a tampered token, which also asserts the session survives.
+Nearest spec: none — library behaviour.

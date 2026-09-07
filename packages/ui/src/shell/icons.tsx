@@ -117,6 +117,15 @@ export function InfoIcon(props: IconProps) {
   )
 }
 
+export function AccountIcon(props: IconProps) {
+  return (
+    <Icon size={18} {...props}>
+      <circle cx="12" cy="8.5" r="3.5" />
+      <path d="M5 20c0-3.6 3.1-5.5 7-5.5s7 1.9 7 5.5" />
+    </Icon>
+  )
+}
+
 export function CloseIcon(props: IconProps) {
   return (
     <Icon size={15} strokeWidth={2} {...props}>
