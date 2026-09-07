@@ -21,6 +21,11 @@ export {
   type ProductsStoreOptions,
 } from './stores/products'
 export {
+  makeSettingsStore,
+  type SettingsStore,
+  type SettingsStoreOptions,
+} from './stores/settings'
+export {
   makeIngestionStatusStore,
   type IngestionRunView,
   type IngestionStatusStore,

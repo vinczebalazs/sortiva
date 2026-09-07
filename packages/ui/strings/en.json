@@ -85,6 +85,8 @@
   "settings.publishing.blogPicker.createPlaceholder": "Blog name",
   "settings.publishing.blogPicker.createButton": "Create and use",
   "settings.publishing.blogPicker.failed": "That didn't work. Try again.",
+  "settings.errors.invalid": "That change could not be saved. Reload the page and try again.",
+  "settings.errors.fieldInvalid": "\"{field}\" was not a value we recognise, so nothing was changed.",
   "settings.publishing.errors.notConnected": "Connect your Shopify store before turning on auto-publish.",
   "settings.publishing.errors.unavailable": "Publishing to Shopify isn't available right now. Nothing has changed.",
   "settings.publishing.errors.writeScopeRequired": "Sortiva needs permission to post to your store first.",
