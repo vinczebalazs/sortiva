@@ -37,7 +37,7 @@ export default async function OpportunitiesPage() {
   return (
     <>
       <ActivationHeader count={data.counts.open} limitedIntelligence={data.limitedIntelligence} />
-      <OpportunitiesScreen initialData={data} />
+      <OpportunitiesScreen initialData={data} today={new Date().toISOString().slice(0, 10)} />
     </>
   )
 }

@@ -51,6 +51,68 @@ describe('canonical copy', () => {
   })
 })
 
+/**
+ * The empty-state sentences that say when we will look at the store again.
+ *
+ * These are quoted copy: the founder chose a relative interval over a named
+ * weekday, so an edit to one of them is a product decision and has to break a
+ * test rather than pass review as a tidy-up.
+ *
+ * This block proves the catalogue holds these exact words, and nothing more.
+ * That each screen picks the right one of its four — and picks the wordless
+ * form when it has no date to count to — is proved where the screen is actually
+ * rendered, in `opportunities.test.ts` and `dashboard.test.ts`.
+ */
+const NEXT_SCAN_COPY: Record<string, string> = {
+  'opportunities.empty': 'No open opportunities right now — the next scan runs in {days} days',
+  'opportunities.empty.tomorrow': 'No open opportunities right now — the next scan runs tomorrow',
+  'opportunities.empty.today': 'No open opportunities right now — the next scan runs today',
+  'opportunities.empty.unscheduled': 'No open opportunities right now',
+  'dashboard.growth.empty': 'Nothing new to act on right now. The next scan runs in {days} days.',
+  'dashboard.growth.empty.tomorrow':
+    'Nothing new to act on right now. The next scan runs tomorrow.',
+  'dashboard.growth.empty.today': 'Nothing new to act on right now. The next scan runs today.',
+  'dashboard.growth.empty.unscheduled': 'Nothing new to act on right now.',
+}
+
+const WEEKDAY = /\b(Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day\b/
+
+describe('when we look again', () => {
+  for (const [key, value] of Object.entries(NEXT_SCAN_COPY)) {
+    it(`holds ${key} verbatim`, () => {
+      expect(t(key as never)).toBe(value)
+    })
+  }
+
+  /**
+   * A store is scanned on its own local Monday, and a re-queued or paused
+   * account moves even that. A screen naming a weekday therefore tells some
+   * merchants something untrue every week — and on the Opportunities screen it
+   * would sit directly under a header printing the real date.
+   */
+  it('names no weekday on any screen', () => {
+    const offenders = Object.entries(en)
+      .filter(([key]) => !key.startsWith('email.'))
+      .filter(([, value]) => WEEKDAY.test(value))
+      .map(([key]) => key)
+    expect(offenders).toEqual([])
+  })
+
+  /**
+   * The one exemption, pinned so it stays a decision somebody took rather than
+   * a string somebody missed. An interval in an email is computed when we send
+   * and read whenever the merchant opens it, so "in 3 days" goes stale in an
+   * inbox in a way a weekday does not. Whether that sentence should stop naming
+   * Monday some other way is a founder question, not a tidy-up.
+   */
+  it('leaves exactly one weekday, and it is in an email', () => {
+    const named = Object.entries(en)
+      .filter(([, value]) => WEEKDAY.test(value))
+      .map(([key]) => key)
+    expect(named).toEqual(['email.monthlySummary.nextNone'])
+  })
+})
+
 describe('the copy an earlier card had to park in packages/core', () => {
   /**
    * Billing shipped before this package existed, so its canonical strings live

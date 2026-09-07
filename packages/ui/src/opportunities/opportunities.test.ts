@@ -8,6 +8,7 @@ import { OpportunityList } from './OpportunityList'
 import {
   DEFAULT_FILTERS,
   GSC_DEPENDENT_SIGNALS,
+  daysUntilScan,
   evidenceLine,
   groupByAction,
   matchesFilters,
@@ -345,12 +346,62 @@ describe('the list', () => {
 })
 
 describe('the empty list', () => {
-  it('says the next scan is coming, and never that there is nothing to do', () => {
-    const html = render(createElement(OpportunityList, { data: response([]) }))
+  /** The screen with nothing open on it, drawn on `today`. */
+  const empty = (today: string, nextScanAt: string | null = '2026-02-09T06:00:00.000Z') =>
+    render(createElement(OpportunityList, { data: response([], { nextScanAt }), today }))
+
+  it('says how many days until the next scan, and never that there is nothing to do', () => {
+    const html = empty('2026-02-02')
     expect(html).toContain('data-opportunities-empty="none"')
-    expect(html).toContain('No open opportunities right now — the next scan runs Monday')
+    expect(html).toContain('No open opportunities right now — the next scan runs in 7 days')
     expect(html).toContain(t('opportunities.emptyNote'))
     expect(html.toLowerCase()).not.toContain('nothing to do')
+  })
+
+  /**
+   * The interval is counted to the same date the header prints, so the two
+   * lines cannot say different things about the same scan. Both read the
+   * timestamp as a UTC date.
+   */
+  it('counts to the date the header names, one line above it', () => {
+    const html = empty('2026-02-02')
+    expect(html).toContain(t('opportunities.scanLine', { date: '2 Feb 2026', next: '9 Feb 2026' }))
+    expect(html).toContain('runs in 7 days')
+  })
+
+  it('says tomorrow rather than "in 1 days"', () => {
+    expect(empty('2026-02-08')).toContain(
+      'No open opportunities right now — the next scan runs tomorrow',
+    )
+  })
+
+  it('says today when the scan is due later the same day', () => {
+    expect(empty('2026-02-09')).toContain(
+      'No open opportunities right now — the next scan runs today',
+    )
+  })
+
+  /**
+   * With no next-scan date the sentence stops rather than guessing a cadence —
+   * which is what the live API sends today, so this is the form a merchant
+   * currently reads. The note underneath still says the calendar is running.
+   */
+  it('promises no timing at all when it has no date to count to', () => {
+    const html = empty('2026-02-02', null)
+    expect(html).toContain('No open opportunities right now')
+    expect(html).not.toContain('the next scan runs')
+    expect(html).toContain(t('opportunities.emptyNote'))
+  })
+
+  it('promises no timing when the scan we know about has already gone by', () => {
+    const html = empty('2026-02-15')
+    expect(html).not.toContain('the next scan runs')
+  })
+
+  it('never names a weekday, whichever day the scan falls on', () => {
+    for (const today of ['2026-02-02', '2026-02-08', '2026-02-09', '2026-02-15']) {
+      expect(empty(today)).not.toMatch(/\b(Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day\b/)
+    }
   })
 
   it('distinguishes "you filtered everything out" from "there is nothing"', () => {
@@ -362,6 +413,23 @@ describe('the empty list', () => {
     )
     expect(html).toContain('data-opportunities-empty="filtered"')
     expect(html).toContain(t('opportunities.clearFilters'))
+  })
+})
+
+describe('counting the days to the next scan', () => {
+  it('counts calendar days, not 24-hour blocks, so a scan later today is nought days away', () => {
+    expect(daysUntilScan('2026-02-09T23:00:00.000Z', '2026-02-09')).toBe(0)
+    expect(daysUntilScan('2026-02-10T00:30:00.000Z', '2026-02-09')).toBe(1)
+  })
+
+  it('accepts a bare date as well as a timestamp', () => {
+    expect(daysUntilScan('2026-02-16', '2026-02-09')).toBe(7)
+  })
+
+  it('refuses to answer for a scan that has gone by, or for no scan, or for nonsense', () => {
+    expect(daysUntilScan('2026-02-08T23:59:00.000Z', '2026-02-09')).toBeNull()
+    expect(daysUntilScan(null, '2026-02-09')).toBeNull()
+    expect(daysUntilScan('not a date', '2026-02-09')).toBeNull()
   })
 })
 

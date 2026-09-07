@@ -15,6 +15,7 @@ import {
   groupByAction,
   impactLabel,
   matchesFilters,
+  nextScanPrompt,
   scanLine,
   signalLabel,
   signalTypesIn,
@@ -60,6 +61,12 @@ export interface OpportunityListProps {
   readonly onDetails?: (opportunity: OpportunityRow) => void
   /** Ids whose own request is in flight, so their buttons cannot be pressed twice. */
   readonly busyIds?: readonly string[]
+  /**
+   * The day the screen was drawn on, `YYYY-MM-DD`, decided by the server rather
+   * than a browser clock — the empty state counts days from it to the next scan,
+   * and two clocks either side of hydration would disagree across UTC midnight.
+   */
+  readonly today?: string
 }
 
 interface ChipRowProps {
@@ -131,6 +138,7 @@ export function OpportunityList({
   onDismiss,
   onDetails,
   busyIds = [],
+  today = new Date().toISOString().slice(0, 10),
 }: OpportunityListProps) {
   const [filters, setFilters] = useState<OpportunityFilters>(initialFilters)
   const [sort, setSort] = useState<SortKey>(initialSort)
@@ -274,7 +282,9 @@ export function OpportunityList({
       {visible.length === 0 ? (
         data.opportunities.length === 0 ? (
           <div className="sortiva-opps__empty" data-opportunities-empty="none">
-            <p className="sortiva-opps__empty-headline">{t('opportunities.empty')}</p>
+            <p className="sortiva-opps__empty-headline">
+              {nextScanPrompt('opportunities.empty', data.nextScanAt, today, t)}
+            </p>
             <p className="sortiva-opps__empty-note">{t('opportunities.emptyNote')}</p>
           </div>
         ) : (

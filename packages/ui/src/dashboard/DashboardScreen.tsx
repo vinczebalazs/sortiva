@@ -6,6 +6,7 @@ import {
   evidenceLine,
   formatDate,
   impactLabel,
+  nextScanPrompt,
   signalLabel,
 } from '../opportunities/list'
 import { renderTemplatedLine } from '../opportunities/why'
@@ -75,7 +76,7 @@ export function DashboardScreen({
 
   return (
     <div className="sortiva-dash">
-      <GrowthHeadline data={opportunities} t={t} />
+      <GrowthHeadline data={opportunities} today={today} t={t} />
       <NextUp next={next} today={current} outcome={outcome} t={t} />
       <MonthStrip lines={lines} t={t} />
       <PerformanceSnapshot performance={performance} t={t} />
@@ -87,7 +88,15 @@ export function DashboardScreen({
 
 // ── 1. Growth headline ──────────────────────────────────────────────────────
 
-function GrowthHeadline({ data, t }: { data: OpportunityListResponse; t: Translate }) {
+function GrowthHeadline({
+  data,
+  today,
+  t,
+}: {
+  data: OpportunityListResponse
+  today: string
+  t: Translate
+}) {
   const top = [...data.opportunities]
     .filter((row) => row.status === 'new' || row.status === 'accepted')
     .sort((left, right) => right.impactScore - left.impactScore)
@@ -112,7 +121,7 @@ function GrowthHeadline({ data, t }: { data: OpportunityListResponse; t: Transla
       <h2 className="sortiva-dash__subheading">{t('dashboard.growth.nextBest')}</h2>
       {top.length === 0 ? (
         <p className="sortiva-dash__note" data-dashboard-growth-empty>
-          {t('dashboard.growth.empty')}
+          {nextScanPrompt('dashboard.growth.empty', data.nextScanAt, today, t)}
         </p>
       ) : (
         <ul className="sortiva-dash__next-best">
