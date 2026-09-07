@@ -12,6 +12,7 @@ import {
 import type {
   FamilyLookup,
   InventoryCursor,
+  OurArticleAddressWriter,
   OurArticleLookup,
   StoreContentBatch,
   StoreContentRecord,
@@ -195,6 +196,62 @@ class RecordingWriter implements StorePageWriter {
     }
     return marked
   }
+
+  /**
+   * What the table does to the address a renamed post has left behind. Not a
+   * port method: the row and the article's address move in one statement in the
+   * repository, so the walk asks for the move and never for this on its own.
+   */
+  retire(url: string) {
+    this.gone.add(url)
+  }
+}
+
+/**
+ * A store's published articles as the product holds them, plus the posts it
+ * made on the shop itself.
+ *
+ * Mutable, because following a rename writes to it: a second walk has to see
+ * the corrected address, which is exactly what a test asserting the link
+ * survived is asking about.
+ */
+class OurArticles implements OurArticleLookup, OurArticleAddressWriter {
+  /** Article id → the address we hold. Insertion order is oldest first. */
+  private readonly addresses = new Map<string, string>()
+  /** The shop's id for each post we made → the article behind it. */
+  private readonly onShop = new Map<string, string>()
+  readonly moves: { articleId: string; from: string; to: string }[] = []
+  private writer: RecordingWriter | undefined
+
+  constructor(pairs: readonly (readonly [string, string])[]) {
+    for (const [url, articleId] of pairs) if (!this.addresses.has(articleId)) this.addresses.set(articleId, url)
+  }
+
+  /** Says these posts are ones we made on the shop, so the shop gave us an id. */
+  postedToShop(...pairs: readonly (readonly [string, string])[]): this {
+    for (const [shopifyArticleId, articleId] of pairs) this.onShop.set(shopifyArticleId, articleId)
+    return this
+  }
+
+  /** Where the inventory row a rename leaves behind is retired. */
+  retiring(writer: RecordingWriter): this {
+    this.writer = writer
+    return this
+  }
+
+  async publishedArticles() {
+    return [...this.addresses].map(([articleId, url]) => ({ articleId, url }))
+  }
+
+  async publishedToShop() {
+    return [...this.onShop].map(([shopifyArticleId, articleId]) => ({ shopifyArticleId, articleId }))
+  }
+
+  async followRename(_accountId: string, move: { articleId: string; from: string; to: string }) {
+    this.moves.push(move)
+    this.addresses.set(move.articleId, move.to)
+    this.writer?.retire(move.from)
+  }
 }
 
 const noFamilies: FamilyLookup = {
@@ -204,19 +261,11 @@ const noFamilies: FamilyLookup = {
 }
 
 /** A store we have published nothing to yet. */
-const nothingPublished: OurArticleLookup = {
-  async publishedArticles() {
-    return []
-  },
-}
+const nothingPublished = new OurArticles([])
 
 /** A store where these addresses hold articles we published. */
-function published(...pairs: readonly (readonly [string, string])[]): OurArticleLookup {
-  return {
-    async publishedArticles() {
-      return pairs.map(([url, articleId]) => ({ url, articleId }))
-    },
-  }
+function published(...pairs: readonly (readonly [string, string])[]): OurArticles {
+  return new OurArticles(pairs)
 }
 
 function sourceOf(batches: readonly StoreContentBatch[], byTarget: readonly StoreContentRecord[] = []) {
@@ -253,7 +302,7 @@ describe('walking a store into the inventory', () => {
       },
     ])
     const writer = new RecordingWriter()
-    const deps: InventorySyncDeps = { source, writer, families: noFamilies, ourArticles: nothingPublished }
+    const deps: InventorySyncDeps = { source, writer, families: noFamilies, ourArticles: nothingPublished, articleAddresses: nothingPublished }
 
     const result = await syncInventoryBatch(deps, 'acc', undefined, 50)
 
@@ -272,7 +321,7 @@ describe('walking a store into the inventory', () => {
   it('writes nothing the second time round, and writes again once a body is edited', async () => {
     const writer = new RecordingWriter()
     const unchanged = sourceOf([{ records: [record()] }, { records: [record()] }])
-    const deps: InventorySyncDeps = { source: unchanged.source, writer, families: noFamilies, ourArticles: nothingPublished }
+    const deps: InventorySyncDeps = { source: unchanged.source, writer, families: noFamilies, ourArticles: nothingPublished, articleAddresses: nothingPublished }
 
     await syncInventoryBatch(deps, 'acc', undefined, 50)
     const second = await syncInventoryBatch(deps, 'acc', undefined, 50)
@@ -280,7 +329,7 @@ describe('walking a store into the inventory', () => {
     expect(writer.writes).toHaveLength(1)
 
     const edited = await syncInventoryRecords(
-      { source: unchanged.source, writer, families: noFamilies, ourArticles: nothingPublished },
+      { source: unchanged.source, writer, families: noFamilies, ourArticles: nothingPublished, articleAddresses: nothingPublished },
       'acc',
       [record({ bodyHtml: '<p>Rewritten.</p>' })],
     )
@@ -307,7 +356,7 @@ describe('walking a store into the inventory', () => {
     ])
     const writer = new RecordingWriter()
 
-    await syncInventoryBatch({ source, writer, families, ourArticles: nothingPublished }, 'acc', undefined, 50)
+    await syncInventoryBatch({ source, writer, families, ourArticles: nothingPublished, articleAddresses: nothingPublished }, 'acc', undefined, 50)
 
     expect(writer.rows.get('https://shop.example/collections/boots')?.familyIds.slice().sort()).toEqual([
       'fam-hiking',
@@ -479,10 +528,15 @@ describe('recognising an article we published', () => {
   async function walk(
     writer: RecordingWriter,
     records: readonly StoreContentRecord[],
-    ourArticles: OurArticleLookup,
+    ourArticles: OurArticles,
   ): Promise<InventorySyncResult> {
     const { source } = sourceOf([{ records }])
-    return syncInventoryBatch({ source, writer, families: noFamilies, ourArticles }, 'acc', undefined, 50)
+    return syncInventoryBatch(
+      { source, writer, families: noFamilies, ourArticles, articleAddresses: ourArticles },
+      'acc',
+      undefined,
+      50,
+    )
   }
 
   it('marks the post the store hands back as ours, and names the article it came from', async () => {
@@ -591,13 +645,15 @@ describe('recognising an article we published', () => {
   it('recognises a post the store told us it had just changed, without waiting for the nightly walk', async () => {
     const writer = new RecordingWriter()
     const { source } = sourceOf([], [article()])
+    const ours = published([OURS, ARTICLE])
 
     const result = await resyncInventoryTargets(
       {
         source,
         writer,
         families: noFamilies,
-        ourArticles: published([OURS, ARTICLE]),
+        ourArticles: ours,
+        articleAddresses: ours,
       },
       'acc',
       [{ kind: 'blog_article', shopifyId: '61' }],
@@ -605,6 +661,167 @@ describe('recognising an article we published', () => {
 
     expect(result.markedOurs).toBe(1)
     expect(writer.ours.get(OURS)).toBe(ARTICLE)
+  })
+})
+
+describe('a merchant renaming one of our published articles', () => {
+  const ARTICLE = 'e0a2f1c4-0000-4000-8000-000000000001'
+  /** Shopify's own id for the post we made. It survives the rename; the address does not. */
+  const SHOP_POST = '61'
+  const BEFORE = 'https://shop.example/blogs/news/best-trail-shoes'
+  const AFTER = 'https://shop.example/blogs/news/best-walking-shoes'
+
+  function article(over: Partial<StoreContentRecord> = {}): StoreContentRecord {
+    return record({
+      kind: 'blog_article',
+      shopifyId: SHOP_POST,
+      handle: 'best-trail-shoes',
+      blogHandle: 'news',
+      title: 'Best trail shoes',
+      ...over,
+    })
+  }
+
+  const renamed = article({ handle: 'best-walking-shoes' })
+
+  /** A store we auto-published this article to, and which has recognised it. */
+  async function settled(writer: RecordingWriter): Promise<OurArticles> {
+    const ours = published([BEFORE, ARTICLE]).postedToShop([SHOP_POST, ARTICLE]).retiring(writer)
+    const { source } = sourceOf([{ records: [article()] }])
+    await syncInventoryBatch(
+      { source, writer, families: noFamilies, ourArticles: ours, articleAddresses: ours },
+      'acc',
+      undefined,
+      50,
+    )
+    return ours
+  }
+
+  /** What the shop's own `articles/update` message makes the walk do. */
+  async function receiveRename(
+    writer: RecordingWriter,
+    ours: OurArticles,
+    record: StoreContentRecord = renamed,
+  ): Promise<InventorySyncResult> {
+    const { source } = sourceOf([], [record])
+    return resyncInventoryTargets(
+      { source, writer, families: noFamilies, ourArticles: ours, articleAddresses: ours },
+      'acc',
+      [{ kind: 'blog_article', shopifyId: record.shopifyId }],
+    )
+  }
+
+  it('follows the post to the address the shop now serves it at', async () => {
+    const writer = new RecordingWriter()
+    const ours = await settled(writer)
+    expect(writer.ours.get(BEFORE)).toBe(ARTICLE)
+
+    const result = await receiveRename(writer, ours)
+
+    expect(result.followedRenames).toBe(1)
+    expect(ours.moves).toEqual([{ articleId: ARTICLE, from: BEFORE, to: AFTER }])
+    // The link the merchant clicks, and the address search performance is
+    // matched against, now name the page the shop actually serves.
+    expect(await ours.publishedArticles()).toEqual([{ articleId: ARTICLE, url: AFTER }])
+  })
+
+  it('recognises the post at its new address on the same pass', async () => {
+    const writer = new RecordingWriter()
+    const ours = await settled(writer)
+
+    const result = await receiveRename(writer, ours)
+
+    // Not a day later: an improve-this-page press against the new address in
+    // the meantime would hand the merchant a list of edits for words we wrote.
+    expect(result.markedOurs).toBe(1)
+    expect(writer.ours.get(AFTER)).toBe(ARTICLE)
+  })
+
+  it('stops calling the address the shop has abandoned a live page', async () => {
+    const writer = new RecordingWriter()
+    const ours = await settled(writer)
+    expect([...writer.gone]).toEqual([])
+
+    await receiveRename(writer, ours)
+
+    // Our own articles are exempt from the nightly deletion sweep, so nothing
+    // else would ever retire this row and it would sit `live` for ever at an
+    // address nobody can open.
+    expect([...writer.gone]).toEqual([BEFORE])
+  })
+
+  it('follows the rename once, however many times the store is walked', async () => {
+    const writer = new RecordingWriter()
+    const ours = await settled(writer)
+    await receiveRename(writer, ours)
+
+    const again = await receiveRename(writer, ours)
+
+    expect(again.followedRenames).toBe(0)
+    expect(ours.moves).toHaveLength(1)
+    expect(again.markedOurs).toBe(1)
+  })
+
+  it('leaves a post the merchant wrote themselves alone', async () => {
+    const writer = new RecordingWriter()
+    const ours = await settled(writer)
+
+    // Same blog, a post of theirs, edited on the same night. Nothing about it
+    // is ours, and moving our article's address onto it would claim their
+    // writing as ours.
+    const result = await receiveRename(
+      writer,
+      ours,
+      article({ shopifyId: '62', handle: 'our-shop-turns-ten', title: 'Our shop turns ten' }),
+    )
+
+    expect(result.followedRenames).toBe(0)
+    expect(ours.moves).toEqual([])
+    expect(await ours.publishedArticles()).toEqual([{ articleId: ARTICLE, url: BEFORE }])
+  })
+
+  it('cannot follow a rename on a store we deliver to by export, and changes nothing there', async () => {
+    const writer = new RecordingWriter()
+    // The merchant downloaded the article and pasted it onto their own blog, so
+    // the shop believes they wrote the post and gave us no id for it. This is
+    // the half of the problem the notification cannot reach, and export is the
+    // default delivery mode.
+    const ours = published([BEFORE, ARTICLE]).retiring(writer)
+    const { source } = sourceOf([{ records: [article()] }])
+    await syncInventoryBatch(
+      { source, writer, families: noFamilies, ourArticles: ours, articleAddresses: ours },
+      'acc',
+      undefined,
+      50,
+    )
+
+    const result = await receiveRename(writer, ours)
+
+    expect(result.followedRenames).toBe(0)
+    expect(result.markedOurs).toBe(0)
+    expect(await ours.publishedArticles()).toEqual([{ articleId: ARTICLE, url: BEFORE }])
+    expect([...writer.gone]).toEqual([])
+  })
+
+  it('does not invent an address for a post we hold none for', async () => {
+    const writer = new RecordingWriter()
+    // An article posted as a shop draft has no address a reader could open, so
+    // we hold none for it. Filling one in is a different question from
+    // correcting one, and nobody has asked it. The store has another article
+    // with an address, so this is the article being skipped rather than the
+    // whole store having nothing published.
+    const other = 'e0a2f1c4-0000-4000-8000-000000000002'
+    const ours = published(['https://shop.example/blogs/news/older', other])
+      .postedToShop([SHOP_POST, ARTICLE])
+      .retiring(writer)
+
+    const result = await receiveRename(writer, ours)
+
+    expect(result.followedRenames).toBe(0)
+    expect(ours.moves).toEqual([])
+    expect(await ours.publishedArticles()).toEqual([
+      { articleId: other, url: 'https://shop.example/blogs/news/older' },
+    ])
   })
 })
 
@@ -620,7 +837,7 @@ describe('noticing that a merchant deleted a page', () => {
     now: Date,
   ): Promise<InventorySyncResult> {
     const { source } = sourceOf([{ records }])
-    return syncInventoryBatch({ source, writer, families: noFamilies, ourArticles: nothingPublished, now: () => now }, 'acc', undefined, 50)
+    return syncInventoryBatch({ source, writer, families: noFamilies, ourArticles: nothingPublished, articleAddresses: nothingPublished, now: () => now }, 'acc', undefined, 50)
   }
 
   it('marks a page the store has stopped serving, and leaves the rest alone', async () => {
@@ -647,7 +864,7 @@ describe('noticing that a merchant deleted a page', () => {
       { records: [record({ shopifyId: '2', handle: 'hats' })], next: { stage: 'page' } },
     ])
     const result = await syncInventoryBatch(
-      { source, writer, families: noFamilies, ourArticles: nothingPublished, now: () => T1 },
+      { source, writer, families: noFamilies, ourArticles: nothingPublished, articleAddresses: nothingPublished, now: () => T1 },
       'acc',
       undefined,
       50,
@@ -675,7 +892,7 @@ describe('noticing that a merchant deleted a page', () => {
       { records: [record({ shopifyId: '1', handle: 'boots' })], next: { stage: 'page' } },
       { records: [record({ shopifyId: '2', handle: 'hats' })] },
     ])
-    const deps = { source, writer, families: noFamilies, ourArticles: nothingPublished, now: () => clock.now }
+    const deps = { source, writer, families: noFamilies, ourArticles: nothingPublished, articleAddresses: nothingPublished, now: () => clock.now }
 
     const first = await syncInventoryBatch(deps, 'acc', undefined, 50)
     clock.now = on('2026-09-09T03:00:00Z')
@@ -723,7 +940,7 @@ describe('noticing that a merchant deleted a page', () => {
 
     const { source } = sourceOf([], [record({ shopifyId: '1', handle: 'boots' })])
     const result = await resyncInventoryTargets(
-      { source, writer, families: noFamilies, ourArticles: nothingPublished, now: () => T1 },
+      { source, writer, families: noFamilies, ourArticles: nothingPublished, articleAddresses: nothingPublished, now: () => T1 },
       'acc',
       [{ kind: 'collection', shopifyId: '1' }],
     )

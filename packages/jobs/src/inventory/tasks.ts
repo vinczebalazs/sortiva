@@ -1,13 +1,25 @@
-import type { InventorySyncDeps, InventorySyncResult, InventoryTarget, Logger } from '@sortiva/core'
-import { resyncInventoryTargets, syncInventoryBatch } from '@sortiva/core'
+import type {
+  InventorySyncDeps,
+  InventorySyncResult,
+  InventoryTarget,
+  Logger,
+  ShopArticleOfOurs,
+} from '@sortiva/core'
+import {
+  articleIdFromIntentExternalId,
+  resyncInventoryTargets,
+  syncInventoryBatch,
+} from '@sortiva/core'
 import {
   accountScope,
   accountsWithLiveShopifyConnection,
   familyIdsByShopifyProductId,
+  followOurArticleRename,
   markStorePagesGoneNotSeenSince,
   markStorePagesOurs,
   markStorePagesSeen,
   publishedArticleAddresses,
+  shopPostsWePublished,
   storePageChecksums,
   systemScope,
   upsertStorePages,
@@ -186,6 +198,12 @@ function inventoryDeps(
     },
     ourArticles: {
       publishedArticles: (accountId) => publishedArticleAddresses(db, accountScope(accountId)),
+      publishedToShop: (accountId) => shopPostsWePublished(db, accountScope(accountId)).then(ourPosts),
+    },
+    articleAddresses: {
+      followRename: async (accountId, move) => {
+        await followOurArticleRename(db, accountScope(accountId), move, (deps.now ?? (() => new Date()))())
+      },
     },
     families: {
       familiesForProducts: (accountId, ids) =>
@@ -193,6 +211,25 @@ function inventoryDeps(
     },
     ...(deps.now ? { now: deps.now } : {}),
   }
+}
+
+/**
+ * Which article each post on the shop came from.
+ *
+ * A publication claim is named after the article it was made for, and the name
+ * is the only thing joining the two — there is no column pointing one at the
+ * other. Unpacking the name is the article pipeline's own business, so this
+ * borrows its reader rather than teaching a query the shape of the name. A name
+ * that reader does not recognise is dropped, because a wrong article here would
+ * move the wrong page's address.
+ */
+function ourPosts(
+  claims: readonly { readonly articleExternalId: string; readonly shopifyArticleId: string }[],
+): readonly ShopArticleOfOurs[] {
+  return claims.flatMap((claim) => {
+    const articleId = articleIdFromIntentExternalId(claim.articleExternalId)
+    return articleId ? [{ articleId, shopifyArticleId: claim.shopifyArticleId }] : []
+  })
 }
 
 function logResult(
@@ -214,6 +251,9 @@ function logResult(
     // Two finished behaviours are dormant while this stays at zero for a store
     // we have published to, so it is worth being able to see from outside.
     marked_ours: result.markedOurs,
+    // A merchant renaming one of our posts. Rare, and each one moved an address
+    // a merchant may have linked to from somewhere we cannot see.
+    followed_renames: result.followedRenames,
   })
 }
 

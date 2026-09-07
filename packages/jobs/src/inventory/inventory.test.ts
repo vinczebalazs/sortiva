@@ -361,7 +361,10 @@ describe.skipIf(!available)('a whole store into the inventory', () => {
    * inserted the long way round because an article only exists at the end of a
    * chain — a piece of work, then a calendar day, then the article itself.
    */
-  async function ourPublishedArticle(url: string): Promise<string> {
+  async function ourPublishedArticle(
+    url: string,
+    over: { readonly delivery?: string } = {},
+  ): Promise<string> {
     const opportunity = await pool.query<{ id: string }>(
       `INSERT INTO opportunities
          (account_id, signal_type, entity_type, entity_ref, evidence_json, impact,
@@ -378,12 +381,35 @@ describe.skipIf(!available)('a whole store into the inventory', () => {
     )
     const article = await pool.query<{ id: string }>(
       `INSERT INTO articles
-         (account_id, topic_id, title, slug, state, published_url, published_at)
-       VALUES ($1,$2,'Caring for boots','boot-care','published',$3,'2026-08-01T09:00:00Z')
+         (account_id, topic_id, title, slug, state, published_url, published_at, delivery)
+       VALUES ($1,$2,'Caring for boots','boot-care','published',$3,'2026-08-01T09:00:00Z',$4)
        RETURNING id`,
-      [accountId, topic.rows[0]!.id, url],
+      [accountId, topic.rows[0]!.id, url, over.delivery ?? 'export'],
     )
     return article.rows[0]!.id
+  }
+
+  /**
+   * The same article, posted to this shop by us rather than downloaded — which
+   * means the shop gave us an id for the post and we kept it on the claim.
+   */
+  async function ourPostOnTheShop(url: string, shopifyArticleId: string): Promise<string> {
+    const articleId = await ourPublishedArticle(url, { delivery: 'auto' })
+    await pool.query(
+      `INSERT INTO publish_intents (article_external_id, account_id, state, shopify_article_id)
+       VALUES ($1,$2,'confirmed',$3)`,
+      [`sortiva-${articleId}`, accountId, shopifyArticleId],
+    )
+    return articleId
+  }
+
+  /** What the shop's `articles/update` message makes the walk go and do. */
+  async function receiveArticleUpdate(shopifyArticleId: string): Promise<void> {
+    const outcome = await runInventorySync(deps, {
+      accountId,
+      targets: [{ kind: 'blog_article', shopifyId: shopifyArticleId }],
+    })
+    if (outcome.status === 'disconnected') throw new Error('the fixture store is connected')
   }
 
   /**
@@ -476,6 +502,100 @@ describe.skipIf(!available)('a whole store into the inventory', () => {
     const row = (await listStorePages(ctx.db, accountScope(accountId))).find((r) => r.url === OURS)
     expect(row?.pageType).toBe('article_ours')
     expect(row?.articleId).toBe(articleId)
+  })
+
+  /**
+   * The whole point of the rename card, driven the way the shop drives it:
+   * the merchant edits the post's handle, Shopify says so, and the walk goes
+   * and re-reads that one post.
+   */
+  describe('when the merchant renames a post we published to their shop', () => {
+    const OURS = 'https://shop.example/blogs/guides/boot-care'
+    const MOVED = 'https://shop.example/blogs/guides/looking-after-boots'
+
+    /** The merchant's edit, on the shop. Only the handle moves. */
+    function renameOnTheShop(): void {
+      store.blogs[1]!.articles[0]!.handle = 'looking-after-boots'
+    }
+
+    async function rowsByUrl() {
+      return new Map((await listStorePages(ctx.db, accountScope(accountId))).map((r) => [r.url, r]))
+    }
+
+    async function addressOf(articleId: string): Promise<string | null> {
+      const { rows } = await pool.query<{ published_url: string | null }>(
+        `SELECT published_url FROM articles WHERE id = $1`,
+        [articleId],
+      )
+      return rows[0]?.published_url ?? null
+    }
+
+    it('follows it, so the article and its page stay attached', async () => {
+      const articleId = await ourPostOnTheShop(OURS, '71')
+      await walkWholeStore()
+      expect((await rowsByUrl()).get(OURS)?.pageType).toBe('article_ours')
+
+      renameOnTheShop()
+      await receiveArticleUpdate('71')
+
+      const rows = await rowsByUrl()
+      // The page at the address the shop now serves is ours, and named against
+      // the same article. Without this the shop's own post reads back as the
+      // merchant's writing and an improve-this-page press hands them edits for
+      // words we wrote.
+      expect(rows.get(MOVED)?.pageType).toBe('article_ours')
+      expect(rows.get(MOVED)?.articleId).toBe(articleId)
+      // And the link the merchant clicks to read it opens the live page.
+      expect(await addressOf(articleId)).toBe(MOVED)
+    })
+
+    it('stops calling the address the shop has abandoned a live page', async () => {
+      await ourPostOnTheShop(OURS, '71')
+      await walkWholeStore()
+
+      renameOnTheShop()
+      await receiveArticleUpdate('71')
+
+      // Our own articles are exempt from the nightly deletion sweep, so without
+      // this the old row sits `live` for ever at an address nobody can open and
+      // goes on counting as coverage.
+      expect((await rowsByUrl()).get(OURS)?.status).toBe('gone')
+      const live = await listStorePages(ctx.db, accountScope(accountId))
+      expect(live.filter((row) => row.status === 'live').map((row) => row.url)).toContain(MOVED)
+    })
+
+    it('cannot follow one on a store we deliver to by export', async () => {
+      // The merchant downloaded this article and published it themselves, so
+      // the shop believes the post is theirs and gave us no id for it. Export
+      // is the default delivery mode, so this is the larger half of stores and
+      // the half this answer does not reach.
+      const articleId = await ourPublishedArticle(OURS)
+      await walkWholeStore()
+      expect((await rowsByUrl()).get(OURS)?.pageType).toBe('article_ours')
+
+      renameOnTheShop()
+      await receiveArticleUpdate('71')
+
+      const rows = await rowsByUrl()
+      expect(rows.get(MOVED)?.pageType).toBe('blog_article')
+      expect(rows.get(OURS)?.status).toBe('live')
+      expect(await addressOf(articleId)).toBe(OURS)
+    })
+
+    it('leaves a post of the merchant’s own entirely alone', async () => {
+      const articleId = await ourPostOnTheShop(OURS, '71')
+      await walkWholeStore()
+
+      // A different post on the same blog, edited on the same night.
+      store.blogs[1]!.articles[1]!.title = 'Your first hike, revised'
+      await receiveArticleUpdate('72')
+
+      const rows = await rowsByUrl()
+      expect(rows.get('https://shop.example/blogs/guides/first-hike')?.pageType).toBe('blog_article')
+      expect(rows.get(OURS)?.pageType).toBe('article_ours')
+      expect(rows.get(OURS)?.status).toBe('live')
+      expect(await addressOf(articleId)).toBe(OURS)
+    })
   })
 
   it('records nothing at all for a store whose connection is gone', async () => {
