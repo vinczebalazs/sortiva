@@ -3,6 +3,7 @@ import {
   accountScope,
   insertDomainRow,
   markAccountDeleted,
+  sessions,
   type Db,
 } from '@sortiva/db'
 import {
@@ -216,6 +217,7 @@ describe('pruning by age', () => {
       verification_tokens: 0,
       gsc_daily: 0,
       gsc_query_daily: 0,
+      sessions: 0,
     })
   })
 
@@ -238,6 +240,93 @@ describe('pruning by age', () => {
 
     expect(await count('idempotency_ledger')).toBe(1)
     expect(await count('spend_events')).toBe(1)
+  })
+})
+
+/**
+ * A session is one signed-in browser. It lapses on a date fixed when the
+ * merchant signed in, and now that a session lasts a month rather than a day,
+ * a row nobody can use sits thirty times longer in the table every signed-in
+ * request reads.
+ */
+describe('clearing sessions that have lapsed', () => {
+  async function sessionExpiring(
+    accountId: string,
+    token: string,
+    interval: string,
+  ): Promise<void> {
+    await harness.pool.query(
+      `insert into sessions (session_token, account_id, expires)
+       values ($1, $2, now() + ($3)::interval)`,
+      [token, accountId, interval],
+    )
+  }
+
+  async function tokensLeft(): Promise<string[]> {
+    const { rows } = await harness.pool.query<{ session_token: string }>(
+      'select session_token from sessions order by session_token',
+    )
+    return rows.map((r) => r.session_token)
+  }
+
+  it('removes what has lapsed and leaves every session still good', async () => {
+    const accountId = await insertAccount(harness.pool, 'signed-in@example.com')
+    await sessionExpiring(accountId, 'lapsed-yesterday', '-1 day')
+    await sessionExpiring(accountId, 'lapsed-a-minute-ago', '-1 minute')
+    // The one that matters: a live session is not the same thing as a session
+    // signed in today. Deleting by age rather than by the row's own date would
+    // sign this merchant out with a day of their month still to run.
+    await sessionExpiring(accountId, 'lapses-tomorrow', '1 day')
+    await sessionExpiring(accountId, 'lapses-in-a-month', '30 days')
+
+    const report = await runRetentionSweep(deps(new Date()))
+
+    expect(report.pruned.sessions).toBe(2)
+    expect(await tokensLeft()).toEqual(['lapses-in-a-month', 'lapses-tomorrow'])
+  })
+
+  it('is idempotent: the second run the same night finds nothing lapsed', async () => {
+    const accountId = await insertAccount(harness.pool, 'twice-swept@example.com')
+    await sessionExpiring(accountId, 'lapsed', '-1 hour')
+    await sessionExpiring(accountId, 'live', '10 days')
+
+    const now = new Date()
+    expect((await runRetentionSweep(deps(now))).pruned.sessions).toBe(1)
+    expect((await runRetentionSweep(deps(now))).pruned.sessions).toBe(0)
+    expect(await tokensLeft()).toEqual(['live'])
+  })
+
+  it('cannot cost the night its obligations if the delete fails', async () => {
+    // The reason this step is written last. Erasing an account whose seven-day
+    // hold has passed is a promise with a deadline; tidying lapsed sessions is
+    // housekeeping. A sweep that died here and therefore never erased the
+    // account would be a worse defect than the one this card fixes.
+    await deletedAccountWithDomain('obligation.example')
+    const other = await insertAccount(harness.pool, 'bystander@example.com')
+    await sessionExpiring(other, 'lapsed', '-1 hour')
+
+    const broken = new Proxy(db, {
+      get(target, prop, receiver) {
+        if (prop !== 'delete') return Reflect.get(target, prop, receiver)
+        return (table: unknown) => {
+          if (table === sessions) throw new Error('the sessions delete failed')
+          return target.delete(table as never)
+        }
+      },
+    }) as Db
+
+    const now = new Date(DELETED_AT.getTime() + 8 * DAY)
+    await expect(
+      runRetentionSweep({ ...deps(now), getDb: () => broken }),
+    ).rejects.toThrow('the sessions delete failed')
+
+    const { rows } = await harness.pool.query<{ n: string }>(
+      'select count(*)::text as n from accounts',
+    )
+    // Only the bystander is left: the deleted account was erased before the
+    // sweep ever reached the step that blew up.
+    expect(rows[0]!.n).toBe('1')
+    expect(await tokensLeft()).toEqual(['lapsed'])
   })
 })
 

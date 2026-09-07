@@ -32,6 +32,7 @@ export type RetentionTarget =
   | 'gsc_daily'
   | 'gsc_query_daily'
   | 'verification_tokens'
+  | 'sessions'
 
 export interface RetentionRule {
   readonly target: RetentionTarget
@@ -100,6 +101,16 @@ export const RETENTION_RULES: readonly RetentionRule[] = [
     why:
       'Sign-in links. Each row carries its own expiry; a spent link is deleted at the moment it is ' +
       'used, so what this clears is links nobody clicked.',
+  },
+  {
+    target: 'sessions',
+    maxAgeDays: null,
+    why:
+      'One row per signed-in browser. Each row carries its own lapse date, and signing out or ' +
+      'deleting the account removes rows the instant either happens — so what this clears is ' +
+      'browsers that simply stopped coming back. It matters more than it looks: a session lasts a ' +
+      'month, so without this a row nobody can use sits in the table Postgres reads on every ' +
+      'signed-in request for thirty days after it stopped meaning anything.',
   },
 ]
 

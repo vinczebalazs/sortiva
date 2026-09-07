@@ -11,6 +11,7 @@ import {
   hardDeleteAccount,
   pruneEmailSends,
   pruneExpiredRequestCache,
+  pruneExpiredSessions,
   pruneExpiredVerificationTokens,
   pruneGscDaily,
   pruneGscQueryDaily,
@@ -205,6 +206,13 @@ async function prune(db: Db, now: Date): Promise<Record<string, number>> {
     verification_tokens: await pruneExpiredVerificationTokens(db, system, now),
     gsc_daily: await pruneGscDaily(db, system, isoDate(at('gsc_daily'))),
     gsc_query_daily: await pruneGscQueryDaily(db, system, isoDate(at('gsc_query_daily'))),
+    // Last on purpose, and it should stay last. These properties are evaluated
+    // in the order they are written, and this is the only tidying step here
+    // with no obligation behind it — nothing is promised to anybody about when
+    // a lapsed session's row goes, only that a lapsed session cannot sign in,
+    // which the lookup already refuses. Moved earlier, a failure on this delete
+    // would cost the night whatever came after it.
+    sessions: await pruneExpiredSessions(db, system, now),
   }
 }
 
