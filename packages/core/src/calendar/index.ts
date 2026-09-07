@@ -1,4 +1,5 @@
 export { topicFingerprint } from './fingerprint'
+export { topicWhyLine, type TopicWhyInput, type TopicWhyOpportunity } from './why-line'
 export {
   VETOABLE_STATES,
   VETO_CONFLICT_CODE,
