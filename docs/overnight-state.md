@@ -5849,6 +5849,85 @@ vitest workers, and a second full run showed four failing assertions in suites t
 touch, all of which passed 47/47 when re-run alone. **The integrator is holding at three lanes
 rather than four until `R-TESTDB` lands.**
 
+### `R-RECO-QUALITY` and `R-STRANDED` LANDED — **the chaos suite is fully green for the first time**
+
+**`R-STRANDED` is the one to read.** If the worker writing a store's daily article was killed
+before that store's local midnight — 23:50, a late deploy, an ordinary evening for a shop whose
+writing starts after dinner — the article was never picked up again. The next morning looked for
+that morning's topic, found none, and **reported success**. The article was written and paid for,
+nothing graded it, and no error reached anybody.
+
+Every store's daily pass now looks behind it. The interrupted day with the most already-paid-for
+work behind it is finished, **keeping its own past date**, so nothing lands on a day the calendar
+never scheduled and finishing an old day can never become a burst. Every other one leaves a **dead
+letter** naming the store, the day, the topic and the article, in plain language. Finishing an old
+day does not consume today's allowance — it is not a dequeue, so "one topic per store per day"
+is untouched and today's article is still written.
+
+**The cadence is inside the store's own daily pass, after today's article.** No new scheduled job,
+so nothing was needed in the crontab. The reasoning: the only thing that can strand a day is that
+store's own pass dying, so the same pass is where to notice; it already holds the per-store lock
+and knows the store's timezone. Today's article runs first, because a recovery can wait a pass and
+must never be the reason today's article did not go out.
+
+**Verified by the integrator, because it changes what the gate means.** `pnpm chaos` passes **10 of
+10**, and `git diff` shows the scenario file byte-identical to `main` — the product converges, the
+test was not softened. The lane also proved it converges *because of* the sweep: disabling the call
+returns the scenario to red with its original message.
+
+**`R-RECO-QUALITY`.** The model-written rationale is now labelled "A model wrote this line." on
+screen and in the download — the only line on that card that is not the merchant's own text, a
+quoted suggestion, or our catalogue wording. **The prompt went into a new version file rather than
+being edited in place**, because the version stamped on a stored recommendation has to still mean
+something a year later. It added **the test that would have caught the original defect**: it holds
+the prompt the product actually loads against every field its answer schema demands — which is how
+a required `rationale_key` came to be never mentioned in the prompt at all. The field is renamed to
+`rationale` and readers accept both spellings, so recommendations a merchant already has do not
+lose their explanation. The weekly pass now shortlists **8** against an allowance of 10, proved by
+what was actually bought.
+
+**Ungraded, and the lane led with it:** `pnpm eval` is the machinery for grading a prompt change,
+this card changes a prompt in two places, and it cannot run without a key. Nothing has measured
+whether the model follows either instruction. **Unverified, not verified-and-fine.**
+
+**One user-visible choice the founder can reverse:** the rationale is written **in English whatever
+language the store publishes in**, on the reasoning that it sits among our own English labels and a
+mixed-language sentence is what the founder rejected two days earlier for the judge's
+justification. Sound, and undictated.
+
+### The test-database leak, measured — **138 databases and growing**
+
+The integrator counted it directly: `select count(*) from pg_database where datname like
+'sortiva%'` returns **138**, against a server connection limit of 100. A lane reported 126 earlier
+the same session. **So databases accumulate during ordinary work, not only after a crash.**
+
+**It has stopped being only a `pnpm test` problem.** `pnpm chaos` failed at its own `beforeAll`
+with "Postgres is not reachable" and skipped all ten scenarios, then ran clean on the next attempt.
+Other lanes have since seen `sorry, too many clients already`, `out of shared memory`, and a
+duplicate-email insert after a truncate — two lanes sharing one database name and truncating each
+other's rows. Failed *files* have ranged from 1 to 56 across runs while failed *assertions* never
+exceeded 2.
+
+**`R-TESTDB` is running on it, and has both measurements.** It is told not to make the symptom
+quieter, not to drop databases another lane may be live on, and to say so plainly if the honest fix
+lies outside `packages/db/src/testing.ts`.
+
+### Three things `R-STRANDED` found and correctly did not fix
+
+1. **Nothing in the product ever moves a calendar entry out of "Generating".** Both publishing
+   paths update the article row and leave the calendar alone, so the Content calendar reads
+   "Generating" for every past **successfully published** day. Pre-existing and product-wide. It is
+   also load-bearing for the sweep's design — identifying a stranded day by its calendar state
+   would have written those stores a second article for a day they already had.
+2. **An abandoned day's calendar entry therefore also reads "Generating", and cannot honestly be
+   changed.** The three terminal states are `published`, `rejected_by_gate` (shown as "Held for
+   quality" — untrue, no gate ran) and `vetoed` ("Vetoed" — untrue, the merchant did nothing).
+   A fourth needs a migration. **Founder call.**
+3. **One narrow gap the sweep does not cover**: a worker dying in the two-statement window between
+   recording a quality rejection and marking the calendar entry rejected. That day *has* a gate
+   decision, so the sweep excludes it, and nothing else looks at it. Rarer, and a different shape
+   of fix.
+
 ### Verification done this morning, so it is not re-done
 
 - Resolved every registered task-name constant in the tree and matched it by hand against all
