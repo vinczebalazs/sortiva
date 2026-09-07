@@ -18,11 +18,14 @@ export {
 } from './sync'
 
 export type {
+  ArticleAddressMove,
   FamilyLookup,
   InventoryTarget,
   InventoryCursor,
+  OurArticleAddressWriter,
   OurArticleLookup,
   PublishedArticleAddress,
+  ShopArticleOfOurs,
   StoreContentBatch,
   StoreContentKind,
   StoreContentRecord,

@@ -141,6 +141,28 @@ export interface StorePageWriter {
   ): Promise<void>
 }
 
+/** One of our own articles that the shop has started serving somewhere else. */
+export interface ArticleAddressMove {
+  readonly articleId: string
+  /** The address we hold for it, which the shop has stopped serving. */
+  readonly from: string
+  /** The address the shop serves the same post at now. */
+  readonly to: string
+}
+
+/**
+ * Where a move is written down.
+ *
+ * Two things have to change together and neither is any use alone: the address
+ * we hold for the article — what the merchant clicks to read it, and what its
+ * search performance is matched against — and the inventory row at the address
+ * the shop has stopped serving, which would otherwise sit for ever claiming to
+ * be a page of ours the store still publishes.
+ */
+export interface OurArticleAddressWriter {
+  followRename(accountId: string, move: ArticleAddressMove): Promise<void>
+}
+
 /** One article we published for this store, and the address we hold for it. */
 export interface PublishedArticleAddress {
   readonly articleId: string
@@ -163,6 +185,25 @@ export interface PublishedArticleAddress {
  */
 export interface OurArticleLookup {
   publishedArticles(accountId: string): Promise<readonly PublishedArticleAddress[]>
+  /**
+   * The posts we made on the merchant's own shop, each with the id the shop
+   * gave it.
+   *
+   * This is what lets the walk tell a rename from a new post: the address moves
+   * and the id does not. Only auto-publish delivery produces one — an article a
+   * merchant downloaded and pasted onto their own blog is, to the shop, a post
+   * the merchant wrote, with nothing of ours attached — so this is empty for an
+   * export-delivery store and a rename there still detaches the article from
+   * its page.
+   */
+  publishedToShop(accountId: string): Promise<readonly ShopArticleOfOurs[]>
+}
+
+/** One article of ours that we posted to the merchant's shop ourselves. */
+export interface ShopArticleOfOurs {
+  readonly articleId: string
+  /** The shop's own id for the post, kept from the publication claim. */
+  readonly shopifyArticleId: string
 }
 
 /**

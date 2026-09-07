@@ -4,6 +4,7 @@ import type {
   FamilyLookup,
   InventoryCursor,
   InventoryTarget,
+  OurArticleAddressWriter,
   OurArticleLookup,
   StoreContentRecord,
   StoreContentSource,
@@ -28,6 +29,7 @@ export interface InventorySyncDeps {
   readonly writer: StorePageWriter
   readonly families: FamilyLookup
   readonly ourArticles: OurArticleLookup
+  readonly articleAddresses: OurArticleAddressWriter
   /** Overridable so a test can walk a store at a time it chooses. */
   readonly now?: () => Date
 }
@@ -48,6 +50,11 @@ export interface InventorySyncResult {
   readonly markedGone?: number
   /** Pages in this batch recognised as articles we published. */
   readonly markedOurs: number
+  /**
+   * Articles of ours the shop has started serving at a new address, whose
+   * address we corrected on this batch.
+   */
+  readonly followedRenames: number
 }
 
 /**
@@ -94,14 +101,14 @@ export async function syncInventoryBatch(
   // After the write, because a page seen for the first time has no row to mark
   // until the write has made one. Before the sweep below, because a page we
   // recognise as ours is one the sweep must leave alone.
-  const markedOurs = await markOurArticles(deps, accountId, rows, origin)
+  const recognised = await recogniseOurArticles(deps, accountId, rows, origin)
 
   if (batch.next) {
     return {
       seen: batch.records.length,
       changed: changed.length,
       changedUrls: changed.map((row) => row.url),
-      markedOurs,
+      ...recognised,
       next: { ...batch.next, [WALK_STARTED_AT]: walkStartedAt.toISOString() },
     }
   }
@@ -113,7 +120,7 @@ export async function syncInventoryBatch(
     seen: batch.records.length,
     changed: changed.length,
     changedUrls: changed.map((row) => row.url),
-    markedOurs,
+    ...recognised,
     markedGone,
   }
 }
@@ -144,12 +151,12 @@ export async function syncInventoryRecords(
     )
   }
   const changed = await writeChanged(deps, accountId, rows)
-  const markedOurs = await markOurArticles(deps, accountId, rows, origin)
+  const recognised = await recogniseOurArticles(deps, accountId, rows, origin)
   return {
     seen: records.length,
     changed: changed.length,
     changedUrls: changed.map((row) => row.url),
-    markedOurs,
+    ...recognised,
   }
 }
 
@@ -164,7 +171,8 @@ export async function resyncInventoryTargets(
   accountId: string,
   targets: readonly InventoryTarget[],
 ): Promise<InventorySyncResult> {
-  if (targets.length === 0) return { seen: 0, changed: 0, changedUrls: [], markedOurs: 0 }
+  if (targets.length === 0)
+    return { seen: 0, changed: 0, changedUrls: [], markedOurs: 0, followedRenames: 0 }
   const records = await deps.source.read(accountId, targets)
   return syncInventoryRecords(deps, accountId, records)
 }
@@ -269,17 +277,18 @@ async function writeChanged(
  * is never un-marked, because absence from a store is not evidence about an
  * article delivered somewhere else entirely.
  */
-async function markOurArticles(
+async function recogniseOurArticles(
   deps: InventorySyncDeps,
   accountId: string,
   rows: readonly StorePageRow[],
   origin: string,
-): Promise<number> {
-  if (rows.length === 0) return 0
+): Promise<{ markedOurs: number; followedRenames: number }> {
+  if (rows.length === 0) return { markedOurs: 0, followedRenames: 0 }
   const published = await deps.ourArticles.publishedArticles(accountId)
-  if (published.length === 0) return 0
+  if (published.length === 0) return { markedOurs: 0, followedRenames: 0 }
 
   const byUrl = new Map<string, string>()
+  const heldByArticle = new Map<string, string>()
   for (const article of published) {
     let url: string
     try {
@@ -293,12 +302,76 @@ async function markOurArticles(
     // ever claim one address, the walk settles on the same one every night
     // instead of alternating between them.
     if (!byUrl.has(url)) byUrl.set(url, article.articleId)
+    if (!heldByArticle.has(article.articleId)) heldByArticle.set(article.articleId, url)
   }
+
+  // Before the marking below, so a post the merchant has just renamed is
+  // recognised at its new address on the same pass rather than a day later.
+  const followedRenames = await followRenames(deps, accountId, rows, byUrl, heldByArticle)
 
   const ours = rows.flatMap((row) => {
     const articleId = byUrl.get(row.url)
     return articleId ? [{ url: row.url, articleId }] : []
   })
   if (ours.length > 0) await deps.writer.markOurs(accountId, ours)
-  return ours.length
+  return { markedOurs: ours.length, followedRenames }
+}
+
+/**
+ * Notices that a post of ours is being served somewhere else, and writes the
+ * new address down.
+ *
+ * A merchant renaming one of our posts on their shop changes its address and
+ * nothing else. Recognition is by address, so without this the product ends up
+ * holding two wrong beliefs at once: a page it thinks is our article at an
+ * address nobody can open, and a page it thinks is the merchant's own at the
+ * address our article is actually at — where an improve-this-page press would
+ * hand the merchant a list of edits for words we wrote.
+ *
+ * The shop's own id for the post is what makes this safe: it is the id we
+ * recorded when we made the post, so a match is our own paperwork rather than a
+ * guess from a title or a marker, and being wrong here would mean claiming a
+ * merchant's own writing as ours.
+ *
+ * Two deliberate limits. Only a post we made on the shop ourselves has such an
+ * id, so nothing here helps a store on export delivery, where the merchant
+ * pastes the article onto their own blog and a rename still detaches it. And an
+ * article we hold no address for at all is left alone: filling one in is a
+ * different question from correcting one, and nobody has asked it.
+ */
+async function followRenames(
+  deps: InventorySyncDeps,
+  accountId: string,
+  rows: readonly StorePageRow[],
+  byUrl: Map<string, string>,
+  heldByArticle: Map<string, string>,
+): Promise<number> {
+  const posts = rows.filter((row) => row.pageType === 'blog_article')
+  if (posts.length === 0) return 0
+  const onShop = await deps.ourArticles.publishedToShop(accountId)
+  if (onShop.length === 0) return 0
+
+  const articleByShopId = new Map<string, string>()
+  for (const post of onShop) {
+    if (!articleByShopId.has(post.shopifyArticleId)) {
+      articleByShopId.set(post.shopifyArticleId, post.articleId)
+    }
+  }
+
+  let followed = 0
+  for (const row of posts) {
+    const articleId = articleByShopId.get(row.shopifyId)
+    if (articleId === undefined) continue
+    const held = heldByArticle.get(articleId)
+    if (held === undefined || held === row.url) continue
+
+    await deps.articleAddresses.followRename(accountId, { articleId, from: held, to: row.url })
+    // The rest of this batch reads these two, so the marking below lands on the
+    // address the shop actually serves.
+    if (byUrl.get(held) === articleId) byUrl.delete(held)
+    if (!byUrl.has(row.url)) byUrl.set(row.url, articleId)
+    heldByArticle.set(articleId, row.url)
+    followed += 1
+  }
+  return followed
 }
