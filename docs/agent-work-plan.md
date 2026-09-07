@@ -640,6 +640,23 @@ Read first: "The concurrent-load test flake, triangulated across four independen
 Done when: a full `pnpm test` under three concurrent lane sessions passes without file-level failures, ten runs in a row; and a suite that genuinely leaks a connection still fails loudly rather than being swallowed by whatever fixes the teardown.
 Note: this is the gate telling the truth badly rather than lying — no assertion has ever failed under it. But a gate that goes red for its own reasons trains people to re-run rather than read, and this project has already had one genuine regression hide underneath exactly that. **A lane found it that way once, which is why re-running is not the same as ignoring.**
 
+**R-REFUSAL — a refusal the merchant can read** · integrator (the contract) + Lane F (the words)
+Scope: the product refuses to improve a page when it cannot tell which search that page competes for, and today the button simply spins and comes back. Add one machine-readable refusal code to the frozen contract and one sentence to the copy catalogue; mark the suggestion on the Opportunities screen as needing Search Console connected rather than leaving it silently un-actionable. **The suggestion is still shortlisted** — the merchant keeps the signal that the page's Google listing text is missing or duplicated, which is true whether or not we know its search.
+Read first: `DECISIONS.md` 2026-09-07 "A suggestion that cannot name its search"; the `R-NOQUERY` section of `docs/overnight-state.md`; main §7.11, §10.1.
+Done when: a store with no Search Console connection sees why the button cannot act, in its own words rather than a generic error; the refusal still spends nothing and still writes no recommendation row, so no day's allowance is consumed; and the nearest existing code is **not** reused — it would say "already moved on — refreshed", which is untrue.
+Note: the contract is the integrator's by rule; the sentence is Lane F's. Sequence accordingly.
+
+**R-DISMISS-CALENDAR — saying "not interested" calls off the article too** · Lane C, with Lane D's calendar
+Scope: dismissing a suggestion cancels the calendar topic it produced, if one is booked or being written. Today the suggestion disappears and the article still appears, because the daily cycle works off the topic row and never looks at the suggestion's status.
+Read first: `DECISIONS.md` 2026-09-07 "Saying not interested also calls off an article"; main §7.9, §8.7; the `R-GRAPH-ENFORCE` section of `docs/overnight-state.md`, which found this and correctly stopped.
+Done when: dismissing a suggestion whose topic is `planned` removes that topic and leaves the day a gap rather than back-filling it; dismissing one whose article is mid-generation stops the run without leaving a half-written draft or a stranded state; and the guarded-update rules hold throughout, so a dismissal racing a publish loses cleanly rather than half-applying.
+Note: **this reaches into the calendar's state machine from the opportunities side.** Both lanes' territory — read the calendar's transitions before writing, and if the right shape is a call the calendar owns, say so rather than reaching in.
+
+**R-STOREFRONT — record the address shoppers actually land on** · Lane D
+Scope: a store's claimed domain is stored bare (`acme.com`) but its storefront may be `www.acme.com` or `shop.acme.com`. Read the shop's primary domain from Shopify — the scope is already held — and record published articles under it.
+Read first: `DECISIONS.md` 2026-09-07 "The published address should use the shop's primary storefront domain" and 2026-09-04 "A store's own claimed domain is the address we record"; main §12.2.
+Done when: an article published by a store whose storefront is `www.` is recorded at the `www.` address; a store whose storefront is the bare domain is unaffected; a store we cannot ask falls back to the claimed domain rather than failing to publish; and articles published before this keep their address, as `R-PUBLISH-2` established.
+
 **R-CONTRACT — the frozen contract describes the endpoints that exist** · integrator
 Scope: ten endpoints were built at addresses the frozen route table does not declare, while the table declares several with no implementation, and `contracts:check` passes throughout because it compares the table to a generated document and **never to the routes on disk**. The founder delegated the call: amend the contract to the built addresses rather than move ten endpoints; assign `apps/web/app/api/settings` to Lane F for anything genuinely settings-shaped; the missing routes-on-disk check lands with `T10.2`.
 Read first: `DECISIONS.md` 2026-09-04 "The frozen contract moves to the addresses that were built".
