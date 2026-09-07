@@ -2,20 +2,20 @@
 
 import {
   ArticlesScreen,
-  articleFiles,
-  type ArticleDetailResponse,
+  fetchArticleExport,
+  type ArticleExport,
   type ArticlesResponse,
   type ArticleSummary,
-  type DownloadFile,
 } from '@sortiva/ui'
 
 /**
  * The library's two browser-side jobs, kept out of the server component that
  * draws it.
  *
- * The download buttons need the article itself — the body, the metadata block —
- * which the list response does not carry, so the file is built after a read of
- * that one article rather than by fetching every article's body to draw a table.
+ * The download buttons ask the export route for the files rather than building
+ * them here out of the article-detail response. That response answers with an
+ * empty body when the article cannot be rendered, so building from it handed a
+ * merchant a title and nothing else in the one case they needed telling about.
  * Confirming a published address is a write, so it happens here too.
  */
 
@@ -28,16 +28,8 @@ export function ArticlesClient({
   claimedDomain: string
   firstArticleDate: string | null
 }) {
-  async function download(article: ArticleSummary): Promise<readonly DownloadFile[]> {
-    try {
-      const response = await fetch(`/api/articles/${article.id}`, {
-        headers: { accept: 'application/json' },
-      })
-      if (!response.ok) return []
-      return articleFiles((await response.json()) as ArticleDetailResponse)
-    } catch {
-      return []
-    }
+  async function download(article: ArticleSummary): Promise<ArticleExport> {
+    return fetchArticleExport(article.id)
   }
 
   async function confirmUrl(article: ArticleSummary, url: string): Promise<boolean> {

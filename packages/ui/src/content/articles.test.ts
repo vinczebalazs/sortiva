@@ -7,10 +7,6 @@ import {
   articleActions,
   articleCounts,
   articleEventLabel,
-  articleFilename,
-  articleFiles,
-  articleMarkdown,
-  articleMetadataBlock,
   checkPublishedUrl,
   criterionLabel,
   failingCriteria,
@@ -188,41 +184,6 @@ describe('the criteria an override has to restate', () => {
   })
 })
 
-describe('what leaves the screen as a file', () => {
-  it('produces Markdown, HTML and the metadata block', () => {
-    const files = articleFiles(detail())
-    expect(files.map((file) => file.mimeType)).toEqual([
-      'text/markdown',
-      'text/html',
-      'application/json',
-    ])
-  })
-
-  it('keeps the article’s structure in the Markdown rather than flattening it', () => {
-    const markdown = articleMarkdown(detail())
-    expect(markdown).toContain('# Wide-fit trail shoes')
-    expect(markdown).toContain('- Lug depth')
-    expect(markdown).not.toContain('<p>')
-  })
-
-  it('carries every field an export merchant has to set by hand', () => {
-    const block = JSON.parse(articleMetadataBlock(detail())) as Record<string, unknown>
-    expect(Object.keys(block).sort()).toEqual([
-      'families',
-      'metaDescription',
-      'products',
-      'slug',
-      'targetKeyword',
-      'title',
-    ])
-  })
-
-  it('makes a filename that survives every operating system', () => {
-    expect(articleFilename('Best shoes: under £80 / wide!', 'md')).toBe(
-      'sortiva-best-shoes-under-80-wide.md',
-    )
-  })
-})
 
 describe('the action bar a state earns', () => {
   it('offers one decision on a draft under review, and no third option', () => {
@@ -291,5 +252,36 @@ describe('there is no editor, and that is a decision rather than an omission', (
     for (const [name, source] of sources) {
       expect(source, name).not.toMatch(/\/(save|edit|update)-?(body|content|html)/i)
     }
+  })
+})
+
+describe('a download comes from the route that builds downloads', () => {
+  const screens = ['ArticleDetail.tsx', 'ArticlesScreen.tsx'].map(
+    (name) => [name, readFileSync(join(here, name), 'utf8')] as const,
+  )
+
+  it('found the screens it is about to make claims about', () => {
+    // The guard is worthless if the filenames drift and it silently checks
+    // nothing, which is how four other checks in this project came to pass over
+    // broken things.
+    expect(screens).toHaveLength(2)
+    for (const [name, source] of screens) expect(source.length, name).toBeGreaterThan(500)
+  })
+
+  it('builds no file out of the article-detail response', () => {
+    // That response answers 200 with an empty body when the article cannot be
+    // rendered — a product it names has left the store — because the same page
+    // has to keep carrying the quality report and the override. Building a
+    // download from it hands the merchant a title and nothing else, silently.
+    for (const [name, source] of screens) {
+      expect(source, name).not.toContain('articleFiles')
+      expect(source, name).not.toMatch(/articleMarkdown|articleMetadataBlock/)
+    }
+  })
+
+  it('leaves the quality report and the override on the page regardless', () => {
+    const detailSource = screens.find(([name]) => name === 'ArticleDetail.tsx')![1]
+    expect(detailSource).toContain('qualityReport')
+    expect(detailSource).toContain('publish_anyway')
   })
 })

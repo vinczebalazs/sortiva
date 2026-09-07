@@ -14,6 +14,7 @@ import {
   type ArticleFilter,
 } from './articles'
 import { PublishedUrlField } from './PublishedUrlField'
+import type { ArticleExport } from './export'
 import type { ArticlesResponse, ArticleState, ArticleSummary } from './types'
 
 /**
@@ -40,7 +41,13 @@ export interface ArticlesScreenProps {
   /** The day the first planned article is due, for the empty state. */
   readonly firstArticleDate?: string | null
   readonly articleHref?: (articleId: string) => string
-  readonly onDownload?: (article: ArticleSummary) => Promise<readonly DownloadFile[]> | readonly DownloadFile[]
+  /**
+   * Answers with the files or with the reason there are none. A refusal carries
+   * a sentence because the case that made this card exists — an article naming a
+   * product the store no longer sells — used to hand over an empty document
+   * without saying so.
+   */
+  readonly onDownload?: (article: ArticleSummary) => Promise<ArticleExport>
   readonly onConfirmUrl?: (article: ArticleSummary, url: string) => Promise<boolean>
 }
 
@@ -231,12 +238,24 @@ function ExportRow({
   onConfirmUrl?: ArticlesScreenProps['onConfirmUrl']
 }) {
   const [files, setFiles] = useState<readonly DownloadFile[] | null>(null)
+  const [refusal, setRefusal] = useState<string | null>(null)
 
-  async function load() {
+  /**
+   * Fetched once and kept: the route builds all three files from one reading of
+   * the store, so pressing Markdown and then HTML cannot return two versions
+   * that disagree about a price the merchant changed in between.
+   */
+  async function load(): Promise<readonly DownloadFile[] | null> {
     if (files) return files
-    const loaded = (await onDownload?.(article)) ?? []
-    setFiles(loaded)
-    return loaded
+    const result = await onDownload?.(article)
+    if (!result) return null
+    if (!result.ok) {
+      setRefusal(result.message)
+      return null
+    }
+    setRefusal(null)
+    setFiles(result.files)
+    return result.files
   }
 
   return (
@@ -249,7 +268,7 @@ function ExportRow({
             data-article-download={extension}
             onClick={() => {
               void load().then((loaded) => {
-                const file = loaded.find((entry) => entry.filename.endsWith(`.${extension}`))
+                const file = loaded?.find((entry) => entry.filename.endsWith(`.${extension}`))
                 if (file) saveFile(file)
               })
             }}
@@ -264,6 +283,11 @@ function ExportRow({
           </button>
         ))}
       </div>
+      {refusal ? (
+        <p role="status" className="sortiva-articles__note" data-article-download-refused>
+          {refusal}
+        </p>
+      ) : null}
       <PublishedUrlField
         article={article}
         claimedDomain={claimedDomain}
