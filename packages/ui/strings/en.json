@@ -955,6 +955,8 @@
   "template.striking_distance.page_one_intent_mismatch": "You already rank on page 1, but the page does not fully match what people searching this actually want.",
   "template.uncovered_commercial_query.no_suitable_url": "There is steady demand here — around {volume} searches a month — you sell for it, and nothing on your site answers the query.",
   "template.catalog_richness_gap.insufficient_substance": "The demand is real, but {products} products in your store do not yet say enough about themselves for us to write about them responsibly.",
+  "template.freshness_opportunity.requested": "You asked us to rewrite \"{article_title}\".",
+  "template.freshness_opportunity.our_own_article": "We published \"{article_title}\", so we rewrite it rather than hand you edits for it.",
   "template.precondition.missing_product_details": "add materials and dimensions for {products} products on the Products page",
   "template.replenishment.exploration": "Trying something new — nothing you have published yet tells us whether this works for your store.",
   "template.replenishment.matches_winning_pattern": "Similar to your best-performing articles, going by {dimension}.",
