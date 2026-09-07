@@ -22,11 +22,13 @@ import type { ArticleRow } from './articles'
 /**
  * The article goes out.
  *
- * Guarded to `draft`, which after `T4.5`'s landing rules is where every article
- * cleared for delivery sits — one that passed the quality bar, one the merchant
- * approved, one they published over a rejection. A zero-row result means
- * somebody else already delivered it, or it was discarded in between, and the
- * caller must stop rather than retry.
+ * Guarded to the two states an article cleared for delivery can be in: `draft`
+ * for one the quality bar passed or the merchant approved after review, and
+ * `cleared_to_deliver` for one they published over a rejection. Whether a given
+ * `draft` was ever actually graded is not this write's question —
+ * `articlesReadyForDelivery` is the read that settles that, and this is only
+ * the hand-over. A zero-row result means somebody else already delivered it, or
+ * it was discarded in between, and the caller must stop rather than retry.
  *
  * For an export account this is not a write to anybody's shop: it is the moment
  * the finished article becomes downloadable in the app. Nothing here touches
@@ -46,7 +48,7 @@ export async function markArticleDelivered(
       and(
         eq(articles.accountId, scope.accountId),
         eq(articles.id, articleId),
-        eq(articles.state, 'draft'),
+        inArray(articles.state, ['draft', 'cleared_to_deliver']),
       ),
     )
     .returning()

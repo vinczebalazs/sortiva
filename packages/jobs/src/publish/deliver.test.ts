@@ -58,7 +58,7 @@ describe.skipIf(!available)('handing over an article at the publish hour', () =>
   async function seedArticle(options: {
     readonly title: string
     readonly gateOutcome?: 'passed' | 'rejected'
-    readonly state?: 'draft' | 'in_review'
+    readonly state?: 'draft' | 'in_review' | 'cleared_to_deliver'
     readonly override?: boolean
     readonly createdAt?: Date
   }): Promise<string> {
@@ -205,10 +205,20 @@ describe.skipIf(!available)('handing over an article at the publish hour', () =>
     expect(states['Newer']!.state).toBe('draft')
   })
 
-  it('publishes an article the merchant overruled the gate on', async () => {
-    await seedArticle({ title: 'Overridden', gateOutcome: 'rejected', override: true })
+  /**
+   * The only decision recorded against this topic is the refusal, and it still
+   * goes out — because the article's own state says a person cleared it.
+   */
+  it('publishes an article the merchant overruled the gate on, with no passing decision anywhere', async () => {
+    await seedArticle({
+      title: 'Overridden',
+      gateOutcome: 'rejected',
+      state: 'cleared_to_deliver',
+      override: true,
+    })
     const result = await runExportDeliveryForAccount(deps(), { accountId, date: TODAY })
     expect(result.status).toBe('delivered')
+    expect((await articleStates())['Overridden']!.state).toBe('published')
   })
 
   it('never publishes a draft nothing has graded', async () => {
@@ -216,6 +226,30 @@ describe.skipIf(!available)('handing over an article at the publish hour', () =>
     const result = await runExportDeliveryForAccount(deps(), { accountId, date: TODAY })
     expect(result).toEqual({ status: 'skipped', reason: 'nothing_ready' })
     expect((await articleStates())['Ungraded']!.state).toBe('draft')
+  })
+
+  /**
+   * The reason the state exists, stated as the thing that must not happen: an
+   * un-graded draft sitting alongside an overruled article on the same store
+   * still goes nowhere, and the overruled one is what the day hands over.
+   */
+  it('hands over the overruled article and leaves the un-graded draft where it is', async () => {
+    await seedArticle({ title: 'Ungraded', createdAt: new Date('2026-09-01T00:00:00.000Z') })
+    await seedArticle({
+      title: 'Overridden',
+      gateOutcome: 'rejected',
+      state: 'cleared_to_deliver',
+      override: true,
+      createdAt: new Date('2026-09-02T00:00:00.000Z'),
+    })
+
+    const result = await runExportDeliveryForAccount(deps(), { accountId, date: TODAY })
+
+    expect(result.status).toBe('delivered')
+    const states = await articleStates()
+    expect(states['Overridden']!.state).toBe('published')
+    expect(states['Ungraded']!.state).toBe('draft')
+    expect(states['Ungraded']!.publishedAt).toBeNull()
   })
 
   it('leaves a draft that is still waiting for the merchant alone', async () => {

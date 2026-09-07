@@ -1,4 +1,4 @@
-import { and, asc, eq, like, lt, sql } from 'drizzle-orm'
+import { and, asc, eq, inArray, like, lt, sql } from 'drizzle-orm'
 import { publishMarker } from '@sortiva/core'
 import type { Db } from '../client'
 import { accountSettings, articles, publishIntents, shopifyConns } from '../schema'
@@ -386,9 +386,11 @@ export async function pendingPublishIntents(
 /**
  * The article goes live on the merchant's own shop.
  *
- * Guarded to `draft` for the same reason the export hand-over is: a zero-row
- * result means somebody else already published it or it was discarded, and the
- * caller must stop rather than try again.
+ * Guarded to the same two states the export hand-over is — `draft`, and
+ * `cleared_to_deliver` for an article the merchant published over a quality
+ * rejection — for the same reason: a zero-row result means somebody else
+ * already published it or it was discarded, and the caller must stop rather
+ * than try again.
  *
  * Called only *after* the remote post is confirmed. An article marked published
  * before the shop has it would tell the merchant something is on their site
@@ -413,7 +415,7 @@ export async function markArticleAutoPublished(
       and(
         eq(articles.accountId, scope.accountId),
         eq(articles.id, input.articleId),
-        eq(articles.state, 'draft'),
+        inArray(articles.state, ['draft', 'cleared_to_deliver']),
       ),
     )
     .returning()
