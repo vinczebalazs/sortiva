@@ -3,6 +3,7 @@ import NextAuth from 'next-auth'
 import type { AccountStore, EmailMessage, EmailProvider, EmailSendResult } from '@sortiva/core'
 import { buildAuthAdapter, type AuthUserStore, type VerificationTokenStore } from './adapter'
 import { buildAuthConfig } from './config'
+import { memorySessionStore } from './memorySessions'
 import { sendSignInLinkVia } from './signInEmail'
 
 /**
@@ -105,12 +106,18 @@ function harness() {
   const mailbox = memoryMailbox()
 
   const provisioning = { store: store.accounts }
+  const sessions = memorySessionStore(store.users)
   const config = buildAuthConfig({
-    provisioning,
-    email: {
-      adapter: buildAuthAdapter({ tokens: tokens.store, users: store.users, provisioning }),
-      sendLink: sendSignInLinkVia(() => mailbox.provider),
+    adapter: buildAuthAdapter({
+      tokens: tokens.store,
+      users: store.users,
+      sessions: sessions.store,
+      provisioning,
+    }),
+    revokeAllSessions: async (accountId) => {
+      await sessions.store.removeAllForAccount(accountId)
     },
+    email: { sendLink: sendSignInLinkVia(() => mailbox.provider) },
   })
 
   // Three of these cases exist to make the library refuse something, and it
@@ -128,7 +135,7 @@ function harness() {
     return new Request(path.startsWith('http') ? path : `${ORIGIN}${path}`, init) as never
   }
 
-  return { tokens, store, mailbox, handlers, request }
+  return { tokens, store, mailbox, sessions, handlers, request }
 }
 
 type Harness = ReturnType<typeof harness>

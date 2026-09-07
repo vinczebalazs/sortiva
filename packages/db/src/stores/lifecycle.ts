@@ -6,6 +6,7 @@ import {
   markAccountDeleted,
   purgePreviewCacheRow,
 } from '../repositories/lifecycle'
+import { deleteSessionsForAccount } from '../repositories/sessions'
 import { accountScope, systemScope } from '../scope'
 
 /**
@@ -72,6 +73,10 @@ export function makeAccountLifecycleStore(
         at: input.at,
         domainReleaseAt: input.domainReleaseAt,
       })
+    },
+
+    revokeSessions(accountId) {
+      return deleteSessionsForAccount(database(), accountScope(accountId))
     },
 
     async queueClosure(accountId) {

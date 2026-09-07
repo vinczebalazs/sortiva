@@ -8,9 +8,9 @@ import { domainReleaseAt } from './retention'
  *
  * **The half that runs while they are waiting** touches nothing outside our own
  * database: the deletion stamp, the domain's release deadline, both connections
- * marked dead, and the preview row dropped. It is one guarded transaction, so a
- * second click changes nothing and a crash half way leaves the account exactly
- * as it was.
+ * marked dead, every signed-in browser signed out, and the preview row dropped.
+ * It is one guarded transaction, so a second click changes nothing and a crash
+ * half way leaves the account exactly as it was.
  *
  * **The half that talks to vendors runs as a job**: cancel the subscription,
  * hand back the Shopify grant, hand back the Google grant, then delete the
@@ -62,6 +62,13 @@ export async function requestAccountDeletion(
     domainReleaseAt: releaseAt,
   })
   if (!written) return { kind: 'already_deleted' }
+
+  // First thing after the deletion is written down: the merchant is signed out
+  // of every browser, including the one they clicked in. The account row itself
+  // survives another week so nobody can re-claim the domain early — and without
+  // this, that week is a week in which a deleted account still has working
+  // sessions.
+  await deps.store.revokeSessions(input.accountId)
 
   if (record.domainNormalized) {
     await deps.store.purgePreviewCache(record.domainNormalized)
