@@ -262,7 +262,7 @@ describe.skipIf(!available)('the override path and the calibration exclusion', (
       await markArticleOverridden(db, scope, overridden.articleId)
 
       const delivered = await markArticleDelivered(db, scope, overridden.articleId, 'export')
-      expect(delivered?.state).toBe('published')
+      expect(delivered?.article.state).toBe('published')
     })
 
     /**
