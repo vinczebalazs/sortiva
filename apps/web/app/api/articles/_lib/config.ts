@@ -18,6 +18,7 @@ import { DbNotificationEmitter } from '@sortiva/jobs/notify/emitter'
 // Shopify write client and which token cipher exist in this process.
 import { publishProvider, publishTokenCipher } from '../../publish/_lib/config'
 import type { DeliveryDeps } from './delivery'
+import type { LibraryDeps } from './library'
 import type { RefreshRouteDeps } from './refresh'
 import type { ReviewDeps } from './review'
 
@@ -79,6 +80,11 @@ function generationSeoProvider(): SeoDataProvider {
 }
 
 export function reviewDeps(): ReviewDeps {
+  return { db: db() }
+}
+
+/** What the articles library and the article page are built from: the database, and nothing else — reading an article we already wrote spends on no vendor. */
+export function libraryDeps(): LibraryDeps {
   return { db: db() }
 }
 
