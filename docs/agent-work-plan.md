@@ -609,7 +609,7 @@ Read first: `DECISIONS.md` 2026-09-04 "The citation word lists go"; main §8.3, 
 Done when: an English draft and a Danish draft are held to the same bar; the shape-based checks still fail an uncited number in both; and nothing anywhere still branches on whether a lexicon exists for a language.
 Note: the founder was told the cost before choosing and accepted it — for these four claim kinds nothing deterministic stands behind the model any more. **Do not quietly reintroduce a list.**
 
-**R-HOLD — a deleted account's domain is released on the deadline, job or no job** · Lane G
+**R-HOLD — a deleted account's domain is released on the deadline, job or no job** · **Lane A** (integrator placed it in Lane G by mistake; the claim path is Lane A's and the card's own done-when names it) · **LANDED**
 Scope: the seven-day hold on a deleted account's domain is delivered by something that does not depend on a cleanup job having run. Today the hold is the job deleting the row, so if the job never runs the domain is blocked for ever.
 Read first: `DECISIONS.md` 2026-09-04 "The seven-day domain hold stays" and the original question in `docs/overnight-state.md`; main §2, §5, §14.6; invariant 1.
 Done when: a domain deleted eight days ago can be claimed even if the cleanup job has never run; one deleted six days ago cannot; and the claim path is still insert-with-conflict rather than check-then-insert.
