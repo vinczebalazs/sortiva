@@ -1,6 +1,6 @@
-import { eq, and, desc, gte, lte, ne, inArray } from 'drizzle-orm'
+import { eq, and, desc, gte, lt, lte, ne, inArray, notExists, sql } from 'drizzle-orm'
 import type { Db } from '../client'
-import { topics } from '../schema'
+import { gateDecisions, topics } from '../schema'
 import type { AccountScope } from '../scope'
 
 export type TopicRow = typeof topics.$inferSelect
@@ -371,4 +371,53 @@ export async function pinTopicGuarded(
     )
     .returning()
   return row
+}
+
+/**
+ * The calendar days whose writing started and never finished.
+ *
+ * A run that is killed is picked up again by the next pass on the same day. Once
+ * the store's own clock has turned over, nothing looks at it: the day's dequeue
+ * asks for `planned` topics on today's date, and this one is `generating` on
+ * yesterday's. This read is what finds them again.
+ *
+ * "Never finished" is the absence of a Gate 3 decision, not the topic's state.
+ * The state cannot answer it: a topic stays `generating` from the moment the
+ * writing starts until the article is published, so a healthy article waiting
+ * its turn to go out looks identical to an abandoned one. Reaching Gate 3 is the
+ * moment a day is decided — passed, held, or repaired and passed — and a run
+ * that reached it is either resolved already or resolved by a path that is not
+ * this one.
+ *
+ * Most recent day first, so a caller that only wants the freshest gets it
+ * without sorting.
+ */
+export async function strandedGeneratingTopicsBefore(
+  db: Db,
+  scope: AccountScope,
+  date: string,
+): Promise<TopicRow[]> {
+  return db
+    .select()
+    .from(topics)
+    .where(
+      and(
+        eq(topics.accountId, scope.accountId),
+        eq(topics.state, 'generating'),
+        lt(topics.scheduledDate, date),
+        notExists(
+          db
+            .select({ one: sql`1` })
+            .from(gateDecisions)
+            .where(
+              and(
+                eq(gateDecisions.accountId, scope.accountId),
+                eq(gateDecisions.topicId, topics.id),
+                eq(gateDecisions.gate, 3),
+              ),
+            ),
+        ),
+      ),
+    )
+    .orderBy(desc(topics.scheduledDate))
 }
