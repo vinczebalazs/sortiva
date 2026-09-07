@@ -339,4 +339,47 @@ describe.skipIf(!available)('replenishment against real data', () => {
     expect(titles).toContain('e-00')
     expect(titles).not.toContain(`e-${SLOTS - 1}`)
   })
+
+  it('never lets rewrites take more than their share of a batch, however many are eligible', async () => {
+    // Sixty eligible rewrites, every one of them outscoring every piece of new
+    // coverage. Without the cap they would take every day the calendar has and
+    // the store would spend three months revisiting old work.
+    const refreshes = await Promise.all(
+      Array.from({ length: 60 }, (_, i) =>
+        acceptedOpportunity({
+          entityRef: `r-${String(i).padStart(2, '0')}`,
+          signalType: 'freshness_opportunity',
+          action: 'refresh',
+          impactScore: 99 - i / 100,
+        }),
+      ),
+    )
+    const creates = await Promise.all(
+      Array.from({ length: 60 }, (_, i) =>
+        acceptedOpportunity({ entityRef: `c-${String(i).padStart(2, '0')}`, impactScore: 50 - i / 100 }),
+      ),
+    )
+
+    const outcome = await replenishCalendarForAccount(deps([...refreshes, ...creates]), accountId)
+    expect(outcome.status).toBe('filled')
+
+    const placed = await placedTopics()
+    expect(placed).toHaveLength(SLOTS)
+
+    const cap = Math.floor(SLOTS * rules().defaults.learning.refresh.batch_share_max)
+    const rewrites = placed.filter((t) => t.kind === 'refresh')
+    expect(rewrites.length).toBeLessThanOrEqual(cap)
+    // And the cap is what bound, not a shortage of candidates: sixty were
+    // waiting and every one outscored the new coverage that took the rest.
+    expect(rewrites).toHaveLength(cap)
+    expect(placed.filter((t) => t.kind === 'new')).toHaveLength(SLOTS - cap)
+
+    if (outcome.status !== 'filled') throw new Error('unreachable')
+    expect(outcome.refreshShare).toBeLessThanOrEqual(rules().defaults.learning.refresh.batch_share_max)
+
+    // The rewrites that got in are the best of them, not an arbitrary sixty.
+    const rewriteTitles = rewrites.map((t) => t.title).sort()
+    expect(rewriteTitles[0]).toBe('r-00')
+    expect(rewriteTitles).not.toContain('r-59')
+  })
 })
