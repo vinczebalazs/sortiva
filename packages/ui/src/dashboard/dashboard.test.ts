@@ -150,6 +150,35 @@ function render(over: Partial<Parameters<typeof DashboardScreen>[0]> = {}): stri
   )
 }
 
+/**
+ * The growth card with nothing worth acting on, which is the only place the
+ * dashboard says when we look again. `TODAY` is 14 Aug and the fixture's next
+ * scan is 17 Aug, so the interval is three days.
+ */
+describe('the dashboard with nothing to act on', () => {
+  const quiet = (over: Partial<OpportunityListResponse> = {}) =>
+    render({ opportunities: { ...OPPORTUNITIES, opportunities: [], ...over } })
+
+  it('says how many days until the next scan rather than naming a weekday', () => {
+    const html = quiet()
+    expect(html).toContain('data-dashboard-growth-empty')
+    expect(html).toContain('Nothing new to act on right now. The next scan runs in 3 days.')
+    expect(html).not.toMatch(/\b(Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day\b/)
+  })
+
+  it('says tomorrow rather than "in 1 days"', () => {
+    expect(quiet({ nextScanAt: '2026-08-15T04:10:00.000Z' })).toContain(
+      'Nothing new to act on right now. The next scan runs tomorrow.',
+    )
+  })
+
+  it('promises no timing when it has no next-scan date, which is what the API sends today', () => {
+    const html = quiet({ nextScanAt: null })
+    expect(html).toContain('Nothing new to act on right now.')
+    expect(html).not.toContain('The next scan runs')
+  })
+})
+
 describe('the order of the page is the argument it makes', () => {
   it('lists the six sections in the order the product decided', () => {
     const html = render()
