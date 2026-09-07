@@ -12,6 +12,7 @@ import {
 import type {
   FamilyLookup,
   InventoryCursor,
+  OurArticleLookup,
   StoreContentBatch,
   StoreContentRecord,
   StoreContentSource,
@@ -149,6 +150,8 @@ class RecordingWriter implements StorePageWriter {
   /** When each address was last seen — what the real table now records. */
   readonly seenAt = new Map<string, Date>()
   readonly gone = new Set<string>()
+  /** Addresses recognised as articles we published, and which article each came from. */
+  readonly ours = new Map<string, string>()
   /** Every sweep asked for, so a test can prove one never happened. */
   readonly sweeps: Date[] = []
 
@@ -173,10 +176,19 @@ class RecordingWriter implements StorePageWriter {
     }
   }
 
+  async markOurs(
+    _accountId: string,
+    pages: readonly { readonly url: string; readonly articleId: string }[],
+  ) {
+    for (const page of pages) this.ours.set(page.url, page.articleId)
+  }
+
   async markGoneNotSeenSince(_accountId: string, since: Date) {
     this.sweeps.push(since)
     let marked = 0
     for (const [url, at] of this.seenAt) {
+      // The table's own exclusion: an article of ours is never marked gone.
+      if (this.ours.has(url)) continue
       if (at.getTime() >= since.getTime() || this.gone.has(url)) continue
       this.gone.add(url)
       marked += 1
@@ -189,6 +201,22 @@ const noFamilies: FamilyLookup = {
   async familiesForProducts() {
     return new Map()
   },
+}
+
+/** A store we have published nothing to yet. */
+const nothingPublished: OurArticleLookup = {
+  async publishedArticles() {
+    return []
+  },
+}
+
+/** A store where these addresses hold articles we published. */
+function published(...pairs: readonly (readonly [string, string])[]): OurArticleLookup {
+  return {
+    async publishedArticles() {
+      return pairs.map(([url, articleId]) => ({ url, articleId }))
+    },
+  }
 }
 
 function sourceOf(batches: readonly StoreContentBatch[], byTarget: readonly StoreContentRecord[] = []) {
@@ -225,7 +253,7 @@ describe('walking a store into the inventory', () => {
       },
     ])
     const writer = new RecordingWriter()
-    const deps: InventorySyncDeps = { source, writer, families: noFamilies }
+    const deps: InventorySyncDeps = { source, writer, families: noFamilies, ourArticles: nothingPublished }
 
     const result = await syncInventoryBatch(deps, 'acc', undefined, 50)
 
@@ -244,7 +272,7 @@ describe('walking a store into the inventory', () => {
   it('writes nothing the second time round, and writes again once a body is edited', async () => {
     const writer = new RecordingWriter()
     const unchanged = sourceOf([{ records: [record()] }, { records: [record()] }])
-    const deps: InventorySyncDeps = { source: unchanged.source, writer, families: noFamilies }
+    const deps: InventorySyncDeps = { source: unchanged.source, writer, families: noFamilies, ourArticles: nothingPublished }
 
     await syncInventoryBatch(deps, 'acc', undefined, 50)
     const second = await syncInventoryBatch(deps, 'acc', undefined, 50)
@@ -252,7 +280,7 @@ describe('walking a store into the inventory', () => {
     expect(writer.writes).toHaveLength(1)
 
     const edited = await syncInventoryRecords(
-      { source: unchanged.source, writer, families: noFamilies },
+      { source: unchanged.source, writer, families: noFamilies, ourArticles: nothingPublished },
       'acc',
       [record({ bodyHtml: '<p>Rewritten.</p>' })],
     )
@@ -279,7 +307,7 @@ describe('walking a store into the inventory', () => {
     ])
     const writer = new RecordingWriter()
 
-    await syncInventoryBatch({ source, writer, families }, 'acc', undefined, 50)
+    await syncInventoryBatch({ source, writer, families, ourArticles: nothingPublished }, 'acc', undefined, 50)
 
     expect(writer.rows.get('https://shop.example/collections/boots')?.familyIds.slice().sort()).toEqual([
       'fam-hiking',
@@ -443,7 +471,7 @@ describe('noticing that a merchant deleted a page', () => {
     now: Date,
   ): Promise<InventorySyncResult> {
     const { source } = sourceOf([{ records }])
-    return syncInventoryBatch({ source, writer, families: noFamilies, now: () => now }, 'acc', undefined, 50)
+    return syncInventoryBatch({ source, writer, families: noFamilies, ourArticles: nothingPublished, now: () => now }, 'acc', undefined, 50)
   }
 
   it('marks a page the store has stopped serving, and leaves the rest alone', async () => {
@@ -470,7 +498,7 @@ describe('noticing that a merchant deleted a page', () => {
       { records: [record({ shopifyId: '2', handle: 'hats' })], next: { stage: 'page' } },
     ])
     const result = await syncInventoryBatch(
-      { source, writer, families: noFamilies, now: () => T1 },
+      { source, writer, families: noFamilies, ourArticles: nothingPublished, now: () => T1 },
       'acc',
       undefined,
       50,
@@ -498,7 +526,7 @@ describe('noticing that a merchant deleted a page', () => {
       { records: [record({ shopifyId: '1', handle: 'boots' })], next: { stage: 'page' } },
       { records: [record({ shopifyId: '2', handle: 'hats' })] },
     ])
-    const deps = { source, writer, families: noFamilies, now: () => clock.now }
+    const deps = { source, writer, families: noFamilies, ourArticles: nothingPublished, now: () => clock.now }
 
     const first = await syncInventoryBatch(deps, 'acc', undefined, 50)
     clock.now = on('2026-09-09T03:00:00Z')
@@ -546,7 +574,7 @@ describe('noticing that a merchant deleted a page', () => {
 
     const { source } = sourceOf([], [record({ shopifyId: '1', handle: 'boots' })])
     const result = await resyncInventoryTargets(
-      { source, writer, families: noFamilies, now: () => T1 },
+      { source, writer, families: noFamilies, ourArticles: nothingPublished, now: () => T1 },
       'acc',
       [{ kind: 'collection', shopifyId: '1' }],
     )

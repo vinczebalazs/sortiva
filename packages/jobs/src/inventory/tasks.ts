@@ -5,7 +5,9 @@ import {
   accountsWithLiveShopifyConnection,
   familyIdsByShopifyProductId,
   markStorePagesGoneNotSeenSince,
+  markStorePagesOurs,
   markStorePagesSeen,
+  publishedArticleAddresses,
   storePageChecksums,
   systemScope,
   upsertStorePages,
@@ -152,8 +154,9 @@ export async function sweepInventory(deps: InventoryTaskDeps): Promise<{ account
 }
 
 /**
- * Binds the inventory's three ports to this store: where its pages come from,
- * where its rows go, and which family each of its products is in.
+ * Binds the inventory's four ports to this store: where its pages come from,
+ * where its rows go, which of the store's addresses hold articles we published,
+ * and which family each of its products is in.
  */
 function inventoryDeps(
   deps: InventoryTaskDeps,
@@ -177,6 +180,12 @@ function inventoryDeps(
         markStorePagesSeen(db, accountScope(accountId), urls, at),
       markGoneNotSeenSince: (accountId, since) =>
         markStorePagesGoneNotSeenSince(db, accountScope(accountId), since),
+      markOurs: async (accountId, pages) => {
+        await markStorePagesOurs(db, accountScope(accountId), pages)
+      },
+    },
+    ourArticles: {
+      publishedArticles: (accountId) => publishedArticleAddresses(db, accountScope(accountId)),
     },
     families: {
       familiesForProducts: (accountId, ids) =>
@@ -202,6 +211,9 @@ function logResult(
     // number is the shape of a walk that went wrong rather than a merchant
     // clearing out their store.
     ...(result.markedGone === undefined ? {} : { marked_gone: result.markedGone }),
+    // Two finished behaviours are dormant while this stays at zero for a store
+    // we have published to, so it is worth being able to see from outside.
+    marked_ours: result.markedOurs,
   })
 }
 
