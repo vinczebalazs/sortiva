@@ -40,7 +40,7 @@ function topic(overrides: Partial<CalendarTopic> = {}): CalendarTopic {
     pinned: false,
     targetKeyword: 'trail shoes wide feet',
     monthlySearchVolume: 880,
-    why: { templateKey: 'uncovered_commercial_query.no_suitable_url', params: { volume: 880 } },
+    why: { templateKey: 'uncovered_commercial_query.create', params: { volume: 880 } },
     opportunityId: 'opp-1',
     signalType: 'uncovered_commercial_query',
     articleId: null,

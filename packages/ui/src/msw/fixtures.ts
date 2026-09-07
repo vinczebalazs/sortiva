@@ -62,7 +62,7 @@ const topicFixture = {
   targetKeyword: 'trail running shoes for wide feet',
   monthlySearchVolume: 880,
   why: {
-    templateKey: 'uncovered_commercial_query.no_suitable_url',
+    templateKey: 'uncovered_commercial_query.create',
     params: { volume: 880 },
   },
   opportunityId: fixtureScheduledTopic.opportunityId,

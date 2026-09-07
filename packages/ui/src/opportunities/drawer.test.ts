@@ -38,7 +38,7 @@ const row: OpportunityRow = {
     { key: 'impressions', value: 8400, source: 'gsc', window: '28d', fetchedAt: AT },
     { key: 'matching_products', value: 14, source: 'catalog', fetchedAt: AT },
   ],
-  why: { templateKey: 'striking_distance.page_one_intent_mismatch', params: {} },
+  why: { templateKey: 'striking_distance.optimize', params: { position: 12.4, impressions: 320 } },
   preconditions: [],
   rulesVersion: 'a'.repeat(64),
   limitedIntelligence: false,
