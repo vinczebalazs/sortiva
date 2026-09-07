@@ -210,12 +210,14 @@ describe('the topic admission reasons', () => {
     }
   })
 
-  it('survive the empty bag of values every calendar chip sends', () => {
-    // Not a stylistic rule. The calendar hands the renderer `params: {}` for
-    // every chip's why-line, Gate 1 stores its measurements under a shape the
+  it('survive a held day, whose second sentence still gets no values', () => {
+    // Not a stylistic rule. Gate 1 stores its measurements under a shape the
     // read-back does not look at, and Gate 2 stores none — so a blank in one of
-    // these sentences reaches a merchant as the literal text `{keyword}`. This
-    // is what stops a well-meant edit adding one before the values arrive.
+    // these sentences reaches a merchant as the literal text `{keyword}`. The
+    // calendar's routes now do send their values, but a held day renders two
+    // sentences — why the day was planned, and why it was stopped — and only
+    // the first comes from the calendar. This is what stops a well-meant edit
+    // adding a blank to the second before the values arrive.
     const leaking: string[] = []
     for (const key of Object.keys(ADMISSION_REASON_PARAMS)) {
       const placeholders = placeholdersIn(key)
