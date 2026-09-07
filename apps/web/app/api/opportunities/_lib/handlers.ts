@@ -1,21 +1,35 @@
 import {
+  GENERATING,
+  NO_RECOMMENDATION,
   OPPORTUNITY_ACTIONS,
   listOpportunitiesQuerySchema,
   listOpportunitiesResponseSchema,
+  opportunityDetailResponseSchema,
   opportunitySchema,
   scheduleOpportunityRequestSchema,
   scheduleOpportunityResponseSchema,
+  serpSnapshotKey,
   toContractOpportunity,
+  toDrawerRecommendation,
   type ConflictCode,
+  type DrawerRecommendation,
   type Opportunity,
 } from '@sortiva/core'
 import {
+  findFreshSerpSnapshot,
   findOpportunityById,
+  latestOptimizeRecommendation,
   listOpenOpportunities,
+  listOptimizeTasks,
   listSignalRuns,
+  readPersona,
+  resultsOf,
+  systemScope,
   undismissOpportunity,
+  type AccountScope,
   type Db,
   type OpportunityRow,
+  type OptimizeRecommendationRow,
 } from '@sortiva/db'
 // Deep import, not the `@sortiva/jobs` barrel — the same build-time
 // `DATABASE_URL is not set` failure `apps/web/app/api/calendar/_lib/handlers.ts`
@@ -37,6 +51,8 @@ import type { AccountHandler } from '../../auth/_lib/session'
 
 export interface OpportunitiesDeps {
   readonly db: Db
+  /** Overridden by tests so a snapshot's freshness is judged against a fixed instant. */
+  readonly now?: () => Date
 }
 
 export type OpportunityRouteCtx = { readonly params: Promise<{ id: string }> }
@@ -291,5 +307,157 @@ export function makeScheduleOpportunityHandler(deps: OpportunitiesDeps): Account
       }
       throw error
     }
+  }
+}
+
+// ── The detail drawer ───────────────────────────────────────────────────────
+
+/**
+ * Which entries of the drawer's history we can actually stand behind.
+ *
+ * There is no audit log: no table records a status change, so a full history is
+ * not something this endpoint could tell the truth about. What the opportunity
+ * row itself carries is three stamped moments — when the scan found it, when
+ * the merchant said they had carried it out, and when a later scan found the
+ * evidence no longer held. Each of those is a fact with a date behind it, so
+ * each becomes an entry; every other transition is silent because nothing
+ * anywhere wrote it down.
+ *
+ * `from` is null throughout for the same reason: the status a row moved *out
+ * of* was never recorded, and inventing one would put words in the product's
+ * mouth about its own past.
+ */
+function historyOf(row: OpportunityRow): {
+  at: string
+  from: null
+  to: Opportunity['status']
+  actor: 'user' | 'autopilot' | 'expiry'
+  reason: null
+}[] {
+  const entries: {
+    at: string
+    from: null
+    to: Opportunity['status']
+    actor: 'user' | 'autopilot' | 'expiry'
+    reason: null
+  }[] = [{ at: row.detectedAt.toISOString(), from: null, to: 'new', actor: 'autopilot', reason: null }]
+
+  if (row.appliedAt) {
+    entries.push({ at: row.appliedAt.toISOString(), from: null, to: 'completed', actor: 'user', reason: null })
+  }
+  if (row.status === 'expired') {
+    // The row records why it expired but there is no approved sentence for any
+    // of the reasons, and a made-up template key renders as a blank line.
+    entries.push({ at: row.updatedAt.toISOString(), from: null, to: 'expired', actor: 'expiry', reason: null })
+  }
+  return entries
+}
+
+/** What the 28-day measurement recorded, or null while there is nothing honest to say. */
+function outcomeOf(row: OpportunityRow): {
+  label: string
+  measuredAt: string
+  before: number
+  after: number
+} | null {
+  const stored = row.outcomeJson as { label?: unknown; before?: unknown; after?: unknown } | null
+  if (!stored || !row.outcomeMeasuredAt) return null
+  if (typeof stored.label !== 'string') return null
+  if (typeof stored.before !== 'number' || typeof stored.after !== 'number') return null
+  return {
+    label: stored.label,
+    measuredAt: row.outcomeMeasuredAt.toISOString(),
+    before: stored.before,
+    after: stored.after,
+  }
+}
+
+/** Only the two actions that have a recommendation view get one; the rest get null. */
+const HAS_RECOMMENDATION_VIEW: ReadonlySet<OpportunityRow['recommendedAction']> = new Set([
+  'optimize',
+  'fix',
+])
+
+function recommendationOf(
+  row: OpportunityRow,
+  stored: OptimizeRecommendationRow | undefined,
+): DrawerRecommendation | null {
+  if (!HAS_RECOMMENDATION_VIEW.has(row.recommendedAction)) return null
+  if (stored) return toDrawerRecommendation(stored)
+  // `executing` on an OPTIMIZE is the generation job running: the row does not
+  // exist yet, so "generating" is a fact about the opportunity rather than
+  // about a recommendation. The drawer polls and re-reads.
+  return row.status === 'executing' ? GENERATING : NO_RECOMMENDATION
+}
+
+/**
+ * Who else Google is showing for this search, from the results page we already
+ * bought and stored.
+ *
+ * Only for a search-shaped opportunity, and only from an unexpired snapshot —
+ * a stale results page is the one degradation the product refuses outright, so
+ * an expired one is shown as no snapshot rather than as an old one. Nothing
+ * here calls a vendor: a drawer opening must never cost money.
+ */
+async function serpSnapshotFor(
+  deps: OpportunitiesDeps,
+  scope: AccountScope,
+  row: OpportunityRow,
+  now: Date,
+): Promise<{ position: number; domain: string; url: string }[] | null> {
+  if (row.entityType !== 'query_cluster') return null
+
+  const persona = await readPersona(deps.db, scope)
+  if (!persona) return null
+
+  const key = serpSnapshotKey({
+    query: row.entityRef,
+    locale: { language: persona.language, country: persona.country },
+    depth: rules().defaults.discovery.competitors.serp_position_max,
+  })
+  const snapshot = await findFreshSerpSnapshot(deps.db, systemScope('serp snapshots are keyed by search and locale, not by account'), key, now)
+  if (!snapshot) return null
+
+  return resultsOf(snapshot).map((result) => ({
+    position: result.position,
+    domain: result.domain,
+    url: result.url,
+  }))
+}
+
+/**
+ * `GET /api/opportunities/{id}` — everything behind one card: the evidence it
+ * was scored on, the work it decomposes into, the advice generated for it, what
+ * has happened to it, and what came of it.
+ *
+ * Every sentence goes out as a key and its parameters rather than as finished
+ * prose, here as everywhere else, so the words a merchant reads are ours and a
+ * model never writes one of them.
+ */
+export function makeOpportunityDetailHandler(deps: OpportunitiesDeps): AccountHandler<OpportunityRouteCtx> {
+  return async (_request, { scope, route }) => {
+    const { id } = await route.params
+    const row = await findOpportunityById(deps.db, scope, id)
+    if (!row) return notFound()
+
+    const opportunity = toContractOpportunity(row, rules().defaults.scoring.confidence)
+    const now = (deps.now ?? (() => new Date()))()
+
+    const [tasks, recommendation, serpSnapshot] = await Promise.all([
+      listOptimizeTasks(deps.db, scope, id),
+      latestOptimizeRecommendation(deps.db, scope, id),
+      serpSnapshotFor(deps, scope, row, now),
+    ])
+
+    const body = {
+      opportunity: serialise(row, opportunity),
+      tasks: tasks.map((task) => ({ id: task.id, label: task.description, state: task.state })),
+      serpSnapshot,
+      recommendation: recommendationOf(row, recommendation),
+      history: historyOf(row),
+      outcome: outcomeOf(row),
+    }
+
+    return Response.json(opportunityDetailResponseSchema.parse(body))
   }
 }

@@ -586,7 +586,9 @@ export async function gscPageTotals(
       ),
     )
     .groupBy(gscDaily.page)
-    .orderBy(sql`sum(${gscDaily.impressions}) desc`)
+    // The address breaks ties so the order is total, which is what lets a
+    // caller page through the result without a row appearing twice or not at all.
+    .orderBy(sql`sum(${gscDaily.impressions}) desc, ${gscDaily.page} asc`)
 
   return rows.map(toKeyTotal)
 }
@@ -615,7 +617,7 @@ export async function gscQueryTotals(
       ),
     )
     .groupBy(gscQueryDaily.query)
-    .orderBy(sql`sum(${gscQueryDaily.impressions}) desc`)
+    .orderBy(sql`sum(${gscQueryDaily.impressions}) desc, ${gscQueryDaily.query} asc`)
 
   return rows.map(toKeyTotal)
 }
