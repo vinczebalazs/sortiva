@@ -132,6 +132,18 @@ const CATALOG_SIGNAL_TYPES: readonly SignalType[] = [
   'catalog_richness_gap',
   'missing_or_weak_metadata',
 ]
+/**
+ * The statuses this pass may retire a row out of — named once, used both to
+ * choose the rows and to guard the write that retires one.
+ *
+ * Deliberately short of the full open set. A `scheduled` or `executing` row has
+ * been taken over by the calendar or by a recommendation being generated, and
+ * expiring it from under that work would strand it. Both states come back to
+ * one of these three when the work finishes or refuses, and a later scan
+ * retires them then.
+ */
+const EXPIRABLE_STATUSES: readonly OpportunityRow['status'][] = ['new', 'accepted', 'blocked']
+
 const GSC_SIGNAL_TYPES: readonly SignalType[] = [
   'striking_distance',
   'low_ctr_at_strong_rank',
@@ -371,11 +383,11 @@ async function runSignalScanLocked(
   }
 
   // Expiry: an open row of a signal type this pass evaluated, whose entity
-  // this pass did not re-detect at all, no longer holds. Restricted to
-  // `new`/`accepted`/`blocked` — the same lane boundary
-  // `reconcileStatusWithPreconditions` draws (see DECISIONS 2026-09-03 T3.7):
-  // once a row is `scheduled`/`executing` it has a `topics` row and belongs
-  // to Lane D's calendar state machine, not a signal-detection pass.
+  // this pass did not re-detect at all, no longer holds. `EXPIRABLE_STATUSES`
+  // is the same lane boundary `reconcileStatusWithPreconditions` draws (see
+  // DECISIONS 2026-09-03 T3.7): once a row is `scheduled`/`executing` it has a
+  // `topics` row and belongs to Lane D's calendar state machine, not a
+  // signal-detection pass.
   for (const row of openBeforeThisPass) {
     if (!evaluatedTypes.includes(row.signalType as SignalType)) continue
     // The one signal this scan does not measure for itself. Not finding a
@@ -384,10 +396,21 @@ async function runSignalScanLocked(
     // and none of those is evidence that the gap closed. Only a page we
     // actually read a comparison for can lose its opportunity here.
     if (row.signalType === 'existing_page_intent_gap' && !intentGapReEvaluated.has(row.entityRef)) continue
-    if (row.status !== 'new' && row.status !== 'accepted' && row.status !== 'blocked') continue
+    if (!EXPIRABLE_STATUSES.includes(row.status)) continue
     const stillDetected = detectedEntityRefsByType.get(row.signalType)?.has(row.entityRef)
     if (stillDetected) continue
-    const result = await expireOpportunity(deps.db, scope, row.id, 'evidence_no_longer_holds', startedAt)
+    const result = await expireOpportunity(
+      deps.db,
+      scope,
+      row.id,
+      'evidence_no_longer_holds',
+      startedAt,
+      EXPIRABLE_STATUSES,
+    )
+    // Somebody moved the row between the read at the top of this pass and this
+    // write — into the calendar, most likely. Whatever they did with it is more
+    // recent than this pass's picture of it, so this leaves it alone rather
+    // than retiring work that has already started.
     if (result) {
       expired += 1
       deps.capture.capture(opportunityStatusChanged(attribution, { from: row.status, to: 'expired', actor: 'expiry' }))
