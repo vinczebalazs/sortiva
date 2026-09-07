@@ -718,7 +718,9 @@ describe.skipIf(!available)('/api/recommendations', () => {
 
       const body = (await response.json()) as { error: { code: string } }
       expect(body.error.code).toBe('optimize_page_gone')
-      expect(response.status).toBe(422)
+      // 409, like every other refusal on this route, since the integrator
+      // promoted the code into the contract's own conflict vocabulary.
+      expect(response.status).toBe(409)
     })
 
     it('enqueues nothing and leaves the suggestion where it was', async () => {
