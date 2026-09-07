@@ -459,6 +459,155 @@ describe('reacting to what the store says changed', () => {
   })
 })
 
+describe('recognising an article we published', () => {
+  const ARTICLE = 'e0a2f1c4-0000-4000-8000-000000000001'
+  const OTHER_ARTICLE = 'e0a2f1c4-0000-4000-8000-000000000002'
+  const OURS = 'https://shop.example/blogs/news/best-trail-shoes'
+
+  function article(over: Partial<StoreContentRecord> = {}): StoreContentRecord {
+    return record({
+      kind: 'blog_article',
+      shopifyId: '61',
+      handle: 'best-trail-shoes',
+      blogHandle: 'news',
+      title: 'Best trail shoes',
+      ...over,
+    })
+  }
+
+  /** One walk of `records` against a store we published `pairs` to. */
+  async function walk(
+    writer: RecordingWriter,
+    records: readonly StoreContentRecord[],
+    ourArticles: OurArticleLookup,
+  ): Promise<InventorySyncResult> {
+    const { source } = sourceOf([{ records }])
+    return syncInventoryBatch({ source, writer, families: noFamilies, ourArticles }, 'acc', undefined, 50)
+  }
+
+  it('marks the post the store hands back as ours, and names the article it came from', async () => {
+    const writer = new RecordingWriter()
+
+    const result = await walk(writer, [article()], published([OURS, ARTICLE]))
+
+    expect(result.markedOurs).toBe(1)
+    expect(writer.ours.get(OURS)).toBe(ARTICLE)
+  })
+
+  it("never marks a post the merchant wrote themselves", async () => {
+    const writer = new RecordingWriter()
+
+    const result = await walk(
+      writer,
+      [article({ shopifyId: '62', handle: 'our-shop-turns-ten', title: 'Our shop turns ten' })],
+      published([OURS, ARTICLE]),
+    )
+
+    expect(result.markedOurs).toBe(0)
+    expect([...writer.ours.keys()]).toEqual([])
+  })
+
+  it('marks nothing at all for a store we have published nothing to', async () => {
+    const writer = new RecordingWriter()
+
+    const result = await walk(writer, [article()], nothingPublished)
+
+    expect(result.markedOurs).toBe(0)
+  })
+
+  it('recognises the same post again on a night when nothing about it changed', async () => {
+    const writer = new RecordingWriter()
+    const ours = published([OURS, ARTICLE])
+
+    const first = await walk(writer, [article()], ours)
+    const second = await walk(writer, [article()], ours)
+
+    // The second walk writes no content — the post is untouched — and still
+    // recognises it. If recognition rode on the content write it would happen
+    // once and then silently stop.
+    expect(first.changed).toBe(1)
+    expect(second.changed).toBe(0)
+    expect(second.markedOurs).toBe(1)
+    expect(writer.ours.get(OURS)).toBe(ARTICLE)
+  })
+
+  it('recognises a post it has already walked, once the merchant tells us where they published it', async () => {
+    const writer = new RecordingWriter()
+
+    // Export delivery: the merchant downloads the article, publishes it on
+    // their own blog, and only tells us the address afterwards. By then the
+    // walk has long since filed the post as one of theirs.
+    await walk(writer, [article()], nothingPublished)
+    expect(writer.ours.size).toBe(0)
+
+    const later = await walk(writer, [article()], published([OURS, ARTICLE]))
+
+    expect(later.changed).toBe(0)
+    expect(later.markedOurs).toBe(1)
+    expect(writer.ours.get(OURS)).toBe(ARTICLE)
+  })
+
+  it('reads through a trailing slash and a tracking parameter on an address a merchant typed', async () => {
+    const writer = new RecordingWriter()
+
+    const result = await walk(
+      writer,
+      [article()],
+      published([`${OURS}/?utm_source=newsletter`, ARTICLE]),
+    )
+
+    expect(result.markedOurs).toBe(1)
+    expect(writer.ours.get(OURS)).toBe(ARTICLE)
+  })
+
+  it('leaves an article published somewhere the walk cannot see unrecognised, and marks nothing else instead', async () => {
+    const writer = new RecordingWriter()
+
+    // An export-delivery store that publishes on a site we have no connection
+    // to. Nothing on this shop is that article, and guessing at the nearest
+    // post would put a rewrite request against a page the merchant wrote.
+    const result = await walk(
+      writer,
+      [article()],
+      published(['https://journal.elsewhere.example/best-trail-shoes', ARTICLE]),
+    )
+
+    expect(result.markedOurs).toBe(0)
+    expect([...writer.ours.keys()]).toEqual([])
+  })
+
+  it('settles on the same article every night when two claim one address', async () => {
+    const writer = new RecordingWriter()
+    // The lookup hands them over oldest first, and the walk keeps the first.
+    const ours = published([OURS, ARTICLE], [OURS, OTHER_ARTICLE])
+
+    await walk(writer, [article()], ours)
+    const again = await walk(writer, [article()], ours)
+
+    expect(again.markedOurs).toBe(1)
+    expect(writer.ours.get(OURS)).toBe(ARTICLE)
+  })
+
+  it('recognises a post the store told us it had just changed, without waiting for the nightly walk', async () => {
+    const writer = new RecordingWriter()
+    const { source } = sourceOf([], [article()])
+
+    const result = await resyncInventoryTargets(
+      {
+        source,
+        writer,
+        families: noFamilies,
+        ourArticles: published([OURS, ARTICLE]),
+      },
+      'acc',
+      [{ kind: 'blog_article', shopifyId: '61' }],
+    )
+
+    expect(result.markedOurs).toBe(1)
+    expect(writer.ours.get(OURS)).toBe(ARTICLE)
+  })
+})
+
 describe('noticing that a merchant deleted a page', () => {
   const on = (iso: string) => new Date(iso)
   const T0 = on('2026-09-07T03:00:00Z')
