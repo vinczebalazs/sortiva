@@ -39,6 +39,8 @@ export interface OpportunitiesScreenProps {
   readonly api?: OpportunitiesApi
   readonly productsHref?: string
   readonly toastMs?: number
+  /** `YYYY-MM-DD`, from the server, so the empty state's countdown does not depend on the browser's clock. */
+  readonly today?: string
 }
 
 export function OpportunitiesScreen({
@@ -47,6 +49,7 @@ export function OpportunitiesScreen({
   api,
   productsHref = '/products',
   toastMs = UNDO_MS,
+  today,
 }: OpportunitiesScreenProps) {
   const analytics = useUiAnalytics()
   const [data, setData] = useState(initialData)
@@ -141,6 +144,7 @@ export function OpportunitiesScreen({
       <OpportunityList
         data={visible}
         t={t}
+        today={today}
         busyIds={busy}
         context={{ productsHref }}
         onDetails={(row) => void openDetail(row)}

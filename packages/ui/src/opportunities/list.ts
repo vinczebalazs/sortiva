@@ -266,8 +266,7 @@ export function recommendationFieldLabel(field: string, t: Translate = defaultTr
  *
  * The next date comes from the response rather than the word "Monday", which
  * is what the spec and the design both write: a store whose scan day is not
- * Monday would otherwise be told something untrue every week. The empty state
- * keeps the sentence as written, because that one is quoted.
+ * Monday would otherwise be told something untrue every week.
  */
 export function scanLine(
   lastScanAt: string | null,
@@ -280,6 +279,55 @@ export function scanLine(
   if (nextScanAt) return t('opportunities.scanLineFirst', { next: formatDate(nextScanAt) })
   if (lastScanAt) return t('opportunities.scanLineLastOnly', { date: formatDate(lastScanAt) })
   return null
+}
+
+/**
+ * Whole days from the day being drawn to the day of the next scan.
+ *
+ * Both ends are read as UTC dates, which is the same clock `formatDate` prints
+ * in, so the interval counts to exactly the date the header names beside it.
+ *
+ * Null means there is no interval worth stating: either no next scan is known,
+ * or the one we hold has already gone by. A scan that was due yesterday cannot
+ * honestly be described as being any number of days away, and guessing the next
+ * one from a cadence would put us back to promising a day we do not control.
+ */
+export function daysUntilScan(nextScanAt: string | null, today: string): number | null {
+  if (!nextScanAt) return null
+  const scan = Date.parse(nextScanAt.length === 10 ? `${nextScanAt}T00:00:00.000Z` : nextScanAt)
+  const from = Date.parse(`${today}T00:00:00.000Z`)
+  if (Number.isNaN(scan) || Number.isNaN(from)) return null
+  const days = Math.floor((scan - from) / 86_400_000)
+  return days < 0 ? null : days
+}
+
+/** The two empty states that tell a merchant when we will look again. */
+export type ScanPromptSurface = 'opportunities.empty' | 'dashboard.growth.empty'
+
+/**
+ * "There is nothing open, and here is when we look again" — said as an interval
+ * rather than a weekday.
+ *
+ * A weekday is a promise the product cannot keep. A store is scanned on its own
+ * local Monday, and a re-queued or paused account moves that; meanwhile the same
+ * screen's header prints the real next-scan date, so a hardcoded weekday
+ * underneath could plainly contradict the line above it. An interval is true
+ * whichever day the scan lands on, and when there is no date to count to the
+ * sentence stops after "nothing open" rather than inventing a timing. The note
+ * rendered under it still says the calendar is running, so a merchant is never
+ * left reading this as "nothing to do".
+ */
+export function nextScanPrompt(
+  surface: ScanPromptSurface,
+  nextScanAt: string | null,
+  today: string,
+  t: Translate = defaultTranslate,
+): string {
+  const days = daysUntilScan(nextScanAt, today)
+  if (days === null) return t(`${surface}.unscheduled` as StringKey)
+  if (days === 0) return t(`${surface}.today` as StringKey)
+  if (days === 1) return t(`${surface}.tomorrow` as StringKey)
+  return t(surface as StringKey, { days })
 }
 
 /** `28d` is the window every Search Console signal uses; anything else is passed through as written. */
