@@ -1,7 +1,8 @@
 import { and, count, desc, eq, gte, inArray, isNotNull, isNull, lt, notInArray, or } from 'drizzle-orm'
 import type { Db } from '../client'
-import { articles, gateDecisions, topics } from '../schema'
+import { articles, gateDecisions, opportunities, refreshLog, topics } from '../schema'
 import type { AccountScope, SystemScope } from '../scope'
+import { REPAIR_SIGNAL_TYPES } from './repair'
 
 export type ArticleRow = typeof articles.$inferSelect
 
@@ -533,4 +534,69 @@ export async function publishedArticleCountInMonth(
       ),
     )
   return row?.n ?? 0
+}
+
+/**
+ * One row of the articles library, with the two facts the table shows that do
+ * not live on the article itself: how many times it has been rewritten, and
+ * whether anything has ever been repaired on it.
+ */
+export interface ArticleLibraryRow {
+  readonly article: ArticleRow
+  readonly refreshCount: number
+  readonly repaired: boolean
+}
+
+/**
+ * Every article this store has had written, newest first.
+ *
+ * Three reads rather than one query with correlated sub-selects: the set is a
+ * store's whole back catalogue at roughly one article a day, so the two
+ * follow-ups are small indexed lookups over ids we already hold, and each of
+ * them is legible on its own. Nothing is paged — the screen filters the rows it
+ * was given in the browser, so a cap here would silently hide the very rows a
+ * filter exists to find.
+ *
+ * "Repaired" means a repair that actually changed something: the same test
+ * `repairHistory` uses, so the badge and the history behind it cannot disagree.
+ */
+export async function articleLibraryRows(
+  db: Db,
+  scope: AccountScope,
+): Promise<readonly ArticleLibraryRow[]> {
+  const rows = await db
+    .select()
+    .from(articles)
+    .where(eq(articles.accountId, scope.accountId))
+    .orderBy(desc(articles.createdAt))
+  if (rows.length === 0) return []
+
+  const ids = rows.map((row) => row.id)
+
+  const refreshes = await db
+    .select({ articleId: refreshLog.articleId, n: count() })
+    .from(refreshLog)
+    .where(inArray(refreshLog.articleId, ids))
+    .groupBy(refreshLog.articleId)
+  const refreshCounts = new Map(refreshes.map((row) => [row.articleId, row.n]))
+
+  const repairs = await db
+    .select({ entityRef: opportunities.entityRef })
+    .from(opportunities)
+    .where(
+      and(
+        eq(opportunities.accountId, scope.accountId),
+        eq(opportunities.entityType, 'article'),
+        inArray(opportunities.entityRef, ids),
+        inArray(opportunities.signalType, [...REPAIR_SIGNAL_TYPES]),
+        isNotNull(opportunities.outcomeJson),
+      ),
+    )
+  const repaired = new Set(repairs.map((row) => row.entityRef))
+
+  return rows.map((article) => ({
+    article,
+    refreshCount: refreshCounts.get(article.id) ?? 0,
+    repaired: repaired.has(article.id),
+  }))
 }

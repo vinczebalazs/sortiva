@@ -77,11 +77,45 @@ function currentPrice(row: LiveProductRow): { price: number | null; compareAtPri
   return { price, compareAtPrice: cheapest?.compareAtPrice ?? null }
 }
 
+/**
+ * The same build, without the record of it.
+ *
+ * The article page is a reading surface, not a hand-over: drawing it must not
+ * write down what the merchant was given, or every page view would move the
+ * baseline the drift sweep compares the store against.
+ */
+export async function renderArticleForReading(
+  deps: BundleDeps,
+  request: BundleRequest,
+): Promise<ExportBundle> {
+  return (await resolveArticleBundle(deps, request)).bundle
+}
+
 export async function buildBundleForArticle(
   deps: BundleDeps,
   request: BundleRequest,
 ): Promise<ExportBundle> {
   const now = (deps.now ?? (() => new Date()))()
+  const { bundle } = await resolveArticleBundle(deps, request)
+
+  // What the merchant was just handed, kept so the app can show the same
+  // figures between downloads and so the drift sweep has something to compare
+  // the store against. Never read back as an input to the next build.
+  await recordResolvedRefValues(
+    deps.db,
+    accountScope(request.accountId),
+    request.articleId,
+    new Map([...bundle.resolved].map(([key, reference]) => [key, { ...reference.values }])),
+    now,
+  )
+
+  return bundle
+}
+
+async function resolveArticleBundle(
+  deps: BundleDeps,
+  request: BundleRequest,
+): Promise<{ bundle: ExportBundle }> {
   const scope = accountScope(request.accountId)
 
   const article = await findArticleById(deps.db, scope, request.articleId)
@@ -135,16 +169,5 @@ export async function buildBundleForArticle(
     images: [] as readonly BundleImage[],
   })
 
-  // What the merchant was just handed, kept so the app can show the same
-  // figures between downloads and so the drift sweep has something to compare
-  // the store against. Never read back as an input to the next build.
-  await recordResolvedRefValues(
-    deps.db,
-    scope,
-    request.articleId,
-    new Map([...bundle.resolved].map(([key, reference]) => [key, { ...reference.values }])),
-    now,
-  )
-
-  return bundle
+  return { bundle }
 }
