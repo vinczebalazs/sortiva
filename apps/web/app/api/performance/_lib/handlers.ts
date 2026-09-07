@@ -186,7 +186,9 @@ export function makeSearchConsoleHandler(deps: PerformanceDeps): AccountHandler 
     const [current, prior, storePages, open] = await Promise.all([
       read(windows.current),
       read(windows.prior),
-      deps.store.storePages(scope),
+      // Only the pages table names a page type, so the searches table does not
+      // pay for the inventory read that answers it.
+      dimension === 'page' ? deps.store.storePages(scope) : [],
       deps.store.openOpportunities(scope),
     ])
 
