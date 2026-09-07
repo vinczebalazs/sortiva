@@ -1,4 +1,9 @@
-import type { ConflictCode } from '@sortiva/core'
+// Type-only, and deliberately so: this module is pulled into a client
+// component, and the `@sortiva/core` barrel re-exports domain modules that
+// reach for `node:crypto` at import time, which fails the Next build. `typeof`
+// over a type-only import still ties these names to the contract's own
+// spelling — renaming a code there is a compile error here — and emits nothing.
+import type { ConflictCode, ENTITLEMENT_INACTIVE_CODE, RATE_LIMITED_CODE } from '@sortiva/core'
 import { t as defaultTranslate, type StringKey, type Translate } from '../strings'
 import { formatDate } from './list'
 import type { OpportunityDetail, OpportunityListResponse, OpportunityRow } from './types'
@@ -47,7 +52,8 @@ export interface ActionSurface {
 }
 
 /**
- * The sentence for every refusal the API has a name for.
+ * The sentence for every refusal in the contract's conflict enum. The two
+ * refusals that sit outside that enum are below.
  *
  * A refused press comes back with a machine-readable code saying *which*
  * refusal it was — the page was deleted, the day is already taken, we have no
@@ -92,6 +98,56 @@ export const CONFLICT_MESSAGE_KEYS: Readonly<Record<ConflictCode, StringKey>> = 
 }
 
 /**
+ * The two refusals that reach this function without being conflicts.
+ *
+ * The browser reads the code off *any* failing response, not only a 409, and
+ * the contract has two codes that are deliberately not in the conflict enum:
+ * the subscription has lapsed (402) and a rate limit said no (429). Nothing
+ * about the resource's state has changed in either case, so keeping them out of
+ * that enum is right — but they still land on the same toast, so a table that
+ * covers only the enum is a table with two holes in it.
+ */
+export type NonConflictRefusalCode =
+  | typeof ENTITLEMENT_INACTIVE_CODE
+  | typeof RATE_LIMITED_CODE
+
+/**
+ * `rate_limited` points at the sentence the public preview already shows when
+ * it meets the same 429, rather than a second copy of the same words that would
+ * eventually drift from it. The preview is the only route the contract marks
+ * rate-limited today; this is here so a rate limit put in front of any other
+ * route does not arrive as a scan conflict.
+ */
+export const NON_CONFLICT_REFUSAL_MESSAGE_KEYS: Readonly<
+  Partial<Record<NonConflictRefusalCode, StringKey>>
+> = {
+  rate_limited: 'preview.rateLimited',
+}
+
+/**
+ * Refusals the contract can return that a merchant is knowingly not being given
+ * a sentence for, listed by name so the gap is loud rather than generic.
+ *
+ * `entitlement_inactive` means the subscription lapsed. Six routes can answer
+ * it, two of them buttons on this screen, and today the merchant is told their
+ * opportunity was re-scored — which is untrue, and hides the one thing they
+ * could act on. Writing what they should read instead is billing copy and is
+ * the founder's to write, not this screen's to invent. Recorded here so the
+ * exhaustiveness check below stays exhaustive without swallowing it: a *new*
+ * code with no sentence still fails, and this one stops being allowed the
+ * moment it is given words.
+ */
+export const REFUSAL_CODES_AWAITING_COPY: readonly NonConflictRefusalCode[] = [
+  'entitlement_inactive',
+]
+
+/** Every refusal code this screen has a sentence for, conflict or not. */
+export const REFUSAL_MESSAGE_KEYS: Readonly<Record<string, StringKey | undefined>> = {
+  ...CONFLICT_MESSAGE_KEYS,
+  ...NON_CONFLICT_REFUSAL_MESSAGE_KEYS,
+}
+
+/**
  * Every one of these ends the same way — the list is re-read — so the message
  * says what happened rather than offering a retry that would race the same way.
  *
@@ -102,8 +158,7 @@ export const CONFLICT_MESSAGE_KEYS: Readonly<Record<ConflictCode, StringKey>> = 
  */
 export function conflictMessage(code: string | null, t: Translate = defaultTranslate): string {
   if (code === null) return t('opportunities.toast.failed')
-  const key = (CONFLICT_MESSAGE_KEYS as Record<string, StringKey | undefined>)[code]
-  return t(key ?? 'opportunities.toast.conflict')
+  return t(REFUSAL_MESSAGE_KEYS[code] ?? 'opportunities.toast.conflict')
 }
 
 let counter = 0

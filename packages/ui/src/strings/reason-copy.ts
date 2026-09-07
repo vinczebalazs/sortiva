@@ -185,14 +185,16 @@ export const GATE_REASON_PARAMS: Readonly<Record<string, readonly string[]>> = {
  *
  * **Every sentence for these is deliberately free of `{placeholders}`, and the
  * numbers below are all listed as offered-but-unused.** The values exist and are
- * measured, but no screen that renders one of these keys is given them today:
- * the calendar sends an empty bag with every chip's why-line, Gate 1 folds its
- * values into an audit column under a shape the read-back does not look at, and
- * Gate 2 stores none at all. A sentence with a blank in it would therefore print
- * the blank — a merchant reading the literal text `{keyword}`. They are recorded
- * here so that the sentences can be given their numbers the day the values
- * actually arrive, and so the test below still catches a sentence that asks for
- * something nothing anywhere measures.
+ * measured, but they still do not reach the screen that would print them: Gate 1
+ * folds its values into an audit column under a shape the read-back does not
+ * look at, and Gate 2 stores none at all. The calendar's own half of this was
+ * fixed — its routes now send the values with every chip's why-line — but a
+ * held day shows *two* sentences, why it was planned and why it was stopped,
+ * and only the first of those is fed. A blank in one of these would therefore
+ * still print — a merchant reading the literal text `{keyword}` — on the
+ * second. They are recorded here so that the sentences can be given their
+ * numbers the day the values actually arrive, and so the test below still
+ * catches a sentence that asks for something nothing anywhere measures.
  */
 export const ADMISSION_REASON_PARAMS: Readonly<Record<string, readonly string[]>> = {
   'gate1.admitted': [],
