@@ -748,6 +748,30 @@ none of these cards is designing an interface, only implementing one.
 
 ### Live on merchant screens right now — found 2026-09-07, highest priority in the queue
 
+### From `R-OPPS-WIRE`, landed 2026-09-07 late evening, plus an integrator finding that corrects an earlier one
+
+**R-SIGNIN-SLOW — the sign-in test is not a load flake, and nobody knows what it is** · Lane F · **and it corrects this plan**
+Scope: `apps/web/app/(public)/_lib/signin-wire.test.ts` has been carried on `R-TESTDB`'s list of wall-clock-sensitive tests since this morning, on the theory that it goes red under load and green alone. **That is now disproved.** Measured by the integrator on 2026-09-07 at 23:00, running that file and nothing else: **it failed two of four runs**, timing out at exactly 5000 ms on work that takes **414 ms** when it passes. It also passed 4 of 4 earlier the same evening at a load average of 87 — the highest recorded — so it does not correlate with load in either direction. A lane reported the same: failing in isolation on a different machine.
+**Why this matters more than one test:** it is on a list that tells every future session to treat a red here as machine noise. If the cause is real, that list is actively training people to ignore it. **The list must be right or it is worse than no list.**
+**A hypothesis worth checking first, and the datum that complicates it:** the Google sign-in provider is configured by issuer only (`type: "oidc"`, `issuer: "https://accounts.google.com"`, no explicit endpoints — `@auth/core/providers/google.js:112`), so handling a sign-in request performs OIDC discovery, which is a live HTTPS fetch. That would explain a five-second stall. **But this machine reaches that endpoint in 0.2 s**, measured, so a simple "no network" explanation does not hold and something subtler is going on. **Establish the cause before changing the budget.** Raising the timeout on a test that makes a real network call would hide a genuine dependency rather than fix a flake.
+**If it is discovery: the second question is production, not the test.** Whether a merchant pressing "Continue with Google" waits on a call to Google before being redirected — and whether that result is cached across requests or fetched every time — is a real latency and availability question, and nobody has looked.
+Read first: the `R-TESTDB` card and its named six; `apps/web/app/api/auth/_lib/config.ts`.
+Done when: the cause is named rather than guessed; the test is deterministic; and this test's entry on `R-TESTDB`'s list is corrected — either removed, or restated with what actually makes it fail.
+
+**R-SKIP-TASK — "Skip this task" was removed because it never worked** · **a founder question, not yet a card**
+Scope: the drawer offered "Skip this task" beside "Mark applied". It posted to an address that has never existed, **so it has only ever failed**. `R-OPPS-WIRE` removed it rather than repair it: nothing in the contract records a task as skipped, and mapping Skip onto the endpoint that exists would record a task the merchant **declined** as one they **did** — a false record, in the table that feeds outcome measurement.
+**The decision:** should a merchant be able to skip a task? If yes it needs a new endpoint and somewhere to record it, plus a one-line revert on the screen. If no, it is already gone and the only cost is a control some designs assumed.
+Read first: `DECISIONS.md` 2026-09-07 `R-OPPS-WIRE` entries; main §10.4; ui §5.3.
+Done when: the founder has said, and the drawer either offers skipping and records it truthfully, or deliberately does not offer it.
+
+**R-CONTRACT-2 — three contract corrections the lanes could not make** · integrator
+Scope: three findings from tonight's lanes, all in the frozen contract, which no lane may touch.
+- **`GET /api/recommendations` is declared with the wrong shape.** The route table names `opportunityDetailResponseSchema`; the handler answers `{recommendation, tasks, looksApplied, appliedAt}` (`apps/web/app/api/recommendations/_lib/handlers.ts:471`). `contracts:check` passes because it checks the declarations against each other and against the existence of routes, never against what a handler returns. **Found independently by two lanes.**
+- **`markTaskAppliedRequestSchema` (`packages/core/src/api/schemas.ts:431`) is now referenced by no route** — it was the request shape for the skip address that never existed.
+- **The drawer's read does not carry the recommendation's own id**, so marking a task applied costs a second read to find it. Adding the id to the existing response removes a request from a merchant's click path.
+Read first: `DECISIONS.md` 2026-09-07 `R-CONTRACT`, `R-OPPS-WIRE` and `R-RECO-VIEW-ONE` entries.
+Done when: the declared shape matches what is served, dead schemas are gone, and the check that let a wrong declaration pass is either extended to compare handlers against declarations or recorded as a known limit with what it cannot see.
+
 ### From `R-RULES-OVERRIDES` and `R-GATE-PARAMS`, both landed 2026-09-07 late evening
 
 **R-OVERRIDE-REACH — the override command accepts more than the product honours** · one card per lane · **read this before setting an override on anything**
