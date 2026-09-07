@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { and, eq } from 'drizzle-orm'
 import { silentLogger, type LlmClient, type SeoDataProvider } from '@sortiva/core'
-import { accountScope, schema, type Db } from '@sortiva/db'
+import { schema, type Db } from '@sortiva/db'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
 import { loadPrompt, MockLlmClient } from '@sortiva/llm'
 import type { PageFetcher } from '@sortiva/providers'
