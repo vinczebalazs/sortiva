@@ -657,6 +657,16 @@ Scope: a store's claimed domain is stored bare (`acme.com`) but its storefront m
 Read first: `DECISIONS.md` 2026-09-07 "The published address should use the shop's primary storefront domain" and 2026-09-04 "A store's own claimed domain is the address we record"; main §12.2.
 Done when: an article published by a store whose storefront is `www.` is recorded at the `www.` address; a store whose storefront is the bare domain is unaffected; a store we cannot ask falls back to the claimed domain rather than failing to publish; and articles published before this keep their address, as `R-PUBLISH-2` established.
 
+**R-SIGNOUT — there is no sign-out button anywhere in the product** · Lane F
+Scope: `R-REVOKE` built revocation and proved it works; **nothing in the interface calls it.** The endpoint exists (the sign-in library's own), every screen was checked and the string catalogue was searched — there is no control that signs a merchant out, and there never has been. Add it where the design puts it, with the copy in the catalogue.
+Read first: `DECISIONS.md` 2026-09-07 `R-REVOKE` entries; ui §9 (Settings), §1 (shell).
+Done when: a merchant can sign out from the product; doing so ends their sessions in every browser, not just the one they pressed it in; and the copy lives in the string catalogue rather than inline.
+
+**R-SESSION-PRUNE — lapsed sessions are cleared away** · Lane G
+Scope: with sessions living thirty days rather than one, dead rows sit thirty times longer. **No schedule change is needed** — the nightly retention sweep already prunes expired sign-in links, and this slots in beside it; the index it needs was added by the last schema wave for exactly this purpose.
+Read first: `DECISIONS.md` 2026-09-07 `R-REVOKE` entries; main §14.6 (retention).
+Done when: a session past its expiry is removed by the nightly sweep; a live one is untouched; and no crontab entry or task registration is added.
+
 **R-CONTRACT — the frozen contract describes the endpoints that exist** · integrator
 Scope: ten endpoints were built at addresses the frozen route table does not declare, while the table declares several with no implementation, and `contracts:check` passes throughout because it compares the table to a generated document and **never to the routes on disk**. The founder delegated the call: amend the contract to the built addresses rather than move ten endpoints; assign `apps/web/app/api/settings` to Lane F for anything genuinely settings-shaped; the missing routes-on-disk check lands with `T10.2`.
 Read first: `DECISIONS.md` 2026-09-04 "The frozen contract moves to the addresses that were built".

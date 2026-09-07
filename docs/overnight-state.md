@@ -5794,6 +5794,61 @@ Proved non-vacuous by removing the three edges and watching seven tests fail.
 **Its half-met done-when became a founder decision** (2026-09-07): dismissing a suggestion whose
 article is already booked leaves the article to appear anyway. Carded as `R-DISMISS-CALENDAR`.
 
+### `R-HOLD` and `R-REVOKE` LANDED
+
+**`R-HOLD`.** A deleted merchant's domain is released on its seven-day deadline **whether or not
+the cleanup job ever ran**. The deadline was already being stamped on the record at deletion;
+nothing read it, and the nightly sweep used it only to decide what to delete — so if the sweep
+stopped, the domain stayed blocked for ever. The claim now reads that stamp itself and releases an
+expired hold before inserting, so the release happens the first moment anyone actually wants the
+domain, which is the only moment it matters.
+**Its fourth test is the best proof in this run.** The risk was breaking the rule that a domain
+claim is decided by the database's unique index rather than by our code reading first. So the fix
+is a delete placed *before* an insert that is byte-for-byte unchanged — and the test **drops the
+unique index** and shows two simultaneous claimants both win. If our code were refereeing, that
+would change nothing. It doesn't.
+**A card-placement error of the integrator's**: `R-HOLD` was put in Lane G; the claim path is Lane
+A's and the card's own done-when named it. The lane spotted the contradiction, took the done-when
+as authoritative, said so, and stayed inside the files it needed. Plan corrected.
+
+**`R-REVOKE`.** Signing out now ends every session an account has, in every browser. A copied
+cookie stops working the moment its session is revoked. **And deletion locks out at once — which
+mattered more than it looks**: deletion here is a *stamp*, not an erase, because the account row
+survives seven days so nobody can re-claim the domain early, so the foreign key's cascade would
+not have fired for a week. A "deleted" account would have had working sessions for seven days.
+
+**Stored as a SHA-256 digest, not the cookie.** A session cookie is a bearer credential — whatever
+presents it *is* the merchant. Stored verbatim, any copy of that table is a set of working
+sessions: a backup on a laptop, a support export, a leaked replica. Stored as a digest it is a set
+of useless strings, at the same single index probe. No salt and no stretching, deliberately: the
+input is a 128-bit random value nobody types, so there is nothing to guess, and a slow hash would
+spend its cost on exactly the request path this feature was priced at one read.
+
+**THE SESSION LIFETIME WENT FROM ONE DAY TO THIRTY, and the founder should know they can reverse
+it.** The card authorised revisiting it and the lane argued the change: a day was a day *because*
+revocation was impossible — lapsing was the only thing that ever stopped a leaked cookie — and
+revoking is now that answer, so the number goes back to being about how often a merchant is made
+to sign in. **Fixed rather than sliding is the load-bearing half**: a sliding window rewrites the
+row as it is used, putting a database *write* on the read path, and this feature was priced at one
+read.
+
+**It found a real security bug in its own first draft.** With sessions in the database, what the
+library hands the session callback is the stored row — token included — so the obvious spread
+would have published that credential in a JSON body any script on the page can read, undoing the
+fact that the cookie carrying it is script-unreadable. The response is built explicitly and a test
+asserts the token does not appear. **Worth knowing, because a later "just spread the object"
+tidy-up reintroduces it.**
+
+**Two gaps it found and correctly did not close.** There is **no sign-out button anywhere in the
+product** — every screen and the string catalogue were checked; the endpoint works and nothing
+calls it. And nothing prunes lapsed sessions, which now sit thirty times longer. Carded as
+`R-SIGNOUT` (Lane F) and `R-SESSION-PRUNE` (Lane G); the prune needs **no** schedule change.
+
+**The machine was saturated while this ran** — load average peaked at 108 with up to 48 concurrent
+vitest workers, and a second full run showed four failing assertions in suites this card does not
+touch, all of which passed 47/47 when re-run alone. **The integrator is holding at three lanes
+rather than four until `R-TESTDB` lands.**
+
 ### Verification done this morning, so it is not re-done
 
 - Resolved every registered task-name constant in the tree and matched it by hand against all
