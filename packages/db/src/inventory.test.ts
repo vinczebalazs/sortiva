@@ -4,6 +4,7 @@ import { accountScope, systemScope } from './scope'
 import {
   accountsWithLiveShopifyConnection,
   familyIdsByShopifyProductId,
+  followOurArticleRename,
   listStorePages,
   readStorePageBody,
   listLiveStorePages,
@@ -11,6 +12,7 @@ import {
   markStorePagesOurs,
   markStorePagesSeen,
   publishedArticleAddresses,
+  shopPostsWePublished,
   storePageChecksums,
   upsertStorePages,
   type StorePageInput,
@@ -296,6 +298,7 @@ describe.skipIf(!available)('recognising an article we published', () => {
       readonly url?: string | null
       readonly state?: string
       readonly publishedAt?: string
+      readonly delivery?: string
     } = {},
   ): Promise<string> {
     const owner = over.owner ?? accountId
@@ -314,8 +317,8 @@ describe.skipIf(!available)('recognising an article we published', () => {
       [owner, opportunity.rows[0]!.id, slug],
     )
     const article = await pool.query<{ id: string }>(
-      `INSERT INTO articles (account_id, topic_id, title, slug, state, published_url, published_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
+      `INSERT INTO articles (account_id, topic_id, title, slug, state, published_url, published_at, delivery)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
       [
         owner,
         topic.rows[0]!.id,
@@ -324,9 +327,24 @@ describe.skipIf(!available)('recognising an article we published', () => {
         over.state ?? 'published',
         over.url === undefined ? `https://shop.example/blogs/news/${slug}` : over.url,
         over.publishedAt ?? '2026-03-01T00:00:00Z',
+        over.delivery ?? 'export',
       ],
     )
     return article.rows[0]!.id
+  }
+
+  /** The claim a publication went out under, once the shop had answered. */
+  async function confirmedClaim(
+    articleId: string,
+    shopifyArticleId: string,
+    over: { readonly owner?: string; readonly revision?: number } = {},
+  ): Promise<void> {
+    const suffix = over.revision ? `#r${over.revision}` : ''
+    await pool.query(
+      `INSERT INTO publish_intents (article_external_id, account_id, state, shopify_article_id)
+       VALUES ($1,$2,'confirmed',$3)`,
+      [`sortiva-${articleId}${suffix}`, over.owner ?? accountId, shopifyArticleId],
+    )
   }
 
   it('marks a page as ours and names the article behind it, without disturbing its change detector', async () => {
@@ -443,5 +461,136 @@ describe.skipIf(!available)('recognising an article we published', () => {
     await publishedArticle('theirs', { owner: other })
 
     expect(await publishedArticleAddresses(ctx.db, accountScope(accountId))).toEqual([])
+  })
+
+  describe('following one of our posts to a new address on the shop', () => {
+    const BEFORE = 'https://shop.example/blogs/news/best-trail-shoes'
+    const AFTER = 'https://shop.example/blogs/news/best-walking-shoes'
+
+    /** An article we posted to the shop ourselves, recognised at `BEFORE`. */
+    async function autoPublished(): Promise<string> {
+      const scope = accountScope(accountId)
+      const articleId = await publishedArticle('best-trail-shoes', { delivery: 'auto' })
+      await confirmedClaim(articleId, '61')
+      await upsertStorePages(
+        ctx.db,
+        scope,
+        [page({ url: BEFORE, shopifyId: '61', pageType: 'blog_article' })],
+        T0,
+      )
+      await markStorePagesOurs(ctx.db, scope, [{ url: BEFORE, articleId }])
+      return articleId
+    }
+
+    it('hands the walk each post on the shop with the claim it went out under', async () => {
+      const articleId = await publishedArticle('best-trail-shoes', { delivery: 'auto' })
+      await confirmedClaim(articleId, '61')
+
+      expect(await shopPostsWePublished(ctx.db, accountScope(accountId))).toEqual([
+        { articleExternalId: `sortiva-${articleId}`, shopifyArticleId: '61' },
+      ])
+    })
+
+    it('leaves out a claim the shop never answered, and another account’s posts', async () => {
+      const scope = accountScope(accountId)
+      const articleId = await publishedArticle('best-trail-shoes', { delivery: 'auto' })
+      // Made and never confirmed: a post we cannot prove exists, and the id
+      // column is empty until the shop has answered.
+      await pool.query(
+        `INSERT INTO publish_intents (article_external_id, account_id, state) VALUES ($1,$2,'pending')`,
+        [`sortiva-${articleId}`, accountId],
+      )
+      const other = await insertAccount(pool, 'renames-other@example.com')
+      const theirs = await publishedArticle('theirs', { owner: other, delivery: 'auto' })
+      await confirmedClaim(theirs, '99', { owner: other })
+
+      expect(await shopPostsWePublished(ctx.db, scope)).toEqual([])
+    })
+
+    it('writes the new address and retires the row the shop has abandoned', async () => {
+      const scope = accountScope(accountId)
+      const articleId = await autoPublished()
+
+      expect(
+        await followOurArticleRename(ctx.db, scope, { articleId, from: BEFORE, to: AFTER }),
+      ).toBe(true)
+
+      expect(await publishedArticleAddresses(ctx.db, scope)).toEqual([{ articleId, url: AFTER }])
+      const [row] = await listStorePages(ctx.db, scope)
+      expect(row?.status).toBe('gone')
+      // Still our record of what we delivered and where. The shop moving the
+      // page is not evidence that we did not publish it.
+      expect(row?.pageType).toBe('article_ours')
+      expect(row?.articleId).toBe(articleId)
+      expect(await listLiveStorePages(ctx.db, scope)).toEqual([])
+    })
+
+    it('never overwrites an address an export merchant typed in themselves', async () => {
+      const scope = accountScope(accountId)
+      const articleId = await publishedArticle('best-trail-shoes', { delivery: 'export' })
+      await upsertStorePages(
+        ctx.db,
+        scope,
+        [page({ url: BEFORE, shopifyId: '61', pageType: 'blog_article' })],
+        T0,
+      )
+      await markStorePagesOurs(ctx.db, scope, [{ url: BEFORE, articleId }])
+
+      expect(
+        await followOurArticleRename(ctx.db, scope, { articleId, from: BEFORE, to: AFTER }),
+      ).toBe(false)
+
+      expect(await publishedArticleAddresses(ctx.db, scope)).toEqual([{ articleId, url: BEFORE }])
+      const [row] = await listStorePages(ctx.db, scope)
+      expect(row?.status).toBe('live')
+    })
+
+    it('does nothing when the address we hold is not the one being moved from', async () => {
+      const scope = accountScope(accountId)
+      const articleId = await autoPublished()
+
+      // Two walks racing, or a second message about a rename we already
+      // followed. Moving from an address we no longer hold would retire a row
+      // the shop is serving.
+      expect(
+        await followOurArticleRename(ctx.db, scope, {
+          articleId,
+          from: 'https://shop.example/blogs/news/something-else',
+          to: AFTER,
+        }),
+      ).toBe(false)
+
+      expect(await publishedArticleAddresses(ctx.db, scope)).toEqual([{ articleId, url: BEFORE }])
+      const [row] = await listStorePages(ctx.db, scope)
+      expect(row?.status).toBe('live')
+    })
+
+    it('never reaches another account’s article or page', async () => {
+      const other = await insertAccount(pool, 'rename-scope-other@example.com')
+      const articleId = await publishedArticle('best-trail-shoes', {
+        owner: other,
+        delivery: 'auto',
+      })
+      await upsertStorePages(
+        ctx.db,
+        accountScope(other),
+        [page({ url: BEFORE, shopifyId: '61', pageType: 'blog_article' })],
+        T0,
+      )
+
+      expect(
+        await followOurArticleRename(ctx.db, accountScope(accountId), {
+          articleId,
+          from: BEFORE,
+          to: AFTER,
+        }),
+      ).toBe(false)
+
+      expect(await publishedArticleAddresses(ctx.db, accountScope(other))).toEqual([
+        { articleId, url: BEFORE },
+      ])
+      const [theirs] = await listStorePages(ctx.db, accountScope(other))
+      expect(theirs?.status).toBe('live')
+    })
   })
 })

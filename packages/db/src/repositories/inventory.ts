@@ -1,7 +1,7 @@
 import { gzipSync, gunzipSync } from 'node:zlib'
 import { and, asc, eq, inArray, isNotNull, sql } from 'drizzle-orm'
 import type { Db } from '../client'
-import { articles, products, shopifyConns, storePages } from '../schema'
+import { articles, products, publishIntents, shopifyConns, storePages } from '../schema'
 import type { AccountScope, SystemScope } from '../scope'
 
 export type StorePageRow = typeof storePages.$inferSelect
@@ -192,6 +192,100 @@ export async function publishedArticleAddresses(
     )
     .orderBy(asc(articles.publishedAt))
   return rows.flatMap((row) => (row.url ? [{ articleId: row.articleId, url: row.url }] : []))
+}
+
+/**
+ * The posts we made on the merchant's own shop, each with the id the shop gave
+ * it and the name our own publication claim went out under.
+ *
+ * This is what lets the walk tell a renamed post from a new one: the address
+ * moves and the shop's id does not. Only a confirmed claim counts — an
+ * unconfirmed one is a post we cannot prove exists, and the id column is empty
+ * until the shop has answered.
+ *
+ * Empty for a store we deliver to by export: an article the merchant downloaded
+ * and pasted onto their own blog was never posted by us, so there is no claim
+ * and no id.
+ *
+ * Oldest first, so that if two claims ever name one post the walk settles on the
+ * same article every night rather than alternating.
+ */
+export async function shopPostsWePublished(
+  db: Db,
+  scope: AccountScope,
+): Promise<readonly { readonly articleExternalId: string; readonly shopifyArticleId: string }[]> {
+  const rows = await db
+    .select({
+      articleExternalId: publishIntents.articleExternalId,
+      shopifyArticleId: publishIntents.shopifyArticleId,
+    })
+    .from(publishIntents)
+    .where(
+      and(
+        eq(publishIntents.accountId, scope.accountId),
+        eq(publishIntents.state, 'confirmed'),
+        isNotNull(publishIntents.shopifyArticleId),
+      ),
+    )
+    .orderBy(asc(publishIntents.createdAt))
+  return rows.flatMap((row) =>
+    row.shopifyArticleId
+      ? [{ articleExternalId: row.articleExternalId, shopifyArticleId: row.shopifyArticleId }]
+      : [],
+  )
+}
+
+/**
+ * Follows a rename: records the address the shop now serves one of our articles
+ * at, and stops treating the address it has abandoned as a live page.
+ *
+ * Both writes or neither, because either one alone leaves the product worse off
+ * than before — an article pointing at a page that no longer exists, or an
+ * inventory row claiming to be a live article of ours at an address nobody can
+ * open.
+ *
+ * Guarded to an article we posted to the shop ourselves. An export merchant
+ * typed their address in by hand and confirmed it; nothing that reads a shop is
+ * allowed to overwrite that.
+ *
+ * The old row keeps its marking and its link to the article. It is our record
+ * of what we delivered and where, and nothing here is evidence against it —
+ * only that the shop has moved the page.
+ */
+export async function followOurArticleRename(
+  db: Db,
+  scope: AccountScope,
+  move: { readonly articleId: string; readonly from: string; readonly to: string },
+  now: Date = new Date(),
+): Promise<boolean> {
+  return db.transaction(async (tx) => {
+    const [row] = await tx
+      .update(articles)
+      .set({ publishedUrl: move.to, updatedAt: now })
+      .where(
+        and(
+          eq(articles.accountId, scope.accountId),
+          eq(articles.id, move.articleId),
+          eq(articles.state, 'published'),
+          eq(articles.delivery, 'auto'),
+          eq(articles.publishedUrl, move.from),
+        ),
+      )
+      .returning({ id: articles.id })
+    if (!row) return false
+
+    await tx
+      .update(storePages)
+      .set({ status: 'gone' })
+      .where(
+        and(
+          eq(storePages.accountId, scope.accountId),
+          eq(storePages.url, move.from),
+          eq(storePages.status, 'live'),
+        ),
+      )
+    return true
+  })
 }
 
 /**
