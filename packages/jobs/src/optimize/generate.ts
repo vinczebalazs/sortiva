@@ -319,13 +319,30 @@ async function runGeneration(
     return { status: 'skipped', reason: 'blocked_by_precondition' }
   }
 
-  // An article we published for this store is rewritten through the article
-  // pipeline, never handed back as a list of edits. Checked before the pack is
-  // assembled, because assembling it is where the money goes.
+  // Every row, deleted ones included. A filtered read would hide a deleted
+  // page rather than refuse it, and this run would go on to buy a search and a
+  // model call for it — the opposite of what the check below is for.
   const wanted = normalisePageUrl(opportunity.entityRef)
   const page = (await listStorePages(deps.db, scope)).find(
     (candidate) => normalisePageUrl(candidate.url) === wanted,
   )
+
+  // The merchant deleted this page since it was suggested. There is nothing to
+  // improve and nowhere to apply the advice, so the run stops before anything
+  // is bought. The row is left marked deleted rather than removed: the walk can
+  // find the page again, at which point this stops refusing on its own.
+  if (page && page.status === 'gone') {
+    log.info('optimize_reco.page_no_longer_in_store', {
+      account_id: input.accountId,
+      opportunity_id: opportunity.id,
+      page: opportunity.entityRef,
+    })
+    return { status: 'skipped', reason: 'page_no_longer_in_store' }
+  }
+
+  // An article we published for this store is rewritten through the article
+  // pipeline, never handed back as a list of edits. Checked before the pack is
+  // assembled, because assembling it is where the money goes.
   if (page && optimizeRouteFor(page.pageType) === 'refresh_pool') {
     // Not a dead end: the suggestion goes into the pool of articles waiting to
     // be rewritten, so the merchant ends up with work they can see rather than

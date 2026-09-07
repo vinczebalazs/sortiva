@@ -3,6 +3,8 @@ import {
   accountScope,
   appendSpendEvent,
   isAccountFlagActive,
+  markStorePagesGoneNotSeenSince,
+  markStorePagesSeen,
   upsertStorePages,
   type Db,
 } from '@sortiva/db'
@@ -339,3 +341,41 @@ function ourPage() {
     checksum: 'checksum-v1',
   }
 }
+
+/**
+ * The weekly comparison pass and a page the merchant has taken down.
+ *
+ * The pass buys a results page and a model call for every page it shortlists,
+ * so a deleted page reaching the shortlist is money spent working out how to
+ * improve something nobody can visit.
+ */
+describe.skipIf(!available)('a page the merchant has deleted', () => {
+  it('is never shortlisted, so nothing is bought for it', async () => {
+    const f = fixtures()
+    const walk = new Date(Date.now() + 60_000)
+    await markStorePagesGoneNotSeenSince(db, accountScope(accountId), walk)
+
+    const result = await scanIntentGaps(deps(f), { accountId, clusters, rows, locale: LOCALE })
+
+    expect(result.shortlisted).toBe(0)
+    expect(result.analysed).toBe(0)
+    expect(result.signals).toEqual([])
+    expect(f.llm.requests, 'no model call for a page that is gone').toHaveLength(0)
+    expect(f.seo.billableCalls, 'and no results page bought for it').toBe(0)
+  })
+
+  it('is shortlisted again once the walk finds it back in the store', async () => {
+    const f = fixtures()
+    const walk = new Date(Date.now() + 60_000)
+    await markStorePagesGoneNotSeenSince(db, accountScope(accountId), walk)
+    // Being served is what makes a page live again. The row kept its checksum
+    // and its body throughout, so nothing else had to happen.
+    await markStorePagesSeen(db, accountScope(accountId), [PAGE], new Date(walk.getTime() + 60_000))
+
+    const result = await scanIntentGaps(deps(f), { accountId, clusters, rows, locale: LOCALE })
+
+    expect(result.shortlisted).toBe(1)
+    expect(result.analysed).toBe(1)
+    expect(result.signals).toHaveLength(1)
+  })
+})

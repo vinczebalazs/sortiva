@@ -72,7 +72,7 @@ export interface AssembleOptimizePackInput {
 export type AssembleOptimizePackOutcome =
   | { readonly status: 'assembled'; readonly pack: OptimizeEvidencePack; readonly coverageMade: boolean }
   /** The page is not in the inventory, so there is nothing to improve. */
-  | { readonly status: 'unavailable'; readonly reason: 'page_not_in_inventory' }
+  | { readonly status: 'unavailable'; readonly reason: 'page_not_in_inventory' | 'page_no_longer_in_store' }
 
 /** The store's own text, markup stripped, long enough to write against and short enough to pay for. */
 function pageText(row: StorePageRow): string {
@@ -97,6 +97,9 @@ const PAGE_TEXT_MAX_CHARS = 6000
 
 /**
  * Which of the store's other pages are offered as link candidates.
+ *
+ * Given only the pages the store still serves: a suggestion to link at a page
+ * the merchant deleted is advice that breaks the page it is applied to.
  *
  * Pages sharing a product family come first — they are about the same things,
  * which is what makes a link between them worth a reader's click — and the rest
@@ -139,6 +142,9 @@ export async function assembleOptimizePack(
   const config = rules().defaults
   const wanted = normalisePageUrl(input.pageUrl)
 
+  // Every row, deleted ones included, because the two refusals below are
+  // different answers and a filtered read could not tell them apart: a page we
+  // have never held is not the same as one the merchant has taken down.
   const pages = await listStorePages(deps.db, scope)
   const page = pages.find((row) => normalisePageUrl(row.url) === wanted)
   // A page with no checksum is one we have never actually read — the comparison
@@ -149,6 +155,16 @@ export async function assembleOptimizePack(
       page: input.pageUrl,
     })
     return { status: 'unavailable', reason: 'page_not_in_inventory' }
+  }
+  // The row survives the merchant deleting the page, so that the walk finding
+  // it again can put it straight back. It is still not something to buy a
+  // search and a model call for.
+  if (page.status === 'gone') {
+    log.info('optimize_pack.page_no_longer_in_store', {
+      account_id: input.accountId,
+      page: input.pageUrl,
+    })
+    return { status: 'unavailable', reason: 'page_no_longer_in_store' }
   }
 
   const windowDays = config.signals.striking_distance.window_days
@@ -276,7 +292,7 @@ export async function assembleOptimizePack(
     families,
     products,
     linkCandidates: linkCandidates(
-      pages,
+      pages.filter((row) => row.status === 'live'),
       page,
       config.gates.optimize_recommendation.internal_link_candidates_max,
     ),
