@@ -746,6 +746,22 @@ carries the shape it must satisfy, which already exists as a zod schema in
 `packages/core/src/api/schemas.ts` — the contract described these endpoints correctly all along, so
 none of these cards is designing an interface, only implementing one.
 
+### From `R-OVERRIDE-JUSTIFICATION` and `R-API-SETTINGS`, both landed 2026-09-07
+
+**R-OVERRIDE-TOPIC — a merchant who published anyway is told weeks later that we held it back** · Lane D
+Scope: publishing over a quality refusal moves the **article** into a cleared state and leaves the **topic** marked as rejected by the gate. The monthly summary email counts topics by that mark, so "5 topics were held back by our quality bar" includes ones the merchant overruled and published. No figure shown is arithmetically wrong; the sentence is. Found by `R-OVERRIDE-JUSTIFICATION`, journalled, deliberately not fixed — the honest repair may be that an override moves the topic's state too, which is wider than a read and touches the calendar's state machine.
+**A second, related question the same card raised and did not answer:** the calendar day for an overridden topic still shows a rejection — now with the correct reason, where before it showed a stock line from a check that never ran. **Whether it should show a rejection at all, once the merchant has decided to publish, is a product decision.**
+Read first: `DECISIONS.md` 2026-09-07 `R-OVERRIDE-JUSTIFICATION` entries and 2026-09-04 "An overridden article gets its own state"; main §8.6, §8.7, §9.6; invariants 12, 14, 15.
+Done when: the monthly summary counts as held back only what was actually held back; a day the merchant published anyway reads correctly on the calendar; and any state move is a guarded update, so an override racing a publish loses cleanly.
+Note: **may need a state the topic does not have.** If so, stop and say so — schema waves are closed and that is the integrator's call.
+
+**R-SETTINGS-ONE-PATH — two endpoints change the same setting** · integrator (the contract) + Lane F
+Scope: auto-publish delivery can be switched through `PATCH /api/settings` and through `POST /api/publish/mode`. Both now enforce the same two conditions — `R-API-SETTINGS` made sure of that — so nothing is broken today. But **one setting with two write paths is how the two drift apart**, and invariant 21 (auto-publish cannot enable without a resolved target blog) is the one they must never disagree about.
+`PATCH /api/settings` accepts it because the frozen contract declares it: `settingsPatchSchema` is `settingsSchema.partial()`, so every settings field is patchable by construction rather than by decision.
+Read first: `DECISIONS.md` 2026-09-07 `R-API-SETTINGS` entries; main §9.4, §9.5; invariant 21.
+Done when: there is one write path for delivery mode, or the contract records deliberately why there are two and a test proves they cannot disagree.
+Note: the contract half is the integrator's by rule. **Not urgent — nothing is wrong today**, which is exactly when this is cheap to settle.
+
 ### Three from `R-SIGNAL-COPY`, landed 2026-09-07
 
 **R-FIXTURE-KEYS — fixtures describe a screen state the product can no longer produce** · Lane C

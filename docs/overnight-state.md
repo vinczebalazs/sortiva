@@ -779,6 +779,31 @@ back for capacity reasons any more — the queue is worked until it is empty. De
 founder's earlier choice) and `T10.4` still cannot run without the Shopify development store they
 deliberately deferred.
 
+### Twelve cards landed and merged green. `main` at 301 test files, 3,809 tests, gate eleven of eleven
+
+`R-OVERRIDE-JUSTIFICATION` and `R-API-SETTINGS` were the eleventh and twelfth.
+
+**The largest single thing found today, and it was found in passing.** `R-API-SETTINGS`'s lane discovered
+that the "grant posting permission" button pointed at the **read-only install flow**. A merchant pressing
+it went round a consent screen that cannot grant posting permission and came back no further forward —
+so **auto-publish could not be enabled by anyone, by any route.** The whole publishing half of the
+product was unreachable from the interface. It is one line, and it was found only because the card asked
+the screen to be moved onto the addresses that were actually built.
+
+**A second instance of the two-halves-that-each-look-right shape, caught by the lane on itself.** Its
+handler answered errors in a shape the screen cannot read; every other route answers `{error:{code}}` and
+it had written the code flat. A merchant hitting either auto-publish conflict would have got a generic
+failure instead of being told to grant permission or choose a blog. **It was caught by writing the test
+against the screen's actual reader rather than against the handler** — which is the general lesson, and
+the same one that found the signal name filed under a key the engine never builds.
+
+**`R-OVERRIDE-JUSTIFICATION` was a read defect with four callers and two meanings.** One database read
+answered "the most recent gate-3 decision"; publishing anyway writes a second gate-3 row that records the
+overruling and judges nothing. Four callers asked that question, two of them meaning "the decision that
+judged the words". There are now two reads with the two meanings in their names. The write was correct
+throughout and is unchanged, and the calibration query was checked and left alone — it excludes
+overridden articles by the article's own flag, so invariant 12 is intact.
+
 ### Ten cards landed and merged green. `main` at 300 test files, 3,794 tests, gate eleven of eleven
 
 `R-SIGNAL-COPY` was the tenth: nearly every card on the Opportunities screen said "the reasoning for this
