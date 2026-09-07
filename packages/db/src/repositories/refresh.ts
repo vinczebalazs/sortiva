@@ -1,6 +1,6 @@
 import { and, desc, eq, inArray } from 'drizzle-orm'
 import type { Db } from '../client'
-import { OPEN_OPPORTUNITY_STATUSES, articles, opportunities, refreshLog } from '../schema'
+import { OPEN_OPPORTUNITY_STATUSES, articles, opportunities, refreshLog, topics } from '../schema'
 import type { AccountScope } from '../scope'
 import { REPAIR_SIGNAL_TYPES } from './repair'
 
@@ -131,4 +131,45 @@ export async function articleRefreshCount(
     .innerJoin(articles, eq(articles.id, refreshLog.articleId))
     .where(and(eq(refreshLog.articleId, articleId), eq(articles.accountId, scope.accountId)))
   return rows.length
+}
+
+/**
+ * What the article was written about, read off the calendar topic it came
+ * from.
+ *
+ * A rewrite is about the same subject as the article it replaces, so the
+ * intent class and the product families are not re-derived — re-deriving them
+ * would let a rewrite drift onto a different subject from the piece it is
+ * meant to be a second attempt at.
+ */
+export interface ArticleSubject {
+  readonly title: string
+  readonly targetKeyword: string | null
+  readonly intentClass: string
+  readonly familyIds: readonly string[]
+}
+
+export async function articleSubject(
+  db: Db,
+  scope: AccountScope,
+  articleId: string,
+): Promise<ArticleSubject | null> {
+  const [row] = await db
+    .select({
+      title: articles.title,
+      targetKeyword: articles.targetKeyword,
+      intentClass: topics.intentClass,
+      familyIds: topics.familyIds,
+    })
+    .from(articles)
+    .innerJoin(topics, eq(topics.id, articles.topicId))
+    .where(and(eq(articles.id, articleId), eq(articles.accountId, scope.accountId)))
+    .limit(1)
+  if (!row) return null
+  return {
+    title: row.title,
+    targetKeyword: row.targetKeyword,
+    intentClass: row.intentClass,
+    familyIds: row.familyIds ?? [],
+  }
 }

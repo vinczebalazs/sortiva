@@ -86,3 +86,11 @@ export {
   type ReviewArticleInput,
   type ReviewArticleResult,
 } from './review-article'
+export {
+  requestArticleRefresh,
+  REFRESH_REQUEST_REASON_KEYS,
+  type RefreshRequestSource,
+  type RequestRefreshDeps,
+  type RequestRefreshInput,
+  type RequestRefreshResult,
+} from './request-refresh'
