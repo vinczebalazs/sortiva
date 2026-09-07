@@ -16,6 +16,11 @@ export {
   type ProfileStoreOptions,
 } from './stores/profile'
 export {
+  makeProductsStore,
+  type ProductsStore,
+  type ProductsStoreOptions,
+} from './stores/products'
+export {
   makeIngestionStatusStore,
   type IngestionRunView,
   type IngestionStatusStore,

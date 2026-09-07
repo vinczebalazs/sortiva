@@ -4615,3 +4615,49 @@ Nearest spec: tech §3; `packages/core/src/api/errors.ts`; ui §6.3.
 Decision: a rewrite admitted to the pool has its impact ranked over a batch of one, the same thing the daily repair pass already does when it raises a single drifted article.
 Why: impact is a percentile rank within a store's own candidates of the same action, and a single request has no batch to be a percentile of. Reading every open rewrite candidate to rank against would make admitting one request a scan of the store's whole pool, and it would still be a different comparison from the one that decides anything: which rewrites actually get days is settled later, by the replenishment pass, over the whole pool at once and under the cap. See the identical treatment in the drift sweep.
 Nearest spec: main §7.6, §9.6.4, §9.6.5.
+
+## 2026-09-07 — R-API-PRODUCTS — The merchant's checklist is recomputed on every visit, because the scan never recorded which products fell short
+Decision: `GET /api/products` builds each merchant task by repeating the scan's own reasoning against today's catalogue — which of the store's product groups the held search is about, which of their products fail the "is this product described well enough to write from" floor, and which of the ten extractable fields each one is missing — rather than reading a stored list.
+Why: there is no stored list to read. A HOLD opportunity (an opportunity we believe in and will not act on, because the store's product pages do not say enough) records `products_needing_detail: 9` as an evidence fact and nothing else; the per-product shortfall exists only inside the scan's own working memory and is discarded. The alternative was to ask for a column in the next schema wave and ship the screen with an empty checklist until then.
+The recomputation turned out to be the better behaviour anyway, not merely the available one: a merchant who fills in a product's material sees it leave the list on their next page load instead of waiting for the weekly scan. A test proves that specific movement rather than asserting the list's contents once.
+Cost worth knowing: the two reads it needs (the store's groups, and the distilled products behind the ones the search maps to) run on every page load. Both are indexed reads on one account and neither calls a vendor or a model.
+Nearest spec: main §6.3, §7.3 (the catalog richness gap row), §7.4 (HOLD); ui §7.
+
+## 2026-09-07 — R-API-PRODUCTS — Only a catalogue-richness hold gets a product checklist
+Decision: every open HOLD becomes a task card, but the list of products underneath it is built only for the one signal that means "the product pages do not say enough" (`catalog_richness_gap`). Any other hold renders with an empty product list.
+Why: the checklist is derived from the opportunity's own reference, and for this signal that reference is the search phrase — which is what makes mapping it back to product groups possible. A future hold about something else would carry a different kind of reference behind the same field, and running the same mapping over it would produce a confident list of the wrong products. Showing none is the honest answer to "we do not know what this hold is about". Today this branch is unreachable: nothing in the product produces a HOLD from any other signal.
+Nearest spec: main §7.4, §7.8.
+
+## 2026-09-07 — R-API-PRODUCTS — A product nothing has read yet is shown as sparse, and it is counted
+Decision: the products table lists every product in the store, including ones with no fact sheet. Such a product shows no facts, all ten fields missing, and the band `sparse`. It is counted in "products" but not in the store's own richness figure.
+Why: two separate judgements, deliberately not merged. The table is the merchant's catalogue and leaving rows out of it would quietly shorten their product count to "the products we happened to have read". The richness figure is a measurement, and measuring products we have not read would drag a store's band down for our own queue depth — so it stays computed from distilled products only, which is exactly what the confirmation screen already shows.
+Cost: the three bands have no fourth word for "not analysed yet", so a product still queued for distillation reads as sparse. Calling it rich would be the worse of the two errors, and the merchant sees a fact count of zero beside it.
+Nearest spec: main §6.3 (richness); ui §7.
+
+## 2026-09-07 — R-API-PRODUCTS — The whole catalogue is returned in one answer and the cursor is always null
+Decision: `GET /api/products` returns every product with `cursor: null`, rather than a page.
+Why: the contract has a cursor field but declares no query parameter to hand one back in, so nothing can ask for a second page. Worse, the screen's only filter — "show me the products we know too little about" — runs in the browser over whatever it was given, so any cap would silently hide the very products that filter exists to surface. That is the same shape of failure this card exists to repair: a screen that looks fine while it is not showing you everything.
+Cost: a very large catalogue is a large response. If that becomes real, the fix is a declared query parameter and a server-side sparse filter, not a silent cap.
+Nearest spec: ui §7; tech §3.
+
+## 2026-09-07 — R-API-PRODUCTS — FLAGGED: nothing records when a merchant task was finished, so the "completed" section can never fill
+Decision: `completedAt` is always null. Only open holds are returned.
+Why: a hold that the merchant resolved leaves as an expiry whose recorded reason is "the evidence no longer holds" — the same reason produced when the search simply lost its volume, or the keyword was removed. Reading that as "you completed this" would congratulate merchants for work they never did. The screen's completed-tasks section (ui §7: "Completed tasks collapse with the date and, once the opportunity proceeds, a link to what it became") therefore stays empty in the live product.
+What it would take: something at expiry time that distinguishes "the catalogue improved and this can now proceed" from every other reason the evidence stopped holding, plus a stamp for when. That is the scan's own territory, not this card's.
+Nearest spec: main §7.9; ui §7.
+
+## 2026-09-07 — R-API-PRODUCTS — A store with no Shopify connection gets an empty admin link rather than a guessed one
+Decision: each product on a task card carries a deep link into the merchant's Shopify admin, built from the shop handle on their live connection. With no connection — or a handle that does not look like one — the link is the empty string.
+Why: the screen already refuses to render any address that is not an HTTPS Shopify admin one and falls back to a plain row, so an empty string lands exactly where it should. Guessing an address for a store we are not connected to would be inventing somewhere to send them.
+Nearest spec: main §6.2; ui §7.
+
+## 2026-09-07 — R-API-PRODUCTS — The test that seeds a quarantined product description is added to the quarantine allowlist
+Decision: `apps/web/app/api/products/_lib/products-read.test.ts` joins the seven files permitted to name `raw_body_html` — the merchant's own marketing copy, which is stored but never allowed to flow into anything we write.
+Why: the test stores a description on a product and then asserts that none of it appears in the bytes `GET /api/products` sends back. Proving the description never reaches a merchant-facing response requires putting one there first, which is the same reason the distillation test and the chaos scenario are already on that list. The allowlist exists to make each such addition a visible decision rather than an inferred one.
+Nearest spec: main §6.3; invariant 3.
+
+## 2026-09-07 — R-API-PRODUCTS — The Products routes read through a store, so no route file holds a database handle
+Decision: a new `makeProductsStore` in `packages/db` answers the four questions the Products screen asks (the catalogue, the family list, the still-open opportunities, the shop's Shopify handle). The route's composition file builds that store and never names the raw database handle.
+Why: a lint rule forbids reaching the database outside `packages/db`, and the several route folders that do it are each individually exempted in `eslint.config.mjs` — a file only the integrator edits. Following that pattern would have meant asking for an eighth exemption. The profile screen's own store already sets the alternative precedent one directory over, and it costs nothing: the handle is still resolved on the call rather than at construction, which is what keeps a build with no database configured from producing a server whose every route answers 500.
+Consequence: the store returns only the shop's handle, never the connection row, so the encrypted access token has no path to a response serialiser.
+Nearest spec: tech §3; CLAUDE.md code-structure rules (route handlers parse → call core → serialise).

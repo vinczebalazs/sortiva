@@ -1,8 +1,14 @@
 import { gzipSync, gunzipSync } from 'node:zlib'
 import { and, asc, eq, gt, inArray, isNull, lt, notInArray, sql } from 'drizzle-orm'
-import { descriptionText } from '@sortiva/core'
+import { descriptionText, type FactSheet } from '@sortiva/core'
 import type { Db } from '../client'
-import { landingRevenueDaily, products, shopifyConns, topProducts } from '../schema'
+import {
+  landingRevenueDaily,
+  productFacts,
+  products,
+  shopifyConns,
+  topProducts,
+} from '../schema'
 import type { AccountScope, SystemScope } from '../scope'
 
 export type ProductRecord = typeof products.$inferSelect
@@ -171,6 +177,62 @@ export async function productIdsByShopifyId(
     )
   for (const row of rows) out.set(row.shopifyProductId, row.id)
   return out
+}
+
+/** One row of the Products screen's table: what we hold about a product, and how much of it there is. */
+export interface CatalogProductRow {
+  /** Our own row id, the same id the family list and the best-seller list are keyed on. */
+  readonly id: string
+  readonly title: string
+  readonly familyId: string | null
+  /** Shopify's own id, which the merchant's admin address is built from. */
+  readonly shopifyProductId: string
+  /** Null when nothing has been distilled from this product yet — not the same as a product with nothing to say. */
+  readonly factSheet: FactSheet | null
+  readonly factCount: number
+  readonly syncedAt: Date
+}
+
+/**
+ * Every product in one store, with its fact sheet where one exists.
+ *
+ * A left join rather than an inner one: a product queued for distillation, or
+ * one whose description defeated it, still belongs on the merchant's own
+ * catalogue screen — dropping it would quietly shorten a store's product count
+ * to the products we happened to have read.
+ *
+ * `raw_body_html` is not among the selected columns and must not become one.
+ * The quarantined description leaves this table only for display and debugging,
+ * never towards a response.
+ */
+export async function listCatalogProducts(
+  db: Db,
+  scope: AccountScope,
+): Promise<CatalogProductRow[]> {
+  const rows = await db
+    .select({
+      id: products.id,
+      title: products.title,
+      familyId: products.familyId,
+      shopifyProductId: products.shopifyProductId,
+      factsJson: productFacts.factsJson,
+      factCount: productFacts.factCount,
+      syncedAt: products.syncedAt,
+    })
+    .from(products)
+    .leftJoin(productFacts, eq(productFacts.productId, products.id))
+    .where(eq(products.accountId, scope.accountId))
+    .orderBy(asc(products.title), asc(products.id))
+
+  return rows.map((row) => ({
+    id: row.id,
+    title: row.title,
+    familyId: row.familyId,
+    shopifyProductId: row.shopifyProductId,
+    factSheet: row.factsJson === null ? null : (row.factsJson as FactSheet),
+    factCount: row.factCount ?? 0,
+    syncedAt: row.syncedAt,
+  }))
 }
 
 /** One best seller, ready to be written. */

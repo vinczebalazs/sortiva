@@ -55,6 +55,10 @@ const ALLOWED = new Set(
     // Seeds a real description for the chaos scenario to distil, the same way
     // `distill.test.ts` above does.
     'packages/jobs/src/chaos/distill.scenario.ts',
+    // Stores a description on a product and then asserts it is absent from the
+    // bytes `GET /api/products` answers with. Proving the description never
+    // reaches a merchant-facing response means putting one there first.
+    'apps/web/app/api/products/_lib/products-read.test.ts',
   ].map((path) => path.split('/').join(sep)),
 )
 
