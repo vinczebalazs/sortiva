@@ -1,4 +1,5 @@
-import { and, desc, eq, gte, inArray, lt, notInArray } from 'drizzle-orm'
+import { and, desc, eq, gte, inArray, lt, ne, notInArray } from 'drizzle-orm'
+import { OVERRIDE_GATE_OUTCOME } from '@sortiva/core'
 import type { Db } from '../client'
 import { articles, gateDecisions, topics } from '../schema'
 import type { AccountScope } from '../scope'
@@ -56,9 +57,13 @@ export async function insertGateDecision(
 }
 
 /**
- * The most recent decision on this topic for one of the given gates —
- * `GET /api/calendar`'s `rejection` field reads this for a
- * `rejected_by_gate` day, main §8.6's "which gate, plain-language reason".
+ * The most recent decision on this topic for one of the given gates.
+ *
+ * **This is the wrong function for anything that means "the decision that
+ * judged the draft".** Once a merchant publishes over a rejection there is a
+ * second gate-3 row on the topic recording that they overruled us, and it is
+ * the more recent one; ask `gate3DecisionsForTopic` instead, which keeps the
+ * two apart by name.
  */
 export async function findLatestGateDecisionForTopic(
   db: Db,
@@ -81,7 +86,59 @@ export async function findLatestGateDecisionForTopic(
   return row
 }
 
-/** Bulk variant for the calendar list — every topic's latest decision in one query rather than one per topic. */
+/**
+ * The two gate-3 rows that say different things about the same draft.
+ *
+ * `grading` is the decision that judged the words: the per-criterion scores,
+ * the judge's own written objections, and the grader that produced them.
+ * `override` is the row a merchant's "publish anyway" writes on top of it — it
+ * records that they overruled us and what the confirmation restated to them,
+ * and it judges nothing.
+ *
+ * They are separated here rather than at each call site because "the most
+ * recent gate-3 decision" quietly stops meaning "the one that graded the
+ * draft" the moment an override exists, and a screen asking the first question
+ * would be handed the second — showing a merchant who overruled us numbers
+ * with none of the sentences that explain them.
+ */
+export interface Gate3DecisionsForTopic {
+  readonly grading: GateDecisionRow | undefined
+  readonly override: GateDecisionRow | undefined
+}
+
+export async function gate3DecisionsForTopic(
+  db: Db,
+  scope: AccountScope,
+  topicId: string,
+): Promise<Gate3DecisionsForTopic> {
+  const rows = await db
+    .select()
+    .from(gateDecisions)
+    .where(
+      and(
+        eq(gateDecisions.accountId, scope.accountId),
+        eq(gateDecisions.topicId, topicId),
+        eq(gateDecisions.gate, 3),
+      ),
+    )
+    .orderBy(desc(gateDecisions.decidedAt))
+
+  return {
+    grading: rows.find((row) => row.outcome !== OVERRIDE_GATE_OUTCOME),
+    override: rows.find((row) => row.outcome === OVERRIDE_GATE_OUTCOME),
+  }
+}
+
+/**
+ * What stopped each of these topics, in one query rather than one per topic —
+ * the calendar's `rejection` field for a held day: which gate, and the key of
+ * the plain-language reason it recorded.
+ *
+ * An override row is skipped. It is a record of a merchant overruling us, not
+ * of anything being judged, and it carries no reason of its own — so taking it
+ * as the topic's latest decision left the calendar with nothing to say and
+ * falling back to a stock Gate 1 line about a draft Gate 3 had actually read.
+ */
 export async function latestGateDecisionsForTopics(
   db: Db,
   scope: AccountScope,
@@ -91,7 +148,13 @@ export async function latestGateDecisionsForTopics(
   const rows = await db
     .select()
     .from(gateDecisions)
-    .where(and(eq(gateDecisions.accountId, scope.accountId), inArray(gateDecisions.topicId, [...topicIds])))
+    .where(
+      and(
+        eq(gateDecisions.accountId, scope.accountId),
+        inArray(gateDecisions.topicId, [...topicIds]),
+        ne(gateDecisions.outcome, OVERRIDE_GATE_OUTCOME),
+      ),
+    )
     .orderBy(desc(gateDecisions.decidedAt))
 
   const latest = new Map<string, GateDecisionRow>()

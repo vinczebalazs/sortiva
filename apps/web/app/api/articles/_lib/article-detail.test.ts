@@ -11,6 +11,10 @@ import {
   productIdsByShopifyId,
 } from '@sortiva/db'
 import { databaseAvailable, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
+// Deep import, not the `@sortiva/jobs` barrel — the same chain `override.ts`
+// avoids. The override is driven through the code that really writes it, so a
+// hand-built audit row cannot hide what the page does with a real one.
+import { publishAnyway } from '@sortiva/jobs/generation/override-article'
 import { withAccount } from '../../auth/_lib/session'
 import { makeGetArticleHandler } from './library'
 
@@ -128,20 +132,34 @@ describe.skipIf(!available)('reading one article', () => {
     return articleDetailResponseSchema.parse(await response.json())
   }
 
+  /**
+   * The times the story is ordered by are minutes apart on purpose. The
+   * article's own row is timestamped by Postgres and the decision by this
+   * process, so leaving both at "now" puts a few milliseconds of clock
+   * difference between two machines in charge of what the merchant reads.
+   */
+  const REJECTED_AFTER = 60_000
+  const OVERRODE_AFTER = 120_000
+
   const rejectedByTheJudge = async () => {
-    await insertGateDecision(harness.db, accountScope(mine), {
-      topicId,
-      gate: 3,
-      outcome: 'rejected_after_repair',
-      scoresJson: {
-        scores: { informationGain: 2, factualGrounding: 4 },
-        justifications: { informationGain: 'Says nothing a product page does not.' },
-        failed_criteria: ['informationGain'],
+    await insertGateDecision(
+      harness.db,
+      accountScope(mine),
+      {
+        topicId,
+        gate: 3,
+        outcome: 'rejected_after_repair',
+        scoresJson: {
+          scores: { informationGain: 2, factualGrounding: 4 },
+          justifications: { informationGain: 'Says nothing a product page does not.' },
+          failed_criteria: ['informationGain'],
+        },
+        reasonUserFacing: 'gate3.below_quality_bar',
+        promptVersion: 'judge.v1',
+        modelId: 'claude-test',
       },
-      reasonUserFacing: 'gate3.below_quality_bar',
-      promptVersion: 'judge.v1',
-      modelId: 'claude-test',
-    })
+      new Date(Date.now() + REJECTED_AFTER),
+    )
     await markArticleRejectedByGate(harness.db, accountScope(mine), articleId)
   }
 
@@ -234,20 +252,63 @@ describe.skipIf(!available)('reading one article', () => {
   it('records the override on the story once the merchant has overruled us', async () => {
     await rejectedByTheJudge()
     await markArticleOverridden(harness.db, accountScope(mine), articleId)
-    await insertGateDecision(harness.db, accountScope(mine), {
-      topicId,
-      gate: 3,
-      outcome: 'overridden',
-      scoresJson: { scores: { informationGain: 2 } },
-      reasonUserFacing: null,
-      promptVersion: 'judge.v1',
-      modelId: 'claude-test',
-    })
+    await insertGateDecision(
+      harness.db,
+      accountScope(mine),
+      {
+        topicId,
+        gate: 3,
+        outcome: 'overridden',
+        scoresJson: { scores: { informationGain: 2 } },
+        reasonUserFacing: null,
+        promptVersion: 'judge.v1',
+        modelId: 'claude-test',
+      },
+      new Date(Date.now() + OVERRODE_AFTER),
+    )
 
     const body = await read(mine, articleId)
     expect(body.history.map((entry) => entry.event)).toContain('overridden')
     expect(body.article.publishedViaOverride).toBe(true)
     expect(body.article.state).toBe('draft')
+  })
+
+  it('bites: an overridden article still shows the objections the judge wrote', async () => {
+    await rejectedByTheJudge()
+    const overrodeAt = new Date(Date.now() + OVERRODE_AFTER)
+    const result = await publishAnyway(
+      { db: harness.db, now: () => overrodeAt },
+      { accountId: mine, articleId, acknowledgedCriteria: ['informationGain'] },
+    )
+    expect(result.ok).toBe(true)
+
+    const body = await read(mine, articleId)
+
+    // The moment a merchant most needs to read what we objected to is after
+    // they have decided to act against it.
+    expect(body.qualityReport).not.toBeNull()
+    expect(body.qualityReport!.justifications.informationGain).toBe(
+      'Says nothing a product page does not.',
+    )
+    expect(body.qualityReport!.scores.informationGain).toBe(2)
+    expect(body.qualityReport!.scores.factualGrounding).toBe(4)
+    expect(body.qualityReport!.passed).toBe(false)
+    // Still attributable, so the screen can say the sentences are model-written.
+    expect(body.qualityReport!.modelId).toBe('claude-test')
+    expect(body.qualityReport!.promptVersion).toBe('judge.v1')
+  })
+
+  it('bites: the refusal stays in the story after the merchant overrules it', async () => {
+    await rejectedByTheJudge()
+    await publishAnyway(
+      { db: harness.db, now: () => new Date(Date.now() + OVERRODE_AFTER) },
+      { accountId: mine, articleId, acknowledgedCriteria: ['informationGain'] },
+    )
+
+    const events = (await read(mine, articleId)).history.map((entry) => entry.event)
+    expect(events).toContain('rejected')
+    expect(events).toContain('overridden')
+    expect(events.indexOf('rejected')).toBeLessThan(events.indexOf('overridden'))
   })
 
   it('never lets the quarantined product description reach the page', async () => {

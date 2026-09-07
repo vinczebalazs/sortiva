@@ -14,6 +14,32 @@ Class (filled by audit): a: fine as-is | b: promote to spec | c: contradicts spe
 
 ---
 
+## 2026-09-07 — R-OVERRIDE-JUSTIFICATION — Two gate-3 rows, two meanings, and the lookup now says which one it wants
+Decision: a new repository read, `gate3DecisionsForTopic`, returns the topic's gate-3 rows as two named fields — `grading`, the decision that judged the draft's words, and `override`, the row a merchant's "publish anyway" writes on top of it. The article page and the override writer both ask by name. The old "most recent gate-3 decision" read stays, and its remaining caller (Gate 1's link task) genuinely wants the most recent.
+Why: the two questions have the same answer until a merchant overrules a refusal, and different answers afterwards — so the bug could not be seen by reading either call site. Naming the two meanings in the repository puts the distinction where it can only be got wrong once, rather than in each screen that asks.
+Nearest spec: main §8.4 (per-criterion scores, each with a written justification), §8.6 (the override and its audit row); invariants 8, 11, 12.
+
+## 2026-09-07 — R-OVERRIDE-JUSTIFICATION — The calendar skips override rows when it says why a day was held
+Decision: the calendar's per-topic decision lookup (`latestGateDecisionsForTopics`) no longer returns override rows.
+Why: this was a live wrong answer, not a tidy-up. Overriding does not move the topic out of `rejected_by_gate`, so the calendar kept drawing a rejection for that day — and took its reason from the override row, which has none. The fallback then named a stock Gate 1 line ("held for insufficient substance") for a draft Gate 3 had read and graded. That is a template rendering a fact that is not true, which is the failure invariant 8 exists to prevent. The one caller of this lookup is the calendar, and an override row never stopped anything, so no caller loses a meaning it wanted.
+Nearest spec: main §8.6 (per-rejection card: which gate, plain-language reason); invariant 8; ui §6.1.
+
+## 2026-09-07 — R-OVERRIDE-JUSTIFICATION — An overridden article's story keeps the refusal as well as the override
+Decision: the article page's history shows both `rejected` and `overridden` for an article a merchant published anyway, in that order. It previously showed only `overridden`.
+Why: not dictated by the card, and it is a visible change. Being overruled does not undo having been held back, and the previous story read as though we had never objected — the same erasure the card exists to remove, in the column beside it. Both rows exist and both are timestamped; nothing new is inferred.
+Nearest spec: main §8.6; ui §6.3.
+
+## 2026-09-07 — R-OVERRIDE-JUSTIFICATION — The override writer names the refusal by meaning rather than by recency
+Decision: `publishAnyway` reads the refusal it is overruling through the new named lookup instead of "the latest gate-3 row". No behaviour changes today.
+Why: it was correct only because a guard elsewhere refuses a second override, so the argument for its correctness lived in a different file. This makes it correct by what it asks for.
+Nearest spec: main §8.6; invariant 12.
+
+## 2026-09-07 — R-OVERRIDE-JUSTIFICATION — FLAGGED: the monthly summary still counts an overridden topic as held back
+Decision: not changed, and not in this card. `heldBackTopicsInMonth` — the query behind "5 topics were held back by our quality bar" in the monthly email — selects topics still in `rejected_by_gate`, which is where a topic stays after its article is published anyway. So a merchant who overruled us and published is told, weeks later, that we held the topic back. No wrong data is shown (the gate number is right either way); the question is whether "held back" should mean "and it never went out".
+Why it is not fixed here: it is a product choice about what the summary counts, and the honest fix may be that an override moves the topic's state as well as the article's — which is a wider change than a read.
+Nearest spec: main §8.6 (the monthly summary); tech §1.
+
+
 ## 2026-09-04 — T-WAVE5 — The fifth article state is called `cleared_to_deliver`, and is added to the end of the list
 Decision: the new article state the founder asked for is stored as `cleared_to_deliver`, appended after the five values that already existed rather than slotted in beside `in_review`.
 Why: the name had to say the one thing that separates this state from the others — that a person has decided the article goes out — without borrowing a word already in use. `cleared` alone reads as "wiped" as easily as "approved", and `approved` is what the quality gate does, which is precisely what did *not* happen here. `cleared_to_deliver` is the founder's own phrase. Appending rather than inserting is deliberate: Postgres sorts these values in the order they were defined, so slotting the new one into the middle would silently change the result of any query that ever orders by state, for no gain — nothing reads the order today, and nothing should have to be checked for it.

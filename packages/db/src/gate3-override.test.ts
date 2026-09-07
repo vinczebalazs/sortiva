@@ -7,8 +7,10 @@ import {
   articlesAwaitingReview,
   articlesReadyForDelivery,
   findArticleById,
+  gate3DecisionsForTopic,
   gateDecisionsForCalibration,
   insertGateDecision,
+  latestGateDecisionsForTopics,
   markArticleDelivered,
   markArticleInReview,
   markArticleOverridden,
@@ -100,6 +102,60 @@ describe.skipIf(!available)('the override path and the calibration exclusion', (
     // decision that was never made. A zero-row result, not a silent success.
     expect(await markArticleOverridden(db, scope, articleId)).toBeUndefined()
     expect((await findArticleById(db, scope, articleId))?.publishedViaOverride).toBe(false)
+  })
+
+  it('bites: the decision that judged the draft is still findable under the override', async () => {
+    const scope = accountScope(accountId)
+    const { topicId, articleId } = await anArticle('overruled-but-legible')
+    const judgedAt = new Date('2026-09-01T10:00:00.000Z')
+
+    await insertGateDecision(
+      db,
+      scope,
+      {
+        topicId,
+        gate: 3,
+        outcome: 'rejected_after_repair',
+        scoresJson: {
+          scores: { informationGain: 2 },
+          justifications: { informationGain: 'Says nothing a product page does not.' },
+        },
+        reasonUserFacing: 'gate3.below_quality_bar',
+        promptVersion: 'judge.v1',
+        modelId: 'claude-sonnet-5',
+      },
+      judgedAt,
+    )
+    await markArticleRejectedByGate(db, scope, articleId)
+    await markArticleOverridden(db, scope, articleId)
+    await insertGateDecision(
+      db,
+      scope,
+      {
+        topicId,
+        gate: 3,
+        outcome: OVERRIDE_GATE_OUTCOME,
+        scoresJson: { overriddenAt: '2026-09-02T10:00:00.000Z', failedCriteria: ['informationGain'] },
+        reasonUserFacing: null,
+        promptVersion: 'judge.v1',
+        modelId: 'claude-sonnet-5',
+      },
+      new Date('2026-09-02T10:00:00.000Z'),
+    )
+
+    const { grading, override } = await gate3DecisionsForTopic(db, scope, topicId)
+    // The judge's own sentences, not the row that records a merchant
+    // disagreeing with them.
+    expect((grading?.scoresJson as { justifications: Record<string, string> }).justifications).toEqual({
+      informationGain: 'Says nothing a product page does not.',
+    })
+    expect(grading?.reasonUserFacing).toBe('gate3.below_quality_bar')
+    expect(override?.outcome).toBe(OVERRIDE_GATE_OUTCOME)
+
+    // And the calendar's per-topic lookup keeps naming the refusal, not the
+    // reasonless row sitting on top of it.
+    const latest = await latestGateDecisionsForTopics(db, scope, [topicId])
+    expect(latest.get(topicId)?.reasonUserFacing).toBe('gate3.below_quality_bar')
   })
 
   it('leaves the overridden article’s gate decision out of the calibration query', async () => {
