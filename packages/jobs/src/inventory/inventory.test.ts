@@ -1,6 +1,12 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import type pg from 'pg'
-import { accountScope, listStorePages, readStorePageBody } from '@sortiva/db'
+import {
+  accountScope,
+  findOpportunityById,
+  listStorePages,
+  readStorePageBody,
+  upsertOpportunity,
+} from '@sortiva/db'
 import { optimizeRouteFor } from '@sortiva/core'
 import { DbOpportunitySource } from '../scan/opportunity-source'
 import { requestArticleRefresh } from '../generation/request-refresh'
@@ -596,6 +602,50 @@ describe.skipIf(!available)('a whole store into the inventory', () => {
       expect(rows.get(OURS)?.status).toBe('live')
       expect(await addressOf(articleId)).toBe(OURS)
     })
+  })
+
+  it('takes down the suggestion about a collection the merchant deletes', async () => {
+    const WATERPROOFS = 'https://shop.example/collections/waterproofs'
+    await walkWholeStore()
+
+    // A suggestion of the kind the merchant sees on the Opportunities screen:
+    // this collection has nothing written in its search fields. Planted here
+    // rather than detected, because what this test is for is the wiring — that
+    // the walk, on the night it works out a page has gone, is what takes the
+    // card down. The closing itself is proved against real detected rows in
+    // `gone-suggestions.test.ts`.
+    const scope = accountScope(accountId)
+    const { row } = await upsertOpportunity(ctx.db, scope, {
+      accountId,
+      signalType: 'missing_or_weak_metadata',
+      entityType: 'url',
+      entityRef: WATERPROOFS,
+      evidence: [
+        { key: 'seo_title', value: 'missing', source: 'shopify', fetchedAt: new Date().toISOString() },
+      ],
+      confidence: 60,
+      confidenceBand: 'medium',
+      reasonTemplateKey: 'missing_or_weak_metadata.optimize',
+      reasonParams: {},
+      recommendedAction: 'OPTIMIZE',
+      preconditions: [],
+      status: 'new',
+      rulesVersion: 'test-rules-version',
+      limitedIntelligence: true,
+      detectedAt: new Date().toISOString(),
+      rawScore: 1,
+      tasks: [],
+      impactScore: 50,
+      impact: 'medium',
+    })
+
+    store.customCollections = store.customCollections.filter((c) => c.handle !== 'waterproofs')
+    await walkWholeStore()
+
+    expect((await listStorePages(ctx.db, scope)).find((p) => p.url === WATERPROOFS)?.status).toBe('gone')
+    const closed = await findOpportunityById(ctx.db, scope, row.id)
+    expect(closed?.status).toBe('expired')
+    expect(closed?.expiredReason).toBe('entity_deleted')
   })
 
   it('records nothing at all for a store whose connection is gone', async () => {
