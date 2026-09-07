@@ -1,3 +1,4 @@
+import type { ConflictCode } from '@sortiva/core'
 import { t as defaultTranslate, type StringKey, type Translate } from '../strings'
 import { formatDate } from './list'
 import type { OpportunityDetail, OpportunityListResponse, OpportunityRow } from './types'
@@ -46,15 +47,63 @@ export interface ActionSurface {
 }
 
 /**
- * The sentence for a refused transition.
+ * The sentence for every refusal the API has a name for.
  *
+ * A refused press comes back with a machine-readable code saying *which*
+ * refusal it was — the page was deleted, the day is already taken, we have no
+ * permission to write to the store. The point of sending a code rather than a
+ * message is that the screen can say the specific thing; for most of the
+ * product's life this function knew one code out of twenty-one and answered
+ * every other refusal with "this opportunity was updated by the latest scan",
+ * which is untrue of almost all of them.
+ *
+ * Typed against `ConflictCode`, so a code added to the contract with no
+ * sentence here is a compile error as well as a named test failure. That
+ * belt-and-braces is deliberate: a hand-maintained list is exactly how the
+ * missing sentences went unnoticed the first time.
+ *
+ * Two entries point at copy that already exists rather than at new words.
+ * `opportunity_already_updated` really is the generic re-scored case, which is
+ * the sentence the interface spec wrote for it; `service_paused` is the pinned
+ * outage wording the product may not reword.
+ */
+export const CONFLICT_MESSAGE_KEYS: Readonly<Record<ConflictCode, StringKey>> = {
+  domain_already_claimed: 'opportunities.toast.domainAlreadyClaimed',
+  profile_already_confirmed: 'opportunities.toast.profileAlreadyConfirmed',
+  opportunity_already_updated: 'opportunities.toast.conflict',
+  opportunity_not_open: 'opportunities.toast.notOpen',
+  competitor_limit_reached: 'opportunities.toast.competitorLimitReached',
+  competitor_is_own_domain: 'opportunities.toast.competitorIsOwnDomain',
+  optimize_daily_cap_reached: 'opportunities.toast.optimizeDailyCapReached',
+  topic_already_generating: 'opportunities.toast.topicAlreadyGenerating',
+  topic_already_published: 'opportunities.toast.topicAlreadyPublished',
+  topic_pinned: 'opportunities.toast.topicPinned',
+  calendar_day_occupied: 'opportunities.toast.calendarDayOccupied',
+  calendar_date_in_past: 'opportunities.toast.calendarDateInPast',
+  article_not_in_review: 'opportunities.toast.articleNotInReview',
+  article_already_published: 'opportunities.toast.articleAlreadyPublished',
+  article_not_rejected: 'opportunities.toast.articleNotRejected',
+  refresh_within_cooldown: 'opportunities.toast.refreshWithinCooldown',
+  write_scope_required: 'opportunities.toast.writeScopeRequired',
+  target_blog_unresolved: 'opportunities.toast.targetBlogUnresolved',
+  optimize_page_gone: 'opportunities.toast.pageGone',
+  optimize_no_target_query: 'opportunities.toast.noTargetQuery',
+  service_paused: 'appendixA.outage',
+}
+
+/**
  * Every one of these ends the same way — the list is re-read — so the message
  * says what happened rather than offering a retry that would race the same way.
+ *
+ * A code we do not recognise still gets the generic re-scored line rather than
+ * nothing: a refusal the frontend has never heard of is much more likely to be
+ * a stale build than a new kind of failure, and a merchant should never be left
+ * with a button that did nothing and said nothing.
  */
 export function conflictMessage(code: string | null, t: Translate = defaultTranslate): string {
-  if (code === 'opportunity_not_open') return t('opportunities.toast.notOpen')
   if (code === null) return t('opportunities.toast.failed')
-  return t('opportunities.toast.conflict')
+  const key = (CONFLICT_MESSAGE_KEYS as Record<string, StringKey | undefined>)[code]
+  return t(key ?? 'opportunities.toast.conflict')
 }
 
 let counter = 0
