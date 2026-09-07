@@ -6,7 +6,6 @@ import type { Draft } from '../../generation/draft'
 import type { EvidencePack } from '../../generation/evidence-pack'
 import type { InternalLinkTarget } from '../../generation/internal-links'
 import type { LengthTarget } from '../../generation/length'
-import { lexiconFor } from './checkable'
 import {
   checkContradictions,
   type CandidateConflict,
@@ -99,8 +98,6 @@ export interface Gate3Input {
   readonly length: LengthTarget
   readonly internalLinks: readonly InternalLinkTarget[]
   readonly comparisons: readonly ComparisonText[]
-  /** The article's language, which decides whether the word-list checks can run. */
-  readonly languageCode: string | null
   readonly gates: GatesConfig
   readonly generation: GenerationConfig
 }
@@ -135,7 +132,6 @@ function auditOf(
 }
 
 export async function runGate3(deps: Gate3Deps, input: Gate3Input): Promise<Gate3Result> {
-  const lexicon = lexiconFor(input.languageCode)
   const calls = { judge: 0, contradiction: 0, repair: 0 }
 
   const lintFor = (draft: Draft): LintResult =>
@@ -147,7 +143,6 @@ export async function runGate3(deps: Gate3Deps, input: Gate3Input): Promise<Gate
       length: input.length,
       internalLinks: input.internalLinks,
       comparisons: input.comparisons,
-      lexicon,
       gates: input.gates,
       generation: input.generation,
     })
@@ -168,14 +163,14 @@ export async function runGate3(deps: Gate3Deps, input: Gate3Input): Promise<Gate
       calls,
       reasonTemplateKey: reason.key,
       reasonParams: reason.params,
-      audit: auditOf(lints, null, null, { language_checks_ran: lexicon !== null }),
+      audit: auditOf(lints, null, null, {}),
     }
   }
 
   // ---- 2. Contradictions: free to find, paid only to adjudicate. ----
   const contradictions = await checkContradictions(
     { llm: deps.llm, prompt: deps.contradictionPrompt },
-    { accountId: input.accountId, draft: input.draft, lexicon, config: input.gates.draft_lints },
+    { accountId: input.accountId, draft: input.draft, config: input.gates.draft_lints },
   )
   calls.contradiction += contradictions.modelCalls
 
@@ -200,7 +195,6 @@ export async function runGate3(deps: Gate3Deps, input: Gate3Input): Promise<Gate
         candidate_count: contradictions.candidates.length,
         contradiction_prompt_version: contradictions.promptVersion,
         contradiction_model_id: contradictions.modelId,
-        language_checks_ran: lexicon !== null,
       }),
     }
   }
@@ -232,7 +226,7 @@ export async function runGate3(deps: Gate3Deps, input: Gate3Input): Promise<Gate
       calls,
       reasonTemplateKey: null,
       reasonParams: {},
-      audit: auditOf(lints, first.evaluation, first.verdict, { language_checks_ran: lexicon !== null }),
+      audit: auditOf(lints, first.evaluation, first.verdict, {}),
     }
   }
 
@@ -261,7 +255,6 @@ export async function runGate3(deps: Gate3Deps, input: Gate3Input): Promise<Gate
       },
       audit: auditOf(lints, first.evaluation, first.verdict, {
         repair_attempted: false,
-        language_checks_ran: lexicon !== null,
       }),
     }
   }
@@ -294,7 +287,6 @@ export async function runGate3(deps: Gate3Deps, input: Gate3Input): Promise<Gate
       audit: auditOf(repairedLints, first.evaluation, first.verdict, {
         repair_attempted: true,
         repair_failed_on: 'lints',
-        language_checks_ran: lexicon !== null,
       }),
     }
   }
@@ -332,7 +324,6 @@ export async function runGate3(deps: Gate3Deps, input: Gate3Input): Promise<Gate
     audit: auditOf(repairedLints, second.evaluation, second.verdict, {
       repair_attempted: true,
       first_scores: first.verdict.scores,
-      language_checks_ran: lexicon !== null,
     }),
   }
 }

@@ -343,7 +343,6 @@ export async function generateArticle(
       length,
       internalLinks,
       comparisons: await comparisonTextsFor(deps.db, scope, article.id, pack),
-      languageCode: input.locale.languageCode,
       gates,
       generation,
     },

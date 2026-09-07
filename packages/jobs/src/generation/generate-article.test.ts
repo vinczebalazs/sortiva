@@ -11,6 +11,7 @@ import {
 import { accountScope, schema, type Db } from '@sortiva/db'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
 import { loadPrompt, MockLlmClient } from '@sortiva/llm'
+import { DRAFT_PROMPT_MAJOR_VERSION } from './prompts'
 import type { PageFetcher } from '@sortiva/providers'
 import { generateArticle } from './generate-article'
 
@@ -27,7 +28,7 @@ import { generateArticle } from './generate-article'
 const available = await databaseAvailable()
 const NOW = new Date('2026-09-03T07:00:00.000Z')
 const CLAIM_PLAN_PROMPT = loadPrompt('claim-plan', 1)
-const DRAFT_PROMPT = loadPrompt('draft', 1)
+const DRAFT_PROMPT = loadPrompt('draft', DRAFT_PROMPT_MAJOR_VERSION)
 const JUDGE_PROMPT = loadPrompt('judge', 1)
 const CONTRADICTION_PROMPT = loadPrompt('contradiction', 1)
 const REVISE_PROMPT = loadPrompt('revise', 1)
