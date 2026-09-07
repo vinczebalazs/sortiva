@@ -779,6 +779,29 @@ back for capacity reasons any more — the queue is worked until it is empty. De
 founder's earlier choice) and `T10.4` still cannot run without the Shopify development store they
 deliberately deferred.
 
+### Ten cards landed and merged green. `main` at 300 test files, 3,794 tests, gate eleven of eleven
+
+`R-SIGNAL-COPY` was the tenth: nearly every card on the Opportunities screen said "the reasoning for this
+one isn't available yet", and all twelve of the weekly scan's signals now explain themselves.
+**One of the two supposedly missing signal names was worse than missing** — the copy existed, filed under
+a key the engine does not build, so written words sat unreachable while the merchant read a
+machine-prettified key. Third instance of declared-and-consumed-but-never-compared, and the nastiest,
+because both halves look present from every direction anyone had checked.
+
+**On the sign-in test, and on running a gate on a contended machine.** Six tests failed on one full run
+and two on the next, all at a five-second timeout, all in the known wall-clock set. Load average reached
+**199 on twelve cores** — other, unrelated sessions were running on this machine. Established rather than
+assumed: names captured first; all the files pass in isolation in about a second; and **a final full run
+on a quiet machine passed all 3,794.** `apps/web/app/(public)/_lib/signin-wire.test.ts` is the fifth
+member of `R-TESTDB`'s residue and the **most** load-sensitive of the five — it failed in two of three
+runs. It builds real Auth.js handlers and does a full anti-forgery exchange, so it is heavy by
+construction rather than slow by accident.
+
+**One unexplained event, recorded rather than smoothed over.** In one chained gate invocation `pnpm build`
+produced no output and `pnpm smoke:boot` then reported no production build in `apps/web/.next`. Run
+again on their own, both passed. **The cause was not established** — the machine was at load 199 at the
+time, and that is a correlation, not an explanation. Worth knowing if it recurs.
+
 ### Nine cards landed and merged green. `main` at 300 test files, 3,790 tests, gate eleven of eleven
 
 Landed since the handover, each merged and gated separately: `R-SCANCOPY`, `R-PAGE-GONE-READ`, `T7.2`,

@@ -746,6 +746,25 @@ carries the shape it must satisfy, which already exists as a zod schema in
 `packages/core/src/api/schemas.ts` — the contract described these endpoints correctly all along, so
 none of these cards is designing an interface, only implementing one.
 
+### Three from `R-SIGNAL-COPY`, landed 2026-09-07
+
+**R-FIXTURE-KEYS — fixtures describe a screen state the product can no longer produce** · Lane C
+Scope: `R-SIGNAL-COPY` deleted two orphan copy keys — `striking_distance.page_one_intent_mismatch` and `uncovered_commercial_query.no_suitable_url` — after establishing the engine never produced either. **Five fixture files outside Lane F still name them**: `packages/core/src/contracts/fixtures.ts:62,84`, `packages/core/src/api/api.test.ts:102`, `packages/core/src/calendar/replenishment.test.ts:41,59`, `packages/jobs/src/generation/m4-flow.test.ts:168,273`, `apps/web/e2e/content-state.ts:59`. **Nothing fails**, because they carry the key as data and never look it up — which is exactly the problem: the fixtures now describe a card the product cannot make, and the guard added by that card checks the engine's keys, not what a fixture claims.
+Read first: `DECISIONS.md` 2026-09-07 `R-SIGNAL-COPY` entries; invariant 8.
+Done when: no fixture names a key the catalogue does not hold; and a test asserts that — every `templateKey:` literal in a fixture resolves to a real catalogue key. **The lane that found this scoped its own fixtures and deliberately left the rest**; the check is a few lines and belongs with them.
+
+**R-INDEXING-SPLIT — one sentence covers two different problems** · Lane C
+Scope: `indexing_issue.fix`'s only parameter is a machine code — `not_indexed` or `canonical_mismatch` — so `R-SIGNAL-COPY` wrote one sentence covering both ("not indexed, or being folded into another page") rather than printing a machine word to a merchant. Honest, and less than the merchant could be told: not being indexed at all and being folded into another page are different problems with different remedies.
+Read first: `DECISIONS.md` 2026-09-07 `R-SIGNAL-COPY` entries; main §11, §7.3.
+Done when: the two conditions produce two reason keys from `packages/core/src/.../reasons.ts` and read as two different sentences; and the guard that pins each reason's parameters against its producer still passes.
+Note: **producer-side, which is why the copy card could not do it.**
+
+**R-PLURALS — the copy catalogue cannot say "1 page"** · Lane F
+Scope: the string catalogue has no singular and plural forms, so a sentence with a count prints "1 pages". **Two shipped sentences already do this**, `template.catalog_richness_gap.insufficient_substance` among them. `R-SIGNAL-COPY` had ten more sentences whose count can legitimately be one and **phrased around every one of them** rather than shipping ten new faults — printing only values safe at any size, and listing the unused parameters in `COUNTS_PHRASED_AROUND` so it reads as a decision. That is a workaround, and it costs the sentences some directness.
+Read first: `DECISIONS.md` 2026-09-07 `R-SIGNAL-COPY` entries; main Appendix A; invariant 24 (canonical strings verbatim).
+Done when: a sentence can carry a count and read correctly at one and at many; the two shipped faults are fixed; and the phrased-around sentences are revisited, or the list records deliberately that they stay as they are.
+Note: **this changes the renderer every lane shares**, which is why the card exists rather than the fix. Whoever takes it should say what it does to the canonical strings held by snapshot tests.
+
 ### Four findings from `R-ARTICLE-OURS` and `R-API-ARTICLES`, both landed 2026-09-07
 
 **R-HANDLE-RENAME — a merchant renaming our article's address breaks the link for ever** · **needs a founder decision**
