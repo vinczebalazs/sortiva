@@ -321,6 +321,23 @@ export async function markStorePagesGoneNotSeenSince(
   return marked.length
 }
 
+/**
+ * The addresses this store no longer serves.
+ *
+ * Read as a status rather than inferred from an absence: a deleted page keeps
+ * its row, because the walk can find it again and put it straight back, so a
+ * row that is missing altogether means "we have never seen this address", which
+ * is a different thing entirely.
+ */
+export async function goneStorePageUrls(db: Db, scope: AccountScope): Promise<string[]> {
+  const rows = await db
+    .select({ url: storePages.url })
+    .from(storePages)
+    .where(and(eq(storePages.accountId, scope.accountId), eq(storePages.status, 'gone')))
+    .orderBy(storePages.url)
+  return rows.map((row) => row.url)
+}
+
 export async function listStorePages(
   db: Db,
   scope: AccountScope,

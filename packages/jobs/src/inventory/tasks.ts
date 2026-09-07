@@ -28,6 +28,7 @@ import {
 import { tryWithAccountLock } from '../runtime/lock'
 import { runtimeLogger } from '../runtime/logging'
 import { registerTask } from '../runtime/tasks'
+import { closeSuggestionsForGonePages } from './gone-suggestions'
 import { ShopifyInventorySource } from './source'
 import { INVENTORY_SYNC_TASK, enqueueInventorySync, type InventorySyncPayload } from './queue'
 import type { InventoryTaskDeps } from './deps'
@@ -128,9 +129,17 @@ export async function runInventorySync(
       PAGES_PER_RUN,
     )
     logResult(log, payload.accountId, result, 'walk')
-    return result.next
-      ? { status: 'more', cursor: result.next, result }
-      : { status: 'done', result }
+    if (result.next) return { status: 'more', cursor: result.next, result }
+
+    // Only the batch that reached the end of the store gets here, which is the
+    // same thing that lets a page be marked gone at all. A suggestion about a
+    // page the merchant has deleted cannot be acted on, so it comes down on the
+    // night we find out rather than waiting for the weekly detection pass.
+    await closeSuggestionsForGonePages(
+      { db, ...(deps.now ? { now: deps.now } : {}), logger: log },
+      payload.accountId,
+    )
+    return { status: 'done', result }
   } catch (error) {
     // A dead token is not a retryable failure — only the merchant can fix it —
     // and it is not a reason to stop the rest of this store's work either. It is

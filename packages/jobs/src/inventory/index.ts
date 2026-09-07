@@ -17,6 +17,12 @@ export {
 } from './drain'
 
 export {
+  closeSuggestionsForGonePages,
+  type CloseGoneSuggestionsDeps,
+  type CloseGoneSuggestionsResult,
+} from './gone-suggestions'
+
+export {
   ShopifyInventorySource,
   type ShopifyInventorySourceOptions,
 } from './source'
