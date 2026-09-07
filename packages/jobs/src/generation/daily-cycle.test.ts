@@ -9,6 +9,7 @@ import {
 import { accountScope, articlesReadyForDelivery, schema, tripAccountFlag, type Db } from '@sortiva/db'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
 import { loadPrompt, MockLlmClient } from '@sortiva/llm'
+import { DRAFT_PROMPT_MAJOR_VERSION } from './prompts'
 import type { PageFetcher } from '@sortiva/providers'
 import { DbNotificationEmitter } from '../notify/emitter'
 import { runDailyGenerationForAccount } from './daily-cycle'
@@ -31,7 +32,7 @@ const TODAY = '2026-09-03'
 const TOMORROW = '2026-09-04'
 
 const CLAIM_PLAN_PROMPT = loadPrompt('claim-plan', 1)
-const DRAFT_PROMPT = loadPrompt('draft', 1)
+const DRAFT_PROMPT = loadPrompt('draft', DRAFT_PROMPT_MAJOR_VERSION)
 const JUDGE_PROMPT = loadPrompt('judge', 1)
 const CONTRADICTION_PROMPT = loadPrompt('contradiction', 1)
 const REVISE_PROMPT = loadPrompt('revise', 1)

@@ -2,7 +2,7 @@ import { EXTRACTED_FIELDS } from '../../distill/schema'
 import { deterministicDerivedClaims, deterministicMerchantClaims, type ClaimPlan, type PlannedClaim } from '../../generation/claims'
 import type { Draft } from '../../generation/draft'
 import type { EvidencePack } from '../../generation/evidence-pack'
-import { checkableKindsIn, numbersIn, type CheckableLexicon } from './checkable'
+import { checkableKindsIn, numbersIn } from './checkable'
 import { sentencesOf, type ProseSentence } from './prose'
 
 /**
@@ -13,9 +13,11 @@ import { sentencesOf, type ProseSentence } from './prose'
  * Three failures live here, in the order they matter:
  *
  * 1. **An uncited assertion.** The sentence carries a number, a measurement, a
- *    superlative, an absolute, an attribution or a comparison and has no
- *    citation marker at all. Forgetting to cite must be a failure, or it
- *    becomes the cheapest route to an unsupported claim.
+ *    percentage or a duration and has no citation marker at all. Forgetting to
+ *    cite must be a failure, or it becomes the cheapest route to an
+ *    unsupported claim. This half works in every language, because a figure
+ *    has the same shape in all of them; the citation a superlative or a
+ *    comparison needs is asked for in the writing prompt instead.
  * 2. **A citation that does not resolve**, or a number in the sentence that
  *    appears in none of the claims it cites — the marker is there, but it is
  *    pointing at something else.
@@ -153,7 +155,6 @@ export function checkCitations(
   draft: Draft,
   plan: ClaimPlan,
   pack: EvidencePack,
-  lexicon: CheckableLexicon | null,
 ): CitationCheckResult {
   const byId = new Map(plan.claims.map((c) => [c.id, c]))
   const reDerived = reDerivedClaimTexts(pack)
@@ -162,7 +163,7 @@ export function checkCitations(
 
   for (const sentence of sentences) {
     const base = { location: sentence.block.label, sentence: sentence.plain }
-    const kinds = checkableKindsIn(sentence.plain, lexicon)
+    const kinds = checkableKindsIn(sentence.plain)
 
     if (kinds.length > 0 && sentence.citedClaimIds.length === 0) {
       issues.push({

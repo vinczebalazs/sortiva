@@ -11,6 +11,7 @@ import {
   type TestDb,
 } from '@sortiva/db/testing'
 import { loadPrompt } from '@sortiva/llm'
+import { DRAFT_PROMPT_MAJOR_VERSION } from './prompts'
 import { sweepGenerationCycles, type GenerationTaskDeps } from './tasks'
 
 /**
@@ -67,7 +68,7 @@ describe.skipIf(!available)('the generation-cycle sweep', () => {
         rankedKeywords: () => Promise.reject(new Error('not called')),
       },
       claimPlanPrompt: loadPrompt('claim-plan', 1),
-      draftPrompt: loadPrompt('draft', 1),
+      draftPrompt: loadPrompt('draft', DRAFT_PROMPT_MAJOR_VERSION),
       judgePrompt: loadPrompt('judge', 1),
       contradictionPrompt: loadPrompt('contradiction', 1),
       revisePrompt: loadPrompt('revise', 1),

@@ -5,7 +5,6 @@ import type { EvidencePack } from '../../generation/evidence-pack'
 import { meetsInternalLinkMinimum, type InternalLinkTarget } from '../../generation/internal-links'
 import type { LengthTarget } from '../../generation/length'
 import { containsCurrencyFigure, currencyFiguresIn } from '../../generation/product-refs'
-import type { CheckableLexicon } from './checkable'
 import { checkCitations } from './citations'
 import { checkNearDuplicate, type ComparisonText } from './duplication'
 import { blocksOf, draftPlainText, draftWordCount, stripMarkers, wordsIn } from './prose'
@@ -61,7 +60,6 @@ export interface LintInput {
   readonly internalLinks: readonly InternalLinkTarget[]
   /** The store's own earlier articles and the pages currently ranking, to compare against. */
   readonly comparisons: readonly ComparisonText[]
-  readonly lexicon: CheckableLexicon | null
   readonly gates: GatesConfig
   readonly generation: GenerationConfig
 }
@@ -104,7 +102,7 @@ export function runLints(input: LintInput): LintResult {
     issues.push({ category: 'structure', kind: issue.kind, location: issue.location, detail: issue.detail })
   }
 
-  const citations = checkCitations(input.draft, input.plan, input.pack, input.lexicon)
+  const citations = checkCitations(input.draft, input.plan, input.pack)
   for (const issue of citations.issues) {
     issues.push({
       category: 'citations',
@@ -115,7 +113,7 @@ export function runLints(input: LintInput): LintResult {
     })
   }
 
-  const strength = checkAssertionStrength(input.draft, input.plan, input.lexicon)
+  const strength = checkAssertionStrength(input.draft, input.plan)
   for (const issue of strength.issues) {
     issues.push({
       category: 'assertion_strength',

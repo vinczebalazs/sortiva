@@ -78,7 +78,6 @@ function input(draft: Draft) {
     length,
     internalLinks: [],
     comparisons: [],
-    languageCode: 'en',
     gates: config.gates,
     generation: config.generation,
   }
@@ -136,6 +135,62 @@ describe('runGate3 — the free checks come first', () => {
     const citationIssues = result.lints.issues.filter((i) => i.category === 'citations')
     expect(citationIssues.map((i) => i.kind)).toContain('uncited_checkable_content')
     expect(citationIssues[0]!.sentence).toContain('12 kg')
+  })
+
+  /**
+   * The same uncited figure, written in Danish. The store publishes in Danish,
+   * nothing in the product holds a list of Danish words, and the draft is
+   * still turned down before a single model call — because a figure has the
+   * same shape in every language. This is the half of the citation check that
+   * had to survive the word lists being removed.
+   */
+  it('fails the same uncited figure written in Danish, on the same free check', async () => {
+    const draft = passingDraft(plan)
+    const uncited: Draft = {
+      ...draft,
+      sections: [
+        ...draft.sections,
+        { heading: 'Vægt', body: 'En pakket weekendtaske vejer omkring 12 kg for de fleste vandrere.' },
+      ],
+    }
+
+    const llm = new RecordingLlmClient({})
+    const result = await runGate3({ llm, judgePrompt: JUDGE_PROMPT, contradictionPrompt: CONTRADICTION_PROMPT }, input(uncited))
+
+    expect(result.outcome).toBe('rejected_lint')
+    expect(llm.requests).toHaveLength(0)
+    const citationIssues = result.lints.issues.filter((i) => i.category === 'citations')
+    expect(citationIssues.map((i) => i.kind)).toContain('uncited_checkable_content')
+    expect(citationIssues[0]!.sentence).toContain('12 kg')
+  })
+
+  /**
+   * The bar is now the same one in both languages, which is the whole point of
+   * the change: an uncited superlative used to be caught in English and never
+   * in Danish. It is caught in neither now — the writing prompt asks for the
+   * citation instead — and the two drafts get the identical verdict.
+   */
+  it('gives an uncited superlative the same verdict in English and in Danish', async () => {
+    const withSentence = (heading: string, body: string): Draft => {
+      const draft = passingDraft(plan)
+      return { ...draft, sections: [...draft.sections, { heading, body }] }
+    }
+
+    const english = new RecordingLlmClient({ 'judge.v1': verdict() })
+    const danish = new RecordingLlmClient({ 'judge.v1': verdict() })
+
+    const englishResult = await runGate3(
+      { llm: english, judgePrompt: JUDGE_PROMPT, contradictionPrompt: CONTRADICTION_PROMPT },
+      input(withSentence('Waterproofing', 'This is the most waterproof boot we stock.')),
+    )
+    const danishResult = await runGate3(
+      { llm: danish, judgePrompt: JUDGE_PROMPT, contradictionPrompt: CONTRADICTION_PROMPT },
+      input(withSentence('Vandtæthed', 'Dette er den mest vandtætte støvle vi har.')),
+    )
+
+    expect(danishResult.outcome).toBe(englishResult.outcome)
+    expect(danishResult.calls).toEqual(englishResult.calls)
+    expect(danishResult.lints.issues.map((i) => i.kind)).toEqual(englishResult.lints.issues.map((i) => i.kind))
   })
 
   it('a draft leaking our own vocabulary into the body fails structurally', async () => {

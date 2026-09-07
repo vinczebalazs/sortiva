@@ -2,7 +2,7 @@ import type { GatesConfig } from '@sortiva/rules'
 import { accountAttribution } from '../../contracts/analytics'
 import type { LlmClient, LlmRequest } from '../../contracts/llm'
 import type { Draft } from '../../generation/draft'
-import { containsWord, numbersIn, type CheckableLexicon } from './checkable'
+import { numbersIn } from './checkable'
 import { sentencesOf, type ProseSentence } from './prose'
 
 /**
@@ -13,23 +13,30 @@ import { sentencesOf, type ProseSentence } from './prose'
  * individually fine. This is the failure that embarrasses a merchant most, and
  * catching it means looking at the document as a whole.
  *
- * The work is split so almost all of it is free. Every number, threshold,
- * recommendation and absolute statement is extracted and **grouped
- * deterministically by what it is about**; agreement inside a group is
- * required arithmetically. Only pairs that genuinely disagree — same subject,
- * same direction, different figure — become *candidates*, and only candidates
- * are put to a model, whose single job is to say whether the two statements
- * are scoped differently ("above 300 kg for the outdoor range") or really do
- * conflict. A draft with no candidates costs nothing.
+ * The work is split so almost all of it is free. Every number and threshold is
+ * extracted and **grouped deterministically by what it is about**; agreement
+ * inside a group is required arithmetically. Only pairs that genuinely
+ * disagree — same subject, same direction, different figure — become
+ * *candidates*, and only candidates are put to a model, whose single job is to
+ * say whether the two statements are scoped differently ("above 300 kg for the
+ * outdoor range") or really do conflict. A draft with no candidates costs
+ * nothing.
+ *
+ * **Only figures are extracted, in every language.** Advice pointing two ways
+ * ("we recommend the Alpha" / "we would not recommend the Alpha") used to be
+ * extracted too, by matching a list of English verbs — which meant a Danish
+ * store's article was never examined for it at all. The list is gone rather
+ * than translated; what a figure looks like is the same everywhere, so what
+ * survives is what every store already had. See DECISIONS 2026-09-04.
  */
 
-export type StatementKind = 'threshold' | 'quantity' | 'recommendation' | 'absolute'
+export type StatementKind = 'threshold' | 'quantity'
 
 export interface ExtractedStatement {
   readonly kind: StatementKind
   readonly location: string
   readonly sentence: string
-  /** `above` / `below` / `exactly` for a numeric statement; `for` / `against` for advice. */
+  /** `above`, `below` or `exactly`. */
   readonly direction: string
   readonly value: number | null
   readonly unit: string | null
@@ -121,7 +128,7 @@ function normaliseUnit(unit: string): string {
   return lower.replace(/s$/, '')
 }
 
-export function extractStatements(draft: Draft, lexicon: CheckableLexicon | null): ExtractedStatement[] {
+export function extractStatements(draft: Draft): ExtractedStatement[] {
   const statements: ExtractedStatement[] = []
 
   for (const sentence of sentencesOf(draft)) {
@@ -142,27 +149,6 @@ export function extractStatements(draft: Draft, lexicon: CheckableLexicon | null
     if (measured.length === 0) {
       for (const value of numbersIn(sentence.plain)) {
         statements.push({ ...base, kind: 'quantity', direction: directionOf(lower), value, unit: null })
-      }
-    }
-
-    if (lexicon) {
-      if (containsWord(lower, lexicon.recommendationVerbs)) {
-        statements.push({
-          ...base,
-          kind: 'recommendation',
-          direction: containsWord(lower, lexicon.negations) ? 'against' : 'for',
-          value: null,
-          unit: null,
-        })
-      }
-      if (containsWord(lower, lexicon.absolutes)) {
-        statements.push({
-          ...base,
-          kind: 'absolute',
-          direction: containsWord(lower, lexicon.negations) ? 'against' : 'for',
-          value: null,
-          unit: null,
-        })
       }
     }
   }
@@ -193,11 +179,9 @@ function disagrees(a: number, b: number, tolerance: number): boolean {
 }
 
 /**
- * Pairs that genuinely disagree, found without a model. Two numeric statements
+ * Pairs that genuinely disagree, found without a model. Two statements
  * conflict when they measure the same unit, point the same way and name
- * different figures about an overlapping subject; two pieces of advice or two
- * absolutes conflict when they are about the same thing and point opposite
- * ways.
+ * different figures about an overlapping subject.
  */
 export function candidateConflicts(
   statements: readonly ExtractedStatement[],
@@ -222,11 +206,6 @@ export function candidateConflicts(
           b,
           reason: `${a.direction} ${a.value}${a.unit ?? ''} in one place and ${b.direction} ${b.value}${b.unit ?? ''} in another, about the same thing`,
         })
-        continue
-      }
-
-      if (a.value === null && b.value === null && a.direction !== b.direction) {
-        candidates.push({ a, b, reason: `one of these is for and the other against, about the same thing` })
       }
     }
   }
@@ -302,11 +281,10 @@ export async function checkContradictions(
   input: {
     readonly accountId: string
     readonly draft: Draft
-    readonly lexicon: CheckableLexicon | null
     readonly config: GatesConfig['draft_lints']
   },
 ): Promise<ContradictionCheckResult> {
-  const candidates = candidateConflicts(extractStatements(input.draft, input.lexicon), input.config)
+  const candidates = candidateConflicts(extractStatements(input.draft), input.config)
 
   if (candidates.length === 0) {
     return { passed: true, candidates, contradictions: [], modelCalls: 0, promptVersion: null, modelId: null }
