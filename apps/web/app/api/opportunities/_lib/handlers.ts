@@ -2,15 +2,19 @@ import {
   GENERATING,
   NO_RECOMMENDATION,
   OPPORTUNITY_ACTIONS,
+  isScanWeekday,
   listOpportunitiesQuerySchema,
   listOpportunitiesResponseSchema,
+  nextWeeklyScanAt,
   opportunityDetailResponseSchema,
   opportunitySchema,
+  scanLocalDay,
   scheduleOpportunityRequestSchema,
   scheduleOpportunityResponseSchema,
   serpSnapshotKey,
   toContractOpportunity,
   toDrawerRecommendation,
+  weeklyScanRunId,
   type ConflictCode,
   type DrawerRecommendation,
   type Opportunity,
@@ -18,10 +22,12 @@ import {
 import {
   findFreshSerpSnapshot,
   findOpportunityById,
+  findSignalRun,
   latestOptimizeRecommendation,
   listOpenOpportunities,
   listOptimizeTasks,
   listSignalRuns,
+  readAccountSettings,
   readPersona,
   resultsOf,
   systemScope,
@@ -37,6 +43,11 @@ import {
 // `TopicSchedulingError` live behind the same barrel chain.
 import { DbTopicScheduler, TopicSchedulingError } from '@sortiva/jobs/generation/topic-scheduler'
 import { dismissOpportunity } from '@sortiva/jobs/generation/veto-topic'
+// The same two questions the scan itself asks before it runs for an account,
+// asked by calling the same functions rather than by re-deriving the answers
+// here — a second opinion about whether a store's engine is running is how a
+// screen ends up promising work that will not happen.
+import { accountLifecycleGate, mayAccountWorkRun } from '@sortiva/jobs/runtime/gate'
 import { rules } from '@sortiva/rules'
 import type { AccountHandler } from '../../auth/_lib/session'
 
@@ -154,6 +165,58 @@ function parseListQuery(url: string): Record<string, string | string[]> {
   return out
 }
 
+/**
+ * When this store is next scanned, or `null` when we cannot honestly say one
+ * is coming.
+ *
+ * The weekly scan wakes hourly and takes every store whose own calendar says
+ * Monday, so the answer is that store's next local Monday — not seven days
+ * after the last scan, which would name a weekday we do not control and would
+ * be wrong for every store whose scan was skipped or delayed.
+ *
+ * Three things make the answer `null`, and each is a store for which no scan
+ * is in fact scheduled:
+ *
+ * - a kill switch is up (the product as a whole, or this account), which is
+ *   the same check the scan makes before it starts;
+ * - the account's engine is stopped — deleted, not paid up, or the merchant
+ *   has switched vacation mode on;
+ * - this store's own Monday has already been scanned, in which case the
+ *   answer is next Monday rather than a scan that has already happened.
+ *
+ * The middle one is deliberately quieter than the machinery: the sweep does
+ * not currently consult the lifecycle gate, so an unpaid store is still
+ * scanned. Saying nothing to a merchant we are not charging is safe; telling
+ * one that work is scheduled and then stopping is not. Read access is never
+ * taken away by any of this — the screen renders in full, it simply carries no
+ * timing line. See DECISIONS 2026-09-07 R-NEXTSCAN.
+ */
+async function nextScanAtFor(
+  deps: OpportunitiesDeps,
+  scope: AccountScope,
+  now: Date,
+): Promise<string | null> {
+  const [switches, lifecycle, settings] = await Promise.all([
+    mayAccountWorkRun(deps.db, scope.accountId),
+    accountLifecycleGate(deps.db, scope.accountId),
+    readAccountSettings(deps.db, scope),
+  ])
+  if (!switches.allowed || !lifecycle.generationAllowed) return null
+
+  const today = scanLocalDay(now, settings.timezone)
+  const thisMondayRun = isScanWeekday(today)
+    ? await findSignalRun(deps.db, scope, weeklyScanRunId(scope.accountId, today.date))
+    : undefined
+
+  const at = nextWeeklyScanAt({
+    now,
+    timeZone: settings.timezone,
+    scanRuns: true,
+    currentLocalDayAlreadyScanned: thisMondayRun?.finishedAt != null,
+  })
+  return at ? at.toISOString() : null
+}
+
 export function makeListOpportunitiesHandler(deps: OpportunitiesDeps): AccountHandler {
   return async (request, { scope }) => {
     const parsed = listOpportunitiesQuerySchema.safeParse(parseListQuery(request.url))
@@ -197,14 +260,13 @@ export function makeListOpportunitiesHandler(deps: OpportunitiesDeps): AccountHa
 
     const runs = await listSignalRuns(deps.db, scope)
     const lastFinished = runs.find((r) => r.finishedAt)
+    const now = (deps.now ?? (() => new Date()))()
 
     const body = {
       opportunities: sorted.map(({ row, opportunity }) => serialise(row, opportunity)),
       counts: { open: opportunities.length, byAction },
       lastScanAt: lastFinished?.finishedAt ? lastFinished.finishedAt.toISOString() : null,
-      // Nothing schedules a next-scan prediction anywhere in this codebase;
-      // null is the honest answer rather than a guessed cadence string.
-      nextScanAt: null,
+      nextScanAt: await nextScanAtFor(deps, scope, now),
       limitedIntelligence: opportunities.some(({ opportunity }) => opportunity.limitedIntelligence),
       // No cursor pagination in this card's own implementation — a store's
       // open-opportunity count is small enough that one page covers it
