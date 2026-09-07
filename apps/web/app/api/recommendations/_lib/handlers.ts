@@ -54,6 +54,10 @@ import {
   enqueueOptimizeGeneration,
   enqueueOpportunityOutcomeMeasurement,
 } from '@sortiva/jobs/optimize/queue'
+// The refresh pool's front door, reached by the same kind of deep import and
+// for the same reason: an improve-this-page press that lands on an article we
+// published becomes a rewrite waiting for a calendar day.
+import { requestArticleRefresh } from '@sortiva/jobs/generation/request-refresh'
 import { rules } from '@sortiva/rules'
 import type { AccountHandler } from '../../auth/_lib/session'
 
@@ -268,14 +272,31 @@ export function makeGenerateRecommendationHandler(deps: RecommendationsDeps): Ac
 
     // An article we published for this store is not something we hand the
     // merchant a list of edits for: we can rewrite it ourselves, through the
-    // same evidence and the same quality bar the first draft went through. The
-    // pool those rewrites wait in is not built yet, so this refuses rather than
-    // producing the thing the product says it should not produce.
+    // same evidence and the same quality bar the first draft went through.
+    //
+    // So the press produces no recommendation — but it is no longer a dead end
+    // either. The article goes into the pool of rewrites waiting for a calendar
+    // day, which is where this kind of work belongs, and the answer says so.
+    // Nothing here reaches the calendar: the pool competes for days through the
+    // ordinary replenishment pass, under the cap that stops rewrites crowding
+    // out new coverage.
     const page = await storePageFor(deps.db, scope, opportunity.entityRef)
     if (page && optimizeRouteFor(page.pageType) === 'refresh_pool') {
+      const admitted = page.articleId
+        ? await requestArticleRefresh(
+            { db: deps.db, now: () => now },
+            {
+              accountId: scope.accountId,
+              articleId: page.articleId,
+              source: 'optimize_on_our_own_article',
+            },
+          )
+        : null
       return conflict(
         'opportunity_not_open',
-        'We published this article, so we rewrite it rather than hand you edits for it.',
+        admitted?.ok
+          ? 'We published this article, so we rewrite it rather than hand you edits for it. It is queued for a rewrite.'
+          : 'We published this article, so we rewrite it rather than hand you edits for it.',
       )
     }
 

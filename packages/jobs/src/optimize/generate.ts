@@ -18,6 +18,10 @@ import {
   type OptimizeRecommendation,
   type RecommendationPrompt,
 } from '@sortiva/core'
+// The refresh pool's front door, one directory over: an improve-this-page
+// suggestion that landed on an article we published goes there instead of
+// being answered with a list of edits.
+import { requestArticleRefresh } from '../generation/request-refresh'
 import {
   accountScope,
   countOptimizeGenerationsSince,
@@ -320,6 +324,20 @@ async function runGeneration(
     (candidate) => normalisePageUrl(candidate.url) === wanted,
   )
   if (page && optimizeRouteFor(page.pageType) === 'refresh_pool') {
+    // Not a dead end: the suggestion goes into the pool of articles waiting to
+    // be rewritten, so the merchant ends up with work they can see rather than
+    // a card whose only button says no. Admitting the same article twice is
+    // the same piece of work, so a retried run costs nothing.
+    if (page.articleId) {
+      await requestArticleRefresh(
+        { db: deps.db, now: () => now, logger: log },
+        {
+          accountId: input.accountId,
+          articleId: page.articleId,
+          source: 'optimize_on_our_own_article',
+        },
+      )
+    }
     return { status: 'skipped', reason: 'our_own_article_goes_to_the_refresh_pool' }
   }
 
