@@ -138,15 +138,108 @@ export const OPPORTUNITY_REASON_KEYS: readonly string[] = [
 ]
 
 /**
+ * The three values every deterministic check hands the renderer when it stops a
+ * draft: how many faults it found, and where and what the first one was.
+ *
+ * Mirrors `lintReason` in `packages/core/src/gates/gate3/gate3.ts`, which
+ * builds the key `gate3.<category>` for each of the eight categories below.
+ */
+const LINT_REASON_PARAMS: readonly string[] = ['issue_count', 'first_location', 'first_detail']
+
+/**
+ * The values the quality gate hands the renderer, per reason.
+ *
+ * Mirrors `runGate3` in `packages/core/src/gates/gate3/gate3.ts`, the only
+ * producer of these keys, exactly as `SCAN_REASON_PARAMS` mirrors the weekly
+ * scan's. The eight lint categories come from `LintCategory`; the last three are
+ * written by the grader's own branches.
+ *
+ * **`first_justification` is the one sentence in the product a model wrote.**
+ * Everywhere else the words are ours and the engine supplies only numbers. The
+ * founder ruled on 2026-09-04 that the grader's written objection may reach a
+ * merchant, and that it is always in English whatever language the store
+ * publishes in, because a mixed-language sentence is worse than either language
+ * alone. It is passed through word for word and nothing rewrites it.
+ */
+export const GATE_REASON_PARAMS: Readonly<Record<string, readonly string[]>> = {
+  'gate3.structure': LINT_REASON_PARAMS,
+  'gate3.citations': LINT_REASON_PARAMS,
+  'gate3.assertion_strength': LINT_REASON_PARAMS,
+  'gate3.volatile_values': LINT_REASON_PARAMS,
+  'gate3.length': LINT_REASON_PARAMS,
+  'gate3.internal_links': LINT_REASON_PARAMS,
+  'gate3.keyword_stuffing': LINT_REASON_PARAMS,
+  'gate3.near_duplicate': LINT_REASON_PARAMS,
+  'gate3.contradiction': ['conflict_count', 'first_detail'],
+  'gate3.no_information_gain': ['failed_criteria', 'first_justification'],
+  'gate3.below_quality_bar': ['failed_criteria', 'first_justification'],
+}
+
+/**
+ * Every reason a gate can put on a held day or a held article, and every
+ * why-line a calendar chip can carry.
+ *
+ * The three gates and the calendar write these; nothing else does. Listing them
+ * beside the opportunity reasons is what stops the two families being checked
+ * to different standards — the gate sentences shipped unreachable for the life
+ * of the feature precisely because only the opportunity family was ever
+ * compared against the catalogue.
+ *
+ * `gate3.lint` is deliberately absent: the fallback that would build it cannot
+ * be reached, because a draft only fails the deterministic checks when there is
+ * a fault to name, and the fault carries the category. Listing it would demand a
+ * sentence for a key nothing produces, which is the other half of the same
+ * fault this file exists to catch.
+ */
+export const GATE_REASON_KEYS: readonly string[] = [
+  ...Object.keys(GATE_REASON_PARAMS),
+  // Topic admission. Every one of these can end up on a rejection card or on an
+  // opportunity that was blocked before it was ever planned.
+  'gate1.admitted',
+  'gate1.admitted_pinned_despite_zero_volume',
+  'gate1.rejected_zero_volume',
+  'gate1.rejected_not_winnable',
+  'gate1.rejected_off_catalog',
+  'gate1.converted_existing_target_optimize',
+  'gate1.converted_existing_target_refresh',
+  'gate1.held_insufficient_substance',
+  // The evidence check, which stops a topic before a word is drafted.
+  'gate2.held_thin_pack',
+  // Why a day holds the topic it holds, on every chip in the calendar.
+  'topic.auto',
+  'topic.manual_addition',
+]
+
+/**
  * Reasons the product can produce today that still have no words.
  *
- * Empty, and the test below is what keeps it that way: a new signal arriving
- * without a sentence fails there rather than reaching a merchant as "the
- * reasoning for this one isn't available yet". Every entry that used to be
+ * It was empty, and the test below is what kept it that way: a new signal
+ * arriving without a sentence failed there rather than reaching a merchant as
+ * "the reasoning for this one isn't available yet". Every entry that used to be
  * here was a card on the Opportunities screen — the store's central surface —
  * explaining itself with that placeholder.
+ *
+ * It is not empty now, because the same comparison has been pointed at the gate
+ * and calendar keys for the first time and found eleven of them wordless. This
+ * is a real hole a merchant can see: a topic held at Gate 1 or Gate 2 says
+ * nothing about why, and **every** calendar chip's why-line — `topic.auto` is on
+ * all of them — renders the placeholder. Writing those sentences is a separate
+ * piece of work; recording them here means a *new* gate key still fails loudly
+ * instead of joining them unnoticed.
  */
-export const REASON_KEYS_AWAITING_COPY: readonly string[] = []
+export const REASON_KEYS_AWAITING_COPY: readonly string[] = [
+  'gate1.admitted',
+  'gate1.admitted_pinned_despite_zero_volume',
+  'gate1.rejected_zero_volume',
+  'gate1.rejected_not_winnable',
+  'gate1.rejected_off_catalog',
+  'gate1.converted_existing_target_optimize',
+  'gate1.converted_existing_target_refresh',
+  'gate1.held_insufficient_substance',
+  'gate2.held_thin_pack',
+  'topic.auto',
+  'topic.manual_addition',
+]
 
 /**
  * What a merchant sees a signal *called*, which is a second family of copy with

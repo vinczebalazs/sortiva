@@ -57,6 +57,37 @@ export async function insertGateDecision(
 }
 
 /**
+ * The values that fill the blanks in a rejection's sentence — which criteria
+ * the draft failed, the grader's own written objection, where a lint tripped.
+ *
+ * The table has no column for them. `reason_user_facing` holds the key of the
+ * sentence and nothing else, and the gate folds the values it measured into
+ * `scores_json` beside its audit trail, so reading them back means knowing a
+ * shape only this table knows. That knowledge lives here rather than in each
+ * screen that asks — which is how it came to be missing from the calendar for
+ * the life of the feature: the row held the values, the response sent an empty
+ * bag, and the sentence rendered with its blanks unfilled.
+ *
+ * Anything that is not a string or a number is dropped rather than coerced. A
+ * nested object pushed into a merchant's sentence reads as `[object Object]`,
+ * which is worse than the blank it would replace.
+ */
+export function reasonParamsOf(
+  row: GateDecisionRow | null | undefined,
+): Readonly<Record<string, string | number>> {
+  const scores = row?.scoresJson
+  if (typeof scores !== 'object' || scores === null) return {}
+  const stored = (scores as Record<string, unknown>).reason_params
+  if (typeof stored !== 'object' || stored === null) return {}
+
+  const params: Record<string, string | number> = {}
+  for (const [key, value] of Object.entries(stored as Record<string, unknown>)) {
+    if (typeof value === 'string' || typeof value === 'number') params[key] = value
+  }
+  return params
+}
+
+/**
  * The most recent decision on this topic for one of the given gates.
  *
  * **This is the wrong function for anything that means "the decision that

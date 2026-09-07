@@ -32,9 +32,32 @@ const ALIASES: Readonly<Record<string, StringKey>> = {
   'quality_rejection.insufficient_richness': 'appendixA.qualityRejectionRichness' as StringKey,
 }
 
+/**
+ * Families of key the catalogue files under their own name rather than under
+ * `template.`.
+ *
+ * Every reason the weekly scan produces is written as `template.<signal>.<action>`,
+ * and for a long time that was the only shape, so the lookup simply prefixed
+ * everything. The sentences explaining a quality gate were written under their
+ * bare key instead — `gate3.below_quality_bar` and ten siblings — which meant
+ * eleven finished sentences sat in the catalogue that no screen could reach,
+ * and every merchant whose article was held back read "the reasoning for this
+ * one isn't available yet".
+ *
+ * `gate1.`, `gate2.` and `topic.` are listed alongside `gate3.` because they
+ * come from the same producers and belong in the same place. They have no
+ * sentences yet, so naming them here changes nothing a merchant sees today; it
+ * decides where those sentences go when they are written, rather than leaving
+ * the next person to guess and repeat this.
+ */
+const CATALOG_NAMESPACES: readonly string[] = ['gate1.', 'gate2.', 'gate3.', 'topic.']
+
 /** Where an engine template key lives in the catalogue. */
 export function catalogKeyFor(templateKey: string): string {
-  return ALIASES[templateKey] ?? `template.${templateKey}`
+  const alias = ALIASES[templateKey]
+  if (alias) return alias
+  if (CATALOG_NAMESPACES.some((namespace) => templateKey.startsWith(namespace))) return templateKey
+  return `template.${templateKey}`
 }
 
 export interface RenderedLine {
