@@ -695,6 +695,107 @@ export const attentionResponseSchema = z.object({
   ),
 })
 
+// ── Publishing target and delivery mode ──────────────────────────────────────
+
+/**
+ * These live under `/api/publish/*` rather than `/api/settings/*`, which is
+ * where an earlier version of this table put them. The addresses that were
+ * built are grouped by what they do; the table now follows them.
+ */
+export const selectBlogResponseSchema = z.object({
+  ok: z.literal(true),
+  blog: z.object({ id: z.string(), title: z.string(), handle: z.string() }),
+})
+
+export const setDeliveryModeRequestSchema = z.object({
+  /** Auto-publish on (`auto`) or off (`export`). */
+  delivery: z.enum(['auto', 'export']).optional(),
+  /** Whether an auto-published post goes live or waits as a Shopify draft. */
+  shopifyPublishAs: z.enum(['live', 'draft']).optional(),
+})
+
+export const setDeliveryModeResponseSchema = z.object({
+  ok: z.literal(true),
+  /** Absent when the call only changed the live-or-draft choice. */
+  delivery: z.enum(['auto', 'export']).optional(),
+})
+
+// ── Opportunity scan progress ────────────────────────────────────────────────
+
+/**
+ * What the "finding your growth opportunities" screen polls, and the payload of
+ * the stream beside it.
+ *
+ * There is deliberately no per-stage text. A timer ticking through invented
+ * stage names would be untrue on the one screen whose job is to earn trust
+ * before the product has produced anything, so this reports only what is real:
+ * whether the run is going, when it started, and its actual counts.
+ */
+export const scanStatusResponseSchema = z.union([
+  z.object({ status: z.literal('not_started') }),
+  z.object({
+    runId: uuidSchema,
+    kind: z.string(),
+    status: z.enum(['running', 'finished']),
+    startedAt: isoDateTimeSchema,
+    finishedAt: isoDateTimeSchema.nullable(),
+    opportunitiesCreated: z.number().int(),
+    opportunitiesUpdated: z.number().int(),
+    opportunitiesExpired: z.number().int(),
+  }),
+])
+
+// ── Recommendations ──────────────────────────────────────────────────────────
+
+export const generateRecommendationRequestSchema = z.object({
+  opportunityId: uuidSchema,
+})
+
+/**
+ * `generated` says whether this call started the work or found it already
+ * running or done — the same request twice costs one generation, not two.
+ */
+export const generateRecommendationResponseSchema = z.object({
+  state: z.enum(['generating', 'ready']),
+  opportunityId: uuidSchema.optional(),
+  recommendationId: uuidSchema.optional(),
+  generated: z.boolean(),
+})
+
+export const readRecommendationQuerySchema = z.object({
+  opportunityId: uuidSchema,
+})
+
+export const applyRecommendationRequestSchema = z.object({
+  /** Absent means the whole recommendation rather than one task. */
+  taskId: uuidSchema.optional(),
+})
+
+/**
+ * Marking the whole thing applied is what starts the clock: the opportunity
+ * completes and the measurement of whether it worked is booked for the first
+ * date on which there is anything honest to say.
+ */
+export const applyRecommendationResponseSchema = z.object({
+  ok: z.literal(true),
+  taskId: uuidSchema.optional(),
+  state: z.string().optional(),
+  appliedAt: isoDateTimeSchema.optional(),
+  outcomeDueAt: isoDateTimeSchema.optional(),
+})
+
+// ── Article export ───────────────────────────────────────────────────────────
+
+/**
+ * Three files in one answer rather than one file per request: the merchant
+ * presses one of three buttons and expects a file each time, and the values in
+ * all three are read from the store in a single pass — three separate requests
+ * could straddle a price change and disagree with each other.
+ */
+export const articleExportResponseSchema = z.object({
+  files: z.record(z.string(), z.string()),
+})
+
 // ── Webhooks ─────────────────────────────────────────────────────────────────
 
 /**

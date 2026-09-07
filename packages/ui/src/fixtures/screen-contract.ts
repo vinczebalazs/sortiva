@@ -108,13 +108,13 @@ export const SCREEN_FIXTURE_DEPENDENCIES: readonly ScreenFixtureDependency[] = [
   },
   {
     screen: 'Opportunities — the detail drawer',
-    route: 'GET /api/opportunities/{opportunityId}',
+    route: 'GET /api/opportunities/{id}',
     fields: ['opportunity', 'tasks', 'serpSnapshot', 'recommendation', 'history', 'outcome'],
     note: 'The drawer renders `recommendation.fields` as current-versus-suggested for OPTIMIZE and as the numbered instruction list for FIX, so `field` should stay within the set the pipeline produces (`title_tag`, `meta_description`, `headings`, `sections`, `faq`); an unrecognised name is spelled out from the code and reads badly. `recommendation.state` is what separates "not asked for yet" from "working on it" from "we could not do this safely", and `failed_validation` must arrive with no fields at all, because the screen shows no partial output. `outcome` stays null until the 28 days are up. **Two gaps the backend will have to close:** the HOLD view has no per-product Shopify admin links, because nothing in this response carries product ids, so it renders the task labels and sends the merchant to Products; and the FIX view has no impression-share numbers, so it renders whatever `recommendation.fields` holds rather than the design\'s comparison of the competing URLs.',
   },
   {
     screen: 'Opportunities — acting on one',
-    route: 'POST /api/opportunities/{opportunityId}/schedule',
+    route: 'POST /api/opportunities/{id}/schedule',
     fields: ['scheduledFor'],
     note: "The date in the confirmation toast is the server's answer rather than the one asked for: at most one topic occupies a day, so a request for a taken day comes back with a different date and the merchant has to be told which. A 409 on this or on dismiss / restore / recommendations / tasks ends in a re-read of the list and a toast, and the screen reads `error.code` — `opportunity_not_open` is worded differently from the rest — so the code must be the machine-readable one rather than a sentence.",
   },
@@ -207,7 +207,7 @@ export const SCREEN_FIXTURE_DEPENDENCIES: readonly ScreenFixtureDependency[] = [
       'draftReview',
       'autoRepair',
     ],
-    note: '`delivery` is the one field this screen writes back through a conflict-aware flow rather than a plain PATCH: setting it to `auto` can come back `write_scope_required` or `target_blog_unresolved` before it actually takes, and the screen must treat both as steps in turning the toggle on rather than as failures. **The response carries no field naming the current target blog** — `GET /api/settings/blogs` lists what a merchant could choose, never which one is chosen — so the screen can offer to change the target but cannot state it; a `targetBlogId` (or the blog embedded inline) on this response would close that.',
+    note: '`delivery` is the one field this screen writes back through a conflict-aware flow rather than a plain PATCH: setting it to `auto` can come back `write_scope_required` or `target_blog_unresolved` before it actually takes, and the screen must treat both as steps in turning the toggle on rather than as failures. **The response carries no field naming the current target blog** — `GET /api/publish/blogs` lists what a merchant could choose, never which one is chosen — so the screen can offer to change the target but cannot state it; a `targetBlogId` (or the blog embedded inline) on this response would close that.',
   },
   {
     screen: 'Settings — Publishing, granting write access',
@@ -217,7 +217,7 @@ export const SCREEN_FIXTURE_DEPENDENCIES: readonly ScreenFixtureDependency[] = [
   },
   {
     screen: 'Settings — Publishing, choosing a target blog',
-    route: 'GET /api/settings/blogs',
+    route: 'GET /api/publish/blogs',
     fields: ['blogs'],
     note: 'Offered once `PATCH /api/settings` has answered `target_blog_unresolved`. Each row needs `id`, `title` and `handle`; the picker sends `id` back as `blogId`. An empty list still renders — the "create a blog named ___" control does not depend on it.',
   },

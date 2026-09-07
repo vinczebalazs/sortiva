@@ -127,19 +127,35 @@ export const ROUTES: readonly RouteDefinition[] = [
   },
   {
     method: 'GET',
-    path: '/api/settings/blogs',
+    path: '/api/publish/blogs',
     summary: 'Shopify blogs available as an auto-publish target.',
     auth: 'session',
     response: s.blogsResponseSchema,
   },
   {
     method: 'POST',
-    path: '/api/settings/blog',
+    path: '/api/publish/target',
     summary: 'Choose or create the target blog. Auto-publish cannot enable without one.',
     auth: 'session',
     body: s.selectBlogRequestSchema,
-    response: s.okSchema,
+    response: s.selectBlogResponseSchema,
     conflicts: ['write_scope_required'],
+  },
+  {
+    method: 'POST',
+    path: '/api/publish/mode',
+    summary: 'Switch auto-publish on or off, and choose whether posts go live or wait as drafts.',
+    auth: 'session',
+    body: s.setDeliveryModeRequestSchema,
+    response: s.setDeliveryModeResponseSchema,
+    conflicts: ['write_scope_required', 'target_blog_unresolved'],
+  },
+  {
+    method: 'POST',
+    path: '/api/publish/grant/start',
+    summary: 'Begin the second Shopify grant, for permission to write. Never asked for at install.',
+    auth: 'session',
+    response: s.redirectResponseSchema,
   },
   {
     method: 'POST',
@@ -284,14 +300,35 @@ export const ROUTES: readonly RouteDefinition[] = [
   },
   {
     method: 'GET',
-    path: '/api/opportunities/{opportunityId}',
+    path: '/api/opportunities/scan-status',
+    summary: 'Whether the opportunity scan is still running, and its counts once it is not.',
+    auth: 'session',
+    response: s.scanStatusResponseSchema,
+  },
+  {
+    method: 'GET',
+    path: '/api/opportunities/scan-stream',
+    summary: 'The same scan progress as a stream, which closes itself when the run ends.',
+    auth: 'session',
+    response: s.scanStatusResponseSchema,
+    sse: true,
+  },
+
+  // These two come before `/api/opportunities/{id}` deliberately. A generated
+  // client that matches in table order — the frontend's mock server does —
+  // would otherwise read "scan-status" as an opportunity id and answer the
+  // wrong shape. Next.js itself prefers the fixed segment, so only order-
+  // sensitive consumers are at risk, and they are the reason this stays put.
+  {
+    method: 'GET',
+    path: '/api/opportunities/{id}',
     summary: 'The detail drawer: evidence, tasks, recommendation, history, outcome.',
     auth: 'session',
     response: s.opportunityDetailResponseSchema,
   },
   {
     method: 'POST',
-    path: '/api/opportunities/{opportunityId}/schedule',
+    path: '/api/opportunities/{id}/schedule',
     summary: 'Put a CREATE or REFRESH opportunity on the calendar.',
     auth: 'session',
     body: s.scheduleOpportunityRequestSchema,
@@ -307,7 +344,7 @@ export const ROUTES: readonly RouteDefinition[] = [
   },
   {
     method: 'POST',
-    path: '/api/opportunities/{opportunityId}/dismiss',
+    path: '/api/opportunities/{id}/dismiss',
     summary: 'Dismiss an opportunity; it is never re-proposed for the same entity.',
     auth: 'session',
     response: s.okSchema,
@@ -315,28 +352,40 @@ export const ROUTES: readonly RouteDefinition[] = [
   },
   {
     method: 'POST',
-    path: '/api/opportunities/{opportunityId}/restore',
+    path: '/api/opportunities/{id}/undismiss',
     summary: 'Undo a dismissal.',
     auth: 'session',
     response: s.okSchema,
     conflicts: ['opportunity_already_updated'],
   },
+  // ── Recommendations ───────────────────────────────────────────────────────
+  // Grouped by what they are rather than under the opportunity they belong to,
+  // which is where an earlier version of this table put them.
   {
     method: 'POST',
-    path: '/api/opportunities/{opportunityId}/recommendations',
-    summary: 'Generate an OPTIMIZE recommendation. User-initiated, capped per day.',
+    path: '/api/recommendations',
+    summary: 'Generate an OPTIMIZE recommendation for an opportunity. User-initiated, capped per day.',
     auth: 'session',
-    response: s.okSchema,
+    body: s.generateRecommendationRequestSchema,
+    response: s.generateRecommendationResponseSchema,
     conflicts: ['optimize_daily_cap_reached', 'opportunity_not_open', 'service_paused'],
     requiresEntitlement: true,
   },
   {
-    method: 'POST',
-    path: '/api/opportunities/{opportunityId}/tasks/{taskId}',
-    summary: 'Mark an opportunity task applied or skipped.',
+    method: 'GET',
+    path: '/api/recommendations',
+    summary: 'The recommendation for an opportunity, its tasks, and whether the page already looks changed.',
     auth: 'session',
-    body: s.markTaskAppliedRequestSchema,
-    response: s.okSchema,
+    query: s.readRecommendationQuerySchema,
+    response: s.opportunityDetailResponseSchema,
+  },
+  {
+    method: 'POST',
+    path: '/api/recommendations/{id}/apply',
+    summary: 'Mark one task or the whole recommendation applied. The whole one starts the outcome clock.',
+    auth: 'session',
+    body: s.applyRecommendationRequestSchema,
+    response: s.applyRecommendationResponseSchema,
     conflicts: ['opportunity_already_updated'],
   },
 
@@ -433,6 +482,18 @@ export const ROUTES: readonly RouteDefinition[] = [
     response: s.okSchema,
     conflicts: ['article_not_rejected', 'article_already_published'],
     requiresEntitlement: true,
+  },
+  {
+    method: 'GET',
+    path: '/api/articles/{articleId}/export',
+    summary: 'The article as Markdown and HTML with its metadata, priced from the store as it is now.',
+    auth: 'session',
+    // Its 409 — the article names a product the store no longer sells, so
+    // handing the file over would publish a hole — carries an error class in
+    // the generic envelope rather than a code from the conflict enum, the same
+    // way its 404 does. Nothing here is a lost race, which is what that enum is
+    // for.
+    response: s.articleExportResponseSchema,
   },
   {
     method: 'POST',
@@ -537,6 +598,50 @@ export const ROUTES: readonly RouteDefinition[] = [
     summary: 'Bounce and complaint events into email_suppressions; delivered into email_sends.',
     auth: 'public',
     response: s.webhookAckSchema,
+  },
+]
+
+/**
+ * Endpoints that exist on disk and are deliberately outside this table.
+ *
+ * The table describes JSON request and response shapes. These seven answer with
+ * a redirect, a rendered page, or a file, so giving each a zod response schema
+ * would state something untrue in order to be complete. They are listed rather
+ * than merely absent because "not in the table" and "nobody built it" looked
+ * identical for the whole build, and a check comparing the table to the routes
+ * on disk needs to be able to tell them apart.
+ *
+ * Adding a path here is the decision this list exists to force into the open:
+ * it says *this is not JSON*, never *this has no contract yet*.
+ */
+export const UNCONTRACTED_ROUTES: readonly { path: string; why: string }[] = [
+  {
+    path: '/api/auth/*',
+    why: 'Auth.js owns these routes and defines their shapes.',
+  },
+  {
+    path: 'GET /api/shopify/oauth/callback',
+    why: 'Shopify redirects the browser here; the answer is a redirect onwards, not a payload.',
+  },
+  {
+    path: 'GET /api/gsc/oauth/callback',
+    why: 'Google redirects the browser here; the answer is a redirect onwards, not a payload.',
+  },
+  {
+    path: 'GET /api/publish/grant/callback',
+    why: 'Where Shopify returns from the second, write-permission grant. A redirect, not a payload.',
+  },
+  {
+    path: 'GET /api/notifications/unsubscribe',
+    why: 'The one-click unsubscribe link in an email. Renders a page for a person, not JSON for a screen.',
+  },
+  {
+    path: 'POST /api/notifications/unsubscribe',
+    why: 'The same link, for mail clients that confirm an unsubscribe with a POST.',
+  },
+  {
+    path: 'GET /api/recommendations/{id}/download',
+    why: 'Answers with the document itself as Markdown or HTML, as an attachment.',
   },
 ]
 

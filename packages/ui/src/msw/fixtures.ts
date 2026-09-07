@@ -126,10 +126,15 @@ export const RESPONSE_FIXTURES: Record<string, unknown> = {
 
   'GET /api/settings': settingsFixture(),
   'PATCH /api/settings': settingsFixture(),
-  'GET /api/settings/blogs': {
+  'GET /api/publish/blogs': {
     blogs: [{ id: 'gid://shopify/Blog/1', title: 'News', handle: 'news' }],
   },
-  'POST /api/settings/blog': { ok: true },
+  'POST /api/publish/target': {
+    ok: true,
+    blog: { id: 'gid://shopify/Blog/1', title: 'News', handle: 'news' },
+  },
+  'POST /api/publish/mode': { ok: true, delivery: 'auto' },
+  'POST /api/publish/grant/start': { url: 'https://example.myshopify.com/admin/oauth/authorize' },
   'POST /api/account/delete': { ok: true },
 
   'POST /api/domain/claim': {
@@ -178,7 +183,7 @@ export const RESPONSE_FIXTURES: Record<string, unknown> = {
     limitedIntelligence: false,
     cursor: null,
   },
-  'GET /api/opportunities/{opportunityId}': {
+  'GET /api/opportunities/{id}': {
     opportunity: opportunityFixture(fixtureOpportunities[0]!),
     tasks: [
       { id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', label: 'Rewrite the collection title', state: 'open' },
@@ -192,14 +197,30 @@ export const RESPONSE_FIXTURES: Record<string, unknown> = {
     ],
     outcome: null,
   },
-  'POST /api/opportunities/{opportunityId}/schedule': {
+  'POST /api/opportunities/{id}/schedule': {
     topicId: fixtureScheduledTopic.topicId,
     scheduledFor: fixtureScheduledTopic.scheduledFor,
   },
-  'POST /api/opportunities/{opportunityId}/dismiss': { ok: true },
-  'POST /api/opportunities/{opportunityId}/restore': { ok: true },
-  'POST /api/opportunities/{opportunityId}/recommendations': { ok: true },
-  'POST /api/opportunities/{opportunityId}/tasks/{taskId}': { ok: true },
+  'POST /api/opportunities/{id}/dismiss': { ok: true },
+  'POST /api/opportunities/{id}/undismiss': { ok: true },
+  'GET /api/opportunities/scan-status': { status: 'not_started' },
+  'GET /api/opportunities/scan-stream': { status: 'not_started' },
+  'POST /api/recommendations': { state: 'generating', generated: true },
+  'GET /api/recommendations': {
+    opportunity: opportunityFixture(fixtureOpportunities[0]!),
+    tasks: [
+      { id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', label: 'Rewrite the collection title', state: 'open' },
+    ],
+    serpSnapshot: [
+      { position: 1, domain: 'competitor.example', url: 'https://competitor.example/trail' },
+    ],
+    recommendation: null,
+    history: [
+      { at: NOW, from: null, to: 'new', actor: 'autopilot', reason: null },
+    ],
+    outcome: null,
+  },
+  'POST /api/recommendations/{id}/apply': { ok: true },
 
   'GET /api/calendar': {
     topics: [topicFixture],
@@ -241,6 +262,9 @@ export const RESPONSE_FIXTURES: Record<string, unknown> = {
   'POST /api/articles/{articleId}/approve': { ok: true },
   'POST /api/articles/{articleId}/discard': { ok: true },
   'POST /api/articles/{articleId}/publish-anyway': { ok: true },
+  'GET /api/articles/{articleId}/export': {
+    files: { 'article.md': '# Trail runners\n', 'article.html': '<h1>Trail runners</h1>' },
+  },
   'POST /api/articles/{articleId}/published-url': { ok: true },
   'POST /api/articles/{articleId}/refresh': { ok: true },
 
