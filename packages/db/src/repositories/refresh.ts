@@ -173,3 +173,25 @@ export async function articleSubject(
     familyIds: row.familyIds ?? [],
   }
 }
+
+/**
+ * When each rewrite of this article happened, oldest first — the "refreshed"
+ * entries on the article page's own history.
+ *
+ * Beside `articleRefreshCount` rather than replacing it: the cooldown check
+ * wants a number and nothing else, and handing it a list of timestamps to
+ * measure would make a hot path read rows it has no use for.
+ */
+export async function articleRefreshTimes(
+  db: Db,
+  scope: AccountScope,
+  articleId: string,
+): Promise<readonly Date[]> {
+  const rows = await db
+    .select({ refreshedAt: refreshLog.refreshedAt })
+    .from(refreshLog)
+    .innerJoin(articles, eq(articles.id, refreshLog.articleId))
+    .where(and(eq(refreshLog.articleId, articleId), eq(articles.accountId, scope.accountId)))
+    .orderBy(refreshLog.refreshedAt)
+  return rows.map((row) => row.refreshedAt)
+}

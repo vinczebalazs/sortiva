@@ -3,6 +3,7 @@ import type { Db } from '@sortiva/db'
 // Deep import, not the `@sortiva/jobs` barrel — see the identical note in
 // `review.ts`, which hit the build failure this avoids.
 import { listArticles, type ArticleLibraryFilter } from '@sortiva/jobs/generation/article-library'
+import { readArticleDetail } from '@sortiva/jobs/generation/article-detail'
 import type { AccountHandler } from '../../auth/_lib/session'
 
 /**
@@ -62,5 +63,29 @@ export function makeListArticlesHandler(deps: LibraryDeps): AccountHandler {
 
     const articles = await listArticles({ db: deps.db }, { accountId: scope.accountId, filter })
     return Response.json({ articles, cursor: null })
+  }
+}
+
+export type ArticleRouteCtx = { readonly params: Promise<{ articleId: string }> }
+
+/**
+ * `GET /api/articles/{articleId}` — one article, read-only, with the quality
+ * report behind it.
+ *
+ * An article that is not this account's is answered exactly as one that never
+ * existed. Anything else would let a caller learn which ids are real by
+ * watching which refusals differ.
+ */
+export function makeGetArticleHandler(deps: LibraryDeps): AccountHandler<ArticleRouteCtx> {
+  return async (_request, { scope, route }) => {
+    const { articleId } = await route.params
+    const detail = await readArticleDetail({ db: deps.db }, { accountId: scope.accountId, articleId })
+    if (!detail) {
+      return Response.json(
+        { error: { code: 'article_not_found', message: 'That article is gone.' } },
+        { status: 404 },
+      )
+    }
+    return Response.json(detail)
   }
 }
