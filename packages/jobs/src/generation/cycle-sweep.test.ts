@@ -11,7 +11,7 @@ import {
   type TestDb,
 } from '@sortiva/db/testing'
 import { loadPrompt } from '@sortiva/llm'
-import { DRAFT_PROMPT_MAJOR_VERSION } from './prompts'
+import { DRAFT_PROMPT_MAJOR_VERSION, JUDGE_PROMPT_MAJOR_VERSION } from './prompts'
 import { sweepGenerationCycles, type GenerationTaskDeps } from './tasks'
 
 /**
@@ -69,7 +69,7 @@ describe.skipIf(!available)('the generation-cycle sweep', () => {
       },
       claimPlanPrompt: loadPrompt('claim-plan', 1),
       draftPrompt: loadPrompt('draft', DRAFT_PROMPT_MAJOR_VERSION),
-      judgePrompt: loadPrompt('judge', 1),
+      judgePrompt: loadPrompt('judge', JUDGE_PROMPT_MAJOR_VERSION),
       contradictionPrompt: loadPrompt('contradiction', 1),
       revisePrompt: loadPrompt('revise', 1),
       // The sweep only queues jobs; nothing it does reaches the bell.

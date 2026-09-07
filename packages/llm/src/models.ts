@@ -70,6 +70,9 @@ export const CALL_TYPE_TIER = {
  * Env overrides exist so a model can be pinned per environment without a code
  * change, but they must still name an id explicitly — an alias is rejected, so
  * "latest" cannot slip in through configuration either.
+ *
+ * One call type does not come through here at all — see
+ * `resolveModelForCallType` below.
  */
 const ALIAS_PATTERN = /(^|-)(latest|preview)$/
 
@@ -86,6 +89,36 @@ export function resolveModel(
     )
   }
   return { ...spec, id: override }
+}
+
+/**
+ * Call types whose model is settled in this file and cannot be moved by
+ * configuration. The draft judge is the only one.
+ *
+ * It is the check standing between a merchant and an article that should not
+ * go out, and a grader quietly swapped for the cheap model is not a check on
+ * anything. Until this existed, one variable that ships in `.env.example`
+ * could do exactly that, with nothing in the code or in CI noticing — and the
+ * spending would still have been reported at the expensive model's prices, so
+ * it would not even have shown up as a saving. Founder decision, 2026-09-04.
+ *
+ * Every other call type still honours `ANTHROPIC_MODEL_<TIER>`: pinning a
+ * model per environment without a code change is legitimate everywhere else.
+ * The consequence is deliberate — pinning the strong tier moves the writer and
+ * leaves the judge where it is, which is the direction that stays safe.
+ */
+const PINNED_CALL_TYPES: ReadonlySet<string> = new Set(['judge'])
+
+export type LlmCallTypeWithTier = keyof typeof CALL_TYPE_TIER
+
+/** The model one call runs on. The only resolution the client ever performs. */
+export function resolveModelForCallType(
+  callType: LlmCallTypeWithTier,
+  env: NodeJS.ProcessEnv = process.env,
+): ModelSpec {
+  const tier = CALL_TYPE_TIER[callType]
+  if (PINNED_CALL_TYPES.has(callType)) return MODELS[tier]
+  return resolveModel(tier, env)
 }
 
 /** Priced from the model's own rates. Cache replays are costed at zero by the caller. */

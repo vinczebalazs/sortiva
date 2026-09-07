@@ -8,7 +8,7 @@ import {
 } from '@sortiva/core'
 import { schema } from '@sortiva/db'
 import { loadPrompt, MockLlmClient } from '@sortiva/llm'
-import { DRAFT_PROMPT_MAJOR_VERSION } from '../generation/prompts'
+import { DRAFT_PROMPT_MAJOR_VERSION, JUDGE_PROMPT_MAJOR_VERSION } from '../generation/prompts'
 import { FakeShopifyPublishClient, type PageFetcher } from '@sortiva/providers'
 import { runDailyGenerationForAccount } from '../generation/daily-cycle'
 import { publishArticleToShopify } from '../publish/auto-publish'
@@ -173,7 +173,7 @@ export const driftRepairAcrossPublish: ChaosScenario = {
         pageFetcher,
         claimPlanPrompt: loadPrompt('claim-plan', 1),
         draftPrompt: loadPrompt('draft', DRAFT_PROMPT_MAJOR_VERSION),
-        judgePrompt: loadPrompt('judge', 1),
+        judgePrompt: loadPrompt('judge', JUDGE_PROMPT_MAJOR_VERSION),
         contradictionPrompt: loadPrompt('contradiction', 1),
         revisePrompt: loadPrompt('revise', 1),
         now: () => NOW,
