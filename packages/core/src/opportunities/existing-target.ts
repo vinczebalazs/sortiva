@@ -60,9 +60,11 @@ export interface ExistingTargetMatch {
   /** Set on a weak match, and the reason the new page still needs a link back to this one. */
   readonly weakness: WeaknessReason | null
   /**
-   * Whether the store still publishes this address. `unknown` today for every
-   * row — see `PagePresence`. A caller showing this match to a merchant should
-   * say the page's continued existence is unconfirmed rather than assert it.
+   * Whether the store still publishes this address, as the last completed walk
+   * of the store found it. A match is never `removed` — a page the store has
+   * taken down cannot be a target — so this reads `published` on anything that
+   * came from the inventory, and `unknown` on a match Search Console or the
+   * search vendor named that the inventory has no row for.
    */
   readonly presence: PagePresence
 }
@@ -98,10 +100,14 @@ function pageIndex(pages: readonly ExistingTargetPage[]): Map<string, ExistingTa
 }
 
 /**
- * A row for a page the store has taken down cannot be a target: there is
- * nothing left to improve. Until something records the removal every row reads
- * `unknown`, and `unknown` counts as present — the deliberately safe direction,
- * because treating a live page as gone is what produces the competing page.
+ * A page the store has taken down cannot be a target: there is nothing left to
+ * improve, and holding it against a new page keeps the store short of coverage
+ * it no longer has.
+ *
+ * Only a removal the walk actually established counts. Everything else —
+ * a page we hold no row for, a page seen by Search Console but not by the
+ * inventory — reads as present, which is the safe direction: treating a live
+ * page as gone is what puts two of our own pages in front of one search.
  */
 function stillPublished(page: ExistingTargetPage | undefined): boolean {
   return page?.presence !== 'removed'
