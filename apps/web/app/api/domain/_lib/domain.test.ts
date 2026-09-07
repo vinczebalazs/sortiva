@@ -1,6 +1,11 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { sql, TransactionRollbackError } from 'drizzle-orm'
-import { DOMAIN_ALREADY_CLAIMED_MESSAGE, DOMAIN_CLAIMED_EVENT, ingestionRunId } from '@sortiva/core'
+import {
+  DOMAIN_ALREADY_CLAIMED_MESSAGE,
+  DOMAIN_CLAIMED_EVENT,
+  domainReleaseAt,
+  ingestionRunId,
+} from '@sortiva/core'
 import type { Database } from '@sortiva/db'
 import {
   TEST_DATABASE_URL,
@@ -389,30 +394,122 @@ describe.skipIf(!available)('POST /api/domain/claim (main §5, ui §3.1)', () =>
     expect(responses.map((r) => r.status).sort()).toEqual([200, 409])
   })
 
+  /**
+   * Plants exactly what a deletion leaves behind, and nothing else: the
+   * deletion stamp on the account and the release deadline on the domain, both
+   * derived from the same rule the real deletion path uses. The nightly sweep
+   * that would eventually erase the row is never run in any test below — that
+   * is the point of them.
+   */
+  async function deletedDaysAgo(accountId: string, days: number): Promise<void> {
+    const deletedAt = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+    await harness.pool.query('UPDATE accounts SET deleted_at = $2 WHERE id = $1', [
+      accountId,
+      deletedAt,
+    ])
+    await harness.pool.query('UPDATE domains SET release_after = $2 WHERE account_id = $1', [
+      accountId,
+      domainReleaseAt(deletedAt),
+    ])
+  }
+
   it('keeps a domain blocked while a deleted account is inside its grace window', async () => {
-    // The claim is released after a 7-day grace window (which protects
-    // against accidental deletion freeing the domain to a squatter the same
-    // hour)". `domains.release_after` is the deadline the deletion sweep (T8.3)
-    // reads before hard-deleting the row; it is *not* a modifier on the unique
-    // index. So the claim path ignores it entirely: the row is what blocks, and
-    // it blocks until it is gone. Pinned here because a timestamp column that
-    // looks like it weakens uniqueness and does not is worth stating out loud.
-    // See DECISIONS 2026-09-01 T1.4.
+    // Six days after a deletion the week is not up, so nobody else may have the
+    // domain — the case the hold exists for: a merchant who deleted in haste,
+    // or whose account was taken from them, still has time.
     const leaver = await insertAccount(harness.pool, 'leaving@example.com')
     const squatter = await insertAccount(harness.pool, 'squatter@example.com')
     expect((await claim(leaver, 'example.com')).status).toBe(200)
 
-    for (const releaseAfter of ["now() + interval '3 days'", "now() - interval '1 day'"]) {
-      await harness.pool.query(
-        `UPDATE domains SET release_after = ${releaseAfter} WHERE account_id = $1`,
-        [leaver],
-      )
-      expect((await claim(squatter, 'example.com')).status).toBe(409)
-    }
+    await deletedDaysAgo(leaver, 6)
+    expect((await claim(squatter, 'example.com')).status).toBe(409)
+    expect((await claim(squatter, 'example.com')).status).toBe(409)
 
-    // Released means gone: once the sweep deletes the row, the domain is free.
-    await harness.pool.query('DELETE FROM domains WHERE account_id = $1', [leaver])
-    expect((await claim(squatter, 'example.com')).status).toBe(200)
+    // Still the leaver's row, untouched by the attempts.
+    const { rows } = await harness.pool.query<{ account_id: string }>(
+      "SELECT account_id FROM domains WHERE domain_normalized = 'example.com'",
+    )
+    expect(rows.map((r) => r.account_id)).toEqual([leaver])
+  })
+
+  it('releases a domain on its deadline even though the clean-up sweep has never run', async () => {
+    // Eight days after a deletion the week is up. Nothing has swept: the old
+    // row is still there, still holding the unique index. The domain is free
+    // anyway, because the deadline written on that row is what frees it.
+    const leaver = await insertAccount(harness.pool, 'leaving@example.com')
+    const newcomer = await insertAccount(harness.pool, 'newcomer@example.com')
+    expect((await claim(leaver, 'example.com')).status).toBe(200)
+    await deletedDaysAgo(leaver, 8)
+    expect(
+      await rowCount("SELECT count(*) n FROM domains WHERE domain_normalized = 'example.com'"),
+    ).toBe(1)
+
+    const response = await claim(newcomer, 'example.com')
+    expect(response.status).toBe(200)
+
+    // One row, the newcomer's, with no hold of its own and a fresh onboarding
+    // run — a claim like any other, not a leftover with a new owner's name on it.
+    const { rows } = await harness.pool.query<{
+      account_id: string
+      state: string
+      release_after: Date | null
+    }>("SELECT account_id, state, release_after FROM domains WHERE domain_normalized = 'example.com'")
+    expect(rows).toEqual([{ account_id: newcomer, state: 'ingesting', release_after: null }])
+    expect(
+      await rowCount('SELECT count(*) n FROM ingestion_jobs WHERE account_id = $1', [newcomer]),
+    ).toBe(1)
+    // The deleted account is still there for the sweep to erase on its own
+    // schedule; releasing the domain did not quietly erase a person's account.
+    expect(
+      await rowCount('SELECT count(*) n FROM accounts WHERE id = $1 AND deleted_at IS NOT NULL', [
+        leaver,
+      ]),
+    ).toBe(1)
+  })
+
+  it('still lets only one of two simultaneous claims on a released domain win', async () => {
+    // Releasing on the deadline must not have opened a second door into the
+    // domains table. Two newcomers going for the same freed domain at the same
+    // instant: one wins, and the winner is picked by the unique index rather
+    // than by anybody reading the table first.
+    const leaver = await insertAccount(harness.pool, 'leaving@example.com')
+    const a = await insertAccount(harness.pool, 'a@example.com')
+    const b = await insertAccount(harness.pool, 'b@example.com')
+    expect((await claim(leaver, 'example.com')).status).toBe(200)
+    await deletedDaysAgo(leaver, 8)
+
+    const responses = await Promise.all([claim(a, 'example.com'), claim(b, 'example.com')])
+    expect(responses.map((r) => r.status).sort()).toEqual([200, 409])
+    expect(
+      await rowCount("SELECT count(*) n FROM domains WHERE domain_normalized = 'example.com'"),
+    ).toBe(1)
+  })
+
+  it('would let both claims on a released domain through if the unique index were gone', async () => {
+    // The teeth of the test above, and the proof that the release did not
+    // become a check-then-insert. If our code decided the winner by reading the
+    // table, dropping the index would change nothing and one claim would still
+    // lose. It does not: both win, so the index is still the referee.
+    const leaver = await insertAccount(harness.pool, 'leaving@example.com')
+    const a = await insertAccount(harness.pool, 'a@example.com')
+    const b = await insertAccount(harness.pool, 'b@example.com')
+    expect((await claim(leaver, 'example.com')).status).toBe(200)
+    await deletedDaysAgo(leaver, 8)
+
+    await harness.pool.query('DROP INDEX domains_domain_normalized_key')
+    try {
+      const responses = await Promise.all([claim(a, 'example.com'), claim(b, 'example.com')])
+      expect(responses.map((r) => r.status)).toEqual([200, 200])
+      expect(
+        await rowCount("SELECT count(*) n FROM domains WHERE domain_normalized = 'example.com'"),
+      ).toBe(2)
+    } finally {
+      await harness.pool.query('DELETE FROM domains')
+      await harness.pool.query('DELETE FROM ingestion_jobs')
+      await harness.pool.query(
+        'CREATE UNIQUE INDEX domains_domain_normalized_key ON domains (domain_normalized)',
+      )
+    }
   })
 
   it('answers 401 without a session (tech §3)', async () => {

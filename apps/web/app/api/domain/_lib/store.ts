@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, isNotNull, lte, sql } from 'drizzle-orm'
 import { db, schema, type Database } from '@sortiva/db'
 // Deep import, not the package barrel: `@sortiva/jobs`'s index re-exports the
 // Graphile Worker runtime, which would drag the worker library into every
@@ -36,6 +36,33 @@ export function makeDomainClaimStore(options: DomainClaimStoreOptions = {}): Dom
     async claimWithIngestionRun(request: ClaimRequest): Promise<StoreClaimResult> {
       return database.transaction(
         async (tx) => {
+          // A domain whose previous owner deleted their account is held for a
+          // week and then belongs to nobody. That deadline is written on the
+          // row at deletion time, so it can be honoured by whoever needs it —
+          // and it is honoured here, at the moment somebody actually tries to
+          // claim the domain, rather than only by the nightly sweep. Without
+          // this the hold is exactly as reliable as that sweep: if it never
+          // runs, the row never goes and the domain is blocked for ever, which
+          // is safe but is not the week we promised.
+          //
+          // Deliberately a delete before the insert rather than a conditional
+          // upsert on the conflicting row: the insert below stays exactly as it
+          // was, so the unique index and nothing else still decides who wins.
+          // Two claims racing for the same released domain both reach that
+          // insert and one of them loses there. A row with no deadline never
+          // matches, so a live account's domain is untouchable here.
+          await tx
+            .delete(domains)
+            .where(
+              and(
+                eq(domains.domainNormalized, request.normalized),
+                isNotNull(domains.releaseAfter),
+                // The database's clock, not the web process's, so two servers
+                // disagreeing about the time cannot disagree about the deadline.
+                lte(domains.releaseAfter, sql`now()`),
+              ),
+            )
+
           // Insert against the unique index and catch
           // the conflict. Nothing reads the table to decide whether to insert,
           // so there is no window between the check and the write.

@@ -27,8 +27,12 @@ export const domains = pgTable(
     /**
      * On account deletion the claim is released after a 7-day
      * grace window, so a squatter cannot take the domain the same hour. Set
-     * while the row still holds the unique index; the release sweep (T8.3)
-     * deletes the row once the window passes.
+     * while the row still holds the unique index.
+     *
+     * The deadline is what releases the domain, not the sweep that eventually
+     * removes the row: a claim on a domain whose date here has passed drops
+     * the row itself and proceeds. That is what stops a sweep which never runs
+     * from holding a domain for ever.
      */
     releaseAfter: timestamp('release_after', { withTimezone: true }),
   },
