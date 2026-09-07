@@ -241,11 +241,17 @@ export async function listStorePages(
 /**
  * The pages the store still serves.
  *
- * What almost every reader wants. `listStorePages` returns deleted pages too,
- * which is right for erasing an account and wrong for anything that asks what
- * the store covers: a page the merchant took down cannot be improved, cannot be
- * compared against a competitor, and must not go on counting as coverage that
- * stops us proposing a replacement.
+ * What almost every reader wants. A page the merchant took down cannot be
+ * improved, cannot be compared against a competitor, and must not go on
+ * counting as coverage that stops us proposing a replacement.
+ *
+ * `listStorePages` still returns deleted rows, and must. The existing-target
+ * check decides by reading each row's status, so a page missing from its list
+ * is one it holds no opinion about and treats as still published — filtering
+ * there would turn every deletion back into a live page. That is the reason,
+ * and it is the only one: an earlier version of this note also claimed account
+ * deletion needs every row, which is not true, because deletion removes them
+ * with a direct statement and never reads this.
  *
  * A deleted row is kept rather than removed, because the walk can find the page
  * again and put it straight back to live — so this filters rather than the
