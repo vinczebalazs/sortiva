@@ -256,7 +256,11 @@ describe.skipIf(!available)('dismissing a suggestion calls off its calendar day'
       // merchant is never told a suggestion was dropped while its article is
       // on their site.
       expect(storedArticle?.state).toBe('published')
-      expect(storedTopic?.state).toBe('generating')
+      // The calendar day follows its article out. This read `generating` until
+      // `R-OVERRIDE-TOPIC`, because nothing ever moved a topic to `published` —
+      // which is what let an overridden topic sit in `rejected_by_gate` for ever
+      // and be counted as held back weeks later.
+      expect(storedTopic?.state).toBe('published')
       // The publication finishes the suggestion on its way out, so the losing
       // dismissal finds nothing of its own left behind.
       expect(storedOpportunity?.status).toBe('completed')

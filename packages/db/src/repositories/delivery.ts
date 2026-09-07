@@ -7,6 +7,7 @@ import {
   completeOpportunityForPublishedArticle,
   type ArticlePublication,
 } from './opportunity-completion'
+import { markTopicPublishedForArticle } from './topic-publication'
 
 /**
  * Everything the publish hour and the export bundle read and write.
@@ -66,10 +67,19 @@ export async function markArticleDelivered(
       )
       .returning()
     if (!row) return undefined
-    return {
-      article: row,
-      completedOpportunity: await completeOpportunityForPublishedArticle(tx, scope, articleId, now),
-    }
+    // Topic before opportunity, and the order is load bearing: cancelling a day
+    // takes the same two locks the other way round (`veto-topic.ts` walks
+    // topics, then the draft, then the opportunity). Taking them in a different
+    // order here is a deadlock the moment a publish and a dismissal meet, which
+    // is exactly what the race test drives.
+    const publishedTopic = await markTopicPublishedForArticle(tx, scope, articleId, now)
+    const completedOpportunity = await completeOpportunityForPublishedArticle(
+      tx,
+      scope,
+      articleId,
+      now,
+    )
+    return { article: row, completedOpportunity, publishedTopic }
   })
 }
 

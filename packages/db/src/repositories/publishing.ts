@@ -7,6 +7,7 @@ import {
   completeOpportunityForPublishedArticle,
   type ArticlePublication,
 } from './opportunity-completion'
+import { markTopicPublishedForArticle } from './topic-publication'
 
 /**
  * Everything auto-publishing reads and writes: the second Shopify grant, the
@@ -430,15 +431,16 @@ export async function markArticleAutoPublished(
       )
       .returning()
     if (!row) return undefined
-    return {
-      article: row,
-      completedOpportunity: await completeOpportunityForPublishedArticle(
-        tx,
-        scope,
-        input.articleId,
-        now,
-      ),
-    }
+    // Topic before opportunity — same lock order as every other path that
+    // touches both, see the note over `markArticleDelivered`.
+    const publishedTopic = await markTopicPublishedForArticle(tx, scope, input.articleId, now)
+    const completedOpportunity = await completeOpportunityForPublishedArticle(
+      tx,
+      scope,
+      input.articleId,
+      now,
+    )
+    return { article: row, completedOpportunity, publishedTopic }
   })
 }
 
