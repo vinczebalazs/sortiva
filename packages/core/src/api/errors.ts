@@ -43,6 +43,10 @@ export const CONFLICT_CODES = [
   // blog to publish into; neither is assumed from the initial connection.
   'write_scope_required',
   'target_blog_unresolved',
+  // The merchant deleted the page since the suggestion was drawn. The
+  // suggestion stays open — the button works again if they put the page back —
+  // so this is not the same thing as a suggestion that has moved on.
+  'optimize_page_gone',
   // We cannot tell which search this page competes for, so there is nothing to
   // improve it against. Its own code rather than the nearest existing one,
   // because the screen maps a code to its own sentence and ignores the message

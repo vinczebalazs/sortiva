@@ -103,14 +103,9 @@ function conflict(code: ConflictCode, message: string): Response {
  * client reads `error.code` whatever the status is.
  */
 function pageGone(): Response {
-  return Response.json(
-    {
-      error: {
-        code: 'optimize_page_gone',
-        message: 'This page is no longer in your store, so there is nothing to improve.',
-      },
-    },
-    { status: 422 },
+  return conflict(
+    'optimize_page_gone',
+    'This page is no longer in your store, so there is nothing to improve.',
   )
 }
 

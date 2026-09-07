@@ -1243,6 +1243,7 @@
                             "refresh_within_cooldown",
                             "write_scope_required",
                             "target_blog_unresolved",
+                            "optimize_page_gone",
                             "optimize_no_target_query",
                             "service_paused"
                           ]
@@ -1402,6 +1403,7 @@
                             "refresh_within_cooldown",
                             "write_scope_required",
                             "target_blog_unresolved",
+                            "optimize_page_gone",
                             "optimize_no_target_query",
                             "service_paused"
                           ]
@@ -1739,6 +1741,7 @@
                             "refresh_within_cooldown",
                             "write_scope_required",
                             "target_blog_unresolved",
+                            "optimize_page_gone",
                             "optimize_no_target_query",
                             "service_paused"
                           ]
@@ -2173,6 +2176,7 @@
                             "refresh_within_cooldown",
                             "write_scope_required",
                             "target_blog_unresolved",
+                            "optimize_page_gone",
                             "optimize_no_target_query",
                             "service_paused"
                           ]
@@ -3556,6 +3560,7 @@
                             "refresh_within_cooldown",
                             "write_scope_required",
                             "target_blog_unresolved",
+                            "optimize_page_gone",
                             "optimize_no_target_query",
                             "service_paused"
                           ]
@@ -3971,6 +3976,7 @@
                             "refresh_within_cooldown",
                             "write_scope_required",
                             "target_blog_unresolved",
+                            "optimize_page_gone",
                             "optimize_no_target_query",
                             "service_paused"
                           ]
@@ -4387,6 +4393,7 @@
                             "refresh_within_cooldown",
                             "write_scope_required",
                             "target_blog_unresolved",
+                            "optimize_page_gone",
                             "optimize_no_target_query",
                             "service_paused"
                           ]
@@ -4596,6 +4603,7 @@
                             "refresh_within_cooldown",
                             "write_scope_required",
                             "target_blog_unresolved",
+                            "optimize_page_gone",
                             "optimize_no_target_query",
                             "service_paused"
                           ]
@@ -4780,6 +4788,7 @@
                             "refresh_within_cooldown",
                             "write_scope_required",
                             "target_blog_unresolved",
+                            "optimize_page_gone",
                             "optimize_no_target_query",
                             "service_paused"
                           ]
@@ -7525,6 +7534,7 @@
                             "refresh_within_cooldown",
                             "write_scope_required",
                             "target_blog_unresolved",
+                            "optimize_page_gone",
                             "optimize_no_target_query",
                             "service_paused"
                           ]
@@ -7759,6 +7769,7 @@
                             "refresh_within_cooldown",
                             "write_scope_required",
                             "target_blog_unresolved",
+                            "optimize_page_gone",
                             "optimize_no_target_query",
                             "service_paused"
                           ]
@@ -7972,6 +7983,7 @@
                             "refresh_within_cooldown",
                             "write_scope_required",
                             "target_blog_unresolved",
+                            "optimize_page_gone",
                             "optimize_no_target_query",
                             "service_paused"
                           ]
@@ -10049,6 +10061,7 @@
                             "refresh_within_cooldown",
                             "write_scope_required",
                             "target_blog_unresolved",
+                            "optimize_page_gone",
                             "optimize_no_target_query",
                             "service_paused"
                           ]
@@ -10395,6 +10408,7 @@
                             "refresh_within_cooldown",
                             "write_scope_required",
                             "target_blog_unresolved",
+                            "optimize_page_gone",
                             "optimize_no_target_query",
                             "service_paused"
                           ]
@@ -11129,6 +11143,7 @@
                             "refresh_within_cooldown",
                             "write_scope_required",
                             "target_blog_unresolved",
+                            "optimize_page_gone",
                             "optimize_no_target_query",
                             "service_paused"
                           ]
@@ -11370,6 +11385,7 @@
                             "refresh_within_cooldown",
                             "write_scope_required",
                             "target_blog_unresolved",
+                            "optimize_page_gone",
                             "optimize_no_target_query",
                             "service_paused"
                           ]
@@ -11629,7 +11645,7 @@
             }
           },
           "409": {
-            "description": "The state changed underneath this request. Codes: optimize_daily_cap_reached, opportunity_not_open, optimize_no_target_query, service_paused.",
+            "description": "The state changed underneath this request. Codes: optimize_daily_cap_reached, opportunity_not_open, optimize_no_target_query, optimize_page_gone, service_paused.",
             "content": {
               "application/json": {
                 "schema": {
@@ -11660,6 +11676,7 @@
                             "refresh_within_cooldown",
                             "write_scope_required",
                             "target_blog_unresolved",
+                            "optimize_page_gone",
                             "optimize_no_target_query",
                             "service_paused"
                           ]
@@ -11683,6 +11700,7 @@
                     "optimize_daily_cap_reached",
                     "opportunity_not_open",
                     "optimize_no_target_query",
+                    "optimize_page_gone",
                     "service_paused"
                   ]
                 }
@@ -12653,6 +12671,7 @@
                             "refresh_within_cooldown",
                             "write_scope_required",
                             "target_blog_unresolved",
+                            "optimize_page_gone",
                             "optimize_no_target_query",
                             "service_paused"
                           ]
@@ -13107,6 +13126,7 @@
                             "refresh_within_cooldown",
                             "write_scope_required",
                             "target_blog_unresolved",
+                            "optimize_page_gone",
                             "optimize_no_target_query",
                             "service_paused"
                           ]

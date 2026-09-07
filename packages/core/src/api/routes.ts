@@ -372,6 +372,7 @@ export const ROUTES: readonly RouteDefinition[] = [
       'optimize_daily_cap_reached',
       'opportunity_not_open',
       'optimize_no_target_query',
+      'optimize_page_gone',
       'service_paused',
     ],
     requiresEntitlement: true,
