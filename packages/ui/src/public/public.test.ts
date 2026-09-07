@@ -173,6 +173,20 @@ describe('the address travels as a suggestion', () => {
     expect(html).toContain(t('signin.google'))
     expect(html).not.toContain('previewed-domain')
   })
+
+  it('does not submit a bare form, which is what stopped anybody signing in', () => {
+    // The screen used to post a form carrying only where to land afterwards.
+    // The sign-in library refuses a post with no anti-forgery token, so the
+    // press went nowhere. The token has to be fetched first, which a form
+    // submission cannot do.
+    const html = render(createElement(SignIn, {}))
+    expect(html).not.toContain('<form')
+    expect(html).not.toContain('/api/auth/signin/google')
+  })
+
+  it('says nothing about a failure until there has been one', () => {
+    expect(render(createElement(SignIn, {}))).not.toContain('signin-failed')
+  })
 })
 
 // ── Coming back from Stripe ──────────────────────────────────────────────────

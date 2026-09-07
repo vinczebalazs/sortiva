@@ -83,7 +83,8 @@
 }
 
 .sortiva-plan__subscribe:disabled,
-.sortiva-preview-form__submit:disabled {
+.sortiva-preview-form__submit:disabled,
+.sortiva-signin__provider:disabled {
   opacity: 0.55;
   cursor: default;
 }
@@ -522,6 +523,18 @@
 .sortiva-signin__previewed {
   color: var(--sortiva-text-muted);
   font-size: 14px;
+}
+
+/* The provider button used to sit inside a form, which held it to its own
+   width; it is a direct child of the card now, so it says so itself. */
+.sortiva-signin__provider {
+  align-self: flex-start;
+}
+
+.sortiva-signin__failed {
+  color: var(--sortiva-critical);
+  font-size: 14px;
+  margin: 0;
 }
 
 .sortiva-checkout-return__back {
