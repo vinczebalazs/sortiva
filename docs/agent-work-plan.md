@@ -66,6 +66,8 @@ Three different answers, by shape:
   wrong rather than loudly broken. These stay integrator-resolved. If a lane needs
   to change one, say so in the session report so the integrator expects it.
 
+**Repository ownership (added 2026-09-07, after a card was misplaced because the table did not say).** `packages/db/src/repositories/*` is not divided by lane above, every lane needs functions there, and until now it was resolved by custom. **A repository file belongs to the lane that owns the domain it serves** — `repositories/inventory.ts` is Lane C's by the same reading that makes `core/inventory` Lane C's, `repositories/publishing.ts` is Lane D's, and so on. This is the same drift that let `apps/web/app/api/settings` go unowned until ten endpoints diverged; the table now answers the question instead of leaving it to whoever is confident.
+
 **Schema ownership:** nobody. Migrations land only in schema-wave cards (T0.3, T2.0, T4.0, T8.0), each authored by the lane that needs the wave most and reviewed by the integrator. A feature card needing an extra column writes a `DECISIONS.md` entry and either waits for the next wave or asks the integrator to hot-add a mini-wave — it never adds a migration itself.
 
 ---
@@ -688,7 +690,7 @@ Read first: the `R-DISMISS-CALENDAR` and `R-STRANDED` entries in `DECISIONS.md` 
 Done when: publishing an article completes the suggestion behind it; the Opportunities screen stops showing finished work as outstanding; and the completion goes through the enforced state graph rather than around it.
 Note: the sibling defect — **a calendar day never leaves `generating` when its article publishes**, so the Content calendar reads "Generating" for every past published day — is the same shape and was reported by `R-STRANDED`. Decide whether they are one card or two before starting; the founder has been asked about the calendar half, which needs a state that does not exist.
 
-**R-PAGE-GONE-WRITE — something notices a merchant deleted a page** · Lane B
+**R-PAGE-GONE-WRITE — something notices a merchant deleted a page** · **Lane C's ground, being built from the `lane-b` worktree by `sortiva-a8` under an explicit integrator authorisation of 2026-09-07** (the card was written "Lane B" from the phrase "the store walk" without opening §3; the walk is `core/inventory` and `jobs/inventory`, both Lane C's). Authorised because Lane C is mid-card and its uncommitted files were checked and contain **no** inventory file, so the collision the rule prevents is not live. Scope is `core/inventory/{sync,ports}.ts`, `jobs/inventory/tasks.ts`, `db/repositories/inventory.ts` and nothing else of Lane C's
 Scope: `store_pages.status` was added by `T4.0a` as **migration only** — the schema's own comment says "nothing sets this to 'gone' yet and nothing reads it", and that is still true. Verified 2026-09-07: no writer anywhere. The store-page walk must mark a page `gone` when the merchant's store stops serving it.
 Read first: `DECISIONS.md` 2026-09-03 "A deleted store page gets a status field" (the founder chose this shape); build plan §6 `T4.0a`, whose note names this follow-up and says explicitly it is **not** a founder question; main §12.3, §14.1.
 Done when: a page the store no longer serves is marked `gone` by the ordinary walk; a page that is merely unreachable once is **not** — the founder's decision rejected inferring deletion from a single pass, because an interrupted walk would mark live pages gone; and the marking is idempotent, since the walk runs nightly.

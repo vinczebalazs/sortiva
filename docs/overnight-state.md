@@ -6155,6 +6155,47 @@ integrator treats a decision as real when it is in `DECISIONS.md`** — so it wi
 that entry is what will be reviewed. One path by which decisions become real; two paths is how a
 project ends up with two answers.
 
+### `R-OVERRIDE-STATE` LANDED, and a card of mine was misplaced
+
+**Merged and verified: 289 files, 3,601 tests, chaos 10 of 10.** An article a merchant publishes
+over a quality rejection now moves to `cleared_to_deliver` rather than back to `draft`, and the
+publish hour hands it over on that state alone. It is never put in front of them for review again.
+**The delivery read lost both guesswork arms** — the override flag, and a decision outcome nothing
+has ever written — and now names states.
+
+**A fact worth knowing about the whole override feature:** the lane established that
+`markArticleOverridden` is called from nowhere outside its own tests, because
+`POST /api/articles/{articleId}/publish-anyway` is **declared in the frozen route table with no
+implementation behind it.** So no merchant has ever overridden anything, and the set of rows a
+migration would have moved is empty. It said this as a verified fact rather than a risk judgement,
+which is why no migration was needed.
+
+**Two things it left alone, both journalled.** The frozen contract and the UI type still list five
+article states and do not know the new one — nothing breaks today because **no route serialises an
+article summary**, but whoever builds that list endpoint must widen both. And **the export download
+serves any article with a body, graded or not** — it asks only whether a body exists, so a
+half-written draft from a crashed run can be downloaded by id. That is the one remaining path to a
+finished article that does not consult the delivery read.
+
+### An integrator card-placement error, caught by the session it was dispatched to
+
+`R-PAGE-GONE-WRITE` was written "Lane B" from the phrase "the store walk", without opening the lane
+table. **Every file it must change is Lane C's** — `core/inventory`, `jobs/inventory`. The session
+holding it **stopped before writing a line**, did branch hygiene only, laid out three options and
+recommended the one that keeps the ownership table true. That is the right instinct and the second
+time today that stopping beat proceeding.
+
+**Resolved as an explicit authorisation rather than a lane going out of bounds**, because Lane C is
+mid-card and cannot hand over its worktree. **Verified before granting**: Lane C's uncommitted files
+are repositories, generation and publishing — **zero inventory files** — so the collision the rule
+exists to prevent is not live. Scope is fenced to four named files.
+
+**And it found a real gap in the ownership table itself, which is now fixed.**
+`packages/db/src/repositories/*` was **not divided by lane at all**, every lane needs functions
+there, and it was resolved by custom. That is the same drift that left
+`apps/web/app/api/settings` unowned until ten endpoints diverged and `R-CONTRACT` had to clean it
+up. §3 now says: **a repository file belongs to the lane that owns the domain it serves.**
+
 ### Verification done this morning, so it is not re-done
 
 - Resolved every registered task-name constant in the tree and matched it by hand against all
