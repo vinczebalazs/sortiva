@@ -91,7 +91,7 @@ describe.skipIf(!available)('reading one article', () => {
       {
         shopifyProductId: '3001',
         title: 'Trailhead 4',
-        rawBodyHtml: '<p>Premium quality mesh, the finest there is</p>',
+        rawBodyHtml: null,
         productType: 'Shoes',
         tags: [],
         variants: [{ variantId: 'v1', price: 129, compareAtPrice: null, available: true, options: {} }],

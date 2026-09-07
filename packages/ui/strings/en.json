@@ -1202,6 +1202,7 @@
   "content.article.quality.met": "Met",
   "content.article.quality.belowFloor": "Below the floor",
   "content.article.quality.scoreLabel": "Score",
+  "content.article.quality.criterion.ecommerceUsefulness": "Usefulness to a shopper",
   "content.article.quality.criterion.informationGain": "Information gain",
   "content.article.quality.criterion.factualGrounding": "Factual grounding",
   "content.article.quality.criterion.searchIntentMatch": "Search-intent match",
@@ -1223,7 +1224,7 @@
   "content.override.excluded": "Its results are shown to you but kept out of our quality tuning.",
   "content.override.confirm": "Publish anyway",
   "content.override.cancel": "Keep it unpublished",
-  "content.override.published": "Published against recommendation.",
+  "content.override.published": "Published against recommendation. It goes out at your publishing hour.",
 
   "content.article.event.generated": "Written",
   "content.article.event.published": "Published",

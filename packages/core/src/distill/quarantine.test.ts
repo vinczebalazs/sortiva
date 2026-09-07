@@ -59,6 +59,12 @@ const ALLOWED = new Set(
     // bytes `GET /api/products` answers with. Proving the description never
     // reaches a merchant-facing response means putting one there first.
     'apps/web/app/api/products/_lib/products-read.test.ts',
+    // Names the field and stores nothing in it. An article's detail needs a
+    // product to rest on, and the product input requires this key even when it
+    // is null — so this file mentions the name without carrying a word of a
+    // merchant's marketing copy. It seeded a real description until the gate
+    // caught it; the test never asserted on it.
+    'apps/web/app/api/articles/_lib/article-detail.test.ts',
   ].map((path) => path.split('/').join(sep)),
 )
 
