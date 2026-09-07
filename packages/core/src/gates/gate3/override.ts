@@ -1,3 +1,4 @@
+import type { ConflictCode } from '../../api/errors'
 import type { JudgeVerdict } from '../../contracts/opportunities'
 import type { FloorEvaluation } from './judge'
 
@@ -59,4 +60,21 @@ export function overrideAudit(input: {
     scores: input.verdict?.scores ?? null,
     actorUserId: input.actorUserId,
   }
+}
+
+/**
+ * Overriding a decision that was never made.
+ *
+ * Only a draft the quality bar actually turned down can be published anyway.
+ * Anything else is refused, and the two refusals are told apart because they
+ * mean different things to the merchant: an article that has already gone out
+ * needs nothing doing, while one that was never held back is a button they
+ * should not have been shown.
+ */
+export const OVERRIDE_NOT_REJECTED_CODE: ConflictCode = 'article_not_rejected'
+
+export const OVERRIDE_ALREADY_PUBLISHED_CODE: ConflictCode = 'article_already_published'
+
+export function overrideConflictFor(actualState: string): ConflictCode {
+  return actualState === 'published' ? OVERRIDE_ALREADY_PUBLISHED_CODE : OVERRIDE_NOT_REJECTED_CODE
 }

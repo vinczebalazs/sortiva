@@ -19,6 +19,7 @@ import { DbNotificationEmitter } from '@sortiva/jobs/notify/emitter'
 import { publishProvider, publishTokenCipher } from '../../publish/_lib/config'
 import type { DeliveryDeps } from './delivery'
 import type { LibraryDeps } from './library'
+import type { OverrideRouteDeps } from './override'
 import type { RefreshRouteDeps } from './refresh'
 import type { ReviewDeps } from './review'
 
@@ -85,6 +86,11 @@ export function reviewDeps(): ReviewDeps {
 
 /** What the articles library and the article page are built from: the database, and nothing else — reading an article we already wrote spends on no vendor. */
 export function libraryDeps(): LibraryDeps {
+  return { db: db() }
+}
+
+/** What "Publish anyway" is built from: the database, and nothing else — clearing an article to go out posts nothing itself. */
+export function overrideDeps(): OverrideRouteDeps {
   return { db: db() }
 }
 
