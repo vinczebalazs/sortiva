@@ -61,9 +61,9 @@ export function PublishingSettings({
   country,
   t = defaultTranslate,
   patchEndpoint = '/api/settings',
-  writeGrantEndpoint = '/api/shopify/oauth/start',
-  blogsEndpoint = '/api/settings/blogs',
-  selectBlogEndpoint = '/api/settings/blog',
+  writeGrantEndpoint = '/api/publish/grant/start',
+  blogsEndpoint = '/api/publish/blogs',
+  selectBlogEndpoint = '/api/publish/target',
 }: PublishingSettingsProps) {
   const [settings, setSettings] = useState(initial)
   const [phase, setPhase] = useState<WriteGrantPhase>({ kind: 'idle' })

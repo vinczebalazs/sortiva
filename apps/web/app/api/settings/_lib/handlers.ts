@@ -25,8 +25,9 @@ const CODES = {
   invalid: 'settings_invalid',
 } as const
 
+/** The envelope every other route answers a refusal in, and the one the screens read. */
 function error(status: number, code: string, message: string): Response {
-  return Response.json({ code, message }, { status })
+  return Response.json({ error: { code, message } }, { status })
 }
 
 /** The shape the frozen contract promises, assembled from the two tables that hold it. */
