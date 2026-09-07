@@ -18,6 +18,9 @@ export default defineConfig({
     environment: 'node',
     globals: false,
     reporters: ['default'],
+    // Builds the migrated database that database-backed suites are copied from,
+    // before any of them starts. The file itself says why it cannot be lazy.
+    globalSetup: ['packages/db/src/testing.global-setup.ts'],
     server: {
       deps: {
         // Auth.js's Next.js wrapper imports `next/server`, which only resolves
