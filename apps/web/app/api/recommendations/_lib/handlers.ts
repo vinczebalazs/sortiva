@@ -752,11 +752,12 @@ export function makeApplyRecommendationHandler(
     // 28 days before against the 28 after — would read as a collapse caused by
     // our advice. Read after the mark, so the window in which the walk could
     // delete the page underneath us is as small as the two statements allow.
-    const served = await listLiveStorePages(deps.db, scope)
-    const stillServed = served.some((page) => page.url === found.recommendation.pageUrl)
+    // A page we hold no row for at all gets the same answer, for the same
+    // reason — there is nothing here to measure either way.
+    const page = await storePageFor(deps.db, scope, found.recommendation.pageUrl)
 
     const maturityDays = rules().defaults.learning.outcomes.maturity_days
-    const dueAt = stillServed
+    const dueAt = page?.status === 'live'
       ? new Date(now.getTime() + maturityDays * 24 * 60 * 60 * 1000)
       : null
     if (dueAt) {

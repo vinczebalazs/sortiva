@@ -750,6 +750,78 @@ describe.skipIf(!available)('/api/recommendations', () => {
 
       expect((await post({ opportunityId: opportunity.id })).status).toBe(200)
     })
+
+    /**
+     * The advice already written, and the page taken down afterwards. The row
+     * still holds the title the check compares against, so without the guard
+     * this is exactly the page state the suite calls an application above.
+     */
+    it('does not offer to confirm work on a page that is gone', async () => {
+      const opportunity = await optimizeOpportunity()
+      await storedRecommendation(opportunity.id)
+      await harness.pool.query('UPDATE store_pages SET seo_title = $1 WHERE url = $2', [
+        'Wide trail running shoes',
+        PAGE_URL,
+      ])
+      await deletePage()
+
+      const response = await read(opportunity.id)
+      const body = (await response.json()) as { looksApplied: unknown }
+
+      expect(body.looksApplied).toBeNull()
+    })
+
+    it('records that the merchant acted, and promises no measurement of a page nobody can visit', async () => {
+      const opportunity = await optimizeOpportunity()
+      const id = await storedRecommendation(opportunity.id)
+      await deletePage()
+
+      const response = await apply(id)
+      expect(response.status).toBe(200)
+      const body = (await response.json()) as { appliedAt?: string; outcomeDueAt?: string }
+
+      // Someone who did the work and then deleted the page did the work. What
+      // we cannot do is measure it, and the missing date is how the drawer
+      // knows not to promise a result.
+      expect(body.appliedAt).toBe(NOW.toISOString())
+      expect(body.outcomeDueAt).toBeUndefined()
+
+      const opportunityRow = await harness.pool.query<{ status: string; applied_at: Date }>(
+        'SELECT status, applied_at FROM opportunities WHERE id = $1',
+        [opportunity.id],
+      )
+      expect(opportunityRow.rows[0]?.status).toBe('completed')
+      expect(new Date(opportunityRow.rows[0]!.applied_at).toISOString()).toBe(NOW.toISOString())
+
+      const { rows } = await harness.pool.query(
+        "SELECT 1 FROM graphile_worker._private_jobs j JOIN graphile_worker._private_tasks t ON t.id = j.task_id WHERE t.identifier = 'opportunity_outcome_measure'",
+      )
+      expect(rows, 'nothing may be booked against a page the store no longer serves').toHaveLength(0)
+    })
+
+    it('offers the prompt and books the measurement again once the page is back', async () => {
+      const opportunity = await optimizeOpportunity()
+      const id = await storedRecommendation(opportunity.id)
+      await harness.pool.query('UPDATE store_pages SET seo_title = $1 WHERE url = $2', [
+        'Wide trail running shoes',
+        PAGE_URL,
+      ])
+      await deletePage()
+      await markStorePagesSeen(harness.db, accountScope(accountId), [PAGE_URL], new Date())
+
+      const view = (await (await read(opportunity.id)).json()) as {
+        looksApplied: { signals: string[] } | null
+      }
+      expect(view.looksApplied?.signals).toContain('title_matches_suggestion')
+
+      const body = (await (await apply(id)).json()) as { outcomeDueAt?: string }
+      expect(body.outcomeDueAt).toBe('2026-10-01T10:00:00.000Z')
+
+      const { rows } = await harness.pool.query(
+        "SELECT 1 FROM graphile_worker._private_jobs j JOIN graphile_worker._private_tasks t ON t.id = j.task_id WHERE t.identifier = 'opportunity_outcome_measure'",
+      )
+      expect(rows).toHaveLength(1)
+    })
   })
 
   /**
