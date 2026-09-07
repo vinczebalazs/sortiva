@@ -221,6 +221,36 @@ describe.skipIf(!available)('/api/recommendations', () => {
     expect(status.rows[0]?.status).toBe('executing')
   })
 
+  /**
+   * The page is marked as being worked on before the work is queued, so that
+   * two tabs pressing at the same instant cannot both start one. If the queue
+   * write then fails, the mark has to come off — a page left marked with
+   * nothing coming to pick it up shows a spinner that never resolves and
+   * refuses every later press.
+   */
+  it('puts an untouched page back exactly where it was when the queue write fails', async () => {
+    const opportunity = await optimizeOpportunity()
+    expect(opportunity.status).toBe('new')
+
+    // The queue's own tables, out of reach for the length of one press.
+    await harness.pool.query('ALTER SCHEMA graphile_worker RENAME TO graphile_worker_hidden')
+    try {
+      await expect(post({ opportunityId: opportunity.id })).rejects.toThrow()
+    } finally {
+      await harness.pool.query('ALTER SCHEMA graphile_worker_hidden RENAME TO graphile_worker')
+    }
+
+    const status = await harness.pool.query<{ status: string }>(
+      'SELECT status FROM opportunities WHERE id = $1',
+      [opportunity.id],
+    )
+    expect(status.rows[0]?.status).toBe('new')
+
+    // And the merchant can press again, which is the whole point of putting it
+    // back rather than leaving it marked.
+    expect((await post({ opportunityId: opportunity.id })).status).toBe(200)
+  })
+
   it('returns the cap error on the third request in a day', async () => {
     const cap = rules().defaults.budgets.optimize.generations_per_account_per_day
     expect(cap).toBe(2)

@@ -13,6 +13,7 @@ import {
   signalRuns,
 } from '../schema'
 import type { AccountScope } from '../scope'
+import { assertMoveIsDrawn } from './opportunity-moves'
 
 /**
  * Where the opportunity engine's decisions land: one row per open signal, the
@@ -289,6 +290,7 @@ export async function transitionOpportunityStatus(
   },
   now: Date = new Date(),
 ): Promise<OpportunityRow | undefined> {
+  assertMoveIsDrawn(input.from, input.to)
   const [row] = await db
     .update(opportunities)
     .set({ status: input.to, updatedAt: now })
@@ -315,6 +317,7 @@ export async function expireOpportunity(
   reason: ExpiryReason,
   now: Date = new Date(),
 ): Promise<OpportunityRow | undefined> {
+  assertMoveIsDrawn(OPEN_OPPORTUNITY_STATUSES, 'expired')
   const [row] = await db
     .update(opportunities)
     .set({ status: 'expired', expiredReason: reason, updatedAt: now })
@@ -556,6 +559,7 @@ export async function dismissOpportunityGuarded(
   opportunityId: string,
   now: Date = new Date(),
 ): Promise<{ readonly row: OpportunityRow; readonly from: OpportunityRow['status'] } | undefined> {
+  assertMoveIsDrawn(OPEN_OPPORTUNITY_STATUSES, 'dismissed')
   return db.transaction(async (tx) => {
     const [before] = await tx
       .select({ status: opportunities.status })

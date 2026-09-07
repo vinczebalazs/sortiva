@@ -13,6 +13,7 @@ import {
   webhookEvents,
 } from '../schema'
 import type { AccountScope, SystemScope } from '../scope'
+import { assertMoveIsDrawn } from './opportunity-moves'
 
 /**
  * What the daily repair pass needs to see, and the two things it writes.
@@ -338,6 +339,7 @@ export async function completeRepair(
   outcome: Record<string, unknown>,
   now: Date = new Date(),
 ): Promise<boolean> {
+  assertMoveIsDrawn(OPEN_STATUSES, 'completed')
   const [row] = await db
     .update(opportunities)
     .set({ status: 'completed', outcomeJson: outcome, appliedAt: now, updatedAt: now })

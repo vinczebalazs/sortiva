@@ -59,6 +59,25 @@ describe('the opportunity status machine (main §7.9)', () => {
     }
   })
 
+  it('lets a claim be given up: a calendar placement that fails puts the row back', () => {
+    // Replenishment marks a candidate taken before it tries to place it on a
+    // day, so that a crash costs one candidate rather than two articles on one
+    // subject. A refused placement has to be able to undo that mark.
+    expect(canTransition('scheduled', 'accepted')).toBe(true)
+  })
+
+  it('lets a press be given up: a page marked as being worked on goes back where it was', () => {
+    // Pressing "improve this page" marks the row before the work is queued. If
+    // queueing fails the row is put back exactly where it came from, which for
+    // an untouched row is `new`.
+    expect(canTransition('executing', 'new')).toBe(true)
+    expect(canTransition('executing', 'accepted')).toBe(true)
+  })
+
+  it('lets a merchant say "not interested" about work already running', () => {
+    expect(canTransition('executing', 'dismissed')).toBe(true)
+  })
+
   it('assertCanTransition throws a named error on an illegal move, and nothing on a legal one', () => {
     expect(() => assertCanTransition('completed', 'new')).toThrow(InvalidOpportunityTransitionError)
     expect(() => assertCanTransition('new', 'accepted')).not.toThrow()
@@ -143,6 +162,13 @@ describe('the improve-this-page (OPTIMIZE) lifecycle, against the graph', () => 
     expect(canTransition('executing', 'scheduled')).toBe(false)
     expect(canTransition('dismissed', 'executing')).toBe(false)
     expect(canTransition('expired', 'completed')).toBe(false)
+    // Nothing reopens a finished row, and a merchant's "not interested" is not
+    // undone into anything but one more look.
+    expect(canTransition('completed', 'accepted')).toBe(false)
+    expect(canTransition('dismissed', 'scheduled')).toBe(false)
+    // Giving up a claim goes back one step, not forward or sideways: a row on
+    // the calendar does not become one nobody has decided about.
+    expect(canTransition('scheduled', 'new')).toBe(false)
   })
 })
 

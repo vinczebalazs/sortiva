@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import type pg from 'pg'
-import type { RankedOpportunityDraft } from '@sortiva/core'
+import { InvalidOpportunityTransitionError, type RankedOpportunityDraft } from '@sortiva/core'
 import { accountScope } from './scope'
 import {
   acceptedContentOpportunities,
@@ -118,17 +118,32 @@ describe.skipIf(!available)('the opportunities table (main §7.6, §7.9)', () =>
     expect(tasks[0]!.state).toBe('open')
   })
 
+  // A legal move asked for about a row that is not where the caller thinks it
+  // is. The two refusals are different and both have to work: the lifecycle
+  // refuses moves nobody drew, and this refuses a drawn move on a row somebody
+  // else has already changed.
   it('rejects a guarded transition from the wrong state', async () => {
     const scope = accountScope(accountId)
     const { row } = await upsertOpportunity(ctx.db, scope, { ...draft({ status: 'accepted' }), accountId })
     const result = await transitionOpportunityStatus(ctx.db, scope, row.id, {
-      from: ['new'],
-      to: 'scheduled',
+      from: ['scheduled'],
+      to: 'executing',
     })
     expect(result).toBeUndefined()
 
     const stillAccepted = await listOpenOpportunities(ctx.db, scope)
     expect(stillAccepted[0]?.status).toBe('accepted')
+  })
+
+  it('refuses a move the lifecycle does not draw, before it reaches the row', async () => {
+    const scope = accountScope(accountId)
+    const { row } = await upsertOpportunity(ctx.db, scope, { ...draft({ status: 'accepted' }), accountId })
+    await expect(
+      transitionOpportunityStatus(ctx.db, scope, row.id, { from: ['accepted'], to: 'new' }),
+    ).rejects.toThrow(InvalidOpportunityTransitionError)
+
+    const untouched = await listOpenOpportunities(ctx.db, scope)
+    expect(untouched[0]?.status).toBe('accepted')
   })
 
   it('expiry keeps the row — main §7.9 says expiry never deletes', async () => {
