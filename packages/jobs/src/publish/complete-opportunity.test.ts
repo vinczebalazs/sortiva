@@ -38,6 +38,12 @@ import { sweepPublishRecovery } from './recovery'
 
 const available = await databaseAvailable()
 const NOW = new Date('2026-09-03T09:00:00.000Z')
+/**
+ * What the race tests below are allowed to take. Far more than they need,
+ * because the thing they test for is a deadlock and the thing that makes them
+ * slow is a loaded machine, and those must never be confused for each other.
+ */
+const RACE_TEST_BUDGET_MS = 120_000
 const TODAY = '2026-09-03'
 
 describe.skipIf(!available)('publishing finishes the suggestion behind the article', () => {
@@ -419,7 +425,12 @@ describe.skipIf(!available)('publishing finishes the suggestion behind the artic
         PromiseFulfilledResult<{ completedOpportunity?: { id: string } | undefined } | undefined>,
       ]
       await expectSettledOneWay(ids, dismissal.value, publication.value)
-    })
+    },
+    // Generous on purpose. This test waits for connections to queue on locks,
+    // and a machine with every lane's suite running makes that slow; it must
+    // fail because two transactions deadlocked, never because the machine was
+    // busy. A red here is real.
+    RACE_TEST_BUDGET_MS)
   }
 
   /**
@@ -439,5 +450,5 @@ describe.skipIf(!available)('publishing finishes the suggestion behind the artic
 
       await expectSettledOneWay(ids, dismissal, delivered)
     }
-  })
+  }, RACE_TEST_BUDGET_MS)
 })
