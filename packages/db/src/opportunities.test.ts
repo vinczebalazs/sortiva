@@ -5,10 +5,12 @@ import { accountScope } from './scope'
 import {
   acceptedContentOpportunities,
   dismissOpportunity,
+  dismissOpportunityGuarded,
   expireOpportunity,
   insertOpportunityTasks,
   isDismissed,
   listOpenOpportunities,
+  readNotInterestedList,
   transitionOpportunityStatus,
   undismissOpportunity,
   upsertOpportunity,
@@ -185,6 +187,54 @@ describe.skipIf(!available)('the opportunities table (main §7.6, §7.9)', () =>
     const undone = await undismissOpportunity(ctx.db, scope, row.id)
     expect(undone?.status).toBe('new')
     expect(await isDismissed(ctx.db, scope, row.signalType, row.entityRef)).toBe(false)
+  })
+
+  it('the merchant-facing dismissal writes the marker too — it is the only one anything calls', async () => {
+    const scope = accountScope(accountId)
+    const { row } = await upsertOpportunity(ctx.db, scope, { ...draft({ status: 'new' }), accountId })
+    const result = await dismissOpportunityGuarded(ctx.db, scope, row.id)
+    expect(result?.row.status).toBe('dismissed')
+    expect(await isDismissed(ctx.db, scope, row.signalType, row.entityRef)).toBe(true)
+  })
+
+  it('undo after the merchant-facing dismissal clears the marker as well as the status', async () => {
+    const scope = accountScope(accountId)
+    const { row } = await upsertOpportunity(ctx.db, scope, { ...draft({ status: 'new' }), accountId })
+    await dismissOpportunityGuarded(ctx.db, scope, row.id)
+    const undone = await undismissOpportunity(ctx.db, scope, row.id)
+    expect(undone?.status).toBe('new')
+    expect(await isDismissed(ctx.db, scope, row.signalType, row.entityRef)).toBe(false)
+  })
+
+  it('a refused dismissal leaves no marker behind — the two writes stand or fall together', async () => {
+    const scope = accountScope(accountId)
+    const { row } = await upsertOpportunity(ctx.db, scope, { ...draft({ status: 'new' }), accountId })
+    await expireOpportunity(ctx.db, scope, row.id, 'demand_lost')
+
+    // The row is no longer open, so the guard refuses. Nothing about the
+    // merchant's wishes has been recorded, and nothing should be.
+    expect(await dismissOpportunityGuarded(ctx.db, scope, row.id)).toBeUndefined()
+    expect(await isDismissed(ctx.db, scope, row.signalType, row.entityRef)).toBe(false)
+  })
+
+  it('reads the whole not-interested list in one go, and only this store\'s', async () => {
+    const scope = accountScope(accountId)
+    const other = accountScope(await insertAccount(pool, 'other-store@example.com'))
+
+    const { row: mine } = await upsertOpportunity(ctx.db, scope, { ...draft({ status: 'new' }), accountId })
+    await dismissOpportunityGuarded(ctx.db, scope, mine.id)
+    const { row: theirs } = await upsertOpportunity(ctx.db, other, {
+      ...draft({ entityRef: 'their entity', status: 'new' }),
+      accountId: other.accountId,
+    })
+    await dismissOpportunityGuarded(ctx.db, other, theirs.id)
+
+    const list = await readNotInterestedList(ctx.db, scope)
+    expect(list.has(mine.signalType, mine.entityRef)).toBe(true)
+    expect(list.has(theirs.signalType, theirs.entityRef)).toBe(false)
+    // Same page, different kind of advice: a merchant who said no to one has
+    // not said no to the others.
+    expect(list.has('low_ctr_at_strong_rank', mine.entityRef)).toBe(false)
   })
 
   it('acceptedContentOpportunities returns only auto-accepted CREATE/REFRESH rows — the OpportunitySource seam', async () => {
