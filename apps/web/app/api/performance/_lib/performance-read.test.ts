@@ -160,7 +160,7 @@ describe.skipIf(!available)('reading the Performance screens', () => {
          (account_id, signal_type, entity_type, entity_ref, evidence_json, impact, impact_score,
           confidence, reason_template_key, recommended_action, status, rules_version, applied_at)
        VALUES ($1, 'striking_distance', 'url', 'https://example.com/collections/trail', '[]'::jsonb,
-               'high', 80, 70, 'striking_distance.page_one_reachable', 'optimize', 'completed',
+               'high', 80, 70, 'striking_distance.optimize', 'optimize', 'completed',
                'test-rules', '2026-08-30T12:00:00Z')
        RETURNING id`,
       [mine],

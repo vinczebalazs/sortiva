@@ -99,7 +99,7 @@ describe('schemas', () => {
 
   it('renders every why-line from a template key and params, never prose (invariant 8)', () => {
     const parsed = s.whyLineSchema.safeParse({
-      templateKey: 'striking_distance.page_one_intent_mismatch',
+      templateKey: 'striking_distance.optimize',
       params: { position: 7.3 },
     })
     expect(parsed.success).toBe(true)
