@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync, readdirSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 /**
@@ -38,6 +38,10 @@ const REAL_IMPLEMENTATION: Record<string, { symbol: string; why: string }> = {
     symbol: 'DbNotificationEmitter',
     why: 'the Shopify composition root hands this out, so a notification reaches a real row rather than a stand-in',
   },
+  StubJudgeLite: {
+    symbol: 'LlmJudgeLite',
+    why: 'the improve-this-page worker builds it unconditionally and the composition root (apps/web/instrumentation-node.ts) registers that worker, so a merchant’s click is graded by the real judge rather than by a stand-in that passes everything',
+  },
   StubCatalogEvents: {
     symbol: 'DatabaseCatalogEvents',
     why: 'the composition root (apps/web/instrumentation-node.ts) builds it and hands it to the registered catalogue-change drain, and the Shopify webhook handler asks for a pass the moment it records a change — so a merchant’s edit really is read in production, which is the half that used to be missing',
@@ -71,10 +75,18 @@ function everyStub(): string[] {
   return [...doubles.matchAll(/export class (Stub\w+)/g)].map((m) => m[1]!)
 }
 
-/** Which of them the report actually constructs, which is what puts one on the list. */
+function reportSource(): string {
+  return readFileSync(join(repoRoot, 'scripts', 'stub-report.mjs'), 'utf8')
+}
+
+/** Which stand-ins a given report builds, which is what puts one on its list. */
+function stubsIn(reportSourceText: string): string[] {
+  return [...reportSourceText.matchAll(/new doubles\.(Stub\w+)\(/g)].map((m) => m[1]!)
+}
+
+/** Which of them the real report constructs. */
 function stubsOnTheReport(): string[] {
-  const report = readFileSync(join(repoRoot, 'scripts', 'stub-report.mjs'), 'utf8')
-  return [...report.matchAll(/new doubles\.(Stub\w+)\(/g)].map((m) => m[1]!)
+  return stubsIn(reportSource())
 }
 
 /**
@@ -83,20 +95,87 @@ function stubsOnTheReport(): string[] {
  * it.
  */
 function constructionSites(symbol: string): string[] {
-  return productionFiles.filter((file) => {
-    const text = readFileSync(file, 'utf8')
-    if (!text.includes(`new ${symbol}(`)) return false
-    return !text.includes(`export class ${symbol}`)
-  })
+  return productionFiles
+    .filter((file) => {
+      const text = readFileSync(file, 'utf8')
+      if (!text.includes(`new ${symbol}(`)) return false
+      return !text.includes(`export class ${symbol}`)
+    })
+    .map((file) => relative(repoRoot, file))
+    .sort()
 }
+
+/**
+ * The other direction, which nothing checked until a stand-in was found running
+ * in the product's money path.
+ *
+ * Everything above guards *removals*: a seam may not be dropped from the report
+ * unless something real replaced it. Nothing guarded the opposite — a stand-in
+ * still being built by shipping code. Those two are not the same question, and
+ * one seam managed to be both at once: `StubNotificationEmitter` was recorded
+ * above as replaced (true of the Shopify path, which is where it was checked)
+ * while the Stripe webhook went on building it, unlisted and unreported.
+ *
+ * So every stand-in must be constructed **nowhere** in shipping code, unless it
+ * is recorded here by the exact file that does it. A record is not permission:
+ * it is a finding that cannot be forgotten, and it is asserted to still be
+ * exactly true, so repairing the wiring turns this file red asking for the
+ * record to be deleted.
+ */
+const WIRED_IN_PRODUCTION: Record<string, { readonly files: readonly string[]; readonly finding: string }> = {
+  StubNotificationEmitter: {
+    files: ['apps/web/app/api/webhooks/stripe/_lib/receiver.ts'],
+    finding:
+      'The Stripe webhook hands the payment-failed notification to a stand-in that keeps it in memory ' +
+      'and drops it when the request ends, so a merchant whose card is declined is never emailed. ' +
+      'Every other composition root builds DbNotificationEmitter. Carded as R-DUNNING-DROPPED.',
+  },
+}
+
+describe('no stand-in is left running in the product itself', () => {
+  it.each(everyStub())('%s is not built by shipping code', (stub) => {
+    const recorded = WIRED_IN_PRODUCTION[stub]
+    const sites = constructionSites(stub)
+
+    if (!recorded) {
+      expect(
+        sites,
+        `\`${stub}\` is constructed by code that ships. A stand-in reached by a real request ` +
+          'does whatever it was written to do for a test — usually nothing — and no report will say so, ' +
+          'because the stub report is a hand-written list and this is not on it. Either wire the real ' +
+          'implementation, or record this in WIRED_IN_PRODUCTION with what a user loses by it.',
+      ).toEqual([])
+      return
+    }
+
+    expect(
+      sites,
+      `The recorded finding for \`${stub}\` no longer matches what the code does. If it has been ` +
+        `fixed, delete its WIRED_IN_PRODUCTION entry in the same commit. Recorded: ${recorded.finding}`,
+    ).toEqual([...recorded.files])
+  })
+
+  it('is not vacuous: it would notice a stand-in nobody had recorded', () => {
+    // The check above can only be trusted if `constructionSites` finds real
+    // ones, which the recorded entry proves it does.
+    expect(Object.keys(WIRED_IN_PRODUCTION).flatMap((s) => constructionSites(s))).not.toEqual([])
+  })
+})
 
 describe('a seam may only leave the stub report by being wired for real', () => {
   const unlisted = everyStub().filter((stub) => !stubsOnTheReport().includes(stub))
 
   it('finds both the stubs and the report, so the comparison means something', () => {
     expect(everyStub().length).toBeGreaterThan(3)
-    expect(stubsOnTheReport().length).toBeGreaterThan(0)
     expect(productionFiles.length).toBeGreaterThan(100)
+
+    // This used to require the real report to still be building at least one
+    // stand-in. That conflated two things, and they came apart on 2026-09-08
+    // when the last one was replaced: an empty list is the goal, not a broken
+    // parser. So the parser is proved against a sample, and the report is
+    // proved to have been read.
+    expect(reportSource()).toContain('wiredStubs')
+    expect(stubsIn('new doubles.StubOne()\nnew doubles.StubTwo(capture)')).toEqual(['StubOne', 'StubTwo'])
   })
 
   it('names a real implementation for every seam kept off the report', () => {

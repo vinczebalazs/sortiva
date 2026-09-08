@@ -1448,6 +1448,24 @@ Done when: Playwright against staging: onboarding through activation; opportunit
 
 ### Found by the integrator while reading the wired-stub report, 2026-09-08
 
+**R-DUNNING-DROPPED — a merchant whose card is declined is never told** · **Lane A** · **live, in the money path, and the highest-priority defect in the queue**
+
+Scope. When Stripe tells us a payment failed, the product is supposed to email the merchant — it is one of the few emails they cannot switch off (`packages/core/src/notifications/matrix.ts:193`, `email: 'always'`). The webhook does the rest of its job correctly: it writes the subscription's new status, so the in-app banner appears the next time the merchant opens Sortiva. **The email never sends.**
+
+The reason is one line. Every other place in the product that emits a notification builds `DbNotificationEmitter`, which writes a row and queues the send. The Stripe receiver builds `StubNotificationEmitter` instead (`apps/web/app/api/webhooks/stripe/_lib/receiver.ts:61`) — a test double that keeps notifications **in a JavaScript array** and loses them when the request ends.
+
+**Why nobody saw it, which is the part worth reading.** The comment beside that line says the stand-in "reports itself through `pnpm stubs:report`, so the gap is visible rather than silently absent." That was true when written. On 2026-09-02 a different card wired the real emitter into the **Shopify** composition root, correctly checked *that* path end to end, and removed the stand-in's line from the report — which is what takes something off the list. The Stripe path was never looked at. So the safeguard this line depends on was removed by someone fixing a different path, and the seam went quiet.
+
+**The check that would have caught it now exists** (`packages/core/src/contracts/seams-wired.test.ts`, "no stand-in is left running in the product itself"): every stand-in must be built nowhere in shipping code unless it is recorded by the exact file that builds it. **This defect is that file's only record.** Fixing the wiring will turn that suite red asking for the record to be deleted — delete it in the same commit; that is the intended flow.
+
+Read first: `packages/core/src/billing/processing.ts` (the `announce` function, which is what emits); `apps/web/app/api/shopify/_lib/config.ts:131` and `apps/web/app/api/articles/_lib/config.ts:146` for how every other composition root does it; main §4.2, §14.6; tech §1.
+
+Done when: a payment-failed event reaching the webhook writes a real notification row and queues a real email; the `WIRED_IN_PRODUCTION` record for `StubNotificationEmitter` is deleted; and a test drives the receiver with a signed `invoice.payment_failed` event and asserts the row exists — **not** that the emitter was called, because being called is exactly what the stand-in already does.
+
+Note: check the dunning follow-ups while you are in there. The same `announce` path handles the whole sequence, and if the first email never sent, nothing after it did either.
+
+
+
 **R-BRAKES-BLIND — two of the product's safety brakes cannot fire, and the reason they were left unbuilt stopped being true some time ago** · Lane G · **the last two entries in the wired-stub report, which `T10.1` requires to be empty**
 
 Scope. The product has a set of automatic brakes: when something goes wrong at a rate that says the fault is ours rather than the world's, a switch goes up and the affected work stops until a person has looked. Two of them are **declared, arithmetically complete, tested — and connected to nothing.**

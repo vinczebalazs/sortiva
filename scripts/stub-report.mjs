@@ -54,7 +54,20 @@ const doubles = await import('../packages/core/src/contracts/doubles.ts')
 // and `T4.6`'s monthly replenishment job (registered as
 // `replenishment_monthly`). The double still exists and its own tests still
 // use it; nothing in production does.
-new doubles.StubJudgeLite()
+// `StubJudgeLite` is deliberately not constructed, from 2026-09-08. The line
+// was stale rather than wrong-headed: `R-OPTIMIZE-WIRE` gave the seam a real
+// implementation and nobody came back here, so this report has been announcing
+// that "the quality bar is not actually applied" while it was. Checked end to
+// end to the standard the notes above set: `LlmJudgeLite` is built
+// unconditionally in the improve-this-page worker's dependencies
+// (`apps/web/app/api/recommendations/_lib/config.ts`), and those dependencies
+// are handed to `registerOptimizeTasks` in the composition root
+// (`apps/web/instrumentation-node.ts`), so a merchant's click really is graded
+// by the real judge. The double still exists and its own tests still use it.
+//
+// This mattered beyond bookkeeping: a report whose first entry a reader has
+// learned to discount is a report they discount entirely, and the two entries
+// below it are true.
 // `StubCatalogEvents` is deliberately not constructed, from 2026-09-04, and this
 // is the third note in this place — the first two were wrong, so the standard
 // here is higher than a card's report. What is true now, checked end to end:

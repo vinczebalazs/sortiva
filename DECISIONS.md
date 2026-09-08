@@ -5632,3 +5632,20 @@ Why the field is sent even to a store that is told no next scan: the *last* scan
 Held by three tests in `apps/web/app/api/opportunities/_lib/next-scan.test.ts`, one of which formats the same instant twice — once in UTC, once in the store's zone — and asserts the two disagree by a day, so the test states the defect rather than describing the fix. Mutation-checked: hardcoding `UTC` in the handler fails two of the three.
 The mock the frontend builds against now carries `Europe/Berlin` rather than UTC on purpose, so a screen that formats without the field shows the wrong day in development instead of only on a real merchant's account.
 Nearest spec: main §6.5 (locale and timezone), §9.4; `DECISIONS.md` 2026-09-07 `R-NEXTSCAN` and `R-SCANCOPY` (which journalled the UTC approximation as acceptable **while `nextScanAt` was always null** — it is live now).
+
+## 2026-09-08 — R-STUB-REPORT — A stand-in running inside the product is now a test failure, not a silence
+Decision: `seams-wired.test.ts` gains the direction it never had. It already refused to let a stand-in be *removed* from the wired-stub report without a real implementation to point at. It now also refuses to let one be *built by shipping code*: for every `Stub*` class, the set of production files constructing it must be empty, unless recorded in `WIRED_IN_PRODUCTION` by the exact file that does it.
+What that found immediately: `StubNotificationEmitter` — recorded since 2026-09-02 as replaced, which was true of the Shopify path where it was checked — is still constructed by the Stripe webhook receiver, where it drops the payment-failed email on the floor. Carded as `R-DUNNING-DROPPED`. That entry is the record; repairing the wiring turns the suite red asking for it to be deleted, the same mechanism `R-CONTRACT-PROVE` established.
+Why a record rather than an exception list: an exception says "this is allowed". A record says "this is a defect, here is exactly what it is, and the check will tell you when it stops being true". The difference is that nobody has to remember.
+Nearest spec: main §14.7; `DECISIONS.md` 2026-09-08 `R-CONTRACT-PROVE` (the pattern being reused).
+
+## 2026-09-08 — R-STUB-REPORT — The report's first entry was stale, and a report a reader discounts is a report they ignore
+Decision: `StubJudgeLite` is no longer constructed by `scripts/stub-report.mjs`, and its real implementation is recorded. `pnpm stubs:report` was announcing that "the quality bar is not actually applied" to recommendations. It is applied: `LlmJudgeLite` is built unconditionally in the improve-this-page worker's dependencies and those are registered in the composition root, so a merchant's click really is graded. The line was simply never removed when the seam was filled.
+Why it is worth a journal entry rather than a quiet deletion: the report had three entries, one false and two true, and nothing distinguished them. The two true ones say that both of the product's rate-based safety brakes cannot fire. A reader who correctly learns to discount the first entry discounts those as well.
+Checked end to end before removing, to the standard the file's own earlier notes set — two previous removals from this report were made on claims that turned out to be false, which is why that standard exists.
+Nearest spec: main §14.4, §14.7.
+
+## 2026-09-08 — R-STUB-REPORT — A guard that assumed the product would never be finished
+Decision: the sanity check asserting the report still constructs at least one stand-in is replaced by one that proves the parser works on a sample. With the judge entry retired, no `Stub*` is on the report at all — and the old assertion read that as a broken check rather than as the goal being reached, failing the moment the last stand-in was replaced.
+Worth recording because the shape recurs: a guard that proves it is looking at something real by requiring an outstanding defect to exist will fail on the day the defect is fixed. Prove the mechanism against a sample; assert the absence separately.
+Nearest spec: main §14.7.
