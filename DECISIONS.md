@@ -6412,3 +6412,24 @@ Nine test files seeded several articles for one store by inserting each one's to
 
 `nextFixtureDay(base)` in `packages/db/src/testing.ts` hands each fixture topic a day of its own near the date the fixture asked for. The counter is per test file, which is all it has to be.
 Nearest spec: n/a — test scaffolding.
+
+## 2026-09-08 — R-DISMISS-DOES-NOTHING — "Not interested" is written by the dismissal itself, and the scan asks before it writes
+
+Card `R-DISMISS-DOES-NOTHING`, Lane C. Both halves of the reported defect were re-verified against the tree before anything was written.
+
+**Where the marker is written.** Inside `dismissOpportunityGuarded`'s existing transaction — the function the merchant's button actually reaches — rather than from the route handler. One writer for one fact: the status flip and the record of the refusal commit together or not at all. A refused dismissal (the suggestion was already resolved) therefore leaves nothing behind. Writing it from the handler would have given two writers, and an easy third later.
+
+**Why the status could not carry it on its own.** The unique index that stops a re-detected suggestion duplicating covers *open* statuses only, deliberately, so history stays queryable. A dismissed row sits outside that index, so a re-detection was simply inserting a fresh one.
+
+**The grain is `(signal_type, entity_ref)` — one kind of advice about one page — and that is the spec's own wording**, not an inference: main §7.9 says a dismissal "goes to the not-interested list keyed by `(signal_type, entity_ref)`". It is also the right product answer: a merchant refusing a title-and-description rewrite for a page has not refused to hear that the same page is nearly on the first results page for a query they sell into.
+
+**A second reader, and why.** `readNotInterestedList` fetches a store's whole list once per detection pass, because a pass has every candidate in hand before it writes any of them. `isDismissed` stays as the single-pair form. Two readers of one table, deliberately, rather than one query per candidate.
+
+**A withheld candidate still counts as detected.** The expiry pass retires an open row whose entity was *not* re-detected. A candidate we decline to propose was still detected — the evidence holds, we are only declining to say so again — so it is recorded as seen before the check. Letting it fall through would retire other open rows on the same signal and entity as though the evidence had evaporated.
+
+**The count of withheld candidates is logged only.** `signal_runs` has no column for it and adding one is a schema wave's to add, not a feature card's.
+
+**Left alone, deliberately, and flagged rather than fixed.** Two other places write opportunity rows and do not consult the list: the drift sweep (`packages/jobs/src/drift/sweep.ts`) and the merchant's own "refresh this article" request (`packages/jobs/src/generation/request-refresh.ts`). Both are Lane D directories. The refresh request is arguably right to ignore a dismissal — the merchant is asking for it — but the drift sweep is the same defect on a second path. The table's own comment now names both rather than claiming a guarantee that only the scan keeps.
+
+**Also flagged, not fixed:** `dismissOpportunity` in the opportunities repository has no production caller and never had one. Its name collides with a differently-shaped `dismissOpportunity` in `packages/jobs/src/generation/veto-topic.ts`, and that collision is how the original defect hid — the button reached one, the tests exercised the other. Both now write the marker through the same private helper, so they cannot diverge, but the duplicate is worth removing on a card of its own.
+Nearest spec: main §7.9; invariant 10.

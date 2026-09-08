@@ -4,10 +4,12 @@ import { silentLogger, type AnalyticsEvent } from '@sortiva/core'
 import { MockSeoDataProvider } from '@sortiva/providers/seo/mock'
 import {
   accountScope,
+  dismissOpportunityGuarded,
   findOpportunityById,
   listOpenOpportunities,
   saveGscGrant,
   selectGscProperty,
+  undismissOpportunity,
   upsertGscQueryDaily,
   upsertOpportunity,
   upsertStorePages,
@@ -178,6 +180,90 @@ describe.skipIf(!available)('runSignalScan against a real store (main §7.5, §7
     const afterSecond = await listOpenOpportunities(ctx.db, scope)
     expect(afterSecond.length).toBe(afterFirst.length)
     expect(new Set(afterSecond.map((r) => r.id))).toEqual(new Set(afterFirst.map((r) => r.id)))
+  })
+
+  it('a suggestion the merchant turned down is not put back by the next scan', async () => {
+    await seedStorePages(ctx, accountId)
+    const scope = accountScope(accountId)
+
+    const first = await runSignalScan(deps(ctx), accountId, 'weekly', 'weekly-2026-W36')
+    const openAfterFirst = await listOpenOpportunities(ctx.db, scope)
+    const declined = openAfterFirst.find((o) => o.signalType === 'missing_or_weak_metadata')!
+    expect(declined).toBeDefined()
+
+    await dismissOpportunityGuarded(ctx.db, scope, declined.id)
+
+    // Nothing about the store has changed, so this pass detects exactly the
+    // same signal on exactly the same page — the situation that used to hand
+    // the merchant back the advice they had just refused.
+    const second = await runSignalScan(deps(ctx), accountId, 'weekly', 'weekly-2026-W37')
+    expect(second.status).toBe('completed')
+
+    const openAfterSecond = await listOpenOpportunities(ctx.db, scope)
+    expect(
+      openAfterSecond.filter(
+        (o) => o.signalType === declined.signalType && o.entityRef === declined.entityRef,
+      ),
+    ).toEqual([])
+    expect((await findOpportunityById(ctx.db, scope, declined.id))?.status).toBe('dismissed')
+
+    // Everything else the same pass found is untouched — the refusal is about
+    // one kind of advice on one page, not about the store.
+    expect(openAfterSecond.length).toBe(openAfterFirst.length - 1)
+    expect(second.opportunitiesCreated).toBe(0)
+    expect(second.opportunitiesUpdated).toBe(first.opportunitiesCreated - 1)
+  })
+
+  it('a merchant who says no to one kind of advice about a page still hears a new kind about the same page', async () => {
+    await seedStorePages(ctx, accountId)
+    const scope = accountScope(accountId)
+    const page = 'https://shop.example/collections/trail-shoes'
+
+    await runSignalScan(deps(ctx), accountId, 'weekly', 'weekly-2026-W36')
+    const metadata = (await listOpenOpportunities(ctx.db, scope)).find(
+      (o) => o.signalType === 'missing_or_weak_metadata' && o.entityRef === page,
+    )!
+    expect(metadata).toBeDefined()
+    await dismissOpportunityGuarded(ctx.db, scope, metadata.id)
+
+    // Search Console arrives, and it says this same page is close to the first
+    // results page for a query — a different problem, on the same address, that
+    // the merchant has never been asked about.
+    await saveGscGrant(ctx.db, scope, { tokens: 'test-tokens' })
+    await selectGscProperty(ctx.db, scope, { property: 'sc-domain:shop.example', connectedAt: NOW })
+    await upsertGscQueryDaily(ctx.db, scope, [gscRow()])
+    await runSignalScan(deps(ctx), accountId, 'weekly', 'weekly-2026-W37')
+
+    const stillOpen = await listOpenOpportunities(ctx.db, scope)
+    expect(stillOpen.some((o) => o.signalType === 'missing_or_weak_metadata' && o.entityRef === page)).toBe(false)
+    expect(stillOpen.some((o) => o.signalType === 'striking_distance' && o.entityRef === page)).toBe(true)
+  })
+
+  it('"show dismissed" undo puts the suggestion back, and the next scan keeps it', async () => {
+    await seedStorePages(ctx, accountId)
+    const scope = accountScope(accountId)
+
+    const first = await runSignalScan(deps(ctx), accountId, 'weekly', 'weekly-2026-W36')
+    const declined = (await listOpenOpportunities(ctx.db, scope)).find(
+      (o) => o.signalType === 'missing_or_weak_metadata',
+    )!
+    await dismissOpportunityGuarded(ctx.db, scope, declined.id)
+
+    const restored = await undismissOpportunity(ctx.db, scope, declined.id)
+    expect(restored?.status).toBe('new')
+
+    // The refusal is lifted, so the pass writes to the row again instead of
+    // stepping over it — the count is what proves that: every candidate the
+    // first pass created is written again, none held back — and it is the same
+    // row, not a replacement.
+    const after = await runSignalScan(deps(ctx), accountId, 'weekly', 'weekly-2026-W37')
+    expect(after.opportunitiesCreated).toBe(0)
+    expect(after.opportunitiesUpdated).toBe(first.opportunitiesCreated)
+    const open = await listOpenOpportunities(ctx.db, scope)
+    const back = open.filter(
+      (o) => o.signalType === declined.signalType && o.entityRef === declined.entityRef,
+    )
+    expect(back.map((o) => o.id)).toEqual([declined.id])
   })
 
   it('closes the T3.6 HIGH finding: a technical blocker discovered on re-scan moves a new/accepted row to blocked, and clears it once the blocker is gone', async () => {

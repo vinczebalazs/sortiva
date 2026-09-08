@@ -196,8 +196,20 @@ export const signalRuns = pgTable(
 
 /**
  * The opportunity-level not-interested list. Keyed on the same
- * `(signal_type, entity_ref)` pair the dedupe index uses, so a dismissed
- * signal is never re-proposed — with a "show dismissed" view to undo it.
+ * `(signal_type, entity_ref)` pair the dedupe index uses — one kind of advice
+ * about one entity, so refusing a metadata rewrite for a page says nothing
+ * about a ranking problem on the same page. A "show dismissed" view undoes it,
+ * which deletes the row.
+ *
+ * This table is what carries the refusal, because the row's own `dismissed`
+ * status cannot: the dedupe index above covers open rows only, so a dismissed
+ * row is invisible to it and a re-detection would simply insert a fresh one.
+ *
+ * **What actually reads it, so the guarantee is not overstated:** the signal
+ * scan — weekly, onboarding and event-driven alike — skips any candidate on
+ * this list. The drift sweep and the merchant's own "refresh this article"
+ * request also write opportunities and do not consult it; both are outside the
+ * lane that owns this table. See DECISIONS 2026-09-08 R-DISMISS-DOES-NOTHING.
  */
 export const dismissedOpportunities = pgTable(
   'dismissed_opportunities',
