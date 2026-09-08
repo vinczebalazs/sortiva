@@ -792,7 +792,7 @@ Scope: `apps/web/app/(public)/_lib/signin-wire.test.ts` has been carried on `R-T
 Read first: the `R-TESTDB` card and its named six; `apps/web/app/api/auth/_lib/config.ts`.
 Done when: the cause is named rather than guessed; the test is deterministic; and this test's entry on `R-TESTDB`'s list is corrected — either removed, or restated with what actually makes it fail.
 
-**R-SKIP-TASK — "Skip this task" was removed because it never worked** · **a founder question, not yet a card**
+**R-SKIP-TASK — "Skip this task" was removed because it never worked** · **ANSWERED and DONE 2026-09-08, merged as `518e306`.** The founder chose "build it properly"; it needed no migration, because the database has accepted a skipped task since schema wave 2. Server side is complete. **Still open: the button itself, a one-line revert in Lane F.**
 Scope: the drawer offered "Skip this task" beside "Mark applied". It posted to an address that has never existed, **so it has only ever failed**. `R-OPPS-WIRE` removed it rather than repair it: nothing in the contract records a task as skipped, and mapping Skip onto the endpoint that exists would record a task the merchant **declined** as one they **did** — a false record, in the table that feeds outcome measurement.
 **The decision:** should a merchant be able to skip a task? If yes it needs a new endpoint and somewhere to record it, plus a one-line revert on the screen. If no, it is already gone and the only cost is a control some designs assumed.
 Read first: `DECISIONS.md` 2026-09-07 `R-OPPS-WIRE` entries; main §10.4; ui §5.3.
@@ -835,7 +835,7 @@ Scope: every explanation renders by looking a key up in the copy catalogue. **Th
 Read first: `DECISIONS.md` 2026-09-08 `R-FIXTURE-KEYS`; main Appendix A; ui §5; invariants 8 and 24.
 Done when: every key a producer writes is one the renderer can resolve, whichever side is changed to make that true; the guard that reads source files for hand-written keys covers the prefix rule too, so this cannot recur; and the canonical outage line reaches a merchant.
 
-**R-SCREEN-READS — nothing checks that a screen reads what an endpoint sends** · Lane F · **the third and last side of the same triangle**
+**R-SCREEN-READS — nothing checks that a screen reads what an endpoint sends** · **DONE, merged as `9601cab`** · Lane F · **the third and last side of the same triangle**
 Scope: two of three sides are now checked. `R-OPPS-WIRE` proved every address a screen posts to is one a route serves. `R-CONTRACT-PROVE` proved every route's answer matches its declaration. **Nothing proves a screen reads fields the endpoint actually sends** — which is how the Search Console button broke, and it was found by a person reading the consumer by hand rather than by any check.
 Read first: `DECISIONS.md` 2026-09-08 `R-CONTRACT-PROVE` and 2026-09-07 `R-OPPS-WIRE`; the two existing checks are the pattern — both **record what the real thing does** rather than reading the source, which is load bearing in both.
 Done when: a screen reading a field no endpoint sends fails a test by name.
@@ -1048,7 +1048,7 @@ Read first: `DECISIONS.md` 2026-09-07 `R-SCANCOPY` and `R-NEXTSCAN` entries; mai
 Done when: a store reads its next scan as the day it actually falls in their own calendar.
 Note: needs the store's timezone in the response, which is a **contract change and therefore the integrator's**, plus formatting in `packages/ui`.
 
-**R-SWEEP-LIFECYCLE — unpaid and paused stores are still scanned every Monday** · **a founder question about cost**
+**R-SWEEP-LIFECYCLE — unpaid and paused stores are still scanned every Monday** · **DONE, merged as `7ae512c`** · **a founder question about cost**
 Scope: found by `R-NEXTSCAN` and stated plainly by its lane. The weekly scan sweep consults the kill switches but **not** the lifecycle gate, so a store that is unpaid, on vacation, or awaiting deletion **is still scanned every Monday**. The new next-scan prediction deliberately tells those merchants nothing — silence being the safe error — so **the product is quieter than the machinery actually is.**
 **The question is cost, not correctness:** should the scan itself skip a store nobody is paying for? Scanning costs vendor money per store per week. Against that: billing state gates generation and publishing only, and read access is never revoked, so a lapsed subscriber's screens still work — and a store that returns has fresher data if we never stopped.
 Read first: `DECISIONS.md` 2026-09-07 `R-NEXTSCAN` entries; main §4.2, §7.11, §14.5; invariant 16.
@@ -1157,7 +1157,7 @@ Read first: `DECISIONS.md` 2026-09-07 `R-SIGNAL-COPY` entries; main §11, §7.3.
 Done when: the two conditions produce two reason keys from `packages/core/src/.../reasons.ts` and read as two different sentences; and the guard that pins each reason's parameters against its producer still passes.
 Note: **producer-side, which is why the copy card could not do it.**
 
-**R-PLURALS — the copy catalogue cannot say "1 page"** · Lane F
+**R-PLURALS — the copy catalogue cannot say "1 page"** · **DONE, merged as `6f944d1`** · Lane F
 Scope: the string catalogue has no singular and plural forms, so a sentence with a count prints "1 pages". **Two shipped sentences already do this**, `template.catalog_richness_gap.insufficient_substance` among them. `R-SIGNAL-COPY` had ten more sentences whose count can legitimately be one and **phrased around every one of them** rather than shipping ten new faults — printing only values safe at any size, and listing the unused parameters in `COUNTS_PHRASED_AROUND` so it reads as a decision. That is a workaround, and it costs the sentences some directness.
 Read first: `DECISIONS.md` 2026-09-07 `R-SIGNAL-COPY` entries; main Appendix A; invariant 24 (canonical strings verbatim).
 Done when: a sentence can carry a count and read correctly at one and at many; the two shipped faults are fixed; and the phrased-around sentences are revisited, or the list records deliberately that they stay as they are.
@@ -1464,7 +1464,7 @@ Done when: a refused publish leaves a record, the brake reads it, and the stand-
 **R-BRAKE-STICKY — the quality switch is hard to lower again** · small, Lane G · **named by the lane that built it, not a defect**
 Scope: the quality brake measures the last fifty verdicts with no time bound, which is what the spec asks for. The consequence: an operator who lowers the switch while those fifty still read badly watches it go straight back up, and can only clear it by fixing the cause or by fifty further drafts being graded. The lane declined to invent a time bound, which would have been a behaviour change nobody asked for. Worth deciding deliberately rather than discovering during an incident.
 
-**R-CREATE-UNCHECKED — two ways to propose a new page skip the check that stops us competing with the merchant's own page** · **Lane C** · **invariant 6, and the mechanism built to make this impossible has no caller**
+**R-CREATE-UNCHECKED — two ways to propose a new page skip the check that stops us competing with the merchant's own page** · **DONE, merged as `3187f40`** · **Lane C** · **invariant 6, and the mechanism built to make this impossible has no caller**
 Scope: the product must never propose writing a new page without first checking whether the store already has one for that subject — if it does, the advice becomes "improve the page you have", never "write a second one". Publishing two of your own pages for one search splits their standing and is the thing the merchant would least forgive.
 **Three signals can produce a new-page recommendation, and only one runs the check.** `uncovered_commercial_query` does, properly: its detector throws if the check has not run (`packages/core/src/signals/uncovered-query.ts:77`). The other two — `competitor_coverage_gap` and `product_family_coverage_gap` (`packages/core/src/opportunities/action-selection.ts:137,150`) — reach `CREATE` without it, each with a comment arguing the detector has already excluded the case.
 **Those two arguments are not the same argument, and one of them is weaker than it looks.** The competitor-gap branch reads `signal.ourRankingUrl ? OPTIMIZE : CREATE` — "nothing of ours is ranking, so write one". **A page that ranks nowhere is still a page.** The existing-target check exists precisely because a store's own page can be invisible in search and still be the page this advice belongs to. The family-gap branch's argument is stronger (its detector excludes families with mapped content) but has never been stated as a *check* anywhere a reader can verify.
@@ -1523,7 +1523,7 @@ This is the same gap behind the Search Console button that failed for every merc
 
 The sweep's remaining findings are all one shape: a rule the constitution states, which the code currently obeys, and which **nothing would notice breaking.** They are not defects today. They are the reason a defect tomorrow would ship.
 
-**R-TELEMETRY-TEETH — the promise that we never send a merchant's content to the analytics vendor is kept by review alone on the server** · Lane G · **invariants 17 and 26**
+**R-TELEMETRY-TEETH — the promise that we never send a merchant's content to the analytics vendor is kept by review alone on the server** · **DONE, merged as `15cf246`** · Lane G · **invariants 17 and 26**
 Scope: three related holes with one cause.
 - **Article text can reach the analytics vendor from the server.** The browser side is genuinely well guarded — a declared table of events, four allowed kinds of property value, anything undeclared dropped at the wrapper, and the vendor's own library banned by lint everywhere else. The server side has **none** of that: its capture takes an open bag of properties and runs only a credential scrubber. The journal says so outright: "today the rule is upheld by review alone." What is at stake is a merchant's product copy, prompts and article drafts leaving our systems for a third party.
 - **"Analytics is told, never asked"** — the rule that a kill switch is decided from our own database and never from the analytics vendor. The port has no read method, which is a type rather than a check; nothing asserts the absence and no lint rule bans adding one. A comment above the spend ledger's tests claims those tests cover this. They do not.
@@ -1551,7 +1551,7 @@ Note added 2026-09-08: the rename machinery exists only for posts **we** publish
 
 **Correction to `R-EXPIRY-GAPS`, 2026-09-08:** that card states "the detector checks it before writing a new row." It does not. Nothing reads the not-interested list.
 
-**R-OUTAGE-COPY-TWICE — a canonical sentence has a second home outside the catalogue** · Lane E, small · **invariant 24**
+**R-OUTAGE-COPY-TWICE — a canonical sentence has a second home outside the catalogue** · **DONE, merged as `329085c`** · Lane E, small · **invariant 24**
 Scope: the "we paused this action rather than continue with lower-quality or stale data" line is one of the sentences the spec requires word for word, and it is hard-coded at `apps/web/app/api/recommendations/_lib/handlers.ts:370` as well as living in the catalogue. The lint rule that catches literal merchant-facing text only looks at screen markup, so nothing would notice the two copies drifting.
 Done when: there is one copy, and the guard that finds hand-written sentences covers this shape too.
 
@@ -1578,7 +1578,7 @@ Scope: checkpointing works and is tested. The rule that any step over sixty seco
 
 ### The intermittent reds finally have a name, 2026-09-08
 
-**R-REAL-NETWORK-TESTS — two tests reach the real network and fail, rarely, at exactly the timeout** · integrator or Lane F · **supersedes `R-SIGNIN-SLOW`, which was the same thing seen once**
+**R-REAL-NETWORK-TESTS — two tests reach the real network and fail, rarely, at exactly the timeout** · **DONE, merged as `21b0de8`** · integrator or Lane F · **supersedes `R-SIGNIN-SLOW`, which was the same thing seen once**
 Scope: the full suite went red three times today with a single failure each time and passed on every re-run. Twice the name could not be recovered from the piped output. The third time it was captured to a file: `packages/providers/src/fetch/fetch.test.ts` — *"resolves the real `localhost` and blocks it — the guard works on real DNS too"* — **timing out at 5002 ms**, which is the runner's default.
 **What that test does, and why it is right to:** it asks the system resolver for a name in an invalid top-level domain, with no injection, deliberately, "to prove the production wiring" of the protection that stops the product being talked into fetching an internal address. That is a good test and its realism is the point.
 **The measurement, so the next reader does not have to guess:** that lookup takes **30 ms** on this machine when it is idle, five times out of five. So the failure is not the lookup being slow in normal conditions.
@@ -1599,39 +1599,39 @@ Note: capture the runner's output to a file rather than piping it through `grep`
 
 The sweep mapped all 26 of the constitution's invariants to the mechanism that enforces each one, and mutation-checked eight of them. Its report has been deleted, deliberately — see the note on findings documents in §7. These are the cards that came out of it, and each is re-checked against the working tree before it is dispatched.
 
-**R-CLOCK-SILENT — one mistyped job name switches the product's entire clock off, and says so in a single log line** · **integrator** (the worker's start-up is shared plumbing no lane owns) · **the highest-severity finding in the sweep** · **TAKEN by the integrator, 2026-09-08**
+**R-CLOCK-SILENT — one mistyped job name switches the product's entire clock off, and says so in a single log line** · **DONE, merged as `316471d`** · **integrator** (the worker's start-up is shared plumbing no lane owns) · **the highest-severity finding in the sweep** · **TAKEN by the integrator, 2026-09-08**
 Scope: the worker runs everything on a schedule — the daily article, the nightly billing reconciliation, the Search Console sync, the recovery sweep that finishes half-done publishes. Start-up checks that every scheduled entry has code registered under exactly that name, and if **one** does not, it turns **all** of them off and continues serving web requests. The product looks healthy and its clock has stopped.
 **The loud guard for this exists and cannot be reached.** `assertCrontabTasksExist` throws with the missing names, and start-up only calls it when the schedule is enabled — which is the flag that was just set to false *because* a name was missing. Both its tests call it directly or force the flag on, so neither exercises the path a deployed server takes.
 Read first: `packages/jobs/src/runtime/bootstrap.ts`; `packages/jobs/src/runtime/crontab.ts:192`; `apps/web/instrumentation-node.ts:314`; the missing-kill-switch-reader path two blocks above, which is the right shape — it marks the worker stopped and throws.
 Done when: a scheduled name with no handler stops the worker loudly instead of disabling the schedule; a test drives the real start-up function with one unregistered name; and the log line that used to be the only signal is not the only signal.
 
-**R-SIGNIN-EMAIL — email sign-in is configured on the server, missing from the screen, and a comment says a test prevents exactly that** · **Lane A** (the flow) with the screen authorised
+**R-SIGNIN-EMAIL — email sign-in is configured on the server, missing from the screen, and a comment says a test prevents exactly that** · **DONE, merged as `1d3fe28`** · **Lane A** (the flow) with the screen authorised
 Scope: the sign-in screen offers one Google button. Email sign-in is specified, configured on the server, and unbuilt on the screen — so a merchant who cannot or will not use a Google account cannot get in at all. **This is the one the sweep was asked to look for:** `apps/web/app/api/auth/_lib/config.ts:65-68` says `authWiring.test.ts` asserts the provider is present "so email sign-in cannot quietly fall off the sign-in screen", and the test repeats the claim. The test inspects a configuration object; it cannot see a screen. The thing the comment says cannot happen has happened, and the test is green.
 **Check one thing before scoping:** the screen's own comment blames a missing store for the single-use token. `VerificationTokenStore` exists and has tests, so that reason looks stale — verify rather than inherit it.
 Read first: `packages/ui/src/public/SignIn.tsx`; `apps/web/app/api/auth/_lib/config.ts` and `authWiring.test.ts`; main §4.1; tech §3; ui §1.
 Done when: a merchant can sign in with an email address; and the two comments claiming a test guards this either become true or go.
 
-**R-COMPETITOR-AUTOADD — the constitution and the code disagree about a trust promise** · **a founder decision, then one structural test**
+**R-COMPETITOR-AUTOADD — the constitution and the code disagree about a trust promise** · **DONE, merged as `0ee59c1`** · **a founder decision, then one structural test**
 Scope: invariant 5 says search-result domains "may be **suggested** to the merchant, never auto-added" to their competitor list. Onboarding adds them: `proposeCompetitors` writes domains that ranked in the store's own search snapshots straight into `competitors` marked `auto`, up to the cap, before the merchant has seen anything.
 **This was noticed at the time and never settled.** `DECISIONS.md` 2026-09-03 `T2.6` records the departure, argues from main §7.2.1 that the invariant compresses a narrower rule, and flags it for the integrator. Nothing since has reconciled them.
 **Neither reading has a mechanism.** Nothing asserts "no automatic row without a merchant action", and nothing asserts the narrower rule the journal proposes. Invariants 2 and 3 both have structural scans; this one has prose in two files.
 **The question for the founder:** should a store's competitor list start populated with who currently outranks them — useful immediately, and something they did not ask for — or start empty with those domains offered as suggestions? Whichever it is, the other document changes: either the code loses the auto-add, or `CLAUDE.md` loses the word "never".
 
-**R-GUARD-TEETH — two invariants are guarded by checks that pass on broken code** · Lane B
+**R-GUARD-TEETH — two invariants are guarded by checks that pass on broken code** · **DONE, merged as `a232037`** · Lane B
 Scope: two of the sweep's eight mutation checks came back green when the thing they guard was broken.
 - **Invariant 3, the quarantine on raw product descriptions.** Raw store HTML must never reach the writer, the grader, the topic picker or a recommendation. The scan that enforces it looks for modules **naming** the quarantined column. The sweep had the persona module read the same HTML through a helper function — no mention of the column anywhere — and all six assertions stayed green.
 - **Invariant 23, no denominators in anything a merchant reads.** "3 of 30" must never appear, because the cap is a ceiling and not a promise. The check's pattern misses any denominator written with literal numbers; run against five candidate phrasings it caught two.
 Read first: invariants 3 and 23. Both mutations are described in the scope above; re-run them yourself rather than trusting this card, and check the code has not moved since it was written.
 Done when: each check fails on the mutation the sweep used, and on at least one the sweep did not think of — and the second one is stated in the test, so a reader can see the check was tried against something it might have missed.
 
-**R-CHAOS-KILLS — a scenario that was never interrupted passes as green as one that survived three kills** · Lane G or integrator
+**R-CHAOS-KILLS — a scenario that was never interrupted passes as green as one that survived three kills** · **DONE, merged as `458339a`** · Lane G or integrator
 Scope: the chaos suite kills workers at random points and asserts the product converges anyway. It discards the record of which kills actually fired, so a scenario whose kill never landed — because the run reached no checkpoint — is indistinguishable from one that took three and recovered. The founder named this as reporter 4.
 Read first: main §14.3.9.
 Done when: a scenario that was not actually interrupted fails, by name.
 
 ### Found by the integrator while reading the wired-stub report, 2026-09-08
 
-**R-DUNNING-DROPPED — a merchant whose card is declined is never told** · **Lane A** · **live, in the money path, and the highest-priority defect in the queue**
+**R-DUNNING-DROPPED — a merchant whose card is declined is never told** · **DONE, merged as `43c53f7`** · **Lane A** · **live, in the money path, and the highest-priority defect in the queue**
 
 Scope. When Stripe tells us a payment failed, the product is supposed to email the merchant — it is one of the few emails they cannot switch off (`packages/core/src/notifications/matrix.ts:193`, `email: 'always'`). The webhook does the rest of its job correctly: it writes the subscription's new status, so the in-app banner appears the next time the merchant opens Sortiva. **The email never sends.**
 
@@ -1649,7 +1649,7 @@ Note: check the dunning follow-ups while you are in there. The same `announce` p
 
 
 
-**R-BRAKES-BLIND — two of the product's safety brakes cannot fire, and the reason they were left unbuilt stopped being true some time ago** · Lane G · **the last two entries in the wired-stub report, which `T10.1` requires to be empty**
+**R-BRAKES-BLIND — two of the product's safety brakes cannot fire, and the reason they were left unbuilt stopped being true some time ago** · **DONE, merged as `c3d4f74`** · Lane G · **the last two entries in the wired-stub report, which `T10.1` requires to be empty**
 
 Scope. The product has a set of automatic brakes: when something goes wrong at a rate that says the fault is ours rather than the world's, a switch goes up and the affected work stops until a person has looked. Two of them are **declared, arithmetically complete, tested — and connected to nothing.**
 
@@ -1710,7 +1710,7 @@ Note: the stale header comment must be corrected or deleted as part of this. A c
 > asserting it.
 ### Found by `R-SCREEN-READS`, 2026-09-08
 
-**R-ATTENTION-REFS — four of the five "needs you" links on the dashboard go to the wrong page** · Lane F (the screen) or Lane B (the store) — **whoever owns it, the spelling has to be picked once** · live and user-facing
+**R-ATTENTION-REFS — four of the five "needs you" links on the dashboard go to the wrong page** · **DONE, merged as `09bef1e`** · Lane F (the screen) or Lane B (the store) — **whoever owns it, the spelling has to be picked once** · live and user-facing
 
 Scope: the dashboard's "needs you" list gives every item a link, and picks where it goes from the identifiers the item carries. **The server sends those identifiers under snake-case names and the screen reads camel-case ones, so no link is ever matched.** The server: `packages/db/src/stores/notifications.ts:60,69,75` and `packages/db/src/repositories/notifications.ts:222,257` — `article_id`, `opportunity_id`. The screen: `packages/ui/src/dashboard/dashboard.ts:210,212` — `refs.articleId`, `refs.opportunityId`.
 
@@ -1744,7 +1744,7 @@ open is `R-RESTUDY`/`R-FINGERPRINT-BLAST`, and it is parked deliberately.**
 | `R-DISMISS-FOLLOWS-RENAME` | A dismissal travels with a renamed page. | Lane E | next wave |
 | `R-EXPORT-FALLBACK` | Keep refusing. No last-recorded-values fallback. | Lane D | next wave — may be a test only |
 | `R-EVIDENCE-BLACKOUT` | Hold the cards indefinitely, recorded as deliberate — **and the screen must say the evidence is stale because nothing is connected.** | Lane C behaviour; copy blocked | behaviour next wave; **the sentence does not exist yet** and is being drafted by `sortiva-98` |
-| `R-SKIP-TASK` | Skip comes back, built properly: its own endpoint, its own record. Explicitly not folded onto "mark applied". | integrator (contract), then Lane E | needs a contract change first |
+| `R-SKIP-TASK` | Skip comes back, built properly: its own endpoint, its own record. | integrator, DONE | server side merged as `518e306`; the button is Lane F's one-line revert |
 | `R-PUBLISH-ATTEMPTS` | Build the small append-only table, one row per publish attempt and how it ended. The brake then reads it. | needs a schema wave, then Lane D | queued for the next wave of migrations |
 | `R-LOCK-EVERY-WORKER` | The structural option: jobs declare account work, the runtime verifies the lock was entered. **33 registration sites across six lanes**, accepted. | integrator plumbing, then every lane | authorised cross-lane work |
 | `T7.1` / `R-VERDICT-UNBUILT` | **M7 is un-deferred — the learning loop is in this release, built LAST.** If it slips, dashes ship. | Lanes C + D | last |
@@ -1775,6 +1775,18 @@ Two rules follow, and they apply to every card:
 2. **A card is re-checked against the working tree before it is dispatched.** Not the audit's tree, not the tree the day the card was written. If a claim in the card is no longer true, the card is corrected or withdrawn before any work starts — and a correction to a card is checked exactly as hard as the card, which is the step that was skipped this week.
 
 **Still open:** making rule 2 mechanical rather than remembered — recording on each card the commit it was written against, and refusing to dispatch one whose commit is behind `HEAD` until somebody re-verifies it. Proposed by the integrator, not yet decided.
+
+### A third rule, added the same evening, because the first two missed the obvious one
+
+**A card that has been merged is marked merged, in the same session that merges it.**
+
+The two rules above are about *findings* going stale. This is about the card list itself going stale, and it turned out to be the more expensive of the two. On the evening of 2026-09-08 a lane was sent to build a card that had been finished and merged that same morning; it checked before rebuilding, said so, and spent its time on something better — but only because its brief happened to tell it to check.
+
+The integrator then checked sixteen cards against the merge history. **All sixteen were merged and none was marked.** Every one of them was a card a future session could have been dispatched against. Three dispatches that day already had been.
+
+So: the card list is a dispatch source, and an unmarked finished card is a live trap in it. Mark it `**DONE, merged as <sha>**` on the card's own header line, at merge time, in the merge session — not later, not in a sweep. The sha matters as much as the word: it is what lets the next reader find what was actually built without believing this document.
+
+A card partly done is marked with what remains, in the same breath — `R-SKIP-TASK` is the model: server side merged, the button still to build, both stated on the header line.
 
 
 
