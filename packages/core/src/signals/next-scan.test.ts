@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { isScanWeekday, nextWeeklyScanAt, scanLocalDay, weeklyScanRunId } from './next-scan'
+import { billingGate } from '../billing/entitlement'
+import { lifecycleGate, type LifecycleGate, type LifecycleStateInput } from '../lifecycle/gate'
+import {
+  isScanWeekday,
+  nextWeeklyScanAt,
+  scanLocalDay,
+  weeklyScanAllowedFor,
+  weeklyScanRunId,
+} from './next-scan'
 
 /**
  * 2026-09-07 is a Monday; 2026-09-09 is a Wednesday. Both are used as literal
@@ -111,6 +119,76 @@ describe('nextWeeklyScanAt — the date comes from the sweep\'s own next matchin
       expect(
         nextWeeklyScanAt({ now, timeZone: 'UTC', scanRuns: false, currentLocalDayAlreadyScanned: false }),
       ).toBeNull()
+    }
+  })
+})
+
+/**
+ * The predicate the Monday sweep and the Opportunities screen both ask, so
+ * that the date a merchant is shown and the work that actually happens cannot
+ * disagree. Driven through `lifecycleGate` rather than hand-built objects,
+ * because what matters is which real account states it lets through.
+ */
+describe('weeklyScanAllowedFor — a scan costs money, so three states stop it', () => {
+  const gate = (over: Partial<LifecycleStateInput> = {}) =>
+    lifecycleGate({
+      billing: billingGate({ status: 'active', cancelAtPeriodEnd: false, currentPeriodEnd: null }),
+      vacationMode: false,
+      deletionRequestedAt: null,
+      ...over,
+    })
+
+  it('scans a paid-up store that is present and not leaving', () => {
+    expect(weeklyScanAllowedFor(gate())).toBe(true)
+  })
+
+  it('does not scan a store whose subscription is not active', () => {
+    for (const status of ['past_due', 'canceled', 'incomplete', 'incomplete_expired'] as const) {
+      const billing = billingGate({ status, cancelAtPeriodEnd: false, currentPeriodEnd: null })
+      expect(weeklyScanAllowedFor(gate({ billing }))).toBe(false)
+    }
+  })
+
+  it('does not scan a store that has never subscribed', () => {
+    expect(weeklyScanAllowedFor(gate({ billing: billingGate(null) }))).toBe(false)
+  })
+
+  it('does not scan a store whose merchant is away', () => {
+    expect(weeklyScanAllowedFor(gate({ vacationMode: true }))).toBe(false)
+  })
+
+  it('does not scan a store that has asked to be deleted', () => {
+    expect(weeklyScanAllowedFor(gate({ deletionRequestedAt: MONDAY_MIDDAY_UTC }))).toBe(false)
+  })
+
+  it('still lets a stopped store be read, and keeps its catalogue and search data flowing', () => {
+    // The whole point of the skip is that it costs the merchant nothing they
+    // can already see. A store that is not scanned is not a store that is cut
+    // off.
+    const stopped = gate({ vacationMode: true, billing: billingGate(null) })
+    expect(weeklyScanAllowedFor(stopped)).toBe(false)
+    expect(stopped.readAllowed).toBe(true)
+    expect(stopped.catalogSyncAllowed).toBe(true)
+    expect(stopped.searchReportingAllowed).toBe(true)
+  })
+
+  it('a store told a scan is coming is one the sweep will actually scan', () => {
+    // The two halves of the promise, asserted against each other: the screen
+    // withholds a date exactly when the sweep passes the store over.
+    const cases: readonly LifecycleGate[] = [
+      gate(),
+      gate({ vacationMode: true }),
+      gate({ billing: billingGate(null) }),
+      gate({ deletionRequestedAt: MONDAY_MIDDAY_UTC }),
+    ]
+    for (const state of cases) {
+      const predicted = nextWeeklyScanAt({
+        now: WEDNESDAY_MIDDAY_UTC,
+        timeZone: 'UTC',
+        scanRuns: weeklyScanAllowedFor(state),
+        currentLocalDayAlreadyScanned: false,
+      })
+      expect(predicted !== null).toBe(weeklyScanAllowedFor(state))
     }
   })
 })
