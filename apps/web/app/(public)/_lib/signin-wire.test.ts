@@ -1,5 +1,5 @@
 import NextAuth from 'next-auth'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { requestGoogleSignIn, SIGN_IN_GOOGLE_ENDPOINT } from '@sortiva/ui'
 import { buildAuthAdapter, type AuthUserStore } from '../../api/auth/_lib/adapter'
 import { buildAuthConfig } from '../../api/auth/_lib/config'
@@ -132,12 +132,68 @@ function harness() {
   return { fetchFor, visitor: () => new Browser() }
 }
 
+/**
+ * Google's own description of where its sign-in endpoints are, as it served it
+ * on 2026-09-08.
+ *
+ * It is here because the sign-in library reads it **over the real internet**
+ * before it can build a sign-in URL, using the process's own `fetch` rather
+ * than the one this file hands the screen. So every run of these tests made a
+ * live request to Google, and this file failed intermittently for weeks —
+ * always at exactly the runner's five-second limit, always on work that takes
+ * about four hundred milliseconds when it passes. Measured from this machine
+ * while idle, that request takes around 230 ms; alongside three hundred other
+ * test files it does not.
+ *
+ * A unit test that cannot run without a vendor being up and quick is not a
+ * unit test. Nothing about the sign-in library's own behaviour is stubbed —
+ * only the document it would have fetched.
+ */
+const GOOGLE_DISCOVERY = {
+  issuer: 'https://accounts.google.com',
+  authorization_endpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
+  token_endpoint: 'https://oauth2.googleapis.com/token',
+  userinfo_endpoint: 'https://openidconnect.googleapis.com/v1/userinfo',
+  jwks_uri: 'https://www.googleapis.com/oauth2/v3/certs',
+  response_types_supported: ['code', 'token', 'id_token', 'none'],
+  subject_types_supported: ['public'],
+  id_token_signing_alg_values_supported: ['RS256'],
+  scopes_supported: ['openid', 'email', 'profile'],
+  token_endpoint_auth_methods_supported: ['client_secret_post', 'client_secret_basic'],
+  claims_supported: ['aud', 'email', 'email_verified', 'exp', 'iss', 'name', 'picture', 'sub'],
+  code_challenge_methods_supported: ['plain', 'S256'],
+  grant_types_supported: ['authorization_code', 'refresh_token'],
+}
+
+const DISCOVERY_URL = 'https://accounts.google.com/.well-known/openid-configuration'
+
+let realFetch: typeof globalThis.fetch
+
 beforeEach(() => {
+  // Answer the one document the library needs, and refuse everything else by
+  // name. The refusal is the more useful half: if this file ever starts
+  // reaching somewhere new, it says where instead of hanging until the timeout.
+  realFetch = globalThis.fetch
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+    if (url === DISCOVERY_URL) {
+      return new Response(JSON.stringify(GOOGLE_DISCOVERY), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    }
+    throw new Error(`signin-wire.test.ts tried to reach ${url}; these tests make no network calls`)
+  }) as typeof globalThis.fetch
+
   process.env.AUTH_SECRET = 'test-secret-not-used-anywhere-real'
   process.env.AUTH_GOOGLE_ID = GOOGLE_CLIENT_ID
   process.env.AUTH_GOOGLE_SECRET = 'google-client-secret-not-used-anywhere-real'
   delete process.env.AUTH_URL
   delete process.env.NEXTAUTH_URL
+})
+
+afterEach(() => {
+  globalThis.fetch = realFetch
 })
 
 describe('pressing “Continue with Google” on the sign-in screen', () => {
