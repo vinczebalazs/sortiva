@@ -1446,6 +1446,40 @@ Done when: every control in ui §9 exists and none that isn't (inventory test ag
 Read first: tech §6 (UI row); ui §3, §5, §6.
 Done when: Playwright against staging: onboarding through activation; opportunity → schedule → calendar; OPTIMIZE generate → download → mark applied; draft review approve; override; export URL confirm — all green.
 
+### From the invariant sweep (`T10.2`, read-only half), 2026-09-08
+
+The sweep mapped all 26 of the constitution's invariants to the mechanism that enforces each one, and mutation-checked eight of them. Its full report is `docs/audit-invariants-2026-09-08.md`; these are the cards that came out of it.
+
+**R-CLOCK-SILENT — one mistyped job name switches the product's entire clock off, and says so in a single log line** · **integrator** (the worker's start-up is shared plumbing no lane owns) · **the highest-severity finding in the sweep** · **TAKEN by the integrator, 2026-09-08**
+Scope: the worker runs everything on a schedule — the daily article, the nightly billing reconciliation, the Search Console sync, the recovery sweep that finishes half-done publishes. Start-up checks that every scheduled entry has code registered under exactly that name, and if **one** does not, it turns **all** of them off and continues serving web requests. The product looks healthy and its clock has stopped.
+**The loud guard for this exists and cannot be reached.** `assertCrontabTasksExist` throws with the missing names, and start-up only calls it when the schedule is enabled — which is the flag that was just set to false *because* a name was missing. Both its tests call it directly or force the flag on, so neither exercises the path a deployed server takes.
+Read first: `packages/jobs/src/runtime/bootstrap.ts`; `packages/jobs/src/runtime/crontab.ts:192`; `apps/web/instrumentation-node.ts:314`; the missing-kill-switch-reader path two blocks above, which is the right shape — it marks the worker stopped and throws.
+Done when: a scheduled name with no handler stops the worker loudly instead of disabling the schedule; a test drives the real start-up function with one unregistered name; and the log line that used to be the only signal is not the only signal.
+
+**R-SIGNIN-EMAIL — email sign-in is configured on the server, missing from the screen, and a comment says a test prevents exactly that** · **Lane A** (the flow) with the screen authorised
+Scope: the sign-in screen offers one Google button. Email sign-in is specified, configured on the server, and unbuilt on the screen — so a merchant who cannot or will not use a Google account cannot get in at all. **This is the one the sweep was asked to look for:** `apps/web/app/api/auth/_lib/config.ts:65-68` says `authWiring.test.ts` asserts the provider is present "so email sign-in cannot quietly fall off the sign-in screen", and the test repeats the claim. The test inspects a configuration object; it cannot see a screen. The thing the comment says cannot happen has happened, and the test is green.
+**Check one thing before scoping:** the screen's own comment blames a missing store for the single-use token. `VerificationTokenStore` exists and has tests, so that reason looks stale — verify rather than inherit it.
+Read first: `packages/ui/src/public/SignIn.tsx`; `apps/web/app/api/auth/_lib/config.ts` and `authWiring.test.ts`; main §4.1; tech §3; ui §1.
+Done when: a merchant can sign in with an email address; and the two comments claiming a test guards this either become true or go.
+
+**R-COMPETITOR-AUTOADD — the constitution and the code disagree about a trust promise** · **a founder decision, then one structural test**
+Scope: invariant 5 says search-result domains "may be **suggested** to the merchant, never auto-added" to their competitor list. Onboarding adds them: `proposeCompetitors` writes domains that ranked in the store's own search snapshots straight into `competitors` marked `auto`, up to the cap, before the merchant has seen anything.
+**This was noticed at the time and never settled.** `DECISIONS.md` 2026-09-03 `T2.6` records the departure, argues from main §7.2.1 that the invariant compresses a narrower rule, and flags it for the integrator. Nothing since has reconciled them.
+**Neither reading has a mechanism.** Nothing asserts "no automatic row without a merchant action", and nothing asserts the narrower rule the journal proposes. Invariants 2 and 3 both have structural scans; this one has prose in two files.
+**The question for the founder:** should a store's competitor list start populated with who currently outranks them — useful immediately, and something they did not ask for — or start empty with those domains offered as suggestions? Whichever it is, the other document changes: either the code loses the auto-add, or `CLAUDE.md` loses the word "never".
+
+**R-GUARD-TEETH — two invariants are guarded by checks that pass on broken code** · Lane B
+Scope: two of the sweep's eight mutation checks came back green when the thing they guard was broken.
+- **Invariant 3, the quarantine on raw product descriptions.** Raw store HTML must never reach the writer, the grader, the topic picker or a recommendation. The scan that enforces it looks for modules **naming** the quarantined column. The sweep had the persona module read the same HTML through a helper function — no mention of the column anywhere — and all six assertions stayed green.
+- **Invariant 23, no denominators in anything a merchant reads.** "3 of 30" must never appear, because the cap is a ceiling and not a promise. The check's pattern misses any denominator written with literal numbers; run against five candidate phrasings it caught two.
+Read first: `docs/audit-invariants-2026-09-08.md` §3 and §23, which name the exact mutations and what stayed green; invariants 3 and 23.
+Done when: each check fails on the mutation the sweep used, and on at least one the sweep did not think of — and the second one is stated in the test, so a reader can see the check was tried against something it might have missed.
+
+**R-CHAOS-KILLS — a scenario that was never interrupted passes as green as one that survived three kills** · Lane G or integrator
+Scope: the chaos suite kills workers at random points and asserts the product converges anyway. It discards the record of which kills actually fired, so a scenario whose kill never landed — because the run reached no checkpoint — is indistinguishable from one that took three and recovered. The founder named this as reporter 4.
+Read first: `docs/audit-invariants-2026-09-08.md` §5, which narrows the description; main §14.3.9.
+Done when: a scenario that was not actually interrupted fails, by name.
+
 ### Found by the integrator while reading the wired-stub report, 2026-09-08
 
 **R-DUNNING-DROPPED — a merchant whose card is declined is never told** · **Lane A** · **live, in the money path, and the highest-priority defect in the queue**
