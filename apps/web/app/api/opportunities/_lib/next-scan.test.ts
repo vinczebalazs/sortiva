@@ -129,6 +129,52 @@ describe.skipIf(!available)('GET /api/opportunities - when the next scan is, and
     expect(body.nextScanAt).toBe('2026-09-07T13:00:00.000Z')
   })
 
+  /* -- Naming the day, not just the instant --------------------------------- */
+
+  /**
+   * The instant is correct and the *day* is not, unless whoever prints it knows
+   * which calendar to print it in. Berlin is the smallest interesting case: one
+   * hour east is enough to move the answer onto the previous date in UTC, so a
+   * screen formatting this without the store timezone tells a Berlin merchant
+   * their scan is on a Sunday.
+   */
+  it('carries the calendar the date must be read in, so a Berlin store is not told Sunday', async () => {
+    await entitle()
+    await setSettings({ timezone: 'Europe/Berlin' })
+
+    const body = await read()
+
+    expect(body.timezone).toBe('Europe/Berlin')
+
+    // The whole point, stated as the two readings of one instant.
+    const inUtc = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', weekday: 'long', day: 'numeric' })
+    const inStore = new Intl.DateTimeFormat('en-GB', {
+      timeZone: body.timezone,
+      weekday: 'long',
+      day: 'numeric',
+    })
+    expect(inUtc.format(new Date(body.nextScanAt!))).toBe('Sunday 13')
+    expect(inStore.format(new Date(body.nextScanAt!))).toBe('Monday 14')
+  })
+
+  it('a store that has never chosen a timezone gets a real answer rather than a missing one', async () => {
+    await entitle()
+    await setSettings({ timezone: 'UTC' })
+
+    expect((await read()).timezone).toBe('UTC')
+  })
+
+  it('sends the calendar even to a store it promises no scan, because the last scan still has a date', async () => {
+    await setSettings({ timezone: 'Pacific/Auckland' })
+    await seedWeeklyRun('2026-09-07', '2026-09-07T00:04:00.000Z')
+
+    const body = await read()
+
+    expect(body.nextScanAt).toBeNull()
+    expect(body.lastScanAt).toBe('2026-09-07T00:04:00.000Z')
+    expect(body.timezone).toBe('Pacific/Auckland')
+  })
+
   /* -- The stores that must not be promised anything ------------------------ */
 
   it('an account nobody is paying for is told nothing - and still reads everything else', async () => {

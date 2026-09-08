@@ -370,6 +370,16 @@ export const listOpportunitiesResponseSchema = z.object({
   }),
   lastScanAt: isoDateTimeSchema.nullable(),
   nextScanAt: isoDateTimeSchema.nullable(),
+  /**
+   * The store's own timezone, so the two instants above can be named as days.
+   *
+   * An instant alone is not enough to print a date. A Berlin store's next scan
+   * is `2026-09-13T22:00Z`, which is their Monday the 14th and reads as Sunday
+   * the 13th to anything that formats it in UTC — a day early, always, for
+   * every store east of us. Always present: a store that has never chosen one
+   * has `UTC`, which is a real answer rather than a missing one.
+   */
+  timezone: z.string(),
   limitedIntelligence: z.boolean(),
   cursor: z.string().nullable(),
 })

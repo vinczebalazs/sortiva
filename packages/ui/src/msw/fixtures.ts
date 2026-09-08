@@ -180,6 +180,10 @@ export const RESPONSE_FIXTURES: Record<string, unknown> = {
     },
     lastScanAt: NOW,
     nextScanAt: '2026-02-09T06:00:00.000Z',
+    // Deliberately not UTC. The instant above is the store's Monday the 9th
+    // and UTC's Sunday the 8th, so a screen that formats it without this
+    // shows the wrong day here rather than only on a real merchant's account.
+    timezone: 'Europe/Berlin',
     limitedIntelligence: false,
     cursor: null,
   },

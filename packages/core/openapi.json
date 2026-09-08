@@ -6598,6 +6598,9 @@
                         }
                       ]
                     },
+                    "timezone": {
+                      "type": "string"
+                    },
                     "limitedIntelligence": {
                       "type": "boolean"
                     },
@@ -6613,6 +6616,7 @@
                     "counts",
                     "lastScanAt",
                     "nextScanAt",
+                    "timezone",
                     "limitedIntelligence",
                     "cursor"
                   ],

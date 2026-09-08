@@ -195,13 +195,17 @@ async function nextScanAtFor(
   deps: OpportunitiesDeps,
   scope: AccountScope,
   now: Date,
-): Promise<string | null> {
+): Promise<{ nextScanAt: string | null; timezone: string }> {
   const [switches, lifecycle, settings] = await Promise.all([
     mayAccountWorkRun(deps.db, scope.accountId),
     accountLifecycleGate(deps.db, scope.accountId),
     readAccountSettings(deps.db, scope),
   ])
-  if (!switches.allowed || !lifecycle.generationAllowed) return null
+  // Returned whatever the answer about timing is: the screen needs the store's
+  // calendar to name the day of the *last* scan too, and that one is not
+  // withheld from anybody.
+  const timezone = settings.timezone
+  if (!switches.allowed || !lifecycle.generationAllowed) return { nextScanAt: null, timezone }
 
   const today = scanLocalDay(now, settings.timezone)
   const thisMondayRun = isScanWeekday(today)
@@ -214,7 +218,7 @@ async function nextScanAtFor(
     scanRuns: true,
     currentLocalDayAlreadyScanned: thisMondayRun?.finishedAt != null,
   })
-  return at ? at.toISOString() : null
+  return { nextScanAt: at ? at.toISOString() : null, timezone }
 }
 
 export function makeListOpportunitiesHandler(deps: OpportunitiesDeps): AccountHandler {
@@ -262,11 +266,14 @@ export function makeListOpportunitiesHandler(deps: OpportunitiesDeps): AccountHa
     const lastFinished = runs.find((r) => r.finishedAt)
     const now = (deps.now ?? (() => new Date()))()
 
+    const scan = await nextScanAtFor(deps, scope, now)
+
     const body = {
       opportunities: sorted.map(({ row, opportunity }) => serialise(row, opportunity)),
       counts: { open: opportunities.length, byAction },
       lastScanAt: lastFinished?.finishedAt ? lastFinished.finishedAt.toISOString() : null,
-      nextScanAt: await nextScanAtFor(deps, scope, now),
+      nextScanAt: scan.nextScanAt,
+      timezone: scan.timezone,
       limitedIntelligence: opportunities.some(({ opportunity }) => opportunity.limitedIntelligence),
       // No cursor pagination in this card's own implementation — a store's
       // open-opportunity count is small enough that one page covers it
