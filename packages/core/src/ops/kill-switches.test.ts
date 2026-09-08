@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { KILL_SWITCHES, killSwitch, reviewReset } from './kill-switches'
+import { KILL_SWITCHES, killSwitch, reviewFinding, reviewReset } from './kill-switches'
 
 /**
  * The vocabulary of switches, and the one place it is allowed to disagree with
@@ -67,5 +67,34 @@ describe('lowering a switch', () => {
     expect(
       reviewReset({ flag: 'global.pause_all', operator: ' alice ', secondOperator: ' bob ' }),
     ).toEqual({ ok: true, resetBy: 'alice + bob' })
+  })
+})
+
+describe('writing down what an operator found', () => {
+  it('refuses an unsigned note, because the value of a finding is being able to go back to whoever found it', () => {
+    expect(reviewFinding({ author: '  ', finding: 'a vendor was retrying in a loop' })).toMatchObject(
+      { ok: false, code: 'missing_author' },
+    )
+  })
+
+  it('refuses the product as an author: it does not investigate itself', () => {
+    expect(reviewFinding({ author: 'auto', finding: 'a vendor was retrying in a loop' })).toMatchObject(
+      { ok: false, code: 'automatic_actor' },
+    )
+  })
+
+  it('refuses an empty note, which records that somebody looked and nothing about what they saw', () => {
+    expect(reviewFinding({ author: 'alice', finding: '   ' })).toMatchObject({
+      ok: false,
+      code: 'empty_finding',
+    })
+  })
+
+  it('takes one name even on a global incident: saying what you saw is not declaring it over', () => {
+    expect(reviewFinding({ author: ' alice ', finding: ' the vendor was down ' })).toEqual({
+      ok: true,
+      author: 'alice',
+      finding: 'the vendor was down',
+    })
   })
 })

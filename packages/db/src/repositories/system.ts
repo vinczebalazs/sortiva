@@ -1,12 +1,20 @@
-import { and, eq, isNull, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm'
 import type { Db } from '../client'
-import { opsFlags, previewCache, requestCache, stripeEvents, webhookEvents } from '../schema'
+import {
+  incidentFindings,
+  opsFlags,
+  previewCache,
+  requestCache,
+  stripeEvents,
+  webhookEvents,
+} from '../schema'
 import type { AccountScope, SystemScope } from '../scope'
 
 export type WebhookEventRow = typeof webhookEvents.$inferSelect
 export type StripeEventRow = typeof stripeEvents.$inferSelect
 export type RequestCacheRow = typeof requestCache.$inferSelect
 export type OpsFlagRow = typeof opsFlags.$inferSelect
+export type IncidentFindingRow = typeof incidentFindings.$inferSelect
 
 /**
  * `webhook_events.webhook_id` is unique: insert-or-ignore, then process from
@@ -240,4 +248,140 @@ export async function listActiveFlags(db: Db, _scope: SystemScope): Promise<OpsF
     .from(opsFlags)
     .where(isNull(opsFlags.resetAt))
     .orderBy(sql`${opsFlags.createdAt} DESC`)
+}
+
+/**
+ * One incident by its id, open or closed.
+ *
+ * Lowering a switch is an update on this row, not a delete and not a fresh
+ * insert, so the id an operator was given while the incident was open still
+ * names it afterwards. That is what lets a finding arrive days late.
+ */
+export async function findFlagById(
+  db: Db,
+  _scope: SystemScope,
+  id: string,
+): Promise<OpsFlagRow | undefined> {
+  const [row] = await db.select().from(opsFlags).where(eq(opsFlags.id, id)).limit(1)
+  return row
+}
+
+/** The global switch of this name that is up right now, if one is. */
+export async function findActiveGlobalFlag(
+  db: Db,
+  _scope: SystemScope,
+  flag: string,
+): Promise<OpsFlagRow | undefined> {
+  const [row] = await db
+    .select()
+    .from(opsFlags)
+    .where(and(eq(opsFlags.scope, 'global'), eq(opsFlags.flag, flag), isNull(opsFlags.resetAt)))
+    .limit(1)
+  return row
+}
+
+/** The same, for a switch raised about one store. */
+export async function findActiveAccountFlag(
+  db: Db,
+  scope: AccountScope,
+  flag: string,
+): Promise<OpsFlagRow | undefined> {
+  const [row] = await db
+    .select()
+    .from(opsFlags)
+    .where(
+      and(
+        eq(opsFlags.scope, 'account'),
+        eq(opsFlags.accountId, scope.accountId),
+        eq(opsFlags.flag, flag),
+        isNull(opsFlags.resetAt),
+      ),
+    )
+    .limit(1)
+  return row
+}
+
+/**
+ * Incidents newest-raised first, **including the ones already closed** —
+ * `listActiveFlags` deliberately shows only what is stopped right now, and an
+ * investigation that finishes after the switch came back down has to be able
+ * to find what it was about.
+ *
+ * Each trip of the same switch is its own row: the unique indexes cover only
+ * active rows, so raising a flag that was lowered last week inserts a second
+ * incident rather than reopening the first. Findings therefore stay attached
+ * to the occasion they explain and not to the switch's name.
+ */
+export async function listRecentFlags(
+  db: Db,
+  _scope: SystemScope,
+  filter: { flag?: string | undefined; accountId?: string | undefined; limit: number },
+): Promise<OpsFlagRow[]> {
+  const conditions = [
+    ...(filter.flag ? [eq(opsFlags.flag, filter.flag)] : []),
+    ...(filter.accountId ? [eq(opsFlags.accountId, filter.accountId)] : []),
+  ]
+  const query = db.select().from(opsFlags)
+  return (conditions.length > 0 ? query.where(and(...conditions)) : query)
+    .orderBy(desc(opsFlags.createdAt))
+    .limit(filter.limit)
+}
+
+/**
+ * What an operator found when they looked into a trip.
+ *
+ * The caller has already had the note reviewed (`reviewFinding` in
+ * `packages/core`) and passes the name it produced; this only writes it. A
+ * closed incident still accepts notes — the trip and the explanation are
+ * separated by however long the investigation took, which is the whole reason
+ * this is not a column on the flag row.
+ *
+ * Takes a `SystemScope` for the same reason the switches do: an incident about
+ * one store is still an operations record about the product, read by the
+ * people running it and never by a merchant.
+ */
+export async function addIncidentFinding(
+  db: Db,
+  _scope: SystemScope,
+  input: { opsFlagId: string; author: string; finding: string },
+): Promise<IncidentFindingRow> {
+  const [row] = await db.insert(incidentFindings).values(input).returning()
+  return row!
+}
+
+/** One incident's findings, oldest first: an investigation reads forwards. */
+export async function listIncidentFindings(
+  db: Db,
+  _scope: SystemScope,
+  opsFlagId: string,
+): Promise<IncidentFindingRow[]> {
+  return db
+    .select()
+    .from(incidentFindings)
+    .where(eq(incidentFindings.opsFlagId, opsFlagId))
+    .orderBy(asc(incidentFindings.createdAt))
+}
+
+/**
+ * The findings for a list of incidents in one read, so printing a dozen
+ * incidents with their notes is two queries rather than thirteen.
+ */
+export async function listFindingsForFlags(
+  db: Db,
+  _scope: SystemScope,
+  opsFlagIds: readonly string[],
+): Promise<Map<string, IncidentFindingRow[]>> {
+  const byFlag = new Map<string, IncidentFindingRow[]>()
+  if (opsFlagIds.length === 0) return byFlag
+  const rows = await db
+    .select()
+    .from(incidentFindings)
+    .where(inArray(incidentFindings.opsFlagId, [...opsFlagIds]))
+    .orderBy(asc(incidentFindings.createdAt))
+  for (const row of rows) {
+    const existing = byFlag.get(row.opsFlagId)
+    if (existing) existing.push(row)
+    else byFlag.set(row.opsFlagId, [row])
+  }
+  return byFlag
 }

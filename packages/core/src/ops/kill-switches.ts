@@ -263,3 +263,63 @@ export function incidentFrom(row: {
 
 /** The analytics event name for a trip. Telemetry only — the flag row is what enforces. */
 export const KILL_SWITCH_TRIPPED_EVENT = 'kill_switch_tripped'
+
+/**
+ * A note an operator writes about an incident, checked before it is stored.
+ *
+ * Two rules, and both are the same ones that govern lowering a switch. The
+ * note is signed: an unattributed finding is close to worthless, because the
+ * value of "a vendor was retrying in a loop" is largely in being able to go
+ * back to whoever found that out. And `auto` is refused as an author for the
+ * reason it is refused as the operator lowering a switch — the product does
+ * not investigate itself, and a note in its name would read as if somebody had
+ * looked when nobody had.
+ *
+ * One name is enough here even on a global incident, which is deliberately
+ * weaker than the four-eyes rule next door. Four eyes exists because declaring
+ * an incident over is a decision with consequences; writing down what you saw
+ * is not that decision, and making it take two people is how findings stop
+ * being written down.
+ */
+export type FindingRefusal =
+  | { readonly ok: false; readonly code: 'missing_author'; readonly detail: string }
+  | { readonly ok: false; readonly code: 'automatic_actor'; readonly detail: string }
+  | { readonly ok: false; readonly code: 'empty_finding'; readonly detail: string }
+
+export type FindingReview =
+  | {
+      readonly ok: true
+      /** Who looked. Goes in `incident_findings.author`. */
+      readonly author: string
+      /** What they found, trimmed. */
+      readonly finding: string
+    }
+  | FindingRefusal
+
+export function reviewFinding(input: { author: string; finding: string }): FindingReview {
+  const author = input.author.trim()
+  const finding = input.finding.trim()
+
+  if (author === '') {
+    return {
+      ok: false,
+      code: 'missing_author',
+      detail: 'A finding is signed. The next person to read it has to know who to ask.',
+    }
+  }
+  if (author === AUTOMATIC_ACTOR) {
+    return {
+      ok: false,
+      code: 'automatic_actor',
+      detail: 'A finding is what a person found out. The product does not investigate itself.',
+    }
+  }
+  if (finding === '') {
+    return {
+      ok: false,
+      code: 'empty_finding',
+      detail: 'An empty finding records that somebody looked and says nothing about what they saw.',
+    }
+  }
+  return { ok: true, author, finding }
+}
