@@ -4,15 +4,16 @@ Rewritten after **every** card lands or stops, and re-read before any card is
 launched and before any merge. Its test: a completely fresh session, with none of
 the conversation that produced it, could take over from this file alone.
 
-**Last rewritten:** 2026-09-08, 14:55, by the integrator session (`sortiva-a8`,
+**Last rewritten:** 2026-09-08, 15:05, by the integrator session (`sortiva-a8`,
 running in the main worktree). **Everything below the first horizontal rule is
 older history, kept deliberately. Read this head first; it is what is true now.**
 
-## Where things stand at 2026-09-08, 14:55
+## Where things stand at 2026-09-08, 15:05
 
-**`main` is green: 330 test files, 4,245 tests.** Typecheck, lint, lint proofs,
+**`main` is green: 330 test files, 4,254 tests.** Typecheck, lint, lint proofs,
 contracts, build, both smoke boots, chaos and env check have all passed since the
-last merge.
+last merge. The contract check now also compares the frozen route table to the
+route files on disk, which it never did before today.
 
 **The founder's instruction: *"continue finishing the product completely."*** The
 standing one is unchanged: **finish everything in code; only vendor credentials in
@@ -37,13 +38,18 @@ and assume nothing about whether it compiles.
 
 The integrator's own commands kept working throughout, so `main` was never at risk.
 
-### The sessions running right now
+### The sessions running right now (all four dispatched between 14:50 and 15:02)
 
-| Lane | Card | Note |
+| Lane | Card | What it is |
 |---|---|---|
-| A | `R-SIGNIN-EMAIL` | inherits a draft. A merchant without a Google account cannot sign in at all |
-| F | `R-SCREEN-READS` | inherits a draft. Told to land what the walker can prove and **name what it cannot**, rather than perfect it |
-| C | `R-CREATE-UNCHECKED` | **invariant 6.** Two of three ways to propose a new page skip the check that stops us competing with the merchant's own page. Told to establish which branches are genuinely safe before changing any |
+| C | `R-CREATE-UNCHECKED` | **invariant 6.** Two of the three ways to propose a new page skip the check that stops us competing with the merchant's own page. Told to establish which branches are genuinely safe before changing any |
+| F | `R-SCREEN-READS` | inherited a draft from the rate-limit death. Nothing proves a screen reads fields an endpoint actually sends. Told to land what the walker can prove and **name what it cannot** |
+| G | `R-TELEMETRY-TEETH` | invariants 17 and 26. Our promise never to send a merchant's content to the analytics vendor is properly kept in the browser and **by review alone on the server** |
+| D | `R-OVERRIDE-REACH-2` | two threshold readers ignore an operator's override while stamping the version that says they did not, and the operator's command accepts keys nobody honours. Authorised to take the command half, which the card assigns to Lane C |
+
+**`R-SIGNIN-EMAIL` merged at 15:00** — a merchant without a Google account can sign
+in. Its two false comments, which claimed a test made that impossible, now say what
+they actually hold.
 
 ### What landed since the morning report
 
