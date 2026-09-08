@@ -1,26 +1,29 @@
 /**
- * Where the two rate-based brakes get their numbers — and, right now, why they
- * cannot.
+ * Where the two rate-based brakes get their numbers.
  *
  * The spend caps read `spend_events`, a table that exists and is written on
- * every paid call. The other two brakes need counts nobody records yet:
+ * every paid call. The quality brake reads `gate_decisions`, which holds every
+ * verdict the quality gate reaches; the sweep builds that counter itself out of
+ * the database handle it is already given, so there is no wiring step anyone can
+ * forget — which is how this brake spent its first months connected to nothing.
  *
- * - **How many recent drafts the quality judge rejected.** The judge belongs to
- *   the content engine, which has no table in the schema: no `articles`, no
- *   record of a gate decision. So there is nothing to count.
- * - **How many publish attempts failed in the last hour.** Publishing goes
- *   through `publish_intents`, which is also not in the schema yet.
+ * **The publishing brake still cannot see, and this is the reason.** Publishing
+ * goes through `publish_intents`, a table that has existed for some time — but
+ * having the table is not the same as recording the number. A claim is written
+ * before a post is sent and has three ends: it is confirmed when the shop takes
+ * the post, it is abandoned when we finally give up on it, and — when the shop
+ * *refuses* it, which is the ordinary way a publish fails and the exact shape of
+ * the platform outage this brake exists for — the row is deleted outright,
+ * because the claim's name has to be free for the next attempt. So the commonest
+ * failure leaves nothing behind at all, and a rate computed from what remains
+ * would report a healthy zero right through the outage it is meant to catch.
  *
- * Rather than leave the two trips unbuilt, or — much worse — build them against
- * a query that silently returns zero forever and looks healthy, each is a
- * declared seam with a stand-in that says out loud that it knows nothing. The
- * stand-ins register in the repo's stub registry, so `pnpm stubs:report` lists
- * them and the milestone gate that turns on `--fail-if-any` fails while they
- * are still wired.
- *
- * The arithmetic they feed is real and tested (`auto-trips.ts`); what is
- * missing is only the counting. When the owning lanes land their tables, the
- * replacement is a query, not a redesign.
+ * Rather than build that, the seam keeps a stand-in that says out loud that it
+ * knows nothing. It registers in the repo's stub registry, so `pnpm
+ * stubs:report` lists it and the milestone gate that turns on `--fail-if-any`
+ * fails while it is still wired. Closing it needs a durable record of a publish
+ * attempt and how it ended, which is a schema change and an integrator's call —
+ * see `DECISIONS.md`, 2026-09-08, `R-BRAKES-BLIND`.
  */
 
 import { registerStub } from '../contracts/stubs'
@@ -49,27 +52,12 @@ export interface PublishOutcomeCounter {
   recentPublishOutcomes(windowHours: number): Promise<FailureCount>
 }
 
-export class UnrecordedJudgeOutcomes implements JudgeOutcomeCounter {
-  constructor() {
-    registerStub({
-      contract: 'JudgeOutcomeCounter',
-      filledBy: 'the content-engine lane, once a draft\'s gate decision is stored',
-      behaviour:
-        'reports that nothing is measurable, so the judge fail-rate trip can never fire in production',
-      mustBeGoneBy: 'M10',
-    })
-  }
-
-  async recentJudgeOutcomes(): Promise<FailureCount> {
-    return UNMEASURED
-  }
-}
-
 export class UnrecordedPublishOutcomes implements PublishOutcomeCounter {
   constructor() {
     registerStub({
       contract: 'PublishOutcomeCounter',
-      filledBy: 'the publishing lane, once `publish_intents` exists',
+      filledBy:
+        "a durable record of a publish attempt and how it ended — `publish_intents` deletes its row on the commonest failure, so it cannot answer this",
       behaviour:
         'reports that nothing is measurable, so the publish error-rate trip can never fire in production',
       mustBeGoneBy: 'M10',

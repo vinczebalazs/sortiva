@@ -13,7 +13,6 @@ export {
   type RateVerdict,
 } from './auto-trips'
 export {
-  UnrecordedJudgeOutcomes,
   UnrecordedPublishOutcomes,
   type FailureCount,
   type JudgeOutcomeCounter,
