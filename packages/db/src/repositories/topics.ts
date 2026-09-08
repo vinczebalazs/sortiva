@@ -326,6 +326,14 @@ export async function swapTopicDates(
   now: Date = new Date(),
 ): Promise<{ readonly a: TopicRow; readonly b: TopicRow } | undefined> {
   return db.transaction(async (tx) => {
+    // The calendar allows one live topic per store per day, and the two updates
+    // below transiently put both topics on the same one. The rule is checked at
+    // the end of this transaction instead of after each statement, so it judges
+    // the swap by what it leaves behind rather than by the half-second in the
+    // middle. Only this transaction asks for that; everywhere else an insert on
+    // an occupied day is still refused where it happens.
+    await tx.execute(sql`SET CONSTRAINTS "topics_account_live_day_excl" DEFERRED`)
+
     const [rowA] = await tx
       .update(topics)
       .set({ scheduledDate: b.date, updatedAt: now })

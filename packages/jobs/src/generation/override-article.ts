@@ -119,6 +119,14 @@ export async function publishAnyway(
       reasonUserFacing: null,
       promptVersion: rejection?.promptVersion ?? null,
       modelId: rejection?.modelId ?? null,
+      // An override judges nothing, so it has no thresholds of its own. It
+      // carries the ones the refusal was reached under, because the question
+      // this row answers later is "which bar did the merchant overrule", not
+      // "which bar was in force at the moment they clicked". The fallback is
+      // for a shape the guard above already refuses — an article can only reach
+      // `rejected` by way of a gate-3 row — and says so rather than inventing a
+      // version that would read as real.
+      rulesVersion: rejection?.rulesVersion ?? 'unrecorded',
     },
     now,
   )

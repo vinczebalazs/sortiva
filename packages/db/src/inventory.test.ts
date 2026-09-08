@@ -21,6 +21,21 @@ import { listOpenOpportunities, upsertOpportunity } from './repositories/opportu
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from './testing'
 
 /**
+ * A day of its own for every fixture topic.
+ *
+ * The calendar holds one live topic per store per day, enforced by a unique
+ * index since schema wave 7. A fixture that hard-codes a single date can
+ * therefore only be called once per account, which is not what these tests are
+ * about — they need several articles for one store, and the day each was
+ * scheduled on is incidental to all of them.
+ */
+let fixtureDay = 0
+function nextScheduledDate(): string {
+  return new Date(Date.UTC(2026, 9, 1 + fixtureDay++)).toISOString().slice(0, 10)
+}
+
+
+/**
  * The inventory against a real Postgres, because the two things that matter
  * about it are database behaviour: that re-reading a store converges on the same
  * rows rather than accumulating them, and that a nightly read cannot demote a
@@ -314,8 +329,8 @@ describe.skipIf(!available)('recognising an article we published', () => {
     )
     const topic = await pool.query<{ id: string }>(
       `INSERT INTO topics (account_id, opportunity_id, title, intent_class, source, scheduled_date)
-       VALUES ($1,$2,$3,'buying_guide','auto','2026-10-01') RETURNING id`,
-      [owner, opportunity.rows[0]!.id, slug],
+       VALUES ($1,$2,$3,'buying_guide','auto',$4) RETURNING id`,
+      [owner, opportunity.rows[0]!.id, slug, nextScheduledDate()],
     )
     const article = await pool.query<{ id: string }>(
       `INSERT INTO articles (account_id, topic_id, title, slug, state, published_url, published_at, delivery)

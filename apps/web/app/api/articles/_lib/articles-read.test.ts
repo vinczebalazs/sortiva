@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { listArticlesResponseSchema } from '@sortiva/core'
 import { accountScope, markArticleOverridden, markArticleRejectedByGate } from '@sortiva/db'
-import { databaseAvailable, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
+import { databaseAvailable, nextFixtureDay, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
 import { withAccount } from '../../auth/_lib/session'
 import { makeListArticlesHandler } from './library'
 
@@ -61,9 +61,9 @@ describe.skipIf(!available)('reading the articles library', () => {
     )
     const { rows: topic } = await harness.pool.query<{ id: string }>(
       `INSERT INTO topics (account_id, opportunity_id, title, intent_class, source, scheduled_date)
-       VALUES ($1,$2,$3,'buying_guide','auto','2026-10-01')
+       VALUES ($1,$2,$3,'buying_guide','auto',$4)
        RETURNING id`,
-      [accountId, opportunity[0]!.id, slug],
+      [accountId, opportunity[0]!.id, slug, nextFixtureDay('2026-10-01')],
     )
     const { rows: article } = await harness.pool.query<{ id: string }>(
       `INSERT INTO articles

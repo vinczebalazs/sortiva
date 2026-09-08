@@ -148,6 +148,7 @@ describe.skipIf(!available)('reading one article', () => {
       {
         topicId,
         gate: 3,
+        rulesVersion: 'rules-test-v1',
         outcome: 'rejected_after_repair',
         scoresJson: {
           scores: { informationGain: 2, factualGrounding: 4 },
@@ -221,6 +222,7 @@ describe.skipIf(!available)('reading one article', () => {
     await insertGateDecision(harness.db, accountScope(mine), {
       topicId,
       gate: 3,
+      rulesVersion: 'rules-test-v1',
       outcome: 'rejected_judge',
       scoresJson: { scores: { informationGain: 2 }, justifications: { informationGain: 'Thin.' } },
       reasonUserFacing: 'gate3.below_quality_bar',
@@ -258,6 +260,7 @@ describe.skipIf(!available)('reading one article', () => {
       {
         topicId,
         gate: 3,
+        rulesVersion: 'rules-test-v1',
         outcome: 'overridden',
         scoresJson: { scores: { informationGain: 2 } },
         reasonUserFacing: null,

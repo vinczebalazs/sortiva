@@ -19,6 +19,21 @@ import {
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from './testing'
 
 /**
+ * A day of its own for every fixture topic.
+ *
+ * The calendar holds one live topic per store per day, enforced by a unique
+ * index since schema wave 7. A fixture that hard-codes a single date can
+ * therefore only be called once per account, which is not what these tests are
+ * about — they need several articles for one store, and the day each was
+ * scheduled on is incidental to all of them.
+ */
+let fixtureDay = 0
+function nextScheduledDate(): string {
+  return new Date(Date.UTC(2026, 9, 1 + fixtureDay++)).toISOString().slice(0, 10)
+}
+
+
+/**
  * "Publish anyway", and the price of it.
  *
  * A merchant can publish an article we turned down — it is their site. What
@@ -66,9 +81,9 @@ describe.skipIf(!available)('the override path and the calibration exclusion', (
     )
     const { rows: topic } = await pool.query<{ id: string }>(
       `INSERT INTO topics (account_id, opportunity_id, title, intent_class, source, scheduled_date)
-       VALUES ($1,$2,$3,'buying_guide','auto','2026-10-01')
+       VALUES ($1,$2,$3,'buying_guide','auto',$4)
        RETURNING id`,
-      [ownerId, opportunity[0]!.id, slug],
+      [ownerId, opportunity[0]!.id, slug, nextScheduledDate()],
     )
     const { rows: article } = await pool.query<{ id: string }>(
       `INSERT INTO articles (account_id, topic_id, title, slug)
@@ -115,6 +130,7 @@ describe.skipIf(!available)('the override path and the calibration exclusion', (
       {
         topicId,
         gate: 3,
+        rulesVersion: 'rules-test-v1',
         outcome: 'rejected_after_repair',
         scoresJson: {
           scores: { informationGain: 2 },
@@ -134,6 +150,7 @@ describe.skipIf(!available)('the override path and the calibration exclusion', (
       {
         topicId,
         gate: 3,
+        rulesVersion: 'rules-test-v1',
         outcome: OVERRIDE_GATE_OUTCOME,
         scoresJson: { overriddenAt: '2026-09-02T10:00:00.000Z', failedCriteria: ['informationGain'] },
         reasonUserFacing: null,
@@ -167,6 +184,7 @@ describe.skipIf(!available)('the override path and the calibration exclusion', (
       await insertGateDecision(db, scope, {
         topicId: article.topicId,
         gate: 3,
+        rulesVersion: 'rules-test-v1',
         outcome: 'rejected_after_repair',
         scoresJson: { scores: { informationGain: 2 } },
         reasonUserFacing: 'gate3.below_quality_bar',
@@ -193,6 +211,7 @@ describe.skipIf(!available)('the override path and the calibration exclusion', (
     await insertGateDecision(db, scope, {
       topicId,
       gate: 3,
+      rulesVersion: 'rules-test-v1',
       outcome: 'passed',
       scoresJson: { scores: { informationGain: 4 } },
       reasonUserFacing: null,
@@ -219,6 +238,7 @@ describe.skipIf(!available)('the override path and the calibration exclusion', (
       await insertGateDecision(db, accountScope(accountId), {
         topicId,
         gate: 3,
+        rulesVersion: 'rules-test-v1',
         outcome: 'rejected_after_repair',
         scoresJson: { scores: { informationGain: 2 } },
         reasonUserFacing: 'gate3.below_quality_bar',
@@ -260,6 +280,7 @@ describe.skipIf(!available)('the override path and the calibration exclusion', (
       await insertGateDecision(db, scope, {
         topicId,
         gate: 3,
+        rulesVersion: 'rules-test-v1',
         outcome: OVERRIDE_GATE_OUTCOME,
         scoresJson: { scores: { informationGain: 2 } },
         reasonUserFacing: null,
@@ -346,6 +367,7 @@ describe.skipIf(!available)('the override path and the calibration exclusion', (
       await insertGateDecision(db, otherScope, {
         topicId: theirs.topicId,
         gate: 3,
+        rulesVersion: 'rules-test-v1',
         outcome: 'rejected_after_repair',
         scoresJson: { scores: { informationGain: 2 } },
         reasonUserFacing: 'gate3.below_quality_bar',

@@ -222,7 +222,7 @@ describe.skipIf(!available)('dismissing a suggestion calls off its calendar day'
     await insertGateDecision(
       db,
       scope,
-      { topicId: topic.id, gate: 3, outcome: 'passed', scoresJson: {}, reasonUserFacing: null },
+      { topicId: topic.id, gate: 3, outcome: 'passed', scoresJson: {}, reasonUserFacing: null, rulesVersion: 'rules-test-v1' },
       NOW,
     )
 

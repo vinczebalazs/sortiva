@@ -10,6 +10,7 @@ import {
   TEST_DATABASE_URL,
   truncateAll,
   type TestDb,
+  nextFixtureDay,
 } from '@sortiva/db/testing'
 import { makeWorkerUtils, type WorkerUtils } from 'graphile-worker'
 import { MockEmailProvider } from '@sortiva/providers'
@@ -293,9 +294,9 @@ describe.skipIf(!available)('the email pipeline', () => {
       )
       const { rows } = await pool.query<{ id: string }>(
         `INSERT INTO topics (account_id, opportunity_id, title, intent_class, source, scheduled_date)
-         VALUES ($1,$2,$3,'buying_guide','auto','2026-08-10')
+         VALUES ($1,$2,$3,'buying_guide','auto',$4)
          RETURNING id`,
-        [forAccount, opportunity[0]!.id, title],
+        [forAccount, opportunity[0]!.id, title, nextFixtureDay('2026-08-10')],
       )
       return rows[0]!.id
     }
@@ -314,8 +315,8 @@ describe.skipIf(!available)('the email pipeline', () => {
       await pool.query(`UPDATE topics SET state = 'rejected_by_gate' WHERE id = $1`, [topicId])
       await pool.query(
         `INSERT INTO gate_decisions
-           (account_id, topic_id, gate, outcome, reason_user_facing, decided_at)
-         VALUES ($1,$2,$3,'held','gate.reason',$4)`,
+           (account_id, topic_id, gate, outcome, reason_user_facing, decided_at, rules_version)
+         VALUES ($1,$2,$3,'held','gate.reason',$4,'rules-test-v1')`,
         [accountId, topicId, gate, decidedAt],
       )
     }
@@ -433,8 +434,8 @@ describe.skipIf(!available)('the email pipeline', () => {
       )
       const { rows: topic } = await pool.query<{ id: string }>(
         `INSERT INTO topics (account_id, opportunity_id, title, intent_class, source, scheduled_date)
-         VALUES ($1,$2,$3,'buying_guide','auto','2026-10-01') RETURNING id`,
-        [accountId, opportunity[0]!.id, slug],
+         VALUES ($1,$2,$3,'buying_guide','auto',$4) RETURNING id`,
+        [accountId, opportunity[0]!.id, slug, nextFixtureDay('2026-10-01')],
       )
       await pool.query(
         `INSERT INTO articles

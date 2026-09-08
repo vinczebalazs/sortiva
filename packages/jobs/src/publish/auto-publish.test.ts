@@ -140,7 +140,7 @@ describe.skipIf(!available)('posting an article to the merchant`s shop', () => {
       .returning()
     await db
       .insert(schema.gateDecisions)
-      .values({ accountId, topicId: topic!.id, gate: 3, outcome: 'passed', scoresJson: {} })
+      .values({ accountId, topicId: topic!.id, gate: 3, outcome: 'passed', scoresJson: {}, rulesVersion: 'rules-test-v1' })
     const [article] = await db
       .insert(schema.articles)
       .values({

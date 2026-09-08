@@ -6345,3 +6345,70 @@ Mutation-checked three ways: the route test was run against a deliberately rewor
 
 Touched outside Lane E's directories, deliberately and as the brief permits: the shared lint plumbing — a new rule file in `tools/eslint-plugin-sortiva`, its registration, `eslint.config.mjs`, and a new proof file in `scripts/lint-proofs/` (added as a file, not by editing a shared list).
 Nearest spec: main Appendix A (Outage row), §14.4; invariant 24.
+## 2026-09-08 — T-WAVE7 — What one publish attempt records, and how it ends
+
+Card `T-WAVE7`, schema wave. The founder decided (2026-09-08, `R-PUBLISH-ATTEMPTS`) that a small append-only table records each attempt to post an article to a merchant's shop. What it records was left to the lane; this is that.
+
+**Four endings, not two.** Posting can succeed, be *refused* (the shop turned it away and wrote nothing — a dead token, a missing blog, a rate limit), leave us *uncertain* (the connection broke or the shop faulted, so the post may be on the blog right now), or be *abandoned* (the recovery sweep gave up). The product already tells refused from uncertain everywhere else in publishing, and gets it wrong in the direction that posts a merchant the same article twice, so the record keeps the distinction. **A brake that counted "we do not know" as a failure would trip on a flaky network as readily as on a real outage.**
+
+**A failure has to say what failed, and the database enforces it.** The row carries a `failure_class`, and a check constraint requires it on every non-success and forbids it on a success. Without it an operator is told something went wrong and not what, which is exactly the difference between "the platform is down" — the thing this brake exists for — and "one merchant's token expired".
+
+**Rows are written once, never updated.** An attempt that ends uncertain is not rewritten when the sweep settles it; the sweep's pass is a further attempt with a row of its own. Two rows for one article is the truth — we did try twice — and only an append-only table gives a count over a time window any meaning.
+
+**Deleting an article does not delete its attempts.** `article_id` is nullable and set null on delete, following `article_product_refs`: cascading would erase the evidence that publishing kept failing exactly when somebody is trying to find out why. `article_external_id`, the name the attempt claimed under, is kept for the same reason — on a refusal the claim row is already gone.
+
+**What this wave does not do.** Nothing writes to the table and nothing reads it yet. That is `R-PUBLISH-ATTEMPTS`, Lane D, and the order matters: wiring the brake's reader before the writer exists would replace a stand-in that says "I can see nothing" with one that reports a healthy zero right through an outage. The stand-in stays in `pnpm stubs:report` until the writer lands.
+Nearest spec: main §14.3.7, §14.4; invariants 19 and 22.
+
+## 2026-09-08 — T-WAVE7 — One live topic per store per day, and why it defers
+
+Card `T-WAVE7`. Constitution invariant 14 — at most one topic dequeues per store per day — was enforced by three code mechanisms and nothing in the database.
+
+**What was actually missing.** All three mechanisms are sound and all three assume the calendar cannot hold two live topics on one day. Nothing made that true. The add-a-topic endpoint reads the day to see whether it is free and then inserts, so two requests a few milliseconds apart both saw an empty day and both wrote — the same check-then-insert race the domain claim was deliberately built to avoid.
+
+**It is an exclusion constraint, not a unique index, and that was forced.** A merchant dragging a topic onto an occupied day *swaps* the two, and a swap is two updates that transiently put both topics on the same day. A unique index refuses that at the first statement, so the plain version broke a shipped feature. An exclusion constraint can be both partial and deferrable; a unique constraint can be neither at once.
+
+**Checked immediately by default, deferred by one caller.** `DEFERRABLE INITIALLY IMMEDIATE`, so an ordinary insert on a taken day is still refused where it happens rather than at commit, where the error would be far from its cause. `swapTopicDates` asks for deferral inside its own transaction, and is the only thing that does.
+
+**Vetoed topics are outside it.** A veto frees the day — the calendar keeps the gap and replenishment fills it later — and the three places that ask what a day holds already ignore vetoed rows. Every other state holds the day, including the states a topic reaches *after* being dequeued, which is what turns "one live topic a day" into "at most one dequeue a day".
+
+**It is invisible in TypeScript.** The schema builder can express none of the three things this needs, so it is hand-written in migration `0013` and appears nowhere in `packages/db/src/schema`. `constraints-t-wave7.test.ts` is the only thing that would notice if a future regeneration dropped it; the schema file carries a note saying so.
+
+**A consequence worth knowing.** A violation now arrives as SQLSTATE `23P01`, not `23505`. No production code catches either today, but anything that starts translating this refusal into a merchant-facing conflict must look for the exclusion code.
+Nearest spec: main §8.7, §9.1, §14.3.1; invariants 14 and 15.
+
+## 2026-09-08 — T-WAVE7 — Gate verdicts carry the thresholds they were reached under
+
+Card `T-WAVE7`. Invariant 9 requires the rules version — the hash of the threshold file, with a store's own overrides folded in — on every opportunity **and every gate decision**. Checked before building: opportunities carried it as a real column; gate decisions did not.
+
+**They were not carrying nothing.** Three of the four writers were already putting the value into `scores_json` as a loose JSON key, where nothing can index it, group by it, or prove it was written. So the fix is a column, not a new value to compute — every caller already had it in hand.
+
+**It is NOT NULL, which cost twenty-odd call sites.** A nullable column would leave the invariant exactly as unenforced as it was; requiring it makes a verdict with no record of the bar it was held to impossible to write. Four production sites pass what they already had; the rest were tests.
+
+**The one row that is not a verdict.** A merchant's "publish anyway" writes a row in the same table, and it judges nothing, so it has no thresholds of its own. It carries the version of the refusal it overrules — the question that row answers later is "which bar did the merchant overrule", not "which bar was in force at the click".
+
+**Existing rows are marked, not invented.** The migration adds the column nullable, sets every pre-existing row to `pre_stamping`, then makes it NOT NULL. `pre_stamping` is deliberately not hash-shaped: it says the verdict was reached before we began recording this, which is true, rather than attributing it to a version it was never judged under. Done this way so the migration cannot fail on a database that already holds gate decisions.
+
+**Left alone deliberately:** the duplicate value still written into `scores_json`. Nothing reads it, and removing it is a change to what four writers store, which is a feature card's call rather than a schema wave's.
+Nearest spec: main §7.10, §8.5; invariant 9.
+
+## 2026-09-08 — T-WAVE7 — The fourth item was dropped: the opportunity drawer needs no column
+
+Card `T-WAVE7` carried a fourth item, a column "the opportunity drawer needs", to be established by reading the drawer's read path rather than trusting the card. Established, and **there is no column to add.**
+
+Two candidates, both real gaps, neither a storage gap:
+
+- **`scheduledFor` is always null, and it drives visible behaviour.** A CREATE or REFRESH card that has a date shows "on the calendar, <date>" and links to the day; without one it shows a "schedule it" button. The endpoint sends null for every card, with a comment saying the lookup was skipped deliberately. But the data is already stored: scheduling writes `opportunities.topic_id`, and the day is `topics.scheduled_date`. **This is a missing join in a read path, not a missing column** — Lane C's or Lane F's, and a migration would not help it.
+- **`expiresAt` is also always null**, and nothing in any screen reads it. Adding storage for a field with no reader would be building something nobody asked for.
+
+Dropping this was the intended good outcome of checking rather than assuming, and it is recorded here so the next reader does not re-card it.
+Nearest spec: main §7.9; ui §5.
+
+## 2026-09-08 — T-WAVE7 — Test fixtures now give each seeded topic its own day
+
+Card `T-WAVE7`, a consequence of the constraint above rather than a choice about the product.
+
+Nine test files seeded several articles for one store by inserting each one's topic on the same hard-coded date. That is a calendar the product does not allow, and the new constraint refused it. The fixtures are wrong, not the constraint: none of those tests is about which day anything was scheduled on.
+
+`nextFixtureDay(base)` in `packages/db/src/testing.ts` hands each fixture topic a day of its own near the date the fixture asked for. The counter is per test file, which is all it has to be.
+Nearest spec: n/a — test scaffolding.

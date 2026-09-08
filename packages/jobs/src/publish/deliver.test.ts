@@ -2,7 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { eq } from 'drizzle-orm'
 import { ACCOUNT_PUBLISHING_PAUSED_FLAG, silentLogger } from '@sortiva/core'
 import { accountScope, schema, tripAccountFlag, type Db } from '@sortiva/db'
-import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
+import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb, nextFixtureDay } from '@sortiva/db/testing'
 import { runExportDeliveryForAccount } from './deliver'
 
 /**
@@ -92,7 +92,7 @@ describe.skipIf(!available)('handing over an article at the publish hour', () =>
         intentClass: 'buying_guide',
         kind: 'new',
         source: 'auto',
-        scheduledDate: TODAY,
+        scheduledDate: nextFixtureDay(TODAY),
         state: 'generating',
       })
       .returning()
@@ -103,6 +103,7 @@ describe.skipIf(!available)('handing over an article at the publish hour', () =>
         gate: 3,
         outcome: options.gateOutcome,
         scoresJson: {},
+        rulesVersion: 'rules-test-v1',
       })
     }
     const [article] = await db

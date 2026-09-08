@@ -237,7 +237,8 @@ describe.skipIf(!available)('schema wave 3 constraints (T4.0)', () => {
   describe('gate_decisions — main §13: gate is one of the three gates', () => {
     const insertDecision = (accountId: string, topicId: string, gate: number) =>
       pool.query(
-        `INSERT INTO gate_decisions (account_id, topic_id, gate, outcome) VALUES ($1,$2,$3,'pass')`,
+        `INSERT INTO gate_decisions (account_id, topic_id, gate, outcome, rules_version)
+         VALUES ($1,$2,$3,'pass','rules-test-v1')`,
         [accountId, topicId, gate],
       )
 
