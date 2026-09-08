@@ -1,7 +1,7 @@
 import { accountAttribution } from '../contracts/analytics'
 import type { LlmClient, LlmRequest } from '../contracts/llm'
 import type { StorePageType } from '../signals/types'
-import { packFacts, type OptimizeEvidencePack } from './pack'
+import { citableStoreFacts, type OptimizeEvidencePack } from './pack'
 
 /**
  * The one model call that proposes edits to a merchant's own page.
@@ -237,7 +237,7 @@ function gapBlock(pack: OptimizeEvidencePack): string {
 }
 
 function factsBlock(pack: OptimizeEvidencePack): string {
-  const facts = packFacts(pack).filter((fact) => !fact.address.startsWith('subtopic:'))
+  const facts = citableStoreFacts(pack)
   if (facts.length === 0) return 'The store has no recorded product facts for this page.'
   return [
     'The store\'s own facts. Cite each by the address in brackets, exactly as written:',

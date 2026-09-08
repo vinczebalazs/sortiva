@@ -1,6 +1,6 @@
 import type { GatesConfig } from '@sortiva/rules'
 import type { JudgeLite, JudgeVerdict } from '../contracts/opportunities'
-import type { OptimizeEvidencePack } from './pack'
+import { citableStoreFacts, type OptimizeEvidencePack } from './pack'
 import type { OptimizeRecommendation } from './recommendation'
 
 /**
@@ -67,10 +67,24 @@ export function evaluateOptimizeFloors(
 
 /**
  * What the grader is shown: the suggestions, and the evidence they were made
- * from. Not the pack object itself — the page's whole body and every fact
- * sheet would bury the two questions being asked — and never the writing
- * call's own conversation, so the grader cannot grade the reasoning instead of
- * the result.
+ * from.
+ *
+ * Two rules pull in opposite directions here and both have to hold.
+ *
+ * **Never more than the writer had.** Grounding asks whether every statement is
+ * traceable to the evidence, so a grader holding a fact the writer never saw can
+ * confirm a sentence the model invented — the price range is the one that bites,
+ * because a fabricated "from £120" reads as verified against a figure that was
+ * never in the writing prompt. The store's facts therefore come from
+ * `citableStoreFacts`, the same call that renders them into the writer's prompt,
+ * rather than from a second walk over the pack. `optimize-evidence-parity.test.ts`
+ * fails if the two ever diverge again.
+ *
+ * **Less than the writer had, on purpose.** The page's body text, the search
+ * numbers, the store's voice, the link candidates and the writing call's own
+ * conversation are all left out. Withholding costs nothing — a grader cannot
+ * wrongly confirm a claim on evidence it does not hold — and it is what keeps
+ * the grading a separate judgement rather than a re-run of the writer's.
  */
 export function gradingEvidence(pack: OptimizeEvidencePack): Record<string, unknown> {
   return {
@@ -87,10 +101,10 @@ export function gradingEvidence(pack: OptimizeEvidencePack): Record<string, unkn
       subtopic: subtopic.name,
       onPages: subtopic.competitors.map((citation) => citation.url),
     })),
-    storeFacts: pack.products.map((product) => ({ product: product.title, facts: product.factSheet })),
-    families: pack.families.map((family) => ({
-      name: family.name,
-      differsBy: family.differentiationAxes,
+    storeFacts: citableStoreFacts(pack).map((fact) => ({
+      address: fact.address,
+      fact: fact.label,
+      value: fact.value,
     })),
   }
 }
