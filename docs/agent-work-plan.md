@@ -1499,7 +1499,7 @@ Scope: every transition the sweep found *is* guarded, and the guard is proved to
 **R-REPAIR-LOOPS-SWITCH — a threshold that is really an on/off switch** · Lane D, tiny · **invariant 11**
 Scope: `repair_loops_max` is only ever read as "less than one", so the "one repair attempt" rule is a property of the code's shape rather than of the number. Either enforce the number or say in `packages/rules` that it is a switch — a number that looks adjustable and is not is worse than a flag.
 
-**R-LOCK-NAME — the constitution names a database function the code deliberately does not use** · **a founder decision, one line**
+**R-LOCK-NAME — the constitution named a database function the code deliberately does not use** · **ANSWERED 2026-09-08 and DONE.** The constitution was corrected; the code is unchanged. That same sentence required both a transaction-scoped lock and mid-step progress notes, which cannot both hold. See `DECISIONS.md` 2026-09-08.
 Scope: invariant 18 names `pg_advisory_xact_lock`. That function appears nowhere in the product except in two comments explaining the decision **against** it; the code uses the session-scoped lock instead, for reasons already journalled. Already flagged for reconciliation in an earlier audit and never made. It is a one-line edit to `CLAUDE.md`, which is yours and not a lane's — and worth making so the next audit does not re-find it.
 
 **R-CAP-THIRD-COPY — the competitor cap number exists three times and the third copy enforces nothing** · Lane F, tiny

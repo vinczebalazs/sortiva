@@ -566,7 +566,7 @@ describe.skipIf(!available)('step state machine against Postgres', () => {
     /**
      * The three ways a *session*-scoped advisory lock can go wrong that the
      * transaction-scoped form cannot. Each of these was a live defect
-     * before card R1 (audit T0.4).
+     * before card R1.
      */
     it('frees the store even when the unlock itself fails', async () => {
       // The realistic trigger: the step used the lock's own connection for a

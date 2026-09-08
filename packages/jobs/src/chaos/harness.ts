@@ -243,7 +243,7 @@ export function assertNoDoubleBilling(provider: {
  * before this card nothing ever offered such a row to anyone again: the store's
  * onboarding simply stopped, with no error, no dead-letter entry and no
  * user-visible signal. An ordinary deploy landing during an eight-minute
- * catalogue sync does exactly this (audit T0.4 [blocker]).
+ * catalogue sync does exactly this.
  *
  * So this scenario spawns a real child process, lets it commit two page cursors,
  * has it SIGKILL itself, and then asserts the step both *looks* abandoned

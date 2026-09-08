@@ -179,7 +179,7 @@ export async function claimStep(
  * `job_steps WHERE idempotency_key = $1 AND state = 'succeeded'`. It reads
  * `idempotency_ledger` now (`ledger.ts`): a job row cascades from its run and
  * from the account, so losing it let a redelivered message re-run — and re-bill
- * — work that was already done (audit T0.4 [major]).
+ * — work that was already done.
  *
  * `job_steps.idempotency_key` stays: the dead-letter entry carries it, and it
  * is how an operator ties a stranded step to its ledger record. It is no longer

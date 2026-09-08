@@ -14,7 +14,7 @@ import { runStep } from '../runtime/runStep'
  * in production is different in kind: the process stops between two statements,
  * nothing unwinds, no `catch` and no `finally` runs, and the row is left in
  * `running` with nobody working on it. Only a real signal produces that, so this
- * process really is killed (audit T0.4 [blocker]).
+ * process really is killed.
  *
  * Reads its whole job from the environment and writes a line per committed page
  * to stdout, so the parent can assert which pages were fetched.

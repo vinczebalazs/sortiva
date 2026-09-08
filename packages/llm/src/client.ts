@@ -267,7 +267,7 @@ export class AnthropicLlmClient implements LlmClient {
       return call
     } finally {
       // In a `finally` so a database hiccup on the cache write cannot lose a
-      // cost we have already paid (audit finding 5) — while still leaving the
+      // cost we have already paid — while still leaving the
       // cache write first, which invariant 20 requires.
       await this.record(request, spec, call, 'succeeded')
     }
@@ -304,7 +304,7 @@ export class AnthropicLlmClient implements LlmClient {
         // A stream that ends early still generated — and was billed for — the
         // tokens accumulated so far. The SDK keeps a running snapshot of the
         // message, including its usage, which is the real figure rather than an
-        // estimate (audit finding 3).
+        // estimate.
         const partial = stream.currentMessage?.usage
         return {
           ok: false,

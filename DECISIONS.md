@@ -6240,3 +6240,20 @@ Mutation-checked by restoring the original defect verbatim — putting the add l
 
 **One thing deliberately not renamed.** The threshold is called `competitors.auto_proposed_max`, and "auto" now reads oddly. Renaming it would change the bytes of `signals.config.yaml`, whose hash is the version string stamped on every decision the product has ever recorded — so every past record would stop comparing. The name stays; what it bounds is now how many are *offered*, and the cap still binds there because the cost it controls is the vendor lookups those competitors would drive if all were accepted.
 Nearest spec: main §6.6, §7.2.1 (both read verbatim; §7.2.1 is marked decided and says "nothing is ever auto-added"), Appendix B; invariant 5.
+
+## 2026-09-08 — R-LOCK-NAME — The constitution named a lock the code deliberately does not use, and the constitution was the wrong document
+
+Decision (founder, direct): **`CLAUDE.md` invariant 18 is corrected to describe the lock the code actually takes.** The code is unchanged.
+
+What the disagreement was. Only one worker may touch a given store's data at a time — otherwise a nightly sweep, an incoming webhook and a merchant pressing "re-sync" can all rework the same store at once and leave it in a state none of them intended. The constitution named the Postgres function that does this as `pg_advisory_xact_lock`, which holds the lock until the surrounding database transaction finishes. The code takes the other one, which holds it until the connection is released.
+
+**The constitution contradicted itself inside a single sentence, which is why this was never a close call.** That same sentence also requires any step running longer than sixty seconds to write down its progress as it goes, so a crash resumes rather than restarts. Those two cannot both be true. A transaction-scoped lock is held until its transaction commits, so anything written inside that transaction is invisible to everyone until the step ends — and a note nobody can read until the work is finished is not a progress note. Whichever way that sentence was read, half of it had to give.
+
+**The recommendation this replaces, and why it was not good enough.** The suggestion relayed here was to change the constitution because the code's reasoning "was written deliberately". That is an argument about who wrote a thing, not about whether it is right, and it is not a basis for editing the document that governs the build. The basis is the contradiction above.
+
+**What the code gives up, and where it buys it back.** A transaction-scoped lock is safer in three specific ways, because the database cleans it up whatever the program does. `packages/jobs/src/runtime/lock.ts` pays for each one by hand: every failure path either unlocks or destroys the connection, so one is never returned to the pool still holding a store; a bounded wait turns a stuck holder into a loud, retryable failure instead of a store that silently stops; and a second attempt to take a lock the same call stack already holds throws immediately rather than waiting on itself forever. All three are covered by tests.
+
+**One claim checked and found false.** The relay said two comments explain the choice and one of them is wrong. Both were read (`packages/jobs/src/runtime/lock.ts` and `packages/jobs/src/runtime/runtime.test.ts`). Both are correct and consistent with each other and with the code. Nothing in the source needed changing.
+
+Left as it is: the wording of the invariant is longer than its neighbours. That is deliberate — the short version is what produced five days of a rule nobody could satisfy, and a reader who only sees the function name will reinstate it.
+Nearest spec: main §14.3.1–14.3.4; invariant 18.
