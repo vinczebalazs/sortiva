@@ -106,13 +106,26 @@ const doubles = await import('../packages/core/src/contracts/doubles.ts')
 // that task is registered in `apps/web/instrumentation-node.ts`, so the sweep a
 // deployed worker runs reads real rows.
 
-// The two brakes that cannot see. The judge fail-rate and publish error-rate
-// trips are built and tested, but nothing records a draft's gate decision or a
-// publish attempt yet — no `articles` table, no `publish_intents` — so each is
-// wired to a counter that reports "not measurable" rather than a healthy zero.
-// The arithmetic is real; only the counting is missing.
+// The judge fail-rate counter is no longer on this list, from 2026-09-08
+// (`R-BRAKES-BLIND`), and the note it replaces was a reason that had expired:
+// it said no table records a draft's gate decision, and `gate_decisions` had
+// been in the schema for weeks. Checked end to end to the standard the notes
+// above set, and the check is cheap here because there is nothing to wire — the
+// sweep builds the counter out of the database handle it already holds
+// (`gateDecisionJudgeCounter`, `packages/jobs/src/sweeps/auto-trips.ts`), and
+// that sweep is the registered `spend_cap_sweep` task. `auto-trips.test.ts`
+// plants real gate-3 rows, runs the sweep with no counter supplied, and watches
+// the switch go up — so what is asserted is the brake firing, not the wiring.
+//
+// The publish error-rate counter stays, and the reason has changed rather than
+// gone. `publish_intents` exists now, but it cannot answer this question: a
+// publish that the shop refuses — the ordinary failure, and the shape of the
+// platform outage this brake is for — deletes its own claim row so the next
+// attempt can take the name back. Counting what is left would report a healthy
+// zero straight through an outage. Closing it needs a durable record of an
+// attempt and its outcome, which is a schema change; see `DECISIONS.md`,
+// 2026-09-08.
 const ops = await import('../packages/core/src/ops/counters.ts')
-new ops.UnrecordedJudgeOutcomes()
 new ops.UnrecordedPublishOutcomes()
 
 const stubs = wiredStubs()

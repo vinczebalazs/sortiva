@@ -69,19 +69,53 @@ function sourceFiles(dir: string, out: string[] = []): string[] {
 /** Everything the product ships, minus its tests. */
 const productionFiles = ['packages', 'apps'].flatMap((top) => sourceFiles(join(repoRoot, top)))
 
-/** Which seam stand-ins exist at all. */
+/**
+ * Every seam stand-in the product has, found by what a stand-in **does** rather
+ * than by where it lives or what it is called.
+ *
+ * This used to read one file for classes named `Stub…`, and two of them were
+ * neither: the counters that make the automatic brakes blind sit in
+ * `core/ops/counters.ts` and are called `Unrecorded…`. They were outside both
+ * checks in this file entirely, and appeared on the wired-stub report only
+ * because a line in the report script constructs them by hand — so deleting
+ * that one line would have removed the last visible trace of a brake that
+ * cannot fire, with nothing to stop it.
+ *
+ * A stand-in is anything that puts itself on that report: it either extends the
+ * shared base, whose constructor registers it, or calls `registerStub` itself.
+ * Both are visible in the source, and neither depends on a naming convention
+ * anybody has to remember.
+ */
 function everyStub(): string[] {
-  const doubles = readFileSync(join(here, 'doubles.ts'), 'utf8')
-  return [...doubles.matchAll(/export class (Stub\w+)/g)].map((m) => m[1]!)
+  const found = new Set<string>()
+  for (const file of productionFiles) {
+    const text = readFileSync(file, 'utf8')
+    if (!text.includes('registerStub') && !text.includes('StubImplementation')) continue
+    // Each class runs to the start of the next one, which is enough to tell
+    // whether this class is the one doing the registering.
+    const chunks = text.split(/(?=export (?:abstract )?class )/)
+    for (const chunk of chunks) {
+      const name = /^export (?:abstract )?class (\w+)/.exec(chunk)?.[1]
+      if (name === undefined || name === 'StubImplementation') continue
+      if (/extends StubImplementation\b/.test(chunk) || /\bregisterStub\(/.test(chunk)) {
+        found.add(name)
+      }
+    }
+  }
+  return [...found].sort()
 }
 
 function reportSource(): string {
   return readFileSync(join(repoRoot, 'scripts', 'stub-report.mjs'), 'utf8')
 }
 
-/** Which stand-ins a given report builds, which is what puts one on its list. */
+/**
+ * Which stand-ins a given report builds, which is what puts one on its list.
+ * Any imported namespace, not just the doubles file — the ops counters are
+ * constructed through a second one.
+ */
 function stubsIn(reportSourceText: string): string[] {
-  return [...reportSourceText.matchAll(/new doubles\.(Stub\w+)\(/g)].map((m) => m[1]!)
+  return [...reportSourceText.matchAll(/new \w+\.(\w+)\(/g)].map((m) => m[1]!)
 }
 
 /** Which of them the real report constructs. */
@@ -122,7 +156,19 @@ function constructionSites(symbol: string): string[] {
  * exactly true, so repairing the wiring turns this file red asking for the
  * record to be deleted.
  */
-const WIRED_IN_PRODUCTION: Record<string, { readonly files: readonly string[]; readonly finding: string }> = {}
+const WIRED_IN_PRODUCTION: Record<string, { readonly files: readonly string[]; readonly finding: string }> = {
+  UnrecordedPublishOutcomes: {
+    files: ['packages/jobs/src/sweeps/auto-trips.ts'],
+    finding:
+      'The brake that should stop publishing when publishing starts failing cannot fire, because ' +
+      'nothing in the product records a failed publish attempt: when a shop refuses a post, the ' +
+      'claim row is deleted so the name is free for the retry, and that covers a dead token, a ' +
+      'missing page and — the case this brake exists for — a rate limit. Deliberate and reported ' +
+      'by `pnpm stubs:report`; a counter that answers "cannot measure" is why no switch goes up on ' +
+      'a number nobody is writing down. Recording an attempt needs a schema decision, carded as ' +
+      'R-PUBLISH-ATTEMPTS.',
+  },
+}
 
 describe('no stand-in is left running in the product itself', () => {
   it.each(everyStub())('%s is not built by shipping code', (stub) => {
@@ -145,6 +191,33 @@ describe('no stand-in is left running in the product itself', () => {
       `The recorded finding for \`${stub}\` no longer matches what the code does. If it has been ` +
         `fixed, delete its WIRED_IN_PRODUCTION entry in the same commit. Recorded: ${recorded.finding}`,
     ).toEqual([...recorded.files])
+  })
+
+  /**
+   * Without this, narrowing the scan is silent. Each stand-in gets its own test
+   * from the list the scan returns, so a scan that finds one fewer runs one
+   * fewer test and reports nothing but a smaller number — the same shape as the
+   * fault this whole file exists to catch, one level up.
+   *
+   * Every name the report constructs, and every name either record names, has
+   * to be a name the scan can see. All three lists are things somebody wrote
+   * down on purpose, so this stays derived rather than becoming a fourth list
+   * to maintain.
+   */
+  it('sees every stand-in that is written down elsewhere, so the scan cannot quietly cover less', () => {
+    const found = new Set(everyStub())
+    const writtenDown = [
+      ...stubsOnTheReport(),
+      ...Object.keys(WIRED_IN_PRODUCTION),
+      ...Object.keys(REAL_IMPLEMENTATION),
+    ]
+    expect(writtenDown.length).toBeGreaterThan(3)
+    expect(
+      writtenDown.filter((name) => !found.has(name)),
+      'These are named on the wired-stub report or in one of the records in this file, and the ' +
+        'scan above did not find them. Either the scan has been narrowed, or a stand-in has been ' +
+        'renamed out of its reach.',
+    ).toEqual([])
   })
 
   it('is not vacuous: it would notice a stand-in nobody had recorded', () => {

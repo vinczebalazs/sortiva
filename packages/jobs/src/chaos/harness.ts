@@ -87,6 +87,19 @@ export interface ChaosScenario {
    * plus its orders-page boundary, or more).
    */
   readonly initialCeiling?: number
+  /**
+   * Set only by a scenario that arranges its **own** interruption and proves it
+   * happened — `process_death_mid_step` kills a real operating-system process
+   * and fails outright if the exit was not a `SIGKILL`. The harness never kills
+   * such a scenario, so it reports no kills, and the suite would otherwise read
+   * that as a scenario that was never interrupted.
+   *
+   * The string is the reason, and it is checked for being one: a scenario that
+   * opts out of the suite's "you were actually interrupted" assertion has to
+   * say what interrupts it instead, in words, or the opt-out becomes a place to
+   * hide a scenario that has quietly stopped testing anything.
+   */
+  readonly selfInterrupting?: string
 }
 
 export interface ChaosResult {
@@ -299,6 +312,9 @@ const processDeathState: ProcessDeathState = {
 
 const processDeathMidStep: ChaosScenario = {
   name: 'process_death_mid_step',
+  selfInterrupting:
+    'it starts a real child process and SIGKILLs it mid-page, then fails if the exit was anything else — ' +
+    'so the interruption is proved by the scenario rather than counted by the harness',
 
   async setup(pool, accountId) {
     const db = drizzle(pool, { schema })
@@ -414,6 +430,8 @@ export const CHAOS_SCENARIOS: readonly ChaosScenario[] = [
     // trivially. Real cases replace nothing — they are added alongside it.
     async drive() {},
     async assert() {},
+    selfInterrupting:
+      'there is nothing here to interrupt: this scenario exists so the harness has a case with no work in it',
   },
   processDeathMidStep,
   // T2.2's mid-sync crash, which is the case this harness was written expecting:
