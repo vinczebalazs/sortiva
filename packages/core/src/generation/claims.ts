@@ -1,4 +1,3 @@
-import { EXTRACTED_FIELDS } from '../distill/schema'
 // Both reused, not redeclared, to avoid a name collision under
 // `packages/core`'s barrel: `ConfidenceBand` already covers low/medium/high
 // in the Opportunity Engine's own contracts, matching `packages/db`'s
@@ -7,7 +6,7 @@ import { EXTRACTED_FIELDS } from '../distill/schema'
 // module's claims are about.
 import type { ConfidenceBand } from '../contracts/opportunities'
 import type { ProductField } from '../signals/substance'
-import type { EvidencePack, EvidencePackProduct } from './evidence-pack'
+import { citableProductFacts, type EvidencePack, type EvidencePackProduct } from './evidence-pack'
 
 /**
  * The claim plan — main idea of `docs/content-pointers.md` §1: every
@@ -65,61 +64,43 @@ const FIELD_LABELS: Readonly<Record<ProductField, string>> = {
   verifiable_claims: 'claim',
 }
 
-function scalarClaimText(product: EvidencePackProduct, field: ProductField, value: string): string {
-  if (field === 'material') return `${product.title} is made of ${value}.`
-  if (field === 'dimensions') return `${product.title}'s dimensions are ${value}.`
-  if (field === 'weight') return `${product.title} weighs ${value}.`
-  if (field === 'capacity') return `${product.title} has a capacity of ${value}.`
-  if (field === 'care') return `${product.title}'s care instructions: ${value}.`
-  if (field === 'origin') return `${product.title} is made in ${value}.`
-  return `${product.title}: ${FIELD_LABELS[field]} — ${value}.`
+function scalarClaimText(title: string, field: ProductField, value: string): string {
+  if (field === 'material') return `${title} is made of ${value}.`
+  if (field === 'dimensions') return `${title}'s dimensions are ${value}.`
+  if (field === 'weight') return `${title} weighs ${value}.`
+  if (field === 'capacity') return `${title} has a capacity of ${value}.`
+  if (field === 'care') return `${title}'s care instructions: ${value}.`
+  if (field === 'origin') return `${title} is made in ${value}.`
+  return `${title}: ${FIELD_LABELS[field]} — ${value}.`
 }
 
-function listClaimText(product: EvidencePackProduct, field: ProductField, value: string): string {
-  if (field === 'compatibility') return `${product.title} is compatible with ${value}.`
-  if (field === 'use_cases_stated') return `${product.title} is described for ${value}.`
-  if (field === 'certifications') return `${product.title} carries the ${value} certification.`
-  if (field === 'verifiable_claims') return `${product.title}: ${value}`
-  return `${product.title}: ${FIELD_LABELS[field]} — ${value}.`
+function listClaimText(title: string, field: ProductField, value: string): string {
+  if (field === 'compatibility') return `${title} is compatible with ${value}.`
+  if (field === 'use_cases_stated') return `${title} is described for ${value}.`
+  if (field === 'certifications') return `${title} carries the ${value} certification.`
+  if (field === 'verifiable_claims') return `${title}: ${value}`
+  return `${title}: ${FIELD_LABELS[field]} — ${value}.`
 }
 
 /**
  * One merchant-fact claim per populated field per product — "something about
  * this store's own catalogue", `content-pointers.md` §1. High confidence: it
  * is a stored fact-sheet value, not an inference.
+ *
+ * The facts themselves come from `citableProductFacts`, which is also what the
+ * judge's store-facts block is built from. Reading one list is what stops the
+ * judge from holding evidence the writer never had.
  */
 export function deterministicMerchantClaims(pack: EvidencePack): PlannedClaim[] {
-  const claims: PlannedClaim[] = []
-  let n = 0
-  for (const product of pack.products) {
-    for (const field of EXTRACTED_FIELDS) {
-      const value = product.factSheet[field]
-      if (Array.isArray(value)) {
-        for (const entry of value) {
-          const trimmed = entry.trim()
-          if (trimmed === '') continue
-          n += 1
-          claims.push({
-            id: `c${n}`,
-            text: listClaimText(product, field, trimmed),
-            kind: 'merchant_fact',
-            confidence: 'high',
-            evidence: [{ kind: 'product', productId: product.productId, field }],
-          })
-        }
-      } else if (typeof value === 'string' && value.trim() !== '') {
-        n += 1
-        claims.push({
-          id: `c${n}`,
-          text: scalarClaimText(product, field, value.trim()),
-          kind: 'merchant_fact',
-          confidence: 'high',
-          evidence: [{ kind: 'product', productId: product.productId, field }],
-        })
-      }
-    }
-  }
-  return claims
+  return citableProductFacts(pack).map((fact, index) => ({
+    id: `c${index + 1}`,
+    text: fact.fromList
+      ? listClaimText(fact.productTitle, fact.field, fact.value)
+      : scalarClaimText(fact.productTitle, fact.field, fact.value),
+    kind: 'merchant_fact',
+    confidence: 'high',
+    evidence: [{ kind: 'product', productId: fact.productId, field: fact.field }],
+  }))
 }
 
 /** The leading number and its trailing unit out of a short fact-sheet string, e.g. "20 litres" -> {value: 20, unit: "litres"}. */

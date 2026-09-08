@@ -13,6 +13,7 @@ import {
   findOpportunityById,
   findTopicOnDate,
   readLifecycleState,
+  readPersona,
   type AccountScope,
   type Db,
   type OpportunityRow,
@@ -71,7 +72,19 @@ export function makeAddTopicHandler(deps: AddTopicDeps): AccountHandler {
       return conflict('calendar_date_in_past', 'Pick a date in the future.')
     }
 
-    const occupant = await findTopicOnDate(deps.db, scope, parsed.data.date)
+    // The store's own language travels with the request because the demand
+    // floor a topic is judged against is set per language — twenty searches a
+    // month is a real subject in Danish and nothing at all in English — and
+    // because an operator can move a threshold for one language. Without it a
+    // Danish merchant's typed topic was measured against the English bar, and
+    // told so in the sentence explaining the decision.
+    //
+    // Read alongside the day check rather than on its own: same round trip, and
+    // it never runs for a request the entitlement check has already refused.
+    const [occupant, persona] = await Promise.all([
+      findTopicOnDate(deps.db, scope, parsed.data.date),
+      readPersona(deps.db, scope),
+    ])
     if (occupant) {
       return conflict('calendar_day_occupied', 'That day already has a topic on it.')
     }
@@ -91,6 +104,10 @@ export function makeAddTopicHandler(deps: AddTopicDeps): AccountHandler {
         title: parsed.data.title,
         scheduledDate: parsed.data.date,
         ...(parsed.data.pin !== undefined ? { pinned: parsed.data.pin } : {}),
+        // A store with no confirmed profile yet has no language to judge by, so
+        // it keeps the global defaults rather than being blocked: adding a
+        // topic is not the moment to discover onboarding is unfinished.
+        locale: persona?.language ?? null,
       },
     )
 

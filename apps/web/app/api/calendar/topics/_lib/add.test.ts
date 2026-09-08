@@ -4,6 +4,7 @@ import { schema } from '@sortiva/db'
 import { insertAccount, databaseAvailable, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
 import { renderTemplatedLine, t } from '@sortiva/ui'
 import { MockLlmClient, loadPrompt } from '@sortiva/llm'
+import { rules } from '@sortiva/rules'
 import { withAccount } from '../../../auth/_lib/session'
 import { makeAddTopicHandler, type AddTopicDeps } from './add'
 
@@ -72,10 +73,10 @@ describe.skipIf(!available)('POST /api/calendar/topics', () => {
    * no topic row is returned at all, so this is what it takes to see the chip
    * this route actually puts on the calendar.
    */
-  async function seedFamilyWithSubstance(familyId: string): Promise<void> {
+  async function seedFamilyWithSubstance(familyId: string, store: string = accountId): Promise<void> {
     await harness.db.insert(schema.productFamilies).values({
       id: familyId,
-      accountId,
+      accountId: store,
       name: 'Trail running shoes',
       groupingSource: 'collection',
       confidence: 'high',
@@ -83,7 +84,7 @@ describe.skipIf(!available)('POST /api/calendar/topics', () => {
     for (let i = 0; i < 3; i += 1) {
       const [product] = await harness.db
         .insert(schema.products)
-        .values({ accountId, shopifyProductId: `shopify-${i}`, title: `Trail Runner ${i}`, familyId })
+        .values({ accountId: store, shopifyProductId: `shopify-${i}`, title: `Trail Runner ${i}`, familyId })
         .returning()
       await harness.db.insert(schema.productFacts).values({
         productId: product!.id,
@@ -148,6 +149,121 @@ describe.skipIf(!available)('POST /api/calendar/topics', () => {
     const line = renderTemplatedLine(body.topic!.why, t)
     expect(line.known).toBe(true)
     expect(line.text).not.toContain('{')
+  })
+
+  /**
+   * The store's own market, as its profile records it. The minimum search
+   * volume a topic has to clear is set per language, so this row is what
+   * decides which bar a hand-typed topic is held to.
+   */
+  async function seedPersona(store: string, language: string, country: string): Promise<void> {
+    await harness.db.insert(schema.personas).values({
+      accountId: store,
+      description: 'A running shop.',
+      language,
+      country,
+      promptVersion: 'persona.v1',
+      modelId: 'test-model',
+    })
+  }
+
+  /** A stored search volume the two markets disagree about the meaning of. */
+  async function seedKeyword(store: string, language: string, volume: number): Promise<void> {
+    await harness.db.insert(schema.keywords).values({
+      accountId: store,
+      term: 'best trail running shoes',
+      language,
+      country: language === 'da' ? 'dk' : 'us',
+      volume,
+      source: 'manual',
+    })
+  }
+
+  async function addTopicFor(store: string, familyId: string) {
+    const llm = new MockLlmClient()
+    llm.enqueue(
+      'topic_classify',
+      JSON.stringify({
+        head: 'best trail running shoes',
+        members: [],
+        intentClass: 'buying_guide',
+        familyIds: [familyId],
+      }),
+    )
+    const response = await post(llm, store, { title: 'Best trail running shoes', date: '2026-03-20' })
+    expect(response.status).toBe(200)
+    return (await response.json()) as {
+      outcome: string
+      topic: { why: { templateKey: string; params: Record<string, string | number> } } | null
+    }
+  }
+
+  /**
+   * Thirty searches a month is a subject worth writing about in Danish and
+   * nothing much in English, and the thresholds say so. A hand-typed topic was
+   * measured against the English bar whatever market the store sells into,
+   * because this route never told the gate which language it was judging — and
+   * the merchant was then shown that foreign number as the bar they missed.
+   */
+  it("judges a typed topic by the store's own market", async () => {
+    const danish = accountId
+    const english = await insertAccount(harness.pool, 'calendar-add-english@example.com')
+    await harness.pool.query(
+      'INSERT INTO subscriptions (account_id, stripe_subscription_id, price_id, status) VALUES ($1, $2, $3, $4)',
+      [english, 'sub_test_en', 'price_test', 'active'],
+    )
+
+    const danishFamily = '33333333-3333-4333-8333-333333333333'
+    const englishFamily = '44444444-4444-4444-8444-444444444444'
+    await seedFamilyWithSubstance(danishFamily, danish)
+    await seedPersona(danish, 'da', 'DK')
+    await seedKeyword(danish, 'da', 30)
+    await seedFamilyWithSubstance(englishFamily, english)
+    await seedPersona(english, 'en', 'US')
+    await seedKeyword(english, 'en', 30)
+
+    // Thirty clears the Danish floor, so the topic is planned with nothing to
+    // warn about.
+    const inDenmark = await addTopicFor(danish, danishFamily)
+    expect(inDenmark.outcome).toBe('planned')
+    expect(inDenmark.topic?.why.templateKey).not.toBe('gate1.rejected_zero_volume')
+
+    // The same thirty is under the English floor, so that merchant is warned
+    // about demand — and the number they are shown is their own market's.
+    const inEngland = await addTopicFor(english, englishFamily)
+    expect(inEngland.outcome).toBe('planned_with_warning')
+    expect(inEngland.topic?.why.templateKey).toBe('gate1.rejected_zero_volume')
+    expect(inEngland.topic?.why.params.monthly_search_volume_min).toBe(
+      rules().defaults.gates.demand_floor.monthly_search_volume_min,
+    )
+  })
+
+  /**
+   * The other half of the same omission: an operator can move a threshold for
+   * one language, and a route that names no language is a route those rows
+   * never reach. Rows aimed at the store, or at every store, always did reach
+   * it — which is what made this easy to miss.
+   */
+  it("lets an override aimed at the store's language reach the gate", async () => {
+    const familyId = '55555555-5555-4555-8555-555555555555'
+    await seedFamilyWithSubstance(familyId)
+    await seedPersona(accountId, 'da', 'DK')
+    await seedKeyword(accountId, 'da', 30)
+
+    await harness.db.insert(schema.rulesOverrides).values({
+      accountId: null,
+      locale: 'da',
+      pageType: null,
+      key: 'gates.demand_floor.monthly_search_volume_min',
+      value: 500,
+      updatedBy: 'test-operator',
+      updatedAt: NOW,
+    })
+
+    const result = await addTopicFor(accountId, familyId)
+    expect(result.outcome).toBe('planned_with_warning')
+    expect(result.topic?.why.templateKey).toBe('gate1.rejected_zero_volume')
+    expect(result.topic?.why.params.monthly_search_volume_min).toBe(500)
   })
 
   it('409s a past date before ever calling the model', async () => {
