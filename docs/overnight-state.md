@@ -4,16 +4,35 @@ Rewritten after **every** card lands or stops, and re-read before any card is
 launched and before any merge. Its test: a completely fresh session, with none of
 the conversation that produced it, could take over from this file alone.
 
-**Last rewritten:** 2026-09-07, 23:15, by the integrator session (`sortiva-a8`,
+**Last rewritten:** 2026-09-08, 09:55, by the integrator session (`sortiva-a8`,
 running in the main worktree). **Everything below the first horizontal rule is
 older history, kept deliberately. Read this head first; it is what is true now.**
 
-## Where things stand at 2026-09-07, 23:15
+## Where things stand at 2026-09-08, 09:55
 
-**`main` is at `8259bfc`, fully green: 318 test files, 4,055 tests, all eleven gate
-commands passing.** That is the first time all night the suite has been clean with
-no known-red test, and it happened after the publish-versus-dismissal deadlock was
-fixed.
+**`main` is at `dc44027`, fully green: 319 test files, 4,062 tests, all eleven gate
+commands passing.**
+
+**The run was interrupted overnight and four lane sessions died.** Two of them
+(`lane-c`, `lane-d`) had **committed their first half** and left an uncommitted
+draft of the second; two (`lane-b`, `lane-f`) had written nothing. That is the
+third time this project has been saved by the commit-in-halves rule and the second
+time it has cost a session that ignored it. **All four have been re-dispatched**,
+the two with drafts under the take-over-an-unverified-draft brief: audit it part by
+part, keep what is right, replace what is not, say which was which, and assume
+nothing about whether it compiles.
+
+**Two integrator cards landed this morning while the lanes ran:**
+- **`T-WAVE6`** (`3b23393`) — the schema mini-wave the founder authorised. Drops
+  `article_claims.staleness` and its enum; adds the unique index
+  `rules_overrides_scope_key` with `NULLS NOT DISTINCT`, written in raw SQL because
+  the schema builder cannot express that clause and **the clause is the whole
+  point**. Mutation-checked: remove the index statement and three of seven tests
+  fail.
+- **`R-CONTRACT-2`** (`022abb2`) — `GET /api/recommendations` is declared as the
+  four answers it really gives rather than as a different endpoint's response.
+  **Two of its three items; the third is deliberately left**, because adding a
+  field to a response is one line and populating it is a lane's work.
 
 **The founder went to sleep at about 23:15 and will read a report in the morning.**
 Their standing instruction, given earlier and unchanged: *finish everything in code;
@@ -24,32 +43,23 @@ building sessions, check `uptime` first, and never `git add -A`.**
 
 A sleep hold is running: `caffeinate -dimsu -t 32400`, started 23:16, nine hours.
 
-### The four lanes running right now
+### The four lanes running right now (re-dispatched 09:50)
 
 | Lane | Card | What it is |
 |---|---|---|
-| C | `R-EXPIRY-GAPS` | three ways a suggestion can get stuck on a merchant's screen for ever |
-| D | `R-SLEEPY-RACE` then `R-WRONG-GATE-REASON` | a test that fails with a wrong answer under load; a day labelled with the wrong gate's reason |
-| F | `R-GATE-NUMBERS` | the last card of three — the sentences finally get their numbers |
-| B | `R-NUL-BYTE` | a source file git treats as binary |
+| C | `R-EXPIRY-GAPS` | **inherits a draft.** One half committed (`e773e2b`, the wide guard). The uncommitted part treats "our newest day of search data falls before the window this pass measured" as the supply having stopped, and gives the intent-gap signal a second way out. Both are judgements, not mechanics |
+| D | `R-WRONG-GATE-REASON` | **inherits a draft.** `R-SLEEPY-RACE` is committed (`f12d3b5`) and needs verifying rather than redoing. The draft stops a row with no recorded reason borrowing Gate 1's sentence, using a new key `gate.reason_unrecorded` |
+| F | `R-GATE-NUMBERS` | the last card of three — the sentences finally get their numbers. Fresh start |
+| B | `R-NUL-BYTE` | a source file git treats as binary. Fresh start |
 
 ### What the integrator should do next, in this order
 
 1. **Merge and gate each lane as it reports.** Full gate every time; do not batch.
-2. **`T-WAVE6`** — the schema mini-wave, and it is the integrator's own. **The founder
-   authorised it explicitly tonight** ("drop 4" of the four unused storage things), so
-   the migration is permitted even though waves are closed. It drops
-   `article_claims.staleness` and its enum, **and** adds the unique index
-   `rules_overrides (account_id, locale, page_type, key)` — which needs
-   `NULLS NOT DISTINCT` or a `coalesce` expression index, because three of those four
-   columns are nullable and Postgres treats nulls as distinct. Do it when lanes are
-   idle, not alongside them.
-3. **`R-CONTRACT-2`** — three contract corrections no lane may make. Also the
-   integrator's.
-4. Then dispatch from the queue: `R-OPTIMIZE-AXES` (E), `R-INCIDENT-NOTES` (G),
+2. Then dispatch from the queue: `R-OPTIMIZE-AXES` (E), `R-INCIDENT-NOTES` (G),
    `R-OVERRIDE-REACH` (per lane), `R-TASK-DONE`, `R-FIXTURE-KEYS`,
    `R-INDEXING-SPLIT`, `R-TASK-COPY`, `R-DRAWER-GAPS`, `R-SETTINGS-ONE-PATH`,
-   `R-CONFIRM-URL-ROW`, `R-SCAN-DATE-ZONE`, `R-CRITERIA-LABELS`, `T10.1`–`T10.3`.
+   `R-CONFIRM-URL-ROW`, `R-SCAN-DATE-ZONE`, `R-CRITERIA-LABELS`, `R-CONTRACT-PROVE`,
+   `T10.1`–`T10.3`.
 
 ### What is waiting on the founder — do not decide any of these
 
