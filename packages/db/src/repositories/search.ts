@@ -547,6 +547,25 @@ export async function latestGscDay(db: Db, scope: AccountScope): Promise<string 
   return row?.date ?? null
 }
 
+/**
+ * The last day the store has search data *of the kind signal detection reads*,
+ * or null when it has none.
+ *
+ * Deliberately the page × search table rather than the page-level one beside
+ * it. The sync writes both in the same step, so on a healthy store the two
+ * answers agree — but every detector reads this one, so a caller asking "can I
+ * still see what I judge by?" has to ask the table it judges by. The other one
+ * would answer for rows nothing in the engine consults.
+ */
+export async function latestGscQueryDay(db: Db, scope: AccountScope): Promise<string | null> {
+  const [row] = await db
+    .select({ date: sql<string | null>`max(${gscQueryDaily.date})` })
+    .from(gscQueryDaily)
+    .where(eq(gscQueryDaily.accountId, scope.accountId))
+    .limit(1)
+  return row?.date ?? null
+}
+
 export interface GscKeyTotal {
   /** The page address, or the search itself — whichever the caller asked to group by. */
   readonly key: string

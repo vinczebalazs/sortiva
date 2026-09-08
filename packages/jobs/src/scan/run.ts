@@ -28,6 +28,7 @@ import {
   findOpportunityById,
   findSignalRun,
   insertOpportunityTasks,
+  latestGscQueryDay,
   listOpenOpportunities,
   readPersona,
   transitionOpportunityStatus,
@@ -132,6 +133,18 @@ const CATALOG_SIGNAL_TYPES: readonly SignalType[] = [
   'catalog_richness_gap',
   'missing_or_weak_metadata',
 ]
+/**
+ * The statuses this pass may retire a row out of — named once, used both to
+ * choose the rows and to guard the write that retires one.
+ *
+ * Deliberately short of the full open set. A `scheduled` or `executing` row has
+ * been taken over by the calendar or by a recommendation being generated, and
+ * expiring it from under that work would strand it. Both states come back to
+ * one of these three when the work finishes or refuses, and a later scan
+ * retires them then.
+ */
+const EXPIRABLE_STATUSES: readonly OpportunityRow['status'][] = ['new', 'accepted', 'blocked']
+
 const GSC_SIGNAL_TYPES: readonly SignalType[] = [
   'striking_distance',
   'low_ctr_at_strong_rank',
@@ -236,9 +249,27 @@ async function runSignalScanLocked(
   const windows = computeScanWindows(assembleDeps, layer.signals.striking_distance.window_days)
   const evaluatedTypes = limitedIntelligence ? CATALOG_SIGNAL_TYPES : [...CATALOG_SIGNAL_TYPES, ...GSC_SIGNAL_TYPES]
 
+  // Retiring a search-data opportunity says the evidence stopped holding, and
+  // we may only say that while we can still see the evidence. A store whose
+  // newest day of search data falls before the window this pass measured has
+  // had its supply stop — the Google grant died, the sync stalled, the
+  // connection was never made — and every signal reading that window then looks
+  // exactly as it would if every page had come right at once. Retiring on that
+  // reading would take down a merchant's whole board on the strength of a
+  // broken pipe. So nothing search-driven is retired while the supply is out.
+  //
+  // The bar is the whole window rather than a fraction of it, because choosing
+  // a fraction would be choosing a number, and numbers live in `packages/rules`.
+  // The cost of the coarse bar: a sync that stopped part-way through the window
+  // still allows expiry, on thinner data than usual.
+  const latestSearchDay = await latestGscQueryDay(deps.db, scope)
+  const searchDataCoversWindow = latestSearchDay !== null && latestSearchDay >= windows.current.startDate
+
   const signals: DetectedSignal[] = []
   let ctrCurve: CtrCurve | undefined
   let intentGapReEvaluated: ReadonlySet<string> = new Set<string>()
+  let intentGapInBand: ReadonlySet<string> = new Set<string>()
+  let intentGapLivePages: ReadonlySet<string> = new Set<string>()
 
   if (!limitedIntelligence) {
     const gsc = await assembleGscInputs(assembleDeps, accountId, windows)
@@ -270,6 +301,8 @@ async function runSignalScanLocked(
     )
     signals.push(...intentGap.signals)
     intentGapReEvaluated = intentGap.reEvaluated
+    intentGapInBand = intentGap.inBand
+    intentGapLivePages = intentGap.livePages
   }
 
   const keywordCandidates = await assembleKeywordCandidates(assembleDeps, accountId)
@@ -371,28 +404,90 @@ async function runSignalScanLocked(
   }
 
   // Expiry: an open row of a signal type this pass evaluated, whose entity
-  // this pass did not re-detect at all, no longer holds. Restricted to
-  // `new`/`accepted`/`blocked` — the same lane boundary
-  // `reconcileStatusWithPreconditions` draws (see DECISIONS 2026-09-03 T3.7):
-  // once a row is `scheduled`/`executing` it has a `topics` row and belongs
-  // to Lane D's calendar state machine, not a signal-detection pass.
+  // this pass did not re-detect at all, no longer holds. `EXPIRABLE_STATUSES`
+  // is the same lane boundary `reconcileStatusWithPreconditions` draws (see
+  // DECISIONS 2026-09-03 T3.7): once a row is `scheduled`/`executing` it has a
+  // `topics` row and belongs to Lane D's calendar state machine, not a
+  // signal-detection pass.
+  let heldOpenWithoutSearchData = 0
   for (const row of openBeforeThisPass) {
-    if (!evaluatedTypes.includes(row.signalType as SignalType)) continue
-    // The one signal this scan does not measure for itself. Not finding a
-    // stored comparison for a page means nobody compared it — the pass was
-    // paused, the merchant edited the page, the results page was bought again —
-    // and none of those is evidence that the gap closed. Only a page we
-    // actually read a comparison for can lose its opportunity here.
-    if (row.signalType === 'existing_page_intent_gap' && !intentGapReEvaluated.has(row.entityRef)) continue
-    if (row.status !== 'new' && row.status !== 'accepted' && row.status !== 'blocked') continue
-    const stillDetected = detectedEntityRefsByType.get(row.signalType)?.has(row.entityRef)
-    if (stillDetected) continue
-    const result = await expireOpportunity(deps.db, scope, row.id, 'evidence_no_longer_holds', startedAt)
+    // The two cheap disqualifications first, so that everything counted below
+    // is a row this pass would otherwise have retired. A count that also
+    // included rows the calendar had taken over, or rows this pass detected
+    // again, would say "held back" about rows nothing was going to touch.
+    if (!EXPIRABLE_STATUSES.includes(row.status)) continue
+    if (detectedEntityRefsByType.get(row.signalType)?.has(row.entityRef)) continue
+
+    const signalType = row.signalType as SignalType
+    const evaluated = evaluatedTypes.includes(signalType)
+    if (GSC_SIGNAL_TYPES.includes(signalType)) {
+      // Held open rather than retired, and counted, so a store sitting like
+      // this is visible instead of merely quiet. Either the store has no
+      // Search Console connection — in which case this pass evaluated none of
+      // these types and has nothing to say about them — or the connection has
+      // stopped supplying days that reach the window judged above. Holding is
+      // also what lets §7.11's promise work: a store that reconnects has its
+      // existing opportunities re-scored, which needs them still to be there.
+      //
+      // The cost, stated rather than discovered: a store that never reconnects
+      // keeps these cards for as long as it stays disconnected. Nothing here
+      // ages them out, and choosing how long a card may outlive its evidence is
+      // a product decision nobody has made.
+      if (!evaluated || !searchDataCoversWindow) {
+        heldOpenWithoutSearchData += 1
+        continue
+      }
+    } else if (!evaluated) continue
+
+    if (signalType === 'existing_page_intent_gap') {
+      // The one signal this scan does not measure for itself, so it has two
+      // ways out rather than one.
+      //
+      // Either a stored comparison was replayed for the page and reported
+      // nothing missing — evidence the gap closed — or Search Console no longer
+      // places the page in the band this signal is defined over at all, having
+      // climbed clear of it or fallen out of it. The second is a measurement
+      // this pass can read for itself, and it is the only exit for a page the
+      // paying pass will never look at again precisely because it left the band.
+      // Absent both, the page simply was not looked at, which is not evidence.
+      //
+      // A page that has left the store is excluded from the second route on
+      // purpose: the nightly walk retires that one, under the reason that says
+      // the merchant took the page away rather than the reason that says a
+      // measurement moved. The two reasons mean different things to the
+      // learning loop and only one of them is true here.
+      const answered = intentGapReEvaluated.has(row.entityRef)
+      const leftTheBand = intentGapLivePages.has(row.entityRef) && !intentGapInBand.has(row.entityRef)
+      if (!answered && !leftTheBand) continue
+    }
+    const result = await expireOpportunity(
+      deps.db,
+      scope,
+      row.id,
+      'evidence_no_longer_holds',
+      startedAt,
+      EXPIRABLE_STATUSES,
+    )
+    // Somebody moved the row between the read at the top of this pass and this
+    // write — into the calendar, most likely. Whatever they did with it is more
+    // recent than this pass's picture of it, so this leaves it alone rather
+    // than retiring work that has already started.
     if (result) {
       expired += 1
       deps.capture.capture(opportunityStatusChanged(attribution, { from: row.status, to: 'expired', actor: 'expiry' }))
     }
     deps.onOpportunityPersisted?.(row.entityRef)
+  }
+
+  if (heldOpenWithoutSearchData > 0) {
+    log.info('signal_scan.expiry_held_open_no_search_data', {
+      account_id: accountId,
+      run_id: runId,
+      rows: heldOpenWithoutSearchData,
+      limited_intelligence: limitedIntelligence,
+      latest_search_day: latestSearchDay,
+      window_start: windows.current.startDate,
+    })
   }
 
   const finishedAt = (deps.now ?? (() => new Date()))()

@@ -72,6 +72,27 @@ export interface IntentGapReadResult {
    * look, which is not the same as evidence that no longer holds.
    */
   readonly reEvaluated: ReadonlySet<string>
+  /**
+   * Every page Search Console still places inside the band this signal is
+   * defined over — between the two positions in `packages/rules` — for at
+   * least one of the store's intents.
+   *
+   * Uncapped, unlike `shortlisted`. The shortlist is cut to the store's daily
+   * allowance of paid comparisons, so a page can fall off it purely because
+   * the store had more candidates than budget that day; that says nothing
+   * about the page. This set is the band itself, which is the thing an open
+   * opportunity's premise rests on.
+   *
+   * **This has to be built the same way the paying pass builds its shortlist**,
+   * because the scan retires an open intent-gap row for a page missing from it.
+   * The two agree today: neither side admits the competitor-gap targets
+   * `shortlistIntentGapPages` will take, since nothing supplies them. Wiring
+   * those into the paying pass alone would put pages here that sit outside the
+   * band on purpose, and this scan would retire their cards on the next pass.
+   */
+  readonly inBand: ReadonlySet<string>
+  /** Every address the store still serves, so absence here means "deleted", not "moved out of the band". */
+  readonly livePages: ReadonlySet<string>
   /** Pages the scan passed over, and why — a page nobody compared is not a page with nothing missing. */
   readonly skipped: readonly { readonly page: string; readonly reason: string }[]
 }
@@ -95,15 +116,18 @@ export async function readIntentGapSignals(
   const inventory = await listLiveStorePages(deps.db, accountScope(input.accountId))
   const byUrl = new Map(inventory.map((row) => [row.url, row]))
 
-  const shortlist = shortlistIntentGapPages({
+  // Asked for uncapped and cut afterwards, rather than asked for twice. The
+  // shortlist function's own last act is this same slice, so the two are the
+  // same set by construction — and the uncut list is the band membership the
+  // scan's expiry needs, which a capped list cannot answer for.
+  const inBand = shortlistIntentGapPages({
     clusters: input.clusters,
     rows: input.rows,
     pages: input.pages,
     config,
-    // The same ceiling, in the same ordering, the paying pass applies — so this
-    // shortlist is exactly the set of pages that pass could have compared.
-    limit,
+    limit: Number.MAX_SAFE_INTEGER,
   })
+  const shortlist = inBand.slice(0, limit)
 
   const signals: ExistingPageIntentGapSignal[] = []
   const skipped: { page: string; reason: string }[] = []
@@ -175,12 +199,20 @@ export async function readIntentGapSignals(
   log.info('intent_gap.read_completed', {
     account_id: input.accountId,
     shortlisted: shortlist.length,
+    in_band: inBand.length,
     replayed: reEvaluated.size,
     detected: signals.length,
     skipped: skipped.length,
   })
 
-  return { signals, shortlisted: shortlist.length, reEvaluated, skipped }
+  return {
+    signals,
+    shortlisted: shortlist.length,
+    reEvaluated,
+    inBand: new Set(inBand.map((candidate) => candidate.page)),
+    livePages: new Set(inventory.map((row) => row.url)),
+    skipped,
+  }
 }
 
 /**
