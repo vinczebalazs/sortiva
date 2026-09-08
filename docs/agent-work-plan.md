@@ -474,9 +474,16 @@ Scope: cannibalization consolidation recommendation (primary URL choice with rea
 Read first: main §11, §7.9 (technical blockers), §10.5, §7.8 example 5.
 Done when: example 5 produces a FIX with the three task kinds; a blocking FIX on a collection blocks an OPTIMIZE on it; grep proves no redirect/canonical write path exists.
 
-### M7 — Learning & outcomes · Lanes C + D · **DEFERRED — not in the first deployment**
+### M7 — Learning & outcomes · Lanes C + D · **UN-DEFERRED 2026-09-08 — in this release, scheduled LAST**
 
-> **Founder decision, 2026-09-02: the learning loop does not ship in v1.** Both cards
+> **Founder decision, 2026-09-08 (relayed via session `sortiva-98`): the learning loop IS in this
+> release, and is built last.** Confirmed twice — "do it, but do it last." This reverses the
+> 2026-09-02 deferral quoted below, which is left in place so the reversal is legible.
+> If it slips, the Performance table ships showing a dash in every result column, and the
+> founder was told that and accepted it (this is what `R-LABELS-OR-DASHES` was asking, and
+> this answer subsumes it). See `DECISIONS.md` 2026-09-08.
+
+> **Superseded — founder decision, 2026-09-02: the learning loop does not ship in v1.** Both cards
 > below stay in the plan and stay unbuilt. Nothing else depends on them — `M10`'s exit
 > gates do not read outcomes — so deferring costs no other card. What the product gives
 > up until they are built: it never learns from what it published. Every article is
@@ -1210,8 +1217,9 @@ Read first: `DECISIONS.md` 2026-09-04 "The citation word lists go" (`R-GATE-LANG
 Done when: a task carries a template key and its parameters rather than a finished sentence; every task kind has a key; the five existing keys are used or deliberately replaced; and `packages/core` composes no merchant-facing English anywhere in that file.
 Note: **this changes an interface two lanes share** — the task shape crosses from `core` into the drawer. Agree the shape before either side writes, and say in the report what the other lane must do.
 
-**R-DEAD-STORAGE — two tables and two columns nothing has ever written** · **needs a founder decision before any lane takes it**
-Scope: found by the read-only audit of 2026-09-07 by resolving producers rather than declarations. **`rules_overrides` and `incident_findings` have zero non-test references outside the schema file** — not written, not read; both carry not-null columns with no default, so nothing has ever inserted a row. `incident_findings` was added by schema wave 3 to collect what an operator learned after investigating a kill-switch trip, and its schema comment explains the intent in full. Separately, `products.metafields` and `article_claims.staleness` are written by nothing and read by nothing; `staleness` has an unused enum of its own, and the walk does read Shopify metafields (`inventory/source.ts:320`) but routes them elsewhere.
+**R-DEAD-STORAGE — WITHDRAWN 2026-09-08. Do not take this card.** Every one of the four things it proposes to delete is either already gone or in daily use, verified against the working tree: `article_claims.staleness` was dropped by migration `0012_t_wave6`; `rules_overrides` is the live per-store threshold layer with a command, an index and a card extending it; `products.metafields` is fetched per product by `packages/jobs/src/ingestion/metafields.ts`, persisted by the catalog upsert and read back by family grouping; and `incident_findings` is what `pnpm switch note` writes and `pnpm switch list`/`history` read, so dropping it would take the notes out of the incident tool. **The card was written from an audit, and work landed the same evening the audit never saw.** See `DECISIONS.md` 2026-09-08 `R-DEAD-STORAGE`. The original text is kept below only so the mistake stays legible.
+
+~~Scope: found by the read-only audit of 2026-09-07~~ by resolving producers rather than declarations. **`rules_overrides` and `incident_findings` have zero non-test references outside the schema file** — not written, not read; both carry not-null columns with no default, so nothing has ever inserted a row. `incident_findings` was added by schema wave 3 to collect what an operator learned after investigating a kill-switch trip, and its schema comment explains the intent in full. Separately, `products.metafields` and `article_claims.staleness` are written by nothing and read by nothing; `staleness` has an unused enum of its own, and the walk does read Shopify metafields (`inventory/source.ts:320`) but routes them elsewhere.
 **The decision:** each of these is either work someone intended and never did, or a schema that outlived its plan. Building them is real work; dropping them needs a migration and schema waves are closed. **Which of the four are still wanted?**
 Read first: main §14.5 (kill switches and incidents), §7.10 (the rules layer), §6.3; the schema comments on both tables, which state the original intent better than this card can.
 Done when: the founder has said which are wanted; the wanted ones have a writer and a reader; and the rest are recorded as deliberately empty rather than left looking like an oversight.
@@ -1697,6 +1705,34 @@ Done when: a merchant pressing one of these items lands on the thing that needs 
 **T10.4 — Dev-store smoke suite & app-listing checklist** — tech §6; main §14.6 (GDPR webhooks), §6.2. Done when: OAuth (read, then write), sync, two-phase publish, webhook HMAC, `shop/redact`, `customers/*` all pass against the dev store; Shopify app-listing requirements checklist complete.
 
 ---
+
+### Founder decisions of 2026-09-08 — sixteen answers, and what each one unblocks
+
+Relayed through session `sortiva-98`, which put the questions to Balazs directly. Recorded in
+`DECISIONS.md` under today's date, one entry per card, each marked as relayed. **The one still
+open is `R-RESTUDY`/`R-FINGERPRINT-BLAST`, and it is parked deliberately.**
+
+| Card | The answer | Who takes it | Status |
+|---|---|---|---|
+| `R-COMPETITOR-AUTOADD` | Competitor list starts **empty**; ranking domains are offered as suggestions. One more onboarding step, accepted. | Lane B | dispatch now |
+| `R-PLURALS` | Fix it properly — singular/plural in the renderer, the two shipped faults fixed, the phrased-around sentences revisited. | Lane F | dispatch now |
+| `R-SWEEP-LIFECYCLE` | The Monday scan skips unpaid, paused and awaiting-deletion stores. A returning store finds week-old data. | Lane C | dispatch now |
+| `R-BRAKE-STICKY` | An operator lowering the brake by hand also resets its window. **A departure from the spec's literal reading**, journalled as one. | Lane G | dispatch now |
+| `R-DISMISS-FOLLOWS-RENAME` | A dismissal travels with a renamed page. | Lane E | next wave |
+| `R-EXPORT-FALLBACK` | Keep refusing. No last-recorded-values fallback. | Lane D | next wave — may be a test only |
+| `R-EVIDENCE-BLACKOUT` | Hold the cards indefinitely, recorded as deliberate — **and the screen must say the evidence is stale because nothing is connected.** | Lane C behaviour; copy blocked | behaviour next wave; **the sentence does not exist yet** and is being drafted by `sortiva-98` |
+| `R-SKIP-TASK` | Skip comes back, built properly: its own endpoint, its own record. Explicitly not folded onto "mark applied". | integrator (contract), then Lane E | needs a contract change first |
+| `R-PUBLISH-ATTEMPTS` | Build the small append-only table, one row per publish attempt and how it ended. The brake then reads it. | needs a schema wave, then Lane D | queued for the next wave of migrations |
+| `R-LOCK-EVERY-WORKER` | The structural option: jobs declare account work, the runtime verifies the lock was entered. **33 registration sites across six lanes**, accepted. | integrator plumbing, then every lane | authorised cross-lane work |
+| `T7.1` / `R-VERDICT-UNBUILT` | **M7 is un-deferred — the learning loop is in this release, built LAST.** If it slips, dashes ship. | Lanes C + D | last |
+| `R-LABELS-OR-DASHES` | Subsumed by the above: the table fills rather than shipping dashes, provided `T7.1` lands. | — | closed |
+| `R-SIGNIN-COPY` | The six sentences are approved as written. | — | closed; the expiry warning's wording is `sortiva-98`'s to draft |
+| `R-NO-BROWSER-TESTS` | Deferred to the very end, "not needed now". My recommendation to take it early was overruled. | Lane F | very end |
+| Rules overrides | **Keep** the per-store override layer as it is. The first answer was "drop", given against a card that was wrong about what it did. | — | closed; the card extending its reach is unaffected |
+| `R-RESTUDY` + `R-FINGERPRINT-BLAST` | **Parked deliberately** — needs more follow-ups and detail. | nobody | **do not dispatch, and no lane may settle it sideways as part of another card** |
+
+`R-DEAD-STORAGE` is withdrawn outright — see its entry above and in `DECISIONS.md`. Four things
+proposed for deletion; none should be deleted; two of them are live features.
 
 ## 7. Audit schedule
 

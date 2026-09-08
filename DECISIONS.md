@@ -6065,3 +6065,142 @@ The measurements: the request takes about 230 ms from this machine while idle, m
 Mutation-checked: raising the limiter to a hundred thousand a second fails the pacing test.
 Why this is worth an entry rather than a quiet fix: three separate full-suite failures today were shrugged at as load, and the state file carried a note calling one of them "not a load flake" without saying what it was. Both had ordinary causes findable by measuring rather than re-running. **Capture the runner's output to a file** — two of the three failures could not even be named because the output was piped through `grep`.
 Nearest spec: main §14.7; tech §6.
+
+## 2026-09-08 — Founder decisions, sixteen at once — how these were taken, and how far they can be trusted
+
+Decision: the sixteen entries that follow record answers Balazs gave on 2026-09-08. **They did not reach me directly.** They were put to him in a different Claude session (`sortiva-98`), which relayed them here with the note "first-hand, not a relay of a relay: I put the questions to him and these are his words."
+
+Why that is written down rather than assumed: this repository has one integrator and one path to `main`, so the journal is the only place these answers exist. A reader in three months has no way to tell a founder's answer from an agent's inference unless the entry says which it is. Every entry below is therefore marked as relayed, and where a relayed answer rested on a fact I could check, I checked it before writing it down — which is how the correction in the next entry was found.
+
+What this does **not** authorise: nothing irreversible or externally visible was taken on the strength of the relay alone. The two entries that change what a merchant sees — the competitor list and the quality brake — are recorded as decided but reach `main` as ordinary cards with tests, reviewable before anything deploys.
+
+## 2026-09-08 — R-DEAD-STORAGE — The card is withdrawn: all four things it proposed to delete are either already gone or in use
+
+Decision: **`R-DEAD-STORAGE` is deleted, not rewritten.** It proposed dropping two tables and two columns as unused. Nothing on its list should be dropped.
+
+- `article_claims.staleness` — **already dropped**, by migration `0012_t_wave6`. Nothing to decide.
+- `rules_overrides` — **live**. It is the per-store threshold layer: read by `packages/rules/src/{load,overrides,reach}.ts`, written by `pnpm rules set/list/clear`, given a unique index by that same migration, and being extended by a card that is running right now. Dropping it would have deleted a working feature mid-build.
+- `products.metafields` — **written, stored, and read.** Shopify does not send a product's metafields alongside the product, so `packages/jobs/src/ingestion/metafields.ts` fetches them per product; the catalog upsert persists them (`packages/db/src/repositories/catalog.ts`); family grouping reads them back (`packages/db/src/repositories/families.ts` → `packages/core/src/families/group.ts`). The relayed correction called this column unwritten. It is not.
+- `incident_findings` — **live, and it is an operator feature.** `pnpm switch note` writes a row and `pnpm switch list` / `history` read them back (`scripts/kill-switch.mjs`), which is how a person investigating a raised brake writes down what they found. The relayed correction named this the one item safe to drop. Dropping it would take the notes out of the incident tool.
+
+Why the card was wrong: it was written from the read-only audit of 2026-09-07, and work landed that same evening the audit never saw. The relayed correction caught two of the four, and applied no fresh checking to the other two — it repeated the same mistake one layer up.
+
+**The lesson, which has now fired three times this week: a finding is a claim about a tree, and a tree older than the finding is a different tree.** Anything carded off the 2026-09-07 audit is re-checked against the working tree before dispatch, and a correction to an audit gets the same treatment as the audit.
+Nearest spec: main §7.10, §14.5; build plan §7 (audit schedule).
+
+## 2026-09-08 — R-COMPETITOR-AUTOADD — The competitor list starts empty, and ranking domains are offered rather than added
+
+Decision (founder, relayed): option (b). A new account's business-competitor list is **empty**. Domains found ranking in search results are shown as **suggestions** the merchant may accept; nothing is added on their behalf. The constitution's invariant 5 stands unchanged — the code moves to meet it.
+
+What was wrong: the constitution says domains seen in search rankings may be suggested to a merchant and never added automatically, because a competitor list is a statement about the merchant's own business and the product should not be putting words in their mouth. Onboarding added them anyway.
+
+The cost, accepted explicitly: **one more step in onboarding**, and a merchant who skips it starts with no competitors at all.
+Nearest spec: main §6.6, §7.2.1; invariant 5.
+
+## 2026-09-08 — R-SKIP-TASK — "Skip this task" comes back, with its own endpoint and its own record
+
+Decision (founder, relayed): the button returns and is **built properly** — its own address, and its own stored row saying the merchant skipped it. Explicitly **not** to be folded onto the existing "mark applied" endpoint.
+
+Why the cheap version was refused: skipping and applying are different merchant answers, and recording a skip as an application would make the product believe work was done that was not — which then feeds the learning loop, the counts on screen, and what gets suggested next.
+
+Consequence: this needs a change to the frozen route contract, which is the integrator's, so it cannot be handed to a lane as it stands.
+Nearest spec: main §10; ui §5.
+
+## 2026-09-08 — R-DISMISS-FOLLOWS-RENAME — A dismissal travels with a renamed page
+
+Decision (founder, relayed): option (a). When a merchant says "not interested" to a suggestion about a page and the page is later renamed, the dismissal follows it. It does not return as a fresh suggestion.
+Nearest spec: main §7.9, §10; invariant 10.
+
+## 2026-09-08 — R-EXPORT-FALLBACK — Export keeps refusing rather than handing over stale values
+
+Decision (founder, relayed): option (a). When an export cannot be produced from current data it **fails and says so**. There is no fallback to the last values we happened to record.
+
+Why: a file that looks complete and silently contains last week's numbers is worse than no file, because the merchant has no way to tell the difference.
+Nearest spec: main §9.5; invariant 22 (degrade to pause, never to lower quality).
+
+## 2026-09-08 — R-RESTUDY and R-FINGERPRINT-BLAST — Deliberately parked, and not to be decided sideways
+
+Decision (founder, relayed): **parked.** Both concern whether and how often a store's understanding of itself is recomputed after signup, and the answer was that it needs more follow-ups and detail before it can be settled.
+
+Standing instruction attached to this: neither card is dispatched, and **no lane may settle it as a side effect of another card**. If a card's work would decide when a store is re-studied, it stops and says so.
+
+Also belonging to this question: whether a change in a store's stored metafields counts as the store changing. See the `R-DEAD-STORAGE` entry above — that column is live, and what re-reads it is exactly this parked question.
+Nearest spec: main §6.3, §6.4, §14.1.
+
+## 2026-09-08 — R-SWEEP-LIFECYCLE — The weekly scan skips stores that are not paying, are paused, or are being deleted
+
+Decision (founder, relayed): the Monday scan skips accounts in those three states.
+
+The consequence, put to the founder and accepted: **a store that comes back finds week-old data** and waits for the next Monday, rather than the scan having quietly kept running for it all along.
+Nearest spec: main §4.2, §7.11, §14.6.
+
+## 2026-09-08 — R-PUBLISH-ATTEMPTS — A small append-only table records every publish attempt and how it ended
+
+Decision (founder, relayed): option (a). Build a table with one row per publish attempt and its outcome. The safety brake — the thing that stops publishing when too many attempts are failing — then reads it, and the last remaining stand-in leaves `pnpm stubs:report`.
+
+Why nothing could count this before: the two-phase publish machinery deletes its claim row on the commonest failure, deliberately, so that a retry can take the name again. That means the commonest kind of refused publish leaves no trace at all — which is why the brake was built visibly blind rather than built wrong.
+
+The rejected alternative stays rejected: adding a fourth state to the claim row would need surgery on the index that makes the claim safe in the first place.
+
+Consequence: this needs a migration, so it belongs to a schema wave.
+Nearest spec: main §14.3.7, §14.4; invariants 19 and 22.
+
+## 2026-09-08 — Rules overrides — The per-store threshold layer is kept as it is
+
+Decision (founder, relayed): option (b), keep it. The first answer given was to drop it, and it was given against a card that was wrong about what the thing did (see the `R-DEAD-STORAGE` entry). The corrected answer is to keep it unchanged.
+
+The card extending its reach continues, unaffected and un-held.
+Nearest spec: main §7.10; invariant 9.
+
+## 2026-09-08 — R-EVIDENCE-BLACKOUT — Cards are held indefinitely, and the screen says why
+
+Decision (founder, relayed): option (a). When the evidence behind a suggestion can no longer be checked because a connection behind it is gone, the cards are **held indefinitely** rather than expiring on a timer, and this is recorded as a deliberate hold rather than a failure.
+
+The second half is new and does not exist yet: **the screen must tell the merchant that the evidence is stale, and that it is stale because nothing is connected.** That is merchant-facing wording nobody has written. The founder delegated drafting it to session `sortiva-98`, which will show him a draft.
+
+Consequence for this repository: the behaviour half is buildable now; the copy half waits for approved words, and shipping the behaviour without the sentence would leave a merchant looking at held cards with no explanation for the hold.
+Nearest spec: main §7.9, §7.11; ui §4; invariant 22.
+
+## 2026-09-08 — R-LABELS-OR-DASHES and T7.1 / R-VERDICT-UNBUILT — The learning loop is in this release, scheduled last
+
+Decision (founder, relayed): **M7 is un-deferred.** The decision of 2026-09-02 to leave the learning loop out of the first deployment is reversed. It is built **last**, confirmed twice: "do it, but do it last."
+
+This subsumes `R-LABELS-OR-DASHES`. The Performance table shows a dash in every result column today because nothing computes a result; with the learning loop built, the table fills. If it slips, **dashes ship**, and the founder was told that and accepted it.
+
+Why it matters that this is last rather than first: it is the one part of the product that cannot be tested against anything real until there are published articles older than four weeks, so building it early buys nothing.
+Nearest spec: main §9.6; invariants 12 and 13; build plan §6 M7.
+
+## 2026-09-08 — R-NO-BROWSER-TESTS — Deferred to the very end, not dropped
+
+Decision (founder, relayed): deferred, "not needed now". My recommendation to take it early was heard and overruled.
+
+What that means in practice, unchanged and worth restating where the next reader will find it: **nothing in this repository can test a click.** Every screen defect found this week — the sign-in dead end, the dashboard's links, the missing Search Console button — was found by a person or by a check reading source, never by exercising the page. That stays true until this card is taken.
+Nearest spec: tech §6.
+
+## 2026-09-08 — R-LOCK-EVERY-WORKER — Jobs declare account work, and the runtime verifies the lock was taken
+
+Decision (founder, relayed): option (b), the structural one. A job declares whether it works on one account's data; the runtime then checks that such a job actually entered the per-account lock, and fails it if not.
+
+Why the cheap option was refused: the alternative was a scan of the source, and a scan cannot be the mechanism here — it classifies five of thirty-three jobs one way and twenty-nine the other, which means it is guessing about most of them.
+
+Cost, accepted: **a change at all thirty-three registration sites, across six lanes.** This is now authorised cross-lane work.
+Nearest spec: main §14.3.1–14.3.4; invariant 18.
+
+## 2026-09-08 — R-BRAKE-STICKY — Lowering the quality brake by hand also resets its window
+
+Decision (founder, relayed): option (c). When an operator lowers the brake by hand, the window it measures is reset, so the next fifty measurements describe what happened **after** the fix rather than dragging the incident along behind them.
+
+**Journalled as a departure from the spec's literal reading**, deliberately: the spec describes a rolling window with no reset. Without the reset, an operator who fixes the underlying problem and lowers the brake watches it trip again immediately, on evidence from before the fix — which teaches operators to ignore it.
+Nearest spec: main §14.4, §14.5; invariant 22.
+
+## 2026-09-08 — R-SIGNIN-COPY — The six sentences on the sign-in screen are approved as written
+
+Decision (founder, relayed): approved, unchanged. These were sentences the build wrote rather than the spec supplying, and they were flagged for exactly that reason.
+
+Outstanding: the wording of the fifteen-minute expiry warning is being drafted by session `sortiva-98`.
+Nearest spec: main Appendix A; invariant 24.
+
+## 2026-09-08 — R-PLURALS — The copy layer learns singular and plural
+
+Decision (founder, relayed): option (a), fix it properly. Singular and plural belong in the string renderer; the two sentences already shipped saying "1 ways" and the like are fixed; and the sentences that were **phrased around** the problem — written awkwardly so they would never need a singular — are revisited now that they need not be.
+Nearest spec: ui §4; invariant 24.
