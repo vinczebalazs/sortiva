@@ -5,6 +5,7 @@ import {
   countAccountCalls,
   countOptimizeGenerationsSince,
   listActiveFlags,
+  recentGate3Outcomes,
   resetAccountFlag,
   systemScope,
   tripAccountFlag,
@@ -21,13 +22,13 @@ import {
   MODEL_CALLS_PER_PAID_ANALYSIS_MAX,
   PUBLISHING_PAUSED_FLAG,
   PUBLISH_ERROR_MINIMUM_SAMPLE,
-  UnrecordedJudgeOutcomes,
   UnrecordedPublishOutcomes,
   accountAttribution,
   callTypeCapVerdict,
   judgeFailRateVerdict,
   publishErrorRateVerdict,
   utcDayWindow,
+  type FailureCount,
   type JudgeOutcomeCounter,
   type Logger,
   type PosthogCapture,
@@ -86,6 +87,11 @@ export interface AutoTripReport {
 }
 
 export interface AutoTripDeps {
+  /**
+   * Overrides the real count of quality-gate verdicts. Tests use it to hand the
+   * arithmetic a rate directly; production supplies nothing, and the sweep reads
+   * the database it was already given.
+   */
   judge?: JudgeOutcomeCounter
   publishing?: PublishOutcomeCounter
   analytics?: PosthogCapture
@@ -120,6 +126,31 @@ function announce(
   }
 }
 
+/**
+ * The quality brake's numbers, read from the gate's own audit trail.
+ *
+ * A plain default rather than something the composition root hands in. The
+ * brake's first months were spent connected to a stand-in that answered "not
+ * measurable" for ever, because the one place that could have wired it never
+ * did; a default that needs no wiring cannot be forgotten the same way.
+ *
+ * **`measurable` is true even when nothing has been graded.** It says whether
+ * anything records this outcome at all, not whether anything happened — and
+ * `gate_decisions` records it. An empty table means no drafts were graded, which
+ * the minimum-sample rule already refuses to draw a conclusion from. Answering
+ * "not measurable" there would put the sweep back to warning every five minutes
+ * about a mechanism that is in fact working.
+ */
+function gateDecisionJudgeCounter(db: Db): JudgeOutcomeCounter {
+  const scope = systemScope('the quality ceiling is about the product as a whole, not one account')
+  return {
+    async recentJudgeOutcomes(trailingDrafts: number): Promise<FailureCount> {
+      const counts = await recentGate3Outcomes(db, scope, trailingDrafts)
+      return { failures: counts.rejected, sample: counts.graded, measurable: true }
+    },
+  }
+}
+
 export async function evaluateAutoTrips(
   db: Db,
   deps: AutoTripDeps = {},
@@ -146,7 +177,7 @@ export async function evaluateAutoTrips(
   // ── Quality ────────────────────────────────────────────────────────────────
   // Most drafts failing the judge means a prompt or a model changed under us,
   // not that the writing got worse. Everything stops and somebody is paged.
-  const judge = deps.judge ?? new UnrecordedJudgeOutcomes()
+  const judge = deps.judge ?? gateDecisionJudgeCounter(db)
   const judged = await judge.recentJudgeOutcomes(caps.judge_fail_rate.trailing_drafts)
   if (!judged.measurable) {
     unmeasurable.push('judge_fail_rate')

@@ -2,7 +2,9 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import {
   accountScope,
   appendSpendEvent,
+  insertGateDecision,
   insertMinimalOpportunity,
+  insertTopic,
   isAccountFlagActive,
   isGlobalFlagActive,
   systemScope,
@@ -22,6 +24,7 @@ import {
   ACCOUNT_PAUSED_FLAG,
   ALL_WORK_PAUSED_FLAG,
   MODEL_CALLS_PER_PAID_ANALYSIS_MAX,
+  OVERRIDE_GATE_OUTCOME,
   PUBLISHING_PAUSED_FLAG,
   createLogger,
   silentLogger,
@@ -177,6 +180,82 @@ async function generatedOptimizeRecommendations(
   }
 }
 
+/**
+ * Drafts as the quality gate really leaves them behind: one `gate_decisions`
+ * row per verdict, in the order they were reached.
+ *
+ * Planted rather than faked because the whole point of the card that added
+ * these tests is that the brake was reading a stand-in. A double proves the
+ * arithmetic; only real rows prove the sweep can find them.
+ */
+async function gradedDrafts(accountId: string, outcomes: readonly string[]): Promise<void> {
+  const scope = accountScope(accountId)
+  const opportunity = await insertMinimalOpportunity(
+    db,
+    scope,
+    {
+      signalType: 'uncovered_commercial_query',
+      entityType: 'query_cluster',
+      entityRef: `graded-${accountId}`,
+      evidenceJson: [],
+      recommendedAction: 'create',
+      status: 'scheduled',
+      reasonTemplateKey: 'gate1.admitted',
+      reasonParams: {},
+      limitedIntelligence: false,
+      rulesVersion: rules().rulesVersion,
+    },
+    NOW,
+  )
+  const topic = await insertTopic(
+    db,
+    scope,
+    {
+      opportunityId: opportunity.id,
+      title: 'A draft the gate looked at',
+      targetKeyword: 'trail shoe sizing',
+      keywordCluster: null,
+      intentClass: 'buying_guide',
+      familyIds: [],
+      kind: 'new',
+      source: 'auto',
+      whyLine: 'topic.auto',
+      scheduledDate: '2026-09-01',
+      pinned: false,
+      state: 'planned',
+    },
+    NOW,
+  )
+
+  for (const [index, outcome] of outcomes.entries()) {
+    // Spaced in time and planted oldest first, so "the last fifty" means
+    // something a test can control rather than whatever order the rows land in.
+    const decidedAt = new Date(NOW.getTime() - (outcomes.length - index) * 60_000)
+    await insertGateDecision(
+      db,
+      scope,
+      {
+        topicId: topic.id,
+        gate: 3,
+        outcome,
+        scoresJson: {},
+        reasonUserFacing: outcome === 'passed' ? null : 'gate3.below_quality_bar',
+        promptVersion: 'judge.v1',
+        modelId: 'claude-test',
+      },
+      decidedAt,
+    )
+  }
+}
+
+/** `rejected` refusals followed by enough passes to fill the trailing window. */
+function verdicts(rejected: number, total: number): string[] {
+  return [
+    ...Array.from({ length: rejected }, () => 'rejected_judge'),
+    ...Array.from({ length: total - rejected }, () => 'passed'),
+  ]
+}
+
 const sweep = (deps: Parameters<typeof evaluateAutoTrips>[1] = {}) =>
   evaluateAutoTrips(db, { now: () => NOW, log: silentLogger, ...deps })
 
@@ -233,13 +312,100 @@ describe('the quality judge rejecting most of what it sees', () => {
   })
 
   it('says it cannot see, rather than reporting a healthy zero', async () => {
-    // Nothing records a draft's gate decision yet. "No failures" and "nobody is
-    // writing it down" have to be different answers, or a brake that cannot see
-    // looks exactly like a brake with nothing to do.
-    const report = await sweep()
+    // The distinction the seam exists for, and it has to survive the counter
+    // being replaced by a real one: "no failures" and "nobody is writing it
+    // down" are different answers, or a brake that cannot see looks exactly
+    // like a brake with nothing to do.
+    // Numbers far over the ceiling, from a counter that says it is not
+    // recording anything. The rate is exactly what would stop the product if it
+    // were real, so a sweep that ignored `measurable` would trip here.
+    const report = await sweep({
+      judge: {
+        recentJudgeOutcomes: async (): Promise<FailureCount> => ({
+          failures: CAPS.judge_fail_rate.trailing_drafts,
+          sample: CAPS.judge_fail_rate.trailing_drafts,
+          measurable: false,
+        }),
+      },
+    })
 
     expect(report.unmeasurable).toContain('judge_fail_rate')
     expect(report.trips).toEqual([])
+    expect(await isGlobalFlagActive(db, SYSTEM, ALL_WORK_PAUSED_FLAG)).toBe(false)
+  })
+})
+
+describe('the quality brake reading the gate\'s own record', () => {
+  /**
+   * The half that was missing. Everything above hands the arithmetic a rate;
+   * these hand it nothing at all and let the sweep go and find the rows, which
+   * is what production does — and what, until this card, it could not.
+   */
+  const WINDOW = CAPS.judge_fail_rate.trailing_drafts
+
+  it('stops all generation on real rejections, with no counter supplied', async () => {
+    const account = await insertAccount(harness.pool, 'gate@example.com')
+    await gradedDrafts(account, verdicts(Math.ceil(WINDOW * 0.7), WINDOW))
+
+    const report = await sweep()
+
+    expect(report.unmeasurable).not.toContain('judge_fail_rate')
+    expect(report.trips.map((t) => t.flag)).toEqual([ALL_WORK_PAUSED_FLAG])
+    expect(report.trips[0]?.reason).toContain('70%')
+    expect(await isGlobalFlagActive(db, SYSTEM, ALL_WORK_PAUSED_FLAG)).toBe(true)
+  })
+
+  it('leaves the switch down while the gate is mostly passing drafts', async () => {
+    const account = await insertAccount(harness.pool, 'passing@example.com')
+    await gradedDrafts(account, verdicts(Math.floor(WINDOW * 0.5), WINDOW))
+
+    expect((await sweep()).trips).toEqual([])
+    expect(await isGlobalFlagActive(db, SYSTEM, ALL_WORK_PAUSED_FLAG)).toBe(false)
+  })
+
+  it('counts a store that has graded nothing as nothing, not as unmeasurable', async () => {
+    // An empty table is not a missing mechanism. `gate_decisions` records this
+    // outcome; today it happens to hold none, and the minimum-sample rule is
+    // what refuses to conclude anything from that. Answering "cannot see" here
+    // would put the five-minute warning back for a brake that works.
+    const report = await sweep()
+
+    expect(report.unmeasurable).not.toContain('judge_fail_rate')
+    expect(report.trips).toEqual([])
+  })
+
+  it('does not read a merchant overruling us as a second rejection', async () => {
+    // A "publish anyway" writes its own gate-3 row on top of the refusal. It
+    // grades nothing. Counted as a rejection it would double every override,
+    // and a store that overrides often would pause generation for everybody.
+    const account = await insertAccount(harness.pool, 'override@example.com')
+    await gradedDrafts(account, [
+      ...Array.from({ length: WINDOW / 2 }, () => 'passed'),
+      ...Array.from({ length: WINDOW / 2 }, () => 'rejected_judge'),
+      ...Array.from({ length: 10 }, () => OVERRIDE_GATE_OUTCOME),
+    ])
+
+    // The gate refused 25 of the 50 drafts it graded: 50%, under the ceiling.
+    // Counting the ten overrides as refusals instead makes the newest fifty
+    // rows 35 refusals — 70% — and stops the product.
+    expect((await sweep()).trips).toEqual([])
+    expect(await isGlobalFlagActive(db, SYSTEM, ALL_WORK_PAUSED_FLAG)).toBe(false)
+  })
+
+  it('looks only at the drafts inside the window', async () => {
+    // Everything before the trailing window is history. A run of rejections
+    // that has since been fixed must not hold the brake down for ever.
+    const account = await insertAccount(harness.pool, 'recovered@example.com')
+    await gradedDrafts(account, [
+      ...Array.from({ length: WINDOW }, () => 'rejected_judge'),
+      ...Array.from({ length: 30 }, () => 'passed'),
+    ])
+
+    // The last fifty are 30 passes and 20 refusals: 40%. Over all eighty rows
+    // it would be 50 of 80 — 62.5% — and the switch would go up on a fault
+    // that is already over.
+    expect((await sweep()).trips).toEqual([])
+    expect(await isGlobalFlagActive(db, SYSTEM, ALL_WORK_PAUSED_FLAG)).toBe(false)
   })
 })
 
@@ -260,7 +426,31 @@ describe('publishing failing at the far end', () => {
   })
 
   it('says it cannot see publish outcomes either', async () => {
-    expect((await sweep()).unmeasurable).toContain('publish_error_rate')
+    // This one is still the production default: nothing durably records that a
+    // publish was attempted and refused, so the sweep is told so every run.
+    const report = await sweep()
+
+    expect(report.unmeasurable).toContain('publish_error_rate')
+    expect(await isGlobalFlagActive(db, SYSTEM, PUBLISHING_PAUSED_FLAG)).toBe(false)
+  })
+
+  it('will not pause publishing on numbers a counter says it cannot vouch for', async () => {
+    // The same distinction on the publishing side, and the case that matters if
+    // a future counter answers with a rate it does not trust: a switch may only
+    // go up on numbers something is really recording.
+    const report = await sweep({
+      publishing: {
+        recentPublishOutcomes: async (): Promise<FailureCount> => ({
+          failures: 9,
+          sample: 10,
+          measurable: false,
+        }),
+      },
+    })
+
+    expect(report.unmeasurable).toContain('publish_error_rate')
+    expect(report.trips).toEqual([])
+    expect(await isGlobalFlagActive(db, SYSTEM, PUBLISHING_PAUSED_FLAG)).toBe(false)
   })
 })
 

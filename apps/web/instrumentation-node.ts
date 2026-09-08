@@ -43,8 +43,13 @@ export async function startServerRuntime() {
 
   // The automatic brakes: one sweep that reads our own counters and pauses
   // whatever crossed a ceiling — the day's vendor spending, the share of drafts
-  // the quality judge is rejecting, the share of publish attempts failing, and
-  // a store's daily allowance of a paid analysis it triggers by clicking.
+  // the quality gate is refusing, and a store's daily allowance of a paid
+  // analysis it triggers by clicking. Each of those counts comes out of the
+  // database handle below, so there is nothing to pass here and nothing to
+  // forget. The fourth brake, the share of publish attempts failing, is not on
+  // that list: nothing durably records a refused publish, so it is still wired
+  // to a counter that says so and appears in `pnpm stubs:report` — see
+  // `DECISIONS.md`, 2026-09-08, `R-BRAKES-BLIND`.
   // Handed the database factory rather than a handle, so registering it here
   // opens no connection — the pool appears the first time the sweep runs.
   const { registerOpsTasks, installKillSwitchReader } = await import('@sortiva/jobs')

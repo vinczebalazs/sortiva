@@ -152,6 +152,9 @@ describe.skipIf(!available)('the worker drain flushes what the process captured 
       analytics,
       connectionString: url.toString(),
       logger: quiet,
+      // This test is about the analytics drain, not the schedule; no schedule
+      // means the worker does not insist on handlers this file never registers.
+      cronEntries: [],
       // The drain ends in process.exit and listens for the signals the test
       // runner also handles, so both are redirected here.
       signals: ['SIGUSR2'],

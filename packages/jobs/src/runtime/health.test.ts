@@ -29,7 +29,7 @@ describe('WORKER_ENABLED=false', () => {
     const previous = process.env.WORKER_ENABLED
     process.env.WORKER_ENABLED = 'false'
     try {
-      const worker = await bootstrapWorker({ analytics: new UnrecordedCapture(), logger: quiet })
+      const worker = await bootstrapWorker({ analytics: new UnrecordedCapture(), logger: quiet, cronEntries: [] })
       expect(worker).toBeUndefined()
       expect(workerLiveness()).toEqual({ status: 'not_expected', reason: 'WORKER_ENABLED=false' })
     } finally {
@@ -43,6 +43,7 @@ describe('a worker that cannot start', () => {
     resetWorkerLiveness()
     await expect(
       bootstrapWorker({
+        cronEntries: [],
         analytics: new UnrecordedCapture(),
         connectionString: 'postgres://sortiva:sortiva@127.0.0.1:1/sortiva',
         logger: quiet,
@@ -71,6 +72,7 @@ describe.skipIf(!available)('a worker that starts and then stops', () => {
     url.pathname = `/${test.databaseName}`
 
     const worker = await bootstrapWorker({
+      cronEntries: [],
       analytics: new UnrecordedCapture(),
       connectionString: url.toString(),
       logger: quiet,
