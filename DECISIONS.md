@@ -5904,3 +5904,15 @@ Nearest spec: main §14.7.
 Decision: `StubExistingTargetCheck` in `packages/core/src/contracts/doubles.ts` attached the head term of a keyword cluster — a phrase derived from the merchant's catalogue and search data, with spaces in it — to the `stub_used` event. The new table drops it; the call site no longer offers it.
 Why both: leaving the argument in place would have left the code reading as though the phrase were captured, with only a silent drop to say otherwise. This is the one live violation of the rule the guard found in existing code.
 Nearest spec: main §14.7; invariant 26.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — "Analytics is told, never asked" is now two checks instead of a shape
+Decision: `packages/providers/src/posthog/control-plane.test.ts` asserts two things. First, every method on the analytics port returns nothing — a method that answers a question has to return an answer, so a read cannot be added without failing. Second, the one file allowed to hold the analytics vendor's library never calls any of the vendor's flag or remote-config methods, which are the vendor's own perfectly good control plane and must not become ours.
+Why: when we stop spending money or halt a job, that decision is read from our own database, because a brake has to work on the day the vendor is down — which is the day something has gone wrong enough for a brake to matter. Until now the rule rested on the port happening to have no method that returns anything, which is a shape and not a check.
+Each half is mutation-checked: adding `isSpendingCapped(): Promise<boolean>` to the port fails the first, and implementing it with the vendor's `isFeatureEnabled` fails the second.
+What it cannot see, stated rather than implied: it reads the port and the one file that imports the vendor's library. Somebody who called the vendor's HTTP API directly, from a file importing nothing, passes both — that path is closed by the lint rule keeping the vendor's library inside this directory, and by nothing else.
+Nearest spec: main §14.5, §14.7 ("PostHog is telemetry and alerting, not the control plane"); invariant 17.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — The spend-ledger tests no longer claim to cover a rule they never touched
+Decision: the comment at the top of `packages/core/src/contracts/spend.test.ts` said those tests covered "the port's own rules" including that analytics is never the control plane. The four tests below it cover which attribution column is set, a negative cost, a cache hit recorded as free, and a ledger outage that must not fail the job. The comment now says that, and points at the file where the control-plane rule is actually checked.
+Why: an over-claiming comment is worse than no comment. The audit found this one while looking for the mechanism it described, which did not exist.
+Nearest spec: main §14.7; invariant 17.

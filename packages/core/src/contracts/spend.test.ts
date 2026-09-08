@@ -11,9 +11,18 @@ import {
 } from './spend'
 
 /**
- * The spend ledger is what the kill switches read; analytics is telemetry and
- * alerting, never the control plane. These cover the
- * port's own rules; the wrappers' suites cover that every call path writes one.
+ * What a spend row may contain, and what happens when writing one fails.
+ *
+ * The spend ledger is the counter the kill switches read, and these tests are
+ * about the counter's own rules: which of the two attribution columns is set,
+ * that a cost is never negative, that free work is recorded as free, and that a
+ * ledger outage is logged loudly rather than turned into a failed job. The
+ * wrappers' own suites cover that every paid call path writes a row.
+ *
+ * What these do **not** cover, though this comment used to say they did: the
+ * rule that the kill switches read our database and never the analytics
+ * vendor. That one is checked in
+ * `packages/providers/src/posthog/control-plane.test.ts`.
  */
 
 const ROW: SpendEvent = {
