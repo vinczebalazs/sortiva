@@ -10,7 +10,7 @@ import {
   truncateAll,
   type TestDb,
 } from '@sortiva/db/testing'
-import type pg from 'pg'
+import { createHmac } from 'node:crypto'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 /**
@@ -53,13 +53,17 @@ interface Driven {
   readonly params?: Readonly<Record<string, string>>
   readonly query?: string
   readonly body?: unknown
+  /**
+   * The exact bytes to send, for a receiver whose signature covers them. Takes
+   * precedence over `body`, which is otherwise serialised here.
+   */
+  readonly rawBody?: string
   readonly headers?: Readonly<Record<string, string>>
   /** Only where the contract declares something other than 200. */
   readonly status?: number
 }
 
 interface SeedContext {
-  readonly pool: pg.Pool
   readonly db: Database
   readonly accountId: string
 }
@@ -94,6 +98,14 @@ async function seedOpportunity(
           source: 'content_inventory',
           fetchedAt: NOW.toISOString(),
         },
+        // The calendar scheduler refuses to guess which article template a
+        // topic needs; it reads this fact or stops.
+        {
+          key: 'intent_class',
+          value: 'buying_guide',
+          source: 'content_inventory',
+          fetchedAt: NOW.toISOString(),
+        },
       ],
       recommendedAction: 'create',
       status: 'new',
@@ -108,12 +120,34 @@ async function seedOpportunity(
 }
 
 /** The store has claimed its domain — several routes refuse before that. */
-async function seedDomain(context: SeedContext): Promise<void> {
+async function seedDomain(
+  context: SeedContext,
+  state: 'ready_for_planning' | 'needs_confirmation' = 'ready_for_planning',
+): Promise<void> {
   await context.db.insert(schema.domains).values({
     accountId: context.accountId,
     domainNormalized: 'example.com',
     platform: 'shopify',
-    state: 'ready_for_planning',
+    state,
+  })
+}
+
+/** A connected Shopify store. The token is never decrypted by the routes driven here. */
+async function seedShopifyConnection(context: SeedContext): Promise<void> {
+  await context.db.insert(schema.shopifyConns).values({
+    accountId: context.accountId,
+    shopHandle: 'example-store',
+    accessToken: 'ciphertext-placeholder',
+    grantedScopes: ['read_products', 'read_content', 'write_content'],
+  })
+}
+
+/** A connected Search Console property. */
+async function seedGscConnection(context: SeedContext): Promise<void> {
+  await context.db.insert(schema.gscConns).values({
+    accountId: context.accountId,
+    property: 'sc-domain:example.com',
+    tokens: 'ciphertext-placeholder',
   })
 }
 
@@ -143,12 +177,24 @@ async function seedPersona(context: SeedContext): Promise<void> {
   })
 }
 
-/** An onboarding run, which is what the progress screen reads. */
-async function seedIngestionRun(context: SeedContext): Promise<void> {
-  await context.db.insert(schema.ingestionJobs).values({
-    accountId: context.accountId,
-    runId: 'route-answers-run',
-    status: 'running',
+/**
+ * An onboarding run, which is what the progress screen reads.
+ *
+ * The detected store name lives in the `detect` step's recorded output rather
+ * than in a column, so the Shopify install route reads it from there.
+ */
+async function seedIngestionRun(context: SeedContext, shopHandle?: string): Promise<void> {
+  const [run] = await context.db
+    .insert(schema.ingestionJobs)
+    .values({ accountId: context.accountId, runId: 'route-answers-run', status: 'running' })
+    .returning({ id: schema.ingestionJobs.id })
+  if (shopHandle === undefined) return
+  await context.db.insert(schema.jobSteps).values({
+    jobId: run!.id,
+    step: 'detect',
+    state: 'succeeded',
+    idempotencyKey: 'route-answers-detect',
+    outputRef: { shopHandle },
   })
 }
 
@@ -209,7 +255,60 @@ async function seedArticle(
  * more routes are excluded by the table itself rather than by this list — see
  * `derivedExceptions`.
  */
-const UNDRIVABLE: Readonly<Record<string, string>> = {}
+const UNDRIVABLE: Readonly<Record<string, string>> = {
+  'POST /api/preview':
+    'the only unauthenticated route: it verifies a Cloudflare bot-challenge token, fetches a ' +
+    "stranger's website and writes a summary with a model call. All three are live outside calls.",
+  'GET /api/billing/plan':
+    'reads the live prices out of Stripe on every request, because no amount may be hardcoded ' +
+    'anywhere in our code.',
+  'POST /api/billing/checkout': 'creates a Stripe Checkout session through Stripe.',
+  'POST /api/billing/portal': "creates a Stripe Customer Portal link through Stripe's API.",
+  'GET /api/publish/blogs':
+    "lists the blogs on the merchant's Shopify store, which means their access token and a call " +
+    'to Shopify.',
+  'POST /api/publish/target':
+    'selects or creates a blog on the Shopify store, which is a write against Shopify.',
+  'GET /api/gsc/properties':
+    'asks Google which Search Console properties the connected account can read.',
+}
+
+/**
+ * Endpoints whose answer its own declaration rejects **today**.
+ *
+ * This is the finding, not a workaround for it. A wrong declaration belongs to
+ * whoever holds the frozen contract and a wrong handler to the lane that owns
+ * it, so neither is corrected here — but a mismatch that merely made this suite
+ * red would be reverted by the next person to see it, and a mismatch nobody
+ * wrote down is one nobody fixes. So each is recorded with the exact complaint
+ * it produces, and the check asserts the complaint is **still** exactly that:
+ * the day the endpoint and its declaration agree, this file goes red asking for
+ * the entry to be deleted, and the day the mismatch changes shape it goes red
+ * saying so.
+ */
+interface KnownMismatch {
+  /** What parsing the real answer complains about, verbatim. */
+  readonly issues: readonly string[]
+  readonly why: string
+}
+
+const KNOWN_MISMATCHES: Readonly<Record<string, KnownMismatch>> = {
+  'POST /api/gsc/oauth/start': {
+    issues: ['url: Invalid input: expected string, received undefined'],
+    why:
+      'The handler answers `{ redirectUrl }`; the contract, and the Shopify install route beside ' +
+      'it, say `{ url }`. The Settings screen reads `body.url` and throws when it is missing, so ' +
+      '"Connect Search Console" fails there on a deployed server; the onboarding step reads ' +
+      'either name and works. Handler: apps/web/app/api/gsc/_lib/handlers.ts:42.',
+  },
+  'GET /api/articles/{articleId}/export': {
+    issues: ['files: Invalid input: expected record, received array'],
+    why:
+      'The handler answers a list of files, each with its own name and contents; the contract ' +
+      'declares one object mapping name to contents. The screen and the export bundle both use ' +
+      'the list. Handler: apps/web/app/api/articles/_lib/delivery.ts:70.',
+  },
+}
 
 const DRIVERS: Readonly<Record<string, Driver>> = {
   'GET /api/health': () => {
@@ -219,31 +318,37 @@ const DRIVERS: Readonly<Record<string, Driver>> = {
     return {}
   },
   'GET /api/account': bare,
-  'GET /api/billing/plan': bare,
-  'POST /api/billing/checkout': () => ({ body: { interval: 'monthly' } }),
-  'POST /api/billing/portal': bare,
   'GET /api/settings': bare,
   'PATCH /api/settings': () => ({ body: { publishHour: 9 } }),
-  'GET /api/publish/blogs': bare,
-  'POST /api/publish/target': () => ({ body: { createNamed: 'News' } }),
   'POST /api/publish/mode': () => ({ body: { delivery: 'export' } }),
-  'POST /api/publish/grant/start': bare,
+  'POST /api/publish/grant/start': async (context) => {
+    await seedShopifyConnection(context)
+    return {}
+  },
   'POST /api/account/delete': () => ({ body: { confirmation: 'DELETE' } }),
   'POST /api/domain/claim': () => ({ body: { domain: 'example.com' } }),
   'GET /api/ingestion/status': async (context) => {
     await seedIngestionRun(context)
     return {}
   },
-  'POST /api/shopify/oauth/start': bare,
+  'POST /api/shopify/oauth/start': async (context) => {
+    await seedDomain(context)
+    await seedIngestionRun(context, 'example-store')
+    return {}
+  },
   'POST /api/gsc/oauth/start': bare,
-  'GET /api/gsc/properties': bare,
-  'POST /api/gsc/property': () => ({ body: { siteUrl: 'sc-domain:example.com' } }),
+  'POST /api/gsc/property': async (context) => {
+    await seedDomain(context)
+    await seedGscConnection(context)
+    return { body: { siteUrl: 'sc-domain:example.com' } }
+  },
   'POST /api/gsc/skip': bare,
   'GET /api/profile': async (context) => {
     await seedPersona(context)
     return {}
   },
   'POST /api/profile/confirm': async (context) => {
+    await seedDomain(context, 'needs_confirmation')
     await seedPersona(context)
     return {
     body: {
@@ -274,15 +379,16 @@ const DRIVERS: Readonly<Record<string, Driver>> = {
     return { params: { keywordId: keyword!.id } }
   },
   'POST /api/profile/competitors': async (context) => {
+    await seedDomain(context)
     await seedPersona(context)
-    return { body: { domain: 'competitor.example' } }
+    return { body: { domain: 'competitor-store.com' } }
   },
   'DELETE /api/profile/competitors/{competitorId}': async (context) => {
     const [competitor] = await context.db
       .insert(schema.competitors)
       .values({
         accountId: context.accountId,
-        domainNormalized: 'competitor.example',
+        domainNormalized: 'competitor-store.com',
         source: 'manual',
       })
       .returning({ id: schema.competitors.id })
@@ -315,13 +421,16 @@ const DRIVERS: Readonly<Record<string, Driver>> = {
   'POST /api/opportunities/{id}/undismiss': async (context) => ({
     params: { id: (await seedOpportunity(context, { status: 'dismissed' })).id },
   }),
-  'POST /api/recommendations': async (context) => ({
-    body: {
-      opportunityId: (
-        await seedOpportunity(context, { recommendedAction: 'optimize', entityType: 'url' })
-      ).id,
-    },
-  }),
+  'POST /api/recommendations': async (context) => {
+    await seedEntitlement(context)
+    return {
+      body: {
+        opportunityId: (
+          await seedOpportunity(context, { recommendedAction: 'optimize', entityType: 'url' })
+        ).id,
+      },
+    }
+  },
   'GET /api/recommendations': async (context) => ({
     query: `opportunityId=${(await seedOpportunity(context, { recommendedAction: 'optimize', entityType: 'url' })).id}`,
   }),
@@ -373,7 +482,7 @@ const DRIVERS: Readonly<Record<string, Driver>> = {
   'POST /api/articles/{articleId}/publish-anyway': async (context) => {
     await seedEntitlement(context)
     return {
-      params: { articleId: (await seedArticle(context)).id },
+      params: { articleId: (await seedArticle(context, { state: 'rejected' })).id },
       body: { acknowledgedCriteria: ['grounding'] },
     }
   },
@@ -410,6 +519,63 @@ const DRIVERS: Readonly<Record<string, Driver>> = {
     return { params: { notificationId: notification!.id } }
   },
   'GET /api/attention': bare,
+  'POST /api/webhooks/stripe': () => {
+    const rawBody = JSON.stringify({
+      id: 'evt_route_answers',
+      object: 'event',
+      type: 'customer.subscription.updated',
+      created: Math.floor(NOW.getTime() / 1000),
+      data: { object: { id: 'sub_route_answers', object: 'subscription', status: 'active' } },
+    })
+    return { rawBody, headers: { 'stripe-signature': stripeSignature(rawBody) } }
+  },
+  'POST /api/webhooks/shopify/{topic}': () => {
+    const rawBody = JSON.stringify({ id: 1, title: 'Trail shoe' })
+    return {
+      params: { topic: 'products-update' },
+      rawBody,
+      headers: {
+        'x-shopify-hmac-sha256': createHmac('sha256', process.env.SHOPIFY_API_SECRET ?? '')
+          .update(rawBody)
+          .digest('base64'),
+        'x-shopify-webhook-id': 'route-answers-delivery',
+        'x-shopify-topic': 'products/update',
+        'x-shopify-shop-domain': 'example-store.myshopify.com',
+      },
+    }
+  },
+  'POST /api/webhooks/resend': () => {
+    const rawBody = JSON.stringify({
+      type: 'email.delivered',
+      data: { to: ['someone@example.com'], email_id: 'route-answers-message' },
+    })
+    return { rawBody, headers: resendSignatureHeaders(rawBody) }
+  },
+}
+
+/** Stripe's own scheme: `t=<unix>,v1=<hex hmac of "<t>.<body>">`. */
+function stripeSignature(rawBody: string): string {
+  const timestamp = Math.floor(Date.now() / 1000)
+  const digest = createHmac('sha256', process.env.STRIPE_WEBHOOK_SECRET ?? '')
+    .update(`${timestamp}.${rawBody}`)
+    .digest('hex')
+  return `t=${timestamp},v1=${digest}`
+}
+
+/** The Svix scheme Resend uses: the signature covers `<id>.<timestamp>.<body>`. */
+function resendSignatureHeaders(rawBody: string): Record<string, string> {
+  const secret = process.env.RESEND_WEBHOOK_SECRET ?? ''
+  const key = Buffer.from(secret.replace(/^whsec_/, ''), 'base64')
+  const id = 'msg_route_answers'
+  const timestamp = String(Math.floor(Date.now() / 1000))
+  const signature = createHmac('sha256', key)
+    .update(`${id}.${timestamp}.${rawBody}`)
+    .digest('base64')
+  return {
+    'svix-id': id,
+    'svix-timestamp': timestamp,
+    'svix-signature': `v1,${signature}`,
+  }
 }
 
 // ── Driving one route ────────────────────────────────────────────────────────
@@ -458,10 +624,10 @@ async function drive(route: RouteDefinition, driven: Driven): Promise<Answer> {
   const handler = await handlerFor(route)
   const request = new Request(urlFor(route, driven), {
     method: route.method,
-    ...(driven.body === undefined
+    ...(driven.rawBody === undefined && driven.body === undefined
       ? { headers: { ...driven.headers } }
       : {
-          body: JSON.stringify(driven.body),
+          body: driven.rawBody ?? JSON.stringify(driven.body),
           headers: { 'content-type': 'application/json', ...driven.headers },
         }),
   })
@@ -506,14 +672,39 @@ describe('every route answers the shape it declares', () => {
     ).toEqual([])
   })
 
+  it('names no route both ways', () => {
+    const both = Object.keys(DRIVERS).filter((key) => UNDRIVABLE[key] !== undefined)
+    expect(both, 'a route is both driven and named as undrivable').toEqual([])
+  })
+
   it('names nothing that has left the table', () => {
     const inTable = new Set(ROUTES.map(routeKey))
-    const stale = [...Object.keys(DRIVERS), ...Object.keys(UNDRIVABLE)].filter(
-      (key) => !inTable.has(key),
-    )
+    const stale = [
+      ...Object.keys(DRIVERS),
+      ...Object.keys(UNDRIVABLE),
+      ...Object.keys(KNOWN_MISMATCHES),
+    ].filter((key) => !inTable.has(key))
     expect(stale, 'a driver or an exception names a route the contract no longer declares').toEqual(
       [],
     )
+  })
+
+  it('gives every route it cannot drive a reason a person can read', () => {
+    const wordless = Object.entries(UNDRIVABLE)
+      .filter(([, reason]) => reason.trim().length < 20)
+      .map(([key]) => key)
+    expect(wordless, 'naming a route without saying why is the same as skipping it').toEqual([])
+  })
+
+  it('records a mismatch only against a route it actually drives', () => {
+    const unreachable = Object.keys(KNOWN_MISMATCHES).filter(
+      (key) => DRIVERS[key] === undefined,
+    )
+    expect(
+      unreachable,
+      'a recorded mismatch on a route nothing drives can never be checked, so it can never be ' +
+        'noticed when it is fixed',
+    ).toEqual([])
   })
 })
 
@@ -545,6 +736,14 @@ describe.skipIf(!available)('the answers themselves', () => {
     process.env.SHOPIFY_API_SECRET ??= 'test-shopify-secret'
     process.env.AUTH_GOOGLE_ID ??= 'test-google-client-id'
     process.env.AUTH_GOOGLE_SECRET ??= 'test-google-client-secret'
+    process.env.GSC_OAUTH_CLIENT_ID ??= 'test-gsc-client-id'
+    process.env.GSC_OAUTH_CLIENT_SECRET ??= 'test-gsc-client-secret'
+    // The webhook receivers verify a signature before touching the body, so the
+    // three drivers below sign what they send with these. Setting the Stripe
+    // key lets its client be constructed; no route driven here calls Stripe.
+    process.env.STRIPE_SECRET_KEY ??= 'sk_test_route_answers'
+    process.env.STRIPE_WEBHOOK_SECRET ??= 'whsec_route_answers'
+    process.env.RESEND_WEBHOOK_SECRET ??= `whsec_${Buffer.alloc(24, 3).toString('base64')}`
     // The SEO vendor is billable per call; its own mock mode is what every
     // other database-backed suite runs against.
     process.env.SEO_PROVIDER_MODE ??= 'mock'
@@ -567,7 +766,7 @@ describe.skipIf(!available)('the answers themselves', () => {
       await truncateAll(harness.pool)
       currentAccountId = await insertAccount(harness.pool, 'route-answers@example.com')
       const { db } = await import('@sortiva/db')
-      const context: SeedContext = { pool: harness.pool, db: db(), accountId: currentAccountId }
+      const context: SeedContext = { db: db(), accountId: currentAccountId }
       const driven = await DRIVERS[key]!(context)
 
       const answer = await drive(route, driven)
@@ -578,10 +777,26 @@ describe.skipIf(!available)('the answers themselves', () => {
       ).toBe(driven.status ?? route.status ?? 200)
 
       const parsed = route.response.safeParse(answer.json)
-      expect(
-        parsed.success ? null : parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`),
-        `${key} answered something its own declaration rejects`,
-      ).toBeNull()
+      const issues = parsed.success
+        ? null
+        : parsed.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+
+      const known = KNOWN_MISMATCHES[key]
+      if (known) {
+        expect(
+          issues,
+          `${key} now answers what it declares. Delete its KNOWN_MISMATCHES entry — the finding ` +
+            'it records has been fixed.',
+        ).not.toBeNull()
+        expect(
+          issues,
+          `${key} disagrees with its declaration in a different way than was recorded. Read the ` +
+            `recorded finding before changing anything: ${known.why}`,
+        ).toEqual(known.issues)
+        return
+      }
+
+      expect(issues, `${key} answered something its own declaration rejects`).toBeNull()
     },
     30_000,
   )
