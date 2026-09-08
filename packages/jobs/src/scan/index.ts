@@ -41,7 +41,12 @@ export {
   type OnboardingSweepDeps,
 } from './onboarding'
 
-export { sweepWeeklyScans, weeklyRunId, type WeeklyScanDeps } from './weekly'
+export {
+  sweepWeeklyScans,
+  weeklyRunId,
+  type WeeklyScanDeps,
+  type WeeklyScanSweepOutcome,
+} from './weekly'
 
 export { runEventDrivenScan } from './event'
 

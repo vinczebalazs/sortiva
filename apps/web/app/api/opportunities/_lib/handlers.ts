@@ -14,6 +14,7 @@ import {
   serpSnapshotKey,
   toContractOpportunity,
   toDrawerRecommendation,
+  weeklyScanAllowedFor,
   weeklyScanRunId,
   type ConflictCode,
   type DrawerRecommendation,
@@ -184,12 +185,17 @@ function parseListQuery(url: string): Record<string, string | string[]> {
  * - this store's own Monday has already been scanned, in which case the
  *   answer is next Monday rather than a scan that has already happened.
  *
- * The middle one is deliberately quieter than the machinery: the sweep does
- * not currently consult the lifecycle gate, so an unpaid store is still
- * scanned. Saying nothing to a merchant we are not charging is safe; telling
- * one that work is scheduled and then stopping is not. Read access is never
- * taken away by any of this — the screen renders in full, it simply carries no
- * timing line. See DECISIONS 2026-09-07 R-NEXTSCAN.
+ * The middle one is answered by the same function the sweep itself asks
+ * (`weeklyScanAllowedFor`), so the date this screen prints and the work that
+ * actually happens cannot disagree: a store told no scan is coming is a store
+ * the sweep genuinely passes over, and vice versa. It used to be merely
+ * quieter than the machinery — the sweep scanned unpaid stores while this said
+ * nothing — which was safe but not true. See DECISIONS 2026-09-07 R-NEXTSCAN
+ * and 2026-09-08 R-SWEEP-LIFECYCLE.
+ *
+ * Read access is never taken away by any of this — the screen renders in full,
+ * every card the store already has stays on it, and only the timing line goes
+ * quiet.
  */
 async function nextScanAtFor(
   deps: OpportunitiesDeps,
@@ -205,7 +211,7 @@ async function nextScanAtFor(
   // calendar to name the day of the *last* scan too, and that one is not
   // withheld from anybody.
   const timezone = settings.timezone
-  if (!switches.allowed || !lifecycle.generationAllowed) return { nextScanAt: null, timezone }
+  if (!switches.allowed || !weeklyScanAllowedFor(lifecycle)) return { nextScanAt: null, timezone }
 
   const today = scanLocalDay(now, settings.timezone)
   const thisMondayRun = isScanWeekday(today)
