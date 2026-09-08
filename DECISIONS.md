@@ -6412,3 +6412,23 @@ Nine test files seeded several articles for one store by inserting each one's to
 
 `nextFixtureDay(base)` in `packages/db/src/testing.ts` hands each fixture topic a day of its own near the date the fixture asked for. The counter is per test file, which is all it has to be.
 Nearest spec: n/a — test scaffolding.
+
+## 2026-09-08 — R-GUARD-TEETH — The catalogue check now says how much of the catalogue it read
+
+Decision: `packages/ui/src/strings/strings.test.ts` gains one assertion before the denominator scan — the catalogue must hold more than 900 sentences, must still contain the five key families where a sentence reporting a count actually lives (the performance, dashboard, content and opportunities screens, and the monthly summary email), and more than a hundred of its sentences must carry a number or a placeholder at all.
+
+Why: found while mutation-checking the work this card had already landed. Every other assertion in that file pins named sentences, so the scan over "all of them" was the only thing standing between the rule and an empty room — and nothing said the room was full. Pruning `en.json` down to the 37 keys the rest of the file names by hand left all 48 assertions green while 97% of everything a merchant reads had gone, this scan included. The three parts are deliberately different questions: the count catches a catalogue that shrank, the named families catch one that stayed large while losing exactly the screens that report counts (a bare floor would have passed that — checked: dropping all 72 `performance.` keys leaves 1,129), and the quantity floor catches a catalogue whose sentences no longer contain numbers, over which a rule about how two numbers may be joined would be proving nothing.
+
+Alternatives rejected: pinning the exact count, 1,201. It would go red on every copy addition, which trains people to bump the number without reading why it moved, and a check nobody reads is the fault this card exists to fix.
+
+Nearest spec: main §8.6; ui §4; invariant 23.
+
+## 2026-09-08 — R-GUARD-TEETH — The card's two guards were verified against live code before this session added anything
+
+Note, not a decision, recorded because the next reader will otherwise re-derive it. Both mutations named on the card were re-run today against the guards as they now stand, by editing real production files rather than by trusting the earlier session's test cases:
+
+- A persona file calling the decompressor (`packages/core/src/persona/brief.ts`) turns three assertions red and names the file. The topic picker taking a whole page of descriptions (`packages/core/src/topics/classify.ts`) — a shape the sweep did not try, and a different downstream consumer from the one the test demonstrates — turns the repository scan red and names it too.
+- Renaming `readProductBody` in the repository while leaving the guard's table stale turns the anti-vacuity assertion red, so the ban cannot quietly come to match nothing.
+- Four denominators put into `en.json`, one the sweep's and three phrasings written down nowhere in the test ("12 from 30", "{used} / {cap}", "22 of the 30 planned"), are all named by key and sentence.
+
+Nearest spec: main §6.3, §8.6; invariants 3 and 23.
