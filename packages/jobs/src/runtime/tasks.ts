@@ -6,11 +6,14 @@ import { guardedTask } from './gate'
  * per the constitution's code-structure rules) and the crontab in `crontab.ts`
  * refers to them by name.
  *
- * M0 ships it empty on purpose: a crontab entry naming a task nobody registered
- * is a scheduled job that silently never runs, so `startWorker` refuses to
- * enable cron until every scheduled task has a handler. That check is the
- * reason this registry exists rather than a bare object literal at the call
- * site.
+ * A crontab entry naming a task nobody registered is a scheduled job that
+ * silently never runs, so the worker refuses to **start** until every scheduled
+ * task has a handler. That check is the reason this registry exists rather than
+ * a bare object literal at the call site.
+ *
+ * It used to disable the schedule instead, which was right while this registry
+ * was empty by design and wrong from the first handler onwards: one misspelt
+ * name took the product's whole clock down and left it looking healthy.
  *
  * **Registering here is also what puts a job behind the kill switches.** Every
  * handler is wrapped so the switches are read at the moment the job starts;

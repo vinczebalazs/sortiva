@@ -4,7 +4,7 @@ import {
   markWorkerRunning,
   markWorkerStopped,
 } from '@sortiva/core/observability/health'
-import { CRON_ENTRIES } from './crontab'
+import { CRON_ENTRIES, type CronEntry } from './crontab'
 import { killSwitchReaderInstalled } from './gate'
 import { registeredTaskNames, taskList } from './tasks'
 import { installSignalHandlers, startWorker, type StartedWorker } from './worker'
@@ -19,10 +19,20 @@ import { installSignalHandlers, startWorker, type StartedWorker } from './worker
  *  - `WORKER_ENABLED=false` skips it entirely, for local UI work and for the
  *    day the worker splits into its own Railway service (a start-command change
  *    on the same image).
- *  - Cron is enabled only once every scheduled task in `CRON_ENTRIES` has a
- *    registered handler. Through M0 the registry is empty, so the worker runs
- *    with no schedule rather than with a crontab pointing at nothing. The log
- *    line names what is still missing.
+ *  - A scheduled job whose handler was never registered stops the worker
+ *    starting at all.
+ *
+ * That second guard used to do the opposite, and the difference is the whole
+ * point of it. It turned the schedule **off** — all of it, the daily article,
+ * the nightly billing reconciliation, the Search Console sync, the sweep that
+ * finishes half-done publishes — and wrote one line to the log while the web
+ * server went on serving pages perfectly. Nothing about the product looked
+ * broken; it simply stopped doing anything on its own. One misspelt name in
+ * one entry was enough.
+ *
+ * It made sense once: through M0 no handlers existed at all, and running with
+ * no schedule was better than a crontab pointing at nothing. That stopped being
+ * true the moment the first handler landed, and the condition outlived it.
  */
 
 let started: StartedWorker | undefined
@@ -49,6 +59,12 @@ export interface BootstrapOptions {
    */
   signals?: readonly NodeJS.Signals[]
   exit?: (code: number) => void
+  /**
+   * The schedule to insist on. Production never passes it and gets the real
+   * one; a test whose subject is not the schedule passes `[]` and starts a
+   * worker with no cron at all, which is what it wants anyway.
+   */
+  cronEntries?: readonly CronEntry[]
 }
 
 export async function bootstrapWorker(
@@ -78,21 +94,30 @@ export async function bootstrapWorker(
     throw new Error(`[worker] ${detail}`)
   }
 
+  const entries = options.cronEntries ?? CRON_ENTRIES
   const registered = new Set(registeredTaskNames())
-  const missing = CRON_ENTRIES.map((e) => e.task).filter((task) => !registered.has(task))
-  const enableCron = registered.size > 0 && missing.length === 0
+  const missing = entries.map((e) => e.task).filter((task) => !registered.has(task))
 
-  if (!enableCron) {
-    logger.log(
-      `[worker] cron disabled — ${missing.length} scheduled task(s) have no handler yet: ${missing.join(', ')}`,
-    )
+  // The same shape as the kill-switch guard above, and for the same reason: a
+  // worker that came up missing something it needs is worse than one that did
+  // not come up, because only the second is visible.
+  if (missing.length > 0) {
+    const detail =
+      `${missing.length} scheduled job(s) have no registered handler, so nothing would run them: ` +
+      missing.join(', ')
+    markWorkerStopped(`refused to start: ${detail}`)
+    throw new Error(`[worker] ${detail}`)
   }
 
   try {
     started = await startWorker({
       ...(options.connectionString ? { connectionString: options.connectionString } : {}),
       taskList: taskList(),
-      enableCron,
+      cronEntries: entries,
+      // A caller that asked for no schedule gets none. Graphile treats an empty
+      // crontab string as "go and find a crontab file", so an empty schedule
+      // has to be off rather than blank.
+      enableCron: entries.length > 0,
     })
   } catch (error) {
     // A worker that never came up is exactly the state the health check exists
@@ -126,7 +151,7 @@ export async function bootstrapWorker(
   })
 
   logger.log(
-    `[worker] started with ${registered.size} task(s), cron ${enableCron ? 'enabled' : 'disabled'}`,
+    `[worker] started with ${registered.size} task(s), cron ${entries.length > 0 ? 'enabled' : 'disabled'}`,
   )
   return started
 }
