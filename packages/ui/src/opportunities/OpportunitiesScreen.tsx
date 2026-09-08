@@ -198,16 +198,16 @@ export function OpportunitiesScreen({
             const row = detail.opportunity
             void actions.generate(row).then(() => reloadDetail(row))
           }}
-          onTask={(task, state) => {
+          onTask={(task) => {
             const row = detail.opportunity
-            void actions.markTask(row, task.id, state).then(() => reloadDetail(row))
+            void actions.markTask(row, task.id).then(() => reloadDetail(row))
           }}
           onMarkAllApplied={() => {
             const row = detail.opportunity
-            const open = detail.tasks.filter((task) => task.state === 'open')
-            void Promise.all(open.map((task) => actions.markTask(row, task.id, 'applied'))).then(() =>
-              reloadDetail(row),
-            )
+            // One press, one request. Marking each open task in turn left the
+            // recommendation itself unapplied, so nothing ever booked the
+            // measurement of whether the advice worked.
+            void actions.applyAll(row).then(() => reloadDetail(row))
           }}
         />
       ) : null}

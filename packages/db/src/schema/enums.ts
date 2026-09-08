@@ -350,13 +350,6 @@ export const claimKindEnum = pgEnum('claim_kind', [
   'recommendation',
 ])
 
-/**
- * How soon a claim's support is expected to move, so the refresh diagnosis
- * (content-pointers.md §9's "claims aged out" row) knows what to re-check
- * first. Not dictated by any spec — see DECISIONS 2026-09-03 T4.0.
- */
-export const claimStalenessEnum = pgEnum('claim_staleness', ['stable', 'seasonal', 'volatile'])
-
 /** What kind of mention a product reference is — main §13 `article_product_refs`. */
 export const productRefTypeEnum = pgEnum('product_ref_type', ['link', 'recommendation', 'mention'])
 

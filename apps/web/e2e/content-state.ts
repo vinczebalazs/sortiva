@@ -199,6 +199,9 @@ interface OpportunityTask {
 interface OpportunityOverlay {
   scheduledFor: string | null
   recommendation: { state: 'none' | 'generating' | 'ready'; fields: RecommendationField[] }
+  /** Null until advice has been generated; it is what the apply route is addressed by. */
+  recommendationId: string | null
+  appliedAt: string | null
   tasks: OpportunityTask[]
 }
 
@@ -212,6 +215,8 @@ function seedOpportunityOverlays(): Map<string, OpportunityOverlay> {
       {
         scheduledFor: null,
         recommendation: { state: 'none', fields: [] },
+        recommendationId: null,
+        appliedAt: null,
         tasks:
           source.recommendedAction === 'OPTIMIZE'
             ? [{ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', label: 'Rewrite the collection title', state: 'open' }]
@@ -369,6 +374,12 @@ export class ContentState {
     return { status: 200 as const, body: { ok: true } }
   }
 
+  /** The undo on the dismiss toast. Named `undismiss`, which is what the route is called. */
+  undismissOpportunity(id: string) {
+    this.calls.push(`undismiss ${id}`)
+    return { status: 200 as const, body: { ok: true } }
+  }
+
   /** The list row: the fixture's static facts plus whatever this run did to it. */
   private opportunityRow(source: Opportunity) {
     const overlay = this.opportunities.get(source.id)
@@ -504,15 +515,64 @@ export class ContentState {
         },
       ],
     }
-    return { status: 200 as const, body: { ok: true } }
+    overlay.recommendationId ??= `cccccccc-0000-4000-8000-${id.slice(-12)}`
+    return {
+      status: 200 as const,
+      body: {
+        state: 'ready' as const,
+        opportunityId: id,
+        recommendationId: overlay.recommendationId,
+        generated: true,
+      },
+    }
   }
 
-  markOpportunityTask(id: string, taskId: string, state: 'applied' | 'skipped') {
-    this.calls.push(`opportunity-task ${id} ${taskId} ${state}`)
-    const task = this.opportunities.get(id)?.tasks.find((entry) => entry.id === taskId)
-    if (!task) return { status: 404 as const, body: { error: { code: 'not_found', message: 'gone' } } }
-    task.state = state
-    return { status: 200 as const, body: { ok: true } }
+  /**
+   * The drawer's own read, and the only answer that publishes the
+   * recommendation's own id — which is what addresses marking work applied.
+   */
+  readRecommendation(opportunityId: string) {
+    const overlay = this.opportunities.get(opportunityId)
+    if (!overlay) return { status: 404 as const, body: { error: { code: 'not_found', message: 'gone' } } }
+    return {
+      status: 200 as const,
+      body: {
+        recommendation:
+          overlay.recommendation.state === 'none'
+            ? null
+            : { id: overlay.recommendationId, state: overlay.recommendation.state, fields: overlay.recommendation.fields },
+        tasks: overlay.tasks,
+        looksApplied: null,
+        appliedAt: overlay.appliedAt,
+      },
+    }
+  }
+
+  /**
+   * Addressed by the recommendation, not by the opportunity. No task named
+   * means the whole recommendation, which is the press that starts the clock on
+   * measuring whether the advice worked.
+   */
+  applyRecommendation(recommendationId: string, taskId: string | null) {
+    const found = [...this.opportunities.entries()].find(
+      ([, overlay]) => overlay.recommendationId === recommendationId,
+    )
+    if (!found) return { status: 404 as const, body: { error: { code: 'not_found', message: 'gone' } } }
+    const [opportunityId, overlay] = found
+
+    if (taskId !== null) {
+      this.calls.push(`apply-task ${opportunityId} ${taskId}`)
+      const task = overlay.tasks.find((entry) => entry.id === taskId)
+      if (!task) return { status: 404 as const, body: { error: { code: 'not_found', message: 'gone' } } }
+      task.state = 'applied'
+      return { status: 200 as const, body: { ok: true, taskId, state: 'applied' } }
+    }
+
+    this.calls.push(`apply-all ${opportunityId}`)
+    const appliedAt = new Date().toISOString()
+    overlay.appliedAt = appliedAt
+    for (const task of overlay.tasks) if (task.state === 'open') task.state = 'applied'
+    return { status: 200 as const, body: { ok: true, appliedAt } }
   }
 }
 

@@ -22,7 +22,6 @@ import {
   articleLabelEnum,
   articleStateEnum,
   claimKindEnum,
-  claimStalenessEnum,
   confidenceBandEnum,
   deliveryModeEnum,
   intentClassEnum,
@@ -264,8 +263,6 @@ export const articleClaims = pgTable(
     text: text('text').notNull(),
     kind: claimKindEnum('kind').notNull(),
     confidence: confidenceBandEnum('confidence').notNull(),
-    /** See DECISIONS 2026-09-03 T4.0 — not dictated by any spec. */
-    staleness: claimStalenessEnum('staleness').notNull().default('stable'),
     /**
      * One entry per piece of evidence: which product, which page, which
      * quoted passage, or — for a derived fact or a recommendation — which

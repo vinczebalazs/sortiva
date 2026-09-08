@@ -748,6 +748,57 @@ none of these cards is designing an interface, only implementing one.
 
 ### Live on merchant screens right now — found 2026-09-07, highest priority in the queue
 
+### From `R-PRODUCT-ATTRIBUTES`, landed 2026-09-07 late evening — including the largest structural gap found all day
+
+**R-RESTUDY — a store's understanding of itself is computed once, at signup, and never again** · **needs a founder decision on cost, then Lane B**
+Scope: distillation (what each product actually is), family grouping (turning forty shoes into four subjects worth writing about) and persona are steps of **one run, created from exactly one place** — the domain claim (`apps/web/app/api/domain/_lib/store.ts:174`, `createRun`). **Nothing re-runs any of them, ever.** A store that adds a product line, rewrites its catalogue, or changes what it sells keeps the understanding we formed on the day it signed up.
+**How it was found, and why nobody had seen it:** `R-PRODUCT-ATTRIBUTES` filled two long-empty columns and then asked the honest question — what changes for a store that is already onboarded? The answer is that the column fills and the families do not change, because nothing regroups them. The card's own value is bounded by it.
+**A second-order version of the same thing**, journalled by that lane: even if grouping were re-run, its "have the inputs changed" key is built from the product fingerprint and the distillation timestamp, and **neither moves when an option or a metafield changes** — so a re-run would decide there was nothing to do.
+**The founder decision, and it is about money rather than correctness:** re-studying a store costs a model call per changed product. Options are (a) never, as today, and say so somewhere a merchant can see; (b) on a schedule; (c) when the catalogue has changed by more than some amount — which needs the change to be visible to the key, i.e. the second-order fix above. **Nobody should choose between these on a lane's authority.**
+Read first: `DECISIONS.md` 2026-09-07 `R-PRODUCT-ATTRIBUTES` entries (seven, and the fingerprint one bears directly); main §6.3, §6.4, §6.5, §14.1.
+Done when: the founder has chosen, and a store's understanding either refreshes on a stated trigger or is deliberately known to be fixed at signup.
+
+**R-FINGERPRINT-BLAST — whether the two new columns count as the product changing** · **a founder question, same subject as `R-RESTUDY`**
+Scope: the content fingerprint decides whether a product is re-distilled. `R-PRODUCT-ATTRIBUTES` **deliberately left options and metafields out of it**, and the lane asked for this to be looked at rather than deciding it. Adding them would give every product in every store a new fingerprint on the first pass after deploy — **which reads as "the whole catalogue changed": a model call per product per store, a change event per product, and a regrouping for everyone, all at once.**
+Against that: with them out, a merchant who fixes their size axis or adds a material metafield changes nothing we notice, for ever.
+**The two questions are one question** — see `R-RESTUDY`. A sensible answer to both together may be cheaper than either alone.
+Read first: the same journal entries; main §6.3, §14.1.
+Done when: the founder has said, and the fingerprint either counts these fields or is recorded as deliberately blind to them.
+
+**R-OPTIMIZE-AXES — an article may not cite the axis names it now has** · Lane E, small
+Scope: `packages/core/src/optimize/pack.ts:109` excludes the "ways this product varies" field from what a recommendation may cite. **The reasoning was written when that field was always empty.** It now carries the merchant's own axis names — the most trustworthy attribute data in the product, because nothing about it was inferred. Whether it should be citable is a live question that has never been asked with a real value in the field.
+Read first: `DECISIONS.md` 2026-09-07 `R-PRODUCT-ATTRIBUTES` entries; main §10.3.
+Done when: the exclusion is either lifted or restated with a reason that is true of a populated field.
+
+**R-NUL-BYTE — a source file git treats as binary** · Lane B, small
+Scope: `packages/core/src/families/splitVariants.ts:151` contains a literal NUL byte inside a template literal, used as a key prefix that cannot collide with a real product title. **The intent is correct and the trick works.** The costs are that it is invisible in every editor, undocumented, and **makes git treat the whole file as binary** — tonight's merge showed it as `Bin 9457 -> 9930 bytes` instead of a diff, so no reviewer can read a change to that file.
+Read first: the surrounding code; nothing else.
+Done when: the same collision-proof prefix is achieved without a byte that makes the file unreviewable, or the byte stays and is documented *and* git is told the file is text.
+
+### From `R-OPPS-WIRE`, landed 2026-09-07 late evening, plus an integrator finding that corrects an earlier one
+
+**R-SIGNIN-SLOW — the sign-in test is not a load flake, and nobody knows what it is** · Lane F · **and it corrects this plan**
+Scope: `apps/web/app/(public)/_lib/signin-wire.test.ts` has been carried on `R-TESTDB`'s list of wall-clock-sensitive tests since this morning, on the theory that it goes red under load and green alone. **That is now disproved.** Measured by the integrator on 2026-09-07 at 23:00, running that file and nothing else: **it failed two of four runs**, timing out at exactly 5000 ms on work that takes **414 ms** when it passes. It also passed 4 of 4 earlier the same evening at a load average of 87 — the highest recorded — so it does not correlate with load in either direction. A lane reported the same: failing in isolation on a different machine.
+**Why this matters more than one test:** it is on a list that tells every future session to treat a red here as machine noise. If the cause is real, that list is actively training people to ignore it. **The list must be right or it is worse than no list.**
+**A hypothesis worth checking first, and the datum that complicates it:** the Google sign-in provider is configured by issuer only (`type: "oidc"`, `issuer: "https://accounts.google.com"`, no explicit endpoints — `@auth/core/providers/google.js:112`), so handling a sign-in request performs OIDC discovery, which is a live HTTPS fetch. That would explain a five-second stall. **But this machine reaches that endpoint in 0.2 s**, measured, so a simple "no network" explanation does not hold and something subtler is going on. **Establish the cause before changing the budget.** Raising the timeout on a test that makes a real network call would hide a genuine dependency rather than fix a flake.
+**If it is discovery: the second question is production, not the test.** Whether a merchant pressing "Continue with Google" waits on a call to Google before being redirected — and whether that result is cached across requests or fetched every time — is a real latency and availability question, and nobody has looked.
+Read first: the `R-TESTDB` card and its named six; `apps/web/app/api/auth/_lib/config.ts`.
+Done when: the cause is named rather than guessed; the test is deterministic; and this test's entry on `R-TESTDB`'s list is corrected — either removed, or restated with what actually makes it fail.
+
+**R-SKIP-TASK — "Skip this task" was removed because it never worked** · **a founder question, not yet a card**
+Scope: the drawer offered "Skip this task" beside "Mark applied". It posted to an address that has never existed, **so it has only ever failed**. `R-OPPS-WIRE` removed it rather than repair it: nothing in the contract records a task as skipped, and mapping Skip onto the endpoint that exists would record a task the merchant **declined** as one they **did** — a false record, in the table that feeds outcome measurement.
+**The decision:** should a merchant be able to skip a task? If yes it needs a new endpoint and somewhere to record it, plus a one-line revert on the screen. If no, it is already gone and the only cost is a control some designs assumed.
+Read first: `DECISIONS.md` 2026-09-07 `R-OPPS-WIRE` entries; main §10.4; ui §5.3.
+Done when: the founder has said, and the drawer either offers skipping and records it truthfully, or deliberately does not offer it.
+
+**R-CONTRACT-2 — three contract corrections the lanes could not make** · integrator
+Scope: three findings from tonight's lanes, all in the frozen contract, which no lane may touch.
+- **`GET /api/recommendations` is declared with the wrong shape.** The route table names `opportunityDetailResponseSchema`; the handler answers `{recommendation, tasks, looksApplied, appliedAt}` (`apps/web/app/api/recommendations/_lib/handlers.ts:471`). `contracts:check` passes because it checks the declarations against each other and against the existence of routes, never against what a handler returns. **Found independently by two lanes.**
+- **`markTaskAppliedRequestSchema` (`packages/core/src/api/schemas.ts:431`) is now referenced by no route** — it was the request shape for the skip address that never existed.
+- **The drawer's read does not carry the recommendation's own id**, so marking a task applied costs a second read to find it. Adding the id to the existing response removes a request from a merchant's click path.
+Read first: `DECISIONS.md` 2026-09-07 `R-CONTRACT`, `R-OPPS-WIRE` and `R-RECO-VIEW-ONE` entries.
+Done when: the declared shape matches what is served, dead schemas are gone, and the check that let a wrong declaration pass is either extended to compare handlers against declarations or recorded as a known limit with what it cannot see.
+
 ### From `R-RULES-OVERRIDES` and `R-GATE-PARAMS`, both landed 2026-09-07 late evening
 
 **R-OVERRIDE-REACH — the override command accepts more than the product honours** · one card per lane · **read this before setting an override on anything**

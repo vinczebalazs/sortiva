@@ -236,5 +236,20 @@ export const rulesOverrides = pgTable(
     updatedBy: text('updated_by').notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index('rules_overrides_key_idx').on(t.key)],
+  (t) => [
+    index('rules_overrides_key_idx').on(t.key),
+    /**
+     * `rules_overrides_scope_key` — one row per scope — is NOT declared here.
+     * It is a unique index over all four scope columns with `NULLS NOT
+     * DISTINCT`, and it is written directly in migration `0012` because this
+     * version of the schema builder cannot express that clause.
+     *
+     * The clause is the whole point rather than a detail: three of those four
+     * columns are null for a broader scope — a global override has no account,
+     * no locale and no page type — and Postgres treats two nulls as different
+     * values by default, so an ordinary unique index would accept the exact
+     * duplicate this one exists to refuse. `constraints-rules.test.ts` proves
+     * the index is really there, since nothing in this file would show it.
+     */
+  ],
 )
