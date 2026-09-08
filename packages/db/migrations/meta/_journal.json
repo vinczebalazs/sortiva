@@ -85,6 +85,13 @@
       "when": 1788539745781,
       "tag": "0011_t_wave5_article_state_and_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1788853340306,
+      "tag": "0012_t_wave6_drop_claim_staleness_and_override_key",
+      "breakpoints": true
     }
   ]
 }
