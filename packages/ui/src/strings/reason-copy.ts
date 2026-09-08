@@ -26,10 +26,39 @@ export function reasonKeysWithoutCopy(keys: readonly string[]): readonly string[
   return keys.filter((key) => !hasCopy(key))
 }
 
-/** The `{placeholders}` a sentence expects the engine to fill. */
+/**
+ * The `{placeholders}` a sentence expects the engine to fill.
+ *
+ * A sentence that changes shape with a number writes both shapes inline —
+ * `{n, plural, one {page} other {pages}}` — and the words inside are the
+ * catalogue's own, not values anybody sends. Reading them as placeholders would
+ * fail every sentence that states both forms, and would miss the one name that
+ * really does have to arrive: the number the block chooses on.
+ */
 export function placeholdersIn(reasonKey: string): readonly string[] {
   const sentence = (en as Record<string, string>)[catalogKeyFor(reasonKey)] ?? ''
-  return [...sentence.matchAll(/\{(\w+)\}/g)].map((match) => match[1]!)
+  const names: string[] = []
+  for (let i = 0; i < sentence.length; ) {
+    const plural = /^\{(\w+),\s*plural,/.exec(sentence.slice(i))
+    if (plural) {
+      names.push(plural[1]!)
+      let depth = 0
+      do {
+        if (sentence[i] === '{') depth += 1
+        else if (sentence[i] === '}') depth -= 1
+        i += 1
+      } while (i < sentence.length && depth > 0)
+      continue
+    }
+    const simple = /^\{(\w+)\}/.exec(sentence.slice(i))
+    if (simple) {
+      names.push(simple[1]!)
+      i += simple[0].length
+      continue
+    }
+    i += 1
+  }
+  return [...new Set(names)]
 }
 
 /**
