@@ -6565,3 +6565,19 @@ Mutation-checked three ways, each restored: deleting the way-back control fails 
 
 **A related gap left alone and worth a card of its own:** the confirmation says the link "works once" and says nothing about the fifteen minutes after which it lapses. That is already recorded as outstanding under `R-SIGNIN-COPY`, with the wording being drafted elsewhere.
 Nearest spec: main §4.1; ui §1; main Appendix A (which has no sign-in row); invariant 24.
+
+## 2026-09-08 — R-DISMISS-FOLLOWS-RENAME — A merchant's own renamed page stays unrecognised, and that is the answer
+
+Decision (founder, direct): leave it. A refusal follows a page only where an address change is already recognised as the same page moving — which is blog posts we published ourselves, matched by the shop's own id for that post. A merchant's own collection, product or content page that changes address is a page we have never seen, refusals included.
+
+Why, in the founder's terms and mine: matching a merchant's own page across an address change means guessing from its title, its body, or the products on it. **Being wrong means silently withholding advice about a page nobody refused** — a failure the merchant cannot see, cannot report, and would have no reason to suspect. The honest limit beats a confident guess, and it is written into the table comment and both functions so nobody reads the card's title as a wider promise.
+Nearest spec: main §7.9, §12.3.
+
+## 2026-09-08 — R-REFRESH-IGNORES-DISMISSAL — A merchant's own "refresh this article" press overrides their earlier refusal, on purpose
+
+Decision (founder, direct): the refresh request does **not** consult the not-interested list. "They asked to refresh on purpose."
+
+What this settles: `packages/jobs/src/generation/request-refresh.ts` writes work without checking the refusal list, which until tonight was incidental rather than intended — it was simply never wired, exactly like the weekly scan before it was fixed. It is now the specified behaviour, and the distinction matters: an earlier "not interested" is us inferring what a merchant wants; a press of the refresh button is the merchant telling us. **The later, explicit instruction wins.**
+
+Consequence, to make this deliberate rather than accidental: the code needs a comment saying so and a test asserting that a dismissed article can still be refreshed on request — otherwise a later reader tidying up "the one path that forgot to consult the list" will helpfully break it. Small card, Lane D's, and it is the whole reason this entry exists rather than nothing.
+Nearest spec: main §7.9, §9.6.5; invariant 10.
