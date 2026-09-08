@@ -792,7 +792,7 @@ Scope: `apps/web/app/(public)/_lib/signin-wire.test.ts` has been carried on `R-T
 Read first: the `R-TESTDB` card and its named six; `apps/web/app/api/auth/_lib/config.ts`.
 Done when: the cause is named rather than guessed; the test is deterministic; and this test's entry on `R-TESTDB`'s list is corrected — either removed, or restated with what actually makes it fail.
 
-**R-SKIP-TASK — "Skip this task" was removed because it never worked** · **ANSWERED and DONE 2026-09-08, merged as `518e306`.** The founder chose "build it properly"; it needed no migration, because the database has accepted a skipped task since schema wave 2. Server side is complete. **Still open: the button itself, a one-line revert in Lane F.**
+**R-SKIP-TASK — "Skip this task" was removed because it never worked** · **ANSWERED and DONE 2026-09-08, merged as `518e306`.** The founder chose "build it properly"; it needed no migration, because the database has accepted a skipped task since schema wave 2. Server side is complete. **The button is back too, merged as `2a3ec0a` — it turned out not to be a revert: the control is per task with no bulk form, because a skip that treated an absent task id the way apply does could wipe a whole checklist.**
 Scope: the drawer offered "Skip this task" beside "Mark applied". It posted to an address that has never existed, **so it has only ever failed**. `R-OPPS-WIRE` removed it rather than repair it: nothing in the contract records a task as skipped, and mapping Skip onto the endpoint that exists would record a task the merchant **declined** as one they **did** — a false record, in the table that feeds outcome measurement.
 **The decision:** should a merchant be able to skip a task? If yes it needs a new endpoint and somewhere to record it, plus a one-line revert on the screen. If no, it is already gone and the only cost is a control some designs assumed.
 Read first: `DECISIONS.md` 2026-09-07 `R-OPPS-WIRE` entries; main §10.4; ui §5.3.
@@ -1502,7 +1502,7 @@ Scope: `repair_loops_max` is only ever read as "less than one", so the "one repa
 **R-LOCK-NAME — the constitution named a database function the code deliberately does not use** · **ANSWERED 2026-09-08 and DONE.** The constitution was corrected; the code is unchanged. That same sentence required both a transaction-scoped lock and mid-step progress notes, which cannot both hold. See `DECISIONS.md` 2026-09-08.
 Scope: invariant 18 names `pg_advisory_xact_lock`. That function appears nowhere in the product except in two comments explaining the decision **against** it; the code uses the session-scoped lock instead, for reasons already journalled. Already flagged for reconciliation in an earlier audit and never made. It is a one-line edit to `CLAUDE.md`, which is yours and not a lane's — and worth making so the next audit does not re-find it.
 
-**R-CAP-THIRD-COPY — the competitor cap number exists three times and the third copy enforces nothing** · Lane F, tiny
+**R-CAP-THIRD-COPY — the competitor cap number exists three times and the third copy enforces nothing** · **DONE, merged as `9c27e68`** · Lane F, tiny
 Scope: two copies are locked to each other by a test; the third, in `packages/ui`, is not.
 
 ### From `R-SIGNIN-EMAIL`, landed 2026-09-08
@@ -1511,7 +1511,7 @@ Scope: two copies are locked to each other by a test; the third, in `packages/ui
 Scope: email sign-in shipped with six authored sentences — "or", "Email address", "you@yourstore.com", "Email me a sign-in link", "Sending…", and "Check your email — we've sent a sign-in link to {email}. It works once." **The approved-copy table has no sign-in row at all**, and the interface spec says only "standard flows; no invention here". The lane shipped them rather than hold the only way in for a merchant without a Google account, following the precedent already in the journal: this screen's existing wording was authored the same way in September and flagged then. Five of the six are labels a field cannot render without.
 **The sixth is worth your eye.** "It works once" is true and it is the only sentence describing how the link behaves — and it is silent about the other way a link dies: **it lapses after fifteen minutes.** A merchant who opens the message an hour later meets a failure nothing warned them about. Adding that warning is a second authored sentence, so the lane did not write it.
 
-**R-SIGNIN-DEADEND — a merchant who mistypes their address is stranded** · Lane F, small
+**R-SIGNIN-DEADEND — a merchant who mistypes their address is stranded** · **DONE, merged as `f248229`** · Lane F, small
 Scope: once the link is sent, the address field is replaced by the confirmation. Someone who typed a valid-looking but wrong address has no way back except reloading the page. New behaviour and new words, so it is a card rather than a repair.
 
 **R-NO-BROWSER-TESTS — nothing in the repository can test a click** · **a founder decision about cost, then Lane F** · **repo-wide, and it is why several of this week's screen defects reached a deployed server**
