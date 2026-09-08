@@ -13,6 +13,7 @@ import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb
 import { loadPrompt, MockLlmClient } from '@sortiva/llm'
 import { DRAFT_PROMPT_MAJOR_VERSION, JUDGE_PROMPT_MAJOR_VERSION } from './prompts'
 import type { PageFetcher } from '@sortiva/providers'
+import { rules } from '@sortiva/rules'
 import { generateArticle } from './generate-article'
 
 /**
@@ -376,6 +377,12 @@ describe.skipIf(!available)('generateArticle against real data', () => {
     expect(gate3Rows[0]!.outcome).toBe('passed')
     expect(gate3Rows[0]!.promptVersion).toBe(JUDGE_PROMPT.version)
     expect(gate3Rows[0]!.modelId).toBeTruthy()
+    // And which *numbers* judged it. This store has no override, so the stamp
+    // is the bare hash of the repo config file — the string every gate decision
+    // recorded before overrides existed carries. `gate-rules-overrides.test.ts`
+    // holds the other half: a store judged under an override stamps a version
+    // that says so.
+    expect((gate3Rows[0]!.scoresJson as { rulesVersion?: unknown }).rulesVersion).toBe(rules().rulesVersion)
     const claimRows = await db
       .select()
       .from(schema.articleClaims)
