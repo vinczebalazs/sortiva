@@ -64,7 +64,14 @@ export interface AuthConfigDeps {
   /**
    * Omitted only by tests that drive the callbacks directly. The single
    * production instantiation always supplies it, and `authWiring.test.ts`
-   * asserts that, so email sign-in cannot quietly fall off the sign-in screen.
+   * asserts that, so the server cannot quietly stop accepting a request for a
+   * sign-in link.
+   *
+   * That is the whole of what it guards. Whether a merchant is ever *offered*
+   * the link is a property of the sign-in screen, which this configuration
+   * cannot see — and for a while it was not offered: the server took requests
+   * nothing sent it. The screen's own half is held in `public.test.ts` in
+   * `packages/ui`, which renders the component and looks for the field.
    */
   readonly email?: EmailSignInDeps
 }

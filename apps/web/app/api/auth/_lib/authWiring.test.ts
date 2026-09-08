@@ -9,7 +9,15 @@ import { authDeps } from './provisioning'
  * Email sign-in is optional in the shape `buildAuthConfig` takes — tests that
  * only drive the callbacks leave it out — and an optional wiring is a wiring
  * that can be quietly dropped. These pin the one production call site, so
- * removing it takes the sign-in route off the screen *and* turns this red.
+ * removing it turns this red.
+ *
+ * **What that does not prove, because this file used to claim it did.** These
+ * assertions read a configuration object. They cannot see the sign-in screen,
+ * they stayed green for the whole life of a screen that offered only Google:
+ * the server accepted requests for a sign-in link that nothing ever sent. What
+ * a merchant is offered is held where the screen is rendered — `public.test.ts`
+ * in `packages/ui` — and the exchange between the two is driven end to end in
+ * `emailSignIn.test.ts` next door.
  */
 
 describe('the production sign-in configuration', () => {

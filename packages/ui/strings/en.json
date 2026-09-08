@@ -265,6 +265,12 @@
   "signin.google": "Continue with Google",
   "signin.googleStarting": "Taking you to Google…",
   "signin.failed": "We could not start sign-in. Please try again.",
+  "signin.or": "or",
+  "signin.emailLabel": "Email address",
+  "signin.emailPlaceholder": "you@yourstore.com",
+  "signin.email": "Email me a sign-in link",
+  "signin.emailSending": "Sending…",
+  "signin.emailSent": "Check your email — we've sent a sign-in link to {email}. It works once.",
   "signin.previewedDomain": "We'll suggest {domain} when you connect your store — nothing is claimed until you confirm it.",
 
   "plan.heading": "Confirm your plan",
