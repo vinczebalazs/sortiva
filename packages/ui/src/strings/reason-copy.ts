@@ -105,20 +105,27 @@ export const SCAN_REASON_PARAMS: Readonly<Record<string, readonly string[]>> = {
 }
 
 /**
- * Why several of those numbers go unused, which is a deliberate limit rather
- * than an oversight.
+ * Numbers the weekly scan sends that its sentences do not print, and why.
  *
- * The catalogue has no singular and plural forms, so a sentence reading
- * "{competing_urls} pages" prints "1 pages" the day a count is one. Two
- * sentences already shipped with that fault. Rather than add two more, the
- * counts that can legitimately be one are phrased around — "more than one of
- * your pages is competing" carries the same meaning and cannot read wrong —
- * and only numbers that are safe at any value are printed: positions,
- * percentages, and a monthly search volume that is never one for a query that
- * cleared the demand floor.
+ * **The reason has expired and these are now free to be rewritten.** They were
+ * phrased around because the catalogue had no singular and plural forms, so a
+ * sentence reading "{competing_urls} pages" printed "1 pages" the day a count
+ * was one; twelve sentences had shipped with that fault. The catalogue gained
+ * both forms since — a sentence states them inline as
+ * `{competing_urls, plural, one {page} other {pages}}` and the number chooses —
+ * so "more than one of your pages is competing" is a limit nothing imposes any
+ * more.
  *
- * Fixing it properly means giving the catalogue plural forms, which is a change
- * to the renderer every lane shares.
+ * Nine of the ten are genuine counts — every one of them a length or an
+ * integer the scan already measured — and want the same treatment the gate
+ * sentences just had. `reason` is the odd one out and is not a count at all: it
+ * arrives as one of two machine tokens naming why a page is missing from
+ * Google, so it needs a sentence per token rather than a plural form, and that
+ * is a different piece of work.
+ *
+ * Rewriting them is deliberately not done here — it is a change to what a
+ * merchant reads on the product's central screen, and it belongs in a card of
+ * its own rather than riding along with the gate copy.
  */
 export const COUNTS_PHRASED_AROUND: readonly string[] = [
   'impressions',
@@ -218,8 +225,14 @@ export const GATE_REASON_PARAMS: Readonly<Record<string, readonly string[]>> = {
  * measurements into an audit column one level below where the read-back looks,
  * and Gate 2 recorded none at all. All three are fixed, so a held day now fills
  * both of its sentences — why it was planned, and why it was stopped — from the
- * same measurements. The sentences themselves are still written without numbers
- * and gaining them is a copy edit, not a plumbing one.
+ * same measurements, and six of the sentences carry those measurements today.
+ *
+ * Three values are still deliberately unprinted. `winnability` and
+ * `boilerplate_ratio` arrive as fractions — 0.83, not 83 — and a merchant
+ * reading "0.83" learns nothing; printing them as percentages means the gate
+ * sending a percentage, not the copy dividing. `via` names which of our data
+ * sources found the page (`gsc`, `content_mapping`, `limited_intelligence`) and
+ * is machine vocabulary rather than English.
  *
  * The table stays because it is the contract the copy is written against: a
  * sentence asking for something no producer sends still fails the test below,
