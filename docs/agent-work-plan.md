@@ -811,6 +811,23 @@ Scope: a recommendation may only suggest copy that points at a named fact about 
 Read first: `DECISIONS.md` 2026-09-08 `R-OPTIMIZE-AXES`; main §8.4, §10.3; invariant 11.
 Done when: the grader judges grounding against the same evidence the writer was given — or the difference is deliberate, named, and cannot silently confirm a claim about a withheld field. A test should fail if the two sets drift apart again, because they are assembled in two places and nothing compares them.
 
+### From `R-OVERRIDE-REACH`, landed 2026-09-08
+
+**R-MANUAL-TOPIC-LOCALE — a topic a merchant types in is judged by the wrong market's numbers** · Lane D
+Scope: the numbers a gate judges by can be set per language — a Danish store should meet a Danish demand floor. **The route a merchant adds a topic through passes no language at all** (`apps/web/app/api/calendar/topics/_lib/add.ts:78-93`), so a hand-added topic has always been judged by the global defaults whatever market the store sells in. Pre-existing, found by `R-OVERRIDE-REACH` and correctly left alone as outside its done-when.
+**It got worse in a small way yesterday, which is why it is worth a card now rather than a note:** the same omission means an override row aimed at a *language* will not reach that gate either. Rows aimed at the store, or at every store, do — so the failure is partial and therefore easy to miss when testing.
+Read first: `DECISIONS.md` 2026-09-08 `R-OVERRIDE-REACH`; main §6.5 (locale), §8.2; invariant 9.
+Done when: a topic added by hand is judged by the store's own market, and a test proves a store in one market gets a different answer from a store in another for the same topic.
+
+**R-OVERRIDE-REACH-2 — the last two threshold readers, and the command that promises more than it delivers** · Lane D (the readers) + Lane C (the command)
+Scope: the remainder of `R-OVERRIDE-REACH`, named by the lane that did the gates.
+- **Two readers still take their numbers straight from the file and stamp the bare hash**: `packages/jobs/src/generation/request-refresh.ts:101,176` and `packages/jobs/src/drift/sweep.ts:103,183`. They produce **opportunities** rather than gate decisions, which is why they were outside the gate card's done-when — but an override does not reach them, and the row they write says it was judged by the defaults.
+- **`pnpm rules set` still accepts a key nobody honours** (`scripts/rules-override.mjs`). That is the cheap half named when the reach problem was first carded, and it is now cheaper still: **the gate keys can come off whatever list it refuses against**, because the gates honour them.
+Read first: `DECISIONS.md` 2026-09-07 `R-RULES-OVERRIDES` (all seven) and 2026-09-08 `R-OVERRIDE-REACH`; main §7.10; invariant 9.
+Done when: every path that reads a threshold either honours an override and stamps a version that says so, or the command refuses to set a key that path would ignore — and which is which is written down rather than discovered.
+
+**For the next schema wave, requested by `R-OVERRIDE-REACH`:** `gate_decisions` has **no `rules_version` column**. The version is stamped inside the free-form audit column beside the rest of the gate's record, which is where the topic gate already put it. It works, and anything that later reads versions in bulk — the calibration review, an audit — will be reading JSON rather than an indexed column. Not urgent; worth carrying into the wave that has another reason to exist.
+
 **R-JUDGE-SEES-MORE — the same hole in the article path, one lane over** · Lane D · **found by `R-GRADER-SEES-MORE` while closing its twin**
 Scope: exactly the shape just closed for recommendations, still open for articles. The article judge is rendered **every non-empty fact-sheet field** (`packages/core/src/gates/gate3/judge.ts:84-93`), while the article writer is shown only an approved claim list built from the ten text-derived fields (`packages/core/src/generation/claims.ts:95`). So the judge can confirm a claim against evidence the writer never had.
 **How the two fields differ today, and why that is not reassurance:** the option-axis names leak as readable strings. The price range leaks as the literal text `[object Object]`, because the renderer calls `String()` on a `{min, max}` object — **so no figure is exposed today, and one would be exposed the moment that shape changes.** A defect that is harmless because of a rendering accident is not fixed; it is waiting.
