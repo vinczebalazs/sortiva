@@ -14,10 +14,17 @@ export type NotificationType = NotificationRow['type']
 export type EmailSendRow = typeof emailSends.$inferSelect
 
 /**
- * Append-only records with a unique `(account_id, type, dedupe_key)`. Workers
- * that may run twice will attempt duplicate
- * inserts; the constraint makes the second a no-op, which is what stops a
- * retried publish job ringing the bell twice.
+ * What a notification says is written once and never rewritten. A unique
+ * `(account_id, type, dedupe_key)` is what makes that safe under retries:
+ * workers that may run twice attempt duplicate inserts, and the constraint
+ * makes the second a no-op, so a retried publish job does not ring the bell
+ * twice.
+ *
+ * Two things below do write to an existing row, and both leave every word of
+ * it alone: the bell's seen/read timestamps, which are facts about the reader,
+ * and the retention sweep in `lifecycle.ts`, which removes rows past the
+ * window. `notifications-append-only.test.ts` beside this file is what stops a
+ * third appearing — and says what it cannot see.
  *
  * Returns the row on first write and `undefined` when the notification already
  * existed, so callers can tell "emitted" from "already emitted" without a

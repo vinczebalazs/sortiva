@@ -5916,3 +5916,17 @@ Nearest spec: main §14.5, §14.7 ("PostHog is telemetry and alerting, not the c
 Decision: the comment at the top of `packages/core/src/contracts/spend.test.ts` said those tests covered "the port's own rules" including that analytics is never the control plane. The four tests below it cover which attribution column is set, a negative cost, a cache hit recorded as free, and a ledger outage that must not fail the job. The comment now says that, and points at the file where the control-plane rule is actually checked.
 Why: an over-claiming comment is worse than no comment. The audit found this one while looking for the mechanism it described, which did not exist.
 Nearest spec: main §14.7; invariant 17.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — CONTRADICTION: "notifications are append-only" is not true of the product, and cannot be made true without changing behaviour
+Not a decision. The constitution's invariant 26 says notifications are append-only records. The shipped product updates and deletes them, in three places, all of them deliberate and all of them needed:
+1. **Opening the bell writes `seen_at`, clicking an item writes `read_at`** (`markNotificationsSeen`, `markNotificationRead`). Without these the badge never clears.
+2. **The nightly retention sweep deletes notifications older than the retention window** (`pruneNotifications`). Keeping them for ever is what the retention policy forbids.
+3. **Deleting an account removes its notifications**, through the foreign key's cascade. Required for deletion to mean deletion.
+So the property that is actually true, and worth defending, is narrower: **what a notification says is written once and never rewritten, and nothing removes one except retention and account deletion.** That is what the new check enforces. The invariant's wording needs correcting to match, which is the founder's or integrator's call, not mine.
+Nearest spec: tech §1 (notifications, retention); main §14.6 (deletion); invariant 26.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — Append-only is enforced by a source check; making it true at the database needs a migration
+Decision: `packages/db/src/repositories/notifications-append-only.test.ts` reads every shipping file and fails, by name, on any update or delete against the notifications table that is not one of the three permitted writes above, and on any permitted update that sets a column other than the two read-state timestamps. Each permitted write carries a written reason. The check also asserts it found writes at all, so a rename or a broken walk fails rather than quietly passing over an empty list.
+What it cannot do, and this is the part the card asked to be said out loud: it stops code we write. It does not stop anyone holding a database connection — a migration, an admin script, a psql session. Making the database itself refuse an update or a delete means `REVOKE UPDATE, DELETE` on the table for the application role, or a trigger, and either is a migration. **Schema waves are closed, so this is the integrator's call and is not taken here.** Note that a plain revoke would also break the two writes the product needs, so the real form is a trigger that permits only the read-state columns and the retention sweep's role — more machinery than a revoke, and worth deciding on rather than assuming.
+Mutation-checked twice: a repository function that rewrites a notification's payload fails two of the checks by name, and a raw `DELETE FROM notifications` in an unrelated file fails one.
+Nearest spec: tech §1; invariant 26.
