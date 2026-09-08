@@ -12,6 +12,7 @@ import {
   signalNamesWithoutCopy,
   signalNamesNothingBuilds,
   REPAIR_REASON_PARAMS,
+  UNRECORDED_REASON_PARAMS,
   placeholdersIn,
   reasonKeysWithoutCopy,
   repairReasonKeys,
@@ -266,6 +267,48 @@ describe('the topic admission reasons', () => {
     expect(
       renderTemplatedLine({ templateKey: 'gate1.converted_existing_target_optimize', params: {} }).text,
     ).toBe(t('appendixA.existingPageWhyLine'))
+  })
+})
+
+/**
+ * The admission a held day carries when the row that stopped it recorded no
+ * reason of its own.
+ *
+ * This key reached a merchant's screen before it reached this file, and looked
+ * like a working screen while it did — the renderer's own "not available yet"
+ * line is indistinguishable from a sentence somebody wrote. That is the fault
+ * this file exists to catch, so the key is listed here and its sentence is held
+ * to the same standard as every other.
+ */
+describe('the reason we did not record', () => {
+  it('reaches the merchant as words rather than as the renderer giving up', () => {
+    const line = renderTemplatedLine({ templateKey: 'gate.reason_unrecorded', params: {} })
+    expect(line.known, 'gate.reason_unrecorded fell through to the "no reasoning yet" line').toBe(
+      true,
+    )
+    expect(line.text).not.toBe(t('opportunities.whyUnavailable'))
+    expect(line.text.trim().length).toBeGreaterThan(0)
+  })
+
+  it('never says what a gate would have said', () => {
+    // The sentence it replaced: borrowing it told a merchant their product
+    // descriptions were too thin, under a heading naming a check that never
+    // looked at them.
+    const line = renderTemplatedLine({ templateKey: 'gate.reason_unrecorded', params: {} })
+    expect(line.text).not.toBe(t('appendixA.qualityRejectionRichness'))
+  })
+
+  it('has no blanks, because the calendar sends it nothing to fill them with', () => {
+    // The route passes an empty bag on purpose — what the row did measure
+    // belongs to the sentence that was never written. A blank here would print
+    // to a merchant as `{keyword}`.
+    expect(placeholdersIn('gate.reason_unrecorded')).toEqual([])
+    expect(UNRECORDED_REASON_PARAMS['gate.reason_unrecorded']).toEqual([])
+  })
+
+  it('is counted among the keys the product produces', () => {
+    expect(GATE_REASON_KEYS).toContain('gate.reason_unrecorded')
+    expect(Object.keys(UNRECORDED_REASON_PARAMS)).toEqual(['gate.reason_unrecorded'])
   })
 })
 

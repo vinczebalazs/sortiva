@@ -1,4 +1,4 @@
-import { t as defaultTranslate, type StringKey, type Translate } from '../strings'
+import { criteriaNamed, t as defaultTranslate, type StringKey, type Translate } from '../strings'
 import type { TemplatedLine } from './types'
 
 /**
@@ -54,9 +54,14 @@ const ALIASES: Readonly<Record<string, StringKey>> = {
  *
  * `gate1.`, `gate2.` and `topic.` are listed alongside `gate3.` because they
  * come from the same producers and belong in the same place. Their sentences
- * are written now too, so all four namespaces resolve to real copy.
+ * are written now too, so all five namespaces resolve to real copy.
+ *
+ * Bare `gate.` is the fifth, and holds what is true of a held day whichever
+ * check stopped it — today only the admission that the row recorded no reason
+ * of its own. It is kept apart from the numbered namespaces exactly because a
+ * sentence there must not read as one particular check's finding.
  */
-const CATALOG_NAMESPACES: readonly string[] = ['gate1.', 'gate2.', 'gate3.', 'topic.']
+const CATALOG_NAMESPACES: readonly string[] = ['gate.', 'gate1.', 'gate2.', 'gate3.', 'topic.']
 
 /** Where an engine template key lives in the catalogue. */
 export function catalogKeyFor(templateKey: string): string {
@@ -64,6 +69,38 @@ export function catalogKeyFor(templateKey: string): string {
   if (alias) return alias
   if (CATALOG_NAMESPACES.some((namespace) => templateKey.startsWith(namespace))) return templateKey
   return `template.${templateKey}`
+}
+
+/**
+ * Values that arrive as the engine's own name for something rather than as a
+ * measurement, and the catalogue lookup that turns each into words.
+ *
+ * Nearly everything a why-line interpolates is a number, and a number reads the
+ * same in every language. `failed_criteria` is the exception: it arrives as the
+ * quality judge's own identifiers, so a merchant whose article was held back
+ * read "didn't meet our bar on informationGain".
+ *
+ * It is mapped here, in the one function every why-line goes through, for two
+ * reasons. The producing side cannot do it — a gate and a route handler have no
+ * idea which language the store reads, and putting the words there would put
+ * copy outside the catalogue. And a screen doing it for itself is how the
+ * article page came to name these correctly while the calendar did not.
+ */
+const LABELLED_PARAMS: Readonly<
+  Record<string, (value: string | number, t: Translate) => string>
+> = {
+  failed_criteria: criteriaNamed,
+}
+
+function inMerchantWords(params: TemplatedLine['params'], t: Translate): TemplatedLine['params'] {
+  let mapped: Record<string, string | number> | null = null
+  for (const [name, label] of Object.entries(LABELLED_PARAMS)) {
+    const value = params[name]
+    if (value === undefined) continue
+    mapped ??= { ...params }
+    mapped[name] = label(value, t)
+  }
+  return mapped ?? params
 }
 
 export interface RenderedLine {
@@ -86,7 +123,7 @@ export function renderTemplatedLine(
   if (!line) return { text: t('opportunities.whyUnavailable' as StringKey), known: false }
   const key = catalogKeyFor(line.templateKey)
   try {
-    return { text: t(key as StringKey, line.params), known: true }
+    return { text: t(key as StringKey, inMerchantWords(line.params, t)), known: true }
   } catch {
     return { text: t('opportunities.whyUnavailable' as StringKey), known: false }
   }

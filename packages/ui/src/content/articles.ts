@@ -120,22 +120,10 @@ export function checkPublishedUrl(raw: string, claimedDomain: string): Published
 
 // ── The quality report ──────────────────────────────────────────────────────
 
-/**
- * A criterion's name, in words. Anything the catalogue has no entry for is
- * spelled out from its own name rather than shown as a code — the judge's
- * criteria are the engine's to name, and a new one arriving before its wording
- * does is a real possibility.
- */
-export function criterionLabel(criterion: string, t: Translate = defaultTranslate): string {
-  try {
-    return t(`content.article.quality.criterion.${criterion}` as StringKey)
-  } catch {
-    return criterion
-      .replace(/([a-z])([A-Z])/g, '$1 $2')
-      .replace(/[_-]+/g, ' ')
-      .replace(/^./, (char) => char.toUpperCase())
-  }
-}
+// `criterionLabel` used to live here, and moved to `../strings/labels` when the
+// sentence explaining a held calendar day needed the same names. The article
+// page was not the only surface naming a criterion, and the surface that came
+// second is the one that shipped showing a merchant `informationGain`.
 
 /** What happened to an article, in words. Unknown events read as themselves. */
 export function articleEventLabel(event: string, t: Translate = defaultTranslate): string {

@@ -1162,6 +1162,7 @@
   "gate2.held_thin_pack": "Before writing, we gather everything your store says about the products a topic covers. What came back held {distinct_claims} distinct {distinct_claims, plural, one {point} other {points}} — we look for at least {distinct_claims_min}, and for points that belong to individual products rather than repeating across all of them. So we stopped rather than draft an article with little to say.",
   "topic.auto": "We planned this one from your growth opportunities.",
   "topic.manual_addition": "You added this topic yourself.",
+  "gate.reason_unrecorded": "We stopped this one at the check named here, but didn't record why. That's a gap in our own records rather than anything we found in your store.",
 
   "content.override.action": "Publish anyway",
   "content.override.heading": "Publish against our recommendation?",

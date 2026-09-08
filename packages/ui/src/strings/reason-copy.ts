@@ -264,6 +264,24 @@ export const ADMISSION_REASON_PARAMS: Readonly<Record<string, readonly string[]>
 }
 
 /**
+ * The one explanation on a held day that no gate wrote.
+ *
+ * A gate decision row stores the key of its own sentence, and a row can carry
+ * none. The calendar used to answer that hole with Gate 1's key, which resolves
+ * to a specific finding about the merchant's product descriptions — presented
+ * under whichever check actually stopped the day, and indistinguishable on
+ * screen from a reason we had measured. The calendar sends this key instead,
+ * and the sentence behind it admits the gap rather than inventing a cause.
+ *
+ * It carries no values on purpose: what the row did measure belongs to the
+ * sentence that was never written, not to this one, so a blank here could only
+ * print raw.
+ */
+export const UNRECORDED_REASON_PARAMS: Readonly<Record<string, readonly string[]>> = {
+  'gate.reason_unrecorded': [],
+}
+
+/**
  * Every reason a gate can put on a held day or a held article, and every
  * why-line a calendar chip can carry.
  *
@@ -282,6 +300,7 @@ export const ADMISSION_REASON_PARAMS: Readonly<Record<string, readonly string[]>
 export const GATE_REASON_KEYS: readonly string[] = [
   ...Object.keys(GATE_REASON_PARAMS),
   ...Object.keys(ADMISSION_REASON_PARAMS),
+  ...Object.keys(UNRECORDED_REASON_PARAMS),
 ]
 
 /**

@@ -2,14 +2,13 @@
 
 import { useMemo, useState } from 'react'
 import { useUiAnalytics } from '../analytics'
-import { t as defaultTranslate, type StringKey, type Translate } from '../strings'
+import { criterionLabel, t as defaultTranslate, type StringKey, type Translate } from '../strings'
 import { formatDate } from '../opportunities/list'
 import type { PostOutcome } from '../opportunities/actions'
 import {
   articleActions,
   articleEventLabel,
   articleStateLabel,
-  criterionLabel,
   failingCriteria,
 } from './articles'
 import { saveFile } from './ArticlesScreen'
