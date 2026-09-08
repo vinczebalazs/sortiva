@@ -20,8 +20,16 @@ import {
  * API will not produce.
  */
 
-const NOW = '2026-02-02T09:00:00.000Z'
-const TODAY = '2026-02-02'
+/**
+ * The moment these answers describe. Exported because anything driving a screen
+ * against them has to move its own clock here as well: a calendar or a chart
+ * drawn around a different "today" has no cell for any of this to land in, and
+ * draws an empty grid instead.
+ */
+export const FIXTURE_NOW = '2026-02-02T09:00:00.000Z'
+
+const NOW = FIXTURE_NOW
+const TODAY = FIXTURE_NOW.slice(0, 10)
 
 const opportunityFixture = (source: (typeof fixtureOpportunities)[number]) => ({
   id: source.id,

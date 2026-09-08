@@ -1670,6 +1670,22 @@ Note: the stale header comment must be corrected or deleted as part of this. A c
 > asserts up front that it found files to check before forbidding anything, and its
 > end-to-end test *measures* that the search provider recorded zero calls rather than
 > asserting it.
+### Found by `R-SCREEN-READS`, 2026-09-08
+
+**R-ATTENTION-REFS — four of the five "needs you" links on the dashboard go to the wrong page** · Lane F (the screen) or Lane B (the store) — **whoever owns it, the spelling has to be picked once** · live and user-facing
+
+Scope: the dashboard's "needs you" list gives every item a link, and picks where it goes from the identifiers the item carries. **The server sends those identifiers under snake-case names and the screen reads camel-case ones, so no link is ever matched.** The server: `packages/db/src/stores/notifications.ts:60,69,75` and `packages/db/src/repositories/notifications.ts:222,257` — `article_id`, `opportunity_id`. The screen: `packages/ui/src/dashboard/dashboard.ts:210,212` — `refs.articleId`, `refs.opportunityId`.
+
+**What a merchant loses.** The link never breaks outright — it falls through to a default chosen by item kind — so the damage is quiet. A draft waiting for review opens the whole articles library instead of that draft. An unconfirmed export URL and a pending repair both land on the content page rather than the article that needs fixing. An unapplied recommendation lands on the content page rather than the opportunity it belongs to. Only the merchant-task item is right, and only because it is routed by kind rather than by identifier.
+
+**Why nothing caught it, which decides where the second half of this card goes.** The mock server the frontend develops against writes the camel-case spelling (`packages/ui/src/msw/fixtures.ts`, `GET /api/attention`), so every link works in development. And both spellings are legal against the declaration, which types these as an object with any string keys — so the endpoint-answer check and the screen-read check are each blind to it by construction, and will stay blind after this is fixed.
+
+Read first: `DECISIONS.md` 2026-09-08 `R-SCREEN-READS` (all six, especially the open-map limit); `packages/core/src/notifications/refs.ts`, which requires stored reference keys to be snake-case identifiers and is the strongest argument for which spelling wins; ui §3.
+
+Done when: a merchant pressing one of these items lands on the thing that needs them; the mock answer spells the identifiers the way the server does, so development stops disagreeing with production; and something fails if the two spellings part again — a check over this one endpoint's identifiers, since the general check cannot see inside an open map.
+
+---
+
 **T10.3 — DECISIONS drift check + spec-contradiction hunt** — auditor session; classify every entry, propose spec edits for class b, escalate class c; hunt stale cross-refs between the three specs. Done when: no class-c entries stand; spec-keeper approved edits applied to `/docs`.
 **T10.4 — Dev-store smoke suite & app-listing checklist** — tech §6; main §14.6 (GDPR webhooks), §6.2. Done when: OAuth (read, then write), sync, two-phase publish, webhook HMAC, `shop/redact`, `customers/*` all pass against the dev store; Shopify app-listing requirements checklist complete.
 
