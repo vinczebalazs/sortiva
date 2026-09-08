@@ -6431,3 +6431,22 @@ Card `R-PUBLISH-ATTEMPTS`, Lane D, the writing half. The table landed with `T-WA
 
 Mutation-checked, each restored afterwards: dropping the record from the send's failure branch fails four tests by name; moving the success record to the far side of the crash point fails the chaos suite with "found []"; collapsing every failure class to one constant fails six; deleting the abandonment record fails the two-rows-for-two-endings test; and pointing the two constraint tests at rows the database permits fails both, so they are about the check constraint rather than about throwing in general.
 Nearest spec: main §14.3.7, §14.4, §14.5; invariants 19 and 22; `DECISIONS.md` 2026-09-08 `T-WAVE7` (what one attempt records).
+
+## 2026-09-08 — R-PUBLISH-ATTEMPTS — The publishing brake reads real attempts, and the repository's last stand-in is deleted
+
+Card `R-PUBLISH-ATTEMPTS`, Lane D, the reading half. The writer landed first, deliberately: wiring this before rows existed would have swapped a counter that says "I can see nothing" for one reporting a healthy zero through an outage.
+
+**What the brake now counts.** Every attempt to post an article, across every store, inside the window — one hour, from `packages/rules`, along with the ceiling; there is no number in the job code. Across every store rather than per store because the switch it raises stops publishing for everybody, so the question it answers is whether the platform is having a bad day.
+
+**A refusal and an abandonment are failures; "we could not tell" is not.** The article did not go out in either of the first two cases, and it is the refusals that carry the shape of an outage. An uncertain attempt may be sitting on the merchant's blog right now, and counting it would pause publishing for every store the first time a network went flaky.
+
+**Uncertain attempts stay in the total, which was the one real choice here.** Dropping them from the denominator as well would be defensible — the fraction would then be "of the attempts we could judge" — and it is the more trigger-happy reading: six refusals in an hour that also held twenty-four dropped connections would become six of six rather than six of thirty, and stop publishing for everybody on an hour that was mostly one bad network. Keeping them in means a long spell of uncertainty can only ever make this brake *slower* to fire, never quicker, and never hides a refusal storm, because a storm raises the numerator too. The consequence worth knowing: an outage that presents entirely as timeouts rather than refusals will not raise this switch. The alert on abandoned publishes is what catches that shape, and it is unchanged.
+
+**Where the counter is built.** Inside the sweep, from the database handle it already holds, exactly like the quality counter beside it — a default that needs no wiring cannot be forgotten the way this one was for months. Tests still override it to hand the arithmetic a rate directly.
+
+**The stand-in is deleted rather than left unconstructed.** `UnrecordedPublishOutcomes` is gone from the code, from `pnpm stubs:report` — which now lists nothing at all — and its finding is gone from `WIRED_IN_PRODUCTION` in `seams-wired.test.ts`, which is that record's own rule: it asserts each finding is still exactly true, so repairing the wiring turns the file red until the record comes down.
+
+Mutation-checked, each restored afterwards: counting uncertain attempts as failures fails two tests; dropping them from the total fails the one written for that; treating an abandonment as a non-failure fails the abandonment test; ignoring the time window fails the history test; and making the counter answer "not measurable" fails three, including the one that watches the switch go up.
+
+**Touched outside Lane D's directories, and named here so the integrator expects it:** `packages/core/src/ops/{counters,index}.ts` and `packages/jobs/src/sweeps/auto-trips.ts` (Lane G's operations sweep — the card requires the brake to read the table), plus `scripts/stub-report.mjs` and `packages/core/src/contracts/seams-wired.test.ts`, which no lane owns and which the card names outright.
+Nearest spec: main §14.4, §14.5 (the trip), §7.10 (the ceilings live in `packages/rules`); invariants 9, 17, 22.
