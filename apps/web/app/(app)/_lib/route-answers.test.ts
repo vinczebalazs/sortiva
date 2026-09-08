@@ -293,14 +293,9 @@ interface KnownMismatch {
 }
 
 const KNOWN_MISMATCHES: Readonly<Record<string, KnownMismatch>> = {
-  'POST /api/gsc/oauth/start': {
-    issues: ['url: Invalid input: expected string, received undefined'],
-    why:
-      'The handler answers `{ redirectUrl }`; the contract, and the Shopify install route beside ' +
-      'it, say `{ url }`. The Settings screen reads `body.url` and throws when it is missing, so ' +
-      '"Connect Search Console" fails there on a deployed server; the onboarding step reads ' +
-      'either name and works. Handler: apps/web/app/api/gsc/_lib/handlers.ts:42.',
-  },
+  // Empty, and that is the healthy state. Every endpoint driven below answers
+  // what it declares. An entry goes in here only when a mismatch is found that
+  // the finder is not the owner of, and comes out in the commit that fixes it.
 }
 
 const DRIVERS: Readonly<Record<string, Driver>> = {

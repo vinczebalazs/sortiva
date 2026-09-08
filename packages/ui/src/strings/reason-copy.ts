@@ -101,7 +101,10 @@ export const SCAN_REASON_PARAMS: Readonly<Record<string, readonly string[]>> = {
   'product_family_coverage_gap.create': ['family', 'revenue_share'],
   'missing_or_weak_metadata.optimize': ['missing_fields', 'duplicate_fields'],
   'existing_page_intent_gap.optimize': ['position', 'missing_subtopics'],
-  'indexing_issue.fix': ['reason'],
+  // No numbers at all: the machine word that told the two conditions apart is
+  // now what picks between two sentences rather than something printed.
+  'indexing_issue.fix_not_indexed': [],
+  'indexing_issue.fix_canonical': [],
 }
 
 /**
@@ -116,12 +119,11 @@ export const SCAN_REASON_PARAMS: Readonly<Record<string, readonly string[]>> = {
  * so "more than one of your pages is competing" is a limit nothing imposes any
  * more.
  *
- * Nine of the ten are genuine counts — every one of them a length or an
- * integer the scan already measured — and want the same treatment the gate
- * sentences just had. `reason` is the odd one out and is not a count at all: it
- * arrives as one of two machine tokens naming why a page is missing from
- * Google, so it needs a sentence per token rather than a plural form, and that
- * is a different piece of work.
+ * All nine are genuine counts — every one of them a length or an integer the
+ * scan already measured — and want the same treatment the gate sentences just
+ * had. The tenth, `reason`, has left this list: it was never a count, but one
+ * of two machine tokens naming why a page is missing from Google, and the scan
+ * now picks a sentence per token instead of offering the token to one sentence.
  *
  * Rewriting them is deliberately not done here — it is a change to what a
  * merchant reads on the product's central screen, and it belongs in a card of
@@ -137,7 +139,6 @@ export const COUNTS_PHRASED_AROUND: readonly string[] = [
   'missing_fields',
   'duplicate_fields',
   'missing_subtopics',
-  'reason',
 ]
 
 /** The only two numbers the repair path hands the renderer. */
@@ -166,7 +167,8 @@ export const OPPORTUNITY_REASON_KEYS: readonly string[] = [
   'quality_rejection.insufficient_richness',
   'missing_or_weak_metadata.optimize',
   'existing_page_intent_gap.optimize',
-  'indexing_issue.fix',
+  'indexing_issue.fix_not_indexed',
+  'indexing_issue.fix_canonical',
   // A published article of ours the merchant asked us to rewrite.
   'freshness_opportunity.requested',
   'freshness_opportunity.our_own_article',

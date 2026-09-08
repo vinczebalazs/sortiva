@@ -5649,3 +5649,36 @@ Nearest spec: main §14.4, §14.7.
 Decision: the sanity check asserting the report still constructs at least one stand-in is replaced by one that proves the parser works on a sample. With the judge entry retired, no `Stub*` is on the report at all — and the old assertion read that as a broken check rather than as the goal being reached, failing the moment the last stand-in was replaced.
 Worth recording because the shape recurs: a guard that proves it is looking at something real by requiring an outstanding defect to exist will fail on the day the defect is fixed. Prove the mechanism against a sample; assert the absence separately.
 Nearest spec: main §14.7.
+## 2026-09-08 — R-GSC-URL-FIELD — The handler is the one that moves, and it keeps the internal name it always had
+Decision: `POST /api/gsc/oauth/start` now answers `{ url }`. The core function behind it still returns `{ redirectUrl }`; only the JSON the browser receives changed. Nothing else was touched: the declaration stays as it was, and the Shopify install route beside it was already right.
+Why the handler rather than the declaration: four things already said `url` — the frozen contract, the sibling route that starts the Shopify install, the Settings screen, and the onboarding screen's preferred branch — and one thing said `redirectUrl`. Changing the declaration would have meant changing the two screens and the sibling route to match a name only this handler used.
+Why the internal name stayed: `startGscConnect` returns `redirectUrl` and is used by tests inside `packages/core`. Renaming it would have spread a wire-format fix into domain code for no gain; the handler is where the wire format is decided, so that is where the translation lives.
+Nearest spec: tech §3 (API conventions); main §6.7.
+
+## 2026-09-08 — R-GSC-URL-FIELD — The handler's own test parses with the contract's schema instead of naming the field
+Decision: the connect-button test in `apps/web/app/api/gsc/_lib/gsc.test.ts` looks the endpoint up in the route table, asserts the table still declares it as a plain redirect answer, and parses the response with that declaration rather than reading a field name written out in the test.
+Why: the fault this card fixes was a field name that existed correctly in four places and wrongly in one, and the endpoint's own test was the fifth place — it read `redirectUrl` and passed, which is how a broken button reached a deployed server with a green suite. A test that restates the name it is checking cannot catch the name being wrong. Parsing with the declaration means the endpoint's test fails the moment the endpoint and the contract disagree, without waiting for the whole-repo contract suite to run.
+Nearest spec: tech §3; `DECISIONS.md` 2026-09-08 `R-CONTRACT-PROVE` (the suite that found this).
+
+## 2026-09-08 — R-GSC-URL-FIELD — The onboarding step reads one field name, and a wrong answer now shows the merchant a failure
+Decision: the onboarding Search Console card no longer accepts either `url` or `redirectUrl` from the connect endpoint. It reads `url`, and anything else lands in the step's existing "couldn't start" state.
+Why: accepting two names meant the one screen that would have reported the broken endpoint reported nothing instead, so the Settings screen — which never hedged — was the only place the fault was visible, and it is the place a merchant reaches later. Verified before removing it: the handler now answers `url`, the browser-test fixture for this endpoint already answered `url`, and the Settings screen already read only `url`.
+What it costs: if this endpoint ever regresses, onboarding shows a visible failure rather than quietly working. That is the intent — a silent success on a wrong answer is what hid this for months.
+Nearest spec: main §6.7 (the step is skippable, and a failure to start is not a dead end); tech §3.
+
+## 2026-09-08 — R-INDEXING-SPLIT — The machine word picks the sentence instead of being offered to one
+Decision: the weekly scan now emits `indexing_issue.fix_not_indexed` or `indexing_issue.fix_canonical` and sends no parameters at all, replacing the single key `indexing_issue.fix` that carried the machine word `not_indexed` / `canonical_mismatch` as a value. The code that chooses is a `switch` over the two codes with a compile-time exhaustiveness guard, so a third code cannot be added without someone writing its sentence.
+Why not one sentence with a parameter: the value is a machine token, so a sentence that printed it would say "canonical_mismatch" to a merchant. That is why the copy card wrote one sentence covering both conditions, and why it could go no further from its own side.
+Why two sentences rather than a richer single one: a page Google has never indexed and a page Google is folding into another of the merchant's own are different problems with different remedies — the first is "find out why Google will not take this page", the second is "decide which of your pages should be the main one". The task text under the card already split on exactly this distinction; only the explanation did not.
+Nearest spec: main §7.3 (the taxonomy carries these as two rows), §11 (the technical layer's two remedies), §7.1 (the why-line renders from templates, never from a model).
+
+## 2026-09-08 — R-INDEXING-SPLIT — The split is proved from the merchant's side, because the params guard cannot see it
+Decision: a new test in `apps/web/app/api/opportunities/_lib/indexing-reason.test.ts` drives the engine's own reason function with both conditions and renders each answer through the real catalogue, asserting the two read as different sentences, that neither falls through to "the reasoning isn't available yet", and that no machine word or unfilled placeholder reaches the text.
+Why it exists on top of the guards already there: the existing guard compares the numbers a sentence asks for against the numbers the scan sends. Both of these sentences ask for nothing, so that guard passes whether or not the two keys are actually different sentences — the exact thing this card changed is invisible to it. The check also cannot live in `packages/core`, which never sees the words.
+Why it sits in the web app rather than in `packages/ui`: it needs both sides at once, and the endpoint directory is where this lane's cross-side checks already live.
+Nearest spec: main §7.1; invariant 8.
+
+## 2026-09-08 — R-INDEXING-SPLIT — Two files outside this lane were changed, and here is the reason
+Decision: the sentences (`packages/ui/strings/en.json`) and the hand-kept list that mirrors the engine's keys (`packages/ui/src/strings/reason-copy.ts`) were edited from this lane, although `packages/ui` belongs to the front-end lane.
+Why: the card's done-when requires the two conditions to "read as two different sentences", and the catalogue is the only place in the repository a sentence may live. Leaving them would have landed two keys with no words behind them — the precise fault this week has been spent closing — and would have left the mirror list naming a key the engine no longer emits. Neither file is among the ones the concurrently running front-end lane was told to work in. Flagged in the session report for the integrator rather than assumed.
+Nearest spec: `CLAUDE.md` (a lane owns its directories; copy lives in `packages/ui/strings/*.json` only).

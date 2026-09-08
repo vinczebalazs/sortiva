@@ -39,7 +39,9 @@ export function makeGscStartHandler(options: GscHandlerOptions = {}): AccountHan
       state: createOAuthState(scope.accountId, now),
       redirectUri: gscRedirectUri(),
     })
-    return Response.json({ redirectUrl }, { status: 200 })
+    // `url` is the name every other redirect-answering route uses and the one
+    // both screens read; the internal name stays `redirectUrl`.
+    return Response.json({ url: redirectUrl }, { status: 200 })
   }
 }
 

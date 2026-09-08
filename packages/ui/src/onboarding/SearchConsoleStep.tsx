@@ -94,10 +94,9 @@ export function SearchConsoleStep({
     try {
       const response = await fetch(startEndpoint, { method: 'POST' })
       if (!response.ok) throw new Error('oauth start failed')
-      const body = (await response.json()) as { url?: string; redirectUrl?: string }
-      const url = body.url ?? body.redirectUrl
-      if (!url) throw new Error('no redirect')
-      window.location.assign(url)
+      const body = (await response.json()) as { url?: string }
+      if (!body.url) throw new Error('no redirect')
+      window.location.assign(body.url)
     } catch {
       setFailed(true)
       setBusy(false)

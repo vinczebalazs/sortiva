@@ -1,5 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { eq } from 'drizzle-orm'
+import { ROUTES, routeKey } from '@sortiva/core'
+import { redirectResponseSchema } from '@sortiva/core/api/schemas'
 import type { GscConnectDeps, GscProvider, GscSite, GscTokens } from '@sortiva/core'
 import { gscConns, ingestionJobs, jobSteps, makeGscConnectStore } from '@sortiva/db'
 import {
@@ -32,6 +34,14 @@ const available = await databaseAvailable()
 process.env.APP_URL ??= 'https://app.test'
 process.env.AUTH_SECRET ??= 'test-secret-for-signing-oauth-state'
 process.env.ENCRYPTION_MASTER_KEY ??= Buffer.alloc(32, 7).toString('base64')
+
+/**
+ * The contract's own entry for the connect button's endpoint. Looked up rather
+ * than restated, so a change to what this endpoint promises fails here instead
+ * of being noticed on a deployed server.
+ */
+const startRoute = ROUTES.find((route) => routeKey(route) === 'POST /api/gsc/oauth/start')
+if (!startRoute) throw new Error('POST /api/gsc/oauth/start has left the route table')
 
 function tokens(): GscTokens {
   return {
@@ -119,8 +129,15 @@ describe.skipIf(!available)('connecting Search Console', () => {
       new Request('https://app.test/api/gsc/oauth/start', { method: 'POST' }),
       {},
     )
-    const body = (await response.json()) as { redirectUrl: string }
-    const url = new URL(body.redirectUrl)
+    expect(
+      startRoute.response,
+      'the contract no longer declares this endpoint as a plain redirect answer, so this test is ' +
+        'checking the wrong shape',
+    ).toBe(redirectResponseSchema)
+    // Parsed with the declaration itself rather than with a field name written
+    // out here: a name written in two places is a name that can drift.
+    const body = redirectResponseSchema.parse(await response.json())
+    const url = new URL(body.url)
     expect(url.searchParams.get('state')).toContain(accountId)
     expect(url.searchParams.get('redirect_uri')).toBe('https://app.test/api/gsc/oauth/callback')
   })

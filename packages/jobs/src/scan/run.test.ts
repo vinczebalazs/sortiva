@@ -206,7 +206,7 @@ describe.skipIf(!available)('runSignalScan against a real store (main §7.5, §7
       evidence: [{ key: 'reason', value: 'not_indexed', source: 'gsc', fetchedAt: NOW.toISOString() }],
       confidence: 70,
       confidenceBand: 'medium',
-      reasonTemplateKey: 'indexing_issue.fix',
+      reasonTemplateKey: 'indexing_issue.fix_not_indexed',
       reasonParams: {},
       recommendedAction: 'FIX',
       preconditions: [],
