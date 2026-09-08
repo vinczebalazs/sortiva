@@ -2,6 +2,7 @@ import { drizzle } from 'drizzle-orm/node-postgres'
 import { publishMarker, silentLogger } from '@sortiva/core'
 import { schema } from '@sortiva/db'
 import { FakeShopifyPublishClient } from '@sortiva/providers'
+import { rules } from '@sortiva/rules'
 import { publishArticleToShopify } from '../publish/auto-publish'
 import { sweepPublishRecovery } from '../publish/recovery'
 import type { ChaosContext, ChaosScenario } from './harness'
@@ -203,9 +204,13 @@ async function seedPublishableStore(
   )
   const topicId = topicRows[0]!.id
   await pool.query(
-    `INSERT INTO gate_decisions (account_id, topic_id, gate, outcome, scores_json)
-     VALUES ($1, $2, 3, 'passed', '{}'::jsonb)`,
-    [accountId, topicId],
+    `INSERT INTO gate_decisions (account_id, topic_id, gate, outcome, scores_json, rules_version)
+     VALUES ($1, $2, 3, 'passed', '{}'::jsonb, $3)`,
+    // The real version string, not a placeholder: these scenarios kill the
+    // process mid-publish and assert the store converges, and a verdict that
+    // could not say which thresholds produced it is a verdict the recovery
+    // path should never have to reason about.
+    [accountId, topicId, rules().rulesVersion],
   )
 
   const { rows: articleRows } = await pool.query<{ id: string }>(
