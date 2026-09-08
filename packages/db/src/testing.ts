@@ -376,7 +376,15 @@ const WAVE_3_TABLES = [
 /** Schema mini-wave 5 (T-WAVE5). One table, which references `accounts`. */
 const WAVE_5_TABLES = ['sessions'] as const
 
+/**
+ * Schema wave 7 (T-WAVE7). One table. It references `accounts` and `articles`,
+ * so it truncates before both — which the ordering below already gives it, this
+ * list going first.
+ */
+const WAVE_7_TABLES = ['publish_attempts'] as const
+
 const ALL_TABLES = [
+  ...WAVE_7_TABLES,
   ...WAVE_5_TABLES,
   ...WAVE_3_TABLES,
   ...WAVE_2B_TABLES,

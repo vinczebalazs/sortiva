@@ -197,6 +197,7 @@ export async function generateArticle(
           rulesVersion: resolvedRules.rulesVersion,
         },
         reasonUserFacing: gate2.reasonTemplateKey,
+        rulesVersion: resolvedRules.rulesVersion,
       },
       now,
     )
@@ -391,6 +392,7 @@ export async function generateArticle(
       reasonUserFacing: gate3.reasonTemplateKey,
       promptVersion: gate3.verdict?.promptVersion ?? null,
       modelId: gate3.verdict?.modelId ?? null,
+      rulesVersion: resolvedRules.rulesVersion,
     },
     now,
   )

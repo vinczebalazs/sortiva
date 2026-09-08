@@ -241,6 +241,7 @@ export async function admitManualTopic(
         rulesVersion,
       },
       reasonUserFacing: gate1.reasonCard?.templateKey ?? null,
+      rulesVersion,
     },
     now,
   )

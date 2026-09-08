@@ -237,6 +237,7 @@ async function gradedDrafts(accountId: string, outcomes: readonly string[]): Pro
       {
         topicId: topic.id,
         gate: 3,
+        rulesVersion: 'rules-test-v1',
         outcome,
         scoresJson: {},
         reasonUserFacing: outcome === 'passed' ? null : 'gate3.below_quality_bar',

@@ -84,6 +84,7 @@ describe.skipIf(!available)('publishing past the quality bar', () => {
     await insertGateDecision(harness.db, accountScope(accountId), {
       topicId: topic,
       gate: 3,
+      rulesVersion: 'rules-test-v1',
       outcome: 'rejected_after_repair',
       scoresJson: {
         scores: { informationGain: 2, factualGrounding: 4 },

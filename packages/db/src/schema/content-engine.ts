@@ -28,6 +28,7 @@ import {
   patternDimensionEnum,
   productRefFieldEnum,
   productRefTypeEnum,
+  publishAttemptOutcomeEnum,
   publishIntentStateEnum,
   topicKindEnum,
   topicSourceEnum,
@@ -86,6 +87,29 @@ export const topics = pgTable(
     index('topics_account_scheduled_idx').on(t.accountId, t.scheduledDate),
     index('topics_account_state_idx').on(t.accountId, t.state),
     index('topics_opportunity_idx').on(t.opportunityId),
+    /**
+     * One live topic per store per day — schema wave 7 (`T-WAVE7`), and the
+     * database half of "at most one topic dequeues per account per day".
+     *
+     * The rule was three code mechanisms and no constraint: the daily job asks
+     * for the topic on today's exact date, the flip out of `planned` is
+     * guarded, and the day's work has a key a redelivery finds already spent.
+     * All three are sound, and all three assume the calendar cannot hold two
+     * live topics on one day. Nothing made that true. The "is this day free?"
+     * check on the add-a-topic endpoint is a read followed by an insert, so two
+     * requests a few milliseconds apart both saw an empty day and both wrote —
+     * the same check-then-insert race the domain claim was deliberately built
+     * to avoid.
+     *
+     * A vetoed topic is outside the index because a veto frees the day: the
+     * calendar keeps the gap and replenishment fills it later, and the three
+     * places that ask what a day holds already ignore vetoed rows. Every other
+     * state counts, including the ones a topic reaches *after* being dequeued —
+     * which is what turns "one live topic a day" into "one dequeue a day".
+     */
+    uniqueIndex('topics_account_live_day_key')
+      .on(t.accountId, t.scheduledDate)
+      .where(sql`${t.state} <> 'vetoed'`),
   ],
 )
 
@@ -179,6 +203,20 @@ export const gateDecisions = pgTable(
     /** Null for Gate 1, which is pure data checks and makes no model call. */
     promptVersion: text('prompt_version'),
     modelId: text('model_id'),
+    /**
+     * The hash of the thresholds this decision was reached under — schema wave
+     * 7 (`T-WAVE7`). Invariant 9 asks for it on every opportunity *and* every
+     * gate decision; the opportunity had a column and the gate decision did
+     * not, so three of the four gates were writing the same value into
+     * `scores_json` as a loose JSON key, where nothing can index it, group by
+     * it or prove it was written at all.
+     *
+     * It matters because a store can have its own thresholds. The value here is
+     * the *resolved* version — the base hash with the store's overrides folded
+     * in — so "which bar was this draft actually held to" has an answer a year
+     * from now, when the bar has moved.
+     */
+    rulesVersion: text('rules_version').notNull(),
     decidedAt: timestamp('decided_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -398,5 +436,81 @@ export const publishIntents = pgTable(
     index('publish_intents_pending_idx')
       .on(t.createdAt)
       .where(sql`${t.state} = 'pending'`),
+  ],
+)
+
+/**
+ * Schema wave 7 (card `T-WAVE7`) — one append-only row per attempt to post an
+ * article to a merchant's shop, and how that attempt ended.
+ *
+ * **Why a table of its own rather than a state on the claim row.** Publishing
+ * is guarded by a claim (`publish_intents`) whose name has to be free for the
+ * next attempt, so a refusal *deletes* the claim. That is correct — it is what
+ * lets a retry happen at all — but it means the commonest kind of failed
+ * publish leaves nothing behind. The brake that is supposed to stop publishing
+ * when the shop is having a bad day was therefore counting a table that
+ * discards exactly the rows it needed, and would have reported a healthy zero
+ * right through the outage it exists to catch. A fourth claim state was the
+ * cheaper-looking fix and was rejected: it needs surgery on the unique index
+ * that is the only thing standing between a crash and a merchant getting the
+ * same article posted twice.
+ *
+ * **Rows are written once and never updated.** An attempt that ends
+ * `uncertain` is not later rewritten when the recovery sweep settles it; the
+ * sweep's own pass is a further attempt and writes its own row. Two rows for
+ * one article is the truth — we did try twice — and an append-only table is
+ * the only shape in which a count over a time window means anything.
+ *
+ * Nothing here decides when the brake trips. Every number that decision uses
+ * lives in `packages/rules`.
+ */
+export const publishAttempts = pgTable(
+  'publish_attempts',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    accountId: uuid('account_id')
+      .notNull()
+      .references(() => accounts.id, { onDelete: 'cascade' }),
+    /**
+     * Nullable, `ON DELETE SET NULL`, for the same reason `article_product_refs`
+     * keeps its row when a product goes: cascading here would let deleting an
+     * article quietly erase the evidence that publishing it kept failing, which
+     * is the one record this table exists to hold.
+     */
+    articleId: uuid('article_id').references(() => articles.id, { onDelete: 'set null' }),
+    /**
+     * The name the attempt claimed under. Kept because it is the only durable
+     * link back to the claim once the claim is gone — which, on a refusal, it
+     * always is — and because it still says which publication this was after
+     * `article_id` has been set null.
+     */
+    articleExternalId: text('article_external_id').notNull(),
+    outcome: publishAttemptOutcomeEnum('outcome').notNull(),
+    /**
+     * The machine name of what went wrong, so an operator reading an incident
+     * can tell a rate-limit storm across every store — the shape of "the
+     * platform is down", which is what the brake is for — from one merchant's
+     * token having expired. Free text rather than an enum: the vocabulary comes
+     * from the shop's own failures and grows, and pinning it here would mean a
+     * migration every time a new one is met.
+     */
+    failureClass: text('failure_class'),
+    /** When the attempt resolved. The brake counts over a window of hours ending now. */
+    endedAt: timestamp('ended_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    // A success with a failure named, or a failure with none, is a row nobody
+    // can act on: the operator is told something went wrong and not what.
+    check(
+      'publish_attempts_failure_class_ck',
+      sql`(${t.outcome} = 'succeeded') = (${t.failureClass} IS NULL)`,
+    ),
+    // The brake's own query: every store's attempts inside one window, because
+    // "publishing is failing" is a statement about the platform, not about one
+    // merchant.
+    index('publish_attempts_ended_idx').on(t.endedAt),
+    // And the same window for one store, which is how an incident gets from
+    // "publishing is failing" to "for whom".
+    index('publish_attempts_account_ended_idx').on(t.accountId, t.endedAt),
   ],
 )

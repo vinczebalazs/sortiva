@@ -389,3 +389,36 @@ export const patternDimensionEnum = pgEnum('pattern_dimension', [
   'keyword_cluster',
   'action_type',
 ])
+
+// ───────────────────────── schema wave 7 (T-WAVE7) ──────────────────────────
+
+/**
+ * How one attempt to post an article to a merchant's shop ended.
+ *
+ * The publishing brake — the switch that stops publishing when publishing
+ * starts failing — needs to tell three different things apart, and until this
+ * enum existed it could see none of them:
+ *
+ * - `succeeded`: the shop took the post.
+ * - `refused`: the shop turned it away and wrote nothing. A dead token, a
+ *   missing blog, a rate limit, a request it would not accept. **This is the
+ *   ordinary way a publish fails and the shape a platform outage takes**, and
+ *   it is the one the claim row cannot record, because a refusal releases the
+ *   claim so the next attempt can take the name again.
+ * - `uncertain`: the connection broke, or the shop answered with its own
+ *   fault, so the post may be sitting on the merchant's blog right now. The
+ *   claim is kept and the recovery sweep settles it by asking the shop.
+ * - `abandoned`: the recovery sweep gave up. Whatever happened, the article
+ *   did not go out and nobody is still trying.
+ *
+ * `uncertain` is deliberately not folded into `refused`. A brake that counted
+ * "we do not know" as a failure would trip on a flaky network as readily as on
+ * an outage, and the difference is the whole reason the two are handled
+ * differently everywhere else in publishing.
+ */
+export const publishAttemptOutcomeEnum = pgEnum('publish_attempt_outcome', [
+  'succeeded',
+  'refused',
+  'uncertain',
+  'abandoned',
+])

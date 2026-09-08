@@ -241,6 +241,7 @@ describe.skipIf(!available)('GET /api/calendar', () => {
       {
         topicId: topic.id,
         gate: 3,
+        rulesVersion: 'rules-test-v1',
         outcome: 'rejected_after_repair',
         scoresJson: { scores: { informationGain: 2 } },
         reasonUserFacing: 'gate3.below_quality_bar',
@@ -311,6 +312,7 @@ describe.skipIf(!available)('GET /api/calendar', () => {
       {
         topicId: topic.id,
         gate: 3,
+        rulesVersion: 'rules-test-v1',
         outcome: 'rejected_after_repair',
         scoresJson: { scores: { informationGain: 2 } },
         reasonUserFacing: 'gate3.below_quality_bar',
@@ -329,6 +331,7 @@ describe.skipIf(!available)('GET /api/calendar', () => {
       {
         topicId: topic.id,
         gate: 3,
+        rulesVersion: 'rules-test-v1',
         outcome: 'overridden',
         scoresJson: { scores: { informationGain: 2 } },
         reasonUserFacing: null,
@@ -407,6 +410,7 @@ describe.skipIf(!available)('GET /api/calendar', () => {
         reasonUserFacing,
         promptVersion: 'judge.v2',
         modelId: 'claude-test',
+        rulesVersion: 'rules-test-v1',
       },
       NOW,
     )

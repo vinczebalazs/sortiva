@@ -103,6 +103,7 @@ describe.skipIf(!available)('handing over an article at the publish hour', () =>
         gate: 3,
         outcome: options.gateOutcome,
         scoresJson: {},
+        rulesVersion: 'rules-test-v1',
       })
     }
     const [article] = await db

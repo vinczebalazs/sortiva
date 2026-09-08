@@ -92,6 +92,13 @@
       "when": 1788853340306,
       "tag": "0012_t_wave6_drop_claim_staleness_and_override_key",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1788883529562,
+      "tag": "0013_t_wave7_publish_attempts_one_topic_a_day_and_gate_rules_version",
+      "breakpoints": true
     }
   ]
 }

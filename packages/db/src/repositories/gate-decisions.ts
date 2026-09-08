@@ -30,6 +30,13 @@ export interface GateDecisionInput {
   readonly reasonUserFacing: string | null
   readonly promptVersion?: string | null
   readonly modelId?: string | null
+  /**
+   * The resolved threshold version the gate judged under — the base hash with
+   * this store's own overrides folded in, not the global one. Required rather
+   * than optional: a decision with no record of the bar it was held to cannot
+   * be re-read later, and every caller already has the value in hand.
+   */
+  readonly rulesVersion: string
 }
 
 export async function insertGateDecision(
@@ -49,6 +56,7 @@ export async function insertGateDecision(
       reasonUserFacing: input.reasonUserFacing,
       promptVersion: input.promptVersion ?? null,
       modelId: input.modelId ?? null,
+      rulesVersion: input.rulesVersion,
       decidedAt: now,
     })
     .returning()
