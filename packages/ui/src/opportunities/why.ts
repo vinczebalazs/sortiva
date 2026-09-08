@@ -56,12 +56,42 @@ const ALIASES: Readonly<Record<string, StringKey>> = {
  * come from the same producers and belong in the same place. Their sentences
  * are written now too, so all five namespaces resolve to real copy.
  *
- * Bare `gate.` is the fifth, and holds what is true of a held day whichever
- * check stopped it — today only the admission that the row recorded no reason
- * of its own. It is kept apart from the numbered namespaces exactly because a
- * sentence there must not read as one particular check's finding.
+ * Bare `gate.` holds what is true of a held day whichever check stopped it —
+ * today only the admission that the row recorded no reason of its own. It is
+ * kept apart from the numbered namespaces exactly because a sentence there must
+ * not read as one particular check's finding.
+ *
+ * The last four are the same fault found again, in four more places. Each of
+ * those families was written into the catalogue under its finished name by code
+ * that had no reason to think of it as a "reason key" at all:
+ *
+ * - `optimize.` — the sentence a merchant reads when we could not produce safe
+ *   advice for one of their pages. It was reaching them as the admission.
+ * - `appendixA.` — the sentences the product may not reword. One of them, the
+ *   outage line, is handed to the screen when a topic a merchant typed in
+ *   cannot be classified, and it has to arrive word for word or not at all.
+ * - `fix.` — the consolidation advice, whose lines sit beside headings the
+ *   screen looks up directly, so both halves have to share one spelling.
+ * - `email.` — the monthly summary names a held topic's reason by its
+ *   catalogue key. Nothing renders those through here today; it is listed so
+ *   this function answers for every explanation key in the product rather than
+ *   for most of them, which is what lets the guard trust it alone.
+ *
+ * A family missing from this list is not a crash and not a blank space. It is a
+ * merchant quietly reading "the reasoning for this one isn't available yet"
+ * over a sentence that was written for them.
  */
-const CATALOG_NAMESPACES: readonly string[] = ['gate.', 'gate1.', 'gate2.', 'gate3.', 'topic.']
+const CATALOG_NAMESPACES: readonly string[] = [
+  'gate.',
+  'gate1.',
+  'gate2.',
+  'gate3.',
+  'topic.',
+  'optimize.',
+  'appendixA.',
+  'fix.',
+  'email.',
+]
 
 /** Where an engine template key lives in the catalogue. */
 export function catalogKeyFor(templateKey: string): string {

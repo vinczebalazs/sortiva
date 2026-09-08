@@ -90,29 +90,24 @@ const AWAITING_ANOTHER_LANE: readonly string[] = [
 ]
 
 /**
- * The catalogue's own key set, read as text rather than imported, because this
- * file walks the repository anyway and the two must be read from the same tree.
- */
-function catalogueKeys(): ReadonlySet<string> {
-  const raw = readFileSync(join(repoRoot, 'packages/ui/strings/en.json'), 'utf8')
-  return new Set(Object.keys(JSON.parse(raw) as Record<string, string>))
-}
-
-/**
- * A key resolves when the catalogue can answer it — either through the
- * renderer's own mapping (`hasCopy`, which prefixes `template.` and follows the
- * aliases) or because the key is already a catalogue key in final form, which
- * is how the email templates and a few pinned Appendix A lines are written.
+ * A key resolves when **the renderer** can find a sentence for it. `hasCopy` is
+ * that same lookup and nothing else: it tries the key's own family, follows the
+ * aliases, and otherwise reaches for `template.<key>`.
  *
- * The second half is deliberately forgiving, and it hides a real fault: several
- * keys a producer emits sit in the catalogue under their bare name while the
- * renderer only ever looks under `template.`, so the sentence exists and the
- * merchant never sees it. That is a fault in the mapping rather than in the key,
- * it belongs to the lane that owns the renderer, and it is reported separately
- * rather than recorded here as though these keys were the problem.
+ * It used to also pass a key that merely existed in the catalogue under its bare
+ * name, whether or not the renderer could reach it. That second route was the
+ * whole fault: eight sentences were written, spelled correctly, and filed in
+ * families the lookup had never been told about, so the guard was satisfied
+ * while the merchant read "the reasoning for this one isn't available yet". A
+ * check that asks the catalogue is a spelling check; a check that asks the
+ * renderer is a check that the sentence arrives.
+ *
+ * The cost of the stricter rule is that a family of finished keys nothing has
+ * declared fails here. That is the point — the fix is one line naming the family
+ * in the renderer, and the failure says which key and which file asked for it.
  */
-function resolves(key: string, catalogue: ReadonlySet<string>): boolean {
-  return hasCopy(key) || catalogue.has(key)
+function resolves(key: string): boolean {
+  return hasCopy(key)
 }
 
 function sourceFiles(dir: string): string[] {
@@ -155,26 +150,44 @@ describe('the explanation keys written by hand across the repository', () => {
     expect(sightings.map((sighting) => sighting.key)).toContain('uncovered_commercial_query.create')
   })
 
-  it('every one resolves to a sentence the catalogue holds', () => {
-    const catalogue = catalogueKeys()
+  it('every one renders as a sentence rather than as the renderer giving up', () => {
     const known = new Set([...DELIBERATELY_UNKNOWN, ...AWAITING_ANOTHER_LANE])
     const orphans = sightings.filter(
-      (sighting) => !known.has(sighting.key) && !resolves(sighting.key, catalogue),
+      (sighting) => !known.has(sighting.key) && !resolves(sighting.key),
     )
 
     expect(
       orphans.map((sighting) => `${sighting.key} (${sighting.where})`),
-      'these name an explanation the product cannot render — either write the sentence or name the key the engine really builds',
+      'these name an explanation the renderer cannot find — write the sentence, name the key the engine really builds, or tell the renderer about the family this key belongs to',
     ).toEqual([])
   })
 
   it('keeps the outstanding list honest — a key that has been written stops being outstanding', () => {
-    const catalogue = catalogueKeys()
-    const resolved = AWAITING_ANOTHER_LANE.filter((key) => resolves(key, catalogue))
+    const resolved = AWAITING_ANOTHER_LANE.filter((key) => resolves(key))
     expect(
       resolved,
       `these now resolve and should come off AWAITING_ANOTHER_LANE: ${resolved.join(', ')}`,
     ).toEqual([])
+  })
+
+  /**
+   * The check above is only worth its runtime if it can say no, and there are
+   * two ways for it to stop being able to. One is a key with no sentence
+   * anywhere. The other is subtler and is the one that already happened: a
+   * sentence that exists in the catalogue under a name the renderer has no way
+   * to reach, which for a whole year looked identical to a working screen.
+   */
+  it('can still say no — to a key with no sentence, and to one the renderer cannot reach', () => {
+    for (const key of DELIBERATELY_UNKNOWN) {
+      expect(resolves(key), `${key} is supposed to be unresolvable`).toBe(false)
+    }
+
+    // A real sentence, under a real catalogue key, in a family nobody has told
+    // the renderer about. This is exactly the shape of the eight keys that were
+    // reaching merchants as "the reasoning for this one isn't available yet",
+    // and the guard has to refuse it rather than be satisfied that the words
+    // exist somewhere.
+    expect(resolves('nav.dashboard')).toBe(false)
   })
 
   it('keeps the outstanding list from outliving the fixtures on it', () => {
