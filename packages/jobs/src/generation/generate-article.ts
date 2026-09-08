@@ -57,7 +57,7 @@ import {
 } from '@sortiva/db'
 import type { PageFetcher } from '@sortiva/providers'
 import { assembleEvidencePack } from './assemble-evidence-pack'
-import { resolveRulesForGate } from './rules-for-gate'
+import { resolveStoreRules } from './store-rules'
 import { runtimeLogger } from '../runtime/logging'
 
 /**
@@ -157,8 +157,8 @@ export async function generateArticle(
   // An operator can move one of these numbers for this store alone. The
   // version comes back with them and is stamped on both gate decisions below,
   // so a draft judged by a moved threshold never claims the repo file judged
-  // it. See `resolveRulesForGate`.
-  const resolvedRules = await resolveRulesForGate(deps.db, input.accountId, input.locale.languageCode)
+  // it. See `resolveStoreRules`.
+  const resolvedRules = await resolveStoreRules(deps.db, input.accountId, input.locale.languageCode)
   const gates = resolvedRules.layer.gates
   const generation = resolvedRules.layer.generation
 

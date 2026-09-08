@@ -25,7 +25,7 @@ import {
   type TopicRow,
 } from '@sortiva/db'
 import type { GatesConfig } from '@sortiva/rules'
-import { resolveRulesForGate } from './rules-for-gate'
+import { resolveStoreRules } from './store-rules'
 import { runtimeLogger } from '../runtime/logging'
 
 /**
@@ -115,12 +115,12 @@ export async function admitManualTopic(
     findGscConnForAccount(deps.db, scope),
     productSubstanceForFamilies(deps.db, scope, input.cluster.familyIds),
     deps.existingTargetCheck.check(input.cluster, input.accountId),
-    resolveRulesForGate(deps.db, input.accountId, input.locale),
+    resolveStoreRules(deps.db, input.accountId, input.locale),
   ])
 
   const gates = resolvedRules.layer.gates
   // Says which numbers judged this topic: the repo file's, or the repo file's
-  // with an override on top. See `resolveRulesForGate`.
+  // with an override on top. See `resolveStoreRules`.
   const rulesVersion = resolvedRules.rulesVersion
 
   const limitedIntelligence = isLimitedIntelligence(connection ?? null)

@@ -15,8 +15,8 @@ import {
   upsertOpportunity,
   type Db,
 } from '@sortiva/db'
-import { rules } from '@sortiva/rules'
 import { runtimeLogger } from '../runtime/logging'
+import { resolveStoreRules } from './store-rules'
 
 /**
  * The refresh pool's front door: an article of ours goes in, and comes out as
@@ -98,10 +98,17 @@ export async function requestArticleRefresh(
   const now = (deps.now ?? (() => new Date()))()
   const at = now.toISOString()
   const scope = accountScope(input.accountId)
-  const config = rules()
 
-  const facts = await articleRefreshFacts(deps.db, scope, input.articleId)
+  // Fetched alongside the article rather than after it, so consulting the
+  // operator's overrides costs this call no extra wait. No language is passed:
+  // this path has never applied the config file's per-language layer, and
+  // starting now would change what every non-English store is judged by.
+  const [facts, storeRules] = await Promise.all([
+    articleRefreshFacts(deps.db, scope, input.articleId),
+    resolveStoreRules(deps.db, input.accountId, null),
+  ])
   if (!facts) return { ok: false, reason: 'article_not_found' }
+  const layer = storeRules.layer
 
   const blockers = merchantRefreshBlockers(
     {
@@ -119,9 +126,9 @@ export async function requestArticleRefresh(
       storeMedianImpressions: null,
     },
     {
-      positionMin: config.defaults.learning.refresh.position_min,
-      positionMax: config.defaults.learning.refresh.position_max,
-      cooldownDays: config.defaults.learning.refresh.cooldown_days,
+      positionMin: layer.learning.refresh.position_min,
+      positionMax: layer.learning.refresh.position_max,
+      cooldownDays: layer.learning.refresh.cooldown_days,
     },
     at,
   )
@@ -150,7 +157,7 @@ export async function requestArticleRefresh(
       // across two scans the way a movement in search data has to be.
       validatedAcrossConsecutiveScans: true,
     },
-    config.defaults.scoring.confidence,
+    layer.scoring.confidence,
   )
 
   const draft: OpportunityDraft = {
@@ -173,7 +180,7 @@ export async function requestArticleRefresh(
     // This is the same posture every rewrite of our own content takes — the
     // merchant's lever is the calendar's own veto, not an approval click.
     status: 'accepted',
-    rulesVersion: config.rulesVersion,
+    rulesVersion: storeRules.rulesVersion,
     limitedIntelligence: false,
     detectedAt: at,
     // Ranked against the batch this call has, which is one — the same thing
@@ -189,7 +196,7 @@ export async function requestArticleRefresh(
     ],
   }
 
-  const [ranked] = rankByImpact([draft], config.defaults.scoring.impact)
+  const [ranked] = rankByImpact([draft], layer.scoring.impact)
   if (!ranked) throw new Error('ranking a single refresh request produced nothing')
 
   const { row, created } = await upsertOpportunity(deps.db, scope, ranked, now)

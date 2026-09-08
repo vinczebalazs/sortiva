@@ -12,7 +12,6 @@ import {
   type RepairRouting,
   type SubstituteCandidate,
 } from '@sortiva/core'
-import { rules } from '@sortiva/rules'
 import {
   accountScope,
   deletedShopifyProductIds,
@@ -27,6 +26,7 @@ import {
   type Db,
   type ReferencedProductRow,
 } from '@sortiva/db'
+import { resolveStoreRules } from '../generation/store-rules'
 import { detectDrift, anyVariantAvailable } from './detect'
 import { mendArticleReferences, settlePendingRepairs, type RepairExecutionDeps } from './repair'
 import { withAccountLock } from '../runtime/lock'
@@ -100,8 +100,13 @@ async function driftPass(deps: DriftSweepDeps, accountId: string): Promise<Drift
   const log = deps.logger ?? runtimeLogger()
   const now = (deps.now ?? (() => new Date()))()
   const scope = accountScope(accountId)
-  const config = rules()
-  const signals = config.defaults.signals
+  // An operator can move one of these numbers for one store without a deploy,
+  // and the piece of work this pass raises records which numbers judged it. No
+  // language is passed: this pass has never applied the config file's
+  // per-language layer, and starting now would change what every non-English
+  // store is judged by.
+  const storeRules = await resolveStoreRules(deps.db, accountId, null)
+  const signals = storeRules.layer.signals
 
   const references = await publishedArticleProductRefs(deps.db, scope)
   const articleIds = new Set(references.map((row) => row.articleId))
@@ -180,18 +185,18 @@ async function driftPass(deps: DriftSweepDeps, accountId: string): Promise<Drift
         substituteAvailable: swaps.length > 0 && swaps.length === observation.references.length,
       },
       {
-        rulesVersion: config.rulesVersion,
+        rulesVersion: storeRules.rulesVersion,
         detectedAt: now.toISOString(),
         limitedIntelligence: false,
       },
-      config.defaults.scoring,
+      storeRules.layer.scoring,
     )
     return { observation, swaps, ...plan }
   })
 
   const ranked = rankByImpact(
     planned.map((entry) => entry.draft),
-    config.defaults.scoring.impact,
+    storeRules.layer.scoring.impact,
   )
 
   let cardsRaised = 0

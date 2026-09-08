@@ -24,6 +24,7 @@ import {
   type TestDb,
 } from '@sortiva/db/testing'
 import { FakeShopifyPublishClient } from '@sortiva/providers'
+import { rules } from '@sortiva/rules'
 import { runDriftPassForAccount } from './sweep'
 
 /**
@@ -566,5 +567,78 @@ describe.skipIf(!available)('the daily check on published articles', () => {
       cardsRaised: 0,
       rewritesQueued: 0,
     })
+  })
+
+  // ── An operator moving one of these numbers for one store ─────────────────
+  //
+  // How long a product must have been unbuyable before an article recommending
+  // it counts as wrong is one of the numbers an operator can move for a single
+  // store without a deploy. Until this pass read those rows it took the repo
+  // file's number and then stamped the piece of work it raised with the version
+  // that means "the repo file judged this" — true about the version, wrong
+  // about everything the operator had asked for.
+
+  async function setOverride(forAccountId: string, key: string, value: unknown): Promise<void> {
+    await db.insert(schema.rulesOverrides).values({
+      accountId: forAccountId,
+      locale: null,
+      pageType: null,
+      key,
+      value,
+      updatedBy: 'test-operator',
+      updatedAt: NOW,
+    })
+  }
+
+  /** A published article naming a product that went unbuyable five days ago. */
+  async function articleNamingAProductOutOfStockFiveDays(): Promise<string> {
+    const familyId = await seedFamily()
+    const productId = await seedProduct({
+      shopifyId: 'shopify-empty',
+      title: 'Steel bottle 750',
+      familyId,
+      available: false,
+    })
+    await recordChange({
+      kind: 'availability_changed',
+      entityId: 'shopify-empty',
+      occurredAt: '2026-09-15T09:00:00.000Z',
+    })
+    return seedPublishedArticle({ productId, slug: 'out-of-stock' })
+  }
+
+  it('raises a card the repo numbers would not, once the out-of-stock window is moved for that store', async () => {
+    const articleId = await articleNamingAProductOutOfStockFiveDays()
+
+    // Five days unbuyable against a floor of fourteen: nothing to say yet.
+    expect((await runDriftPassForAccount(deps(), { accountId })).driftFound).toBe(0)
+    expect(await opportunityFor(articleId)).toBeUndefined()
+
+    await setOverride(accountId, 'signals.product_change_impact.out_of_stock_days_min', 3)
+
+    expect((await runDriftPassForAccount(deps(), { accountId })).driftFound).toBe(1)
+    const raised = await opportunityFor(articleId)
+    expect(raised).toMatchObject({ signalType: 'product_change_impact' })
+    // The record says it was judged by a moved number, not by the repo file.
+    expect(raised?.rulesVersion).toMatch(
+      new RegExp(`^${rules().rulesVersion}\\+ov\\.[0-9a-f]{16}$`),
+    )
+  })
+
+  it('leaves a store with no row of its own judged and stamped exactly as before', async () => {
+    const somebodyElse = await insertAccount(ctx.pool, 'not-this-store@example.com')
+    await setOverride(somebodyElse, 'signals.product_change_impact.out_of_stock_days_min', 3)
+
+    const articleId = await articleNamingAProductOutOfStockFiveDays()
+    expect((await runDriftPassForAccount(deps(), { accountId })).driftFound).toBe(0)
+
+    // And a card this store does earn still stamps the bare file hash it always did.
+    await recordChange({
+      kind: 'product_deleted',
+      entityId: 'shopify-empty',
+      occurredAt: '2026-09-19T00:00:00.000Z',
+    })
+    expect((await runDriftPassForAccount(deps(), { accountId })).driftFound).toBe(1)
+    expect((await opportunityFor(articleId))?.rulesVersion).toBe(rules().rulesVersion)
   })
 })
