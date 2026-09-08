@@ -30,6 +30,7 @@ import {
   findSignalRun,
   insertOpportunityTasks,
   latestGscQueryDay,
+  listFamilies,
   listOpenOpportunities,
   readPersona,
   transitionOpportunityStatus,
@@ -49,6 +50,7 @@ import {
   assembleGscInputs,
   assembleKeywordCandidates,
   assembleMetadataInput,
+  assembleExistingTargetCoverage,
   assembleRichnessGapInput,
   assembleUncoveredQueryInput,
   computeScanWindows,
@@ -307,7 +309,24 @@ async function runSignalScanLocked(
   }
 
   const keywordCandidates = await assembleKeywordCandidates(assembleDeps, accountId)
-  const uncovered = await assembleUncoveredQueryInput(assembleDeps, accountId, keywordCandidates)
+
+  // Asked once, for every subject this pass could end up proposing a new page
+  // for, and shared by all three findings that can: the store must never be
+  // told to write a second page for a subject it already has a page for, and
+  // three separate answers would eventually be three different answers.
+  const coverage = await assembleExistingTargetCoverage(
+    assembleDeps,
+    accountId,
+    keywordCandidates,
+    await listFamilies(deps.db, scope),
+  )
+
+  const uncovered = await assembleUncoveredQueryInput(
+    assembleDeps,
+    accountId,
+    keywordCandidates,
+    coverage.byKeyword,
+  )
   signals.push(
     ...detectUncoveredCommercialQueries({
       candidates: uncovered.candidates,
@@ -324,10 +343,16 @@ async function runSignalScanLocked(
     accountId,
     keywordCandidates,
     options.allowSerpSpend ?? true,
+    coverage.byKeyword,
   )
   signals.push(...detectCompetitorCoverageGaps(competitorGapInput))
 
-  const familyCoverageInput = await assembleFamilyCoverageInput(assembleDeps, accountId, keywordCandidates)
+  const familyCoverageInput = await assembleFamilyCoverageInput(
+    assembleDeps,
+    accountId,
+    keywordCandidates,
+    coverage.byFamily,
+  )
   signals.push(...detectFamilyCoverageGaps(familyCoverageInput))
 
   const richnessInput = await assembleRichnessGapInput(assembleDeps, accountId, keywordCandidates)

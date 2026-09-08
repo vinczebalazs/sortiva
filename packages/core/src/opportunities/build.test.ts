@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { detectCompetitorCoverageGaps } from '../signals/competitor-gap'
 import { detectCatalogRichnessGaps } from '../signals/richness-gap'
-import { rulesLayer } from '../signals/testing'
+import { coverageAnswerFor, rulesLayer } from '../signals/testing'
 import { substanceInventory } from '../signals/substance'
 import { emptyFactSheet } from '../distill/schema'
 import { buildOpportunityDraft, rankByImpact, type OpportunityBuildContext } from './build'
@@ -39,6 +39,7 @@ describe('buildOpportunityDraft — status policy (main §7.9)', () => {
           ],
           ourPosition: null,
           ourUrl: null,
+          existingTarget: coverageAnswerFor({ head: 'trail running shoes', familyIds: ['trail-running'] }),
         },
       ],
       config: layer.signals.competitor_coverage_gap,
@@ -65,6 +66,7 @@ describe('buildOpportunityDraft — status policy (main §7.9)', () => {
           ],
           ourPosition: 18,
           ourUrl: '/collections/trail-running',
+          existingTarget: coverageAnswerFor({ head: 'trail running shoes', familyIds: ['trail-running'] }),
         },
       ],
       config: layer.signals.competitor_coverage_gap,
@@ -118,6 +120,7 @@ describe('buildOpportunityDraft — status policy (main §7.9)', () => {
           ],
           ourPosition: null,
           ourUrl: null,
+          existingTarget: coverageAnswerFor({ head: 'trail running shoes', familyIds: ['trail-running'] }),
         },
       ],
       config: layer.signals.competitor_coverage_gap,
@@ -146,6 +149,7 @@ describe('rankByImpact — percentile rank within the action family only (main �
             ],
             ourPosition: null,
             ourUrl: null,
+            existingTarget: coverageAnswerFor({ head: `k-${volume}`, familyIds: ['trail-running'] }),
           },
         ],
         config: layer.signals.competitor_coverage_gap,
@@ -166,6 +170,7 @@ describe('rankByImpact — percentile rank within the action family only (main �
           ],
           ourPosition: 18,
           ourUrl: '/collections/trail-running',
+          existingTarget: coverageAnswerFor({ head: 'trail running shoes', familyIds: ['trail-running'] }),
         },
       ],
       config: layer.signals.competitor_coverage_gap,

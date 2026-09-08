@@ -9,6 +9,7 @@ import type { RichnessGapSignal } from '../signals/richness-gap'
 import type { StrikingDistanceSignal } from '../signals/striking-distance'
 import type { UncoveredQuerySignal } from '../signals/uncovered-query'
 import type { ExistingPageIntentGapSignal, IndexingIssueSignal } from './p1-signal-shapes'
+import { assertClearedToCreate } from './clearance'
 
 /**
  * "What is true" and "what to do about it" are different questions, answered
@@ -22,6 +23,15 @@ import type { ExistingPageIntentGapSignal, IndexingIssueSignal } from './p1-sign
  * §7.8's mapping table, and the eight worked examples plus the competitor-gap
  * #18 fixture (`action-selection.test.ts`) are the acceptance test for the
  * whole file.
+ *
+ * One rule cuts across all of them: **no branch returns CREATE without a
+ * clearance**. A clearance is a value only the existing-target check can
+ * produce, so a signal assembled without ever asking "does the store already
+ * have a page for this?" cannot reach a new-page recommendation — the call
+ * throws instead. This is the one mistake with no visible symptom: two pages
+ * of the merchant's own splitting one search look exactly like one page, and
+ * nothing anywhere raises an error. `clearance.test.ts` fails if a branch is
+ * ever added that skips it.
  */
 
 /** Every signal shape this function knows how to turn into an action. A signal type absent from this union is a compile error at the call site, not a silent miss. */
@@ -124,10 +134,9 @@ export function selectAction(
       )
 
     case 'uncovered_commercial_query':
-      // The detector has already run the existing-target check (it throws if
-      // it hasn't, `UncheckedCandidateError`) and only reaches here when no
-      // strong match exists — a weak match still means CREATE, with the link
-      // task `build.ts` attaches from `weakExistingTarget`.
+      // A weak match still means CREATE — the new page goes ahead linked to the
+      // old one, which is what the clearance's link tasks carry.
+      assertClearedToCreate(signal.clearance, signal.keyword)
       return withBlocker(
         { action: 'CREATE', entityType: 'query_cluster', entityRef: signal.keyword },
         [],
@@ -135,22 +144,35 @@ export function selectAction(
       )
 
     case 'competitor_coverage_gap':
-      // Today's founder-set threshold (DECISIONS 2026-09-03): a middling page
-      // of ours (11–30) converts this to OPTIMIZE; nothing there means CREATE.
-      // This is the #18 fixture the card's done-when names.
+      // Two routes to "improve what you have" rather than "write another one".
+      // Today's founder-set threshold (DECISIONS 2026-09-03) covers a middling
+      // page of ours (11–30); the existing-target check covers a page that
+      // serves the subject however it ranks, including not at all. The detector
+      // fills `ourRankingUrl` from whichever found a page. A page we published
+      // ourselves is rewritten rather than recommended for edits.
+      if (signal.ourRankingUrl) {
+        return withBlocker(
+          {
+            action: refreshIfOurs(signal.ourRankingPageType ?? ''),
+            entityType: 'query_cluster',
+            entityRef: signal.keyword,
+          },
+          [],
+          context,
+        )
+      }
+      assertClearedToCreate(signal.existingTarget.clearance, signal.keyword)
       return withBlocker(
-        {
-          action: signal.ourRankingUrl ? 'OPTIMIZE' : 'CREATE',
-          entityType: 'query_cluster',
-          entityRef: signal.keyword,
-        },
+        { action: 'CREATE', entityType: 'query_cluster', entityRef: signal.keyword },
         [],
         context,
       )
 
     case 'product_family_coverage_gap':
-      // The detector already excludes any family with mapped content that
-      // ranks or is ours, so every row here is a genuine gap.
+      // The clearance is minted for the range's name, which is the intent the
+      // check was asked about — a family has no single search to be asked
+      // about, so its name is what stands in for one.
+      assertClearedToCreate(signal.clearance, signal.familyName)
       return withBlocker(
         { action: 'CREATE', entityType: 'family', entityRef: signal.familyId },
         [],

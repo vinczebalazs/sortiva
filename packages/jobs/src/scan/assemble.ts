@@ -32,6 +32,8 @@ import {
   serpSnapshotKey,
   standardCurve,
   substanceInventory,
+  toCoverageAnswer,
+  findExistingTarget,
   toIsoDate,
   windowToken,
 } from '@sortiva/core'
@@ -58,7 +60,11 @@ import {
 } from '@sortiva/db'
 import type { RulesLayer } from '@sortiva/rules'
 import { rebuildQueryClustersForAccount } from './clusters'
-import { DbExistingTargetCheck } from './existing-target'
+import {
+  existingTargetInputFrom,
+  prepareExistingTargetReads,
+  type PreparedExistingTargetReads,
+} from './existing-target'
 import { runtimeLogger } from '../runtime/logging'
 
 /**
@@ -383,25 +389,101 @@ export async function assembleKeywordCandidates(
 }
 
 /**
+ * "Does the store already have a page for this?", asked once for every subject
+ * this scan might end up proposing a new page for.
+ *
+ * One answer per subject, shared by all three findings that can end in a new
+ * page, so they cannot disagree about the same store. The answer carries the
+ * permission a new page needs, and that permission can only come from here —
+ * a finding assembled without one cannot reach a new-page recommendation at
+ * all, it throws instead.
+ *
+ * Asked for every candidate that maps to something the store sells, which is
+ * the widest net any of the three casts. Narrowing it further to save reads
+ * would leave one of them holding no answer, and holding no answer is the
+ * failure this is here to prevent.
+ */
+export async function assembleExistingTargetCoverage(
+  deps: AssembleDeps,
+  accountId: string,
+  candidates: readonly KeywordCandidate[],
+  families: readonly { readonly id: string; readonly name: string }[],
+): Promise<{
+  readonly byKeyword: ReadonlyMap<string, ExistingCoverage>
+  readonly byFamily: ReadonlyMap<string, ExistingCoverage>
+}> {
+  const prepared = await prepareExistingTargetReads(
+    { db: deps.db, seo: deps.seo, ...(deps.now ? { now: deps.now } : {}), ...(deps.logger ? { logger: deps.logger } : {}) },
+    accountId,
+  )
+
+  const byKeyword = new Map<string, ExistingCoverage>()
+  for (const candidate of candidates) {
+    // A search the store sells nothing into is never proposed as a new page by
+    // any of the three, so there is nothing to clear.
+    if (candidate.familyIds.length === 0) continue
+    if (byKeyword.has(candidate.keyword)) continue
+    byKeyword.set(candidate.keyword, coverageFor(prepared, {
+      head: candidate.keyword,
+      members: [],
+      intentClass: candidate.intentClass,
+      familyIds: candidate.familyIds,
+    }))
+  }
+
+  // A whole range has no single search to be asked about, so its name stands in
+  // for one. That is what the range's own finding proposes writing about, and
+  // the permission is checked against the same name later.
+  const byFamily = new Map<string, ExistingCoverage>()
+  for (const family of families) {
+    byFamily.set(family.id, coverageFor(prepared, {
+      head: family.name,
+      members: [],
+      intentClass: FAMILY_GAP_INTENT,
+      familyIds: [family.id],
+    }))
+  }
+
+  return { byKeyword, byFamily }
+}
+
+function coverageFor(prepared: PreparedExistingTargetReads, cluster: QueryCluster): ExistingCoverage {
+  return toCoverageAnswer(findExistingTarget(existingTargetInputFrom(prepared, cluster)))
+}
+
+/**
+ * The answer for one subject, or a refusal to carry on without it.
+ *
+ * Never a default. "We did not ask" and "we asked and found nothing" look
+ * identical downstream, and only one of them is safe to write a new page on.
+ */
+function requireCoverage(
+  coverage: ReadonlyMap<string, ExistingCoverage>,
+  key: string,
+  subject: string,
+): ExistingCoverage {
+  const answer = coverage.get(key)
+  if (!answer) {
+    throw new Error(
+      `No existing-target answer for ${subject} "${key}". Every candidate that could become a new ` +
+        'page must be checked against the pages the store already has first.',
+    )
+  }
+  return answer
+}
+
+/**
  * `uncovered_commercial_query`'s own input: every confirmed-keyword
  * candidate unfiltered (the detector applies `mapped_families_min`, the
  * demand floor and the commercial-intent filter itself — that is its job,
- * not this assembler's), which families clear the substance floor, and what
- * the existing-target check found for each candidate the detector could
- * plausibly need it for.
- *
- * The existing-target check is itself a real read (and, in Limited
- * Intelligence mode, a billable one), so it only runs for a candidate with
- * *any* family clearing the substance floor — a safe superset of what
- * `mapped_families_min` will actually keep: every candidate the detector
- * would go on to check `coverage` for is checked here, and the (small) extra
- * ones the detector will discard for a different reason cost one wasted
- * lookup, never a missing one (which would throw `UncheckedCandidateError`).
+ * not this assembler's), which families clear the substance floor, and the
+ * shared existing-target answers.
  */
 export async function assembleUncoveredQueryInput(
   deps: AssembleDeps,
   accountId: string,
   candidates: readonly KeywordCandidate[],
+  coverage: ReadonlyMap<string, ExistingCoverage>,
 ): Promise<{
   candidates: readonly KeywordCandidate[]
   coverage: ReadonlyMap<string, ExistingCoverage>
@@ -410,31 +492,12 @@ export async function assembleUncoveredQueryInput(
   const scope = accountScope(accountId)
   const families = await listFamilies(deps.db, scope)
   const familiesWithSubstance = new Set<string>()
-  const check = new DbExistingTargetCheck({ db: deps.db, seo: deps.seo, ...(deps.now ? { now: deps.now } : {}), ...(deps.logger ? { logger: deps.logger } : {}) })
-  const coverage = new Map<string, ExistingCoverage>()
 
   const config = deps.rules.gates.substance_floor
   for (const family of families) {
     const products = await productSubstanceForFamilies(deps.db, scope, [family.id])
     const inventory = substanceInventory(products, config)
     if (inventory.passes) familiesWithSubstance.add(family.id)
-  }
-
-  const worthChecking = candidates.filter((c) => c.familyIds.some((id) => familiesWithSubstance.has(id)))
-  for (const candidate of worthChecking) {
-    const cluster: QueryCluster = {
-      head: candidate.keyword,
-      members: [],
-      intentClass: candidate.intentClass,
-      familyIds: candidate.familyIds,
-    }
-    const outcome = await check.full(cluster, accountId)
-    coverage.set(
-      candidate.keyword,
-      outcome.match
-        ? { strength: outcome.match.strength, ...(outcome.match.url ? { url: outcome.match.url } : {}) }
-        : { strength: 'none' },
-    )
   }
 
   return { candidates, coverage, familiesWithSubstance }
@@ -454,6 +517,7 @@ export async function assembleCompetitorGapInput(
   accountId: string,
   candidates: readonly KeywordCandidate[],
   allowSpend: boolean,
+  coverage: ReadonlyMap<string, ExistingCoverage>,
 ): Promise<CompetitorGapInput> {
   const scope = accountScope(accountId)
   const system = systemScope('competitor coverage gap reads SERP snapshots keyed by the search, not the store')
@@ -506,6 +570,10 @@ export async function assembleCompetitorGapInput(
     competitorRankings: (byKeyword.get(candidate.keyword) ?? []).filter((r) => competitorDomains.has(r.domain)),
     ourPosition: ourRanked.get(candidate.keyword)?.position ?? null,
     ourUrl: ourRanked.get(candidate.keyword)?.url ?? null,
+    // Where the store already has a page for this search, whether or not any
+    // search result has ever shown it. A competitor ranking says nothing about
+    // that, and this finding used to decide on the ranking alone.
+    existingTarget: requireCoverage(coverage, candidate.keyword, 'the search'),
   }))
 
   return { candidates: gapCandidates, config: deps.rules.signals.competitor_coverage_gap, fetchedAt: now.toISOString() }
@@ -536,11 +604,19 @@ async function ourSerpPositions(
   return out
 }
 
+/**
+ * The article shape a whole-range gap asks for, and the intent the check is
+ * asked about for the same range — one constant so the question and the answer
+ * cannot come apart.
+ */
+const FAMILY_GAP_INTENT = 'buying_guide' as const
+
 /** `product_family_coverage_gap`'s input, with a real revenue-share computed from the store's own best-seller list. */
 export async function assembleFamilyCoverageInput(
   deps: AssembleDeps,
   accountId: string,
   keywordCandidates: readonly KeywordCandidate[],
+  coverage: ReadonlyMap<string, ExistingCoverage>,
 ): Promise<FamilyCoverageInput> {
   const scope = accountScope(accountId)
   const now = (deps.now ?? (() => new Date()))().toISOString()
@@ -585,12 +661,14 @@ export async function assembleFamilyCoverageInput(
     familyName: family.name,
     isTopSeller: topSellerFamilies.has(family.id),
     revenueShare: totalRevenue > 0 ? (revenueByFamily.get(family.id) ?? 0) / totalRevenue : 0,
-    // A page "mentions" this family once `store_pages.family_ids` names it —
-    // that column exists (schema wave 2) and nothing writes it yet (the same
-    // open gap `T3.4`/`T3.5` already named for `intent_class`), so this reads
-    // as empty on every real store today, the safe direction (never hides a
-    // real gap; can only over-detect one). Flagged, not fixed — not this
-    // card's column to populate.
+    // A page "mentions" this family once `store_pages.family_ids` names it. The
+    // nightly walk fills that in for collections and products (from the
+    // families of the products on the page) but not for written pages, which
+    // have no products to read a family off. `ranks` is always false because
+    // nothing here measures whether a page has ever been shown — so this
+    // reading can say "there is a page" and never "there is coverage", which is
+    // why it is no longer the only thing standing between a range and a new
+    // article. The existing-target answer below is.
     mappedContent: storePagesRows
       .filter((page) => page.familyIds.includes(family.id))
       .map((page) => ({ url: page.url, kind: page.pageType === 'article_ours' ? ('ours' as const) : ('store' as const), ranks: false })),
@@ -598,7 +676,8 @@ export async function assembleFamilyCoverageInput(
     // No single keyword to read an intent off a whole-range gap — buying_guide
     // is the broadest, least-assuming article shape for "nothing at all is
     // written about this range yet". See DECISIONS 2026-09-03 T3.7.
-    intentClass: 'buying_guide',
+    intentClass: FAMILY_GAP_INTENT,
+    existingTarget: requireCoverage(coverage, family.id, 'the range'),
   }))
 
   return { candidates, config: deps.rules.signals.product_family_coverage_gap, fetchedAt: now }

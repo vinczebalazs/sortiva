@@ -1,4 +1,6 @@
 import type { IntentClass } from '../contracts/opportunities'
+import type { CreateClearance } from '../opportunities/clearance'
+import type { ExistingTargetPage } from '../opportunities/ports'
 
 /**
  * A search the store might want to be found for, and what we know about it
@@ -59,10 +61,27 @@ export function clearsDemandFloor(
  * detector is allowed to know.
  *
  * Detectors say what is true and never what to do about it, so the strength of
- * the match travels here and the decision it implies does not.
+ * the match travels here and the decision it implies does not — which is why
+ * this carries the *kind* of page that was found rather than what should happen
+ * to it.
+ *
+ * The `clearance` is the load-bearing part. Only the check can mint one, and
+ * every detector that can end in "write a new page" has to hand it on, so a
+ * detector assembled without ever asking the question has nothing to give the
+ * action selector and cannot reach a new-page recommendation at all.
  */
 export interface ExistingCoverage {
   readonly strength: 'none' | 'weak' | 'strong'
   /** The page found, where one was. A weak match's address is what the new page has to link to. */
   readonly url?: string
+  /** Which kind of page it is, so a page we published ourselves can be rewritten rather than "improved". */
+  readonly pageType?: ExistingTargetPage['pageType'] | null
+  /** Mean position over the check's window, where the source that found it supplied one. */
+  readonly position?: number | null
+  /**
+   * Non-null exactly when the check decided a new page may go ahead. Null on a
+   * strong match, which is the case where the work belongs to the page the
+   * store already has.
+   */
+  readonly clearance: CreateClearance | null
 }

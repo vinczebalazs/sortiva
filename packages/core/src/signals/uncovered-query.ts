@@ -2,6 +2,7 @@ import type { GatesConfig, SignalsConfig } from '@sortiva/rules'
 import type { EvidenceFact, IntentClass } from '../contracts/opportunities'
 import { INVENTORY_SOURCE, facts } from './types'
 import { clearsDemandFloor, isCommercialIntent, type ExistingCoverage, type KeywordCandidate } from './candidates'
+import type { CreateClearance } from '../opportunities/clearance'
 
 /**
  * People are searching for something this store sells, and the store has
@@ -33,6 +34,11 @@ export interface UncoveredQuerySignal {
    * weak to take the work over. Null when the store has nothing at all.
    */
   readonly weakExistingTarget: string | null
+  /**
+   * The check's permission slip, carried through rather than discarded so that
+   * the step which turns this into "write a new page" can demand one.
+   */
+  readonly clearance: CreateClearance | null
   readonly evidence: readonly EvidenceFact[]
 }
 
@@ -85,6 +91,7 @@ export function detectUncoveredCommercialQueries(
       familyIds: backed,
       source: candidate.source,
       weakExistingTarget: coverage.strength === 'weak' ? (coverage.url ?? null) : null,
+      clearance: coverage.clearance,
       evidence: facts(input.fetchedAt, [
         { key: 'keyword', value: candidate.keyword, source: INVENTORY_SOURCE },
         { key: 'monthly_search_volume', value: candidate.monthlySearchVolume ?? 'unknown', source: 'dataforseo' },

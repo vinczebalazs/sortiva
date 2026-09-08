@@ -1,6 +1,7 @@
 import type { EvidenceFact, ExistingTargetOutcome, QueryCluster } from '../contracts/opportunities'
 import { GSC_SOURCE, INVENTORY_SOURCE, facts, normalisePageUrl } from '../signals/types'
 import { normaliseQuery } from '../search/clusters'
+import type { ExistingCoverage } from '../signals/candidates'
 import { mintCreateClearance, type CreateClearance } from './clearance'
 import type { ExistingTargetInput, ExistingTargetPage, PagePresence } from './ports'
 
@@ -367,6 +368,27 @@ export function toContractOutcome(result: ExistingTargetResult): ExistingTargetO
     action: match.pageType === 'article_ours' ? 'REFRESH' : 'OPTIMIZE',
     via: match.via,
     ...(match.position !== null ? { position: match.position } : {}),
+  }
+}
+
+/**
+ * The same answer in the shape a detector reads.
+ *
+ * The third and last shape of one answer, and the only route by which a
+ * detector can obtain a clearance: a detector that was never given a checked
+ * answer has nothing that will satisfy the guard on a new-page recommendation.
+ * A hand-built object gets no further — the clearance inside carries a marker
+ * only the mint above can put there.
+ */
+export function toCoverageAnswer(result: ExistingTargetResult): ExistingCoverage {
+  const { match } = result
+  if (!match) return { strength: 'none', clearance: result.clearance }
+  return {
+    strength: match.strength,
+    url: match.url,
+    pageType: match.pageType,
+    position: match.position,
+    clearance: result.clearance,
   }
 }
 

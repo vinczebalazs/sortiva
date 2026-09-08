@@ -1,6 +1,8 @@
 import type { SignalsConfig } from '@sortiva/rules'
 import type { EvidenceFact, IntentClass } from '../contracts/opportunities'
 import { INVENTORY_SOURCE, facts } from './types'
+import type { ExistingCoverage } from './candidates'
+import type { CreateClearance } from '../opportunities/clearance'
 
 /**
  * A range the store actually makes its money from, with nothing written about
@@ -17,6 +19,13 @@ import { INVENTORY_SOURCE, facts } from './types'
  * "Nothing written about it" is deliberately strict about what counts. A
  * collection page that exists but has never been shown for anything is not
  * coverage; it is a page with a list of products on it.
+ *
+ * Strict in that direction is the safe direction for deciding a range deserves
+ * attention, and the unsafe one for deciding to write a page — a page nobody
+ * has been shown is still a page, and a second one beside it splits the
+ * subject between them. So the same existing-target check the rest of the
+ * engine uses runs for the range as well, and its answer, not this module's
+ * stricter reading, is what decides whether a new page may be proposed.
  */
 
 /** One thing of ours already pointing at this range. */
@@ -48,6 +57,12 @@ export interface FamilyCoverageCandidate {
    * at all.
    */
   readonly intentClass: IntentClass
+  /**
+   * What the existing-target check found when asked about this range. Required
+   * of every candidate: it is the only thing that can permit a new page, and a
+   * caller that never ran the check has nothing to put here.
+   */
+  readonly existingTarget: ExistingCoverage
 }
 
 export interface FamilyCoverageGapSignal {
@@ -59,6 +74,13 @@ export interface FamilyCoverageGapSignal {
   readonly keywordCandidatesClearingFloor: number
   /** Pages of ours that mention the range but have never been shown for anything. */
   readonly unrankedPages: readonly string[]
+  /**
+   * A page of ours that covers part of the range but was too weak to take the
+   * work over. A new page may still go ahead, tied to this one by a link.
+   */
+  readonly weakExistingTarget: string | null
+  /** The check's permission slip, carried through so the action selector can demand one. */
+  readonly clearance: CreateClearance | null
   readonly evidence: readonly EvidenceFact[]
 }
 
@@ -82,6 +104,12 @@ export function detectFamilyCoverageGaps(
     const covered = candidate.mappedContent.some((item) => item.kind === 'ours' || item.ranks)
     if (covered) continue
 
+    // The check overrules the reading above whenever it is more cautious. A
+    // page it calls a strong match owns this subject already, so the range is
+    // not uncovered and the advice belongs to that page instead.
+    const existing = candidate.existingTarget
+    if (existing.strength === 'strong') continue
+
     if (candidate.keywordCandidatesClearingFloor < config.keyword_candidates_min) continue
 
     out.push({
@@ -92,6 +120,8 @@ export function detectFamilyCoverageGaps(
       revenueShare: candidate.revenueShare,
       keywordCandidatesClearingFloor: candidate.keywordCandidatesClearingFloor,
       unrankedPages: candidate.mappedContent.map((item) => item.url).sort(),
+      weakExistingTarget: existing.strength === 'weak' ? (existing.url ?? null) : null,
+      clearance: existing.clearance,
       evidence: facts(input.fetchedAt, [
         { key: 'family', value: candidate.familyName, source: INVENTORY_SOURCE },
         { key: 'top_seller', value: candidate.isTopSeller ? 'yes' : 'no', source: 'catalog' },
@@ -112,6 +142,8 @@ export function detectFamilyCoverageGaps(
         // `family_id` fact is enough here, since the family *is* the entity.
         { key: 'intent_class', value: candidate.intentClass, source: INVENTORY_SOURCE },
         { key: 'family_id', value: candidate.familyId, source: INVENTORY_SOURCE },
+        { key: 'existing_target_match', value: existing.strength, source: INVENTORY_SOURCE },
+        ...(existing.url ? [{ key: 'existing_target_url', value: existing.url, source: INVENTORY_SOURCE }] : []),
       ]),
     })
   }

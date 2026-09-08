@@ -8,8 +8,10 @@ import { detectCompetitorCoverageGaps } from './competitor-gap'
 import { detectFamilyCoverageGaps } from './family-coverage'
 import { detectUncoveredCommercialQueries, UncheckedCandidateError } from './uncovered-query'
 import { substanceInventory } from './substance'
+import { selectAction } from '../opportunities/action-selection'
+import { generateTasks } from '../opportunities/tasks'
 import type { ExistingCoverage, KeywordCandidate } from './candidates'
-import { FETCHED_AT, rulesLayer, substanceInputFor } from './testing'
+import { FETCHED_AT, coverageAnswerFor, rulesLayer, substanceInputFor } from './testing'
 
 /**
  * The four catalogue- and market-driven things the product notices without
@@ -31,8 +33,25 @@ function candidate(overrides: Partial<KeywordCandidate> = {}): KeywordCandidate 
   }
 }
 
-function coverageOf(strength: ExistingCoverage['strength'], keyword: string, url?: string) {
-  return new Map<string, ExistingCoverage>([[keyword, { strength, ...(url ? { url } : {}) }]])
+/**
+ * The coverage answer these tests hand a detector, produced by running the real
+ * check over a store arranged to reach that conclusion — never written out as a
+ * literal, because a literal cannot carry the permission the check mints and a
+ * literal is exactly what would let the fixture drift away from the rule.
+ */
+function coverageOf(
+  strength: ExistingCoverage['strength'],
+  keyword: string,
+  url?: string,
+  familyIds: readonly string[] = [ROAD_RUNNING],
+) {
+  const answer = coverageAnswerFor({
+    head: keyword,
+    familyIds,
+    found: strength,
+    ...(url ? { url } : {}),
+  })
+  return new Map<string, ExistingCoverage>([[keyword, answer]])
 }
 
 describe('worked example 3 — people are searching, and the store has nothing for them', () => {
@@ -293,6 +312,7 @@ describe('competitors found for something we sell', () => {
       ],
       ourPosition: null,
       ourUrl: null,
+      existingTarget: coverageAnswerFor({ head: 'trail running shoes', familyIds: [TRAIL_RUNNING] }),
       ...overrides,
     }
   }
@@ -371,6 +391,67 @@ describe('competitors found for something we sell', () => {
     })
     expect(signals).toEqual([])
   })
+
+  it('names the page the check found even though it ranks nowhere, so we improve it rather than compete with it', () => {
+    const covered = coverageAnswerFor({
+      head: 'trail running shoes',
+      familyIds: [TRAIL_RUNNING],
+      found: 'strong',
+      url: 'https://shop.example/collections/trail-running',
+    })
+    expect(covered.clearance).toBeNull()
+
+    const signals = detectCompetitorCoverageGaps({
+      candidates: [gapCandidate({ existingTarget: covered })],
+      config,
+      fetchedAt: FETCHED_AT,
+    })
+
+    expect(signals).toHaveLength(1)
+    expect(signals[0]!.ourRankingUrl).toBe('https://shop.example/collections/trail-running')
+    expect(selectAction(signals[0]!).action).toBe('OPTIMIZE')
+  })
+
+  it('rewrites our own article rather than telling the merchant to edit it', () => {
+    const ours = coverageAnswerFor({
+      head: 'trail running shoes',
+      familyIds: [TRAIL_RUNNING],
+      found: 'strong',
+      url: 'https://shop.example/blogs/guides/trail-shoes',
+      pageType: 'article_ours',
+    })
+
+    const signals = detectCompetitorCoverageGaps({
+      candidates: [gapCandidate({ existingTarget: ours })],
+      config,
+      fetchedAt: FETCHED_AT,
+    })
+
+    expect(signals).toHaveLength(1)
+    expect(selectAction(signals[0]!).action).toBe('REFRESH')
+  })
+
+  it('still proposes a new page beside a page too weak to take the work over, and ties the two together', () => {
+    const weak = coverageAnswerFor({
+      head: 'trail running shoes',
+      familyIds: [TRAIL_RUNNING],
+      found: 'weak',
+      url: 'https://shop.example/collections/trail-running',
+    })
+
+    const signals = detectCompetitorCoverageGaps({
+      candidates: [gapCandidate({ existingTarget: weak })],
+      config,
+      fetchedAt: FETCHED_AT,
+    })
+
+    expect(signals).toHaveLength(1)
+    expect(selectAction(signals[0]!).action).toBe('CREATE')
+    expect(generateTasks(signals[0]!).map((task) => task.kind)).toEqual([
+      'schedule_topic',
+      'internal_links',
+    ])
+  })
 })
 
 describe('a range the store earns from with nothing written about it', () => {
@@ -385,6 +466,7 @@ describe('a range the store earns from with nothing written about it', () => {
       mappedContent: [],
       keywordCandidatesClearingFloor: config.keyword_candidates_min,
       intentClass: 'buying_guide' as const,
+      existingTarget: coverageAnswerFor({ head: 'Trail Running', familyIds: [TRAIL_RUNNING] }),
       ...overrides,
     }
   }
@@ -464,5 +546,44 @@ describe('a range the store earns from with nothing written about it', () => {
       fetchedAt: FETCHED_AT,
     })
     expect(signals).toEqual([])
+  })
+
+  it('says nothing about a range the check found a page for, however that page performs', () => {
+    const covered = coverageAnswerFor({
+      head: 'Trail Running',
+      familyIds: [TRAIL_RUNNING],
+      found: 'strong',
+      url: 'https://shop.example/collections/trail-running',
+    })
+
+    const signals = detectFamilyCoverageGaps({
+      candidates: [familyCandidate({ existingTarget: covered })],
+      config,
+      fetchedAt: FETCHED_AT,
+    })
+    expect(signals).toEqual([])
+  })
+
+  it('proposes coverage beside a page too weak to take it over, and ties the two together', () => {
+    const weak = coverageAnswerFor({
+      head: 'Trail Running',
+      familyIds: [TRAIL_RUNNING],
+      found: 'weak',
+      url: 'https://shop.example/collections/trail-running',
+    })
+
+    const signals = detectFamilyCoverageGaps({
+      candidates: [familyCandidate({ existingTarget: weak })],
+      config,
+      fetchedAt: FETCHED_AT,
+    })
+
+    expect(signals).toHaveLength(1)
+    expect(signals[0]!.weakExistingTarget).toBe('https://shop.example/collections/trail-running')
+    expect(selectAction(signals[0]!).action).toBe('CREATE')
+    expect(generateTasks(signals[0]!).map((task) => task.kind)).toEqual([
+      'schedule_topic',
+      'internal_links',
+    ])
   })
 })

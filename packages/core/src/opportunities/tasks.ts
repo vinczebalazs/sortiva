@@ -1,4 +1,5 @@
 import type { DetectedSignal } from './action-selection'
+import type { CreateClearance } from './clearance'
 
 /**
  * The concrete units of work an opportunity decomposes into — main §7.5 step
@@ -28,6 +29,23 @@ export interface OpportunityTaskDraft {
     | 'schedule_topic'
     | 'repair_reference'
   readonly description: string
+}
+
+/**
+ * The obligation that travels with a new page cleared past a weak match.
+ *
+ * The check lets a new page go ahead beside a page of the merchant's that only
+ * partly covers the subject, on the condition that the two are linked — so
+ * they support each other instead of competing for the same search. The
+ * condition is carried by the clearance itself rather than re-derived here,
+ * which is what stops the permission and the condition coming apart.
+ */
+function linkBackTasks(clearance: CreateClearance | null): OpportunityTaskDraft[] {
+  if (!clearance) return []
+  return clearance.linkTasks.map((task) => ({
+    kind: 'internal_links' as const,
+    description: `Link the new page to and from ${task.existingUrl}, which covers part of this already.`,
+  }))
 }
 
 /** Our own articles never take the recommendation path (main §10.5) — one task, standing for "enters the refresh pipeline". */
@@ -108,20 +126,25 @@ export function generateTasks(signal: DetectedSignal): readonly OpportunityTaskD
 
     case 'competitor_coverage_gap': {
       if (signal.ourRankingUrl) {
+        const where =
+          signal.ourPosition === null
+            ? 'this page already covers the search'
+            : `this page sits at position ${signal.ourPosition}`
         return [
           {
             kind: 'title_rewrite',
-            description: `Improve ${signal.ourRankingUrl} — competitors rank for "${signal.keyword}" and this page sits at position ${signal.ourPosition}.`,
+            description: `Improve ${signal.ourRankingUrl} — competitors rank for "${signal.keyword}" and ${where}.`,
           },
           { kind: 'internal_links', description: 'Add internal links to strengthen this page for the search.' },
         ]
       }
-      return [
+      const tasks: OpportunityTaskDraft[] = [
         {
           kind: 'schedule_topic',
           description: `Schedule a new article for "${signal.keyword}" — ${signal.competitorsRanking.length} competitors already rank for it.`,
         },
       ]
+      return [...tasks, ...linkBackTasks(signal.existingTarget.clearance)]
     }
 
     case 'product_family_coverage_gap':
@@ -130,6 +153,7 @@ export function generateTasks(signal: DetectedSignal): readonly OpportunityTaskD
           kind: 'schedule_topic',
           description: `Schedule coverage for ${signal.familyName}, which earns ${Math.round(signal.revenueShare * 100)}% of trailing revenue with nothing written about it.`,
         },
+        ...linkBackTasks(signal.clearance),
       ]
 
     case 'catalog_richness_gap':
