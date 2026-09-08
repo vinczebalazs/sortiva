@@ -88,28 +88,24 @@ export const topics = pgTable(
     index('topics_account_state_idx').on(t.accountId, t.state),
     index('topics_opportunity_idx').on(t.opportunityId),
     /**
-     * One live topic per store per day — schema wave 7 (`T-WAVE7`), and the
-     * database half of "at most one topic dequeues per account per day".
+     * One live topic per store per day is enforced by an exclusion constraint,
+     * `topics_account_live_day_excl`, which is **written in raw SQL in
+     * migration `0013` and cannot be expressed here** — the schema builder has
+     * no exclusion constraint, and this one additionally needs both a partial
+     * predicate and deferral. Nothing in this file shows that it exists, so the
+     * only thing that can tell whether it survived a future regeneration is
+     * `constraints-t-wave7.test.ts` running against a real Postgres.
      *
-     * The rule was three code mechanisms and no constraint: the daily job asks
-     * for the topic on today's exact date, the flip out of `planned` is
-     * guarded, and the day's work has a key a redelivery finds already spent.
-     * All three are sound, and all three assume the calendar cannot hold two
-     * live topics on one day. Nothing made that true. The "is this day free?"
-     * check on the add-a-topic endpoint is a read followed by an insert, so two
-     * requests a few milliseconds apart both saw an empty day and both wrote —
-     * the same check-then-insert race the domain claim was deliberately built
-     * to avoid.
-     *
-     * A vetoed topic is outside the index because a veto frees the day: the
-     * calendar keeps the gap and replenishment fills it later, and the three
-     * places that ask what a day holds already ignore vetoed rows. Every other
-     * state counts, including the ones a topic reaches *after* being dequeued —
-     * which is what turns "one live topic a day" into "one dequeue a day".
+     * Why it is there, and why it is not a plain unique index: the rule was
+     * three code mechanisms and no constraint, all three assuming a day could
+     * not hold two live topics. Nothing made that true — the add-a-topic
+     * endpoint reads the day to see whether it is free and then inserts, the
+     * same check-then-insert race the domain claim was built to avoid. But
+     * dragging a topic onto an occupied day *swaps* the two, and a swap is two
+     * updates that transiently put both on one day. A unique index refuses that
+     * at the first statement; a deferrable constraint lets the swap reach
+     * commit and judges the state it actually leaves behind.
      */
-    uniqueIndex('topics_account_live_day_key')
-      .on(t.accountId, t.scheduledDate)
-      .where(sql`${t.state} <> 'vetoed'`),
   ],
 )
 

@@ -1,5 +1,5 @@
 {
-  "id": "3620ce84-6898-47e6-a874-cef4daf186d4",
+  "id": "1a3342e2-284b-4c98-9d64-12fac9c9881b",
   "prevId": "f227c7b7-3a7d-45a2-8716-108787c7ffae",
   "version": "7",
   "dialect": "postgresql",
@@ -6426,28 +6426,6 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "topics_account_live_day_key": {
-          "name": "topics_account_live_day_key",
-          "columns": [
-            {
-              "expression": "account_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "scheduled_date",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "where": "\"topics\".\"state\" <> 'vetoed'",
           "concurrently": false,
           "method": "btree",
           "with": {}

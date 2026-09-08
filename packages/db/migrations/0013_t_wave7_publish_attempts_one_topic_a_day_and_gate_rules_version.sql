@@ -15,11 +15,29 @@ ALTER TABLE "gate_decisions" ADD COLUMN "rules_version" text;--> statement-break
 -- database that already holds gate decisions. 'pre_stamping' is not a hash and
 -- is not meant to look like one: it says this verdict was reached before we
 -- began recording which thresholds produced it, which is the truth about every
--- row written before this wave and is better than inventing a version for them.
+-- row written before this wave and better than inventing a version for them.
 UPDATE "gate_decisions" SET "rules_version" = 'pre_stamping' WHERE "rules_version" IS NULL;--> statement-breakpoint
 ALTER TABLE "gate_decisions" ALTER COLUMN "rules_version" SET NOT NULL;--> statement-breakpoint
 ALTER TABLE "publish_attempts" ADD CONSTRAINT "publish_attempts_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "publish_attempts" ADD CONSTRAINT "publish_attempts_article_id_articles_id_fk" FOREIGN KEY ("article_id") REFERENCES "public"."articles"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "publish_attempts_ended_idx" ON "publish_attempts" USING btree ("ended_at");--> statement-breakpoint
 CREATE INDEX "publish_attempts_account_ended_idx" ON "publish_attempts" USING btree ("account_id","ended_at");--> statement-breakpoint
-CREATE UNIQUE INDEX "topics_account_live_day_key" ON "topics" USING btree ("account_id","scheduled_date") WHERE "topics"."state" <> 'vetoed';
+-- One live topic per store per day. Hand-written because the schema builder can
+-- express none of the three things this needs: an exclusion constraint, a
+-- partial predicate, and deferral. `packages/db/src/schema/content-engine.ts`
+-- carries a note saying so, and `constraints-t-wave7.test.ts` is the only thing
+-- that can notice if a future regeneration drops it.
+--
+-- A vetoed topic is outside the predicate because a veto frees the day: the
+-- calendar keeps the gap and replenishment fills it later. Every other state
+-- holds the day, including the ones a topic reaches after being dequeued, which
+-- is what turns "one live topic a day" into "at most one dequeue a day".
+--
+-- DEFERRABLE, because dragging a topic onto an occupied day swaps the two, and
+-- a swap is two updates that transiently put both topics on one day. Checked
+-- immediately by default so that an ordinary insert is refused where it happens
+-- rather than at commit; the swap is the one caller that asks for deferral, and
+-- it asks per transaction.
+ALTER TABLE "topics" ADD CONSTRAINT "topics_account_live_day_excl"
+  EXCLUDE USING btree ("account_id" WITH =, "scheduled_date" WITH =)
+  WHERE ("state" <> 'vetoed') DEFERRABLE INITIALLY IMMEDIATE;

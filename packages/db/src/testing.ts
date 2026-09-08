@@ -408,6 +408,8 @@ export async function insertAccount(pool: pg.Pool, email: string): Promise<strin
 
 /** Postgres unique-violation. Asserting on the code beats asserting on a message. */
 export const UNIQUE_VIOLATION = '23505'
+/** What a deferrable exclusion constraint raises — `topics_account_live_day_excl` is the only one. */
+export const EXCLUSION_VIOLATION = '23P01'
 export const CHECK_VIOLATION = '23514'
 export const NOT_NULL_VIOLATION = '23502'
 export const FOREIGN_KEY_VIOLATION = '23503'
