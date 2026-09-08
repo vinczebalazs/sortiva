@@ -7,7 +7,7 @@ import {
   notificationFeed,
 } from '@sortiva/core'
 import { makeNotificationStore } from '@sortiva/db'
-import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
+import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb, nextFixtureDay } from '@sortiva/db/testing'
 import { DbNotificationEmitter } from './emitter'
 
 /**
@@ -298,9 +298,9 @@ describe.skipIf(!available)('notifications and the attention list', () => {
       )
       const { rows: topic } = await pool.query<{ id: string }>(
         `INSERT INTO topics (account_id, opportunity_id, title, intent_class, source, scheduled_date)
-         VALUES ($1,$2,$3,'buying_guide','auto','2026-10-01')
+         VALUES ($1,$2,$3,'buying_guide','auto',$4)
          RETURNING id`,
-        [forAccount, opportunity[0]!.id, slug],
+        [forAccount, opportunity[0]!.id, slug, nextFixtureDay('2026-10-01')],
       )
       const { rows } = await pool.query<{ id: string }>(
         `INSERT INTO articles

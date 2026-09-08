@@ -14,7 +14,7 @@ import {
   schema,
   setDeliveryMode,
   setTargetBlog,
-  type Db,
+  type Db
 } from '@sortiva/db'
 import {
   databaseAvailable,
@@ -22,6 +22,7 @@ import {
   setupTestDb,
   truncateAll,
   type TestDb,
+  nextFixtureDay,
 } from '@sortiva/db/testing'
 import { FakeShopifyPublishClient } from '@sortiva/providers'
 import { rules } from '@sortiva/rules'
@@ -176,7 +177,7 @@ describe.skipIf(!available)('the daily check on published articles', () => {
         intentClass: 'buying_guide',
         kind: 'new',
         source: 'auto',
-        scheduledDate: TODAY,
+        scheduledDate: nextFixtureDay(TODAY),
         state: 'published',
       })
       .returning()

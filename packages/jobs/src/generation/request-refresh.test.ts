@@ -9,9 +9,9 @@ import {
   listTopicsInRange,
   recordArticleRefresh,
   schema,
-  type Db,
+  type Db
 } from '@sortiva/db'
-import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
+import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb, nextFixtureDay } from '@sortiva/db/testing'
 import { rules } from '@sortiva/rules'
 import { DbOpportunitySource } from '../scan/opportunity-source'
 import { replenishCalendarForAccount } from './replenish'
@@ -86,7 +86,7 @@ describe.skipIf(!available)('the refresh pool', () => {
         kind: 'new',
         source: 'auto',
         whyLine: 'x',
-        scheduledDate: '2026-01-01',
+        scheduledDate: nextFixtureDay('2026-01-01'),
         pinned: false,
         state: 'published',
       },

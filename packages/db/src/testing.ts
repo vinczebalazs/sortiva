@@ -398,6 +398,25 @@ export async function truncateAll(pool: pg.Pool): Promise<void> {
   )
 }
 
+/**
+ * A day of its own for each fixture topic, counting on from `base`.
+ *
+ * The calendar holds one live topic per store per day, enforced since schema
+ * wave 7. A fixture that hard-codes a single date can therefore only be called
+ * once per account — and the tests that call these helpers several times need
+ * several articles for one store, without caring which day each was scheduled
+ * on. This gives every one a different day near the date the fixture asked for.
+ *
+ * The counter is per test file, because the runner loads this module afresh for
+ * each one. That is enough: it only has to keep one file's fixtures apart.
+ */
+let fixtureDayCursor = 0
+export function nextFixtureDay(base: string): string {
+  const day = new Date(`${base}T00:00:00Z`)
+  day.setUTCDate(day.getUTCDate() + fixtureDayCursor++)
+  return day.toISOString().slice(0, 10)
+}
+
 export async function insertAccount(pool: pg.Pool, email: string): Promise<string> {
   const { rows } = await pool.query<{ id: string }>(
     'INSERT INTO accounts (email) VALUES ($1) RETURNING id',

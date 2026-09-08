@@ -10,9 +10,9 @@ import {
   schema,
   setDeliveryMode,
   setTargetBlog,
-  type Db,
+  type Db
 } from '@sortiva/db'
-import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
+import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb, nextFixtureDay } from '@sortiva/db/testing'
 import { FakeShopifyPublishClient } from '@sortiva/providers'
 import { publishArticleToShopify } from './auto-publish'
 import { dismissOpportunity } from '../generation/veto-topic'
@@ -122,7 +122,7 @@ describe.skipIf(!available)('publishing finishes the suggestion behind the artic
         intentClass: 'buying_guide',
         kind: 'new',
         source: 'auto',
-        scheduledDate: TODAY,
+        scheduledDate: nextFixtureDay(TODAY),
         state: 'generating',
       })
       .returning()
