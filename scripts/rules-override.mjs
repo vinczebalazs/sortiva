@@ -13,6 +13,13 @@
  * the product cannot run on are all refused before anything is written — a
  * threshold that quietly fails to apply is worse than one that was never set.
  *
+ * A number is also refused when nothing would read it. Only some of the
+ * product reads a store's overrides; the rest takes the repo file's numbers
+ * whatever the table says. Setting one of those used to succeed and change
+ * nothing, which is worse than a refusal, because the operator then believes
+ * it is in force. `packages/rules/src/reach.ts` is the record of which is
+ * which, and this is what refuses against it.
+ *
  * Every write is recorded with the name of the person who made it: `auto` is
  * refused, because the product does not move its own thresholds. A row aimed at
  * every store changes every store's decisions at once, so it takes two named
@@ -29,6 +36,7 @@ import {
 } from '../packages/db/src/repositories/rules.ts'
 import { rules } from '../packages/rules/src/load.ts'
 import { describeScope } from '../packages/rules/src/overrides.ts'
+import { reachOf } from '../packages/rules/src/reach.ts'
 
 const argv = process.argv.slice(2).filter((arg) => arg !== '--')
 const [command, ...rest] = argv
@@ -38,7 +46,7 @@ const AUTOMATIC_ACTOR = 'auto'
 function usage(code) {
   console.log(`Usage:
   pnpm rules list [--account <id>]
-  pnpm rules set <key> <value> --actor <you> [--account <id>] [--locale <tag>] [--page-type <type>] [--second <colleague>]
+  pnpm rules set <key> <value> --actor <you> [--account <id>] [--locale <tag>] [--page-type <type>] [--second <colleague>] [--partial]
   pnpm rules clear <key> --actor <you> [--account <id>] [--locale <tag>] [--page-type <type>] [--second <colleague>]
 
 A key is the dotted name of one number, e.g.
@@ -50,7 +58,14 @@ a piece of text.
 
 Aim a row with --account, --locale or --page-type. The narrowest row wins: one
 store beats one language, which beats one page type. A row with no aim at all
-changes every store, and needs a second named person.`)
+changes every store, and needs a second named person.
+
+Not every number can be moved this way. Some are read from the repo file by
+every piece of code that uses them, and a row aiming at one of those would
+change nothing at all — those are refused, naming what reads them. Some are
+read both ways; those are refused too, saying which half would not move, and
+--partial sets one anyway once you have read that. Clearing a row is never
+refused.`)
   process.exit(code)
 }
 
@@ -63,6 +78,38 @@ if (!process.env.DATABASE_URL) {
 function option(name) {
   const at = rest.indexOf(`--${name}`)
   return at === -1 ? undefined : rest[at + 1]
+}
+
+function flag(name) {
+  return rest.includes(`--${name}`)
+}
+
+/**
+ * Whether this number is read by anything that looks at the store's rows.
+ *
+ * `ignored` means every reader takes the repo file's value, so the row would
+ * be stored and never consulted. `partial` means some readers resolve the
+ * store's rows and some do not, so the change is real but smaller than it
+ * looks — which is its own way of misleading somebody, and why it takes an
+ * explicit --partial rather than a warning nobody reads.
+ */
+function reachRefusal(key) {
+  const entry = reachOf(key)
+  if (!entry || entry.reach === 'honoured') return undefined
+  if (entry.reach === 'ignored') {
+    return `Nothing would read "${key}" from this row.\n${entry.note}\nSetting it would change nothing. Moving this number needs a change to the code that reads it.`
+  }
+  if (flag('partial')) return undefined
+  return `"${key}" is only read from a store's overrides by some of the code that uses it.\n${entry.note}\nPass --partial to set it anyway, knowing that.`
+}
+
+/** Short marker for the listing, so a row that is not doing what it looks like is visible. */
+function reachWarning(key) {
+  const entry = reachOf(key)
+  if (!entry || entry.reach === 'honoured') return undefined
+  return entry.reach === 'ignored'
+    ? `NOT READ: ${entry.note}`
+    : `PARTLY READ: ${entry.note}`
 }
 
 /** A row's aim, as the operator gave it. Every unset part means "not narrowed by that". */
@@ -185,6 +232,8 @@ try {
         console.log(`  ${row.key} = ${JSON.stringify(row.value)}`)
         console.log(`    for:     ${aim}`)
         console.log(`    set by:  ${row.updatedBy} at ${new Date(row.updatedAt).toISOString()}`)
+        const warning = reachWarning(row.key)
+        if (warning) console.log(`    ${warning}`)
         if (refusal) {
           console.log(`    REFUSED: ${refusal.split('\n')[0]}`)
           console.log("             This store's scan will fail until it is corrected or cleared.")
@@ -215,6 +264,13 @@ try {
         console.error(`FAIL  give the value to set ${key} to.`)
         process.exit(1)
       }
+      const notRead = reachRefusal(key)
+      if (notRead) {
+        console.error(`FAIL  ${notRead}`)
+        console.error('Nothing was written.')
+        process.exit(1)
+      }
+
       const value = readValue(rawValue)
       const candidate = {
         scope: scopeOf(target),

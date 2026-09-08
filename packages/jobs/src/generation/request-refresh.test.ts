@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { sql } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import {
   accountScope,
   insertArticleStub,
@@ -7,6 +8,7 @@ import {
   insertTopic,
   listTopicsInRange,
   recordArticleRefresh,
+  schema,
   type Db,
 } from '@sortiva/db'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
@@ -228,5 +230,78 @@ describe.skipIf(!available)('the refresh pool', () => {
 
     const pool = await new DbOpportunitySource(db).acceptedContentOpportunities(accountId)
     expect(pool).toHaveLength(1)
+  })
+
+  // ── An operator moving one of these numbers for one store ─────────────────
+  //
+  // The refresh pool judges a merchant's press against thresholds an operator
+  // can move for a single store without a deploy, and the piece of work it
+  // writes records which numbers judged it. Both halves matter: the decision
+  // has to change, and the record has to say it was made under a moved number
+  // rather than under the ones in the repo.
+
+  async function setOverride(forAccountId: string, key: string, value: unknown): Promise<void> {
+    await db.insert(schema.rulesOverrides).values({
+      accountId: forAccountId,
+      locale: null,
+      pageType: null,
+      key,
+      value,
+      updatedBy: 'test-operator',
+      updatedAt: NOW,
+    })
+  }
+
+  async function stampedVersion(articleId: string): Promise<string> {
+    const [row] = await db
+      .select({ rulesVersion: schema.opportunities.rulesVersion })
+      .from(schema.opportunities)
+      .where(
+        and(
+          eq(schema.opportunities.accountId, accountId),
+          eq(schema.opportunities.entityType, 'article'),
+          eq(schema.opportunities.entityRef, articleId),
+        ),
+      )
+    if (!row) throw new Error('no piece of work was written for that article')
+    return row.rulesVersion
+  }
+
+  it('admits a press the repo numbers refuse, once the cooldown is moved for that store', async () => {
+    const articleId = await publishedArticle()
+    await recordArticleRefresh(db, accountScope(accountId), articleId, new Date('2026-08-08T08:00:00.000Z'))
+
+    // 30 days ago, against a cooldown of 60: refused everywhere by default.
+    expect(
+      await requestArticleRefresh(deps(), { accountId, articleId, source: 'merchant_request' }),
+    ).toEqual({ ok: false, reason: 'not_eligible', blockers: ['within_cooldown'] })
+
+    await setOverride(accountId, 'learning.refresh.cooldown_days', 7)
+
+    expect(
+      await requestArticleRefresh(deps(), { accountId, articleId, source: 'merchant_request' }),
+    ).toMatchObject({ ok: true, created: true })
+    // The record says it was judged by a moved number, not by the repo file.
+    expect(await stampedVersion(articleId)).toMatch(
+      new RegExp(`^${rules().rulesVersion}\\+ov\\.[0-9a-f]{16}$`),
+    )
+  })
+
+  it('leaves a store with no row of its own judged and stamped exactly as before', async () => {
+    const somebodyElse = await insertAccount(ctx.pool, 'not-this-store@example.com')
+    await setOverride(somebodyElse, 'learning.refresh.cooldown_days', 7)
+
+    const articleId = await publishedArticle()
+    await recordArticleRefresh(db, accountScope(accountId), articleId, new Date('2026-08-08T08:00:00.000Z'))
+
+    expect(
+      await requestArticleRefresh(deps(), { accountId, articleId, source: 'merchant_request' }),
+    ).toEqual({ ok: false, reason: 'not_eligible', blockers: ['within_cooldown'] })
+
+    const fresh = await publishedArticle()
+    expect(
+      await requestArticleRefresh(deps(), { accountId, articleId: fresh, source: 'merchant_request' }),
+    ).toMatchObject({ ok: true })
+    expect(await stampedVersion(fresh)).toBe(rules().rulesVersion)
   })
 })
