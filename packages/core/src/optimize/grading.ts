@@ -77,7 +77,7 @@ export function evaluateOptimizeFloors(
  * because a fabricated "from £120" reads as verified against a figure that was
  * never in the writing prompt. The store's facts therefore come from
  * `citableStoreFacts`, the same call that renders them into the writer's prompt,
- * rather than from a second walk over the pack. `optimize-evidence-parity.test.ts`
+ * rather than from a second walk over the pack. `evidence-parity.test.ts`
  * fails if the two ever diverge again.
  *
  * **Less than the writer had, on purpose.** The page's body text, the search
