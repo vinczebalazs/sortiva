@@ -22,8 +22,19 @@ export interface FactSheet {
   readonly use_cases_stated: readonly string[]
   readonly care: string | null
   /**
-   * The axes the product's own variants differ along. Merged from the stored
-   * variant data rather than extracted, because it is already structured.
+   * The merchant's own names for the options defined on this product — "Size",
+   * "Colour". Copied from the store's option definitions rather than
+   * extracted, because they are already structured and a model asked to name
+   * an axis would sooner or later name one nobody chose.
+   *
+   * Names only, and the values are dropped on purpose: a sheet describes one
+   * product, so listing them would say a shoe is black *and* tan. And a name
+   * lands here whenever the merchant *defined* the option — whether they
+   * filled it with twelve values, with one, or with none at all. Only
+   * Shopify's `Title: Default Title` placeholder is removed. So a shop selling
+   * one black shoe and a shop selling five colourways both store "Colour", and
+   * nothing in this field tells them apart: it says an option exists, never
+   * that a choice does.
    */
   readonly variant_axes: readonly string[]
   /** Merged from the product's variants, never taken from the model. */
