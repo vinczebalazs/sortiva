@@ -32,6 +32,7 @@ import {
   latestGscQueryDay,
   listFamilies,
   listOpenOpportunities,
+  readNotInterestedList,
   readPersona,
   transitionOpportunityStatus,
   upsertOpportunity,
@@ -366,6 +367,9 @@ async function runSignalScanLocked(
 
   const openBeforeThisPass = await listOpenOpportunities(deps.db, scope)
   const openTechnicalBlockers = blockingFixLookup(openBeforeThisPass)
+  // Read once for the pass rather than per candidate: every candidate is in
+  // hand before any of them is written.
+  const notInterested = await readNotInterestedList(deps.db, scope)
 
   const patternClamp = { min: layer.learning.patterns.multiplier_clamp_min, max: layer.learning.patterns.multiplier_clamp_max }
   const drafts = signals.map((signal) => {
@@ -397,6 +401,7 @@ async function runSignalScanLocked(
   let created = 0
   let updated = 0
   let expired = 0
+  let withheld = 0
   const attribution = accountAttribution(accountId)
   const detectedEntityRefsByType = new Map<string, Set<string>>()
 
@@ -404,6 +409,20 @@ async function runSignalScanLocked(
     const set = detectedEntityRefsByType.get(draft.signalType) ?? new Set<string>()
     set.add(draft.entityRef)
     detectedEntityRefsByType.set(draft.signalType, set)
+
+    // The merchant has already said "not interested" to this kind of advice
+    // about this entity, so we do not put it back in front of them. The
+    // dismissed row itself cannot do this job: the dedupe index covers open
+    // rows only, so writing here would simply create a second, fresh one.
+    //
+    // The entity is counted as detected above regardless, deliberately — the
+    // evidence still holds, we are only declining to say so again, and letting
+    // this fall through would retire whatever else is open on the same signal
+    // and entity as if the evidence had gone away.
+    if (notInterested.has(draft.signalType, draft.entityRef)) {
+      withheld += 1
+      continue
+    }
 
     const { row, created: isNew } = await upsertOpportunity(deps.db, scope, draft, startedAt)
     if (isNew) {
@@ -561,6 +580,10 @@ async function runSignalScanLocked(
     opportunities_created: created,
     opportunities_updated: updated,
     opportunities_expired: expired,
+    // Candidates this pass found and did not write, because the merchant had
+    // already turned them down. Logged only: `signal_runs` has no column for it
+    // and adding one is a schema wave's to add, not this pass's.
+    opportunities_withheld: withheld,
     duration_ms: finishedAt.getTime() - startedAt.getTime(),
   })
 

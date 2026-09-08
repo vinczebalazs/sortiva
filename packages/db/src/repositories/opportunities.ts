@@ -468,6 +468,34 @@ export async function moveOpenOpportunitiesToAddress(
 }
 
 /**
+ * Puts one `(signal_type, entity_ref)` pair on the store's not-interested list.
+ *
+ * The single place that pair is written, so every route to "not interested"
+ * leaves the same record. Re-dismissing the same pair moves the date rather
+ * than failing: the merchant said no twice, which is not an error.
+ */
+async function recordNotInterested(
+  db: Db,
+  scope: AccountScope,
+  signalType: OpportunityRow['signalType'],
+  entityRef: string,
+  now: Date,
+): Promise<void> {
+  await db
+    .insert(dismissedOpportunities)
+    .values({
+      accountId: scope.accountId,
+      signalType,
+      entityRef,
+      dismissedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: [dismissedOpportunities.accountId, dismissedOpportunities.signalType, dismissedOpportunities.entityRef],
+      set: { dismissedAt: sql`excluded.dismissed_at` },
+    })
+}
+
+/**
  * The user says no. Moves the row to `dismissed` and writes the not-interested
  * marker in the same call, so the two halves of main §7.9's rule — the row
  * leaves the open list, and the signal is never re-proposed — cannot come
@@ -476,6 +504,11 @@ export async function moveOpenOpportunitiesToAddress(
  * rather than reopening a conversation the merchant already ended — the
  * caller checking `dismissed_opportunities` before writing a new row is what
  * makes that true; this function only writes the marker.
+ *
+ * Nothing in the product calls this: the merchant's own button goes through
+ * `dismissOpportunityGuarded`, which does the same two writes in one
+ * transaction. Kept because it is the plain-`Db` form and is exercised by the
+ * repository tests; see DECISIONS 2026-09-08 R-DISMISS-DOES-NOTHING.
  */
 export async function dismissOpportunity(
   db: Db,
@@ -492,18 +525,7 @@ export async function dismissOpportunity(
   )
   if (!dismissed) return undefined
 
-  await db
-    .insert(dismissedOpportunities)
-    .values({
-      accountId: scope.accountId,
-      signalType: dismissed.signalType,
-      entityRef: dismissed.entityRef,
-      dismissedAt: now,
-    })
-    .onConflictDoUpdate({
-      target: [dismissedOpportunities.accountId, dismissedOpportunities.signalType, dismissedOpportunities.entityRef],
-      set: { dismissedAt: sql`excluded.dismissed_at` },
-    })
+  await recordNotInterested(db, scope, dismissed.signalType, dismissed.entityRef, now)
 
   return dismissed
 }
@@ -527,6 +549,34 @@ export async function isDismissed(
     )
     .limit(1)
   return row !== undefined
+}
+
+/**
+ * One store's whole not-interested list, in the form a detection pass needs it:
+ * something to ask about each candidate it is holding.
+ *
+ * A pass has every candidate in hand before it writes any of them, so it asks
+ * once for the list rather than once per candidate — `isDismissed` is the
+ * single-pair form, for a caller that only has one pair.
+ */
+export interface NotInterestedList {
+  /** True when this store has already said no to this signal on this entity. */
+  has(signalType: string, entityRef: string): boolean
+}
+
+export async function readNotInterestedList(db: Db, scope: AccountScope): Promise<NotInterestedList> {
+  const rows = await db
+    .select({
+      signalType: dismissedOpportunities.signalType,
+      entityRef: dismissedOpportunities.entityRef,
+    })
+    .from(dismissedOpportunities)
+    .where(eq(dismissedOpportunities.accountId, scope.accountId))
+
+  // A tab cannot occur in a signal type — they are enum labels — so it cannot
+  // make two different pairs collide into one key.
+  const pairs = new Set(rows.map((row) => `${row.signalType}\t${row.entityRef}`))
+  return { has: (signalType, entityRef) => pairs.has(`${signalType}\t${entityRef}`) }
 }
 
 /** Undoes a dismissal — the "show dismissed" view's own control (main §7.9) — back to `new` so the merchant sees it decided again rather than silently re-entering autopilot. */
@@ -687,6 +737,15 @@ export async function findOpportunityById(
  * written inside one transaction so the `from` status the PostHog event
  * carries is the status that was actually true the instant this update
  * committed, not one read moments earlier and possibly stale.
+ *
+ * The not-interested marker is written here, in that same transaction, rather
+ * than by whoever called this. The status alone cannot keep a signal away: the
+ * unique index that stops a re-detected signal duplicating covers open rows
+ * only, so a dismissed row is invisible to it and the next detection pass
+ * simply inserts a fresh one. The marker is what the pass reads instead — and
+ * a marker written outside this transaction could be lost while the status
+ * flip survived, which is a merchant told "not interested" and shown it again
+ * the following Monday.
  */
 export async function dismissOpportunityGuarded(
   db: Db,
@@ -716,6 +775,7 @@ export async function dismissOpportunityGuarded(
       )
       .returning()
     if (!row) return undefined
+    await recordNotInterested(tx, scope, row.signalType, row.entityRef, now)
     return { row, from: before.status }
   })
 }
