@@ -3,7 +3,7 @@ import { and, asc, eq, inArray, isNotNull, sql } from 'drizzle-orm'
 import type { Db } from '../client'
 import { articles, products, publishIntents, shopifyConns, storePages } from '../schema'
 import type { AccountScope, SystemScope } from '../scope'
-import { moveOpenOpportunitiesToAddress } from './opportunities'
+import { moveDismissalsToAddress, moveOpenOpportunitiesToAddress } from './opportunities'
 
 export type StorePageRow = typeof storePages.$inferSelect
 
@@ -259,6 +259,14 @@ export async function shopPostsWePublished(
  * and the merchant has not acted on the advice. Moving them in this transaction
  * rather than after it is what stops that pass from seeing a gone address with
  * live cards pointing at it at all.
+ *
+ * So do the suggestions the merchant answered with "not interested". They told
+ * us no about this page; a new address is not a new question. Note the reach of
+ * that, because it is narrower than it sounds: this function is the only place
+ * an address change is recognised as the same page, and it is only ever reached
+ * for a post we published ourselves. A merchant's own page that changes address
+ * is marked gone and its replacement arrives as a new page, so a refusal about
+ * it does not follow.
  */
 export async function followOurArticleRename(
   db: Db,
@@ -294,6 +302,7 @@ export async function followOurArticleRename(
       )
 
     await moveOpenOpportunitiesToAddress(tx, scope, { from: move.from, to: move.to }, now)
+    await moveDismissalsToAddress(tx, scope, { from: move.from, to: move.to }, now)
     return true
   })
 }

@@ -468,6 +468,99 @@ export async function moveOpenOpportunitiesToAddress(
 }
 
 /**
+ * Carries the merchant's "not interested" over to the address the page now
+ * lives at, so advice they have already declined is not offered again the
+ * moment the page changes address.
+ *
+ * **What this covers, and it is the smaller half of the pages these suggestions
+ * are about.** A rename is only ever recognised for a post we published to the
+ * shop ourselves, matched by the shop's own id for that post. A merchant's own
+ * collection, product or page that changes address is not recognised as a
+ * rename by anything: the old address is marked gone and the new one arrives as
+ * a page we have never seen, so a dismissal against the old address stays where
+ * it is and the advice is offered again at the new one. Matching a merchant's
+ * own page across an address change would be a guess, and nobody has decided
+ * how it should be made.
+ *
+ * Both the refusal marker and the dismissed row it came from move, together.
+ * The "show dismissed" undo deletes the marker by reading the row's own
+ * address, so a marker that moved without its row could never be undone — the
+ * merchant would be left with advice suppressed for good and a button that
+ * silently does nothing.
+ *
+ * A refusal already recorded at the new address wins and the old one is left
+ * behind: the merchant answered about the page as it now is, and only one
+ * answer per kind of advice per address can be held.
+ */
+export async function moveDismissalsToAddress(
+  db: Db,
+  scope: AccountScope,
+  move: { readonly from: string; readonly to: string },
+  now: Date = new Date(),
+): Promise<{ readonly moved: number; readonly leftBehind: number }> {
+  const from = normalisePageUrl(move.from)
+  const to = normalisePageUrl(move.to)
+  if (from === to) return { moved: 0, leftBehind: 0 }
+
+  const markers = await db
+    .select()
+    .from(dismissedOpportunities)
+    .where(eq(dismissedOpportunities.accountId, scope.accountId))
+
+  const takenAtDestination = new Set(
+    markers.filter((row) => normalisePageUrl(row.entityRef) === to).map((row) => row.signalType),
+  )
+
+  let moved = 0
+  let leftBehind = 0
+  for (const marker of markers) {
+    if (normalisePageUrl(marker.entityRef) !== from) continue
+    if (takenAtDestination.has(marker.signalType)) {
+      leftBehind += 1
+      continue
+    }
+
+    // Written before the old one is removed, and tolerant of a conflict, so a
+    // merchant pressing "not interested" on the new address in the same instant
+    // keeps their newer answer instead of this failing the whole rename.
+    await db
+      .insert(dismissedOpportunities)
+      .values({
+        accountId: scope.accountId,
+        signalType: marker.signalType,
+        entityRef: to,
+        dismissedAt: marker.dismissedAt,
+      })
+      .onConflictDoNothing()
+    await db
+      .delete(dismissedOpportunities)
+      .where(
+        and(
+          eq(dismissedOpportunities.accountId, scope.accountId),
+          eq(dismissedOpportunities.signalType, marker.signalType),
+          eq(dismissedOpportunities.entityRef, marker.entityRef),
+        ),
+      )
+    await db
+      .update(opportunities)
+      .set({ entityRef: to, updatedAt: now })
+      .where(
+        and(
+          eq(opportunities.accountId, scope.accountId),
+          eq(opportunities.signalType, marker.signalType),
+          eq(opportunities.entityRef, marker.entityRef),
+          eq(opportunities.status, 'dismissed'),
+        ),
+      )
+
+    takenAtDestination.add(marker.signalType)
+    moved += 1
+  }
+
+  return { moved, leftBehind }
+}
+
+/**
  * Puts one `(signal_type, entity_ref)` pair on the store's not-interested list.
  *
  * The single place that pair is written, so every route to "not interested"
