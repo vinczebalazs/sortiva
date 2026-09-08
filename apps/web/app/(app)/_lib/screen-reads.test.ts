@@ -120,20 +120,30 @@ function isElement(node: unknown): node is Required<ReactNodeish> {
 interface Pass {
   /** Handlers found on this pass, in the order they were rendered. */
   readonly handlers: { readonly name: string; readonly fn: (...args: unknown[]) => unknown }[]
-  /** Components that threw while rendering, so a driver that saw nothing says why. */
-  readonly failures: string[]
   rendered: number
 }
+
+/**
+ * Where a render stopped, gathered across the whole of one drive.
+ *
+ * A component that throws returns no tree, so everything below it is never
+ * walked and not one of its reads is seen. Letting that pass quietly is how a
+ * check comes to claim more ground than it covers, which is the fault this file
+ * exists to end — so the suite holds this list against what each pass is
+ * entitled to: nothing at all on the answer as sent, and a named, reasoned list
+ * on the emptied one.
+ */
+const renderStops: string[] = []
 
 /**
  * Renders one element tree by calling every function component in it, which is
  * all a field read needs: the read happens in the component's own body, or in a
  * handler this collects on the way past.
  */
-function walk(node: unknown, path: string, pass: Pass, depth: number): void {
+async function walk(node: unknown, path: string, pass: Pass, depth: number): Promise<void> {
   if (depth > 60 || node === null || node === undefined || typeof node !== 'object') return
   if (Array.isArray(node)) {
-    node.forEach((child, index) => walk(child, `${path}/${index}`, pass, depth + 1))
+    for (const [index, child] of node.entries()) await walk(child, `${path}/${index}`, pass, depth + 1)
     return
   }
   if (!isElement(node)) return
@@ -159,22 +169,32 @@ function walk(node: unknown, path: string, pass: Pass, depth: number): void {
       output = (type as (p: unknown) => unknown)(props)
       pass.rendered += 1
     } catch (error) {
-      pass.failures.push(`${here}: ${(error as Error).message}`)
+      renderStops.push(`${here}: ${(error as Error).message}`)
       output = null
     } finally {
       slots = previousSlots
       cursor = previousCursor
       currentInstance = previousInstance
     }
-    walk(output, here, pass, depth + 1)
+    // A server component is an async function; what it returns is a promise of
+    // its tree, and everything inside it would be invisible without this.
+    if (output instanceof Promise) {
+      try {
+        output = await output
+      } catch (error) {
+        renderStops.push(`${here}: ${(error as Error).message}`)
+        output = null
+      }
+    }
+    await walk(output, here, pass, depth + 1)
     return
   }
 
-  walk(props?.children, path, pass, depth + 1)
+  await walk(props?.children, path, pass, depth + 1)
 }
 
 function pass(): Pass {
-  return { handlers: [], failures: [], rendered: 0 }
+  return { handlers: [], rendered: 0 }
 }
 
 /**
@@ -189,9 +209,8 @@ async function run(element: unknown): Promise<Pass> {
   pendingEffects = []
   for (let round = 0; round < 3; round += 1) {
     const current = pass()
-    walk(element, '', current, 0)
+    await walk(element, '', current, 0)
     all.handlers.push(...current.handlers)
-    all.failures.push(...current.failures)
     all.rendered += current.rendered
     await settleEffects()
     for (const handler of current.handlers) {
@@ -511,6 +530,21 @@ interface ScreenDriver {
   readonly run: () => Promise<void>
 }
 
+/**
+ * The day the answers below describe, asked of the fixtures rather than
+ * repeated here.
+ *
+ * Every screen is driven as if it were that day, because a calendar or a chart
+ * drawn around a different "today" has no cell for any of this to land in: it
+ * draws an empty grid, and every read that would have happened inside a chip
+ * that was never drawn goes unseen. Repeating the date here would let the
+ * fixtures move and take that coverage away in silence.
+ */
+async function fixtureToday(): Promise<Date> {
+  const { FIXTURE_NOW } = await import('@sortiva/ui/msw')
+  return new Date(FIXTURE_NOW)
+}
+
 /** A press hands its handler a synthetic event carrying something typeable. */
 const TYPED = 'example-outdoor.com'
 
@@ -812,6 +846,66 @@ const UNDRIVEN: Readonly<Record<string, string>> = {
     'identity library\'s, not one this contract declares. Pinned by signout.test.ts.',
 }
 
+// ── Where the emptied pass runs out of screen ────────────────────────────────
+
+/**
+ * Screens whose second drive stops part way, and what each one costs.
+ *
+ * The second drive hands the screen the same answer with every value emptied
+ * out, which is the only way to reach a fallback: `a.url ?? a.redirectUrl` never
+ * touches the second name while the first has a value. Emptying values is
+ * deliberately something no real endpoint does, so a component that formats a
+ * number, looks a word up by a value, or maps over a list will throw the moment
+ * it touches one — and a component that throws renders nothing, so the fallback
+ * reads *below* it are never reached on that pass.
+ *
+ * None of this is a fault in the screen. What it is, is the exact edge of what
+ * this file can say: on these screens, a hedge between two spellings sitting
+ * underneath the named component would still go unnoticed. The first drive, on
+ * the answer as really sent, reaches every one of them — so a field a screen
+ * simply reads is covered everywhere; it is only the unreached branch that is
+ * not.
+ *
+ * Held exactly, so that a screen which starts stopping has to be added with a
+ * sentence, and one that stops stopping has to be taken out.
+ */
+const EMPTIED_PASS_STOPS: Readonly<Record<string, string>> = {
+  'Opportunities — the list and the drawer over it':
+    'a card\'s chip row and the drawer over it both stop on an emptied value, so the fallbacks ' +
+    'in the rest of a card\'s chips and in the whole of the drawer body are not reached.',
+  'Content — the articles library':
+    'the library stops asking the copy catalogue for the word for an article state that is now ' +
+    'blank, so the fallbacks in the list below it are not reached.',
+  'Content — one article':
+    'the same lookup stops the article page, so the fallbacks in the quality report, the task ' +
+    'list and the export controls under it are not reached.',
+  'Products':
+    'the screen stops asking for the word for a product-richness band that is now blank, so the ' +
+    'fallbacks in the family list under it are not reached.',
+  'Performance — the Search Console page':
+    'the results table stops formatting a number that is now blank, so the fallbacks in its rows ' +
+    'are not reached.',
+  'Performance — the Search Console tab':
+    'the same table, driven directly rather than through its page, and the same stop.',
+  'Settings — Connections, as the page assembles it':
+    'the connections list stops asking for the word for a connection state that is now blank, so ' +
+    'the fallbacks in the rows under it are not reached.',
+  'Settings — Connections':
+    'the same component driven directly rather than through its page, and the same stop.',
+  'Settings — Account, as the page assembles it':
+    'the billing card stops asking for the word for a subscription state that is now blank, so ' +
+    'the fallbacks below it are not reached.',
+  'Settings — Account':
+    'the same component driven directly rather than through its page, and the same stop.',
+  'Settings — Store profile':
+    'the competitors and families sections both stop — one on a word keyed by a value that is ' +
+    'now blank, one on a list that is no longer a list — so the fallbacks under both are not ' +
+    'reached.',
+  'Shell — notification bell':
+    'the bell stops having no line to show for a notification type that is now blank, so the ' +
+    'fallbacks in the notification list are not reached.',
+}
+
 // ── The suite ────────────────────────────────────────────────────────────────
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -851,6 +945,8 @@ interface DriverResult {
   readonly screen: string
   readonly reads: readonly Read[]
   readonly unmatched: readonly string[]
+  /** Where the emptied pass stopped, if it did; see `EMPTIED_PASS_STOPS`. */
+  readonly stoppedWhenEmptied: readonly string[]
 }
 
 const results: DriverResult[] = []
@@ -861,7 +957,11 @@ describe('every field a screen reads is one the endpoint sends', () => {
       const seen: Read[] = []
       const sent: string[] = []
       const stray: string[] = []
+      const stoppedOnReal: string[] = []
+      const stoppedWhenEmptied: string[] = []
+      const today = await fixtureToday()
       for (const fill of ['as sent', 'emptied'] as const) {
+        renderStops.length = 0
         reads = []
         unmatched = []
         requests = []
@@ -869,19 +969,30 @@ describe('every field a screen reads is one the endpoint sends', () => {
         ranEffects.clear()
         pendingEffects = []
         propsFill = fill
+        vi.useFakeTimers({ toFake: ['Date'] })
+        vi.setSystemTime(today)
         vi.stubGlobal('fetch', network(fill))
         vi.stubGlobal('window', { location: { assign: () => {}, href: '', origin: 'http://localhost:3000' } })
         try {
           await driver.run()
         } finally {
           vi.unstubAllGlobals()
+          vi.useRealTimers()
           propsFill = 'as sent'
         }
         seen.push(...reads)
         sent.push(...requests)
         stray.push(...unmatched)
+        ;(fill === 'as sent' ? stoppedOnReal : stoppedWhenEmptied).push(...new Set(renderStops))
       }
-      results.push({ screen: driver.screen, reads: seen, unmatched: stray })
+      results.push({ screen: driver.screen, reads: seen, unmatched: stray, stoppedWhenEmptied })
+
+      expect(
+        stoppedOnReal,
+        `${driver.screen} stopped part way through rendering the answer its endpoints really ` +
+          'send. Everything below that point was never rendered and none of its reads were seen, ' +
+          'so this screen is covered less than the rest of this file claims.',
+      ).toEqual([])
 
       expect(
         seen.length + sent.length,
@@ -911,6 +1022,29 @@ describe('every field a screen reads is one the endpoint sends', () => {
       'the screens above between them read almost nothing, which means they are not really being ' +
         'run and every check in this file is passing over an empty list',
     ).toBeGreaterThan(60)
+  })
+
+  it('says exactly which screens the emptied pass runs out of', () => {
+    const stopping = results.filter((result) => result.stoppedWhenEmptied.length > 0).map((result) => result.screen)
+    const undeclared = stopping.filter((screen) => EMPTIED_PASS_STOPS[screen] === undefined)
+    expect(
+      undeclared,
+      'the emptied pass stopped part way through a screen nothing here admits to. Either the ' +
+        'screen was made to survive an emptied answer, or this file is quietly covering less than ' +
+        'it says — add it to EMPTIED_PASS_STOPS with what stopping there costs.',
+    ).toEqual([])
+
+    const overstated = Object.keys(EMPTIED_PASS_STOPS).filter((screen) => !stopping.includes(screen))
+    expect(
+      overstated,
+      'a screen is recorded as one the emptied pass runs out of, and it no longer does. Delete ' +
+        'the entry: an admission that is no longer true reads as a limit this file does not have.',
+    ).toEqual([])
+
+    const wordless = Object.entries(EMPTIED_PASS_STOPS)
+      .filter(([, cost]) => cost.trim().length < 20)
+      .map(([screen]) => screen)
+    expect(wordless, 'naming a screen without saying what it costs is the same as skipping it').toEqual([])
   })
 
   it('sends only to addresses the contract declares', () => {
