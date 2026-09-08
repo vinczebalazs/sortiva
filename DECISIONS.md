@@ -6452,3 +6452,24 @@ Card `R-DISMISS-DOES-NOTHING`, Lane C. Both halves of the reported defect were r
 
 **Also flagged, not fixed:** `dismissOpportunity` in the opportunities repository has no production caller and never had one. Its name collides with a differently-shaped `dismissOpportunity` in `packages/jobs/src/generation/veto-topic.ts`, and that collision is how the original defect hid — the button reached one, the tests exercised the other. Both now write the marker through the same private helper, so they cannot diverge, but the duplicate is worth removing on a card of its own.
 Nearest spec: main §7.9; invariant 10.
+
+## 2026-09-08 — R-SKIP-TASK — The drawer offers "Skip" again, and it goes to the address that records a refusal
+
+Decision (implementation of the founder's answer of today). A merchant reading a page-improvement suggestion sees a checklist of small edits. Each open item now offers two answers instead of one: "Mark applied" and "Skip". Skipping posts to `POST /api/recommendations/{id}/skip`, which the integrator built this morning, and which stores the refusal as a refusal.
+
+**What changes for a merchant.** They can decline one edit and leave the rest open. Until today the only answer the screen would accept was "I did it", so a merchant who disagreed with one line either had to claim they had done it or leave it open forever. The control existed once and posted to an address nobody had built, so it had only ever failed; it was removed rather than repaired.
+
+**The two things that make this correct rather than merely present.**
+
+*Skipping names its task, and there is no bulk form.* The apply endpoint treats an absent task id as "the whole recommendation", which is a useful thing to ask for. The skip endpoint refuses that outright. So the screen offers exactly one skip control per task and no "skip all"; the actions layer has a `skipTask` and deliberately no counterpart to `applyAll`, and a test asserts the list of presses the screen can make, so adding a bulk skip would go red rather than through. A merchant who wants nothing to do with a whole suggestion dismisses the opportunity, which is a different act with its own record.
+
+*A declined task reads as declined.* Checked before changing anything, because the card warned about it: the drawer already rendered a skipped task as "Skipped", distinct from "Applied", and had done since the state existed. **Nothing was wrong and nothing was changed.** It was untested, though — the only assertion about a skipped task was that the button was gone — so there is now a test that a skipped task says "Skipped" and does not say "Applied". This matters because the two words sit in the same list and the same row is what outcome measurement later reads.
+
+**Nothing needed inventing.** The endpoint, its request and response shapes, the frozen route table's entry, the database state and the development mock's answer all existed before this session. The words did too: `opportunities.drawer.skip` ("Skip") and `opportunities.drawer.skipped` ("Skipped") had survived in the copy catalogue since the control was removed, so no new sentence was written and no canonical copy was touched.
+
+**One wording note, not a change.** The work plan and the earlier journal entries describe the control as "Skip this task". The catalogue string is "Skip", and it is what the button showed before removal. Left as it is — the surrounding prose was describing the control, not quoting it — but recorded here in case the founder meant the longer label.
+
+Mutation-checked four ways, each restored afterwards: pointing the skip press at the apply address fails three tests across two files; sending the skip with no task id fails one; deleting the Skip button again fails one; and rendering a skipped task as "Applied" fails one.
+
+**Two files touched outside `packages/ui`, both inside Lane F's own directories:** the address walk in `apps/web/app/(app)/_lib/screen-addresses.test.ts`, which asserts the exact list of requests the screen can make and so had to learn the new one. Nothing in another lane's directory was edited.
+Nearest spec: main §10.4; ui §5.3; `DECISIONS.md` 2026-09-08 `R-SKIP-TASK` (the integrator's entry, which this completes).

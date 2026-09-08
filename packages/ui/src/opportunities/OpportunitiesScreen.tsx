@@ -198,9 +198,14 @@ export function OpportunitiesScreen({
             const row = detail.opportunity
             void actions.generate(row).then(() => reloadDetail(row))
           }}
-          onTask={(task) => {
+          onTask={(task, state) => {
             const row = detail.opportunity
-            void actions.markTask(row, task.id).then(() => reloadDetail(row))
+            // Two answers, two addresses. Skipping is not applying with a flag:
+            // the server keeps its own record so a declined task is never
+            // counted as work done.
+            const press =
+              state === 'skipped' ? actions.skipTask(row, task.id) : actions.markTask(row, task.id)
+            void press.then(() => reloadDetail(row))
           }}
           onMarkAllApplied={() => {
             const row = detail.opportunity

@@ -39,7 +39,8 @@ export interface OpportunityDrawerProps {
   readonly detail: OpportunityDetail
   readonly t?: Translate
   readonly onClose?: () => void
-  readonly onTask?: (task: OpportunityTask) => void
+  /** The answer names its task; there is no way to answer for all of them at once. */
+  readonly onTask?: (task: OpportunityTask, state: 'applied' | 'skipped') => void
   readonly onMarkAllApplied?: () => void
   readonly onGenerate?: () => void
   /** Regeneration waits for new evidence; until then the stored recommendation is what there is. */
@@ -364,19 +365,30 @@ export function OpportunityDrawer({
               <li key={task.id} className="sortiva-drawer__task" data-task-id={task.id}>
                 <span>{task.label}</span>
                 {task.state === 'open' ? (
-                  // Applied is the only answer that has anywhere to go: no
-                  // endpoint in the contract records a task as skipped, and the
-                  // "Skip" control that used to sit here posted to an address
-                  // that has never existed. It comes back when a route does.
-                  <button
-                    type="button"
-                    className="sortiva-opp__secondary"
-                    data-task-action="applied"
-                    disabled={busy}
-                    onClick={() => onTask?.(task)}
-                  >
-                    {t('opportunities.drawer.markApplied')}
-                  </button>
+                  // Both answers are per task and neither is offered in bulk.
+                  // Declining is a separate act with a separate record: it must
+                  // never travel as an application, because the row it writes is
+                  // what outcome measurement later reads.
+                  <>
+                    <button
+                      type="button"
+                      className="sortiva-opp__secondary"
+                      data-task-action="applied"
+                      disabled={busy}
+                      onClick={() => onTask?.(task, 'applied')}
+                    >
+                      {t('opportunities.drawer.markApplied')}
+                    </button>
+                    <button
+                      type="button"
+                      className="sortiva-opp__secondary"
+                      data-task-action="skipped"
+                      disabled={busy}
+                      onClick={() => onTask?.(task, 'skipped')}
+                    >
+                      {t('opportunities.drawer.skip')}
+                    </button>
+                  </>
                 ) : (
                   <span className="sortiva-drawer__task-state" data-task-state={task.state}>
                     {t(`opportunities.drawer.${task.state}` as StringKey)}
