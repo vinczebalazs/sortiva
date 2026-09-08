@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { generateTasks } from './tasks'
 import type { ExistingPageIntentGapSignal, IndexingIssueSignal } from './p1-signal-shapes'
+import { coverageAnswerFor } from '../signals/testing'
 
 const EVIDENCE = [{ key: 'position', value: 5, source: 'gsc', fetchedAt: 'x' }]
 
@@ -66,6 +67,7 @@ describe('generateTasks', () => {
       familyIds: ['f1'],
       source: 'merchant_seed',
       weakExistingTarget: '/products/y',
+      clearance: coverageAnswerFor({ head: 'x', familyIds: ['f1'], found: 'weak', url: '/products/y' }).clearance,
       evidence: EVIDENCE,
     })
     expect(withLink.map((t) => t.kind)).toEqual(['schedule_topic', 'internal_links'])
@@ -78,6 +80,7 @@ describe('generateTasks', () => {
       familyIds: ['f1'],
       source: 'merchant_seed',
       weakExistingTarget: null,
+      clearance: coverageAnswerFor({ head: 'x', familyIds: ['f1'] }).clearance,
       evidence: EVIDENCE,
     })
     expect(withoutLink.map((t) => t.kind)).toEqual(['schedule_topic'])

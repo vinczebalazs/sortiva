@@ -4,6 +4,10 @@ import { type FactSheet, emptyFactSheet } from '../distill/schema'
 import { buildQueryClusters, type ClusterDefinition, type ClusterShareRow } from '../search'
 import { type DetectionWindow, type PageFact, indexPages } from './types'
 import type { ProductSubstance } from './substance'
+import type { IntentClass } from '../contracts/opportunities'
+import type { ExistingTargetPage } from '../opportunities/ports'
+import { findExistingTarget, toCoverageAnswer } from '../opportunities/existing-target'
+import type { ExistingCoverage } from './candidates'
 
 /**
  * Turning a worked example into detector input.
@@ -168,4 +172,55 @@ export function substanceInputFor(store: SyntheticStore, familyKey: string): Pro
       familyId: familyKey,
       factSheet: factSheetFor(product),
     }))
+}
+
+/**
+ * An existing-target answer for a test, obtained the way production obtains
+ * one: by running the real check over a store arranged to produce it.
+ *
+ * Deliberately not a literal. The clearance inside an answer is what permits a
+ * new page, and it can only come from the check — so a test that wants to
+ * describe "the store has nothing for this" has to make the check say so,
+ * which means the fixture and the rule cannot drift apart.
+ */
+export function coverageAnswerFor(options: {
+  readonly head: string
+  readonly familyIds?: readonly string[]
+  readonly intentClass?: IntentClass
+  /** What the arranged store should make the check conclude. Defaults to nothing found. */
+  readonly found?: 'none' | 'weak' | 'strong'
+  readonly url?: string
+  readonly pageType?: ExistingTargetPage['pageType']
+}): ExistingCoverage {
+  const familyIds = options.familyIds ?? ['fixture-family']
+  const intentClass = options.intentClass ?? 'buying_guide'
+  const found = options.found ?? 'none'
+  const url = options.url ?? 'https://shop.example/collections/fixture'
+
+  const pages: ExistingTargetPage[] =
+    found === 'none'
+      ? []
+      : [
+          {
+            url,
+            pageType: options.pageType ?? 'collection',
+            // A page whose purpose nobody has established is the check's own
+            // definition of a match too weak to take the work over.
+            intentClass: found === 'strong' ? intentClass : null,
+            familyIds,
+            presence: 'published',
+          },
+        ]
+
+  return toCoverageAnswer(
+    findExistingTarget({
+      cluster: { head: options.head, members: [], intentClass, familyIds },
+      rankedPages: [],
+      pages,
+      proxyRankings: [],
+      limitedIntelligence: false,
+      config: rulesLayer().gates.existing_target_check,
+      fetchedAt: FETCHED_AT,
+    }),
+  )
 }

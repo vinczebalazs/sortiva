@@ -13,6 +13,7 @@ import type { ExistingCoverage, KeywordCandidate } from '../signals/candidates'
 import {
   FETCHED_AT,
   clustersFrom,
+  coverageAnswerFor,
   inventoryFor,
   rulesLayer,
   scenarioRows,
@@ -112,7 +113,10 @@ describe('worked example 3 — missing coverage', () => {
       source: 'merchant_seed',
     }
     const coverage = new Map<string, ExistingCoverage>([
-      ['best road running shoes', { strength: 'none' }],
+      [
+        'best road running shoes',
+        coverageAnswerFor({ head: 'best road running shoes', familyIds: [ROAD_RUNNING] }),
+      ],
     ])
 
     const signals = detectUncoveredCommercialQueries({
@@ -319,6 +323,7 @@ describe('the competitor-gap fixture the founder unblocked — DECISIONS 2026-09
       ],
       ourPosition: null,
       ourUrl: null,
+      existingTarget: coverageAnswerFor({ head: 'trail running shoes', familyIds: ['trail-running'] }),
       ...overrides,
     }
   }
