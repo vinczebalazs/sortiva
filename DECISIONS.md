@@ -6490,3 +6490,22 @@ The first two were already pinned to each other: a database test fills an accoun
 
 Mutation-checked three ways, each restored: moving the screen's constant to 6 fails the new comparison and an existing screen test; changing "five competitors" to "six" in the refusal fails one; changing "Limited to 5" to "Limited to 6" fails the same one.
 Nearest spec: main §6.6, §7.2.1; invariant 5.
+
+## 2026-09-08 — R-SIGNIN-DEADEND — Somebody who mistypes their email address can now correct it without reloading the page
+
+Decision: after a sign-in link is sent, the confirmation carries a control back to the address field, and the address they typed is still in it.
+
+**Why the mistake is invisible without one.** Signing in by email sends a one-time link to whatever address is typed. A plausible but wrong address — one character out, a colleague's, an old one — produces no error and never can: the link goes to that mailbox, we tell nobody whether an account exists, and the person waiting reads a calm "Check your email" for a message that will never arrive. The confirmation replaced the address field outright, so their only way back was to reload the page, which is not what somebody does while they believe an email is in flight. For a merchant with no Google account this screen is the only way in, so the dead end was total.
+
+**One new sentence, authored here, and flagged as such.** The button reads **"Use a different address"**. The approved-copy table has no sign-in row at all, so this is the seventh sentence on this screen the build wrote rather than the spec supplying — the six before it were flagged the same way on 2026-09-08 (`R-SIGNIN-COPY`) and approved unchanged. **This one has not been approved and should be looked at**, though nothing about the change depends on the exact words.
+
+**The typed address is kept rather than cleared**, because the mistake this exists for is usually one character and retyping a whole address invites a second one.
+
+**The one real constraint, and what was done about it.** Nothing in this repository can press a button (`R-NO-BROWSER-TESTS`, deferred by decision), so a panel only reachable through a click is a panel no test can look at — which is how a dead end shipped in the first place. The confirmation is therefore its own component, `SignInLinkSent`, rendered on its own by the tests: they prove it names the address the link actually went to and offers the way back. The way out is a **required** prop, not an optional handler, so a caller that omitted it would not compile.
+
+That still leaves one gap those tests cannot see: the screen drawing the confirmation inline again instead of using the panel, which would look right and have no way out. A test reads the component's source and asserts the screen renders the panel and that the confirmation sentence appears exactly once. Reading source is a poor substitute for pressing a button and is only here because pressing one is not available; it goes when browser tests land.
+
+Mutation-checked three ways, each restored: deleting the way-back control fails one test; drawing the confirmation inline again fails one; and dropping the address from the confirmation fails one.
+
+**A related gap left alone and worth a card of its own:** the confirmation says the link "works once" and says nothing about the fifteen minutes after which it lapses. That is already recorded as outstanding under `R-SIGNIN-COPY`, with the wording being drafted elsewhere.
+Nearest spec: main §4.1; ui §1; main Appendix A (which has no sign-in row); invariant 24.

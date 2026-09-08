@@ -531,6 +531,21 @@
   align-self: flex-start;
 }
 
+/* Subordinate to the send button: it is the way out of a mistake, not the thing
+   anybody came here to press. */
+.sortiva-signin__secondary {
+  align-self: flex-start;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sortiva-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .sortiva-signin__failed {
   color: var(--sortiva-critical);
   font-size: 14px;
