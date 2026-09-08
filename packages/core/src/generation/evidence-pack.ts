@@ -1,5 +1,6 @@
-import type { FactSheet } from '../distill/schema'
+import { EXTRACTED_FIELDS, type FactSheet } from '../distill/schema'
 import type { IntentClass } from '../contracts/opportunities'
+import type { ProductField } from '../signals/substance'
 
 /**
  * What Gate 2 checks and the claim plan is built from: the merged fact
@@ -122,4 +123,69 @@ export function assembleEvidencePack(input: AssembleEvidencePackInput): Evidence
     linkTasks: input.linkTasks,
     assembledAt: input.now.toISOString(),
   }
+}
+
+/** One thing the store itself recorded about a product, at the granularity a claim is made at. */
+export interface CitableProductFact {
+  readonly productId: string
+  readonly productTitle: string
+  readonly field: ProductField
+  /** A scalar field's value, or one entry of a list field. */
+  readonly value: string
+  /** One entry of a list field, which reads differently in a sentence than a scalar does. */
+  readonly fromList: boolean
+}
+
+/**
+ * The store's own facts, and the only part of the pack a finished article may
+ * rest on.
+ *
+ * It is narrower than a fact sheet on purpose. Four of the sheet's fields are
+ * not things the description said — the price range and the option-axis names
+ * are merged from the variant data, and the fluff flag and the fact count are
+ * our own bookkeeping — so no claim is ever built from them and no sentence may
+ * cite them.
+ *
+ * It exists so that the writer and the judge cannot end up holding different
+ * evidence. The claim plan the writer is given and the store facts the judge
+ * grades against are assembled in two different files, and both call this. They
+ * used to be assembled separately, and the judge ended up holding whole fact
+ * sheets while the writer got the ten description-derived fields — so a price
+ * the model had invented could be confirmed against a price range that was
+ * never in front of it. `evidence-parity.test.ts` fails if they drift apart
+ * again.
+ *
+ * Order is products in pack order, fields in sheet order, list entries in their
+ * own order: the claim ids (`c1`, `c2`, …) an article cites are positions in
+ * this list, and they are written into `article_claims`.
+ */
+export function citableProductFacts(pack: EvidencePack): CitableProductFact[] {
+  const facts: CitableProductFact[] = []
+  for (const product of pack.products) {
+    for (const field of EXTRACTED_FIELDS) {
+      const value = product.factSheet[field]
+      if (Array.isArray(value)) {
+        for (const entry of value) {
+          const trimmed = entry.trim()
+          if (trimmed === '') continue
+          facts.push({
+            productId: product.productId,
+            productTitle: product.title,
+            field,
+            value: trimmed,
+            fromList: true,
+          })
+        }
+      } else if (typeof value === 'string' && value.trim() !== '') {
+        facts.push({
+          productId: product.productId,
+          productTitle: product.title,
+          field,
+          value: value.trim(),
+          fromList: false,
+        })
+      }
+    }
+  }
+  return facts
 }

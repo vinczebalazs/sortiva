@@ -3,7 +3,7 @@ import { accountAttribution } from '../../contracts/analytics'
 import type { LlmClient, LlmRequest } from '../../contracts/llm'
 import type { JudgeVerdict } from '../../contracts/opportunities'
 import type { Draft } from '../../generation/draft'
-import type { EvidencePack } from '../../generation/evidence-pack'
+import { citableProductFacts, type EvidencePack } from '../../generation/evidence-pack'
 import { renderDraftMarkdown } from './prose'
 
 /**
@@ -12,13 +12,19 @@ import { renderDraftMarkdown } from './prose'
  * Two properties make it a check on anything rather than a rubber stamp, and
  * both are structural rather than a matter of prompting:
  *
- * **It is blind.** Everything it sees is built here from the draft, the
- * evidence pack and the three pages currently ranking. There is no parameter
- * on this request through which the writer's conversation — its system prompt,
+ * **It is blind.** Everything it sees is built here from the draft, the store's
+ * own facts and the three pages currently ranking. There is no parameter on
+ * this request through which the writer's conversation — its system prompt,
  * its instructions, its approved claim list, its earlier attempt — could
  * reach it, because a grader shown the writer's reasoning grades the reasoning
  * and not the article. `judge.test.ts` proves the built request carries none
  * of it.
+ *
+ * **It is never shown more than the writer was.** Blindness is about the
+ * writer's reasoning; this is about the evidence, and it is the opposite
+ * failure. A judge holding a fact the writer never had can confirm a claim the
+ * model invented, so the store facts below are the writer's own list rather
+ * than a second reading of the pack. `evidence-parity.test.ts` holds both.
  *
  * **It is never the cheaper model.** The request names no model, so the call
  * runs on whatever tier `judge` is configured for, which is the same tier the
@@ -80,16 +86,48 @@ const RESPONSE_SCHEMA = {
   properties: { scores: scoreSchema(), justifications: justificationSchema() },
 } as const
 
-/** The pack as facts, not as the writer's brief: what the article says has to be traceable to this. */
+/**
+ * The store's own facts, as the judge is shown them: what every claim about a
+ * product has to be traceable to.
+ *
+ * Two rules pull in opposite directions here and both have to hold.
+ *
+ * **Never more than the writer had.** Grounding asks whether every statement is
+ * traceable to the store's record, so a judge holding a fact the writer never
+ * saw can confirm a sentence the model invented. The price range is the one
+ * that bites: an article's price figure is supposed to be a placeholder
+ * resolved at publish, and a judge holding the real range can wave through a
+ * price stated as prose. This block therefore comes from
+ * `citableProductFacts`, the same list the writer's approved claims are built
+ * from, rather than from a second walk over the fact sheets.
+ *
+ * **Less than the writer had, on purpose.** The claim plan, the writing
+ * instructions, the length target, the internal links and any earlier attempt
+ * stay out — withholding costs nothing, because a judge cannot wrongly confirm
+ * a claim on evidence it does not hold, and it is what keeps this a separate
+ * judgement rather than a re-run of the writing call.
+ *
+ * The families are not here either: the writer is shown a family's axes only
+ * when the article's shape expands a section per axis, and never its name at
+ * all, so including them would be exactly the over-share above for the four
+ * shapes that do not. Where the axes did shape the article they are in its own
+ * headings, which the judge reads.
+ *
+ * `evidence-parity.test.ts` fails if any of this drifts.
+ */
 function packBlock(pack: EvidencePack): string {
-  const products = pack.products.map((product) => {
-    const facts = Object.entries(product.factSheet)
-      .filter(([, value]) => value !== null && value !== undefined && value !== '')
-      .map(([field, value]) => `${field}: ${Array.isArray(value) ? value.join('; ') : String(value)}`)
-    return `- ${product.title} — ${facts.join(' | ') || '(no recorded facts)'}`
-  })
-  const families = pack.families.map((f) => `- ${f.name}: ${f.differentiationAxes.join(', ') || '(no axes)'}`)
-  return ['Store facts available:', ...products, '', 'Product families and how they differ:', ...families].join('\n')
+  const byProduct = new Map<string, { readonly title: string; readonly facts: string[] }>()
+  for (const fact of citableProductFacts(pack)) {
+    const entry = byProduct.get(fact.productId) ?? { title: fact.productTitle, facts: [] }
+    entry.facts.push(`${fact.field}: ${fact.value}`)
+    byProduct.set(fact.productId, entry)
+  }
+
+  if (byProduct.size === 0) return 'Store facts available: the store has recorded nothing about these products.'
+  return [
+    'Store facts available:',
+    ...[...byProduct.values()].map((entry) => `- ${entry.title} — ${entry.facts.join(' | ')}`),
+  ].join('\n')
 }
 
 /** The three ranking pages, so "is there anything new here" is answered against the SERP rather than in the abstract. */
