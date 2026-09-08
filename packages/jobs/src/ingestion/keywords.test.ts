@@ -274,20 +274,32 @@ describe.skipIf(!(await databaseAvailable()))('finding a store’s keywords and 
     expect(w.seo.billableCalls).toBeGreaterThan(0)
   })
 
-  it('proposes the rival and never the marketplace or the store itself', async () => {
+  /**
+   * The merchant's competitor list is theirs to write. Onboarding used to fill
+   * it with whoever currently outranks the store — useful-looking, and never
+   * asked for. A domain on a results page is a domain on a results page: a
+   * publisher, a forum and a marketplace all rank, and the size of this list is
+   * what we pay the search-data vendor per store.
+   */
+  it('leaves the competitor list empty for the merchant to fill', async () => {
     const w = world()
     await runDiscovery(w)
 
-    const rows = await listCompetitors(harness.db, accountScope(accountId))
-    const domains = rows.map((row) => row.domainNormalized)
-    expect(domains).toContain('rival.example')
-    expect(domains).toContain('second.example')
-    expect(domains).not.toContain('amazon.de')
-    expect(domains).not.toContain(DOMAIN)
-    expect(rows.every((row) => row.source === 'auto')).toBe(true)
+    expect(await listCompetitors(harness.db, accountScope(accountId))).toEqual([])
   })
 
-  it('never proposes more competitors than the cap, whatever the results pages hold', async () => {
+  it('counts the rivals worth offering, without the marketplace or the store itself', async () => {
+    const w = world()
+    const result = await runDiscovery(w)
+
+    // Two survive the filters — the marketplace and the store's own domain do
+    // not — and the count is what the log reports. Which two they are is held
+    // by the ranking function's own tests and by the profile endpoint that
+    // offers them; this asserts only that the step counted rather than wrote.
+    expect(result.output?.competitorsProposed).toBe(2)
+  })
+
+  it('never offers more competitors than the cap, whatever the results pages hold', async () => {
     const w = world()
     // Twelve distinct rivals across every search: the ranking would happily
     // return them all, and the cap is what stops the list.
@@ -309,8 +321,12 @@ describe.skipIf(!(await databaseAvailable()))('finding a store’s keywords and 
       serp: many,
     })
 
-    await runDiscovery({ ...w, deps: { ...w.deps, seo }, seo })
-    expect(await listCompetitors(harness.db, accountScope(accountId))).toHaveLength(5)
+    const result = await runDiscovery({ ...w, deps: { ...w.deps, seo }, seo })
+    // The cap bounds what is *offered*, not just what is stored, because the
+    // cost it exists to control is the vendor lookups a long list would drive
+    // if the merchant accepted them all.
+    expect(result.output?.competitorsProposed).toBe(5)
+    expect(await listCompetitors(harness.db, accountScope(accountId))).toEqual([])
   })
 
   it('stores the results pages it read, and never an account against them', async () => {

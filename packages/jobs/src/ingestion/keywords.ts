@@ -14,9 +14,7 @@ import {
 } from '@sortiva/core'
 import {
   BUSINESS_COMPETITOR_CAP,
-  CompetitorCapReached,
   accountScope,
-  addCompetitor,
   familiesForPersona,
   findFreshSerpSnapshot,
   isGlobalFlagActive,
@@ -66,10 +64,13 @@ import type { StepDefinition } from './steps'
  * built on them is then confident and wrong.
  *
  * **A domain seen on a results page does not become a competitor by being
- * there.** The stored pages are read, counted, filtered against the marketplace
- * list and the store's own domain, and only a domain that turns up for several
- * of the store's searches is proposed — as a draft the merchant edits, badged
- * as ours, capped at five. The pages themselves stay where they are.
+ * there, and this step adds none.** The stored pages are read, counted and
+ * filtered against the marketplace list and the store's own domain, and the
+ * survivors are counted for the log. The merchant's competitor list is left
+ * empty for them to fill: the same filtering runs again when they open the
+ * screen, and each domain is offered with a button. A list of competitors is a
+ * statement about their own business, and it costs money per store, so it is
+ * theirs to make.
  */
 
 /**
@@ -195,7 +196,7 @@ export const keywordsCompetitorsStep: StepDefinition = {
       attribution,
     })
 
-    const proposed = await proposeCompetitors(deps, ctx, {
+    const proposed = await countCompetitorCandidates(deps, ctx, {
       scope,
       ranked: serps.ranked,
       ownDomain: domain ?? '',
@@ -430,17 +431,25 @@ async function readResultsPages(
 }
 
 /**
- * Fills the store's draft competitor list.
+ * Counts the rivals worth offering the merchant. **Writes nothing.**
  *
- * Every domain here has already been through the ranking function's filters:
+ * Every domain counted here has been through the ranking function's filters:
  * not the store itself, not on the marketplace list, on the first page, and
- * seen for several different searches. What is added is a draft the merchant
- * removes from, badged as ours rather than theirs. Hitting the database's cap
- * mid-way stops the loop instead of failing the step — five is five, and a
- * store that already has competitors from a previous run is not a problem to
- * report.
+ * seen for several different searches. It is still only a domain that turned up
+ * in some search results, which is not the same as somebody the merchant would
+ * call a competitor — a publisher, a forum and a marketplace all rank.
+ *
+ * So the list they see starts empty and these are offered underneath it, one
+ * click each. The merchant's competitor list is a statement about their own
+ * business, and filling it in on their behalf puts words in their mouth; it
+ * also spends money, because the size of that list is what we pay the search
+ * data vendor per store.
+ *
+ * Nothing is stored, so nothing needs undoing: the offer is recomputed from the
+ * stored results pages each time the screen is opened, which is the same
+ * function the profile endpoint calls.
  */
-async function proposeCompetitors(
+async function countCompetitorCandidates(
   deps: IngestionDeps,
   ctx: StepContext,
   input: {
@@ -463,26 +472,11 @@ async function proposeCompetitors(
     limit: Math.min(room, input.discovery.competitors.auto_proposed_max),
   })
 
-  let added = 0
-  for (const candidate of candidates) {
-    try {
-      await addCompetitor(deps.db, input.scope, {
-        domainNormalized: candidate.domain,
-        source: 'auto',
-      })
-      added += 1
-    } catch (error) {
-      if (error instanceof CompetitorCapReached) break
-      throw error
-    }
-  }
-
   ctx.log.info('keywords_competitors.proposed', {
     candidates: candidates.length,
-    added,
     already_held: existing.length,
   })
-  return added
+  return candidates.length
 }
 
 function toRankedRows(

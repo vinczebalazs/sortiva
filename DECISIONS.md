@@ -6223,3 +6223,20 @@ Mutation-checked, six ways: writing `applied` instead of `skipped` fails two tes
 
 **Still to build, and it is not mine:** the drawer's "Skip this task" control, which is a one-line revert in Lane F. The server is ready for it.
 Nearest spec: main §10.4; ui §5.3; `DECISIONS.md` 2026-09-07 `R-OPPS-WIRE`.
+
+## 2026-09-08 — R-COMPETITOR-AUTOADD — Onboarding stops writing the merchant's competitor list, and a scan now stops it coming back
+
+Decision: the keyword-and-competitor discovery step adds no competitors. It counts the domains worth offering and writes none. A store finishes onboarding with an **empty** competitor list.
+
+What a merchant sees change: previously, up to five domains that happened to rank for their search terms were already on their Competitors list before they had seen anything, badged as ours. Now the list is empty and those same domains appear underneath it as suggestions, one button each. This is the extra onboarding step the founder accepted.
+
+**Almost all of this already existed.** Worth recording, because the card scoped a build and the build was one function. `competitorSuggestions` in the profile endpoint already recomputed the same candidates live from the stored results pages, already refused to write anything, and is already rendered by both the onboarding confirmation screen and Settings; the response schema already carried them. Nothing needed designing and no migration was involved. **The suggestions were probably invisible in practice until today**, because the suggestion list excludes domains already on the competitor list — and onboarding had just added the top five.
+
+**Nothing is stored for a suggestion, deliberately.** They are recomputed from the stored results pages each time a screen opens. So there is no half-accepted state, nothing to expire, and nothing to clean up when a merchant ignores them — and invariant 5's other half holds by construction, since ranking domains stay in the snapshots they came from.
+
+**The mechanism, which is what the card was really about.** Invariant 5 was prose in two files — the constitution and a schema comment — and the code contradicted both. The contradiction was noticed when it was built (`DECISIONS.md` 2026-09-03, `T2.6`), argued in the journal, flagged for the integrator, and stood for five days. A new scan asserts that the only code that may write a competitor row is the repository function, the narrow interface above it, and the route handling the merchant's click. It also asserts the discovery step still reads results pages, so the check cannot pass by the step losing the feature.
+
+Mutation-checked by restoring the original defect verbatim — putting the add loop back into the step — which fails both assertions. The scan carries the anti-vacuity tests this repository now expects of every scan: that it has the workspace in view, that it names the directory where the defect actually lived rather than trusting a file count, and that its pattern still matches a real call.
+
+**One thing deliberately not renamed.** The threshold is called `competitors.auto_proposed_max`, and "auto" now reads oddly. Renaming it would change the bytes of `signals.config.yaml`, whose hash is the version string stamped on every decision the product has ever recorded — so every past record would stop comparing. The name stays; what it bounds is now how many are *offered*, and the cap still binds there because the cost it controls is the vendor lookups those competitors would drive if all were accepted.
+Nearest spec: main §6.6, §7.2.1 (both read verbatim; §7.2.1 is marked decided and says "nothing is ever auto-added"), Appendix B; invariant 5.
