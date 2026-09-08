@@ -1,7 +1,9 @@
-import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ROUTES, UNCONTRACTED_ROUTES } from '@sortiva/core'
+// Deep import, not the barrel: this module reads the filesystem, and the barrel
+// is pulled into browser bundles.
+import { patternFor, routesOnDisk } from '@sortiva/core/api/routes-on-disk'
 import {
   createOpportunityActions,
   httpOpportunitiesApi,
@@ -39,70 +41,16 @@ import { describe, expect, it } from 'vitest'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const apiRoot = join(here, '..', '..', 'api')
-
-/** `[id]` is a parameter; `{id}` is how the contract spells the same thing. */
-function contractPathOf(directory: string): string {
-  return `/api/${directory}`
-    .split('/')
-    .map((segment) =>
-      segment.startsWith('[') && segment.endsWith(']') ? `{${segment.slice(1, -1)}}` : segment,
-    )
-    .join('/')
-}
-
-const METHODS = ['GET', 'POST', 'PATCH', 'DELETE'] as const
-type Method = (typeof METHODS)[number]
+const served = routesOnDisk(apiRoot)
 
 /**
- * The methods a route file exports.
- *
- * Auth.js's own route hands its handlers over by destructuring what the library
- * built, so the ordinary `export const POST` form does not appear in it; both
- * spellings are read.
+ * The walk, the method reading and the address matching all come from one
+ * place, shared with `pnpm contracts:check`, which needs the same answer to the
+ * same question. Two copies of "what does this application serve" is how the
+ * two ends of a check come to disagree without either being wrong.
  */
-function methodsExportedBy(source: string): Method[] {
-  const found = new Set<Method>()
-  for (const match of source.matchAll(
-    /export\s+(?:const|(?:async\s+)?function)\s+(GET|POST|PATCH|DELETE)\b/g,
-  )) {
-    found.add(match[1] as Method)
-  }
-  for (const match of source.matchAll(/export\s+const\s*\{([^}]*)\}/g)) {
-    for (const name of (match[1] ?? '').split(',')) {
-      const trimmed = name.trim() as Method
-      if (METHODS.includes(trimmed)) found.add(trimmed)
-    }
-  }
-  return [...found]
-}
 
-/** Every `METHOD /api/…` a route file on disk actually serves. */
-function routesOnDisk(): Set<string> {
-  const served = new Set<string>()
-  const walk = (directory: string, relative: string): void => {
-    for (const entry of readdirSync(directory, { withFileTypes: true })) {
-      const next = join(directory, entry.name)
-      if (entry.isDirectory()) {
-        walk(next, relative === '' ? entry.name : `${relative}/${entry.name}`)
-      } else if (entry.name === 'route.ts') {
-        for (const method of methodsExportedBy(readFileSync(next, 'utf8'))) {
-          served.add(`${method} ${contractPathOf(relative)}`)
-        }
-      }
-    }
-  }
-  walk(apiRoot, '')
-  return served
-}
-
-/** A declared address as a matcher: `{id}` stands for one path segment. */
-function patternFor(path: string): RegExp {
-  const source = path
-    .split(/\{[^}]+\}/)
-    .map((literal) => literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-    .join('([^/]+)')
-  return new RegExp(`^${source}$`)
-}
+const METHODS = ['GET', 'POST', 'PATCH', 'DELETE'] as const
 
 /**
  * Redirects, file downloads and the identity library's own routes are
@@ -125,14 +73,8 @@ const declared = [
   ...uncontracted(),
 ].map((route) => ({
   ...route,
-  // A trailing `*` covers every address below it, which is how Auth.js's own
-  // family of routes is named.
-  pattern: route.path.endsWith('/*')
-    ? new RegExp(`^${route.path.slice(0, -1).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`)
-    : patternFor(route.path),
+  pattern: patternFor(route.path),
 }))
-
-const served = routesOnDisk()
 
 interface Verdict {
   readonly address: string

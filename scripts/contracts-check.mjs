@@ -12,6 +12,15 @@
  * every route declares a response schema, and every conflict code in the enum
  * is returned by at least one route (dead contract surface the UI would build
  * a toast for and never see).
+ *
+ * And — added 2026-09-08, because until then it did not — it compares the table
+ * to the **route files on disk**. Everything above compares the contract to
+ * itself: the table to the document generated from the table. Ten endpoints
+ * were once built at addresses the table did not know about, while the table
+ * declared several nothing had ever implemented, and this check passed on every
+ * run throughout. The walk itself lives in `packages/core/src/api/
+ * routes-on-disk.ts` so that this script and the browser-side check that needs
+ * the same answer cannot drift into two opinions about what is served.
  */
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -21,7 +30,10 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 const documentPath = join(repoRoot, 'packages', 'core', 'openapi.json')
 const write = process.argv.includes('--write')
 
-const { ROUTES, routeKey, unusedConflictCodes } = await import('../packages/core/src/api/routes.ts')
+const { ROUTES, routeKey, unusedConflictCodes, UNCONTRACTED_ROUTES } = await import(
+  '../packages/core/src/api/routes.ts'
+)
+const { routesOnDisk, patternFor } = await import('../packages/core/src/api/routes-on-disk.ts')
 const { serialiseOpenApi, operationIdOf } = await import('../packages/core/src/api/openapi.ts')
 
 const problems = []
@@ -58,6 +70,58 @@ if (unused.length > 0) {
   )
 }
 
+/**
+ * The contract against the routes, both ways.
+ *
+ * A declared address with no file is an endpoint a screen will call and nothing
+ * will answer. A served address the contract does not know about is an endpoint
+ * nothing describes, nothing generates a client for, and no check in this file
+ * has ever looked at. `UNCONTRACTED_ROUTES` names the addresses that are
+ * deliberately outside the JSON contract — redirects, downloads, and the
+ * identity library's own family — each with a reason, so "not in the table" and
+ * "nobody built it" cannot look the same.
+ */
+const apiRoot = join(repoRoot, 'apps', 'web', 'app', 'api')
+const served = routesOnDisk(apiRoot)
+
+if (served.size === 0) {
+  // A walk that finds nothing would silently agree with any contract at all.
+  problems.push(`no route files found under ${apiRoot} — the routes-on-disk check would prove nothing`)
+} else {
+  const declared = [
+    ...ROUTES.map((route) => ({ method: route.method, path: route.path })),
+    ...UNCONTRACTED_ROUTES.flatMap((route) => {
+      const [first = '', second] = route.path.split(' ')
+      return second === undefined
+        ? ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'].map((method) => ({ method, path: first }))
+        : [{ method: first, path: second }]
+    }),
+  ].map((route) => ({ ...route, pattern: patternFor(route.path) }))
+
+  for (const address of served) {
+    const [method = '', path = ''] = address.split(' ')
+    const known = declared.some((route) => route.method === method && route.pattern.test(path))
+    if (!known) {
+      problems.push(
+        `${address} is served by a route file and the contract does not declare it — add it to the ` +
+          'route table, or to UNCONTRACTED_ROUTES with the reason it is outside the JSON contract',
+      )
+    }
+  }
+
+  for (const route of ROUTES) {
+    const key = routeKey(route)
+    // A parameterised path is served by one file whose directory carries the
+    // brackets, so compare on the contract spelling rather than the address.
+    if (!served.has(`${route.method} ${route.path}`)) {
+      problems.push(
+        `${key} is declared in the contract and no route file serves it — a screen calling it ` +
+          'would reach nothing',
+      )
+    }
+  }
+}
+
 let generated
 try {
   generated = serialiseOpenApi()
@@ -83,4 +147,6 @@ if (problems.length > 0) {
   process.exit(1)
 }
 
-console.log(`PASS  ${ROUTES.length} routes; zod and OpenAPI agree; no dead conflict codes`)
+console.log(
+  `PASS  ${ROUTES.length} routes; zod and OpenAPI agree; ${served.size} served by route files and all accounted for; no dead conflict codes`,
+)
