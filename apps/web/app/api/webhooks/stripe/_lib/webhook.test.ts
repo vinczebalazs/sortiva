@@ -92,6 +92,28 @@ describe.skipIf(!available)('POST /api/webhooks/stripe (main §4.2, §14.3.8)', 
     return rows[0]?.status ?? null
   }
 
+  /** The bell entries this account holds, oldest first. */
+  async function bellRows(): Promise<{ type: string; dedupe_key: string; payload_json: unknown }[]> {
+    const { rows } = await harness.pool.query<{
+      type: string
+      dedupe_key: string
+      payload_json: unknown
+    }>(
+      'SELECT type, dedupe_key, payload_json FROM notifications WHERE account_id = $1 ORDER BY created_at',
+      [accountId],
+    )
+    return rows
+  }
+
+  /** The emails queued for this account, oldest first. */
+  async function mailRows(): Promise<{ type: string; dedupe_key: string; state: string }[]> {
+    const { rows } = await harness.pool.query<{ type: string; dedupe_key: string; state: string }>(
+      'SELECT type, dedupe_key, state FROM email_sends WHERE account_id = $1 ORDER BY queued_at',
+      [accountId],
+    )
+    return rows
+  }
+
   it('refuses a forged payload before it reaches the store', async () => {
     const response = await post(fixtures.checkoutCompleted('evt_forged', 1_000), 't=1,v1=deadbeef')
     expect(response.status).toBe(400)
@@ -152,6 +174,91 @@ describe.skipIf(!available)('POST /api/webhooks/stripe (main §4.2, §14.3.8)', 
       fixtures.subscriptionUpdated('evt_5', 3_001, { status: 'active' }),
     ])
     expect(await storedStatus()).toBe('active')
+  })
+
+  /** The dunning episode's key: one per billing period, not one per attempt. */
+  const DUNNING_KEY = `${SUBSCRIPTION}:past_due:2026-10-01T00:00:00.000Z`
+
+  /**
+   * A merchant whose card is declined is told twice: a banner the next time
+   * they open Sortiva, which the status write already produced, and an email,
+   * which is the half this asserts. It reads the rows rather than watching the
+   * emitter, because an emitter that is called and drops what it was given is
+   * exactly the failure this replaced.
+   */
+  it('a declined card writes a real bell entry and queues a real email', async () => {
+    await deliver([fixtures.checkoutCompleted('evt_1', 1_000)])
+
+    // The invoice event decides nothing on its own — only the subscription
+    // events write status, and the email follows the status. It is delivered
+    // first, in the order Stripe sends it, and asserted inert, so this test
+    // says which event actually does the work.
+    await deliver([fixtures.invoicePaymentFailed('evt_2', 2_000)])
+    expect(await storedStatus()).toBe('active')
+    expect(await bellRows()).toEqual([])
+    expect(await mailRows()).toEqual([])
+
+    stripe.setSubscription(remote('past_due'))
+    await deliver([fixtures.subscriptionUpdated('evt_3', 2_001, { status: 'past_due' })])
+
+    expect(await storedStatus()).toBe('past_due')
+    expect(await bellRows()).toEqual([
+      {
+        type: 'payment_failed',
+        dedupe_key: DUNNING_KEY,
+        // References only: the id of the subscription, never a sentence.
+        payload_json: { subscription_id: SUBSCRIPTION },
+      },
+    ])
+    expect(await mailRows()).toEqual([
+      { type: 'payment_failed', dedupe_key: DUNNING_KEY, state: 'queued' },
+    ])
+  })
+
+  /**
+   * The rest of the dunning sequence, which runs through the same code as the
+   * first email — so if the first never sent, none of these did either.
+   */
+  it('Stripe’s retry schedule is one email, not one per attempt', async () => {
+    await deliver([fixtures.checkoutCompleted('evt_1', 1_000)])
+    stripe.setSubscription(remote('past_due'))
+
+    // Smart Retries: three attempts over the same unpaid invoice, each emitting
+    // its own pair of events while the status stays past_due.
+    await deliver([
+      fixtures.invoicePaymentFailed('evt_2', 2_000),
+      fixtures.subscriptionUpdated('evt_3', 2_001, { status: 'past_due' }),
+      fixtures.invoicePaymentFailed('evt_4', 3_000),
+      fixtures.subscriptionUpdated('evt_5', 3_001, { status: 'past_due' }),
+      fixtures.invoicePaymentFailed('evt_6', 4_000),
+      fixtures.subscriptionUpdated('evt_7', 4_001, { status: 'past_due' }),
+    ])
+
+    expect(await bellRows()).toHaveLength(1)
+    expect(await mailRows()).toEqual([
+      { type: 'payment_failed', dedupe_key: DUNNING_KEY, state: 'queued' },
+    ])
+  })
+
+  /**
+   * Webhooks drop, which is why the nightly sweep re-reads Stripe. It repairs
+   * the status through the same write as a webhook, and the merchant has to
+   * hear about it from there too — otherwise a dropped delivery leaves an
+   * account paused with nothing said.
+   */
+  it('the nightly repair tells the merchant, not just the row', async () => {
+    await deliver([fixtures.checkoutCompleted('evt_1', 1_000)])
+    expect(await bellRows()).toEqual([])
+
+    stripe.setSubscription(remote('past_due'))
+    await harness.pool.query("UPDATE subscriptions SET synced_at = now() - interval '48 hours'")
+    expect((await reconcileSubscriptions(deps())).repaired).toBe(1)
+
+    expect(await storedStatus()).toBe('past_due')
+    expect(await bellRows()).toHaveLength(1)
+    expect(await mailRows()).toEqual([
+      { type: 'payment_failed', dedupe_key: DUNNING_KEY, state: 'queued' },
+    ])
   })
 
   it('cancel_at_period_end keeps entitlement until the period actually ends', async () => {

@@ -122,15 +122,7 @@ function constructionSites(symbol: string): string[] {
  * exactly true, so repairing the wiring turns this file red asking for the
  * record to be deleted.
  */
-const WIRED_IN_PRODUCTION: Record<string, { readonly files: readonly string[]; readonly finding: string }> = {
-  StubNotificationEmitter: {
-    files: ['apps/web/app/api/webhooks/stripe/_lib/receiver.ts'],
-    finding:
-      'The Stripe webhook hands the payment-failed notification to a stand-in that keeps it in memory ' +
-      'and drops it when the request ends, so a merchant whose card is declined is never emailed. ' +
-      'Every other composition root builds DbNotificationEmitter. Carded as R-DUNNING-DROPPED.',
-  },
-}
+const WIRED_IN_PRODUCTION: Record<string, { readonly files: readonly string[]; readonly finding: string }> = {}
 
 describe('no stand-in is left running in the product itself', () => {
   it.each(everyStub())('%s is not built by shipping code', (stub) => {
@@ -156,9 +148,13 @@ describe('no stand-in is left running in the product itself', () => {
   })
 
   it('is not vacuous: it would notice a stand-in nobody had recorded', () => {
-    // The check above can only be trusted if `constructionSites` finds real
-    // ones, which the recorded entry proves it does.
-    expect(Object.keys(WIRED_IN_PRODUCTION).flatMap((s) => constructionSites(s))).not.toEqual([])
+    // The check above passes trivially if `constructionSites` has stopped
+    // finding anything. The recorded finding used to prove it still worked;
+    // there are now none, so a class the product certainly does build stands in
+    // for that — if this scan cannot see `DbNotificationEmitter`, which every
+    // composition root that notifies anybody builds, it would not see a
+    // stand-in either.
+    expect(constructionSites('DbNotificationEmitter')).not.toEqual([])
   })
 })
 

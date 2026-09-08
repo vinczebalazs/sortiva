@@ -4,8 +4,11 @@ import {
   type BillingWorkerDeps,
   type StripeBillingProvider,
 } from '@sortiva/core'
-import { StubNotificationEmitter } from '@sortiva/core'
-import { dbPool, type Db } from '@sortiva/db'
+import { db, dbPool, type Db } from '@sortiva/db'
+// Deep import, not the package barrel: `@sortiva/jobs`'s index re-exports the
+// Graphile Worker runtime, which would drag the worker library into every
+// request bundle that touches this file.
+import { DbNotificationEmitter } from '@sortiva/jobs/notify/emitter'
 import { PosthogServerCapture } from '@sortiva/providers'
 import {
   makeBillingStore,
@@ -54,11 +57,12 @@ export function billingWorkerDeps(options: ReceiverOptions = {}): BillingWorkerD
     billing: makeBillingStore(storeOptions),
     events: makeStripeEventStore(storeOptions),
     stripe: options.stripe ?? stripeProvider(),
-    // The payment-failed email. Until Lane G's T8.1 fills
-    // `NotificationEmitter`, the registered stub records the emission and
-    // reports itself through `pnpm stubs:report`, so the gap is visible rather
-    // than silently absent.
-    notifications: new StubNotificationEmitter(capture),
+    // The payment-failed email, and the bell entry that goes with it. The
+    // database factory rather than a handle where there is none: this module is
+    // loaded when its route file is, and opening a connection then would open
+    // one during the build. A test hands in its own handle so the notification
+    // lands in the same database as the subscription row it reports.
+    notifications: new DbNotificationEmitter(database ?? db),
     capture,
     ...options.deps,
   }
