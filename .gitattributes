@@ -25,3 +25,9 @@ packages/db/src/repositories/index.ts merge=union
 packages/providers/src/index.ts     merge=union
 packages/jobs/src/index.ts          merge=union
 packages/ui/src/index.ts            merge=union
+
+# Source files are text even if one picks up a stray control byte: git decides
+# "binary" by finding a NUL, and then shows a byte count in place of a diff, so
+# a file nobody could review is exactly the state this prevents.
+*.ts   diff
+*.tsx  diff

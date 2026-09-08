@@ -318,6 +318,23 @@ describe('split-variant detection', () => {
     ])
     expect(groups.map((group) => group.memberIds)).toEqual([['p1'], ['p2']])
   })
+
+  it('never merges a title that was nothing but variant words, not even with its own kind', () => {
+    const facts = { ...emptyFactSheet(), material: 'mesh', care: 'wipe clean', origin: 'vietnam' }
+    const only = (productId: string, title: string) =>
+      productAttributes({ productId, title, factSheet: facts, populatedFields: 5 })
+    const groups = detectLogicalProducts([
+      // These two name no product at all, so they stay apart despite agreeing
+      // on every fact.
+      only('p1', 'Red — Large'),
+      only('p2', 'Blue — Small'),
+      // A real title reaching for the private key p1 was given. It cannot land
+      // there: leading whitespace is trimmed out of a residual title.
+      only('p3', '   p1'),
+    ])
+    expect(groups.map((group) => group.memberIds)).toEqual([['p1'], ['p2'], ['p3']])
+    expect(groups.map((group) => group.residualTitle)).toEqual(['', '', 'p1'])
+  })
 })
 
 describe('the sparse-product guardrail', () => {
