@@ -17,6 +17,7 @@ import {
   upsertStorePages,
   type StorePageInput,
 } from './repositories/inventory'
+import { listOpenOpportunities, upsertOpportunity } from './repositories/opportunities'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from './testing'
 
 /**
@@ -563,6 +564,123 @@ describe.skipIf(!available)('recognising an article we published', () => {
       expect(await publishedArticleAddresses(ctx.db, scope)).toEqual([{ articleId, url: BEFORE }])
       const [row] = await listStorePages(ctx.db, scope)
       expect(row?.status).toBe('live')
+    })
+
+    /** Only the suggestions keyed on an address; the article fixture leaves one keyed on a search. */
+    async function openPageSuggestions(scope: ReturnType<typeof accountScope>) {
+      return (await listOpenOpportunities(ctx.db, scope)).filter((row) => row.entityType === 'url')
+    }
+
+    /**
+     * A suggestion about one page, sitting in the merchant's list unanswered.
+     * `freshness_opportunity` is the kind that names one of our own posts, which
+     * is the only kind a rename can be about.
+     */
+    async function suggestionAbout(
+      url: string,
+      over: { readonly status?: 'new' | 'accepted' | 'blocked' | 'scheduled'; readonly signalType?: 'freshness_opportunity' | 'missing_or_weak_metadata' } = {},
+    ): Promise<string> {
+      const { row } = await upsertOpportunity(ctx.db, accountScope(accountId), {
+        accountId,
+        signalType: over.signalType ?? 'freshness_opportunity',
+        entityType: 'url',
+        entityRef: url,
+        evidence: [
+          { key: 'page', value: url, source: 'content_inventory', fetchedAt: '2026-09-01T00:00:00.000Z' },
+        ],
+        confidence: 60,
+        confidenceBand: 'medium',
+        reasonTemplateKey: 'freshness_opportunity.refresh',
+        reasonParams: {},
+        recommendedAction: 'REFRESH',
+        preconditions: [],
+        status: over.status ?? 'new',
+        rulesVersion: 'test-rules-version',
+        limitedIntelligence: false,
+        detectedAt: '2026-09-01T00:00:00.000Z',
+        rawScore: 5,
+        tasks: [],
+        impactScore: 70,
+        impact: 'high',
+      })
+      return row.id
+    }
+
+    it('carries the open suggestion about the post over to the new address', async () => {
+      const scope = accountScope(accountId)
+      const articleId = await autoPublished()
+      const suggestionId = await suggestionAbout(BEFORE)
+
+      expect(
+        await followOurArticleRename(ctx.db, scope, { articleId, from: BEFORE, to: AFTER }),
+      ).toBe(true)
+
+      // Without this the address is marked gone with a live card pointing at
+      // it, and the next nightly walk takes the card down as though the
+      // merchant had deleted the page. They renamed it and never answered it.
+      expect(
+        (await openPageSuggestions(scope)).map((row) => ({
+          id: row.id,
+          entityRef: row.entityRef,
+          status: row.status,
+        })),
+      ).toEqual([{ id: suggestionId, entityRef: AFTER, status: 'new' }])
+    })
+
+    it('leaves a suggestion where it is when one of the same kind is already open at the new address', async () => {
+      const scope = accountScope(accountId)
+      const articleId = await autoPublished()
+      const stale = await suggestionAbout(BEFORE)
+      const current = await suggestionAbout(AFTER)
+
+      expect(
+        await followOurArticleRename(ctx.db, scope, { articleId, from: BEFORE, to: AFTER }),
+      ).toBe(true)
+
+      // Only one open suggestion of a kind may exist per subject, and the one
+      // already at the new address was written against the page as it now is.
+      // The stranded row is the walk's to take down.
+      expect(new Map((await openPageSuggestions(scope)).map((row) => [row.id, row.entityRef]))).toEqual(
+        new Map([
+          [stale, BEFORE],
+          [current, AFTER],
+        ]),
+      )
+    })
+
+    it('does not move a suggestion the calendar has taken over', async () => {
+      const scope = accountScope(accountId)
+      const articleId = await autoPublished()
+      const scheduled = await suggestionAbout(BEFORE, { status: 'scheduled' })
+
+      expect(
+        await followOurArticleRename(ctx.db, scope, { articleId, from: BEFORE, to: AFTER }),
+      ).toBe(true)
+
+      expect(
+        (await openPageSuggestions(scope)).map((row) => ({ id: row.id, entityRef: row.entityRef })),
+      ).toEqual([{ id: scheduled, entityRef: BEFORE }])
+    })
+
+    it('moves nothing when the rename itself is refused', async () => {
+      const scope = accountScope(accountId)
+      const articleId = await publishedArticle('best-trail-shoes', { delivery: 'export' })
+      await upsertStorePages(
+        ctx.db,
+        scope,
+        [page({ url: BEFORE, shopifyId: '61', pageType: 'blog_article' })],
+        T0,
+      )
+      await markStorePagesOurs(ctx.db, scope, [{ url: BEFORE, articleId }])
+      const suggestionId = await suggestionAbout(BEFORE)
+
+      expect(
+        await followOurArticleRename(ctx.db, scope, { articleId, from: BEFORE, to: AFTER }),
+      ).toBe(false)
+
+      expect(
+        (await openPageSuggestions(scope)).map((row) => ({ id: row.id, entityRef: row.entityRef })),
+      ).toEqual([{ id: suggestionId, entityRef: BEFORE }])
     })
 
     it('never reaches another account’s article or page', async () => {
