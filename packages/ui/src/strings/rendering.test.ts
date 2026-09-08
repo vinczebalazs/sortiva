@@ -96,9 +96,20 @@ describe('every sentence the product can show', () => {
 describe('a sentence that carries a count', () => {
   const catalogueEntries = Object.entries(catalogue)
 
-  /** Placeholder names that hold a quantity, as opposed to a position, a share or a name. */
-  const COUNTABLE =
-    /^(count|days|weeks|months|products|pages|urls|fields|clicks|impressions|references|subtopics|competitors|articles|topics|items|competing_urls|leader_changes|missing_fields|duplicate_fields|missing_subtopics|opportunities)$/i
+  /**
+   * Placeholder names that are not a quantity — a name, a heading, an address.
+   *
+   * This list used to run the other way: a list of names that *are* counts, and
+   * anything not on it was passed over. Six sentences a merchant reads on the
+   * opportunity drawer walked straight through that, because the chip renderer
+   * calls its number `value` — "1 impressions", "1 clicks", "1 matching
+   * products" — and so did the two performance deltas and the two search-volume
+   * lines. A list of the counts somebody thought of is the same shape of defect
+   * as fixing the sentences one at a time, so the burden is now the other way
+   * round: every number is a count until this list says otherwise, and adding a
+   * name here is a deliberate act somebody can see in a diff.
+   */
+  const NOT_A_COUNT = /^(subject|title|action|url)$/i
 
   /**
    * `appendixA.opportunityHeadline` is the one known exception and it is not an
@@ -134,10 +145,18 @@ describe('a sentence that carries a count', () => {
    * a noun three words away would slip through, and none exists today.
    */
   /**
-   * Removes the parts of a sentence that already state both forms, so what is
-   * left is the text that has not made a decision. Without this the check
-   * flags its own fix: the `other` form legitimately reads "{count} articles".
+   * Replaces the parts of a sentence that already state both forms with a mark,
+   * so what is left is the text that has not made a decision. Without this the
+   * check flags its own fix: the `other` form legitimately reads "{count}
+   * articles".
+   *
+   * A mark rather than nothing, because deleting the block closes the gap and
+   * lets the number reach across it — "{value} {value, plural, …} missing
+   * details" then reads as a count run on to "details", which is a word the
+   * count does not govern. Nothing may be read across a decision already taken.
    */
+  const DECIDED = '·'
+
   function withoutPluralBlocks(template: string): string {
     let out = ''
     for (let i = 0; i < template.length; ) {
@@ -153,6 +172,7 @@ describe('a sentence that carries a count', () => {
         else if (template[i] === '}') depth -= 1
         i += 1
       } while (i < template.length && depth > 0)
+      out += DECIDED
     }
     return out
   }
@@ -162,7 +182,7 @@ describe('a sentence that carries a count', () => {
     const offenders: string[] = []
     for (const match of template.matchAll(/\{(\w+)\}((?:\s+[a-z]+){1,2})/g)) {
       const [, name, run] = match
-      if (!COUNTABLE.test(name!)) continue
+      if (NOT_A_COUNT.test(name!)) continue
       const words = run!.trim().split(/\s+/)
       const plural = words.find((word) => word.length > 3 && word.endsWith('s') && !word.endsWith('ss'))
       if (plural) offenders.push(`{${name}} … ${plural}`)
@@ -175,9 +195,20 @@ describe('a sentence that carries a count', () => {
     expect(countableRunOns('we found {count} ways to grow')).toEqual(['{count} … ways'])
     // The shape that slipped past the first draft: a plural behind an adjective.
     expect(countableRunOns('{count} published articles repaired')).toEqual(['{count} … articles'])
-    // A sentence that has already made the decision is not an offender.
+    // A sentence that has already made the decision is not an offender, and the
+    // decision blocks the words behind it from being read as the count's own.
     expect(countableRunOns('{count} {count, plural, one {article} other {articles}} went live')).toEqual([])
+    expect(
+      countableRunOns('{value} {value, plural, one {product} other {products}} missing details'),
+    ).toEqual([])
     expect(countableRunOns('this page sits at position {position} today')).toEqual([])
+    // The number the evidence chips and the performance deltas call theirs. The
+    // list this check used to keep did not have the name in it, so six chips a
+    // merchant reads said "1 impressions" with every test green.
+    expect(countableRunOns('{value} impressions')).toEqual(['{value} … impressions'])
+    // And the other side of the inversion: a name that is not a quantity is
+    // passed over, so an ordinary verb ending in "s" is not read as a plural.
+    expect(countableRunOns('{title} needs a small fix')).toEqual([])
   })
 
   it('never states a count beside a word only correct at many', () => {
@@ -219,5 +250,23 @@ describe('a sentence that carries a count', () => {
     expect(t('opportunities.window.days' as StringKey, { days: 1 })).toContain(' day')
     expect(t('opportunities.window.days' as StringKey, { days: 1 })).not.toContain('days')
     expect(t('opportunities.window.days' as StringKey, { days: 28 })).toContain('days')
+  })
+
+  it('chooses on a number a screen had already turned into text', () => {
+    // The evidence chips and the performance deltas group thousands before they
+    // hand the number over, so what reaches the renderer is "1" or "12,480" and
+    // not a number at all. Without this the chip for a single click would read
+    // "1 clicks" however the sentence is written.
+    expect(t('opportunities.evidence.clicks' as StringKey, { value: '1' })).toBe('1 click')
+    expect(t('opportunities.evidence.clicks' as StringKey, { value: 1 })).toBe('1 click')
+    expect(t('opportunities.evidence.clicks' as StringKey, { value: '12,480' })).toBe(
+      '12,480 clicks',
+    )
+  })
+
+  it('keeps the general form for a value that is not a number at all', () => {
+    // A sentence must not lose half of itself because a screen sent a word. The
+    // grouped-thousands rule above must not become "guess at anything".
+    expect(t('opportunities.evidence.clicks' as StringKey, { value: 'lots' })).toBe('lots clicks')
   })
 })

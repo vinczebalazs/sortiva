@@ -60,16 +60,34 @@ function readPluralBlock(template: string, from: number): PluralBlock | null {
   return null
 }
 
+/**
+ * The number a plural block chooses by, or null when there is nothing to choose
+ * by.
+ *
+ * Several screens hand the renderer a number they have already turned into text
+ * — evidence chips and the performance deltas group thousands, so a merchant
+ * reads "12,480" rather than "12480". Those still have to be able to say "1
+ * click", and "1" is written the same way whether it arrived as a number or as
+ * text. Anything that is not plainly a number keeps the general form rather
+ * than guessing at it; grouped thousands are never one, so nothing is lost.
+ */
+function quantity(value: string | number | undefined): number | null {
+  if (typeof value === 'number') return value
+  if (typeof value !== 'string' || value.trim() === '') return null
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
 function applyPlurals(template: string, params: StringParams, rules: Intl.PluralRules): string {
   let out = template
   let from = 0
   for (;;) {
     const block = readPluralBlock(out, from)
     if (!block) return out
-    const value = params[block.name]
+    const number = quantity(params[block.name])
     // A block whose number was not supplied keeps the general form rather than
     // vanishing: a missing parameter must not silently delete half a sentence.
-    const category = typeof value === 'number' ? rules.select(value) : 'other'
+    const category = number === null ? 'other' : rules.select(number)
     const chosen = block.forms[category] ?? block.forms.other ?? ''
     out = out.slice(0, block.start) + chosen + out.slice(block.end)
     from = block.start + chosen.length
