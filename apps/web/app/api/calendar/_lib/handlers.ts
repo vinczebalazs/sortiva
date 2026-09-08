@@ -104,19 +104,49 @@ function serialiseTopic(
     articleId: article?.id ?? null,
     rejection:
       topic.state === 'rejected_by_gate' && gateDecision
-        ? {
-            gate: (`gate_${gateDecision.gate}` as const),
-            reason: {
-              templateKey: gateDecision.reasonUserFacing ?? 'gate1.held_insufficient_substance',
-              // The values the gate measured, which the sentence has blanks
-              // for: the criteria the draft failed and the grader's own written
-              // objection. Sending an empty bag here left every quality
-              // rejection reading "the reasoning for this one isn't available
-              // yet" while the row held both.
-              params: reasonParamsOf(gateDecision),
-            },
-          }
+        ? { gate: (`gate_${gateDecision.gate}` as const), reason: rejectionReason(gateDecision) }
         : null,
+  }
+}
+
+/**
+ * The key that says a gate stopped this day and did not record why.
+ *
+ * It has no sentence of its own in the copy catalogue yet, so the renderer
+ * answers it with its own honest admission — "The reasoning for this one isn't
+ * available yet." — which is already the right thing to say. The key exists so
+ * that giving it purpose-written words later is an edit to the catalogue rather
+ * than another change to this route.
+ */
+const UNRECORDED_REASON_KEY = 'gate.reason_unrecorded'
+
+/**
+ * The sentence a merchant reads beside a held day, and never one another gate
+ * wrote.
+ *
+ * A rejection card names which check stopped the day *and* why, so the two have
+ * to agree. The card's heading is taken from the row's own gate, so it is
+ * always right — "Stopped at: Evidence check" for a gate 2 row. The sentence
+ * under it was not: a row with no recorded reason was answered with Gate 1's
+ * "your catalogue doesn't say enough about these products yet", a specific
+ * claim about the store's product descriptions, whichever gate the row actually
+ * came from. A merchant reading it has no way to tell a measured reason from a
+ * borrowed one. Admitting we did not record it says less and is true.
+ */
+function rejectionReason(gateDecision: GateDecisionRow) {
+  if (!gateDecision.reasonUserFacing) {
+    // Nothing to interpolate: a sentence admitting we have no reason has no
+    // blanks, and the row's own measurements belong to the sentence that was
+    // never written rather than to this one.
+    return { templateKey: UNRECORDED_REASON_KEY, params: {} }
+  }
+  return {
+    templateKey: gateDecision.reasonUserFacing,
+    // The values the gate measured, which the sentence has blanks for: the
+    // criteria the draft failed and the grader's own written objection. Sending
+    // an empty bag here left every quality rejection reading "the reasoning for
+    // this one isn't available yet" while the row held both.
+    params: reasonParamsOf(gateDecision),
   }
 }
 

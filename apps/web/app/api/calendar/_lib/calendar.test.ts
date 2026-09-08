@@ -10,7 +10,7 @@ import {
   markArticleRejectedByGate,
 } from '@sortiva/db'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
-import { renderTemplatedLine, t } from '@sortiva/ui'
+import { gateLabel, renderTemplatedLine, t } from '@sortiva/ui'
 import { withAccount } from '../../auth/_lib/session'
 import { makeGetCalendarHandler } from './handlers'
 
@@ -357,6 +357,7 @@ describe.skipIf(!available)('GET /api/calendar', () => {
   const held = async (
     scoresJson: unknown,
     reasonUserFacing: string | null = 'gate3.below_quality_bar',
+    gate: 1 | 2 | 3 = 3,
   ) => {
     const scope = accountScope(accountId)
     const opportunity = await insertMinimalOpportunity(
@@ -400,7 +401,7 @@ describe.skipIf(!available)('GET /api/calendar', () => {
       scope,
       {
         topicId: topic.id,
-        gate: 3,
+        gate,
         outcome: 'rejected_after_repair',
         scoresJson,
         reasonUserFacing,
@@ -413,9 +414,9 @@ describe.skipIf(!available)('GET /api/calendar', () => {
     const body = calendarResponseSchema.parse(
       await (await get(accountId, '?from=2026-03-01&to=2026-03-31')).json(),
     )
-    const reason = body.topics[0]?.rejection?.reason
-    if (!reason) throw new Error('the held day carried no reason at all')
-    return { reason, line: renderTemplatedLine(reason, t) }
+    const rejection = body.topics[0]?.rejection
+    if (!rejection) throw new Error('the held day carried no rejection at all')
+    return { rejection, reason: rejection.reason, line: renderTemplatedLine(rejection.reason, t) }
   }
 
   // The grader's own objection, written by a model. It is the one sentence in
@@ -468,6 +469,50 @@ describe.skipIf(!available)('GET /api/calendar', () => {
     // from becoming permanent.
     const { reason } = await held({ scores: { informationGain: 2 } })
     expect(reason.params).toEqual({})
+  })
+
+  /**
+   * The sentence a merchant reads has to belong to the check that stopped them.
+   *
+   * A gate writes its reason as a key; a row can carry none, and the calendar
+   * used to fill that hole with Gate 1's key, which resolves to "we don't have
+   * enough detail about your products yet". Under an "Evidence check" or "Draft
+   * grading" heading that is a claim about the merchant's catalogue that nobody
+   * measured, and it is indistinguishable on screen from one we did measure.
+   *
+   * These two fail if the fallback comes back: the first on the key, the second
+   * on the words. Neither pins today's admission text, so the sentence Lane F
+   * eventually writes for this key passes both.
+   */
+  it('bites: a gate 2 hold with no recorded reason does not borrow Gate 1\'s sentence', async () => {
+    const { rejection, reason, line } = await held({}, null, 2)
+
+    expect(rejection.gate).toBe('gate_2')
+    expect(reason.templateKey).not.toBe('gate1.held_insufficient_substance')
+    expect(reason.templateKey).toBe('gate.reason_unrecorded')
+    // A sentence that admits we recorded nothing has nothing to interpolate,
+    // and the row's own measurements belong to the sentence never written.
+    expect(reason.params).toEqual({})
+    expect(line.text).not.toBe(t('appendixA.qualityRejectionRichness'))
+    expect(line.text.trim().length).toBeGreaterThan(0)
+    expect(line.text).not.toContain('{')
+  })
+
+  it('bites: the heading still names the check that actually stopped the day', async () => {
+    // The admission only works beside a true label. The heading comes from the
+    // row's own gate column, which is always recorded, so "Stopped at: Evidence
+    // check" stays factual next to "we didn't record why".
+    const { rejection, line } = await held({}, null, 2)
+
+    expect(gateLabel(rejection.gate, t)).toBe(t('content.gate.gate_2'))
+    expect(line.text).not.toBe(t('appendixA.qualityRejectionRichness'))
+  })
+
+  it('bites: a gate 3 hold with no recorded reason says so too', async () => {
+    const { reason, line } = await held({ scores: { informationGain: 2 } }, null, 3)
+
+    expect(reason.templateKey).toBe('gate.reason_unrecorded')
+    expect(line.text).not.toBe(t('appendixA.qualityRejectionRichness'))
   })
 
   it('drops a recorded value that is not a word or a number', async () => {

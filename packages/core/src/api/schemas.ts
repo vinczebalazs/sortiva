@@ -428,8 +428,6 @@ export const scheduleOpportunityResponseSchema = z.object({
   scheduledFor: isoDateSchema,
 })
 
-export const markTaskAppliedRequestSchema = z.object({ state: z.enum(['applied', 'skipped']) })
-
 // ── Calendar ─────────────────────────────────────────────────────────────────
 
 export const topicSchema = z.object({
@@ -765,6 +763,114 @@ export const generateRecommendationResponseSchema = z.object({
 export const readRecommendationQuerySchema = z.object({
   opportunityId: uuidSchema,
 })
+
+/**
+ * The same task, with the field the recommendations endpoint sends and the
+ * opportunity drawer does not: which kind of edit it is. Declared here rather
+ * than added to `opportunityTaskSchema` because the drawer genuinely does not
+ * send it, and widening the shared schema would declare a field one of its two
+ * endpoints omits — the fault this correction exists to remove.
+ */
+export const recommendationTaskSchema = opportunityTaskSchema.extend({
+  kind: z.enum([
+    'title_rewrite',
+    'meta_rewrite',
+    'add_section',
+    'add_faq',
+    'internal_links',
+    'product_data',
+    'consolidate',
+    'primary_url',
+    'canonical_recommendation',
+    'schedule_topic',
+    'repair_reference',
+  ]),
+})
+
+const fixSectionLineSchema = z.object({
+  templateKey: z.string(),
+  params: z.record(z.string(), z.union([z.string(), z.number()])),
+})
+
+/**
+ * A FIX recommendation as the drawer shows it: three sections in the order the
+ * merchant has to act in, and the line saying we changed nothing in their shop.
+ * Every piece of prose is a key plus its numbers, never a finished sentence.
+ */
+export const fixRecommendationViewSchema = z.object({
+  kind: z.literal('cannibalization_consolidation'),
+  clusterHead: z.string(),
+  sections: z.array(
+    z.object({
+      kind: z.enum(['primary_url', 'internal_links', 'canonical']),
+      headingKey: z.string(),
+      lines: z.array(fixSectionLineSchema),
+    }),
+  ),
+  trustLineKey: z.string(),
+})
+
+/**
+ * The full recommendation — what the drawer shows and what the download is
+ * built from, which are the same thing since they were made one view.
+ */
+export const optimizeRecommendationViewSchema = z.object({
+  id: uuidSchema,
+  state: z.enum(['ready', 'failed_validation']),
+  pageUrl: z.string(),
+  fields: z.array(recommendationFieldSchema),
+  sections: z.array(
+    z.object({ heading: z.string(), copy: z.string(), evidence: z.array(z.string()) }),
+  ),
+  faq: z.array(z.object({ q: z.string(), a: z.string(), evidence: z.array(z.string()) })),
+  internalLinksIn: z.array(z.object({ fromUrl: z.string(), anchor: z.string() })),
+  internalLinksOut: z.array(z.object({ toUrl: z.string(), anchor: z.string() })),
+  intentNote: z.string().nullable(),
+  failureReason: whyLineSchema.nullable(),
+  generatedAt: isoDateTimeSchema,
+})
+
+/**
+ * What reading a recommendation actually answers — four shapes, not one.
+ *
+ * This schema is deliberately a union rather than one object with everything
+ * made optional, because the four cases are genuinely different answers and a
+ * client that cannot tell them apart will render the wrong thing. They are:
+ * advice that exists; advice being written right now; a technical fix, which is
+ * a different shape entirely and carries no recommendation; and nothing at all.
+ *
+ * It replaces a declaration that named the opportunity-drawer shape, which this
+ * endpoint has never returned. Nothing was red, because the contract check
+ * compares the declarations to each other and to the routes that exist — never
+ * to what a handler answers. See `R-CONTRACT-2`.
+ */
+export const readRecommendationResponseSchema = z.union([
+  z.object({
+    recommendation: optimizeRecommendationViewSchema,
+    tasks: z.array(recommendationTaskSchema),
+    /** The page already looks edited, so we offer to record it rather than assert it. */
+    looksApplied: z
+      .object({ signals: z.array(z.string()), headings: z.array(z.string()) })
+      .nullable(),
+    appliedAt: isoDateTimeSchema.nullable(),
+  }),
+  z.object({
+    recommendation: z.object({ state: z.literal('generating'), opportunityId: uuidSchema }),
+    tasks: z.array(recommendationTaskSchema),
+    looksApplied: z.null(),
+  }),
+  z.object({
+    recommendation: z.null(),
+    fix: fixRecommendationViewSchema.nullable(),
+    tasks: z.array(recommendationTaskSchema),
+    looksApplied: z.null(),
+  }),
+  z.object({
+    recommendation: z.null(),
+    tasks: z.array(recommendationTaskSchema),
+    looksApplied: z.null(),
+  }),
+])
 
 export const applyRecommendationRequestSchema = z.object({
   /** Absent means the whole recommendation rather than one task. */

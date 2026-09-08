@@ -11791,347 +11791,27 @@
               "application/json": {
                 "schema": {
                   "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "type": "object",
-                  "properties": {
-                    "opportunity": {
+                  "anyOf": [
+                    {
                       "type": "object",
                       "properties": {
-                        "id": {
-                          "type": "string",
-                          "format": "uuid",
-                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                        },
-                        "signalType": {
-                          "type": "string"
-                        },
-                        "entityRef": {
+                        "recommendation": {
                           "type": "object",
                           "properties": {
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "query_cluster",
-                                "page",
-                                "product",
-                                "family",
-                                "article"
-                              ]
-                            },
                             "id": {
-                              "type": "string"
-                            },
-                            "label": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "kind",
-                            "id",
-                            "label"
-                          ],
-                          "additionalProperties": false
-                        },
-                        "recommendedAction": {
-                          "type": "string",
-                          "enum": [
-                            "CREATE",
-                            "OPTIMIZE",
-                            "REFRESH",
-                            "FIX",
-                            "HOLD"
-                          ]
-                        },
-                        "status": {
-                          "type": "string",
-                          "enum": [
-                            "new",
-                            "accepted",
-                            "scheduled",
-                            "executing",
-                            "completed",
-                            "dismissed",
-                            "blocked",
-                            "expired"
-                          ]
-                        },
-                        "impact": {
-                          "type": "string",
-                          "enum": [
-                            "high",
-                            "medium",
-                            "low"
-                          ]
-                        },
-                        "impactScore": {
-                          "type": "number"
-                        },
-                        "confidence": {
-                          "type": "string",
-                          "enum": [
-                            "high",
-                            "medium",
-                            "low"
-                          ]
-                        },
-                        "confidenceScore": {
-                          "type": "number"
-                        },
-                        "confidenceFactors": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "label": {
-                                "type": "string"
-                              },
-                              "direction": {
-                                "type": "string",
-                                "enum": [
-                                  "up",
-                                  "down"
-                                ]
-                              }
-                            },
-                            "required": [
-                              "label",
-                              "direction"
-                            ],
-                            "additionalProperties": false
-                          }
-                        },
-                        "evidence": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "key": {
-                                "type": "string"
-                              },
-                              "value": {
-                                "type": [
-                                  "string",
-                                  "number"
-                                ]
-                              },
-                              "source": {
-                                "type": "string"
-                              },
-                              "window": {
-                                "type": "string"
-                              },
-                              "fetchedAt": {
-                                "type": "string",
-                                "format": "date-time",
-                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                              }
-                            },
-                            "required": [
-                              "key",
-                              "value",
-                              "source",
-                              "fetchedAt"
-                            ],
-                            "additionalProperties": false
-                          }
-                        },
-                        "why": {
-                          "type": "object",
-                          "properties": {
-                            "templateKey": {
-                              "type": "string"
-                            },
-                            "params": {
-                              "type": "object",
-                              "propertyNames": {
-                                "type": "string"
-                              },
-                              "additionalProperties": {
-                                "type": [
-                                  "string",
-                                  "number"
-                                ]
-                              }
-                            }
-                          },
-                          "required": [
-                            "templateKey",
-                            "params"
-                          ],
-                          "additionalProperties": false
-                        },
-                        "preconditions": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "code": {
-                                "type": "string"
-                              },
-                              "whatToDo": {
-                                "type": "object",
-                                "properties": {
-                                  "templateKey": {
-                                    "type": "string"
-                                  },
-                                  "params": {
-                                    "type": "object",
-                                    "propertyNames": {
-                                      "type": "string"
-                                    },
-                                    "additionalProperties": {
-                                      "type": [
-                                        "string",
-                                        "number"
-                                      ]
-                                    }
-                                  }
-                                },
-                                "required": [
-                                  "templateKey",
-                                  "params"
-                                ],
-                                "additionalProperties": false
-                              }
-                            },
-                            "required": [
-                              "code",
-                              "whatToDo"
-                            ],
-                            "additionalProperties": false
-                          }
-                        },
-                        "rulesVersion": {
-                          "type": "string"
-                        },
-                        "limitedIntelligence": {
-                          "type": "boolean"
-                        },
-                        "detectedAt": {
-                          "type": "string",
-                          "format": "date-time",
-                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                        },
-                        "scheduledFor": {
-                          "anyOf": [
-                            {
                               "type": "string",
-                              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                             },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        },
-                        "expiresAt": {
-                          "anyOf": [
-                            {
-                              "type": "string",
-                              "format": "date-time",
-                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "signalType",
-                        "entityRef",
-                        "recommendedAction",
-                        "status",
-                        "impact",
-                        "impactScore",
-                        "confidence",
-                        "confidenceScore",
-                        "confidenceFactors",
-                        "evidence",
-                        "why",
-                        "preconditions",
-                        "rulesVersion",
-                        "limitedIntelligence",
-                        "detectedAt",
-                        "scheduledFor",
-                        "expiresAt"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "tasks": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string",
-                            "format": "uuid",
-                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                          },
-                          "label": {
-                            "type": "string"
-                          },
-                          "state": {
-                            "type": "string",
-                            "enum": [
-                              "open",
-                              "applied",
-                              "skipped"
-                            ]
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "label",
-                          "state"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "serpSnapshot": {
-                      "anyOf": [
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "position": {
-                                "type": "integer",
-                                "minimum": -9007199254740991,
-                                "maximum": 9007199254740991
-                              },
-                              "domain": {
-                                "type": "string"
-                              },
-                              "url": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "position",
-                              "domain",
-                              "url"
-                            ],
-                            "additionalProperties": false
-                          }
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "recommendation": {
-                      "anyOf": [
-                        {
-                          "type": "object",
-                          "properties": {
                             "state": {
                               "type": "string",
                               "enum": [
-                                "none",
-                                "generating",
                                 "ready",
                                 "failed_validation"
                               ]
+                            },
+                            "pageUrl": {
+                              "type": "string"
                             },
                             "fields": {
                               "type": "array",
@@ -12161,6 +11841,58 @@
                                   "field",
                                   "current",
                                   "suggested",
+                                  "evidence"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "sections": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "heading": {
+                                    "type": "string"
+                                  },
+                                  "copy": {
+                                    "type": "string"
+                                  },
+                                  "evidence": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "heading",
+                                  "copy",
+                                  "evidence"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "faq": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "q": {
+                                    "type": "string"
+                                  },
+                                  "a": {
+                                    "type": "string"
+                                  },
+                                  "evidence": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "q",
+                                  "a",
                                   "evidence"
                                 ],
                                 "additionalProperties": false
@@ -12241,160 +11973,417 @@
                                   "type": "null"
                                 }
                               ]
+                            },
+                            "generatedAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
                             }
                           },
                           "required": [
+                            "id",
                             "state",
+                            "pageUrl",
                             "fields",
+                            "sections",
+                            "faq",
                             "internalLinksIn",
                             "internalLinksOut",
                             "intentNote",
-                            "failureReason"
+                            "failureReason",
+                            "generatedAt"
                           ],
                           "additionalProperties": false
                         },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "history": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "at": {
-                            "type": "string",
-                            "format": "date-time",
-                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                          },
-                          "from": {
-                            "anyOf": [
-                              {
+                        "tasks": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "state": {
                                 "type": "string",
                                 "enum": [
-                                  "new",
-                                  "accepted",
-                                  "scheduled",
-                                  "executing",
-                                  "completed",
-                                  "dismissed",
-                                  "blocked",
-                                  "expired"
+                                  "open",
+                                  "applied",
+                                  "skipped"
                                 ]
                               },
-                              {
-                                "type": "null"
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "title_rewrite",
+                                  "meta_rewrite",
+                                  "add_section",
+                                  "add_faq",
+                                  "internal_links",
+                                  "product_data",
+                                  "consolidate",
+                                  "primary_url",
+                                  "canonical_recommendation",
+                                  "schedule_topic",
+                                  "repair_reference"
+                                ]
                               }
-                            ]
-                          },
-                          "to": {
-                            "type": "string",
-                            "enum": [
-                              "new",
-                              "accepted",
-                              "scheduled",
-                              "executing",
-                              "completed",
-                              "dismissed",
-                              "blocked",
-                              "expired"
-                            ]
-                          },
-                          "actor": {
-                            "type": "string",
-                            "enum": [
-                              "user",
-                              "autopilot",
-                              "expiry"
-                            ]
-                          },
-                          "reason": {
-                            "anyOf": [
-                              {
-                                "type": "object",
-                                "properties": {
-                                  "templateKey": {
-                                    "type": "string"
-                                  },
-                                  "params": {
-                                    "type": "object",
-                                    "propertyNames": {
-                                      "type": "string"
-                                    },
-                                    "additionalProperties": {
-                                      "type": [
-                                        "string",
-                                        "number"
-                                      ]
-                                    }
-                                  }
-                                },
-                                "required": [
-                                  "templateKey",
-                                  "params"
-                                ],
-                                "additionalProperties": false
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
+                            },
+                            "required": [
+                              "id",
+                              "label",
+                              "state",
+                              "kind"
+                            ],
+                            "additionalProperties": false
                           }
                         },
-                        "required": [
-                          "at",
-                          "from",
-                          "to",
-                          "actor",
-                          "reason"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "outcome": {
-                      "anyOf": [
-                        {
-                          "type": "object",
-                          "properties": {
-                            "label": {
-                              "type": "string"
+                        "looksApplied": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "signals": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
+                                "headings": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "required": [
+                                "signals",
+                                "headings"
+                              ],
+                              "additionalProperties": false
                             },
-                            "measuredAt": {
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "appliedAt": {
+                          "anyOf": [
+                            {
                               "type": "string",
                               "format": "date-time",
                               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
                             },
-                            "before": {
-                              "type": "number"
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "recommendation",
+                        "tasks",
+                        "looksApplied",
+                        "appliedAt"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "recommendation": {
+                          "type": "object",
+                          "properties": {
+                            "state": {
+                              "type": "string",
+                              "const": "generating"
                             },
-                            "after": {
-                              "type": "number"
+                            "opportunityId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                             }
                           },
                           "required": [
-                            "label",
-                            "measuredAt",
-                            "before",
-                            "after"
+                            "state",
+                            "opportunityId"
                           ],
                           "additionalProperties": false
                         },
-                        {
+                        "tasks": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "state": {
+                                "type": "string",
+                                "enum": [
+                                  "open",
+                                  "applied",
+                                  "skipped"
+                                ]
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "title_rewrite",
+                                  "meta_rewrite",
+                                  "add_section",
+                                  "add_faq",
+                                  "internal_links",
+                                  "product_data",
+                                  "consolidate",
+                                  "primary_url",
+                                  "canonical_recommendation",
+                                  "schedule_topic",
+                                  "repair_reference"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "label",
+                              "state",
+                              "kind"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "looksApplied": {
                           "type": "null"
                         }
-                      ]
+                      },
+                      "required": [
+                        "recommendation",
+                        "tasks",
+                        "looksApplied"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "recommendation": {
+                          "type": "null"
+                        },
+                        "fix": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "cannibalization_consolidation"
+                                },
+                                "clusterHead": {
+                                  "type": "string"
+                                },
+                                "sections": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "enum": [
+                                          "primary_url",
+                                          "internal_links",
+                                          "canonical"
+                                        ]
+                                      },
+                                      "headingKey": {
+                                        "type": "string"
+                                      },
+                                      "lines": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "templateKey": {
+                                              "type": "string"
+                                            },
+                                            "params": {
+                                              "type": "object",
+                                              "propertyNames": {
+                                                "type": "string"
+                                              },
+                                              "additionalProperties": {
+                                                "type": [
+                                                  "string",
+                                                  "number"
+                                                ]
+                                              }
+                                            }
+                                          },
+                                          "required": [
+                                            "templateKey",
+                                            "params"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "headingKey",
+                                      "lines"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "trustLineKey": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "clusterHead",
+                                "sections",
+                                "trustLineKey"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "tasks": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "state": {
+                                "type": "string",
+                                "enum": [
+                                  "open",
+                                  "applied",
+                                  "skipped"
+                                ]
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "title_rewrite",
+                                  "meta_rewrite",
+                                  "add_section",
+                                  "add_faq",
+                                  "internal_links",
+                                  "product_data",
+                                  "consolidate",
+                                  "primary_url",
+                                  "canonical_recommendation",
+                                  "schedule_topic",
+                                  "repair_reference"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "label",
+                              "state",
+                              "kind"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "looksApplied": {
+                          "type": "null"
+                        }
+                      },
+                      "required": [
+                        "recommendation",
+                        "fix",
+                        "tasks",
+                        "looksApplied"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "recommendation": {
+                          "type": "null"
+                        },
+                        "tasks": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "state": {
+                                "type": "string",
+                                "enum": [
+                                  "open",
+                                  "applied",
+                                  "skipped"
+                                ]
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "title_rewrite",
+                                  "meta_rewrite",
+                                  "add_section",
+                                  "add_faq",
+                                  "internal_links",
+                                  "product_data",
+                                  "consolidate",
+                                  "primary_url",
+                                  "canonical_recommendation",
+                                  "schedule_topic",
+                                  "repair_reference"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "label",
+                              "state",
+                              "kind"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "looksApplied": {
+                          "type": "null"
+                        }
+                      },
+                      "required": [
+                        "recommendation",
+                        "tasks",
+                        "looksApplied"
+                      ],
+                      "additionalProperties": false
                     }
-                  },
-                  "required": [
-                    "opportunity",
-                    "tasks",
-                    "serpSnapshot",
-                    "recommendation",
-                    "history",
-                    "outcome"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               }
             }
