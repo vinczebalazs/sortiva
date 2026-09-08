@@ -4,109 +4,109 @@ Rewritten after **every** card lands or stops, and re-read before any card is
 launched and before any merge. Its test: a completely fresh session, with none of
 the conversation that produced it, could take over from this file alone.
 
-**Last rewritten:** 2026-09-08, 12:55, by the integrator session (`sortiva-a8`,
+**Last rewritten:** 2026-09-08, 14:55, by the integrator session (`sortiva-a8`,
 running in the main worktree). **Everything below the first horizontal rule is
 older history, kept deliberately. Read this head first; it is what is true now.**
 
-## Where things stand at 2026-09-08, 12:55
+## Where things stand at 2026-09-08, 14:55
 
-**`main` is green: 330 test files, 4,216 tests.** Typecheck, lint, lint proofs,
-contracts, build, both smoke boots, chaos and env check all passed within the last
-hour; the full suite has been run and passed after every merge below.
+**`main` is green: 330 test files, 4,245 tests.** Typecheck, lint, lint proofs,
+contracts, build, both smoke boots, chaos and env check have all passed since the
+last merge.
 
-**The founder is awake.** Their instruction at 12:05: *"continue finishing the
-product completely."* The earlier standing instruction stands: **finish everything
-in code; only vendor credentials in `.env` are deferred to the last step.** The
-rules of `docs/overnight-run.md` still apply — do not decide a founder question, no
-more than four building sessions, check `uptime` before dispatching, never
-`git add -A`.
+**The founder's instruction: *"continue finishing the product completely."*** The
+standing one is unchanged: **finish everything in code; only vendor credentials in
+`.env` are deferred to the last step.** `docs/overnight-run.md` still governs.
 
-### The wave that landed this morning, and what each one actually fixed
+### The account hit its model rate limit at about 13:10, resetting 14:30
 
-- **`R-GSC-URL-FIELD`** — the Connect Search Console button worked for nobody on a
-  deployed server. The endpoint answered one field name; both screens read another.
-  **The half worth remembering:** the onboarding copy of that button was written to
-  accept *either* spelling, so the one place that could have reported the fault
-  reported nothing. That hedge is gone.
-- **`R-TEMPLATE-PREFIX`** — eight sentences written for merchants were never found,
-  because the renderer only looked under one prefix. Two were live, one of them a
-  canonical string the spec requires verbatim and that reached nobody.
-- **`R-JUDGE-SEES-MORE`** — the article quality judge was shown four fields the
-  writer never had, so it could confirm an invented claim about price. Writer and
-  judge now read one function.
-- **`R-MANUAL-TOPIC-LOCALE`** — a topic a merchant typed in was judged by the
-  English demand bar whatever market they sell in, and shown the English figure as
-  the bar they had missed.
-- **`R-DUNNING-DROPPED`** — **a merchant whose card was declined was never emailed.**
-  The status was written so the banner appeared; the email went to a stand-in that
-  kept it in memory. The nightly repair job did the same, so a merchant whose
-  webhook was lost was paused and never told at all.
-- **`R-CLOCK-SILENT`** (integrator) — one scheduled job name with no handler turned
-  the product's **entire** schedule off and wrote one log line. The loud guard for
-  it ran only when the schedule was enabled, which is the flag the missing name had
-  just switched off.
-- **`R-SCAN-DATE-ZONE`** (contract half, integrator) — the response now carries the
-  store's timezone, so a Berlin store stops being told its scan is on a Sunday.
-  **The formatting half is still open and belongs to the frontend lane.**
-- **`R-STUB-REPORT`** (integrator) — a stand-in running inside the product is now a
-  test failure rather than a silence. That is what found the dunning defect.
-- **`R-AXES-DESCRIPTION`** and **`R-INDEXING-SPLIT`** — a field description that
-  described something the code does not store, and two different indexing problems
-  that shared one sentence.
+**Two sessions died mid-card. Both had committed their first half, and both
+survived because of it** — the fourth time that rule has paid for itself. Both were
+re-dispatched at 14:50 under the take-over-an-unverified-draft brief: audit the
+draft part by part, keep what is right, replace what is not, say which was which,
+and assume nothing about whether it compiles.
 
-### The four sessions running right now (dispatched 12:41 and 12:54)
+- **Lane A**, `R-SIGNIN-EMAIL`: committed `1d3fe28` (the exchange that asks for a
+  sign-in link). Left uncommitted: `packages/ui/src/public/SignIn.tsx` and
+  `packages/ui/strings/en.json`. Its last words were "Now the screen. First the
+  copy." — so the copy may be **invented**, and the brief says not to ship invented
+  merchant-facing wording.
+- **Lane F**, `R-SCREEN-READS`: committed `9601cab` (a screen reading a field its
+  endpoint cannot send fails by name). Left uncommitted: an attempt to make the
+  walker follow async server components, which is what stopped it.
 
-| Lane | Card | What it is |
+The integrator's own commands kept working throughout, so `main` was never at risk.
+
+### The sessions running right now
+
+| Lane | Card | Note |
 |---|---|---|
-| G | `R-BRAKES-BLIND` | two safety brakes — stop generating if the judge starts rejecting everything, stop publishing if publishing starts failing — are written, tested and fed nothing. Authorised in writing to edit `apps/web/instrumentation-node.ts` |
-| F | `R-SCREEN-READS` | the third side of the triangle: nothing proves a screen reads fields an endpoint actually sends. This is the class the Search Console button belonged to |
-| B | `R-GUARD-TEETH` | two invariants guarded by checks that pass on broken code — the quarantine on raw store HTML, and the ban on "3 of 30" phrasing |
-| A | `R-SIGNIN-EMAIL` | a merchant who will not use a Google account cannot sign in at all. Authorised for `packages/ui/src/public/SignIn.tsx`, which is Lane F's |
+| A | `R-SIGNIN-EMAIL` | inherits a draft. A merchant without a Google account cannot sign in at all |
+| F | `R-SCREEN-READS` | inherits a draft. Told to land what the walker can prove and **name what it cannot**, rather than perfect it |
+| C | `R-CREATE-UNCHECKED` | **invariant 6.** Two of three ways to propose a new page skip the check that stops us competing with the merchant's own page. Told to establish which branches are genuinely safe before changing any |
 
-Every brief carries the same three rules, each paid for once: **no `pnpm test`**,
-**commit in halves**, **mutation-check every test**.
+### What landed since the morning report
+
+`R-CLOCK-SILENT` (one bad job name no longer switches the whole schedule off),
+`R-DUNNING-DROPPED` (a declined card is finally emailed; the nightly repair too),
+`R-BRAKES-BLIND` (the quality brake fires; the publishing one honestly still
+cannot), `R-GUARD-TEETH` (two invariants whose guards passed on broken code),
+`R-CHAOS-KILLS` (the chaos suite checks it actually killed something),
+`R-STUB-REPORT` and `-2` (a stand-in inside the product is a failure, and is found
+by what it does rather than what it is called), `R-SCAN-DATE-ZONE` contract half,
+`R-JUDGE-SEES-MORE`, `R-MANUAL-TOPIC-LOCALE`, `R-TEMPLATE-PREFIX`,
+`R-GSC-URL-FIELD`, `R-INDEXING-SPLIT`, `R-AXES-DESCRIPTION`, and the invariant
+sweep itself.
 
 ### What the integrator does next
 
 1. Merge and gate each lane as it reports. Full gate every time; never batch.
-2. Integrator cards with no collision: `R-CHAOS-KILLS`, then the `contracts:check`
-   gap (it still never compares the frozen contract to the route files on disk).
-3. Then dispatch: `R-OVERRIDE-REACH-2` (D + C), `R-TASK-COPY` (C + F),
-   `R-DRAWER-GAPS` (C), `R-VENDOR-DOUBLES` (F), `R-SCAN-DATE-ZONE` formatting (F),
-   `R-SIGNIN-SLOW` (F), and the eleven "invariant with no mechanism" items in
-   `docs/audit-invariants-2026-09-08.md`.
+2. Integrator work with no collision: make `contracts:check` compare the frozen
+   contract to the **route files on disk**, which it has never done — the founder's
+   reporter 2, still open, and the guard that let ten endpoints be built at
+   addresses the contract did not know about.
+3. Then: `R-OVERRIDE-REACH-2` (D + C), `R-TASK-COPY` (C + F), `R-DRAWER-GAPS` (C),
+   `R-VENDOR-DOUBLES` (F), `R-SCAN-DATE-ZONE` formatting (F),
+   `R-REAL-NETWORK-TESTS`, `R-BRAKE-STICKY` (G), and the eleven "invariant with no
+   mechanism" items in `docs/audit-invariants-2026-09-08.md`.
 4. `T10.4` needs a Shopify development store and cannot be finished from code.
 
 ### What is waiting on the founder — do not decide any of these
 
-`R-SWEEP-LIFECYCLE` (cost: should unpaid stores still be scanned weekly),
-`R-RESTUDY` (cost: re-study a store after signup, and on what trigger),
-`R-EVIDENCE-BLACKOUT` (a number), **`R-COMPETITOR-AUTOADD`** (the constitution says
-search-result domains are never auto-added to a competitor list, and onboarding
-adds them — either the code or `CLAUDE.md` changes), `R-LABELS-OR-DASHES`,
+**Newest and largest:** `R-PUBLISH-ATTEMPTS` — nothing records that a publish was
+refused (a refused post deletes its own claim row, which covers rate limits), so
+one safety brake cannot be built without storing something we do not store today.
+**`R-COMPETITOR-AUTOADD`** — the constitution says search-result domains are never
+added to a merchant's competitor list without them, and onboarding adds them.
+Then: `R-SWEEP-LIFECYCLE`, `R-RESTUDY`, `R-EVIDENCE-BLACKOUT`, `R-LABELS-OR-DASHES`,
 `R-EXPORT-FALLBACK`, `R-SKIP-TASK`, `R-DISMISS-FOLLOWS-RENAME`, `R-STATE-FIVE`,
-`R-FINGERPRINT-BLAST`, `R-COMPLETED-LINK` (Lane F stopped on it and wrote up three
-options with a recommendation), the "We found 1 ways to grow your store" string,
-the monthly email still naming Monday, the lapsed-subscriber copy, and the two gate
-sentences that borrow approved copy.
+`R-FINGERPRINT-BLAST`, `R-COMPLETED-LINK`, `R-BRAKE-STICKY`, the "We found 1 ways
+to grow your store" string, the monthly email naming Monday, the lapsed-subscriber
+copy, and the two gate sentences that borrow approved copy.
 
 ### The three things a fresh session would most likely get wrong
 
-1. **`apps/web/app/(public)/_lib/signin-wire.test.ts` is NOT a load flake**, whatever
-   the `R-TESTDB` card says. Measured alone: 2 failures in 4 runs, timing out at
-   5000 ms on work that takes 414 ms; and 4 passes in 4 at load average 87. Carded
-   as `R-SIGNIN-SLOW`. Treat a red there as unknown and do not raise the timeout
-   before the cause is named.
-2. **Twice today the full suite went red once with a single failure and passed on
-   the next two runs, both times at load average 17–21, and both times the failure
-   name could not be recovered from the output.** Not diagnosed. If it recurs,
-   capture the reporter output to a file rather than piping it through `grep`.
-3. **The pattern behind most of this week's findings**, so it is not rediscovered
-   again: *a thing is checked against its own idea of itself, never against what
-   consumes it.* A related sibling appeared twice today and is worth naming
-   separately: **a guard that proves it is working by requiring an outstanding
-   defect to exist will start lying on the day the defect is fixed.** Both instances
-   were caught — one by the lane whose fix triggered it.
+1. **The intermittent red now has a name and a shared shape, and `R-SIGNIN-SLOW` is
+   superseded by `R-REAL-NETWORK-TESTS`.** The full suite went red three times
+   today, one failure each, green on every re-run. The third was captured to a file
+   and is `packages/providers/src/fetch/fetch.test.ts`, the case that asks the real
+   system resolver for an invalid name to prove the fetch guard's production
+   wiring, **timing out at 5002 ms** — the runner's default. That lookup takes
+   **30 ms** on this machine idle, five times out of five. `signin-wire.test.ts`
+   fails identically, at exactly 5000 ms, on work measured at 414 ms, and also
+   reaches a real remote endpoint. **Two tests, one shape.** Cause not established.
+   **Do not raise either timeout before it is** — a test that talks to the real
+   network and is given longer just fails more slowly. And **capture the runner's
+   output to a file**: two of the three failures were unnameable because the output
+   was piped through `grep`.
+2. **The pattern behind most of this week's findings:** *a thing is checked against
+   its own idea of itself, never against what consumes it.*
+3. **Its sibling, which appeared three times today in code written hours apart,
+   twice by me:** *a guard that proves it is working by requiring an outstanding
+   defect to exist starts lying on the day the defect is fixed* — and the version
+   of it that is hardest to see: **a check that generates one test per thing it
+   finds gets quieter, not redder, when it starts finding less.** Assert the size
+   of what you found, not just what you found.
 ---
 
 ## The run stopped on a rate limit at 20:25, and RESUMED at 21:59
