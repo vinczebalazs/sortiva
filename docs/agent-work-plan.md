@@ -1456,6 +1456,18 @@ Done when: a refused publish leaves a record, the brake reads it, and the stand-
 **R-BRAKE-STICKY — the quality switch is hard to lower again** · small, Lane G · **named by the lane that built it, not a defect**
 Scope: the quality brake measures the last fifty verdicts with no time bound, which is what the spec asks for. The consequence: an operator who lowers the switch while those fifty still read badly watches it go straight back up, and can only clear it by fixing the cause or by fifty further drafts being graded. The lane declined to invent a time bound, which would have been a behaviour change nobody asked for. Worth deciding deliberately rather than discovering during an incident.
 
+### The intermittent reds finally have a name, 2026-09-08
+
+**R-REAL-NETWORK-TESTS — two tests reach the real network and fail, rarely, at exactly the timeout** · integrator or Lane F · **supersedes `R-SIGNIN-SLOW`, which was the same thing seen once**
+Scope: the full suite went red three times today with a single failure each time and passed on every re-run. Twice the name could not be recovered from the piped output. The third time it was captured to a file: `packages/providers/src/fetch/fetch.test.ts` — *"resolves the real `localhost` and blocks it — the guard works on real DNS too"* — **timing out at 5002 ms**, which is the runner's default.
+**What that test does, and why it is right to:** it asks the system resolver for a name in an invalid top-level domain, with no injection, deliberately, "to prove the production wiring" of the protection that stops the product being talked into fetching an internal address. That is a good test and its realism is the point.
+**The measurement, so the next reader does not have to guess:** that lookup takes **30 ms** on this machine when it is idle, five times out of five. So the failure is not the lookup being slow in normal conditions.
+**The connection worth making:** `apps/web/app/(public)/_lib/signin-wire.test.ts` fails the same way — intermittently, at exactly 5000 ms, on work measured at 414 ms — and it too reaches a real remote endpoint. **Two tests, both making a real network call, both failing at exactly the default timeout, both fast when measured alone.** That is one hypothesis rather than two flakes, and it is more than was known this morning.
+**What is not established:** the cause. It is not simple machine load — the sign-in test failed twice in four runs *in isolation* and passed four times out of four at load average 87.
+Read first: `docs/overnight-state.md`, the note about `signin-wire.test.ts`, which this replaces; `packages/providers/src/fetch/fetch.ts`.
+Done when: the cause is named. **Do not raise either timeout before it is** — a test that reaches the real network and is given longer to do it is a test that fails more slowly. If the answer turns out to be that the suite may not make real network calls, that is a decision about what these two tests are for, and it needs saying rather than assuming.
+Note: capture the runner's output to a file rather than piping it through `grep` — that is why two of the three failures could not be named.
+
 ### From the invariant sweep (`T10.2`, read-only half), 2026-09-08
 
 The sweep mapped all 26 of the constitution's invariants to the mechanism that enforces each one, and mutation-checked eight of them. Its full report is `docs/audit-invariants-2026-09-08.md`; these are the cards that came out of it.
