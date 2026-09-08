@@ -441,6 +441,35 @@ const DRIVERS: Readonly<Record<string, Driver>> = {
       .returning({ id: schema.optimizeRecommendations.id })
     return { params: { id: recommendation!.id } }
   },
+  'POST /api/recommendations/{id}/skip': async (context) => {
+    const opportunity = await seedOpportunity(context, {
+      recommendedAction: 'optimize',
+      entityType: 'url',
+    })
+    const [recommendation] = await context.db
+      .insert(schema.optimizeRecommendations)
+      .values({
+        opportunityId: opportunity.id,
+        pageUrl: 'https://example.com/collections/trail',
+        recommendationJson: { title: 'Trail shoes for wide feet' },
+        promptVersion: 'v1',
+        modelId: 'test-model',
+        rulesVersion: RULES_VERSION,
+        state: 'valid',
+      })
+      .returning({ id: schema.optimizeRecommendations.id })
+    // Skipping names its task and is refused without one, so this route cannot
+    // be driven from a bare body the way its apply sibling can.
+    const [task] = await context.db
+      .insert(schema.opportunityTasks)
+      .values({
+        opportunityId: opportunity.id,
+        kind: 'title_rewrite',
+        description: 'Rewrite the collection title',
+      })
+      .returning({ id: schema.opportunityTasks.id })
+    return { params: { id: recommendation!.id }, body: { taskId: task!.id } }
+  },
   'GET /api/calendar': () => ({ query: 'from=2026-09-01&to=2026-09-30' }),
   'POST /api/calendar/topics': async (context) => {
     await seedEntitlement(context)
