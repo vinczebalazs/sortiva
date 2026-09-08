@@ -1446,6 +1446,16 @@ Done when: every control in ui §9 exists and none that isn't (inventory test ag
 Read first: tech §6 (UI row); ui §3, §5, §6.
 Done when: Playwright against staging: onboarding through activation; opportunity → schedule → calendar; OPTIMIZE generate → download → mark applied; draft review approve; override; export URL confirm — all green.
 
+**R-PUBLISH-ATTEMPTS — nothing records that a publish was refused, so one of the safety brakes cannot be built** · **a founder decision about what we store, then Lane D**
+Scope: the product is meant to stop publishing when publishing starts failing at a rate that says the fault is the platform's rather than ours. `R-BRAKES-BLIND` built everything except the counting and then stopped, correctly, because **there is nothing to count.**
+Posting an article to a merchant's shop is guarded by a claim row with three ends: the shop took it, or we gave up twenty-five minutes later after three recovery passes, or — when the shop **refuses** the post — the row is deleted outright, because the claim's name has to be free for the next attempt. That third case is a dead token, a missing page, a permanent rejection, and a rate limit. **A rate-limit storm is the likeliest shape of "Shopify is having a bad day", which is exactly what this brake exists for, and it leaves nothing behind at all.**
+The lane also refused the tempting half-measure — counting only the rows that survive — because that number would almost never reach the minimum sample the brake needs, so the brake would look connected and still never fire. It stays visibly blind instead, which is the safe direction.
+**The decision:** recording a publish attempt means storing something we do not store today. The lane's recommendation is a small append-only table, one row per attempt and how it ended. The cheaper-looking alternative — a fourth state on the claim row — needs surgery on the unique index that is the only thing standing between a crash and a merchant getting the same article posted to their shop twice, which is not a trade worth making for a counter.
+Done when: a refused publish leaves a record, the brake reads it, and the stand-in leaves `pnpm stubs:report` and its record in `seams-wired.test.ts` is deleted.
+
+**R-BRAKE-STICKY — the quality switch is hard to lower again** · small, Lane G · **named by the lane that built it, not a defect**
+Scope: the quality brake measures the last fifty verdicts with no time bound, which is what the spec asks for. The consequence: an operator who lowers the switch while those fifty still read badly watches it go straight back up, and can only clear it by fixing the cause or by fifty further drafts being graded. The lane declined to invent a time bound, which would have been a behaviour change nobody asked for. Worth deciding deliberately rather than discovering during an incident.
+
 ### From the invariant sweep (`T10.2`, read-only half), 2026-09-08
 
 The sweep mapped all 26 of the constitution's invariants to the mechanism that enforces each one, and mutation-checked eight of them. Its full report is `docs/audit-invariants-2026-09-08.md`; these are the cards that came out of it.
