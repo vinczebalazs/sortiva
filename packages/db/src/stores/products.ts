@@ -2,7 +2,7 @@ import { db, type Db } from '../client'
 import { listCatalogProducts, type CatalogProductRow } from '../repositories/catalog'
 import { findShopifyConnForAccount } from '../repositories/accounts'
 import { productSubstanceForFamilies, type ProductSubstanceRow } from '../repositories/distill'
-import { listOpenOpportunities } from '../repositories/opportunities'
+import { listCompletedMerchantTasks, listOpenOpportunities } from '../repositories/opportunities'
 import type { OpportunityRow } from '../repositories/opportunities'
 import { makeProfileStore, type ProfileFamily } from './profile'
 import type { AccountScope } from '../scope'
@@ -33,6 +33,8 @@ export interface ProductsStore {
   families(scope: AccountScope): Promise<ProfileFamily[]>
   /** Every opportunity still open, which the merchant tasks are filtered out of. */
   openOpportunities(scope: AccountScope): Promise<OpportunityRow[]>
+  /** The holds the merchant themselves cleared, newest first, for the completed section. */
+  completedMerchantTasks(scope: AccountScope): Promise<OpportunityRow[]>
   /** The distilled products behind a set of families, for the substance floor to judge. */
   substanceForFamilies(
     scope: AccountScope,
@@ -55,6 +57,7 @@ export function makeProductsStore(options: ProductsStoreOptions = {}): ProductsS
     catalog: (scope) => listCatalogProducts(database(), scope),
     families: (scope) => profile.families(scope),
     openOpportunities: (scope) => listOpenOpportunities(database(), scope),
+    completedMerchantTasks: (scope) => listCompletedMerchantTasks(database(), scope),
     substanceForFamilies: (scope, familyIds) =>
       productSubstanceForFamilies(database(), scope, familyIds),
 

@@ -248,6 +248,40 @@ export async function listOpenOpportunities(db: Db, scope: AccountScope): Promis
 }
 
 /**
+ * The holds a merchant finished — rows retired under the one expiry reason
+ * that means a person acted rather than a measurement moved.
+ *
+ * `updated_at` is the moment it happened. Expiry is the last write a row ever
+ * takes: the partial unique index covers only the open statuses, so a signal
+ * detected again after expiry inserts a fresh row and never reaches back to
+ * this one. Nothing else in the product has a column for the moment a merchant
+ * task was finished, and adding one would need a schema wave.
+ *
+ * Capped and newest-first because the screen collapses these into a summary
+ * line: a merchant three years in should not be sent their whole history to
+ * render a fold. Older ones fall off the list rather than out of the database —
+ * the rows stay, and the learning loop still reads them.
+ */
+export async function listCompletedMerchantTasks(
+  db: Db,
+  scope: AccountScope,
+  limit = 20,
+): Promise<OpportunityRow[]> {
+  return db
+    .select()
+    .from(opportunities)
+    .where(
+      and(
+        eq(opportunities.accountId, scope.accountId),
+        eq(opportunities.status, 'expired'),
+        eq(opportunities.expiredReason, 'catalog_now_sufficient' satisfies ExpiryReason),
+      ),
+    )
+    .orderBy(desc(opportunities.updatedAt))
+    .limit(limit)
+}
+
+/**
  * Auto-accepted CREATE/REFRESH opportunities — the frozen
  * `OpportunitySource.acceptedContentOpportunities` seam (`packages/core`
  * contracts) that Lane D's replenishment and calendar-seeding read. `label` on

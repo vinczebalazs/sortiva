@@ -165,7 +165,7 @@ describe.skipIf(!available)('M4 end to end: an opportunity becomes an article wa
         impact: 'high',
         impactScore: 82,
         confidence: 70,
-        reasonTemplateKey: 'uncovered_commercial_query.no_suitable_url',
+        reasonTemplateKey: 'uncovered_commercial_query.create',
         reasonParamsJson: { volume: 900 },
         recommendedAction: 'create',
         status: 'accepted',
@@ -270,7 +270,7 @@ describe.skipIf(!available)('M4 end to end: an opportunity becomes an article wa
       kind: 'new',
       source: 'auto',
       scheduledDate: '2026-09-04',
-      whyLine: 'uncovered_commercial_query.no_suitable_url',
+      whyLine: 'uncovered_commercial_query.create',
     })
     expect(topic!.score).not.toBeNull()
 

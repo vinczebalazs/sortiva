@@ -38,7 +38,7 @@ function candidate(over: Partial<ReplenishmentCandidate> & { opportunityId: stri
     signalType: 'uncovered_commercial_query',
     baseScore: 10,
     dimensions: [],
-    reasonTemplateKey: 'uncovered_commercial_query.no_suitable_url',
+    reasonTemplateKey: 'uncovered_commercial_query.create',
     reasonParams: {},
     currentPosition: null,
     ...over,
@@ -56,7 +56,7 @@ function record(over: Partial<ScoringRecord> & { opportunityId: string }): Scori
     score: 10,
     unexplored: true,
     currentPosition: null,
-    reasonTemplateKey: 'uncovered_commercial_query.no_suitable_url',
+    reasonTemplateKey: 'uncovered_commercial_query.create',
     reasonParams: {},
     ...over,
   }

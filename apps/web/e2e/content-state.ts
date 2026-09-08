@@ -56,7 +56,7 @@ export interface E2ETopic {
 }
 
 const why = (volume: number) => ({
-  templateKey: 'uncovered_commercial_query.no_suitable_url',
+  templateKey: 'uncovered_commercial_query.create',
   params: { volume },
 })
 

@@ -3,6 +3,7 @@ import {
   buildOpportunityDraft,
   detectCannibalization,
   detectCatalogRichnessGaps,
+  keywordsClearingSubstanceFloor,
   detectCompetitorCoverageGaps,
   detectContentDecay,
   detectFamilyCoverageGaps,
@@ -331,6 +332,9 @@ async function runSignalScanLocked(
 
   const richnessInput = await assembleRichnessGapInput(assembleDeps, accountId, keywordCandidates)
   signals.push(...detectCatalogRichnessGaps(richnessInput))
+  // Read from the same measurement that decides whether to raise a hold, in
+  // the same pass, so the two can never disagree about one store's catalogue.
+  const catalogueNowSufficient = keywordsClearingSubstanceFloor(richnessInput)
 
   const metadataInput = await assembleMetadataInput(assembleDeps, accountId)
   signals.push(...detectMetadataProblems(metadataInput))
@@ -460,11 +464,19 @@ async function runSignalScanLocked(
       const leftTheBand = intentGapLivePages.has(row.entityRef) && !intentGapInBand.has(row.entityRef)
       if (!answered && !leftTheBand) continue
     }
+    // A hold is work the merchant does, so it is the one row whose expiry can
+    // mean they finished it. Recorded as its own reason rather than left to be
+    // inferred later: read back from `evidence_no_longer_holds` alone, a
+    // finished checklist is indistinguishable from a search that lost its
+    // volume, and only one of those is something to congratulate.
+    const merchantResolved =
+      row.signalType === 'catalog_richness_gap' && catalogueNowSufficient.has(row.entityRef)
+
     const result = await expireOpportunity(
       deps.db,
       scope,
       row.id,
-      'evidence_no_longer_holds',
+      merchantResolved ? 'catalog_now_sufficient' : 'evidence_no_longer_holds',
       startedAt,
       EXPIRABLE_STATUSES,
     )

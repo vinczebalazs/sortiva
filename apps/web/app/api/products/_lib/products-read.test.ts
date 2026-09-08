@@ -182,6 +182,31 @@ describe.skipIf(!available)('reading the Products screen', () => {
     return rows[0]!.id
   }
 
+  /**
+   * A hold the scan has already retired. `reason` is the whole point: only the
+   * one that says the catalogue itself improved may reach the screen as work
+   * somebody did.
+   */
+  const expiredHold = async (
+    accountId: string,
+    keyword: string,
+    reason: string,
+    at: string,
+  ) => {
+    const { rows } = await harness.pool.query<{ id: string }>(
+      `INSERT INTO opportunities
+         (account_id, signal_type, entity_type, entity_ref, evidence_json, impact, impact_score,
+          confidence, reason_template_key, recommended_action, preconditions_json, status,
+          rules_version, expired_reason, updated_at)
+       VALUES ($1, 'catalog_richness_gap', 'query_cluster', $2, '[]'::jsonb, 'medium', 55,
+               50, 'catalog_richness_gap.insufficient_substance', 'hold',
+               '["catalog_richness_gap"]'::jsonb, 'expired', 'test-rules', $3, $4)
+       RETURNING id`,
+      [accountId, keyword, reason, at],
+    )
+    return rows[0]!.id
+  }
+
   const products = (accountId: string | null) =>
     withAccount(
       makeGetProductsHandler({ store: makeProductsStore({ database: harness.db }) }),
@@ -281,6 +306,39 @@ describe.skipIf(!available)('reading the Products screen', () => {
 
     const after = productsResponseSchema.parse(await (await products(mine)).json())
     expect(after.merchantTasks[0]!.products).toEqual([])
+  })
+
+  it('folds away a checklist the merchant finished, with the day they finished it', async () => {
+    const finished = await expiredHold(
+      mine,
+      'wide fit trail shoes',
+      'catalog_now_sufficient',
+      '2026-08-14T09:30:00Z',
+    )
+    await openHold(mine, 'trail running shoes')
+
+    const body = productsResponseSchema.parse(await (await products(mine)).json())
+    const completed = body.merchantTasks.filter((task) => task.completedAt !== null)
+
+    expect(completed).toHaveLength(1)
+    expect(completed[0]!.opportunityId).toBe(finished)
+    expect(completed[0]!.blockingTitle).toBe('wide fit trail shoes')
+    expect(completed[0]!.completedAt).toBe('2026-08-14T09:30:00.000Z')
+    // Nothing is missing from these products any more, so there is no
+    // checklist left to render — only the title, the date and the link on.
+    expect(completed[0]!.products).toEqual([])
+
+    // The open task is untouched and still leads the screen.
+    expect(body.merchantTasks.filter((task) => task.completedAt === null)).toHaveLength(1)
+  })
+
+  it('bites: a hold that expired for any other reason is never shown as work the merchant did', async () => {
+    await expiredHold(mine, 'wide fit trail shoes', 'evidence_no_longer_holds', '2026-08-14T09:30:00Z')
+    await expiredHold(mine, 'trail shoes for mud', 'demand_lost', '2026-08-15T09:30:00Z')
+    await expiredHold(mine, 'discontinued trail shoe', 'entity_deleted', '2026-08-16T09:30:00Z')
+
+    const body = productsResponseSchema.parse(await (await products(mine)).json())
+    expect(body.merchantTasks).toEqual([])
   })
 
   it('offers no admin link for a store we have no connection to', async () => {

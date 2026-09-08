@@ -59,7 +59,7 @@ export const fixtureOpportunity: Opportunity = {
   confidenceScore: 0.72,
   confidence: 'high',
   evidence: fixtureEvidence,
-  reasonTemplateKey: 'striking_distance.page_one_intent_mismatch',
+  reasonTemplateKey: 'striking_distance.optimize',
   reasonParams: { position: 7.3, impressions: 9402 },
   preconditions: [],
   rulesVersion: FIXTURE_RULES_VERSION,
@@ -81,7 +81,7 @@ export const fixtureCreateOpportunity: Opportunity = {
   status: 'accepted',
   impactScore: 64,
   impact: 'medium',
-  reasonTemplateKey: 'uncovered_commercial_query.no_suitable_url',
+  reasonTemplateKey: 'uncovered_commercial_query.create',
   reasonParams: { volume: 880 },
 }
 

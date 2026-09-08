@@ -93,6 +93,7 @@ export {
 
 export {
   detectCatalogRichnessGaps,
+  keywordsClearingSubstanceFloor,
   type RichnessGapCandidate,
   type RichnessGapInput,
   type RichnessGapSignal,

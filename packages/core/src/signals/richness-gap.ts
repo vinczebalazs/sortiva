@@ -101,3 +101,30 @@ export function detectCatalogRichnessGaps(
 
   return out
 }
+
+/**
+ * The searches whose products now say enough — the exact opposite reading of
+ * `detectCatalogRichnessGaps`'s substance test, over the same measurement.
+ *
+ * A hold is the only piece of work in this product the merchant does rather
+ * than us, so an expiring hold is the only expiry that can mean "they did it".
+ * Telling the two apart needs the measurement that raised the hold taken again
+ * on today's catalogue: if the products behind the search clear the substance
+ * floor, the checklist we handed them is genuinely finished. Every other way a
+ * hold can stop being detected — the search lost its demand, the store stopped
+ * looking winnable, the keyword left the candidate set — leaves the products
+ * exactly as thin as they were, and must not be read as work done.
+ *
+ * Deliberately ignores the demand and winnability floors that gate detection.
+ * A merchant who filled in the details has filled them in whether or not the
+ * search they were asked for is still worth writing about, and marking their
+ * work undone because Google's volume estimate moved would be the more
+ * dishonest of the two answers.
+ */
+export function keywordsClearingSubstanceFloor(input: RichnessGapInput): ReadonlySet<string> {
+  const cleared = new Set<string>()
+  for (const candidate of input.candidates) {
+    if (candidate.substance.passes) cleared.add(candidate.keyword)
+  }
+  return cleared
+}

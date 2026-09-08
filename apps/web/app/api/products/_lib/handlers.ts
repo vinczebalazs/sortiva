@@ -125,10 +125,11 @@ export interface ProductsDeps {
  */
 export function makeGetProductsHandler(deps: ProductsDeps): AccountHandler {
   return async (_request, { scope }) => {
-    const [catalog, families, open, shopHandle] = await Promise.all([
+    const [catalog, families, open, completed, shopHandle] = await Promise.all([
       deps.store.catalog(scope),
       deps.store.families(scope),
       deps.store.openOpportunities(scope),
+      deps.store.completedMerchantTasks(scope),
       deps.store.shopHandle(scope),
     ])
 
@@ -148,12 +149,15 @@ export function makeGetProductsHandler(deps: ProductsDeps): AccountHandler {
       thresholds,
     )
 
-    const merchantTasks = await buildMerchantTasks(deps, scope, {
-      open,
-      families,
-      catalog,
-      shopHandle: shopHandleOf(shopHandle),
-    })
+    const merchantTasks = [
+      ...(await buildMerchantTasks(deps, scope, {
+        open,
+        families,
+        catalog,
+        shopHandle: shopHandleOf(shopHandle),
+      })),
+      ...completed.map(completedMerchantTask),
+    ]
 
     return Response.json(
       productsResponseSchema.parse({
@@ -304,14 +308,35 @@ async function buildMerchantTasks(
         missingFields: [...shortfall.missingFields],
         shopifyAdminUrl: adminUrl(inputs.shopHandle, shopifyIds.get(shortfall.productId)),
       })),
-      // Nothing in the product records when a merchant task was finished. A
-      // resolved hold leaves as an expiry whose stated reason ("the evidence no
-      // longer holds") is also what a keyword losing its volume produces, so
-      // reading one as "you completed this" would congratulate merchants for
-      // work they never did.
       completedAt: null,
     }
   })
+}
+
+/**
+ * A hold the merchant cleared themselves.
+ *
+ * Nothing is inferred here. The scan retired this row under the one expiry
+ * reason that means the products behind the search now carry the detail we
+ * asked for, and the read only trusts that mark — which is why a hold that
+ * expired because the search lost its volume can never arrive on this screen as
+ * work somebody did. The store answers only with rows carrying that mark.
+ *
+ * No product checklist, because there is no longer anything missing from them;
+ * the screen renders a completed task as its title, the date, and a link
+ * through to the opportunity it unblocked.
+ */
+function completedMerchantTask(row: OpportunityRow) {
+  return {
+    opportunityId: row.id,
+    blockingTitle: row.entityRef,
+    impact: row.impact,
+    products: [],
+    // The moment the retiring pass wrote this row, and the last write it ever
+    // takes: a signal detected again after expiry starts a new row rather than
+    // reopening this one.
+    completedAt: row.updatedAt.toISOString(),
+  }
 }
 
 /** Shopify stores the connection under the shop's handle; some callers have written the full host. */

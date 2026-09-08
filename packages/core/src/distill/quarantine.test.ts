@@ -65,6 +65,10 @@ const ALLOWED = new Set(
     // merchant's marketing copy. It seeded a real description until the gate
     // caught it; the test never asserted on it.
     'apps/web/app/api/articles/_lib/article-detail.test.ts',
+    // Same shape as the line above, and the same nothing stored in it: the
+    // weekly scan's hold-completion test needs a catalogue to measure, and the
+    // product input requires this key even when it is null.
+    'packages/jobs/src/scan/expiry.test.ts',
   ].map((path) => path.split('/').join(sep)),
 )
 

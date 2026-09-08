@@ -5549,3 +5549,42 @@ Decision: the uncached read stays uncached. The topic-admission gate runs inside
 Why it is still the right answer here, stated so the next person does not have to re-derive it: the read is folded into the batch of queries that gate already makes in parallel, so it adds no round trip to the request's wall time; it is one indexed lookup against a table holding a handful of rows; and the same request already makes a model call to work out what the merchant's typed title is about, which is orders of magnitude more expensive. The thing a cache would cost — a window in which a store is judged by numbers the table no longer holds, and an invalidation rule to get wrong — is worth more than the microseconds it would save.
 What would change this: a *page view* resolving thresholds, or any read not already sharing a round trip with other work. The condition to watch is "a read that adds a round trip", not "a read in a request".
 Nearest spec: main §7.10; tech §2 (cost disciplines).
+
+## 2026-09-08 — R-TASK-DONE — A finished merchant checklist gets an expiry reason of its own
+Decision: `EXPIRY_REASONS` gains `catalog_now_sufficient`. The weekly scan stamps it when it retires a `catalog_richness_gap` hold whose mapped families now clear the substance floor — the same measurement, taken in the same pass, that decides whether to raise the hold in the first place. Every other way a hold stops being detected keeps `evidence_no_longer_holds`.
+Why: a hold is the only work in this product the merchant does rather than us, so it is the only expiry that can mean a person acted. `R-API-PRODUCTS` correctly refused to infer that at read time, because reading `evidence_no_longer_holds` as "you completed this" would also congratulate a merchant for a keyword losing its search volume. Recording the distinction where the measurement is taken is the fix that flag asked for.
+Consequence: `expired_reason` is a `text` column, so this needed no migration. The reason is written by the scan alone; nothing infers it later.
+Nearest spec: main §7.9 (expiry is automatic, logged with the reason, and never deletes); ui §7.
+
+## 2026-09-08 — R-TASK-DONE — The moment a task was finished is the expired row's `updated_at`
+Decision: `completedAt` on a merchant task is the expired opportunity's `updated_at`, not a new column.
+Why: expiry is the last write a row ever takes. The partial unique index that dedupes open opportunities covers only the open statuses, so a signal detected again after expiry inserts a fresh row and never reaches back to the expired one — which makes `updated_at` on an expired row exactly the moment it was retired. A dedicated `completed_at` would be more legible and would need a schema wave; schema waves are closed and this reads the same value.
+Risk, stated rather than discovered: if a future card ever writes to an expired row, this date silently becomes that write's date instead. The repository function carries that warning where a caller will see it.
+Nearest spec: main §7.9; ui §7.
+
+## 2026-09-08 — R-TASK-DONE — A merchant who did the work is credited even if the search went quiet
+Decision: `keywordsClearingSubstanceFloor` ignores the demand and winnability floors that gate detection. A keyword whose products now clear the substance floor is named as cleared whether or not the search is still worth writing about.
+Why: the two facts are independent. The merchant was handed a checklist of product details and filled it in; marking that undone because Google's volume estimate moved in the meantime is the more dishonest of the two answers. The card the checklist was blocking does not come back either way — it expires — so nothing is over-promised by saying the work was done.
+Nearest spec: main §7.9, §6.3; ui §7.
+
+## 2026-09-08 — R-TASK-DONE — The completed section is capped at the twenty most recent, newest first
+Decision: `listCompletedMerchantTasks` returns at most 20 rows, ordered by when they were retired.
+Why: ui §7 collapses completed tasks behind a summary line, so the screen never needs the full history, and an uncapped read grows without limit for a store that has been going for years. Nothing is deleted — the rows stay for the learning loop, they simply stop being sent to a fold nobody has opened. The number is a page size for a collapsed list, not a threshold on any measurement, so it does not belong in `packages/rules`.
+Nearest spec: ui §7; invariant 10 (expiry never deletes).
+
+## 2026-09-08 — R-FIXTURE-KEYS — Each orphaned fixture key is replaced by the key the engine really builds for that card
+Decision: `striking_distance.page_one_intent_mismatch` and `striking_distance.page_one_reachable` become `striking_distance.optimize`; `uncovered_commercial_query.no_suitable_url` becomes `uncovered_commercial_query.create`.
+Why: each fixture already carries exactly the numbers its replacement asks for — the striking-distance ones send `position` and `impressions`, the uncovered ones send `volume` — and each already carries the matching recommended action, `OPTIMIZE` and `CREATE`. So the fixtures now describe a card the engine can actually make, rather than one it never could, and no fixture had to be reshaped to get there.
+Consequence: the fake server the frontend develops against now serves a real sentence where it previously served "the reasoning for this one isn't available yet". That is the intended behaviour and no test asserted on the old admission.
+Nearest spec: main §7.1; invariant 8.
+
+## 2026-09-08 — R-FIXTURE-KEYS — The guard is repo-wide and carries a named list of what is still broken
+Decision: `apps/web/app/api/opportunities/_lib/fixture-keys.test.ts` reads every source file under `packages/` and `apps/`, finds every explanation key written as a literal, and asserts the catalogue can answer it. Two short lists carry the exceptions: keys deliberately absent (four, used to prove the renderer's fallback) and keys with no sentence anywhere that sit in another lane's files (ten). Three further assertions stop either list rotting: a key that acquires a sentence must leave, a key nothing names any more must leave, and a run that finds no keys at all fails rather than passing vacuously.
+Why: the card asked for the check and the check cannot be scoped to five files without leaving the same hole open everywhere else. Scanning everything found nine more orphaned keys the card's list did not name. Fixing all of them would mean editing test files across four other lanes mid-run, which is how merges get lost; naming them makes the debt visible and makes a *new* one fail immediately, which is what the card is for.
+Consequence: the outstanding list is a debt register, not an escape hatch. Its comment says so, and the two hygiene assertions mean an entry cannot be added and then forgotten.
+Nearest spec: invariant 8.
+
+## 2026-09-08 — R-FIXTURE-KEYS — "Resolves" means the catalogue holds the key, by either route
+Decision: a key passes the guard if the renderer's own mapping finds a sentence for it (prefixing `template.`, following the aliases) **or** the key is already a catalogue key in final form.
+Why: the email templates and a few pinned Appendix A lines are written as finished catalogue keys and are not reason keys at all; judging them by the reason-key mapping alone would fail three correct call sites. The second route is deliberately forgiving and it conceals a real, separate fault — several keys a producer emits exist in the catalogue under their bare name while the renderer only looks under `template.`, so the sentence exists and the merchant never reads it. That is a fault in the mapping, not in the keys, it belongs to the lane that owns the renderer, and it is reported rather than recorded here as though the keys were wrong.
+Nearest spec: invariant 8, invariant 24.

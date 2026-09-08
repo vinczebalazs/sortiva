@@ -3,7 +3,7 @@ import { scenario } from '../fixtures'
 import { existingTargetCheck } from '../opportunities/existing-target'
 import type { ExistingTargetPage } from '../opportunities/ports'
 import type { QueryCluster } from '../contracts/opportunities'
-import { detectCatalogRichnessGaps } from './richness-gap'
+import { detectCatalogRichnessGaps, keywordsClearingSubstanceFloor } from './richness-gap'
 import { detectCompetitorCoverageGaps } from './competitor-gap'
 import { detectFamilyCoverageGaps } from './family-coverage'
 import { detectUncoveredCommercialQueries, UncheckedCandidateError } from './uncovered-query'
@@ -163,6 +163,44 @@ describe('worked example 7 — a good search the catalogue cannot answer honestl
     })
 
     expect(signals).toEqual([])
+  })
+
+  describe('and afterwards, telling a finished checklist from a search that went quiet', () => {
+    const held = { ...candidate({ keyword: 'best trail running shoes' }), winnability: 0.9, substance }
+    const filledIn = {
+      ...held,
+      substance: { ...substance, passes: true, shortfalls: [] },
+    }
+
+    it('names the search whose products now say enough', () => {
+      const cleared = keywordsClearingSubstanceFloor({
+        candidates: [filledIn],
+        gates: layer.gates,
+        fetchedAt: FETCHED_AT,
+      })
+
+      expect([...cleared]).toEqual(['best trail running shoes'])
+    })
+
+    it('bites: the same search with the same thin products is not named', () => {
+      const cleared = keywordsClearingSubstanceFloor({
+        candidates: [held],
+        gates: layer.gates,
+        fetchedAt: FETCHED_AT,
+      })
+
+      expect([...cleared]).toEqual([])
+    })
+
+    it('still names it when the search lost its volume, because the merchant still did the work', () => {
+      const cleared = keywordsClearingSubstanceFloor({
+        candidates: [{ ...filledIn, monthlySearchVolume: 0 }],
+        gates: layer.gates,
+        fetchedAt: FETCHED_AT,
+      })
+
+      expect([...cleared]).toEqual(['best trail running shoes'])
+    })
   })
 })
 

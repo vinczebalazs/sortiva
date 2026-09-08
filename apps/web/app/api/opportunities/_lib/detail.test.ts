@@ -95,7 +95,7 @@ describe.skipIf(!available)('reading one opportunity', () => {
       entityRef: 'https://example.com/collections/trail',
       action: 'optimize',
       status: 'new',
-      reasonKey: 'striking_distance.page_one_reachable',
+      reasonKey: 'striking_distance.optimize',
       reasonParams: JSON.stringify({ position: 8.6 }),
       evidence: JSON.stringify([
         {
@@ -156,7 +156,7 @@ describe.skipIf(!available)('reading one opportunity', () => {
       await (await detail(mine, optimizeId)).json(),
     )
     expect(body.opportunity.why).toEqual({
-      templateKey: 'striking_distance.page_one_reachable',
+      templateKey: 'striking_distance.optimize',
       params: { position: 8.6 },
     })
 
@@ -325,7 +325,7 @@ describe.skipIf(!available)('reading one opportunity', () => {
       entityRef: 'https://elsewhere.example/secret',
       action: 'optimize',
       status: 'new',
-      reasonKey: 'striking_distance.page_one_reachable',
+      reasonKey: 'striking_distance.optimize',
     })
 
     const response = await detail(mine, otherId)
