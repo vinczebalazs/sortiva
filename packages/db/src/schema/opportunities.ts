@@ -210,6 +210,13 @@ export const signalRuns = pgTable(
  * this list. The drift sweep and the merchant's own "refresh this article"
  * request also write opportunities and do not consult it; both are outside the
  * lane that owns this table. See DECISIONS 2026-09-08 R-DISMISS-DOES-NOTHING.
+ *
+ * **A refusal follows a page that changes address only where the change is
+ * recognised as a rename**, which is only ever a post we published to the shop
+ * ourselves. A merchant's own collection, product or page that moves is marked
+ * gone and its new address arrives as a page we have never seen, so the refusal
+ * stays at the old address and the advice is offered again at the new one. See
+ * DECISIONS 2026-09-08 R-DISMISS-FOLLOWS-RENAME.
  */
 export const dismissedOpportunities = pgTable(
   'dismissed_opportunities',

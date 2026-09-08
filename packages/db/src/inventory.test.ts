@@ -17,7 +17,14 @@ import {
   upsertStorePages,
   type StorePageInput,
 } from './repositories/inventory'
-import { listOpenOpportunities, upsertOpportunity } from './repositories/opportunities'
+import {
+  dismissOpportunityGuarded,
+  findOpportunityById,
+  isDismissed,
+  listOpenOpportunities,
+  undismissOpportunity,
+  upsertOpportunity,
+} from './repositories/opportunities'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from './testing'
 
 /**
@@ -696,6 +703,83 @@ describe.skipIf(!available)('recognising an article we published', () => {
       expect(
         (await openPageSuggestions(scope)).map((row) => ({ id: row.id, entityRef: row.entityRef })),
       ).toEqual([{ id: suggestionId, entityRef: BEFORE }])
+    })
+
+    /** The merchant pressed "not interested" on this suggestion. */
+    async function refuse(opportunityId: string, at = new Date('2026-09-05T00:00:00Z')): Promise<void> {
+      const dismissal = await dismissOpportunityGuarded(ctx.db, accountScope(accountId), opportunityId, at)
+      expect(dismissal).toBeDefined()
+    }
+
+    it('carries the merchant’s "not interested" over to the new address', async () => {
+      const scope = accountScope(accountId)
+      const articleId = await autoPublished()
+      const refused = await suggestionAbout(BEFORE)
+      await refuse(refused)
+      const elsewhere = await suggestionAbout('https://shop.example/blogs/news/unrelated', {
+        signalType: 'missing_or_weak_metadata',
+      })
+      await refuse(elsewhere)
+
+      expect(
+        await followOurArticleRename(ctx.db, scope, { articleId, from: BEFORE, to: AFTER }),
+      ).toBe(true)
+
+      // They said no about this page. A new address is not a new question.
+      expect(await isDismissed(ctx.db, scope, 'freshness_opportunity', AFTER)).toBe(true)
+      expect(await isDismissed(ctx.db, scope, 'freshness_opportunity', BEFORE)).toBe(false)
+      // The row behind it moves with its marker, so the "show dismissed" list
+      // names the address the page is actually at.
+      expect((await findOpportunityById(ctx.db, scope, refused))?.entityRef).toBe(AFTER)
+      // A refusal about some other page is nobody's business here.
+      expect(
+        await isDismissed(ctx.db, scope, 'missing_or_weak_metadata', 'https://shop.example/blogs/news/unrelated'),
+      ).toBe(true)
+    })
+
+    it('leaves the merchant able to undo a refusal after the post has been renamed', async () => {
+      const scope = accountScope(accountId)
+      const articleId = await autoPublished()
+      const refused = await suggestionAbout(BEFORE)
+      await refuse(refused)
+
+      expect(
+        await followOurArticleRename(ctx.db, scope, { articleId, from: BEFORE, to: AFTER }),
+      ).toBe(true)
+
+      // "Show dismissed" undoes by the row's own address. A marker that
+      // travelled without its row could never be reached again, which is advice
+      // suppressed for good behind a button that appears to work.
+      expect(await undismissOpportunity(ctx.db, scope, refused)).toBeDefined()
+      expect(await isDismissed(ctx.db, scope, 'freshness_opportunity', AFTER)).toBe(false)
+      expect(await isDismissed(ctx.db, scope, 'freshness_opportunity', BEFORE)).toBe(false)
+    })
+
+    it('keeps a refusal the merchant already gave at the new address', async () => {
+      const scope = accountScope(accountId)
+      const articleId = await autoPublished()
+      const old = await suggestionAbout(BEFORE)
+      await refuse(old, new Date('2026-09-01T00:00:00Z'))
+      const current = await suggestionAbout(AFTER)
+      await refuse(current, new Date('2026-09-06T00:00:00Z'))
+
+      expect(
+        await followOurArticleRename(ctx.db, scope, { articleId, from: BEFORE, to: AFTER }),
+      ).toBe(true)
+
+      // Only one answer per kind of advice per address can be held, and the one
+      // already at the new address was given about the page as it now is.
+      const { rows } = await pool.query<{ entity_ref: string; dismissed_at: Date }>(
+        `SELECT entity_ref, dismissed_at FROM dismissed_opportunities
+         WHERE account_id = $1 AND signal_type = 'freshness_opportunity' ORDER BY entity_ref`,
+        [accountId],
+      )
+      expect(rows.map((row) => row.entity_ref).sort()).toEqual([AFTER, BEFORE].sort())
+      expect(rows.find((row) => row.entity_ref === AFTER)?.dismissed_at.toISOString()).toBe(
+        '2026-09-06T00:00:00.000Z',
+      )
+      expect((await findOpportunityById(ctx.db, scope, old))?.entityRef).toBe(BEFORE)
+      expect((await findOpportunityById(ctx.db, scope, current))?.entityRef).toBe(AFTER)
     })
 
     it('never reaches another account’s article or page', async () => {
