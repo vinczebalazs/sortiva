@@ -3,6 +3,7 @@ import { and, asc, eq, inArray, isNotNull, sql } from 'drizzle-orm'
 import type { Db } from '../client'
 import { articles, products, publishIntents, shopifyConns, storePages } from '../schema'
 import type { AccountScope, SystemScope } from '../scope'
+import { moveOpenOpportunitiesToAddress } from './opportunities'
 
 export type StorePageRow = typeof storePages.$inferSelect
 
@@ -251,6 +252,13 @@ export async function shopPostsWePublished(
  * The old row keeps its marking and its link to the article. It is our record
  * of what we delivered and where, and nothing here is evidence against it —
  * only that the shop has moved the page.
+ *
+ * The open suggestions about the old address come with it. Marking that address
+ * gone is what the nightly walk's own pass reads to decide a suggestion has lost
+ * its subject, and here it has not — the page is the same page at a new address,
+ * and the merchant has not acted on the advice. Moving them in this transaction
+ * rather than after it is what stops that pass from seeing a gone address with
+ * live cards pointing at it at all.
  */
 export async function followOurArticleRename(
   db: Db,
@@ -284,6 +292,8 @@ export async function followOurArticleRename(
           eq(storePages.status, 'live'),
         ),
       )
+
+    await moveOpenOpportunitiesToAddress(tx, scope, { from: move.from, to: move.to }, now)
     return true
   })
 }

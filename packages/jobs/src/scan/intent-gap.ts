@@ -82,6 +82,13 @@ export interface IntentGapReadResult {
    * the store had more candidates than budget that day; that says nothing
    * about the page. This set is the band itself, which is the thing an open
    * opportunity's premise rests on.
+   *
+   * **This has to be built the same way the paying pass builds its shortlist**,
+   * because the scan retires an open intent-gap row for a page missing from it.
+   * The two agree today: neither side admits the competitor-gap targets
+   * `shortlistIntentGapPages` will take, since nothing supplies them. Wiring
+   * those into the paying pass alone would put pages here that sit outside the
+   * band on purpose, and this scan would retire their cards on the next pass.
    */
   readonly inBand: ReadonlySet<string>
   /** Every address the store still serves, so absence here means "deleted", not "moved out of the band". */

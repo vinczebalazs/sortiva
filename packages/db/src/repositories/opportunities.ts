@@ -1,4 +1,5 @@
 import { and, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm'
+import { normalisePageUrl } from '@sortiva/core'
 import type {
   ExpiryReason,
   OpportunityTaskDraft,
@@ -339,6 +340,97 @@ export async function expireOpportunity(
     )
     .returning()
   return row
+}
+
+/**
+ * The statuses a suggestion may be carried to a new address from.
+ *
+ * The same three the two expiry passes act on, and short of the full open set
+ * for the same reason: a `scheduled` row belongs to a calendar day and an
+ * `executing` one to a recommendation being generated, and changing the subject
+ * under either would move the ground out from under work already running on it.
+ */
+const MOVEABLE_STATUSES: readonly OpportunityRow['status'][] = ['new', 'accepted', 'blocked']
+
+/**
+ * Carries the open suggestions about one page over to the address that page now
+ * lives at.
+ *
+ * There is exactly one case where an address changing does not mean the page
+ * went away: the merchant renamed a post we published, and the shop told us so.
+ * The page is still there and the merchant never acted on the suggestion, so the
+ * suggestion follows the page instead of being taken down as though the page had
+ * been deleted — which is what the walk would otherwise do to it the same night,
+ * because the address it names has just been marked gone.
+ *
+ * A suggestion is left where it is when one of the same kind is already open at
+ * the new address: only one open row per kind per subject may exist, and the one
+ * already there was written against the page as it now is. The stranded row is
+ * then taken down by the walk's own pass and the merchant still has a live card
+ * about the real address, which is the outcome that matters.
+ *
+ * Guarded per row rather than issued as one wide update, so a row another worker
+ * moved into the calendar between the read and the write is left alone.
+ */
+export async function moveOpenOpportunitiesToAddress(
+  db: Db,
+  scope: AccountScope,
+  move: { readonly from: string; readonly to: string },
+  now: Date = new Date(),
+): Promise<{ readonly moved: number; readonly leftBehind: number }> {
+  const from = normalisePageUrl(move.from)
+  const to = normalisePageUrl(move.to)
+  if (from === to) return { moved: 0, leftBehind: 0 }
+
+  const open = await db
+    .select()
+    .from(opportunities)
+    .where(
+      and(
+        eq(opportunities.accountId, scope.accountId),
+        eq(opportunities.entityType, 'url'),
+        inArray(opportunities.status, [...OPEN_OPPORTUNITY_STATUSES]),
+      ),
+    )
+
+  // Every kind already spoken for at the destination, counted across the whole
+  // open set rather than the three this moves from — the dedupe rule covers all
+  // five, so a `scheduled` row at the new address blocks the move just as a
+  // `new` one does.
+  const takenAtDestination = new Set(
+    open.filter((row) => normalisePageUrl(row.entityRef) === to).map((row) => row.signalType),
+  )
+
+  let moved = 0
+  let leftBehind = 0
+  for (const row of open) {
+    if (normalisePageUrl(row.entityRef) !== from) continue
+    if (!MOVEABLE_STATUSES.includes(row.status)) continue
+    if (takenAtDestination.has(row.signalType)) {
+      leftBehind += 1
+      continue
+    }
+    const [updated] = await db
+      .update(opportunities)
+      .set({ entityRef: to, updatedAt: now })
+      .where(
+        and(
+          eq(opportunities.id, row.id),
+          eq(opportunities.accountId, scope.accountId),
+          eq(opportunities.entityRef, row.entityRef),
+          inArray(opportunities.status, [...MOVEABLE_STATUSES]),
+        ),
+      )
+      .returning({ id: opportunities.id })
+    if (!updated) {
+      leftBehind += 1
+      continue
+    }
+    takenAtDestination.add(row.signalType)
+    moved += 1
+  }
+
+  return { moved, leftBehind }
 }
 
 /**
