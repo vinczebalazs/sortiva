@@ -5926,3 +5926,66 @@ Not fixed here: the fix is one lane's screen or another's store, the choice of w
 ## 2026-09-08 — R-SCREEN-READS — Stated limit: a poll started by one screen can be recorded against the next
 The driver lets a screen's effects settle with real timers, so a screen that polls has a `setTimeout` outstanding when its test ends. That callback can fire during a later screen's drive and be recorded against it — which is why the landing page's preview form appears to read the notification bell's answer.
 It cannot hide a fault or invent one: the pair that is checked is the endpoint and the field, both of which are still true of the read. It can only put the right complaint under the wrong screen's name. Left alone deliberately: cancelling them means the driver owning every timer a screen starts, which is a larger machine than the confusion is worth.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — The server now has the same declared table of analytics events the browser has, and drops everything else
+Decision: `packages/core/src/contracts/analytics-events.ts` lists every event the server may send to our analytics vendor and, for each, the properties it may carry and what kind of value each one is. The wrapper that talks to the vendor (`packages/providers/src/posthog/index.ts`) runs every capture through it — the ordinary one, the model-call one, the search-data one and the crash one — and silently drops anything the table does not name. The test double runs the same table, so a test that asserts "an article title cannot get out" is asserting what production does.
+Why: the promise to merchants is that nothing they wrote — product copy, a prompt, a draft article — reaches a third-party analytics vendor; only identifiers and counts. In the browser that was already structural. On the server the capture took an open bag of properties and ran a credential scrubber, which redacts an access token and passes a paragraph of prose through untouched. This journal said so outright ("today the rule is upheld by review alone") and two audits had it open.
+Why a copy of the browser's shape rather than a new scheme: there is one rule and it should have one form. The kinds are the browser's four — an identifier, an enumerated name, a count, a yes/no — with the same rule that an identifier has no spaces and stops at sixty-four characters, which is what a headline and a paragraph both fail.
+Nearest spec: main §14.7 ("events carry ids and aggregates only — never product content, article text, prompts"); invariant 26.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — A fifth kind, for the one event that reports a set of counts it cannot name in advance
+Decision: the server table has a kind the browser's does not: `count_map`, names paired with counts. Exactly one property uses it — `family_grouping_completed.grouping_sources`, which reports how many product families each grouping method produced.
+Why it is not a loophole: every key in such a map must satisfy the same shape rule as an enumerated name (no whitespace, sixty-four characters at most, not a credential) and every value must be a number. So it admits nothing an `enum` property would not already admit, and it cannot hold a sentence.
+Alternative rejected: declaring the property undeclared and letting the guard drop it, which would have silently removed a number a dashboard reads.
+Nearest spec: main §14.7; invariant 26.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — An event the table has never heard of keeps its row and loses every property
+Decision: if a capture names an event with no row in the table, it is still sent, carrying only the account (or preview domain) the wrapper itself attaches; every property the call site supplied is dropped. If the event *name* is not even shaped like a name — lower-case words joined by underscores — nothing is sent at all.
+Why: the rule is about content, and dropping the properties keeps it completely. Dropping the whole row instead would also hide that the work happened, which is a worse telemetry failure than a row with nothing on it, and both are equally visible to whoever is building the dashboard that needs it. The name is checked as well because a name assembled from a merchant's words would otherwise carry them past a table that only inspects properties.
+Nearest spec: main §14.7; invariant 26.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — `null` is allowed under any declared property
+Decision: a declared property may hold `null` whatever its kind.
+Why: "we had none" is an answer with no content in it, and several events legitimately report one — Gate 1 makes no model call, so it has no model id or prompt version to name. Refusing null would have meant dropping those properties, which loses the difference between "no model was used" and "nobody said".
+Nearest spec: main §14.7; invariant 26.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — The guard is at the wrapper only; the compiler still accepts any event name
+Decision: `AnalyticsEvent.event` stays a plain string. The table is enforced when an event is sent, not when one is written.
+Why, and what it costs: narrowing that field to the list of declared names would make an undeclared event a build failure rather than a silent stripping — genuinely stronger. But `AnalyticsEvent` is a shared interface three other lanes' code builds events against, and narrowing it is the kind of interface change the constitution says to ask about rather than take. Left as a card candidate. Until then, an undeclared event is caught when someone looks at the dashboard, not when they compile.
+Nearest spec: main §14.7; CLAUDE.md prime directive 3.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — The table declares what the code emits today, not everything the spec names
+Decision: rows exist for the twenty-eight events the product actually sends. The spec's §14.7 taxonomy also names events nothing emits yet — `shopify_oauth_granted` / `_abandoned`, `ingestion_step_completed`, `distillation_completed`, `optimize_recommendation_generated`, `opportunity_outcome_measured`, `publish_intent_created` / `_confirmed` / `_abandoned`. They are not in the table.
+Why: declaring permissions for events nobody has built means guessing their properties, and a wrong guess is a permission granted in advance. The card that builds each one adds its row, which is the workflow the table is for. The cost is that the first attempt to emit one of them will find its properties stripped; the fix is one line in one file.
+Nearest spec: main §14.7.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — A search phrase from the merchant's own catalogue was being sent, and the call site is fixed as well as guarded
+Decision: `StubExistingTargetCheck` in `packages/core/src/contracts/doubles.ts` attached the head term of a keyword cluster — a phrase derived from the merchant's catalogue and search data, with spaces in it — to the `stub_used` event. The new table drops it; the call site no longer offers it.
+Why both: leaving the argument in place would have left the code reading as though the phrase were captured, with only a silent drop to say otherwise. This is the one live violation of the rule the guard found in existing code.
+Nearest spec: main §14.7; invariant 26.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — "Analytics is told, never asked" is now two checks instead of a shape
+Decision: `packages/providers/src/posthog/control-plane.test.ts` asserts two things. First, every method on the analytics port returns nothing — a method that answers a question has to return an answer, so a read cannot be added without failing. Second, the one file allowed to hold the analytics vendor's library never calls any of the vendor's flag or remote-config methods, which are the vendor's own perfectly good control plane and must not become ours.
+Why: when we stop spending money or halt a job, that decision is read from our own database, because a brake has to work on the day the vendor is down — which is the day something has gone wrong enough for a brake to matter. Until now the rule rested on the port happening to have no method that returns anything, which is a shape and not a check.
+Each half is mutation-checked: adding `isSpendingCapped(): Promise<boolean>` to the port fails the first, and implementing it with the vendor's `isFeatureEnabled` fails the second.
+What it cannot see, stated rather than implied: it reads the port and the one file that imports the vendor's library. Somebody who called the vendor's HTTP API directly, from a file importing nothing, passes both — that path is closed by the lint rule keeping the vendor's library inside this directory, and by nothing else.
+Nearest spec: main §14.5, §14.7 ("PostHog is telemetry and alerting, not the control plane"); invariant 17.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — The spend-ledger tests no longer claim to cover a rule they never touched
+Decision: the comment at the top of `packages/core/src/contracts/spend.test.ts` said those tests covered "the port's own rules" including that analytics is never the control plane. The four tests below it cover which attribution column is set, a negative cost, a cache hit recorded as free, and a ledger outage that must not fail the job. The comment now says that, and points at the file where the control-plane rule is actually checked.
+Why: an over-claiming comment is worse than no comment. The audit found this one while looking for the mechanism it described, which did not exist.
+Nearest spec: main §14.7; invariant 17.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — CONTRADICTION: "notifications are append-only" is not true of the product, and cannot be made true without changing behaviour
+Not a decision. The constitution's invariant 26 says notifications are append-only records. The shipped product updates and deletes them, in three places, all of them deliberate and all of them needed:
+1. **Opening the bell writes `seen_at`, clicking an item writes `read_at`** (`markNotificationsSeen`, `markNotificationRead`). Without these the badge never clears.
+2. **The nightly retention sweep deletes notifications older than the retention window** (`pruneNotifications`). Keeping them for ever is what the retention policy forbids.
+3. **Deleting an account removes its notifications**, through the foreign key's cascade. Required for deletion to mean deletion.
+So the property that is actually true, and worth defending, is narrower: **what a notification says is written once and never rewritten, and nothing removes one except retention and account deletion.** That is what the new check enforces. The invariant's wording needs correcting to match, which is the founder's or integrator's call, not mine.
+Nearest spec: tech §1 (notifications, retention); main §14.6 (deletion); invariant 26.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — Append-only is enforced by a source check; making it true at the database needs a migration
+Decision: `packages/db/src/repositories/notifications-append-only.test.ts` reads every shipping file and fails, by name, on any update or delete against the notifications table that is not one of the three permitted writes above, and on any permitted update that sets a column other than the two read-state timestamps. Each permitted write carries a written reason. The check also asserts it found writes at all, so a rename or a broken walk fails rather than quietly passing over an empty list.
+What it cannot do, and this is the part the card asked to be said out loud: it stops code we write. It does not stop anyone holding a database connection — a migration, an admin script, a psql session. Making the database itself refuse an update or a delete means `REVOKE UPDATE, DELETE` on the table for the application role, or a trigger, and either is a migration. **Schema waves are closed, so this is the integrator's call and is not taken here.** Note that a plain revoke would also break the two writes the product needs, so the real form is a trigger that permits only the read-state columns and the retention sweep's role — more machinery than a revoke, and worth deciding on rather than assuming.
+Mutation-checked twice: a repository function that rewrites a notification's payload fails two of the checks by name, and a raw `DELETE FROM notifications` in an unrelated file fails one.
+Nearest spec: tech §1; invariant 26.
