@@ -12,9 +12,8 @@ import {
 import { spendOutcomeEnum, spendVendorEnum } from './enums'
 
 /**
- * The meter the daily spend caps are computed from. Added to this wave by
- * `docs/audits/remediation.md` D1 (founder-accepted 2026-08-31); the reasoning
- * is `docs/audits/T0.5.md` finding 1.
+ * The meter the daily spend caps are computed from. Added on 2026-08-31 with the
+ * founder's agreement.
  *
  * This is the boundary the table exists to hold: analytics displays cost, our
  * own code enforces the caps. A kill switch has to work when the analytics

@@ -52,8 +52,8 @@ export { llmCacheKey }
  *     recorded at zero so cached work does not inflate the numbers.
  *
  * The rule that shapes all of it: **recording a cost is an obligation of making
- * the call, not a side effect of the call succeeding** (`docs/audits/
- * remediation.md` D2). Anthropic bills for tokens processed, not for bytes we
+ * the call, not a side effect of the call succeeding**. Anthropic bills for
+ * tokens processed, not for bytes we
  * received, so a 500, a rate limit, a timeout, a dropped connection, a stream
  * cut off partway and a cache write that fails after a good answer each leave a
  * record. Only a call that never reached the vendor records nothing.
@@ -69,8 +69,7 @@ export interface AnthropicLlmClientOptions {
   /**
    * The analytics capture. **Required** — an optional recorder meant a
    * client built without one spent real money and produced no record, with no
-   * error and no log line. Pass `new UnrecordedCapture()` to opt out by name
-   * (audit `docs/audits/T0.5.md` finding 6).
+   * error and no log line. Pass `new UnrecordedCapture()` to opt out by name.
    */
   capture: Pick<PosthogCapture, 'captureAiGeneration'>
   /**

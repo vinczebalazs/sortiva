@@ -31,7 +31,7 @@ import { DATAFORSEO_ENDPOINTS, ENDPOINT_PRICES, chargeFor } from './pricing'
  *   anything inspects it — DataForSEO reports per-request failures *inside* an
  *   otherwise-successful HTTP response, and inspecting first left a call the
  *   vendor had already executed and billed with no cache row, so a retry paid
- *   twice (audit `docs/audits/T0.5.md` finding 4).
+ *   twice.
  * - **Every call that reaches the vendor is recorded twice**: as a
  *   `dataforseo_request` analytics event, and as a row in the spend ledger the
  *   daily caps are computed from. That includes the failures — a connection
@@ -69,8 +69,7 @@ export interface DataForSeoProviderOptions {
   /**
    * The analytics capture. **Required** — an optional recorder meant a
    * wrapper built without one spent real money and produced no record, with no
-   * error and no log line. Pass `new UnrecordedCapture()` to opt out by name
-   * (audit `docs/audits/T0.5.md` finding 6).
+   * error and no log line. Pass `new UnrecordedCapture()` to opt out by name.
    */
   capture: Pick<PosthogCapture, 'captureSeoRequest'>
   /**

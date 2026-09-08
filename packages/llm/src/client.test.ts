@@ -19,7 +19,7 @@ import { MODELS } from './models'
  * re-billing; retried LLM call replays identical completion); a cached call
  * captures `usd_cost: 0` / `cache_hit: true`".
  *
- * Card R2 adds the audit's path table (`docs/audits/T0.5.md`): every exit from
+ * The rule this file holds: every exit from
  * this wrapper that reached Anthropic must leave a cost record in *both* the
  * analytics capture and the spend ledger the caps read
  * (invariant 17), including the ones where the call failed.

@@ -20,9 +20,8 @@ import { validateCompletion } from './validate'
  * **accounts cost**, so a test can assert what a pipeline would have spent and
  * a chaos run can assert that a resumed job did not pay twice.
  *
- * Audit `docs/audits/T0.5.md` finding 11 — a double that models a different
- * cost curve than production misleads any spend estimate built on it. Three
- * divergences are closed here:
+ * A double that models a different cost curve than production misleads any
+ * spend estimate built on it. Three divergences are closed here:
  *
  * - it takes the same `RequestCache` the live client does, so a replay is free
  *   in a test exactly as it is in production;

@@ -12,8 +12,7 @@ import { idempotencyLedger, type Db } from '@sortiva/db'
  * read `job_steps` (`lookupCompletedKey`, removed from `steps.ts`), which
  * cascades from `ingestion_jobs` and from `accounts`: delete the run and the
  * evidence went with it. `idempotency_ledger` references nothing, so no cascade,
- * retention sweep or "restart onboarding" can reach it (`docs/audits/T0.4.md`
- * [major]; `docs/audits/remediation.md` D7 item 2; DECISIONS 2026-08-31 T2.0b).
+ * retention sweep or "restart onboarding" can reach it.
  *
  * Two rules the table enforces in the database, not here:
  *   - `UPDATE` raises (`migrations/0005_wave2b_guards.sql`), so a completed

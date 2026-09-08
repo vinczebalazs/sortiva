@@ -129,8 +129,7 @@ export async function databaseAvailable(): Promise<boolean> {
  * therefore destroyed each other: one passed, the other failed with "terminating
  * connection due to administrator command", or skipped wholesale because the
  * connection probe timed out. That is what made a fifth of the suite quietly not
- * run (`docs/audits/false-confidence.md`, finding 3) — and a skipped test is
- * green, so every other result was provisional.
+ * run — and a skipped test is green, so every other result was provisional.
  */
 const RUN_SUFFIX = randomBytes(4).toString('hex')
 

@@ -203,7 +203,7 @@ const CONNECTION_STRING = /^[a-z][a-z0-9+.-]*:\/\/[^/@\s]*:[^/@\s]+@/i
  *
  * Two families qualify. **Secret-shaped names** — anything ending in SECRET,
  * TOKEN, PASSWORD, API_KEY or KEY. **Connection strings** — audit
- * `docs/audits/T0.5.md` finding 14: `DATABASE_URL` matches none of those
+ * `DATABASE_URL` matches none of those
  * suffixes and carries a password inline, so a Postgres error that echoed the
  * connection string printed it. Matching on the *value* rather than adding
  * `URL$` to the name pattern is what keeps `APP_URL` readable in logs, which is

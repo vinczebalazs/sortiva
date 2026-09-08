@@ -13,8 +13,7 @@ import {
 } from './testing'
 
 /**
- * `docs/audits/remediation.md` D10 item 1. The daily caps pause an account whose
- * spend runs away, and the number they read comes from our own database rather
+ * The daily caps pause an account whose spend runs away, and the number they read comes from our own database rather
  * than from analytics — a kill switch has to work when the analytics vendor is
  * down or its events are delayed.
  *

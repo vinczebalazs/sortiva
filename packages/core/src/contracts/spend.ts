@@ -11,8 +11,8 @@ import type { EventAttribution } from './analytics'
  * cost-per-domain and preview-economics dashboards are still built there.
  *
  * The one rule that is not obvious from the shape: **recording a cost is an
- * obligation of making the call, not a side effect of the call succeeding**
- * (`docs/audits/remediation.md` D2). Both paid vendors bill for work performed,
+ * obligation of making the call, not a side effect of the call succeeding**.
+ * Both paid vendors bill for work performed,
  * not for bytes we successfully received, so a vendor error, a rate limit, a
  * timeout, a dropped connection and a stream cut off partway all produce a row
  * — with `outcome: 'failed'`, so a reader can tell them apart afterwards
@@ -86,8 +86,7 @@ export function spendAttribution(attribution: EventAttribution): {
 /**
  * **A ledger that writes nothing.** Callers must ask for it by name, so "this
  * spend is not being counted" is always a visible choice in the code rather
- * than the default that a missing argument silently produces (audit
- * `docs/audits/T0.5.md` finding 6).
+ * than the default that a missing argument silently produces.
  *
  * Legitimate uses: a unit test that asserts something other than cost, and a
  * local development process with no database. Never production — the daily caps

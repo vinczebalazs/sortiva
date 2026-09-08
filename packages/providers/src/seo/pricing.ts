@@ -60,8 +60,7 @@ export interface EndpointCharge {
 }
 
 /**
- * Audit `docs/audits/T0.5.md` finding 10. The previous version threw here, at
- * request time — which is *after* DataForSEO has been called and billed and
+ * The previous version threw here, at request time — which is *after* DataForSEO has been called and billed and
  * *before* the cost record is emitted, so the guard against under-counting
  * caused an under-count and turned a successful paid call into a job failure.
  *

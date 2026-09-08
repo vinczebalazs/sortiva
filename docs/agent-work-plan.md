@@ -194,7 +194,7 @@ the rest of `T8.4`.
 
 ### Cards created outside this numbering
 
-Recorded in full in `docs/audits/remediation.md`: the spec-citation sweep, the
+Recorded at the time in a findings document since deleted: the spec-citation sweep, the
 operations card (diagnosis script, one-command dead-letter replay, a health check
 that can fail, crash reporting), and the durable account-scoping fix. None is
 owned by a lane; each is small and can slot between cards.
@@ -297,7 +297,7 @@ Invariants: 18.
 
 **T-ANALYTICS — Screens report to the analytics vendor from the browser** · *Lane F, before any further screen card*
 Scope: bind the reporting seam `T9.1` left — PostHog's browser library, public key in the page — so the seam's do-nothing default is replaced by a real transport. **Session replay is off on every view that renders a merchant's store data**, deliberately and provably. Event definitions stay the only way to send an event: a call site cannot attach a free-text field.
-Read first: `DECISIONS.md` 2026-09-02 `T-ANALYTICS` (the decision, the alternative rejected, and the two obligations it creates); `docs/audits/false-confidence.md` (the finding that nothing structurally stops product content reaching an analytics event); main §14.7; tech §1.6.
+Read first: `DECISIONS.md` 2026-09-02 `T-ANALYTICS` (the decision, the alternative rejected, and the two obligations it creates) (nothing structurally stops product content reaching an analytics event); main §14.7; tech §1.6.
 Done when: an event sent from a screen reaches the vendor client with the account attribution the wrapper already applies; **replay is asserted off on every store-data view, by a test that fails when a new such view is added without it**; a test proves an event cannot carry a property its definition does not declare, planted-violation style; no product content, article text, prompt or token appears in any event payload (test over the definitions, not over one call site); the public funnel's server-side events are unchanged and not duplicated from the browser.
 Invariants: 26.
 
@@ -315,7 +315,7 @@ Invariants: 9.
 
 **T-OPS — Diagnosis, replay, a health check that can fail, crash reporting** · *slots between `T2.1` and `T2.2`; no lane owns it*
 Scope: four small things that share a theme — none exists today and no other card owns any of them. (1) A script taking an email or a domain and printing that store's state and every pipeline step, so answering "why is this store stuck" is not hand-written SQL. (2) A one-command replay for permanently-failed work: `replayDlqEntry` is written and tested and has **no caller**, while the spec promises this as a single action. (3) A health check that actually checks the database and the worker — `/api/health` currently returns OK unconditionally, so it cannot fail while the app is broken, which disables the platform's own restart-on-failure. (4) Wiring the crash reporter: `captureException` is implemented on the analytics wrapper and has **zero production callers**, so an unhandled error goes to stdout and nowhere else.
-Read first: main §14.3.5 (the replay surface the spec asks for), §14.7 (observability); tech §2.1, §5. Accepted as `D8` in `docs/audits/remediation.md` — three of the four are founder-accepted proposals rather than spec requirements; the replay surface is the one the spec already requires.
+Read first: main §14.3.5 (the replay surface the spec asks for), §14.7 (observability); tech §2.1, §5. Three of the four are founder-accepted proposals rather than spec requirements; the replay surface is the one the spec already requires.
 Done when: the diagnosis script prints state and steps for a store identified by either email or domain, and says so plainly when there is no such store; a dead-letter entry can be replayed by one command and the replay is proved to re-run the work rather than duplicate it; the health check fails when the database is unreachable and when the worker is not running, proved by breaking each; an unhandled error in a route and in a job step both reach the crash reporter, proved by a test that asserts the call rather than the wiring.
 Notes: this card is scheduled here because `T2.1` is what made background steps actually run — before it, every store looked identical and idle, so a working diagnosis script was indistinguishable from a broken one. `T2.2` is the card most likely to strand a merchant halfway through onboarding, and having diagnosis and replay in place *before* it ships is the difference between answering a support question in seconds and reconstructing state by hand.
 
@@ -1470,13 +1470,17 @@ Scope: the product must never propose writing a new page without first checking 
 **Those two arguments are not the same argument, and one of them is weaker than it looks.** The competitor-gap branch reads `signal.ourRankingUrl ? OPTIMIZE : CREATE` — "nothing of ours is ranking, so write one". **A page that ranks nowhere is still a page.** The existing-target check exists precisely because a store's own page can be invisible in search and still be the page this advice belongs to. The family-gap branch's argument is stronger (its detector excludes families with mapped content) but has never been stated as a *check* anywhere a reader can verify.
 **The mechanism built to prevent exactly this is unused.** `CreateClearance` (`packages/core/src/opportunities/clearance.ts`) is a token minted only by the existing-target check, so that "any function that proposes a new page takes one as an argument, and a caller that skipped the check has nothing to pass." `assertClearedToCreate` has **no production caller** and `buildOpportunityDraft` takes no clearance. Its one structural test asserts that the minting function is *named* in two files — which is satisfied by an import.
 **Establish before fixing.** Two of the three branches may be genuinely safe; the point is that nothing says so in a way anything checks. Work out for each what actually guarantees it, then either route it through the check or make its guarantee explicit and tested.
-Read first: `packages/core/src/opportunities/{clearance,existing-target,action-selection}.ts`; `packages/jobs/src/scan/existing-target.ts`; `docs/audit-invariants-2026-09-08.md` findings 6 and 10; main §7.7, §8.2; invariant 6.
+Read first: `packages/core/src/opportunities/{clearance,existing-target,action-selection}.ts`; `packages/jobs/src/scan/existing-target.ts`; main §7.7, §8.2; invariant 6.
 Done when: no branch can reach a new-page recommendation without either a clearance or a stated, tested guarantee — and a test fails if a fourth signal is added that has neither. If the clearance token is the right answer, it acquires a production caller; if it is not, it goes, rather than sitting in the tree implying a protection nobody gets.
 
 ### The rest of the invariant sweep, carded 2026-09-08 so nothing is lost
 
 **R-COMMENT-CLAIMS — seventeen comments promise a guarantee the test beside them cannot give** · **spread across lanes; the integrator should split it** · **the sweep's single most valuable output**
-Scope: `docs/audit-invariants-2026-09-08.md` ends with a table of seventeen comments, each describing a stronger protection than the assertion next to it delivers. **This class cannot be found by grepping for weak assertions — only by reading the sentence beside a test** — and two of the seventeen have already cost us: the one saying a test stopped email sign-in falling off the screen (it had fallen off, and the test was green), and the one saying every function proposing a new page takes a clearance token (none does).
+Scope: **comments that promise a stronger protection than the test beside them delivers.** A sweep on 2026-09-08 found seventeen; its list has been deleted with the rest of the findings documents, and the list is not the point — the method is, because the list was a day old and already partly wrong.
+
+**How to find them, which is the whole card.** This class cannot be found by grepping for weak assertions. It is found by reading the sentence beside a test and asking whether the assertion under it could fail if the sentence became false. Take a package at a time; for every comment that says a test *stops*, *prevents*, *guarantees* or *proves* something, break that thing and run the test. If it stays green, the comment is the defect — either the assertion is strengthened to match the words, or the words come down to match the assertion.
+
+**Two that already cost us, as worked examples.** One said a test stopped email sign-in falling off the sign-in screen: it had fallen off, and the test was green, because it inspected a configuration object and a configuration object cannot see a screen. The other said every function proposing a new page takes a clearance token; none did. Both were true-sounding sentences about tests that could not fail.
 Others worth reading first: overridden articles are said to be excluded from calibration, pattern learning **and** headline claims, and only calibration has an enforcing query; the judge is said to run on the same model tier as the writer, and the request names no model at all; auto-publish is said to be "guarded in the database as well as in the API", and the database guard is a `WHERE` clause in one statement.
 Done when: every row is either made true, corrected to what is actually checked, or deleted — **and it says which**, because a comment that has been narrowed is more useful than one that has been removed.
 Note: the sweep's own recommendation is to **retire the habit** these come from — asserting on a configuration object and describing the result as a property of a screen. The pattern already in the tree that does it properly is `screen-addresses.test.ts`: drive the thing, record what came out.
@@ -1524,7 +1528,7 @@ Scope: three related holes with one cause.
 - **Article text can reach the analytics vendor from the server.** The browser side is genuinely well guarded — a declared table of events, four allowed kinds of property value, anything undeclared dropped at the wrapper, and the vendor's own library banned by lint everywhere else. The server side has **none** of that: its capture takes an open bag of properties and runs only a credential scrubber. The journal says so outright: "today the rule is upheld by review alone." What is at stake is a merchant's product copy, prompts and article drafts leaving our systems for a third party.
 - **"Analytics is told, never asked"** — the rule that a kill switch is decided from our own database and never from the analytics vendor. The port has no read method, which is a type rather than a check; nothing asserts the absence and no lint rule bans adding one. A comment above the spend ledger's tests claims those tests cover this. They do not.
 - **Notifications are append-only** in the constitution, and in the code that property is a comment. The deduplication index is real; nothing stops an update or a delete.
-Read first: `docs/audit-invariants-2026-09-08.md` findings 13, 14 and 17, and its sections on invariants 17 and 26; `packages/providers/src/posthog/`; the browser-side wrapper, which is the model to copy.
+Read first: `packages/providers/src/posthog/`; the browser-side wrapper, which is the model to copy.
 Done when: the server-side capture drops what it has not declared, the way the browser one does; adding a read to the analytics port fails a check by name; and an update or delete of a notification fails. **Say for each whether the mechanism is structural or a test, and what it still cannot see** — an honest boundary beats an implied guarantee, which is what all three of these were.
 Note: if append-only genuinely needs a database privilege change rather than a test, **stop and say so** — that is a migration and the integrator's call.
 
@@ -1534,7 +1538,7 @@ Done when: there is one copy, and the guard that finds hand-written sentences co
 
 **R-LOCK-EVERY-WORKER — six workers take the per-account lock by hand and nothing checks the seventh does** · integrator (shared worker plumbing) · **invariant 18** · **TAKEN 2026-09-08**
 Scope: all work for one store must run one thing at a time, which is what stops two jobs writing the same rows at once. Registering a task already wraps it in the kill-switch check automatically — the registry's own reasoning is "a switch that half the code paths consult is not a switch" — and that reasoning applies word for word to the lock, which is *not* wrapped. Six task files take it by hand and nothing would notice a seventh that forgot.
-Read first: `docs/audit-invariants-2026-09-08.md` finding 15 and its section on invariant 18; `packages/jobs/src/runtime/tasks.ts`; `packages/jobs/src/runtime/lock.ts`.
+Read first: `packages/jobs/src/runtime/tasks.ts`; `packages/jobs/src/runtime/lock.ts`.
 Done when: a task that does account work without the lock fails a check by name — and the short list of jobs that legitimately run without one says why, the way the kill-switch exemptions already do.
 
 **What the integrator established on 2026-09-08 before handing this back, so nobody repeats it.** There are 33 task registrations and every task name is an ordinary `export const … = 'literal'`, so **discovering the full list from source is easy and reliable**. The hard half is deciding whether a given task does account work.
@@ -1574,7 +1578,7 @@ Note: capture the runner's output to a file rather than piping it through `grep`
 
 ### From the invariant sweep (`T10.2`, read-only half), 2026-09-08
 
-The sweep mapped all 26 of the constitution's invariants to the mechanism that enforces each one, and mutation-checked eight of them. Its full report is `docs/audit-invariants-2026-09-08.md`; these are the cards that came out of it.
+The sweep mapped all 26 of the constitution's invariants to the mechanism that enforces each one, and mutation-checked eight of them. Its report has been deleted, deliberately — see the note on findings documents in §7. These are the cards that came out of it, and each is re-checked against the working tree before it is dispatched.
 
 **R-CLOCK-SILENT — one mistyped job name switches the product's entire clock off, and says so in a single log line** · **integrator** (the worker's start-up is shared plumbing no lane owns) · **the highest-severity finding in the sweep** · **TAKEN by the integrator, 2026-09-08**
 Scope: the worker runs everything on a schedule — the daily article, the nightly billing reconciliation, the Search Console sync, the recovery sweep that finishes half-done publishes. Start-up checks that every scheduled entry has code registered under exactly that name, and if **one** does not, it turns **all** of them off and continues serving web requests. The product looks healthy and its clock has stopped.
@@ -1598,12 +1602,12 @@ Scope: invariant 5 says search-result domains "may be **suggested** to the merch
 Scope: two of the sweep's eight mutation checks came back green when the thing they guard was broken.
 - **Invariant 3, the quarantine on raw product descriptions.** Raw store HTML must never reach the writer, the grader, the topic picker or a recommendation. The scan that enforces it looks for modules **naming** the quarantined column. The sweep had the persona module read the same HTML through a helper function — no mention of the column anywhere — and all six assertions stayed green.
 - **Invariant 23, no denominators in anything a merchant reads.** "3 of 30" must never appear, because the cap is a ceiling and not a promise. The check's pattern misses any denominator written with literal numbers; run against five candidate phrasings it caught two.
-Read first: `docs/audit-invariants-2026-09-08.md` §3 and §23, which name the exact mutations and what stayed green; invariants 3 and 23.
+Read first: invariants 3 and 23. Both mutations are described in the scope above; re-run them yourself rather than trusting this card, and check the code has not moved since it was written.
 Done when: each check fails on the mutation the sweep used, and on at least one the sweep did not think of — and the second one is stated in the test, so a reader can see the check was tried against something it might have missed.
 
 **R-CHAOS-KILLS — a scenario that was never interrupted passes as green as one that survived three kills** · Lane G or integrator
 Scope: the chaos suite kills workers at random points and asserts the product converges anyway. It discards the record of which kills actually fired, so a scenario whose kill never landed — because the run reached no checkpoint — is indistinguishable from one that took three and recovered. The founder named this as reporter 4.
-Read first: `docs/audit-invariants-2026-09-08.md` §5, which narrows the description; main §14.3.9.
+Read first: main §14.3.9.
 Done when: a scenario that was not actually interrupted fails, by name.
 
 ### Found by the integrator while reading the wired-stub report, 2026-09-08
@@ -1735,6 +1739,25 @@ open is `R-RESTUDY`/`R-FINGERPRINT-BLAST`, and it is parked deliberately.**
 proposed for deletion; none should be deleted; two of them are live features.
 
 ## 7. Audit schedule
+
+### Findings documents are deleted when their cards are written (2026-09-08, founder)
+
+Three defects this week had the same cause: **a document describing what the code was at some past moment was read as though it described the code now.** The worst nearly deleted two working features, because a card written from the audit of 2026-09-07 was acted on after work landed that same evening which the audit never saw. A correction to that card, written a day later, repeated the mistake on two more items.
+
+So the documents here divide in three, and only one kind rots:
+
+- **The specs** (`sortiva-spec.md`, `sortiva-ui-spec.md`, `sortiva-tech-spec.md`) say what the product *should* do. Code is measured against them; they do not go stale when code changes. Kept.
+- **`DECISIONS.md`** says what was chosen and why, dated. Read as a record of a moment, so it does not mislead. Kept, and appended to.
+- **Findings** — audit reports and sweep output — are observations about the code at an instant, and are wrong the moment anything lands. **Deleted**, as soon as their findings have become cards. `docs/audits/` and `docs/audit-invariants-2026-09-08.md` were deleted on 2026-09-08, along with the thirty-three code comments that cited them.
+
+Two rules follow, and they apply to every card:
+
+1. **A card carries its own findings.** It says what to look for and how to check it, never "read the audit". A card that cannot be acted on without a findings document is not finished being written.
+2. **A card is re-checked against the working tree before it is dispatched.** Not the audit's tree, not the tree the day the card was written. If a claim in the card is no longer true, the card is corrected or withdrawn before any work starts — and a correction to a card is checked exactly as hard as the card, which is the step that was skipped this week.
+
+**Still open:** making rule 2 mechanical rather than remembered — recording on each card the commit it was written against, and refusing to dispatch one whose commit is behind `HEAD` until somebody re-verifies it. Proposed by the integrator, not yet decided.
+
+
 
 - **Task audit** (fresh session, before dependents start) after: T0.3, T0.4, T0.5, T1.2, T2.2, T3.5, T3.6, T4.2, T4.4, T4.5, T5.2, T6.2, T8.2, T8.3.
 - **Invariant sweep** at the end of every milestone (the integrator runs it; findings become cards or DECISIONS entries).

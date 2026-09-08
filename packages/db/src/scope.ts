@@ -47,8 +47,7 @@ export interface AccountScope {
  * email sign-in links, which exist before the account does.
  * `idempotency_ledger` is keyed on a hash and deliberately carries no account
  * column at all — an account cascade must not be able to erase the record that
- * paid work was already done (`docs/audits/T0.4.md`). Both take
- * `SystemScope`. See DECISIONS 2026-08-31 T2.0b.
+ * paid work was already done. Both take `SystemScope`. See DECISIONS 2026-08-31 T2.0b.
  */
 export interface SystemScope {
   readonly [systemScopeBrand]: true

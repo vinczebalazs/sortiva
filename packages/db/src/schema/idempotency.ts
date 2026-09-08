@@ -18,9 +18,8 @@ import { index, jsonb, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
  * which cascades from `accounts`, and the daily retention sweep registered in
  * the crontab still has no handler. Delete the step row — by a retention sweep,
  * a "restart onboarding" feature, or an account cascade — and a replay executes
- * for real. `docs/audits/T0.4.md` traced every current deletion path and found
- * the risk unrealised but live; `docs/audits/remediation.md` D7 item 2 is the
- * decision to take the structural fix.
+ * for real. Every deletion path that exists today was traced: the risk is
+ * unrealised but live, which is why the structural fix below was taken.
  *
  * **The absence of a foreign key is the entire design.** A key that cascades
  * from a job is precisely what goes wrong today, so this table references

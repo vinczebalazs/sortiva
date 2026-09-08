@@ -12,7 +12,7 @@ import {
 } from './testing'
 
 /**
- * Schema mini-wave 2b (`docs/audits/remediation.md` D7).
+ * Schema mini-wave 2b.
  *
  * Every case talks to a real Postgres and asserts on the error code the
  * *database* raised, because a constraint asserted in TypeScript is not a
@@ -198,7 +198,7 @@ describe.skipIf(!available)('schema mini-wave 2b constraints', () => {
       await recordCompletion('sha256:catalog_sync:1', { products: 412 })
 
       // A retention sweep, a "restart onboarding" feature, or an account
-      // cascade — every path `docs/audits/T0.4.md` traced.
+      // cascade — every path that can delete a step row.
       await pool.query('DELETE FROM job_steps')
       await pool.query('DELETE FROM ingestion_jobs')
       await pool.query('DELETE FROM accounts WHERE id = $1', [accountId])

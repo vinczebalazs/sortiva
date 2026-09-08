@@ -18,7 +18,7 @@ import { DATAFORSEO_ENDPOINTS, assertEndpointsPriced, chargeFor, priceFor } from
  * re-billing); a cached call captures `usd_cost: 0` / `cache_hit: true`; mock
  * providers account cost."
  *
- * Card R2 adds the audit's path table (`docs/audits/T0.5.md`): every exit from
+ * The rule this file holds: every exit from
  * this wrapper that reached DataForSEO must leave a cost record in *both* the
  * analytics capture and the spend ledger the caps read — and the one exit that
  * never reached the vendor must leave neither.

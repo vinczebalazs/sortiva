@@ -5,7 +5,7 @@
 // wave 1, and a bad merge there silently weakens the check that proves every
 // other check still works. A lane adds a file here; nobody edits a shared one.
 export default {
-    // R2 / audit `docs/audits/T0.5.md` finding 9. DataForSEO has no SDK to ban,
+    // DataForSEO has no SDK to ban,
     // so the sibling rule cannot see it; the host string is the thing fenced in.
     name: 'direct api.dataforseo.com call outside the SEO wrapper (invariant 25)',
     file: 'packages/llm/src/__lintproof__/dataforseo-host.ts',

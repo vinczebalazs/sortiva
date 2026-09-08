@@ -15,8 +15,7 @@ import { accounts } from './accounts'
  * it a second time.
  *
  * The table is ours rather than the spec's data model, which omits it. Added by
- * the mini-wave `T2.0b`
- * (`docs/audits/remediation.md` D7 item 1).
+ * the mini-wave `T2.0b`.
  *
  * Column names are Auth.js's, not this repository's: `expires`, not the house
  * `*_at` suffix. The adapter reads them by name.

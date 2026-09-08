@@ -67,7 +67,7 @@ export class PosthogServerCapture implements PosthogCapture {
         ? new PostHog(apiKey, { host: options.host ?? process.env.POSTHOG_HOST })
         : undefined
     if (!this.client) {
-      // Audit `docs/audits/T0.5.md` finding 6: without a key this wrapper
+      // without a key this wrapper
       // records nothing, with no error and no log line — so a deploy missing
       // `POSTHOG_API_KEY` spent real money invisibly. It still degrades rather
       // than throwing (local dev has no project), but it now says so once.
@@ -268,8 +268,8 @@ export class MockPosthogCapture implements PosthogCapture {
 /**
  * **A capture that records nothing.** The counterpart of `UnrecordedSpend`:
  * both wrappers now require a recorder, so a caller that genuinely does not
- * want telemetry has to name this class (audit `docs/audits/T0.5.md` finding
- * 6). "Not recorded" is then a visible choice in the code, never what a missing
+ * want telemetry has to name this class. "Not recorded" is then a visible
+ * choice in the code, never what a missing
  * argument quietly produced.
  *
  * `PosthogServerCapture` with no key behaves the same way, but reaching that

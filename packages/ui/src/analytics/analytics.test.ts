@@ -11,9 +11,8 @@ import {
 
 /**
  * The four values that reached the analytics vendor when the server-side
- * wrapper was tested against this rule (`docs/audits/false-confidence.md`,
- * finding 9). The wrapper redacted the token and passed the other three
- * through. Nothing a screen sends may carry any of them.
+ * wrapper was tested against this rule: it redacted the token and passed the
+ * other three through. Nothing a screen sends may carry any of them.
  */
 const WHAT_MUST_NEVER_REACH_THE_VENDOR = [
   'Ten Ways To Style A Merino Base Layer',

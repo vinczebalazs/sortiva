@@ -9,7 +9,7 @@ import { accountScope, systemScope } from './scope'
  * `CostLedger` in the repository was `UnrecordedSpend` — a deliberate no-op —
  * so both paid-vendor wrappers recorded every cost to PostHog and nothing to
  * our own database, and the caps in `packages/rules/signals.config.yaml` had
- * no meter to read (`docs/audits/remediation.md` D10 item 1).
+ * no meter to read.
  *
  * All the shape decisions are the port's, in
  * `packages/core/src/contracts/spend.ts`; this class is the seam between that

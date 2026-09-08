@@ -91,7 +91,7 @@ describe('registerEnvSecrets', () => {
   })
 
   it('registers a connection string, whose name matches no secret suffix', () => {
-    // Audit `docs/audits/T0.5.md` finding 14: a Postgres error that echoes the
+    // a Postgres error that echoes the
     // connection string used to print the password with it.
     const registered = registerEnvSecrets({
       DATABASE_URL: 'postgres://sortiva:s3cr3t@db.internal:5432/sortiva',

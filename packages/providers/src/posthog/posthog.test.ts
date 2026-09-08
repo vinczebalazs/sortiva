@@ -125,7 +125,7 @@ describe('PosthogServerCapture', () => {
   })
 
   it('captures nothing at all when no project key is configured — but says so', () => {
-    // Audit `docs/audits/T0.5.md` finding 6: this used to degrade to silence
+    // this used to degrade to silence
     // with no error, no warning and no log line, so a deploy missing the key
     // spent real money invisibly. It still degrades (local dev has no project),
     // and it now announces itself once at construction.

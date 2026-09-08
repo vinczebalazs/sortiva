@@ -10,8 +10,7 @@ import { databaseAvailable, setupTestDb, type TestDb } from './testing'
  * That test did not exist. The protection was two prose comments saying the rule
  * "shows up here as an absence" — and an absence nothing checks is an absence
  * until someone adds a column. Adding `customer_email` and `shipping_city` to the
- * order-derived table, with its migration, passed 433 tests and lint
- * (`docs/audits/false-confidence.md`, finding 2).
+ * order-derived table, with its migration, passed 433 tests and lint.
  *
  * This asks the live database what columns it actually has, rather than reading
  * the schema files — a migration is what creates a column, and a migration can

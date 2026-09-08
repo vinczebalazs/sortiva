@@ -136,9 +136,8 @@ export function specForModelId(modelId: string): ModelSpec | undefined {
 }
 
 /**
- * `LlmRequest.model` lets a caller override the model for one call. Audit
- * `docs/audits/T0.5.md` finding 8: the previous version applied the override to
- * the model's *name* but kept the tier's *prices*, so overriding a Haiku call
+ * `LlmRequest.model` lets a caller override the model for one call. A previous
+ * version applied the override to the model's *name* but kept the tier's *prices*, so overriding a Haiku call
  * with Sonnet recorded roughly half the real cost, and it skipped the "no
  * moving aliases" check that the environment-variable path performs.
  *

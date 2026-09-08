@@ -293,9 +293,8 @@ export const spendVendorEnum = pgEnum('spend_vendor', ['anthropic', 'dataforseo'
 
 /**
  * Recording a cost is an obligation of *making* the call, not of the call
- * succeeding: both vendors bill for work performed. `docs/audits/remediation.md`
- * D2 makes every failure path emit a record; this column is what tells the two
- * apart afterwards.
+ * succeeding: both vendors bill for work performed. Every failure path emits a
+ * record, and this column is what tells the two apart afterwards.
  */
 export const spendOutcomeEnum = pgEnum('spend_outcome', ['succeeded', 'failed'])
 
