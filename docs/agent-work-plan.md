@@ -1465,6 +1465,38 @@ Scope: the product must never propose writing a new page without first checking 
 Read first: `packages/core/src/opportunities/{clearance,existing-target,action-selection}.ts`; `packages/jobs/src/scan/existing-target.ts`; `docs/audit-invariants-2026-09-08.md` findings 6 and 10; main §7.7, §8.2; invariant 6.
 Done when: no branch can reach a new-page recommendation without either a clearance or a stated, tested guarantee — and a test fails if a fourth signal is added that has neither. If the clearance token is the right answer, it acquires a production caller; if it is not, it goes, rather than sitting in the tree implying a protection nobody gets.
 
+### The invariants held up by review alone, from the sweep, 2026-09-08
+
+The sweep's remaining findings are all one shape: a rule the constitution states, which the code currently obeys, and which **nothing would notice breaking.** They are not defects today. They are the reason a defect tomorrow would ship.
+
+**R-TELEMETRY-TEETH — the promise that we never send a merchant's content to the analytics vendor is kept by review alone on the server** · Lane G · **invariants 17 and 26**
+Scope: three related holes with one cause.
+- **Article text can reach the analytics vendor from the server.** The browser side is genuinely well guarded — a declared table of events, four allowed kinds of property value, anything undeclared dropped at the wrapper, and the vendor's own library banned by lint everywhere else. The server side has **none** of that: its capture takes an open bag of properties and runs only a credential scrubber. The journal says so outright: "today the rule is upheld by review alone." What is at stake is a merchant's product copy, prompts and article drafts leaving our systems for a third party.
+- **"Analytics is told, never asked"** — the rule that a kill switch is decided from our own database and never from the analytics vendor. The port has no read method, which is a type rather than a check; nothing asserts the absence and no lint rule bans adding one. A comment above the spend ledger's tests claims those tests cover this. They do not.
+- **Notifications are append-only** in the constitution, and in the code that property is a comment. The deduplication index is real; nothing stops an update or a delete.
+Read first: `docs/audit-invariants-2026-09-08.md` findings 13, 14 and 17, and its sections on invariants 17 and 26; `packages/providers/src/posthog/`; the browser-side wrapper, which is the model to copy.
+Done when: the server-side capture drops what it has not declared, the way the browser one does; adding a read to the analytics port fails a check by name; and an update or delete of a notification fails. **Say for each whether the mechanism is structural or a test, and what it still cannot see** — an honest boundary beats an implied guarantee, which is what all three of these were.
+Note: if append-only genuinely needs a database privilege change rather than a test, **stop and say so** — that is a migration and the integrator's call.
+
+**R-OUTAGE-COPY-TWICE — a canonical sentence has a second home outside the catalogue** · Lane E, small · **invariant 24**
+Scope: the "we paused this action rather than continue with lower-quality or stale data" line is one of the sentences the spec requires word for word, and it is hard-coded at `apps/web/app/api/recommendations/_lib/handlers.ts:370` as well as living in the catalogue. The lint rule that catches literal merchant-facing text only looks at screen markup, so nothing would notice the two copies drifting.
+Done when: there is one copy, and the guard that finds hand-written sentences covers this shape too.
+
+**R-LOCK-EVERY-WORKER — six workers take the per-account lock by hand and nothing checks the seventh does** · integrator (shared worker plumbing) · **invariant 18** · **TAKEN 2026-09-08**
+Scope: all work for one store must run one thing at a time, which is what stops two jobs writing the same rows at once. Registering a task already wraps it in the kill-switch check automatically — the registry's own reasoning is "a switch that half the code paths consult is not a switch" — and that reasoning applies word for word to the lock, which is *not* wrapped. Six task files take it by hand and nothing would notice a seventh that forgot.
+Read first: `docs/audit-invariants-2026-09-08.md` finding 15 and its section on invariant 18; `packages/jobs/src/runtime/tasks.ts`; `packages/jobs/src/runtime/lock.ts`.
+Done when: a task that does account work without the lock fails a check by name — and the short list of jobs that legitimately run without one says why, the way the kill-switch exemptions already do.
+
+**R-GRANT-ENTRY — nothing constrains where the write-permission grant can be started from** · Lane A, small · **invariant 21**
+Scope: asking a merchant for permission to write to their shop is a second, separate consent, offered only from Settings or at a first publish attempt. The route that starts it can be reached from anywhere.
+Done when: either the entry points are constrained and a test says so, or the invariant is corrected to what the product actually promises.
+
+**R-ONE-TOPIC-INDEX — "one topic a day" is an API check with no database behind it** · needs a schema wave · **invariant 14**
+Scope: the index on scheduled topics is a plain one, so two concurrent additions for the same day are not stopped by the database — only by a check in the API, which two simultaneous requests can both pass. Needs a unique index, and therefore a migration.
+
+**R-LONG-STEP-CHECKPOINT — nothing measures whether a long step checkpoints** · Lane G or integrator, low priority · **invariant 18**
+Scope: checkpointing works and is tested. The rule that any step over sixty seconds must checkpoint has no mechanism: nothing measures a step's duration or asserts that a slow one saves its progress. Low priority because the steps that matter already checkpoint; carded so the absence is written down rather than assumed.
+
 ### The intermittent reds finally have a name, 2026-09-08
 
 **R-REAL-NETWORK-TESTS — two tests reach the real network and fail, rarely, at exactly the timeout** · integrator or Lane F · **supersedes `R-SIGNIN-SLOW`, which was the same thing seen once**
