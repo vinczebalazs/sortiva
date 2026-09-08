@@ -14,6 +14,11 @@ Class (filled by audit): a: fine as-is | b: promote to spec | c: contradicts spe
 
 ---
 
+## 2026-09-08 — R-GUARD-TEETH — The quarantine scan searches before it parses, so the gate does not get slower
+Decision: a file whose raw text contains none of the banned words is settled by that search and never parsed. Only the dozen or so that mention something get a syntax tree. The suite runs in about half a second, which is what it cost before this card.
+Why: parsing every one of the 1,137 sources took 2.7 seconds alone and 14 under three other lanes' suites — slow enough to read as a hang on a loaded machine, which is the complaint `R-TESTDB` was opened for. The pre-filter cannot hide a violation: a file that has no banned word in its text cannot have one in its parse. What it does mean is that the parse helper answers "no names" for a file it never opened, so it is not a general list of a file's names and the comment beside it says so.
+Nearest spec: main §6.3; invariant 3.
+
 ## 2026-09-08 — R-GUARD-TEETH — The catalogue's denominator check calls the rule the emails already use, instead of keeping its own regex
 Decision: `packages/ui/src/strings/strings.test.ts` no longer carries its own pattern. It calls `findNumericDenominator`, the widened form of the rule that already runs inside the monthly summary's render, and reports the offending key and sentence rather than a bare array.
 Why: the catalogue's own pattern required a `{placeholder}` on the left of the "of", so a sentence with the numbers typed in — "3 of 30 articles", "22/30 published" — passed it outright. I reproduced that before changing anything, and then reproduced it the other way round by putting four such sentences into `en.json`: the old check stayed green on all four, the new one names all four. One rule in one place also means the emails and the screens cannot drift into disagreeing about what a denominator is, which is the failure mode two homes for one rule always has.

@@ -171,16 +171,43 @@ function namesInSource(source: string, kind: ts.ScriptKind = ts.ScriptKind.TS): 
   return names
 }
 
-/** Parsed once per file: the scan below asks four questions of every source. */
+/**
+ * A file whose raw text does not contain a banned word cannot have parsed one,
+ * so nearly the whole repository is settled by a substring search and only the
+ * dozen or so files that mention something get parsed. Without this the scan
+ * parses 1,100-odd files and takes long enough under a loaded machine to look
+ * like a hang.
+ */
+const reachable = new Map<string, boolean>()
+
+function couldReach(file: string): boolean {
+  const hit = reachable.get(file)
+  if (hit !== undefined) return hit
+  const text = readFileSync(file, 'utf8')
+  const found = QUARANTINED.some((entry) => text.includes(entry.name))
+  reachable.set(file, found)
+  return found
+}
+
+/**
+ * Parsed once per file: the scan asks several questions of every candidate.
+ *
+ * A file the search above ruled out comes back empty rather than parsed. Every
+ * caller asks this only about the banned words, and for those the answer is the
+ * same either way — but it does mean this is not a general list of a file's
+ * names and must not be used as one.
+ */
 const cache = new Map<string, Set<string>>()
 
 function namesIn(file: string): Set<string> {
   const hit = cache.get(file)
   if (hit) return hit
-  const names = namesInSource(
-    readFileSync(file, 'utf8'),
-    file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
-  )
+  const names = couldReach(file)
+    ? namesInSource(
+        readFileSync(file, 'utf8'),
+        file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+      )
+    : new Set<string>()
   cache.set(file, names)
   return names
 }
