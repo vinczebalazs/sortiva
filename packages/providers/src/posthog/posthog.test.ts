@@ -51,17 +51,77 @@ describe('PosthogServerCapture', () => {
     expect(call[0].groups).toEqual({})
   })
 
-  it('scrubs secrets out of properties before they reach the wire', () => {
+  it('drops a credential nobody declared, rather than sending it redacted', () => {
+    // This used to arrive as `access_token: '[redacted]'`. A redacted secret is
+    // still a property nobody declared, and the same open bag that carried it
+    // would have carried an article body untouched.
     const client = fakeClient()
     new PosthogServerCapture({ client: client as never }).capture({
-      event: 'shopify_oauth_granted',
+      event: 'article_published',
       attribution: accountAttribution('acc-1', 'example.com'),
-      properties: { access_token: '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', scopes: 4 },
+      properties: { access_token: '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', article_id: 'art-9' },
     })
 
     const [call] = client.capture.mock.calls as [[{ properties: Record<string, unknown> }]]
-    expect(call[0].properties.access_token).toBe('[redacted]')
-    expect(call[0].properties.scopes).toBe(4)
+    expect(call[0].properties.access_token).toBeUndefined()
+    expect(call[0].properties.article_id).toBe('art-9')
+  })
+
+  it('sends nothing a merchant wrote, on any of the four ways in', () => {
+    const client = fakeClient()
+    const capture = new PosthogServerCapture({ client: client as never })
+    const attribution = accountAttribution('acc-1', 'example.com')
+    const draft = 'Merino wool regulates temperature across a wide range...'
+
+    capture.capture({
+      event: 'article_published',
+      attribution,
+      properties: { article_id: 'art-1', article_body: draft },
+    })
+    capture.captureAiGeneration({
+      attribution,
+      callType: 'draft',
+      promptVersion: 'draft.v3',
+      modelId: 'claude-sonnet-4-5',
+      inputTokens: 10,
+      outputTokens: 20,
+      latencyMs: 30,
+      usdCost: 0.01,
+      cacheHit: false,
+      properties: { completion: draft },
+    })
+    capture.captureSeoRequest({
+      attribution,
+      endpoint: 'serp/google/organic/live/advanced',
+      billable: true,
+      cacheHit: false,
+      usdCost: 0.002,
+      properties: { keyword: 'merino base layer' },
+    })
+    capture.captureException(new Error('boom'), attribution, { draft_body: draft })
+
+    const sent = [
+      ...client.capture.mock.calls.map((call) => (call as [{ properties: unknown }])[0].properties),
+      ...client.captureException.mock.calls.map((call) => (call as [unknown, string, unknown])[2]),
+    ]
+    expect(sent).toHaveLength(4)
+    expect(JSON.stringify(sent)).not.toContain('Merino wool')
+    expect(JSON.stringify(sent)).not.toContain('merino base layer')
+  })
+
+  it('still scrubs the message of a captured error, which no table can check', () => {
+    // An exception's message and stack are not properties. The event table
+    // cannot see inside them, so the credential scrubber is the only thing
+    // between a thrown string and the vendor — and it is still wired.
+    const client = fakeClient()
+    new PosthogServerCapture({ client: client as never }).captureException(
+      new Error('shopify rejected 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'),
+      accountAttribution('acc-1', 'example.com'),
+    )
+
+    const [call] = client.captureException.mock.calls as [[Error, string, unknown]]
+    expect(call[0].message).toContain('[redacted]')
+    expect(call[0].message).not.toContain('shpat_a1b2c3d4e5f6')
   })
 
   it('captures nothing at all when no project key is configured — but says so', () => {
@@ -99,6 +159,24 @@ describe('UnrecordedCapture', () => {
 })
 
 describe('MockPosthogCapture', () => {
+  it('runs the same event table as the live wrapper, so a test asserting the rule is asserting production', () => {
+    const capture = new MockPosthogCapture()
+    capture.capture({
+      event: 'article_published',
+      attribution: accountAttribution('acc-1', 'example.com'),
+      properties: {
+        article_id: 'art-1',
+        article_title: 'Ten Ways To Style A Merino Base Layer',
+      },
+    })
+
+    expect(capture.of('article_published')[0]!.properties).toEqual({
+      account_id: 'acc-1',
+      article_id: 'art-1',
+    })
+    expect(capture.rejected).toEqual([{ key: 'article_title', reason: 'undeclared' }])
+  })
+
   it('totals LLM and DataForSEO spend, which is the cost-per-domain number', () => {
     const capture = new MockPosthogCapture()
     const attribution = accountAttribution('acc-1', 'example.com')

@@ -5867,3 +5867,40 @@ One behaviour is stricter than the copy it replaced: a directory in parentheses 
 A walk that finds nothing now fails rather than agreeing with any contract at all.
 Mutation-checked in both directions: a route file at an address nobody declared fails naming it and saying what to do; moving an existing route's directory fails twice, once for the address that appeared and once for the one that vanished. Today it passes with 70 served addresses, all accounted for.
 Nearest spec: main §14.7; tech §6; `DECISIONS.md` 2026-09-08 `R-CONTRACT-PROVE`.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — The server now has the same declared table of analytics events the browser has, and drops everything else
+Decision: `packages/core/src/contracts/analytics-events.ts` lists every event the server may send to our analytics vendor and, for each, the properties it may carry and what kind of value each one is. The wrapper that talks to the vendor (`packages/providers/src/posthog/index.ts`) runs every capture through it — the ordinary one, the model-call one, the search-data one and the crash one — and silently drops anything the table does not name. The test double runs the same table, so a test that asserts "an article title cannot get out" is asserting what production does.
+Why: the promise to merchants is that nothing they wrote — product copy, a prompt, a draft article — reaches a third-party analytics vendor; only identifiers and counts. In the browser that was already structural. On the server the capture took an open bag of properties and ran a credential scrubber, which redacts an access token and passes a paragraph of prose through untouched. This journal said so outright ("today the rule is upheld by review alone") and two audits had it open.
+Why a copy of the browser's shape rather than a new scheme: there is one rule and it should have one form. The kinds are the browser's four — an identifier, an enumerated name, a count, a yes/no — with the same rule that an identifier has no spaces and stops at sixty-four characters, which is what a headline and a paragraph both fail.
+Nearest spec: main §14.7 ("events carry ids and aggregates only — never product content, article text, prompts"); invariant 26.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — A fifth kind, for the one event that reports a set of counts it cannot name in advance
+Decision: the server table has a kind the browser's does not: `count_map`, names paired with counts. Exactly one property uses it — `family_grouping_completed.grouping_sources`, which reports how many product families each grouping method produced.
+Why it is not a loophole: every key in such a map must satisfy the same shape rule as an enumerated name (no whitespace, sixty-four characters at most, not a credential) and every value must be a number. So it admits nothing an `enum` property would not already admit, and it cannot hold a sentence.
+Alternative rejected: declaring the property undeclared and letting the guard drop it, which would have silently removed a number a dashboard reads.
+Nearest spec: main §14.7; invariant 26.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — An event the table has never heard of keeps its row and loses every property
+Decision: if a capture names an event with no row in the table, it is still sent, carrying only the account (or preview domain) the wrapper itself attaches; every property the call site supplied is dropped. If the event *name* is not even shaped like a name — lower-case words joined by underscores — nothing is sent at all.
+Why: the rule is about content, and dropping the properties keeps it completely. Dropping the whole row instead would also hide that the work happened, which is a worse telemetry failure than a row with nothing on it, and both are equally visible to whoever is building the dashboard that needs it. The name is checked as well because a name assembled from a merchant's words would otherwise carry them past a table that only inspects properties.
+Nearest spec: main §14.7; invariant 26.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — `null` is allowed under any declared property
+Decision: a declared property may hold `null` whatever its kind.
+Why: "we had none" is an answer with no content in it, and several events legitimately report one — Gate 1 makes no model call, so it has no model id or prompt version to name. Refusing null would have meant dropping those properties, which loses the difference between "no model was used" and "nobody said".
+Nearest spec: main §14.7; invariant 26.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — The guard is at the wrapper only; the compiler still accepts any event name
+Decision: `AnalyticsEvent.event` stays a plain string. The table is enforced when an event is sent, not when one is written.
+Why, and what it costs: narrowing that field to the list of declared names would make an undeclared event a build failure rather than a silent stripping — genuinely stronger. But `AnalyticsEvent` is a shared interface three other lanes' code builds events against, and narrowing it is the kind of interface change the constitution says to ask about rather than take. Left as a card candidate. Until then, an undeclared event is caught when someone looks at the dashboard, not when they compile.
+Nearest spec: main §14.7; CLAUDE.md prime directive 3.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — The table declares what the code emits today, not everything the spec names
+Decision: rows exist for the twenty-eight events the product actually sends. The spec's §14.7 taxonomy also names events nothing emits yet — `shopify_oauth_granted` / `_abandoned`, `ingestion_step_completed`, `distillation_completed`, `optimize_recommendation_generated`, `opportunity_outcome_measured`, `publish_intent_created` / `_confirmed` / `_abandoned`. They are not in the table.
+Why: declaring permissions for events nobody has built means guessing their properties, and a wrong guess is a permission granted in advance. The card that builds each one adds its row, which is the workflow the table is for. The cost is that the first attempt to emit one of them will find its properties stripped; the fix is one line in one file.
+Nearest spec: main §14.7.
+
+## 2026-09-08 — R-TELEMETRY-TEETH — A search phrase from the merchant's own catalogue was being sent, and the call site is fixed as well as guarded
+Decision: `StubExistingTargetCheck` in `packages/core/src/contracts/doubles.ts` attached the head term of a keyword cluster — a phrase derived from the merchant's catalogue and search data, with spaces in it — to the `stub_used` event. The new table drops it; the call site no longer offers it.
+Why both: leaving the argument in place would have left the code reading as though the phrase were captured, with only a silent drop to say otherwise. This is the one live violation of the rule the guard found in existing code.
+Nearest spec: main §14.7; invariant 26.

@@ -64,7 +64,12 @@ export class StubExistingTargetCheck extends StubImplementation implements Exist
   }
 
   async check(cluster: QueryCluster, accountId: string): Promise<ExistingTargetOutcome> {
-    this.record('check', { kind: 'account', accountId }, { cluster: cluster.head })
+    // The cluster's head term used to ride along here as a property. It is a
+    // search phrase derived from the merchant's own catalogue, and analytics
+    // carries ids and counts only. The event table drops it now; it should
+    // never have been offered.
+    void cluster
+    this.record('check', { kind: 'account', accountId })
     return { match: 'none' }
   }
 }

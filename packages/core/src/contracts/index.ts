@@ -1,4 +1,5 @@
 export * from './analytics'
+export * from './analytics-events'
 export * from './cache'
 export * from './doubles'
 export * from './email'
