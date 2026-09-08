@@ -1,7 +1,7 @@
-import { and, desc, eq, ne } from 'drizzle-orm'
+import { and, desc, eq, gte, ne } from 'drizzle-orm'
 import { OVERRIDE_GATE_OUTCOME, type Gate3Outcome } from '@sortiva/core'
 import type { Db } from '../client'
-import { gateDecisions } from '../schema'
+import { gateDecisions, publishAttempts } from '../schema'
 import type { SystemScope } from '../scope'
 
 /**
@@ -66,5 +66,47 @@ export async function recentGate3Outcomes(
   return {
     graded: rows.length,
     rejected: rows.filter((row) => row.outcome !== PASSED).length,
+  }
+}
+
+/** How publishing to merchants' shops has gone lately, across every store. */
+export interface PublishOutcomeCounts {
+  /** Attempts the shop turned away, plus the ones we finally gave up on. */
+  readonly failed: number
+  /** Every attempt in the window, whatever it ended as. */
+  readonly attempted: number
+}
+
+/**
+ * Every attempt to post an article since `since`, and how many of them failed.
+ *
+ * **Deliberately across all accounts**, like the gate counter above: the switch
+ * this feeds stops publishing for everybody, so the question is whether the
+ * platform is having a bad day, not whether one store is.
+ *
+ * **An attempt we could not judge is not a failure.** When a connection breaks
+ * mid-post, the article may be on the merchant's blog right now; counted as a
+ * failure, a flaky network would raise the same switch a genuine outage does.
+ * It stays in the total, because it really was an attempt and hiding it would
+ * make a bad hour look smaller than it was — so a spell of uncertainty can only
+ * ever make this brake slower to fire, never quicker.
+ *
+ * A shop that gave up on us and a shop that refused us are both failures: the
+ * article did not go out either way, and it is the refusals that carry the
+ * shape of an outage.
+ */
+export async function recentPublishOutcomes(
+  db: Db,
+  _scope: SystemScope,
+  since: Date,
+): Promise<PublishOutcomeCounts> {
+  const rows = await db
+    .select({ outcome: publishAttempts.outcome })
+    .from(publishAttempts)
+    .where(gte(publishAttempts.endedAt, since))
+
+  return {
+    attempted: rows.length,
+    failed: rows.filter((row) => row.outcome === 'refused' || row.outcome === 'abandoned').length,
   }
 }

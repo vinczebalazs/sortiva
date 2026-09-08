@@ -6,6 +6,7 @@ import {
   countOptimizeGenerationsSince,
   listActiveFlags,
   recentGate3Outcomes,
+  recentPublishOutcomes,
   resetAccountFlag,
   systemScope,
   tripAccountFlag,
@@ -22,7 +23,6 @@ import {
   MODEL_CALLS_PER_PAID_ANALYSIS_MAX,
   PUBLISHING_PAUSED_FLAG,
   PUBLISH_ERROR_MINIMUM_SAMPLE,
-  UnrecordedPublishOutcomes,
   accountAttribution,
   callTypeCapVerdict,
   judgeFailRateVerdict,
@@ -151,6 +151,31 @@ function gateDecisionJudgeCounter(db: Db): JudgeOutcomeCounter {
   }
 }
 
+/**
+ * The publishing brake's numbers, read from the record every attempt to post
+ * now leaves.
+ *
+ * Built here out of the database handle the sweep already holds, for the same
+ * reason the counter above is: this brake spent months wired to a stand-in that
+ * answered "not measurable" for ever, because the one place that could have
+ * connected it never did.
+ *
+ * **`measurable` is true even when nothing has been posted.** It says whether
+ * anything records this outcome, not whether anything happened — and now
+ * something does. An empty hour means nobody published, which the
+ * minimum-sample rule already refuses to conclude anything from.
+ */
+function publishAttemptCounter(db: Db, now: Date): PublishOutcomeCounter {
+  const scope = systemScope('publishing failing is a statement about the platform, not one store')
+  return {
+    async recentPublishOutcomes(windowHours: number): Promise<FailureCount> {
+      const since = new Date(now.getTime() - windowHours * 60 * 60 * 1000)
+      const counts = await recentPublishOutcomes(db, scope, since)
+      return { failures: counts.failed, sample: counts.attempted, measurable: true }
+    },
+  }
+}
+
 export async function evaluateAutoTrips(
   db: Db,
   deps: AutoTripDeps = {},
@@ -194,7 +219,7 @@ export async function evaluateAutoTrips(
   // ── Publishing ─────────────────────────────────────────────────────────────
   // Publishing failing at this rate is the platform, not us. Publishing stops;
   // writing does not.
-  const publishing = deps.publishing ?? new UnrecordedPublishOutcomes()
+  const publishing = deps.publishing ?? publishAttemptCounter(db, now)
   const published = await publishing.recentPublishOutcomes(caps.publish_error_rate.window_hours)
   if (!published.measurable) {
     unmeasurable.push('publish_error_rate')

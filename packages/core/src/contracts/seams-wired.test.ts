@@ -157,17 +157,11 @@ function constructionSites(symbol: string): string[] {
  * record to be deleted.
  */
 const WIRED_IN_PRODUCTION: Record<string, { readonly files: readonly string[]; readonly finding: string }> = {
-  UnrecordedPublishOutcomes: {
-    files: ['packages/jobs/src/sweeps/auto-trips.ts'],
-    finding:
-      'The brake that should stop publishing when publishing starts failing cannot fire, because ' +
-      'nothing in the product records a failed publish attempt: when a shop refuses a post, the ' +
-      'claim row is deleted so the name is free for the retry, and that covers a dead token, a ' +
-      'missing page and — the case this brake exists for — a rate limit. Deliberate and reported ' +
-      'by `pnpm stubs:report`; a counter that answers "cannot measure" is why no switch goes up on ' +
-      'a number nobody is writing down. Recording an attempt needs a schema decision, carded as ' +
-      'R-PUBLISH-ATTEMPTS.',
-  },
+  // Empty, and the last entry left on 2026-09-08 (`R-PUBLISH-ATTEMPTS`). It
+  // recorded that the brake meant to stop publishing when publishing starts
+  // failing could not fire, because nothing wrote down a refused publish. Every
+  // attempt to post now leaves a row and the sweep counts them, so the finding
+  // is no longer true and, by the rule above, could not be left standing.
 }
 
 describe('no stand-in is left running in the product itself', () => {
