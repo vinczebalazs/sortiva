@@ -9,6 +9,7 @@ import { renderTemplatedLine } from '../opportunities/why'
 import { t } from './index'
 import {
   ADMISSION_REASON_PARAMS,
+  COUNTS_PHRASED_AROUND,
   GATE_REASON_KEYS,
   GATE_REASON_PARAMS,
   OPPORTUNITY_REASON_KEYS,
@@ -130,6 +131,36 @@ describe('the scan reasons, now that they have words', () => {
         ).toContain(placeholder)
       }
     }
+  })
+})
+
+/**
+ * The other direction: numbers the scan measures and sends, and no sentence
+ * ever shows a merchant.
+ *
+ * This was a written list with nothing checking it, and it went stale — it
+ * still said nine numbers were being avoided for want of singular and plural
+ * forms months after the renderer had them. A list that describes the copy is
+ * only true on the day it is written; this makes the copy answer for it.
+ */
+describe('the numbers the scan sends and no sentence prints', () => {
+  const sent = new Set(Object.values(SCAN_REASON_PARAMS).flat())
+  const printed = new Set(Object.keys(SCAN_REASON_PARAMS).flatMap((key) => placeholdersIn(key)))
+
+  it('has both sides of the comparison in hand', () => {
+    // An empty set on either side would make the equality below pass over
+    // nothing at all, which is how the list it replaces came to be wrong.
+    expect(sent.size).toBeGreaterThan(10)
+    expect(printed.size).toBeGreaterThan(5)
+  })
+
+  it('is exactly the list that says so, with a reason written beside each', () => {
+    const unprinted = [...sent].filter((name) => !printed.has(name))
+    expect(
+      unprinted.sort(),
+      'either a sentence started printing one of these and the note beside it is now wrong, ' +
+        'or a number stopped being printed and nobody said why',
+    ).toEqual([...COUNTS_PHRASED_AROUND].sort())
   })
 })
 

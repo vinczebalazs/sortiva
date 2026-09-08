@@ -108,37 +108,38 @@ export const SCAN_REASON_PARAMS: Readonly<Record<string, readonly string[]>> = {
 }
 
 /**
- * Numbers the weekly scan sends that its sentences do not print, and why.
+ * Numbers the weekly scan sends that its sentences still do not print, and why
+ * each one stays unprinted.
  *
- * **The reason has expired and these are now free to be rewritten.** They were
- * phrased around because the catalogue had no singular and plural forms, so a
- * sentence reading "{competing_urls} pages" printed "1 pages" the day a count
- * was one; twelve sentences had shipped with that fault. The catalogue gained
- * both forms since — a sentence states them inline as
- * `{competing_urls, plural, one {page} other {pages}}` and the number chooses —
- * so "more than one of your pages is competing" is a limit nothing imposes any
- * more.
+ * Five of the nine have gone. They were phrased around because the catalogue
+ * could not say "1 page", and the sentences that lost the most by it now state
+ * their number with both forms written out, the renderer choosing between them.
  *
- * All nine are genuine counts — every one of them a length or an integer the
- * scan already measured — and want the same treatment the gate sentences just
- * had. The tenth, `reason`, has left this list: it was never a count, but one
- * of two machine tokens naming why a page is missing from Google, and the scan
- * now picks a sentence per token instead of offering the token to one sentence.
+ * The four that remain are not waiting on machinery. Each would make its
+ * sentence worse, or make it lie:
  *
- * Rewriting them is deliberately not done here — it is a change to what a
- * merchant reads on the product's central screen, and it belongs in a card of
- * its own rather than riding along with the gate copy.
+ * - `impressions` — how often the store came up in search for this subject. The
+ *   number means nothing without the period it covers, and a reason sentence is
+ *   never given one. The drawer already shows it as a chip beside the window it
+ *   was measured over, which is the honest place for it.
+ * - `leader_changes` — how many times Google switched which of the store's own
+ *   pages it led with. **It is legitimately nought.** The finding is confirmed
+ *   either by the leader flipping *or* by the search losing clicks, so a
+ *   sentence stating this number would say "changed 0 times" to every merchant
+ *   whose finding was confirmed the second way.
+ * - `missing_fields` and `duplicate_fields` — how many of a page's search title
+ *   and description are absent, and how many repeat another page's. Either is
+ *   legitimately nought, because one of the two conditions alone raises the
+ *   signal, so one sentence stating both would announce a nought to half the
+ *   merchants who read it. Saying it properly means two keys and a producer
+ *   choosing between them — the same split `indexing_issue` was given — and the
+ *   producer is not this package.
  */
 export const COUNTS_PHRASED_AROUND: readonly string[] = [
   'impressions',
-  'clicks_before',
-  'clicks_after',
-  'competing_urls',
   'leader_changes',
-  'competitors',
   'missing_fields',
   'duplicate_fields',
-  'missing_subtopics',
 ]
 
 /** The only two numbers the repair path hands the renderer. */

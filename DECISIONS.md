@@ -6257,3 +6257,32 @@ What the disagreement was. Only one worker may touch a given store's data at a t
 
 Left as it is: the wording of the invariant is longer than its neighbours. That is deliberate — the short version is what produced five days of a rule nobody could satisfy, and a reader who only sees the function name will reinstate it.
 Nearest spec: main §14.3.1–14.3.4; invariant 18.
+
+## 2026-09-08 — R-PLURALS — Twelve more sentences can say "one", and the four numbers still not printed each say why
+
+Decision: the check that finds sentences reading "1 pages" now treats **every** number in a sentence as a count unless a short list says it is a name, a heading or an address; twelve sentences it had been passing over are fixed; the renderer chooses a form even when the screen handed it a number already turned into text; and of the nine numbers the weekly scan measured and never showed anybody, five are now shown and four are recorded with the reason each stays hidden.
+
+**What was already done before this session, and is worth saying plainly.** The renderer learned singular and plural yesterday (`bcf5645`), and nineteen sentences were fixed then, including `catalog_richness_gap.insufficient_substance`, the one the card named. This session found the rest.
+
+**Why twelve more survived a check written for exactly this.** The check kept a list of placeholder names that are counts — `count`, `days`, `products` and so on — and skipped anything else. The six number chips on the opportunity drawer call their number `value`, which nobody had listed, so "1 impressions", "1 clicks", "1 matching products", "1 competing URLs on one query", "1 products missing details" and "1 searches a month" all passed it, as did the two performance deltas ("+1 clicks", "up 1 places") and the two search-volume lines. **A list of the counts somebody remembered is the same defect as fixing the sentences one at a time**, so the burden is inverted: adding a name to the not-a-count list is now a visible, deliberate act, and there are four names on it.
+
+**A number a screen has already formatted still has to be able to be one.** The chips and the performance deltas group thousands before handing the value over — a merchant reads "12,480", not "12480" — so what reached the renderer was the text "1", not the number 1, and the plural machinery had nothing to choose by. It now reads text that is plainly a number, and keeps the general form for anything else. Grouped thousands are never one, so nothing is lost, and a sentence never loses half of itself because a screen sent a word.
+
+**The five sentences that stopped being phrased around, and why each was safe to change.** None is canonical copy; all five are the weekly scan's own explanations, written by the previous copy card, and each states a number the scan had already measured and sent:
+
+- Self-competition: *"More than one of your pages is competing for this search…"* → *"3 pages of yours are competing for this search…"* (and *"1 page of yours is competing"*, though the detector's own floor is two).
+- Decay: *"…and the traffic has followed it down."* → *"…and its clicks from search have followed it down — 40 then, 6 now."*
+- Competitor gap: *"Competitors rank for this search and you do not…"* → *"4 competitors rank for this search and you do not…"*
+- Intent gap: *"…answer questions it does not. Covering what they cover…"* → *"…answer 3 questions it does not. Covering them…"* (*"1 question… Covering it"* at one).
+- Demand: *"around 1 searches a month"* → *"around 1 search a month"*, in both of the create sentences.
+
+**The four numbers still not printed are not waiting on machinery**, and the note beside each now says which: `impressions` means nothing without the period it covers and the reason sentence is never given one, while the drawer already shows it as a chip beside its window; `leader_changes`, `missing_fields` and `duplicate_fields` are each **legitimately nought** on real findings, so a sentence stating one would announce a nought to a merchant. The metadata pair needs two sentences and a producer choosing between them — the split `indexing_issue` was given by `R-INDEXING-SPLIT` — and the producer is Lane C's.
+
+**That list is no longer a comment.** It had gone stale once already: it still said nine numbers were being avoided for want of plural forms after the renderer had them. A test now derives the unprinted set from the copy itself and requires it to equal the list exactly, so a sentence that starts printing one, or stops, fails the build.
+
+**Left alone, and it is with the founder.** `appendixA.opportunityHeadline` — *"We found {count} ways to grow your store organically"* — still reads "We found 1 ways" for a store whose first scan finds one thing, on the screen the spec calls the activation moment. It is canonical copy from the spec's Appendix A, pinned verbatim (invariant 24), and no plural machinery can fix it without rewording it. The relay for this session asked for it to be fixed **and** forbade editing a canonical string; the constitution decides that tie. It is named in the guard as a known exception, with a test that fails if it is ever reworded so the exception cannot outlive the problem.
+
+**One thing this session did not touch and should be looked at.** The self-competition sentence still ends *"and Google keeps changing which one it shows"*. That is true of only one of the two ways the finding is confirmed: `packages/core/src/signals/cannibalization.ts` accepts either the leading page flipping week to week **or** the search earning fewer clicks than a quarter ago, and a finding confirmed the second way can have had no flips at all. A merchant reading that sentence may be told something that did not happen. Fixing it is a copy decision, not a plural one, so it was left as written and flagged rather than reworded in passing.
+
+Mutation-checked, five ways: making the renderer ignore a number that arrived as text fails the new chip test; restoring *"{value} impressions"* fails the guard, naming the key; letting the guard read across a plural decision instead of stopping at it fails two tests on *"1 products … missing details"*; a sentence that stops printing its count fails the unprinted-numbers equality; and a number on the not-printed list that a sentence does print fails it from the other side.
+Nearest spec: ui §4; main Appendix A; invariants 23 (no denominators — the catalogue-wide check still passes) and 24.
