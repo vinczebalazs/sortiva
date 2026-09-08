@@ -128,9 +128,13 @@ export interface OptimizeEvidencePack {
  * reads as "this product comes in a choice of colours" — and from inside this
  * pack the two are the same string, with nothing to tell them apart. Cited, it
  * would licence suggested copy promising a choice that may not exist, on the
- * merchant's own page and in their own voice; the grader would not catch it
- * either, because `gradingEvidence` hands it the same half-fact. What lifting
- * this needs is the axis *values* reaching the pack, not a change to this list.
+ * merchant's own page and in their own voice. What lifting this needs is the
+ * axis *values* reaching the pack, not a change to this list.
+ *
+ * Leaving a field out of this list now withholds it from the grader as well as
+ * from the writer, because both read `citableStoreFacts` below. That is the
+ * point: a claim resting on a withheld field has nothing behind it in the
+ * grader's evidence either, so it fails grounding instead of being confirmed.
  */
 const CITABLE_FIELDS = [
   'material',
@@ -146,6 +150,9 @@ const CITABLE_FIELDS = [
 ] as const satisfies readonly (keyof FactSheet)[]
 
 export type CitableField = (typeof CITABLE_FIELDS)[number]
+
+/** Marks an address whose evidence is a reading of somebody else's page rather than the store's own record. */
+const SUBTOPIC_PREFIX = 'subtopic:'
 
 /** One citable fact and the address a suggestion has to name it by. */
 export interface PackFact {
@@ -205,13 +212,28 @@ export function packFacts(pack: OptimizeEvidencePack): PackFact[] {
   for (const subtopic of pack.missingSubtopics) {
     const pages = subtopic.competitors.map((c) => c.url).join('; ')
     out.push({
-      address: `subtopic:${subtopic.name}`,
+      address: `${SUBTOPIC_PREFIX}${subtopic.name}`,
       value: subtopic.name,
       label: `Covered by the pages above you: ${subtopic.name} (${pages})`,
     })
   }
 
   return out
+}
+
+/**
+ * The store's own facts — its products' and its families' — without the
+ * readings of other people's pages.
+ *
+ * It exists so that the writer and the grader cannot end up holding different
+ * evidence. The prompt the writer is sent and the evidence the grader grades
+ * against are built in two different files, and both call this. They used to be
+ * assembled separately, and the grader ended up holding whole fact sheets while
+ * the writer got this filtered list — so a price the model had invented could be
+ * confirmed against a price range that was never in front of it.
+ */
+export function citableStoreFacts(pack: OptimizeEvidencePack): PackFact[] {
+  return packFacts(pack).filter((fact) => !fact.address.startsWith(SUBTOPIC_PREFIX))
 }
 
 /** The addresses alone, which is what the grounding lint checks against. */

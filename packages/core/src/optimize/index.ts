@@ -45,6 +45,7 @@ export {
   type OptimizeLintResult,
 } from './lints'
 export {
+  citableStoreFacts,
   packFactAddresses,
   packFacts,
   packLinkAddresses,
