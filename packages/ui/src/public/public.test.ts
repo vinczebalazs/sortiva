@@ -168,10 +168,8 @@ describe('the address travels as a suggestion', () => {
     expect(text(html)).toContain('nothing is claimed until you confirm it')
   })
 
-  it('offers only the providers that are actually built', () => {
-    const html = render(createElement(SignIn, {}))
-    expect(html).toContain(t('signin.google'))
-    expect(html).not.toContain('previewed-domain')
+  it('is absent from the screen when there was no preview to carry', () => {
+    expect(render(createElement(SignIn, {}))).not.toContain('previewed-domain')
   })
 
   it('does not submit a bare form, which is what stopped anybody signing in', () => {
@@ -186,6 +184,52 @@ describe('the address travels as a suggestion', () => {
 
   it('says nothing about a failure until there has been one', () => {
     expect(render(createElement(SignIn, {}))).not.toContain('signin-failed')
+  })
+})
+
+// ── Two ways in, one of which needs nothing but a mailbox ───────────────────
+
+/**
+ * **The half of email sign-in that no configuration test can see.**
+ *
+ * The server has offered a sign-in link for as long as `authWiring.test.ts` has
+ * asserted it, and `emailSignIn.test.ts` drives the exchange the button runs
+ * against the real handlers. Both of those stayed green through the whole
+ * period when the screen had a single Google button and a merchant without a
+ * Google account could not get in at all — because neither renders the screen.
+ * These do. Deleting the field or the button from the component turns this red
+ * and nothing else in the repository.
+ */
+describe('the sign-in screen offers both ways in', () => {
+  it('has a Google button and an address to send a link to', () => {
+    const html = render(createElement(SignIn, {}))
+
+    expect(html).toContain(t('signin.google'))
+    expect(html).toContain(t('signin.email'))
+    expect(html).toContain('data-testid="signin-email"')
+  })
+
+  it('labels the address field and asks for the keyboard that has an @ on it', () => {
+    const html = render(createElement(SignIn, {}))
+
+    expect(html).toContain(t('signin.emailLabel'))
+    expect(html).toContain('type="email"')
+  })
+
+  it('posts the address through the same exchange as Google, not to the library', () => {
+    // A form post carries no anti-forgery token, so it lands on the library's
+    // error page — the defect the Google button was already repaired for.
+    const html = render(createElement(SignIn, {}))
+
+    expect(html).not.toContain('<form')
+    expect(html).not.toContain('/api/auth/signin/email')
+  })
+
+  it('tells nobody to go and look in a mailbox until a link has been asked for', () => {
+    const html = render(createElement(SignIn, {}))
+
+    expect(html).not.toContain('signin-link-sent')
+    expect(html).not.toContain('signin-link-failed')
   })
 })
 
