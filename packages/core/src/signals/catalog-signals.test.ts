@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { scenario } from '../fixtures'
-import { existingTargetCheck, findExistingTarget, toCoverageAnswer } from '../opportunities/existing-target'
+import { existingTargetCheck } from '../opportunities/existing-target'
 import type { ExistingTargetPage } from '../opportunities/ports'
 import type { QueryCluster } from '../contracts/opportunities'
 import { detectCatalogRichnessGaps, keywordsClearingSubstanceFloor } from './richness-gap'

@@ -10,6 +10,7 @@ export {
   existingTargetCheck,
   findExistingTarget,
   toContractOutcome,
+  toCoverageAnswer,
   type ExistingTargetMatch,
   type ExistingTargetResult,
   type MatchSource,

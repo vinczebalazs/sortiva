@@ -104,11 +104,36 @@ function presenceOf(row: { status: 'live' | 'gone' }): ExistingTargetPage['prese
   return row.status === 'gone' ? 'removed' : 'published'
 }
 
-export async function existingTargetInputFor(
+/**
+ * Everything the check needs about a store, read once.
+ *
+ * The three lookups behind the check are per-store, not per-subject: the
+ * store's whole page list, its Search Console rows for the window, and (for a
+ * store with no Search Console at all) the vendor's account of the domain.
+ * Only the last step — pooling those rows onto the subject being asked about —
+ * changes from one question to the next. A scan asks the question for every
+ * search a store might want, so reading the store once and asking many times is
+ * the difference between one pass over the inventory and hundreds.
+ */
+export interface PreparedExistingTargetReads {
+  readonly pages: readonly ExistingTargetPage[]
+  readonly gscRows: readonly {
+    page: string
+    query: string
+    clicks: number
+    impressions: number
+    position: number | null
+  }[]
+  readonly proxyRankings: readonly ProxyRankedKeyword[]
+  readonly limitedIntelligence: boolean
+  readonly config: ReturnType<typeof rules>['defaults']['gates']['existing_target_check']
+  readonly fetchedAt: string
+}
+
+export async function prepareExistingTargetReads(
   deps: ExistingTargetDeps,
   accountId: string,
-  cluster: QueryCluster,
-): Promise<Parameters<typeof findExistingTarget>[0]> {
+): Promise<PreparedExistingTargetReads> {
   const scope = accountScope(accountId)
   const now = (deps.now ?? (() => new Date()))()
   const config = rules().defaults.gates.existing_target_check
@@ -139,27 +164,45 @@ export async function existingTargetInputFor(
     presence: presenceOf(row),
   }))
 
-  const rankedPages = limited
-    ? []
-    : toRankedPages(
-        await gscPageQueryTotals(
+  return {
+    pages,
+    gscRows: limited
+      ? []
+      : await gscPageQueryTotals(
           deps.db,
           scope,
           { startDate: toIsoDate(start), endDate: toIsoDate(end) },
           rules().defaults.clusters.min_query_impressions,
         ),
-        cluster,
-      )
-
-  return {
-    cluster,
-    rankedPages,
-    pages,
     proxyRankings: limited ? await proxyRankings(deps, accountId) : [],
     limitedIntelligence: limited,
     config,
     fetchedAt: now.toISOString(),
   }
+}
+
+/** The store's reads, narrowed onto one subject. */
+export function existingTargetInputFrom(
+  prepared: PreparedExistingTargetReads,
+  cluster: QueryCluster,
+): Parameters<typeof findExistingTarget>[0] {
+  return {
+    cluster,
+    rankedPages: prepared.limitedIntelligence ? [] : toRankedPages(prepared.gscRows, cluster),
+    pages: [...prepared.pages],
+    proxyRankings: [...prepared.proxyRankings],
+    limitedIntelligence: prepared.limitedIntelligence,
+    config: prepared.config,
+    fetchedAt: prepared.fetchedAt,
+  }
+}
+
+export async function existingTargetInputFor(
+  deps: ExistingTargetDeps,
+  accountId: string,
+  cluster: QueryCluster,
+): Promise<Parameters<typeof findExistingTarget>[0]> {
+  return existingTargetInputFrom(await prepareExistingTargetReads(deps, accountId), cluster)
 }
 
 /**

@@ -5,7 +5,7 @@ import { MockSeoDataProvider } from '@sortiva/providers/seo/mock'
 import { accountScope, markStorePagesGoneNotSeenSince, upsertStorePages, type StorePageInput } from '@sortiva/db'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
 import { rules } from '@sortiva/rules'
-import { assembleFamilyCoverageInput, assembleMetadataInput } from './assemble'
+import { assembleExistingTargetCoverage, assembleFamilyCoverageInput, assembleMetadataInput } from './assemble'
 import { existingTargetInputFor } from './existing-target'
 
 const available = await databaseAvailable()
@@ -160,7 +160,10 @@ describe.skipIf(!available)('once a deleted page is visible to the scan', () => 
       await plantFamily()
       await plant(false)
 
-      const input = await assembleFamilyCoverageInput(deps(), accountId, [])
+      const coverage = await assembleExistingTargetCoverage(deps(), accountId, [], [
+        { id: FAMILY, name: 'Boots' },
+      ])
+      const input = await assembleFamilyCoverageInput(deps(), accountId, [], coverage.byFamily)
 
       expect(input.candidates).toHaveLength(1)
       expect(input.candidates[0]?.mappedContent.map((c) => c.url)).toEqual([
@@ -172,7 +175,10 @@ describe.skipIf(!available)('once a deleted page is visible to the scan', () => 
       await plantFamily()
       await plant(true)
 
-      const input = await assembleFamilyCoverageInput(deps(), accountId, [])
+      const coverage = await assembleExistingTargetCoverage(deps(), accountId, [], [
+        { id: FAMILY, name: 'Boots' },
+      ])
+      const input = await assembleFamilyCoverageInput(deps(), accountId, [], coverage.byFamily)
 
       // The opposite direction from the two above: here a stale row does not
       // produce a suggestion that should not exist, it suppresses one that
