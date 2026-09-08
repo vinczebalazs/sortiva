@@ -791,13 +791,24 @@ Scope: the drawer offered "Skip this task" beside "Mark applied". It posted to a
 Read first: `DECISIONS.md` 2026-09-07 `R-OPPS-WIRE` entries; main §10.4; ui §5.3.
 Done when: the founder has said, and the drawer either offers skipping and records it truthfully, or deliberately does not offer it.
 
-**R-CONTRACT-2 — three contract corrections the lanes could not make** · integrator
+**R-CONTRACT-2 — three contract corrections the lanes could not make** · integrator · **LANDED 2026-09-08, two of three**
 Scope: three findings from tonight's lanes, all in the frozen contract, which no lane may touch.
 - **`GET /api/recommendations` is declared with the wrong shape.** The route table names `opportunityDetailResponseSchema`; the handler answers `{recommendation, tasks, looksApplied, appliedAt}` (`apps/web/app/api/recommendations/_lib/handlers.ts:471`). `contracts:check` passes because it checks the declarations against each other and against the existence of routes, never against what a handler returns. **Found independently by two lanes.**
 - **`markTaskAppliedRequestSchema` (`packages/core/src/api/schemas.ts:431`) is now referenced by no route** — it was the request shape for the skip address that never existed.
 - **The drawer's read does not carry the recommendation's own id**, so marking a task applied costs a second read to find it. Adding the id to the existing response removes a request from a merchant's click path.
 Read first: `DECISIONS.md` 2026-09-07 `R-CONTRACT`, `R-OPPS-WIRE` and `R-RECO-VIEW-ONE` entries.
 Done when: the declared shape matches what is served, dead schemas are gone, and the check that let a wrong declaration pass is either extended to compare handlers against declarations or recorded as a known limit with what it cannot see.
+**LANDED 2026-09-08 (`022abb2`): the first two are done and the limit is recorded.** The read is declared as a union of the four answers the handler really gives; the dead schema is gone; the mock server's fixture, which answered the old wrong shape, was corrected with it — a contract change that breaks a fixture has to carry the fixture with it or `main` goes red.
+**The third is deliberately NOT done and becomes a lane card.** Adding the recommendation's id to the drawer's read is one line in the schema; **populating it is a lane's work, and declaring a field nothing fills is the exact pattern this whole day has been about.** Whichever lane next touches `apps/web/app/api/opportunities/_lib/handlers.ts` should carry it.
+**A second thing left as found, and worth someone's judgement:** the two endpoints disagree about a task's shape — the recommendations read sends a task's `kind`, the drawer does not. The contract now declares both truthfully rather than pretending they agree. Unifying them is a lane's call.
+
+**R-CONTRACT-PROVE — the contract check cannot see what a handler actually answers** · integrator or Lane F · **the systematic version of eleven separate findings**
+Scope: `contracts:check` compares the declarations to each other and to the route files that exist on disk. **It has never compared a handler's answer to the shape that handler declares.** That is how `GET /api/recommendations` spent its whole life declared as a different endpoint's response with nothing red, and it is the same shape as the eleven findings of 2026-09-07: *a thing is checked against its own idea of itself, never against what consumes it.*
+**The worked example already exists and was built for exactly this reason.** `apps/web/app/(app)/_lib/screen-addresses.test.ts` (from `R-OPPS-WIRE`) drives every press through the real network client, records the addresses that come out, and holds them against the contract *and* the routes on disk. It records rather than reads the source — which was load bearing there, because the bad addresses were assembled at runtime and the visible string in the source was correct.
+**Do the same for bodies.** Drive each route handler with a seeded database, take what it answers, and parse it with the schema the contract declares for it. A handler whose answer its own declaration rejects fails by name.
+Read first: `DECISIONS.md` 2026-09-08 `R-CONTRACT-2`; `scripts/contracts-check.mjs`; `apps/web/app/(app)/_lib/screen-addresses.test.ts` as the pattern.
+Done when: every route in the table has its answer parsed against its declared schema, or is listed by name as one that cannot be driven yet with the reason — a list nobody maintains by hand, derived from the table, so a new route is covered or named rather than silently absent.
+Note: some routes cannot be driven cheaply (streams, redirects, webhooks with signatures). **Naming them is the deliverable for those, not skipping them quietly** — the seven already listed in `UNCONTRACTED_ROUTES` are the precedent for how to say so.
 
 ### From `R-RULES-OVERRIDES` and `R-GATE-PARAMS`, both landed 2026-09-07 late evening
 
