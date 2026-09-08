@@ -34,6 +34,18 @@ import { dismissOpportunity } from './veto-topic'
 const available = await databaseAvailable()
 const NOW = new Date('2026-03-10T08:00:00.000Z')
 const SCHEDULED = '2026-03-15'
+/**
+ * What the forced race below is allowed to spend waiting for the dismissal to
+ * queue behind the publication's row lock, and what the test itself is allowed
+ * to take in total.
+ *
+ * Both are far larger than the work needs, deliberately. The test proves an
+ * ordering, and the only thing that makes it slow is a machine running every
+ * lane's suite at once; a red here must mean the ordering broke, never that the
+ * machine was busy.
+ */
+const LOCK_WAIT_BUDGET_MS = 30_000
+const RACE_TEST_BUDGET_MS = 120_000
 
 describe.skipIf(!available)('dismissing a suggestion calls off its calendar day', () => {
   let ctx: TestDb
@@ -99,6 +111,32 @@ describe.skipIf(!available)('dismissing a suggestion calls off its calendar day'
       NOW,
     )
     return { opportunity, topic }
+  }
+
+  /**
+   * Waits until one of this suite's connections is queued behind a row lock.
+   *
+   * This suite has a database to itself, so the only connections in it are
+   * ours and the only thing any of them ever waits on is a row another one is
+   * holding.
+   */
+  async function waitForTheDismissalToBlock(): Promise<void> {
+    const deadline = Date.now() + LOCK_WAIT_BUDGET_MS
+    for (;;) {
+      const { rows } = await ctx.pool.query<{ waiting: number }>(
+        `SELECT count(*)::int AS waiting
+           FROM pg_stat_activity
+          WHERE datname = current_database()
+            AND wait_event_type = 'Lock'`,
+      )
+      if ((rows[0]?.waiting ?? 0) >= 1) return
+      if (Date.now() >= deadline) {
+        throw new Error(
+          'the dismissal never queued behind the held article row: it no longer takes that row before it writes, so this race cannot be forced any more',
+        )
+      }
+      await new Promise((resolve) => setTimeout(resolve, 25))
+    }
   }
 
   it('removes a planned day and leaves it a gap rather than filling it', async () => {
@@ -294,9 +332,18 @@ describe.skipIf(!available)('dismissing a suggestion calls off its calendar day'
       )
 
       const pending = dismissOpportunity({ db, now: () => NOW }, { accountId, opportunityId: opportunity.id })
-      // Long enough for the dismissal to reach its own write and block on the
-      // row the publication is holding.
-      await new Promise((resolve) => setTimeout(resolve, 150))
+      // The forcing, and the reason this is not a sleep.
+      //
+      // A dismissal that is *already blocked* on the held article row has, by
+      // definition, read the calendar day while the publication was still
+      // uncommitted — which is the branch this test is about, and the only one
+      // its assertions below are true of. Waiting a fixed 150 ms instead let a
+      // loaded machine push that first read past the commit, where the
+      // dismissal legitimately finds no day left to call off and succeeds on
+      // its own. That is correct behaviour with its own test ("dismisses a
+      // suggestion whose article has already gone out"), but under these
+      // assertions it read as a genuine regression rather than as noise.
+      await waitForTheDismissalToBlock()
       await publisher.query('COMMIT')
       result = await pending
     } finally {
@@ -321,7 +368,7 @@ describe.skipIf(!available)('dismissing a suggestion calls off its calendar day'
       .from(schema.notInterested)
       .where(eq(schema.notInterested.accountId, accountId))
     expect(notInterested).toHaveLength(0)
-  })
+  }, RACE_TEST_BUDGET_MS)
 
   it('wins against a publication that arrives after it, and the publication stops', async () => {
     const { opportunity, topic } = await seedBookedDay('generating')
