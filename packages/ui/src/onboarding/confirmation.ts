@@ -79,6 +79,10 @@ export interface ProfileDraft {
  * The cap exists because competitor analysis is the most expensive thing the
  * product runs: every extra competitor multiplies the paid search lookups in
  * topic discovery and in measuring results.
+ *
+ * This is a third copy of a number enforced elsewhere, and it is held to the
+ * enforced one by a test in the application — `packages/ui` must not import the
+ * database layer, so the comparison cannot live here.
  */
 export const MAX_COMPETITORS = 5
 

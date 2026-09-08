@@ -102,14 +102,37 @@ describe('the detail drawer', () => {
     expect(html).toContain('competitor.example')
   })
 
-  it('lists the tasks with a way to mark each one applied', () => {
+  it('lets a merchant answer each open task either way', () => {
     expect(html).toContain('data-drawer-section="tasks"')
     expect(html).toContain('data-task-action="applied"')
-    // No "skip": nothing in the contract records a task as skipped, so the
-    // control that used to sit here posted to an address that never existed.
-    expect(html).not.toContain('data-task-action="skipped"')
+    expect(html).toContain('data-task-action="skipped"')
+    expect(html).toContain(t('opportunities.drawer.skip'))
     // One already applied offers no buttons, only its state.
     expect(html).toContain('data-task-state="applied"')
+  })
+
+  /**
+   * A task the merchant declined has to read as declined. Both words appear in
+   * the same list, and a skipped task labelled "Applied" would tell a merchant
+   * they did work they refused — which is also the claim the product goes on to
+   * measure.
+   */
+  it('says a skipped task was skipped, not applied', () => {
+    const skipped = render(
+      createElement(OpportunityDrawer, {
+        detail: {
+          ...detail,
+          tasks: [
+            { id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', label: 'Add a sizing FAQ', state: 'skipped' },
+          ],
+        },
+      }),
+    )
+    expect(skipped).toContain('data-task-state="skipped"')
+    expect(skipped).toContain(t('opportunities.drawer.skipped'))
+    expect(skipped).not.toContain(t('opportunities.drawer.applied'))
+    // Answered already, so neither button is offered on it.
+    expect(skipped).not.toContain('data-task-action=')
   })
 
   it('records who moved it and when', () => {
@@ -322,6 +345,78 @@ function apiDouble(outcome: PostOutcome = { ok: true }) {
   }
   return { api, posts }
 }
+
+/** Records the body as well as the address; skipping is only correct if both are right. */
+function recordingApiDouble(outcome: PostOutcome = { ok: true }) {
+  const sent: { path: string; body: unknown }[] = []
+  const api: OpportunitiesApi = {
+    list: async () => null,
+    detail: async () => null,
+    recommendationId: async () => RECOMMENDATION_ID,
+    post: async (path, body) => {
+      sent.push({ path, body })
+      return outcome
+    },
+  }
+  return { api, sent }
+}
+
+const TASK_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+
+/**
+ * Declining one task. The two things that make this correct rather than merely
+ * present: it goes to the skip address, not the apply address, and it names its
+ * task. The server refuses a skip with no task, so a press that lost its body
+ * cannot clear a whole recommendation the way an empty apply body would.
+ */
+describe('skipping one task', () => {
+  it('posts to the skip address, naming the task', async () => {
+    const scene = surfaceDouble()
+    const { api, sent } = recordingApiDouble()
+    await createOpportunityActions(api, scene.surface).skipTask(row, TASK_ID)
+
+    expect(sent).toEqual([
+      { path: `/api/recommendations/${RECOMMENDATION_ID}/skip`, body: { taskId: TASK_ID } },
+    ])
+    expect(scene.refreshes()).toBe(1)
+  })
+
+  it('is a different address from marking the same task applied', async () => {
+    const scene = surfaceDouble()
+    const { api, sent } = recordingApiDouble()
+    const actions = createOpportunityActions(api, scene.surface)
+    await actions.markTask(row, TASK_ID)
+    await actions.skipTask(row, TASK_ID)
+
+    expect(sent.map((entry) => entry.path)).toEqual([
+      `/api/recommendations/${RECOMMENDATION_ID}/apply`,
+      `/api/recommendations/${RECOMMENDATION_ID}/skip`,
+    ])
+  })
+
+  /** There is no bulk counterpart, and adding one would be a product decision. */
+  it('offers no way to skip a whole recommendation', () => {
+    const scene = surfaceDouble()
+    const { api } = recordingApiDouble()
+    expect(Object.keys(createOpportunityActions(api, scene.surface)).sort()).toEqual([
+      'applyAll',
+      'dismiss',
+      'generate',
+      'markTask',
+      'schedule',
+      'skipTask',
+    ])
+  })
+
+  it('says so and re-reads the list when the task had already been answered', async () => {
+    const scene = surfaceDouble()
+    const { api } = recordingApiDouble({ ok: false, conflict: 'opportunity_already_updated' })
+    await createOpportunityActions(api, scene.surface).skipTask(row, TASK_ID)
+
+    expect(scene.toasts[0]?.message).toBe(t('opportunities.toast.conflict'))
+    expect(scene.refreshes()).toBe(1)
+  })
+})
 
 describe('dismissing an opportunity', () => {
   let scene: ReturnType<typeof surfaceDouble>

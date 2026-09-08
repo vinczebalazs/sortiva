@@ -201,6 +201,12 @@ export const OPPORTUNITY_ENDPOINTS = {
   schedule: (id: string) => `/api/opportunities/${id}/schedule`,
   generate: () => '/api/recommendations',
   apply: (recommendationId: string) => `/api/recommendations/${recommendationId}/apply`,
+  /**
+   * Declining a task is its own address, not a flag on `apply`. Recording a task
+   * the merchant refused as one they did would put a false row in the table that
+   * outcome measurement reads.
+   */
+  skip: (recommendationId: string) => `/api/recommendations/${recommendationId}/skip`,
 } as const
 
 export interface OpportunityActions {
@@ -209,6 +215,13 @@ export interface OpportunityActions {
   generate(row: OpportunityRow): Promise<void>
   /** One task on the standing recommendation. */
   markTask(row: OpportunityRow, taskId: string): Promise<void>
+  /**
+   * One task the merchant has declined. There is deliberately no "skip
+   * everything" counterpart: the server refuses a skip that names no task, so
+   * a request that lost its body cannot clear a whole recommendation. A
+   * merchant who wants nothing to do with a suggestion dismisses it instead.
+   */
+  skipTask(row: OpportunityRow, taskId: string): Promise<void>
   /**
    * The whole recommendation, which is a different thing from marking each of
    * its tasks: only this books the measurement of whether the advice worked.
@@ -306,6 +319,14 @@ export function createOpportunityActions(
       const recommendationId = await recommendationFor(row)
       if (recommendationId === null) return
       if ((await run(row, OPPORTUNITY_ENDPOINTS.apply(recommendationId), { taskId })).ok) {
+        surface.refresh()
+      }
+    },
+
+    async skipTask(row, taskId) {
+      const recommendationId = await recommendationFor(row)
+      if (recommendationId === null) return
+      if ((await run(row, OPPORTUNITY_ENDPOINTS.skip(recommendationId), { taskId })).ok) {
         surface.refresh()
       }
     },

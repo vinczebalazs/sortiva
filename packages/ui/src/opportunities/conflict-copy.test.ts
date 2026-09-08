@@ -230,6 +230,10 @@ describe('pressing a button on an opportunity the product will not act on', () =
       const marking = refusing(code)
       await marking.actions.markTask(row, 'task-1')
       expect(marking.toasts[0]?.message).toBe(conflictMessage(code))
+
+      const skipping = refusing(code)
+      await skipping.actions.skipTask(row, 'task-1')
+      expect(skipping.toasts[0]?.message).toBe(conflictMessage(code))
     }
   })
 

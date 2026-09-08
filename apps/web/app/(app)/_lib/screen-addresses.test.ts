@@ -165,7 +165,8 @@ const topic: CalendarTopic = {
 
 /**
  * The Opportunities screen: dismiss and the undo behind it, schedule, generate
- * page advice, mark one task applied, mark the whole recommendation applied.
+ * page advice, mark one task applied, decline one task, mark the whole
+ * recommendation applied.
  */
 async function opportunityAddresses(): Promise<string[]> {
   const net = recorder()
@@ -181,6 +182,7 @@ async function opportunityAddresses(): Promise<string[]> {
   await actions.schedule(row)
   await actions.generate(row)
   await actions.markTask(row, TASK_ID)
+  await actions.skipTask(row, TASK_ID)
   await actions.applyAll(row)
   // The undo fires from inside the dismiss toast, so it lands a tick later.
   await new Promise((resolve) => setTimeout(resolve, 0))
@@ -222,6 +224,10 @@ describe('every address a screen sends a request to', () => {
       // route is addressed by, and only this read publishes it.
       `GET /api/recommendations?opportunityId=${OPPORTUNITY_ID}`,
       `POST /api/recommendations/${RECOMMENDATION_ID}/apply`,
+      `GET /api/recommendations?opportunityId=${OPPORTUNITY_ID}`,
+      // Declining a task has its own address. Pointing it at `apply` would
+      // record a task the merchant refused as one they did.
+      `POST /api/recommendations/${RECOMMENDATION_ID}/skip`,
       `GET /api/recommendations?opportunityId=${OPPORTUNITY_ID}`,
       `POST /api/recommendations/${RECOMMENDATION_ID}/apply`,
     ])
@@ -271,5 +277,6 @@ describe('every address a screen sends a request to', () => {
     expect(served.size).toBeGreaterThan(30)
     expect(served.has('POST /api/opportunities/{id}/undismiss')).toBe(true)
     expect(served.has('POST /api/recommendations/{id}/apply')).toBe(true)
+    expect(served.has('POST /api/recommendations/{id}/skip')).toBe(true)
   })
 })

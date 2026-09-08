@@ -71,6 +71,49 @@ function looksLikeAnAddress(value: string): boolean {
   return /^[^\s@]+@[^\s@]+$/.test(value.trim())
 }
 
+/**
+ * What the screen shows once a link has been sent, and the way back out of it.
+ *
+ * Somebody who types a plausible but wrong address gets no error, and never
+ * can: the link goes to whatever mailbox they named, and nothing arrives in
+ * theirs. This panel used to replace the address field outright, so the only
+ * way back was reloading the page — which is not what a person does while they
+ * believe they are waiting for an email.
+ *
+ * The address they typed is kept when they come back, because the mistake this
+ * exists for is usually one character.
+ *
+ * It is a component of its own so the state behind it can be rendered without
+ * pressing anything. Nothing in this repository can drive a click, so a panel
+ * only reachable through one is a panel no test can look at.
+ */
+export function SignInLinkSent({
+  email,
+  t = defaultTranslate,
+  onUseDifferentAddress,
+}: {
+  readonly email: string
+  readonly t?: Translate
+  /** Required, so a caller cannot render this panel with no way out of it. */
+  readonly onUseDifferentAddress: () => void
+}) {
+  return (
+    <div className="sortiva-signin__email">
+      <p className="sortiva-signin__sent" role="status" data-testid="signin-link-sent">
+        {t('signin.emailSent', { email })}
+      </p>
+      <button
+        className="sortiva-signin__secondary"
+        type="button"
+        data-testid="signin-email-again"
+        onClick={onUseDifferentAddress}
+      >
+        {t('signin.emailUseDifferent')}
+      </button>
+    </div>
+  )
+}
+
 export function SignIn({
   t = defaultTranslate,
   previewedDomain,
@@ -133,9 +176,11 @@ export function SignIn({
       <p className="sortiva-signin__or">{t('signin.or')}</p>
 
       {linkPhase === 'sent' ? (
-        <p className="sortiva-signin__sent" role="status" data-testid="signin-link-sent">
-          {t('signin.emailSent', { email: email.trim() })}
-        </p>
+        <SignInLinkSent
+          email={email.trim()}
+          t={t}
+          onUseDifferentAddress={() => setLinkPhase('idle')}
+        />
       ) : (
         <div className="sortiva-signin__email">
           <label className="sortiva-signin__label" htmlFor="signin-email">

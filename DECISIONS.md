@@ -6508,3 +6508,60 @@ Card `R-DISMISS-FOLLOWS-RENAME`, Lane C, implementing the founder's option (a): 
 
 Mutation-checked, five ways, each restored after: dropping the call from the rename turns the follow-the-rename test red; moving the marker without its row turns that test *and* the undo test red; dropping the "already answered at the destination" rule turns the third test red; matching every marker instead of only those at the old address turns the first red on a refusal about an unrelated page; and copying the marker instead of moving it (leaving the old one behind) turns two red.
 Nearest spec: main §7.9, §12.3, §14.1; invariants 10 and 15. `DECISIONS.md` 2026-09-08 `R-DISMISS-DOES-NOTHING` and `R-EXPIRY-GAPS` "A renamed post takes its open suggestions with it".
+
+## 2026-09-08 — R-SKIP-TASK — The drawer offers "Skip" again, and it goes to the address that records a refusal
+
+Decision (implementation of the founder's answer of today). A merchant reading a page-improvement suggestion sees a checklist of small edits. Each open item now offers two answers instead of one: "Mark applied" and "Skip". Skipping posts to `POST /api/recommendations/{id}/skip`, which the integrator built this morning, and which stores the refusal as a refusal.
+
+**What changes for a merchant.** They can decline one edit and leave the rest open. Until today the only answer the screen would accept was "I did it", so a merchant who disagreed with one line either had to claim they had done it or leave it open forever. The control existed once and posted to an address nobody had built, so it had only ever failed; it was removed rather than repaired.
+
+**The two things that make this correct rather than merely present.**
+
+*Skipping names its task, and there is no bulk form.* The apply endpoint treats an absent task id as "the whole recommendation", which is a useful thing to ask for. The skip endpoint refuses that outright. So the screen offers exactly one skip control per task and no "skip all"; the actions layer has a `skipTask` and deliberately no counterpart to `applyAll`, and a test asserts the list of presses the screen can make, so adding a bulk skip would go red rather than through. A merchant who wants nothing to do with a whole suggestion dismisses the opportunity, which is a different act with its own record.
+
+*A declined task reads as declined.* Checked before changing anything, because the card warned about it: the drawer already rendered a skipped task as "Skipped", distinct from "Applied", and had done since the state existed. **Nothing was wrong and nothing was changed.** It was untested, though — the only assertion about a skipped task was that the button was gone — so there is now a test that a skipped task says "Skipped" and does not say "Applied". This matters because the two words sit in the same list and the same row is what outcome measurement later reads.
+
+**Nothing needed inventing.** The endpoint, its request and response shapes, the frozen route table's entry, the database state and the development mock's answer all existed before this session. The words did too: `opportunities.drawer.skip` ("Skip") and `opportunities.drawer.skipped` ("Skipped") had survived in the copy catalogue since the control was removed, so no new sentence was written and no canonical copy was touched.
+
+**One wording note, not a change.** The work plan and the earlier journal entries describe the control as "Skip this task". The catalogue string is "Skip", and it is what the button showed before removal. Left as it is — the surrounding prose was describing the control, not quoting it — but recorded here in case the founder meant the longer label.
+
+Mutation-checked four ways, each restored afterwards: pointing the skip press at the apply address fails three tests across two files; sending the skip with no task id fails one; deleting the Skip button again fails one; and rendering a skipped task as "Applied" fails one.
+
+**Two files touched outside `packages/ui`, both inside Lane F's own directories:** the address walk in `apps/web/app/(app)/_lib/screen-addresses.test.ts`, which asserts the exact list of requests the screen can make and so had to learn the new one. Nothing in another lane's directory was edited.
+Nearest spec: main §10.4; ui §5.3; `DECISIONS.md` 2026-09-08 `R-SKIP-TASK` (the integrator's entry, which this completes).
+
+## 2026-09-08 — R-CAP-THIRD-COPY — The screen's copy of the five-competitor cap, and the two sentences quoting it, are now held to the number that is enforced
+
+Decision: the cap is compared across packages by a test in the application, because the application is the only package that can see both ends. The number itself moves nowhere and nothing about the product's behaviour changes.
+
+**The card's claim, verified before anything was written, and it was accurate.** A merchant may track at most five rival stores. The number appears in five places: a Postgres trigger that refuses a sixth row whatever the code thinks (`packages/db/migrations/0003_wave2_guards.sql`); `BUSINESS_COMPETITOR_CAP` in the repository, so the API can refuse politely instead of leaking a database error (`packages/db/src/repositories/keywords.ts:37`); `MAX_COMPETITORS` on the onboarding screen, which greys the "Add" control out before the merchant presses it (`packages/ui/src/onboarding/confirmation.ts:83`); and **two sentences the merchant actually reads** — "Limited to 5 — competitor analysis is the most expensive thing we run" under the onboarding list, and "You're already tracking five competitors, which is as many as we track" on the refusal. The card said three copies; there are five, because it counted constants and not the copy.
+
+The first two were already pinned to each other: a database test fills an account through the repository and then writes round it, so a trigger and a constant naming different numbers fails there. The other three had nothing. The screen's only assertion was `expect(MAX_COMPETITORS).toBe(5)` — a copy of the number checked against another copy of the number, which would still have passed with all five disagreeing.
+
+**What now fails if they drift.** `apps/web/app/(app)/_lib/competitor-cap.test.ts` asserts the screen's constant equals the enforced one, and that both merchant sentences quote it — the onboarding note as a digit, the refusal in words, through a short spelling table that refuses a cap it has no spelling for rather than passing quietly. The literal-against-literal assertion in the screen's own suite is replaced by a pointer to where the real comparison lives, so the next reader does not mistake it for enforcement again.
+
+**Why the test is in the application and not beside either constant, which is the one real choice here.** The obvious fix is for the screen to import the enforced constant instead of restating it. It must not: `packages/ui` is compiled into browser bundles, and `@sortiva/db` pulls in a Postgres client and the query builder. The same hazard is already documented in `packages/ui/src/opportunities/actions.ts`, where a value import had to become a type import for exactly this reason. `apps/web` depends on both packages and ships neither into a bundle from a test file, and it already hosts the cross-package agreement checks (`screen-addresses.test.ts` compares screens against the route contract). So the third copy stays a copy and is held to the original.
+
+**One limit worth naming rather than fixing.** The existing lock between the trigger and the repository constant only runs when a Postgres is reachable; with no database it skips. The new test needs no database, so the screen's number is held to the repository's under all conditions — but the repository's tie to the trigger is still only checked where a database exists. Closing that would mean reading the migration text, and the migration is another lane's file.
+
+Mutation-checked three ways, each restored: moving the screen's constant to 6 fails the new comparison and an existing screen test; changing "five competitors" to "six" in the refusal fails one; changing "Limited to 5" to "Limited to 6" fails the same one.
+Nearest spec: main §6.6, §7.2.1; invariant 5.
+
+## 2026-09-08 — R-SIGNIN-DEADEND — Somebody who mistypes their email address can now correct it without reloading the page
+
+Decision: after a sign-in link is sent, the confirmation carries a control back to the address field, and the address they typed is still in it.
+
+**Why the mistake is invisible without one.** Signing in by email sends a one-time link to whatever address is typed. A plausible but wrong address — one character out, a colleague's, an old one — produces no error and never can: the link goes to that mailbox, we tell nobody whether an account exists, and the person waiting reads a calm "Check your email" for a message that will never arrive. The confirmation replaced the address field outright, so their only way back was to reload the page, which is not what somebody does while they believe an email is in flight. For a merchant with no Google account this screen is the only way in, so the dead end was total.
+
+**One new sentence, authored here, and flagged as such.** The button reads **"Use a different address"**. The approved-copy table has no sign-in row at all, so this is the seventh sentence on this screen the build wrote rather than the spec supplying — the six before it were flagged the same way on 2026-09-08 (`R-SIGNIN-COPY`) and approved unchanged. **This one has not been approved and should be looked at**, though nothing about the change depends on the exact words.
+
+**The typed address is kept rather than cleared**, because the mistake this exists for is usually one character and retyping a whole address invites a second one.
+
+**The one real constraint, and what was done about it.** Nothing in this repository can press a button (`R-NO-BROWSER-TESTS`, deferred by decision), so a panel only reachable through a click is a panel no test can look at — which is how a dead end shipped in the first place. The confirmation is therefore its own component, `SignInLinkSent`, rendered on its own by the tests: they prove it names the address the link actually went to and offers the way back. The way out is a **required** prop, not an optional handler, so a caller that omitted it would not compile.
+
+That still leaves one gap those tests cannot see: the screen drawing the confirmation inline again instead of using the panel, which would look right and have no way out. A test reads the component's source and asserts the screen renders the panel and that the confirmation sentence appears exactly once. Reading source is a poor substitute for pressing a button and is only here because pressing one is not available; it goes when browser tests land.
+
+Mutation-checked three ways, each restored: deleting the way-back control fails one test; drawing the confirmation inline again fails one; and dropping the address from the confirmation fails one.
+
+**A related gap left alone and worth a card of its own:** the confirmation says the link "works once" and says nothing about the fifteen minutes after which it lapses. That is already recorded as outstanding under `R-SIGNIN-COPY`, with the wording being drafted elsewhere.
+Nearest spec: main §4.1; ui §1; main Appendix A (which has no sign-in row); invariant 24.

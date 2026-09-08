@@ -60,8 +60,17 @@ describe('the five-competitor cap', () => {
     expect(canAddCompetitor(competitors(MAX_COMPETITORS))).toBe(false)
   })
 
-  it('is five', () => {
-    expect(MAX_COMPETITORS).toBe(5)
+  /**
+   * Deliberately not `toBe(5)`, which is what stood here: one copy of the number
+   * checked against another copy of the number proves only that somebody typed
+   * it twice. The number is enforced in the database and in the repository, and
+   * this screen's copy of it is held to those in
+   * `apps/web/app/(app)/_lib/competitor-cap.test.ts` — the application is the
+   * only package that can see both, because a screen must not import the
+   * database layer.
+   */
+  it('is a number this screen can act on at all', () => {
+    expect(MAX_COMPETITORS).toBeGreaterThan(0)
   })
 })
 
