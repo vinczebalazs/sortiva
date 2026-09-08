@@ -37,6 +37,7 @@ import {
   makeDownloadRecommendationHandler,
   makeGenerateRecommendationHandler,
   makeReadRecommendationHandler,
+  makeSkipTaskHandler,
   type RecommendationsDeps,
 } from './handlers'
 
@@ -186,6 +187,15 @@ describe.skipIf(!available)('/api/recommendations', () => {
   const apply = (id: string, body: unknown = {}) =>
     withAccount(makeApplyRecommendationHandler(deps()), async () => accountId)(
       new Request(`http://localhost/api/recommendations/${id}/apply`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+      { params: Promise.resolve({ id }) },
+    )
+
+  const skip = (id: string, body: unknown) =>
+    withAccount(makeSkipTaskHandler(deps()), async () => accountId)(
+      new Request(`http://localhost/api/recommendations/${id}/skip`, {
         method: 'POST',
         body: JSON.stringify(body),
       }),
@@ -513,6 +523,132 @@ describe.skipIf(!available)('/api/recommendations', () => {
       [opportunity.id],
     )
     expect(status.rows[0]?.status).toBe('new')
+  })
+
+  /**
+   * The drawer offered "Skip this task" beside "Mark applied", posting to an
+   * address that had never existed — so the button had only ever failed. It was
+   * removed rather than pointed at the apply endpoint, because that would have
+   * recorded a task the merchant declined as one they did, in the table outcome
+   * measurement reads. These cases hold the two halves of that: the skip is
+   * recorded truthfully, and nothing later turns it into an application.
+   */
+  describe('skipping a task', () => {
+    async function oneTaskRecommendation(): Promise<{
+      opportunityId: string
+      recommendationId: string
+      taskId: string
+    }> {
+      const opportunity = await optimizeOpportunity()
+      const row = await storeOptimizeRecommendation(
+        harness.db,
+        accountScope(accountId),
+        {
+          opportunityId: opportunity.id,
+          pageUrl: PAGE_URL,
+          recommendationJson: recommendation(),
+          judgeScoresJson: null,
+          promptVersion: 'optimize-reco.v1',
+          modelId: 'claude-sonnet-5',
+          rulesVersion: rules().rulesVersion,
+          state: 'valid',
+        },
+        [
+          {
+            kind: 'title_rewrite',
+            description: 'Wide trail running shoes',
+            suggestedCopyRef: 'title_tag',
+            evidenceRefs: [],
+          },
+        ],
+      )
+      const view = (await (await read(opportunity.id)).json()) as { tasks: { id: string }[] }
+      return {
+        opportunityId: opportunity.id,
+        recommendationId: row!.id,
+        taskId: view.tasks[0]!.id,
+      }
+    }
+
+    const taskStates = async (opportunityId: string) =>
+      (
+        await harness.pool.query<{ state: string; applied_at: string | null }>(
+          `SELECT t.state, t.applied_at FROM opportunity_tasks t WHERE t.opportunity_id = $1`,
+          [opportunityId],
+        )
+      ).rows
+
+    it('records the merchant declining one task, and does not stamp it as done', async () => {
+      const { recommendationId, opportunityId, taskId } = await oneTaskRecommendation()
+
+      const response = await skip(recommendationId, { taskId })
+      expect(response.status).toBe(200)
+      expect(await response.json()).toEqual({ ok: true, taskId, state: 'skipped' })
+
+      const rows = await taskStates(opportunityId)
+      expect(rows).toEqual([{ state: 'skipped', applied_at: null }])
+    })
+
+    /**
+     * The one that matters. Marking the whole recommendation applied sweeps the
+     * remaining tasks to applied; if that sweep took skipped ones too, a
+     * merchant's "no" would become a "yes" the moment they finished the rest,
+     * and the record outcome measurement reads would be wrong in the one
+     * direction nobody would notice.
+     */
+    it('leaves a skipped task skipped when the whole recommendation is later applied', async () => {
+      const { recommendationId, opportunityId, taskId } = await oneTaskRecommendation()
+      await skip(recommendationId, { taskId })
+
+      expect((await apply(recommendationId)).status).toBe(200)
+
+      const rows = await taskStates(opportunityId)
+      expect(rows).toEqual([{ state: 'skipped', applied_at: null }])
+    })
+
+    it('refuses to skip a task that was already marked', async () => {
+      const { recommendationId, taskId } = await oneTaskRecommendation()
+      await apply(recommendationId, { taskId })
+
+      const response = await skip(recommendationId, { taskId })
+      expect(response.status).toBe(409)
+      expect(((await response.json()) as { error: { code: string } }).error.code).toBe(
+        'opportunity_already_updated',
+      )
+    })
+
+    /**
+     * Applying reads an absent id as "the whole recommendation". Skipping must
+     * not, or a request that lost its body would clear every task on it.
+     */
+    it('will not skip anything without being told which task', async () => {
+      const { recommendationId, opportunityId } = await oneTaskRecommendation()
+
+      // 422 rather than 400, which is what every malformed request to this
+      // file answers.
+      const refused = await skip(recommendationId, {})
+      expect(refused.status).toBe(422)
+      expect(((await refused.json()) as { error: { code: string } }).error.code).toBe(
+        'invalid_request',
+      )
+
+      const rows = await taskStates(opportunityId)
+      expect(rows).toEqual([{ state: 'open', applied_at: null }])
+    })
+
+    it("will not skip a task on another account's recommendation", async () => {
+      const { recommendationId, taskId } = await oneTaskRecommendation()
+      const other = await insertAccount(harness.pool, 'someone-else@example.com')
+
+      const response = await withAccount(makeSkipTaskHandler(deps()), async () => other)(
+        new Request(`http://localhost/api/recommendations/${recommendationId}/skip`, {
+          method: 'POST',
+          body: JSON.stringify({ taskId }),
+        }),
+        { params: Promise.resolve({ id: recommendationId }) },
+      )
+      expect(response.status).toBe(404)
+    })
   })
 
   it('reads back the recommendation and notices the merchant applied the title', async () => {

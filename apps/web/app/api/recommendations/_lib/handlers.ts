@@ -608,6 +608,56 @@ async function targetQueryFor(
 }
 
 /**
+ * `POST /api/recommendations/{id}/skip` — the merchant declines one task.
+ *
+ * A separate address from applying, and deliberately so. The drawer once
+ * offered "Skip this task" beside "Mark applied" and posted it to an address
+ * that had never existed, so the button had only ever failed; it was removed
+ * rather than repaired, because the obvious repair — pointing it at the apply
+ * endpoint — would have recorded a task the merchant **declined** as one they
+ * **did**. That row is read by outcome measurement, so the lie would not have
+ * stopped at the screen.
+ *
+ * Skipping names its task and cannot be asked for without one. Applying treats
+ * an absent id as "the whole recommendation"; if skipping did the same, a
+ * request that lost its body in transit would wipe out every task on the
+ * recommendation. A merchant who wants nothing to do with a suggestion
+ * dismisses the opportunity instead, which is a different act with its own
+ * record.
+ */
+export function makeSkipTaskHandler(
+  deps: RecommendationsDeps,
+): AccountHandler<RecommendationRouteCtx> {
+  return async (request, { scope, route }) => {
+    const { id } = await route.params
+    const found = await findOptimizeRecommendation(deps.db, scope, id)
+    if (!found || isFailedRecommendation(found.recommendation)) return notFound()
+
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return badRequest('Send a JSON body naming the task to skip.')
+    }
+    const taskId = (body as { taskId?: unknown })?.taskId
+    if (typeof taskId !== 'string' || taskId === '') {
+      return badRequest('A taskId is required — skipping applies to one task.')
+    }
+
+    const now = (deps.now ?? (() => new Date()))()
+    const task = await markOptimizeTask(deps.db, scope, { taskId, state: 'skipped' }, now)
+    // Undefined covers both "not this account's task" and "somebody already
+    // moved it", which the repository does not distinguish. Answering the same
+    // way for both is deliberate: telling a caller that a task id exists but
+    // belongs to somebody else is more than they should learn from a 409.
+    if (!task) {
+      return conflict('opportunity_already_updated', 'That task was already marked.')
+    }
+    return Response.json({ ok: true, taskId: task.id, state: 'skipped' })
+  }
+}
+
+/**
  * `POST /api/recommendations/{id}/apply` — "Mark as applied", per task or whole
  * (main §10.4).
  *

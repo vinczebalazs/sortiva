@@ -914,6 +914,32 @@ export const applyRecommendationRequestSchema = z.object({
 })
 
 /**
+ * Skipping is per task and the task must be named — deliberately unlike
+ * applying, where an absent id means the whole recommendation.
+ *
+ * There is no "skip the whole recommendation": a merchant who wants nothing to
+ * do with a suggestion dismisses the opportunity, which is a different act with
+ * a different record. Letting an empty body mean "skip everything" would make
+ * the commonest accident — a request that lost its body — the most destructive
+ * one.
+ */
+export const skipTaskRequestSchema = z.object({
+  taskId: uuidSchema,
+})
+
+/**
+ * Skipping records what the merchant actually said. It is a separate address
+ * and a separate answer from applying because the two are different merchant
+ * answers, and recording a declined task as a done one would put a false row
+ * in the table that outcome measurement reads.
+ */
+export const skipTaskResponseSchema = z.object({
+  ok: z.literal(true),
+  taskId: uuidSchema,
+  state: z.literal('skipped'),
+})
+
+/**
  * Marking the whole thing applied is what starts the clock: the opportunity
  * completes and the measurement of whether it worked is booked for the first
  * date on which there is anything honest to say.

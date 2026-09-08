@@ -261,6 +261,14 @@ export const RESPONSE_FIXTURES: Record<string, unknown> = {
     appliedAt: null,
   },
   'POST /api/recommendations/{id}/apply': { ok: true },
+  // The identifier is a well-formed one rather than a word: the response
+  // declares it as an identifier, and a mock answering `'task-1'` would let a
+  // screen develop against a shape the server can never send.
+  'POST /api/recommendations/{id}/skip': {
+    ok: true,
+    taskId: '00000000-0000-4000-8000-000000000001',
+    state: 'skipped',
+  },
 
   'GET /api/calendar': {
     topics: [topicFixture],

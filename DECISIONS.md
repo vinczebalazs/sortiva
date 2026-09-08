@@ -6204,3 +6204,22 @@ Nearest spec: main Appendix A; invariant 24.
 
 Decision (founder, relayed): option (a), fix it properly. Singular and plural belong in the string renderer; the two sentences already shipped saying "1 ways" and the like are fixed; and the sentences that were **phrased around** the problem — written awkwardly so they would never need a singular — are revisited now that they need not be.
 Nearest spec: ui §4; invariant 24.
+
+## 2026-09-08 — R-SKIP-TASK — Skipping a task is its own address, its own answer, and cannot be asked for without naming the task
+
+Decision: `POST /api/recommendations/{id}/skip` exists, takes `{ taskId }`, and answers `{ ok: true, taskId, state: 'skipped' }`. The merchant can again decline one of the suggested edits, and the product records that they declined it.
+
+What was wrong, in a merchant's terms: the drawer used to offer "Skip this task" beside "Mark applied". It posted to an address that had never existed, **so the button had only ever failed** — it was removed rather than repaired. The obvious repair was to point it at the endpoint that does exist, and that was refused, because marking a declined task as applied puts a false row in the table that outcome measurement reads. A merchant's "no" would have been recorded as a "yes", and the product would then have measured whether advice worked using work nobody did.
+
+**Nothing needed building underneath it.** Checked before designing anything: the database enum has carried `skipped` since schema wave 2, the tasks table's state column already accepts it, and `markOptimizeTask` already took `'applied' | 'skipped'` and was already guarded on the task still being open. **No migration, and no schema wave.** What was missing was only the address and the handler — the card had assumed storage was missing too, and it was not.
+
+**Skipping names its task; applying need not.** An absent id on the apply endpoint means "the whole recommendation", which is a real and useful thing to ask for. If skipping copied that, a request that lost its body in transit would clear every task on the recommendation — the commonest accident becoming the most destructive one. A merchant who wants nothing to do with a suggestion dismisses the opportunity instead, which is a different act with its own record. Asking to skip without a task id is refused with 422, matching every other malformed request to this file.
+
+**The behaviour worth the most scrutiny, and what actually protects it.** Marking a whole recommendation applied sweeps the remaining tasks to applied. If that sweep took skipped ones too, a merchant's "no" would silently become a "yes" the moment they finished the rest. It does not — and it is protected **twice**: the handler's sweep only touches tasks still open, and the repository's update is guarded on the row still being open. Mutation-checking found that breaking either one alone leaves the behaviour correct; the test only goes red when both are removed. That is defence in depth working as intended, but it is stated here because it means **neither guard is individually held by a test**, and a future reader deleting one will see a green suite.
+
+Mutation-checked, six ways: writing `applied` instead of `skipped` fails two tests; dropping the required-task-id guard fails one; dropping the check that the recommendation belongs to this account fails one; dropping the already-marked refusal fails one; and the pair above fails one only when both halves go.
+
+**Outside the integrator's lane, and flagged.** `apps/web/app/api/recommendations` is Lane E's and `packages/ui/src/msw` is Lane F's. Taken by the integrator with both lanes idle, on the same footing as the four earlier takings, because the contract change is the integrator's by rule and splitting a five-file change across three sessions costs more than it protects. The development mock gained an answer for the new address, with a well-formed identifier rather than a word — the mock check caught its absence, and the lesson from `R-ATTENTION-REFS` is that a mock answering a shape the server cannot send is how a screen develops against a fiction.
+
+**Still to build, and it is not mine:** the drawer's "Skip this task" control, which is a one-line revert in Lane F. The server is ready for it.
+Nearest spec: main §10.4; ui §5.3; `DECISIONS.md` 2026-09-07 `R-OPPS-WIRE`.

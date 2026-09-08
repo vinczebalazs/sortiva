@@ -394,6 +394,15 @@ export const ROUTES: readonly RouteDefinition[] = [
     response: s.applyRecommendationResponseSchema,
     conflicts: ['opportunity_already_updated'],
   },
+  {
+    method: 'POST',
+    path: '/api/recommendations/{id}/skip',
+    summary: 'Record that the merchant declined one task. Never counted as applied.',
+    auth: 'session',
+    body: s.skipTaskRequestSchema,
+    response: s.skipTaskResponseSchema,
+    conflicts: ['opportunity_already_updated'],
+  },
 
   // ── Calendar ──────────────────────────────────────────────────────────────
   {
