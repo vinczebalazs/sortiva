@@ -290,8 +290,26 @@ export const RESPONSE_FIXTURES: Record<string, unknown> = {
   'POST /api/articles/{articleId}/approve': { ok: true },
   'POST /api/articles/{articleId}/discard': { ok: true },
   'POST /api/articles/{articleId}/publish-anyway': { ok: true },
+  // Three files, named and typed, because that is what the endpoint has always
+  // answered and what the browser needs to hand each one to the merchant.
   'GET /api/articles/{articleId}/export': {
-    files: { 'article.md': '# Trail runners\n', 'article.html': '<h1>Trail runners</h1>' },
+    files: [
+      {
+        filename: 'wide-fit-trail-shoes.md',
+        mimeType: 'text/markdown',
+        content: '# Best trail running shoes for wide feet\n',
+      },
+      {
+        filename: 'wide-fit-trail-shoes.html',
+        mimeType: 'text/html',
+        content: '<h1>Best trail running shoes for wide feet</h1>',
+      },
+      {
+        filename: 'wide-fit-trail-shoes.json',
+        mimeType: 'application/json',
+        content: '{\n  "title": "Best trail running shoes for wide feet"\n}\n',
+      },
+    ],
   },
   'POST /api/articles/{articleId}/published-url': { ok: true },
   'POST /api/articles/{articleId}/refresh': { ok: true },
