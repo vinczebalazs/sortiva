@@ -54,9 +54,14 @@ const ALIASES: Readonly<Record<string, StringKey>> = {
  *
  * `gate1.`, `gate2.` and `topic.` are listed alongside `gate3.` because they
  * come from the same producers and belong in the same place. Their sentences
- * are written now too, so all four namespaces resolve to real copy.
+ * are written now too, so all five namespaces resolve to real copy.
+ *
+ * Bare `gate.` is the fifth, and holds what is true of a held day whichever
+ * check stopped it — today only the admission that the row recorded no reason
+ * of its own. It is kept apart from the numbered namespaces exactly because a
+ * sentence there must not read as one particular check's finding.
  */
-const CATALOG_NAMESPACES: readonly string[] = ['gate1.', 'gate2.', 'gate3.', 'topic.']
+const CATALOG_NAMESPACES: readonly string[] = ['gate.', 'gate1.', 'gate2.', 'gate3.', 'topic.']
 
 /** Where an engine template key lives in the catalogue. */
 export function catalogKeyFor(templateKey: string): string {
