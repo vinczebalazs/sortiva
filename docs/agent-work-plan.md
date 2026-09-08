@@ -1465,6 +1465,34 @@ Scope: the product must never propose writing a new page without first checking 
 Read first: `packages/core/src/opportunities/{clearance,existing-target,action-selection}.ts`; `packages/jobs/src/scan/existing-target.ts`; `docs/audit-invariants-2026-09-08.md` findings 6 and 10; main §7.7, §8.2; invariant 6.
 Done when: no branch can reach a new-page recommendation without either a clearance or a stated, tested guarantee — and a test fails if a fourth signal is added that has neither. If the clearance token is the right answer, it acquires a production caller; if it is not, it goes, rather than sitting in the tree implying a protection nobody gets.
 
+### The rest of the invariant sweep, carded 2026-09-08 so nothing is lost
+
+**R-COMMENT-CLAIMS — seventeen comments promise a guarantee the test beside them cannot give** · **spread across lanes; the integrator should split it** · **the sweep's single most valuable output**
+Scope: `docs/audit-invariants-2026-09-08.md` ends with a table of seventeen comments, each describing a stronger protection than the assertion next to it delivers. **This class cannot be found by grepping for weak assertions — only by reading the sentence beside a test** — and two of the seventeen have already cost us: the one saying a test stopped email sign-in falling off the screen (it had fallen off, and the test was green), and the one saying every function proposing a new page takes a clearance token (none does).
+Others worth reading first: overridden articles are said to be excluded from calibration, pattern learning **and** headline claims, and only calibration has an enforcing query; the judge is said to run on the same model tier as the writer, and the request names no model at all; auto-publish is said to be "guarded in the database as well as in the API", and the database guard is a `WHERE` clause in one statement.
+Done when: every row is either made true, corrected to what is actually checked, or deleted — **and it says which**, because a comment that has been narrowed is more useful than one that has been removed.
+Note: the sweep's own recommendation is to **retire the habit** these come from — asserting on a configuration object and describing the result as a property of a screen. The pattern already in the tree that does it properly is `screen-addresses.test.ts`: drive the thing, record what came out.
+
+**R-LINT-PROOFS — five of the seven banned vendor libraries have nothing proving the ban works** · integrator · **invariant 25** · **TAKEN 2026-09-08**
+Scope: every vendor library must be reached through one wrapper, and importing it anywhere else is a lint error. Seven are banned; only three have a planted proof that the rule actually fires. `resend`, `stripe`, `posthog-node`, `@shopify/shopify-api` and `googleapis` are in the rule's table and in nobody's proof — so if one of those entries broke, nothing would say so. The proof harness discovers cases by file, so closing this edits nothing shared.
+
+**R-VERDICT-UNBUILT — the learning loop does not exist, and a passing test makes it look as though it does** · **needs the founder to decide when this gets built**
+Scope: invariant 13 — no verdict on an article before 28 days, and labels relative to the store's own median — has **no implementation at all.** No verdict computation exists, the labels table has no writer, the pattern table has no writer, and the six threshold numbers behind it have no consumer. Nothing can violate a rule about a feature that does not exist, so this is not a live defect.
+**The risk is the green test.** `packages/rules/src/rules.test.ts` asserts those six numbers are present, which reads exactly like coverage. Whoever builds the learning loop will find a green test file carrying the invariant's citations and reasonably conclude something is already there.
+Done when: either the loop is built, or the numbers and the test say plainly that nothing consumes them yet.
+
+**R-TRANSITION-SCAN — the "every state change is guarded" rule rests on a naming habit** · Lane D, small · **invariant 15**
+Scope: every transition the sweep found *is* guarded, and the guard is proved to bite on the race that matters. But the universal rests on functions being named `…Guarded`, with none of the structural scan that invariants 2, 3 and 21 all have.
+
+**R-REPAIR-LOOPS-SWITCH — a threshold that is really an on/off switch** · Lane D, tiny · **invariant 11**
+Scope: `repair_loops_max` is only ever read as "less than one", so the "one repair attempt" rule is a property of the code's shape rather than of the number. Either enforce the number or say in `packages/rules` that it is a switch — a number that looks adjustable and is not is worse than a flag.
+
+**R-LOCK-NAME — the constitution names a database function the code deliberately does not use** · **a founder decision, one line**
+Scope: invariant 18 names `pg_advisory_xact_lock`. That function appears nowhere in the product except in two comments explaining the decision **against** it; the code uses the session-scoped lock instead, for reasons already journalled. Already flagged for reconciliation in an earlier audit and never made. It is a one-line edit to `CLAUDE.md`, which is yours and not a lane's — and worth making so the next audit does not re-find it.
+
+**R-CAP-THIRD-COPY — the competitor cap number exists three times and the third copy enforces nothing** · Lane F, tiny
+Scope: two copies are locked to each other by a test; the third, in `packages/ui`, is not.
+
 ### From `R-SIGNIN-EMAIL`, landed 2026-09-08
 
 **R-SIGNIN-COPY — six sentences on the sign-in screen are ours, not yours** · **a founder decision about words**
