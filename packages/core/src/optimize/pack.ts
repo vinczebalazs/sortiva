@@ -107,11 +107,30 @@ export interface OptimizeEvidencePack {
 }
 
 /**
- * Fact-sheet fields that carry a value worth citing. `variant_axes`,
- * `price_range` and the marketing flag are excluded on purpose: the first two
- * are structured data the merchant's storefront already shows and that a
- * pasted paragraph would go stale against, and the third is a note about the
- * distillation, not a fact about the product.
+ * Fact-sheet fields that carry a value worth citing.
+ *
+ * Three are left out, for three different reasons.
+ *
+ * `price_range` is structured data the storefront already shows and that moves
+ * on its own: a paragraph saying "from £120" that a merchant pastes onto their
+ * page is wrong the first time they run a sale, and we would have written it.
+ *
+ * The marketing flag says whether there was fluff to throw away. That is a note
+ * about the distillation, not a fact about the product.
+ *
+ * `variant_axes` is the one that looks citable and is not, and the reason is
+ * only visible from outside this file. It holds the merchant's own names for
+ * the choices on a product — "Size", "Colour" — which is the most trustworthy
+ * attribute data we hold, because nothing about it was inferred by a model. But
+ * it holds those names *without* their values, and an option becomes an axis
+ * whether the merchant filled it with twelve values, with one, or with none at
+ * all. So "Colour" here means "this shop has defined a Colour option", while it
+ * reads as "this product comes in a choice of colours" — and from inside this
+ * pack the two are the same string, with nothing to tell them apart. Cited, it
+ * would licence suggested copy promising a choice that may not exist, on the
+ * merchant's own page and in their own voice; the grader would not catch it
+ * either, because `gradingEvidence` hands it the same half-fact. What lifting
+ * this needs is the axis *values* reaching the pack, not a change to this list.
  */
 const CITABLE_FIELDS = [
   'material',
