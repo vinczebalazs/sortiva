@@ -888,7 +888,7 @@ Scope: `R-EXPIRY-GAPS` (landed 2026-09-08) fixed the dangerous half of this — 
 Read first: `DECISIONS.md` 2026-09-08 `R-EXPIRY-GAPS` entries; main §7.9, §7.11; invariant 10 (expiry never deletes) and 22 (degrade to pause, never silently).
 Done when: the founder has said, and either a number lives in `packages/rules` with a plain-language note, or the indefinite hold is recorded as deliberate.
 
-**R-DISMISS-FOLLOWS-RENAME — a merchant's "not interested" does not follow a renamed post** · **a founder question, small**
+**R-DISMISS-FOLLOWS-RENAME — a merchant's "not interested" does not follow a renamed post** · **DONE, merged as `867b204`** · founder-answered (a) 2026-09-08
 Scope: found by `R-EXPIRY-GAPS` while moving open cards to a renamed post's new address, and deliberately not fixed. We record a dismissal against the signal **and the address**. Rename the post and that record no longer matches, so **we will offer the same advice again at the new address** — advice the merchant has already declined.
 **Why it was not simply moved with the open cards:** it is not the mirror image. An open card is unfinished business, so moving it is obviously right. A dismissal is an **answer the merchant already gave**, and whether an answer travels with a page that changed address is a judgement about what they meant — did they decline this advice, or decline it for that page as it then was?
 Read first: `DECISIONS.md` 2026-09-08 `R-EXPIRY-GAPS` entries; main §7.9.
@@ -1556,7 +1556,7 @@ Done when: a refusal survives the drift sweep, proved the same way — dismiss o
 Scope: `packages/db/src/repositories/opportunities.ts` exports `dismissOpportunity`, which has never had a production caller. `packages/jobs/src/generation/veto-topic.ts` exports a differently-shaped `dismissOpportunity`, which is the one the button reaches. For five days the tests exercised the first and the merchant pressed the second, and nothing noticed that only one of them recorded anything. Both now write through one private helper so they cannot diverge, but the duplicate name remains and is the trap.
 Done when: one of the two is renamed or removed, and nothing imports a `dismissOpportunity` whose behaviour is not the one the button gets.
 
-**R-DISMISS-FOLLOWS-RENAME — second, and it has a limit worth stating** · Lane C, small, **now unblocked — `R-DISMISS-DOES-NOTHING` merged as `259fd7b`**
+**R-DISMISS-FOLLOWS-RENAME — second, and it has a limit worth stating** · **DONE, merged as `867b204`** · Lane C
 Note added 2026-09-08: the rename machinery exists only for posts **we** published, recognised by the shop's own id for that post rather than by guessing. A merchant's own collection, product or page that changes address is not recognised as renamed by anything — it is marked gone and the new address arrives as a new page. Those are most of the pages this card's suggestions concern. So either the dismissal simply does not follow a merchant's own renamed pages (honest, no new machinery), or somebody decides how a merchant page is matched across an address change — **a matching heuristic, and a founder decision, not this card.**
 
 **Correction to `R-EXPIRY-GAPS`, 2026-09-08:** that card states "the detector checks it before writing a new row." It does not. Nothing reads the not-interested list.
