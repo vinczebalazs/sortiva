@@ -140,10 +140,11 @@ const SPLIT_VARIANT_AGREEMENT_MIN = 0.8
  *
  * A single space puts that key out of reach of every real title in every
  * language, and the guarantee is structural rather than a guess about what a
- * merchant might type: a residual title has had its whitespace collapsed and
- * trimmed by the time it becomes a key, so a non-empty one cannot begin with a
- * space. Do not make `stripVariantTokens` stop trimming without changing this
- * too.
+ * merchant might type: `stripVariantTokens` assembles a residual only out of
+ * words it split on whitespace and kept as non-empty, then trims the result,
+ * so a non-empty residual cannot begin with a space. Either step alone is
+ * enough; both would have to be abandoned before a real title could reach
+ * this key.
  *
  * Resist the urge to harden this with an unprintable character. A NUL byte is
  * the tempting choice and it is strictly weaker — a title can carry a NUL and
