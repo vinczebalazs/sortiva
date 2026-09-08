@@ -435,7 +435,11 @@ describe.skipIf(!available)('GET /api/calendar', () => {
 
     expect(line.known, 'the reason fell through to the "no reasoning yet" line').toBe(true)
     expect(line.text).not.toBe(t('opportunities.whyUnavailable'))
-    expect(line.text).toContain('informationGain')
+    // `informationGain` is the judge's own field name. A merchant reads the
+    // name we gave it, which the why-line renderer looks up on the way out —
+    // the same name the article page and the override dialog have always used.
+    expect(line.text).toContain(t('content.article.quality.criterion.informationGain'))
+    expect(line.text).not.toContain('informationGain')
     expect(line.text).toContain(JUSTIFICATION)
     // Nothing between the grader and the merchant rewrites, truncates or
     // translates the sentence — which is what makes a Danish store's card carry

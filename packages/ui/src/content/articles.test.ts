@@ -2,13 +2,12 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { t } from '../strings'
+import { criterionLabel, t } from '../strings'
 import {
   articleActions,
   articleCounts,
   articleEventLabel,
   checkPublishedUrl,
-  criterionLabel,
   failingCriteria,
   filterArticles,
   needsAttention,
@@ -178,9 +177,11 @@ describe('the criteria an override has to restate', () => {
     expect(source).not.toMatch(/\b(informationGain|factualGrounding)\s*[<>]=?/)
   })
 
-  it('turns a criterion name into words, and spells out one it has never heard of', () => {
-    expect(criterionLabel('informationGain')).toBe('Information gain')
-    expect(criterionLabel('narrative_flow')).toBe('Narrative flow')
+  it('names a criterion the same way the calendar does', () => {
+    // The lookup moved to the copy layer when the held-day sentence needed it
+    // too; this holds the article page on the same one rather than restating
+    // what `strings/labels.test.ts` proves about the wording.
+    expect(criterionLabel('informationGain')).toBe(t('content.article.quality.criterion.informationGain'))
   })
 })
 
