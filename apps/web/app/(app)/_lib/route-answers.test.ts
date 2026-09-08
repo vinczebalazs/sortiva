@@ -712,6 +712,7 @@ describe.skipIf(!available)('the answers themselves', () => {
   let harness: TestDb
 
   let queue: WorkerUtils
+  const databaseUrlBefore = process.env.DATABASE_URL
 
   beforeAll(async () => {
     harness = await setupTestDb('web_route_answers')
@@ -754,6 +755,12 @@ describe.skipIf(!available)('the answers themselves', () => {
     await closeDb()
     await queue.release()
     await harness.close()
+    // The database this suite owns is dropped on the line above, and the test
+    // runner reuses a worker process for the next file. Leaving the variable
+    // pointing at a database that no longer exists would break whatever runs
+    // next in this process, in a way that looks nothing like this file.
+    if (databaseUrlBefore === undefined) delete process.env.DATABASE_URL
+    else process.env.DATABASE_URL = databaseUrlBefore
   })
 
   const drivable = ROUTES.filter(
