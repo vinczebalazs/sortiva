@@ -811,6 +811,38 @@ Scope: a recommendation may only suggest copy that points at a named fact about 
 Read first: `DECISIONS.md` 2026-09-08 `R-OPTIMIZE-AXES`; main §8.4, §10.3; invariant 11.
 Done when: the grader judges grounding against the same evidence the writer was given — or the difference is deliberate, named, and cannot silently confirm a claim about a withheld field. A test should fail if the two sets drift apart again, because they are assembled in two places and nothing compares them.
 
+### From `R-CONTRACT-PROVE` and `R-TASK-DONE`/`R-FIXTURE-KEYS`, all landed 2026-09-08
+
+**R-GSC-URL-FIELD — the Connect Search Console button is broken on a deployed server** · Lane C (the handler) · **live, and the highest-priority defect in the queue**
+Scope: `POST /api/gsc/oauth/start` answers a field it calls `redirectUrl`. **The contract, the Shopify install button beside it, and both screens all say `url`.** The Settings screen reads `url`, finds nothing, and throws (`packages/ui/src/settings/ConnectionsSettings.tsx:63-65`). Handler at `apps/web/app/api/gsc/_lib/handlers.ts:42`; declaration at `packages/core/src/api/schemas.ts:125`.
+**The handler is the odd one out** — everything else already agrees — so this is one word, in Lane C's file. It is not the integrator's to change, which is why it is a card rather than a fix.
+**The symptom that hid it, and it is worth reading before you touch anything:** the onboarding copy of the same button survives because it was **written to accept either spelling** (`packages/ui/src/onboarding/SearchConsoleStep.tsx:97-98`). A screen hedging between two names for one field is not robustness; it is a bug being tolerated at the only place that would have reported it. **Narrow that hedge once the handler and the contract agree** — that half is Lane F's, and doing it first would break onboarding.
+Read first: `DECISIONS.md` 2026-09-08 `R-CONTRACT-PROVE`; main §6.7; tech §3.
+Done when: a merchant on a deployed server can press Connect Search Console and reach Google; the record of this mismatch in `route-answers.test.ts` is deleted, which that suite will demand as soon as the handler is fixed; and the onboarding hedge is narrowed to the one name.
+
+**R-TEMPLATE-PREFIX — eight sentences a merchant should read are never found** · Lane F (the renderer) + the producers
+Scope: every explanation renders by looking a key up in the copy catalogue. **The renderer only ever looks under a `template.` prefix**, and eight keys are produced without one, so the sentence written for the merchant is never found and they read the placeholder instead.
+- **Live and user-facing:** `optimize.failedValidation.reason` — a merchant whose recommendation failed our own safety checks reads "the reasoning for this one isn't available yet" instead of the reason written for them. Produced at `packages/core/src/optimize/recommendation-view.ts:76`, rendered at `packages/ui/src/opportunities/OpportunityDrawer.tsx:242`, mapped at `packages/ui/src/opportunities/why.ts:62`.
+- **A canonical string, and therefore an invariant 24 breach:** `appendixA.outage` (`packages/jobs/src/generation/add-manual-topic.ts:52`) — the "we paused rather than continue with lower-quality or stale data" line, which the spec says must be shown verbatim, **is currently not shown at all.**
+- **Six with no screen yet:** the `fix.consolidation.*` keys at `packages/core/src/fix/view.ts:40,48,56,66,70,74`.
+Read first: `DECISIONS.md` 2026-09-08 `R-FIXTURE-KEYS`; main Appendix A; ui §5; invariants 8 and 24.
+Done when: every key a producer writes is one the renderer can resolve, whichever side is changed to make that true; the guard that reads source files for hand-written keys covers the prefix rule too, so this cannot recur; and the canonical outage line reaches a merchant.
+
+**R-SCREEN-READS — nothing checks that a screen reads what an endpoint sends** · Lane F · **the third and last side of the same triangle**
+Scope: two of three sides are now checked. `R-OPPS-WIRE` proved every address a screen posts to is one a route serves. `R-CONTRACT-PROVE` proved every route's answer matches its declaration. **Nothing proves a screen reads fields the endpoint actually sends** — which is how the Search Console button broke, and it was found by a person reading the consumer by hand rather than by any check.
+Read first: `DECISIONS.md` 2026-09-08 `R-CONTRACT-PROVE` and 2026-09-07 `R-OPPS-WIRE`; the two existing checks are the pattern — both **record what the real thing does** rather than reading the source, which is load bearing in both.
+Done when: a screen reading a field no endpoint sends fails a test by name.
+
+**R-VENDOR-DOUBLES — six endpoints cannot be proved because they call a vendor** · Lane F or integrator
+Scope: `R-CONTRACT-PROVE` drives 53 of 62 routes and names seven it cannot, **six of them for the same reason: they call Stripe, Shopify or Google.** Every one of those vendors already has an interface with a test double behind it (constitution, `packages/providers`). A stand-in at the route's own boundary would bring all six in.
+Read first: `DECISIONS.md` 2026-09-08 `R-CONTRACT-PROVE`; tech §2; the provider doubles in `packages/providers`.
+Done when: the named list is shorter and each remaining name says why a double is not enough.
+
+**R-COMPLETED-LINK — a finished task links to a page that will not show it** · Lane F, small
+Scope: `packages/ui/src/products/ProductsScreen.tsx:124` links a completed task to the opportunity it came from. That opportunity is expired, and the Opportunities screen lists only open rows, **so the link goes nowhere.** The screen spec asks for "a link to what it became", which is the successor opportunity — and identifying that needs work the card that added the completed list correctly left alone.
+Read first: `DECISIONS.md` 2026-09-08 `R-TASK-DONE`; ui §7.
+Done when: the link goes somewhere a merchant can use, or is not offered.
+
 ### From `R-OVERRIDE-REACH`, landed 2026-09-08
 
 **R-MANUAL-TOPIC-LOCALE — a topic a merchant types in is judged by the wrong market's numbers** · Lane D
