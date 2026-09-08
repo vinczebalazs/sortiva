@@ -383,7 +383,7 @@ export const ROUTES: readonly RouteDefinition[] = [
     summary: 'The recommendation for an opportunity, its tasks, and whether the page already looks changed.',
     auth: 'session',
     query: s.readRecommendationQuerySchema,
-    response: s.opportunityDetailResponseSchema,
+    response: s.readRecommendationResponseSchema,
   },
   {
     method: 'POST',

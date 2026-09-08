@@ -1154,12 +1154,12 @@
   "gate3.below_quality_bar": "The draft didn't meet our bar on {failed_criteria}, and a revision didn't fix it. Our grader wrote: {first_justification}",
 
   "gate1.admitted": "We checked this topic before planning it: people search for it, you sell into it, and nothing you have already covers it.",
-  "gate1.admitted_pinned_despite_zero_volume": "Almost nobody searches for this, so it isn't something we would have planned on our own. You pinned it, so it stays on the calendar.",
-  "gate1.rejected_zero_volume": "Hardly anyone searches for this — it sits below the level of demand we plan articles for.",
-  "gate1.rejected_not_winnable": "The pages already ranking for this are further ahead than your site can realistically catch at the moment, so we haven't planned an article for it.",
-  "gate1.rejected_off_catalog": "This doesn't match anything we can see you selling, so we haven't planned an article for it.",
-  "gate1.converted_existing_target_refresh": "You already rank for this. Rewriting the article we published is safer than creating another page.",
-  "gate2.held_thin_pack": "Before writing, we gather everything your store says about the products a topic covers. What came back repeated the same few points, so we stopped rather than draft an article with little to say.",
+  "gate1.admitted_pinned_despite_zero_volume": "Almost nobody searches for “{keyword}”, so it isn't something we would have planned on our own. You pinned it, so it stays on the calendar.",
+  "gate1.rejected_zero_volume": "We could only find about {monthly_search_volume} {monthly_search_volume, plural, one {search} other {searches}} a month for “{keyword}”, under the {monthly_search_volume_min} a month we plan articles for.",
+  "gate1.rejected_not_winnable": "The pages already ranking for “{keyword}” are further ahead than your site can realistically catch at the moment, so we haven't planned an article for it.",
+  "gate1.rejected_off_catalog": "“{keyword}” doesn't match anything we can see you selling, so we haven't planned an article for it.",
+  "gate1.converted_existing_target_refresh": "You already rank for “{keyword}” with {url}. Rewriting the article we published is safer than creating another page.",
+  "gate2.held_thin_pack": "Before writing, we gather everything your store says about the products a topic covers. What came back held {distinct_claims} distinct {distinct_claims, plural, one {point} other {points}} — we look for at least {distinct_claims_min}, and for points that belong to individual products rather than repeating across all of them. So we stopped rather than draft an article with little to say.",
   "topic.auto": "We planned this one from your growth opportunities.",
   "topic.manual_addition": "You added this topic yourself.",
 

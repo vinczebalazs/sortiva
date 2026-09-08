@@ -206,19 +206,47 @@ export const RESPONSE_FIXTURES: Record<string, unknown> = {
   'GET /api/opportunities/scan-status': { status: 'not_started' },
   'GET /api/opportunities/scan-stream': { status: 'not_started' },
   'POST /api/recommendations': { state: 'generating', generated: true },
+  // Corrected with the contract in `R-CONTRACT-2`: this fixture answered the
+  // opportunity-drawer shape, which this endpoint has never returned. It now
+  // answers the richest of the four real shapes — advice that exists — because
+  // that is the one a screen is built against.
   'GET /api/recommendations': {
-    opportunity: opportunityFixture(fixtureOpportunities[0]!),
+    recommendation: {
+      id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+      state: 'ready',
+      pageUrl: 'https://example-outdoor.com/collections/trail-shoes',
+      fields: [
+        {
+          field: 'title',
+          current: 'Trail Shoes',
+          suggested: 'Trail Running Shoes for Technical Terrain',
+          evidence: 'Shoppers search for the terrain, not the category.',
+        },
+      ],
+      sections: [
+        {
+          heading: 'How to choose a trail shoe',
+          copy: 'Start with the terrain you run on most.',
+          evidence: ['Trailblazer GTX', 'Ridgeline 2'],
+        },
+      ],
+      faq: [{ q: 'Do trail shoes run small?', a: 'Ours run half a size small.', evidence: ['Trailblazer GTX'] }],
+      internalLinksIn: [{ fromUrl: 'https://example-outdoor.com/blog/sizing', anchor: 'trail shoes' }],
+      internalLinksOut: [{ toUrl: 'https://example-outdoor.com/products/trailblazer', anchor: 'Trailblazer GTX' }],
+      intentNote: null,
+      failureReason: null,
+      generatedAt: NOW,
+    },
     tasks: [
-      { id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', label: 'Rewrite the collection title', state: 'open' },
+      {
+        id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+        kind: 'title_rewrite',
+        label: 'Rewrite the collection title',
+        state: 'open',
+      },
     ],
-    serpSnapshot: [
-      { position: 1, domain: 'competitor.example', url: 'https://competitor.example/trail' },
-    ],
-    recommendation: null,
-    history: [
-      { at: NOW, from: null, to: 'new', actor: 'autopilot', reason: null },
-    ],
-    outcome: null,
+    looksApplied: null,
+    appliedAt: null,
   },
   'POST /api/recommendations/{id}/apply': { ok: true },
 
