@@ -1446,6 +1446,27 @@ Done when: every control in ui §9 exists and none that isn't (inventory test ag
 Read first: tech §6 (UI row); ui §3, §5, §6.
 Done when: Playwright against staging: onboarding through activation; opportunity → schedule → calendar; OPTIMIZE generate → download → mark applied; draft review approve; override; export URL confirm — all green.
 
+### Found by the integrator while reading the wired-stub report, 2026-09-08
+
+**R-BRAKES-BLIND — two of the product's safety brakes cannot fire, and the reason they were left unbuilt stopped being true some time ago** · Lane G · **the last two entries in the wired-stub report, which `T10.1` requires to be empty**
+
+Scope. The product has a set of automatic brakes: when something goes wrong at a rate that says the fault is ours rather than the world's, a switch goes up and the affected work stops until a person has looked. Two of them are **declared, arithmetically complete, tested — and connected to nothing.**
+
+- **The quality brake.** If our own quality judge starts rejecting an unusual share of recent drafts, that is almost always a broken prompt or a changed model rather than a sudden run of bad writing, so all generation pauses. The sentence a merchant and an operator read is already written (`packages/core/src/ops/auto-trips.ts:90-93`).
+- **The publishing brake.** If an unusual share of publish attempts fail inside an hour, publishing pauses and drafting continues (`:117-119`).
+
+Both take their numbers from a **counter** — an interface with one method — and in production both are wired to a stand-in that answers "nothing is measurable" forever (`packages/core/src/ops/counters.ts:52,68`). That answer is deliberately distinguishable from "nothing went wrong", so nothing is *silently* broken: `pnpm stubs:report` names both, and `T10.1`'s done-when requires that report to be empty. **But in production the brakes are simply absent.**
+
+**Why this is a card now rather than a note.** The file's own header explains, at length and convincingly, that the counts cannot be taken because the tables do not exist: "the content engine ... has no table in the schema: no `articles`, no record of a gate decision", and "`publish_intents` ... is also not in the schema yet". **Both statements are false today.** `gate_decisions` (`packages/db/src/schema/content-engine.ts:164`) carries `gate`, `outcome` and `decided_at`; `publish_intents` (`:380`) carries `state` and `created_at`; `articles` has been there since `:93`. The comment is a reason that expired without anybody noticing it had, which is the same shape as half the findings in this run — **a thing checked against its own idea of itself.**
+
+**The one judgement this card must make, and it is not obvious.** Counting rejected drafts is a straightforward read of `gate_decisions`. Counting *failed publish attempts* is not: `publish_intent_state` has exactly three values — `pending`, `confirmed`, `abandoned` — and **none of them means "tried and failed"**. Deciding whether a failure is an abandoned intent, a stale pending one, or something the table cannot currently express is the real work here. If the honest answer needs a column, **stop and say so** — schema waves are closed and that is the integrator's call, not the lane's.
+
+Read first: `packages/core/src/ops/counters.ts` in full, including the header that is now wrong; `packages/jobs/src/sweeps/auto-trips.ts`; `packages/jobs/src/sweeps/auto-trips.test.ts` (the arithmetic is already covered — do not redo it); main §14.4, §14.5; invariant 17 (the control plane is our own counters, never the analytics vendor).
+
+Done when: both brakes read real counts in production; the two stand-ins are gone from `pnpm stubs:report`; a test proves each brake **actually raises its switch** on numbers over the ceiling and stays down under it; **and** a test proves that a counter which cannot measure still does not raise a switch — the distinction between "nothing went wrong" and "nobody is writing it down" is the whole reason the seam is shaped this way, and it must survive the replacement.
+
+Note: the stale header comment must be corrected or deleted as part of this. A comment that gives an expired reason for an absent feature is worse than no comment: it is what kept this closed for as long as it was.
+
 ### M10 — Exit gates · serial
 
 **T10.1 — Full chaos test nightly green** — main §14.3.9; tech §5. Done when: ingest → scan → generate → publish → repair with random kills converges; exactly one remote article per external id; billable-call count equals distinct canonical requests; wired-stub report is empty.
