@@ -1465,6 +1465,20 @@ Scope: the product must never propose writing a new page without first checking 
 Read first: `packages/core/src/opportunities/{clearance,existing-target,action-selection}.ts`; `packages/jobs/src/scan/existing-target.ts`; `docs/audit-invariants-2026-09-08.md` findings 6 and 10; main §7.7, §8.2; invariant 6.
 Done when: no branch can reach a new-page recommendation without either a clearance or a stated, tested guarantee — and a test fails if a fourth signal is added that has neither. If the clearance token is the right answer, it acquires a production caller; if it is not, it goes, rather than sitting in the tree implying a protection nobody gets.
 
+### From `R-SIGNIN-EMAIL`, landed 2026-09-08
+
+**R-SIGNIN-COPY — six sentences on the sign-in screen are ours, not yours** · **a founder decision about words**
+Scope: email sign-in shipped with six authored sentences — "or", "Email address", "you@yourstore.com", "Email me a sign-in link", "Sending…", and "Check your email — we've sent a sign-in link to {email}. It works once." **The approved-copy table has no sign-in row at all**, and the interface spec says only "standard flows; no invention here". The lane shipped them rather than hold the only way in for a merchant without a Google account, following the precedent already in the journal: this screen's existing wording was authored the same way in September and flagged then. Five of the six are labels a field cannot render without.
+**The sixth is worth your eye.** "It works once" is true and it is the only sentence describing how the link behaves — and it is silent about the other way a link dies: **it lapses after fifteen minutes.** A merchant who opens the message an hour later meets a failure nothing warned them about. Adding that warning is a second authored sentence, so the lane did not write it.
+
+**R-SIGNIN-DEADEND — a merchant who mistypes their address is stranded** · Lane F, small
+Scope: once the link is sent, the address field is replaced by the confirmation. Someone who typed a valid-looking but wrong address has no way back except reloading the page. New behaviour and new words, so it is a card rather than a repair.
+
+**R-NO-BROWSER-TESTS — nothing in the repository can test a click** · **a founder decision about cost, then Lane F** · **repo-wide, and it is why several of this week's screen defects reached a deployed server**
+Scope: there is no browser-DOM test environment anywhere in the build. **Every screen is held by static-render assertions only** — a test can check that a button exists in the rendered markup, and nothing can check what happens when a person presses it, types into a field, or moves between states. The email sign-in card ran into this rather than caused it: the exchange behind the button is driven end to end and the button is proved to be on the screen, but **nothing covers React dispatching the click**.
+This is the same gap behind the Search Console button that failed for every merchant on a deployed server, and behind the three Opportunities buttons that posted to addresses no route served — in each case, the last unchecked link was the browser actually doing the thing.
+**The decision is about cost, not correctness:** a DOM environment is a dependency, a slower suite, and a class of test that needs maintaining. The alternative is what we have — proving the parts on either side of the press and accepting that the press itself is unproven. **Nobody should choose that on a lane's authority**, and the end-to-end browser suite that exists covers whole journeys against a running server rather than components.
+
 ### The invariants held up by review alone, from the sweep, 2026-09-08
 
 The sweep's remaining findings are all one shape: a rule the constitution states, which the code currently obeys, and which **nothing would notice breaking.** They are not defects today. They are the reason a defect tomorrow would ship.
