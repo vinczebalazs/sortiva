@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import {
+  ACCOUNT_OPTIMIZE_PAUSED_FLAG,
   RECOMMENDATION_RESPONSE_SCHEMA,
   opportunityDetailResponseSchema,
   type OptimizeRecommendation,
@@ -12,6 +13,7 @@ import {
   markStorePagesGoneNotSeenSince,
   markStorePagesSeen,
   storeOptimizeRecommendation,
+  tripAccountFlag,
   upsertStorePages,
   type OpportunityRow,
 } from '@sortiva/db'
@@ -29,6 +31,7 @@ import {
   type WorkerUtils,
 } from '@sortiva/jobs/runtime/testing'
 import { rules } from '@sortiva/rules'
+import { t } from '@sortiva/ui/strings/index'
 import { withAccount } from '../../auth/_lib/session'
 import { makeOpportunityDetailHandler } from '../../opportunities/_lib/handlers'
 import { OPTIMIZE_RECO_PROMPT_MAJOR_VERSION } from './config'
@@ -320,6 +323,30 @@ describe.skipIf(!available)('/api/recommendations', () => {
       "SELECT 1 FROM graphile_worker._private_jobs j JOIN graphile_worker._private_tasks t ON t.id = j.task_id WHERE t.identifier = 'optimize_recommendation_generate'",
     )
     expect(rows).toHaveLength(0)
+  })
+
+  /**
+   * The sentence a merchant is shown when we decline to act rather than act on
+   * stale or lower-quality data is one the product may not reword. It used to
+   * be typed out here as well as living in the catalogue, so the two could
+   * drift and nothing would notice. This holds the route to the catalogue's
+   * copy rather than to a second literal written out again in the test.
+   */
+  it('answers the pause with the catalogue\'s wording, not a copy of it', async () => {
+    const opportunity = await optimizeOpportunity(`${PAGE_URL}/paused`)
+    await tripAccountFlag(harness.db, accountScope(accountId), {
+      flag: ACCOUNT_OPTIMIZE_PAUSED_FLAG,
+      actor: 'test',
+      reason: 'daily allowance spent',
+      trippedBy: 'auto',
+    })
+
+    const response = await post({ opportunityId: opportunity.id })
+
+    expect(response.status).toBe(409)
+    const body = (await response.json()) as { error: { code: string; message: string } }
+    expect(body.error.code).toBe('service_paused')
+    expect(body.error.message).toBe(t('appendixA.outage'))
   })
 
   it('does not spend the store\'s allowance on presses nothing has picked up', async () => {
