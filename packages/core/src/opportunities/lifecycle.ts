@@ -154,5 +154,15 @@ export const EXPIRY_REASONS = [
   'entity_deleted',
   /** A newer detection of the same signal on the same entity superseded this row before it was acted on. */
   'superseded',
+  /**
+   * The merchant did the work. A held opportunity waits on product detail only
+   * they can supply, and this is the one reason a row leaves the open set
+   * because a person acted rather than because a measurement moved: the
+   * products behind the search now clear the substance floor. It is a reason of
+   * its own precisely so the Products screen can fold the checklist away as
+   * finished without also congratulating a merchant for a keyword quietly
+   * losing its search volume.
+   */
+  'catalog_now_sufficient',
 ] as const
 export type ExpiryReason = (typeof EXPIRY_REASONS)[number]
