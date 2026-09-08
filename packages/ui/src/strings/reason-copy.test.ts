@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { driftPolicies } from '@sortiva/core'
+import {
+  buildConsolidationRecommendation,
+  driftPolicies,
+  renderConsolidationView,
+  OPTIMIZE_FAILED_VALIDATION_KEY,
+} from '@sortiva/core'
 import { renderTemplatedLine } from '../opportunities/why'
 import { t } from './index'
 import {
@@ -309,6 +314,70 @@ describe('the reason we did not record', () => {
   it('is counted among the keys the product produces', () => {
     expect(GATE_REASON_KEYS).toContain('gate.reason_unrecorded')
     expect(Object.keys(UNRECORDED_REASON_PARAMS)).toEqual(['gate.reason_unrecorded'])
+  })
+})
+
+/**
+ * Explanations whose sentences were written straight into the catalogue under
+ * their finished names, rather than as `template.<something>`.
+ *
+ * Every one of these had a sentence sitting in the catalogue, spelled exactly
+ * as the code that produces it spells it, and every one of them reached a
+ * merchant as "the reasoning for this one isn't available yet" — because the
+ * lookup only ever tried the `template.` shelf. Nothing crashed and nothing
+ * looked broken, which is why it survived four separate arrivals of the same
+ * mistake.
+ *
+ * These tests ask the question from the merchant's side: for each key the
+ * product really produces, do words come back?
+ */
+describe('a sentence written under its own name rather than under `template.`', () => {
+  it('reaches a merchant whose page recommendation failed our own safety checks', () => {
+    // The key is imported from the code that writes it, so renaming it on
+    // either side fails here rather than going quiet on the drawer.
+    const line = renderTemplatedLine({ templateKey: OPTIMIZE_FAILED_VALIDATION_KEY, params: {} })
+    expect(line.known, `${OPTIMIZE_FAILED_VALIDATION_KEY} fell through to the "no reasoning yet" line`).toBe(
+      true,
+    )
+    expect(line.text).not.toBe(t('opportunities.whyUnavailable'))
+    expect(line.text).toBe(t('optimize.failedValidation.reason'))
+  })
+
+  it('reaches a merchant whose typed-in topic we could not classify, word for word', () => {
+    // Produced by the manual-topic path when the classifier is unavailable
+    // (`packages/jobs/src/generation/add-manual-topic.ts`), and handed to the
+    // add-topic form as the refusal. It is one of the sentences the product may
+    // not reword, so the wording is asserted here and not paraphrased.
+    const line = renderTemplatedLine({ templateKey: 'appendixA.outage', params: {} })
+    expect(line.known, 'appendixA.outage fell through to the "no reasoning yet" line').toBe(true)
+    expect(line.text).toBe(
+      'Delayed — we paused this action rather than continue with lower-quality or stale data.',
+    )
+  })
+
+  it('reaches a merchant reading which of their competing pages should win', () => {
+    // Built by the real producer rather than by listing its keys here, so a
+    // line added to the consolidation advice is covered the day it is written.
+    const view = renderConsolidationView(
+      buildConsolidationRecommendation({
+        clusterHead: 'trail running shoes',
+        competing: [
+          { url: '/collections/a', pageType: 'collection', impressionShare: 0.6, position: 8 },
+          { url: '/products/b', pageType: 'product', impressionShare: 0.4, position: 11 },
+        ],
+        inventory: [{ url: '/pages/x', outboundInternalLinks: ['/products/b'] }],
+      }),
+    )
+    const lines = view.sections.flatMap((section) => section.lines)
+    expect(lines.length).toBeGreaterThan(3)
+    for (const line of lines) {
+      const rendered = renderTemplatedLine(line)
+      expect(rendered.known, `${line.templateKey} fell through to the "no reasoning yet" line`).toBe(
+        true,
+      )
+      expect(rendered.text).not.toBe(t('opportunities.whyUnavailable'))
+      expect(rendered.text).not.toContain('{')
+    }
   })
 })
 
