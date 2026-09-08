@@ -6,6 +6,7 @@ import {
   PLAN_CANCEL_ANYTIME,
   PLAN_CAP_LINE,
   CHECKOUT_CANCELED_NOTE,
+  findNumericDenominator,
 } from '@sortiva/core'
 import en from '../../strings/en.json'
 import { createTranslate, resolveLanguage, t } from './index'
@@ -149,17 +150,93 @@ describe('the copy an earlier card had to park in packages/core', () => {
   })
 })
 
+/**
+ * The daily cap is a ceiling, never a promise, so no sentence may render a count
+ * against a target — "3 of 30" invites a merchant to read the 30 as owed.
+ *
+ * This used to be one regex written here, and it required a `{placeholder}` on
+ * the left. A denominator typed as literal numbers therefore passed it outright:
+ * run against five candidate phrasings on 2026-09-08 it caught two. It now calls
+ * the same rule the emails are held to, which knows a quantity can be a number
+ * or a placeholder and does not care which side is which. The phrasings it has
+ * been tried against are below, so the next reader can see what was and was not
+ * put to it.
+ */
 describe('no denominators anywhere in the catalogue', () => {
-  /**
-   * The daily cap is a ceiling, never a promise, so no sentence may render a
-   * count against a target — "3 of 30" invites a merchant to read the 30 as
-   * owed.
-   */
-  it('contains no "x of y" or "x/y" phrasing', () => {
-    const offenders = Object.entries(en).filter(([, value]) =>
-      /\{\w+\}\s*(of|\/)\s*\{?\w+\}?/i.test(value),
-    )
+  it('contains no count stated against a total', () => {
+    const offenders = Object.entries(en)
+      .map(([key, value]) => [key, findNumericDenominator(value)] as const)
+      .filter(([, found]) => found !== undefined)
+      .map(([key, found]) => `${key}: ${found!.message}`)
     expect(offenders).toEqual([])
+  })
+})
+
+describe('the phrasings the catalogue check has been tried against', () => {
+  /**
+   * The five the sweep used. Three of them passed the old pattern, which is why
+   * this check changed; all five are here so a later reader can see the pair it
+   * did catch was never the problem.
+   */
+  const SWEEP = [
+    '3 of 30 articles',
+    '{count} of {cap}',
+    '22/30 published',
+    'You have used 12 of your 30',
+    '{count} of 30',
+  ]
+
+  /**
+   * Phrasings the sweep did not think of, added because a check whose only
+   * evidence is the cases its author had in mind is the fault being fixed here.
+   * Each is a way of writing the same promise: an "out of" spelled in words, a
+   * possessive between the halves, and a fraction slash that is not the ASCII
+   * one — the character a word processor substitutes without being asked.
+   */
+  const NOT_IN_THE_SWEEP = [
+    '3 out of 30 articles',
+    '12 of your 30 this month',
+    '22 ⁄ 30 published',
+    '{count} of your {cap} articles',
+  ]
+
+  for (const phrase of [...SWEEP, ...NOT_IN_THE_SWEEP]) {
+    it(`refuses ${JSON.stringify(phrase)}`, () => {
+      expect(findNumericDenominator(phrase)).toBeDefined()
+    })
+  }
+
+  /**
+   * The other half of the rule: it has to leave ordinary sentences alone, or the
+   * next person to hit it will weaken it rather than reword. "One of your
+   * articles" states no total, and the cap line itself is canonical copy.
+   */
+  for (const phrase of [
+    'One of your articles needs a small fix.',
+    'Up to 1 article per day, quality permitting',
+    'We found {count} ways to grow your store organically',
+    'Open your dashboard: https://sortiva.app/settings/notifications',
+  ]) {
+    it(`allows ${JSON.stringify(phrase)}`, () => {
+      expect(findNumericDenominator(phrase)).toBeUndefined()
+    })
+  }
+
+  /**
+   * What it cannot do, stated rather than implied.
+   *
+   * The rule reads one catalogue value at a time, and it only recognises a
+   * quantity written as digits or as a placeholder. A denominator spelled in
+   * words passes, and so does one assembled at render time out of two strings
+   * that are innocent apart — "{count} published" beside a heading that says
+   * "30 this month" is a denominator on the screen and not in any single value
+   * here. That second gap is a rendered-output check on the screens that have
+   * none, which is somebody else's card; this test cannot close it.
+   */
+  it('does not catch a denominator spelled in words, or one assembled at render time', () => {
+    expect(findNumericDenominator('3 of thirty articles')).toBeUndefined()
+    expect(findNumericDenominator('{count} published')).toBeUndefined()
+    expect(findNumericDenominator('30 this month')).toBeUndefined()
   })
 })
 
