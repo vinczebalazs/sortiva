@@ -28,6 +28,14 @@ export {
 } from './overrides'
 
 export {
+  RULES_REACH,
+  reachOf,
+  thresholdPaths,
+  type RulesReach,
+  type RulesReachEntry,
+} from './reach'
+
+export {
   SIGNAL_TYPES,
   type AutoTripsConfig,
   type BudgetsConfig,
