@@ -5488,3 +5488,25 @@ Nearest spec: CLAUDE.md code-structure rules — every repository method takes a
 Decision: the command writes and reads findings and does nothing else. The table has no append-only guard — its schema comment says correcting a typo in your own note is not the hazard that revising a financial record is — but no code path updates or removes a row.
 Why: the card asks for recording a finding and reading it back, and an edit command is a feature nobody asked for. Recorded here so the next person finds out the absence was deliberate rather than overlooked: the door is open in the schema, and `pnpm switch note … --replace <id>` or a delete would be a small addition if an operator ever wants one. Until then a correction is a second note, which is also how an investigation reads.
 Nearest spec: none; the schema comment on `incident_findings` in `packages/db/src/schema/jobs.ts` states the intent.
+
+## 2026-09-08 — R-TASK-DONE — A finished merchant checklist gets an expiry reason of its own
+Decision: `EXPIRY_REASONS` gains `catalog_now_sufficient`. The weekly scan stamps it when it retires a `catalog_richness_gap` hold whose mapped families now clear the substance floor — the same measurement, taken in the same pass, that decides whether to raise the hold in the first place. Every other way a hold stops being detected keeps `evidence_no_longer_holds`.
+Why: a hold is the only work in this product the merchant does rather than us, so it is the only expiry that can mean a person acted. `R-API-PRODUCTS` correctly refused to infer that at read time, because reading `evidence_no_longer_holds` as "you completed this" would also congratulate a merchant for a keyword losing its search volume. Recording the distinction where the measurement is taken is the fix that flag asked for.
+Consequence: `expired_reason` is a `text` column, so this needed no migration. The reason is written by the scan alone; nothing infers it later.
+Nearest spec: main §7.9 (expiry is automatic, logged with the reason, and never deletes); ui §7.
+
+## 2026-09-08 — R-TASK-DONE — The moment a task was finished is the expired row's `updated_at`
+Decision: `completedAt` on a merchant task is the expired opportunity's `updated_at`, not a new column.
+Why: expiry is the last write a row ever takes. The partial unique index that dedupes open opportunities covers only the open statuses, so a signal detected again after expiry inserts a fresh row and never reaches back to the expired one — which makes `updated_at` on an expired row exactly the moment it was retired. A dedicated `completed_at` would be more legible and would need a schema wave; schema waves are closed and this reads the same value.
+Risk, stated rather than discovered: if a future card ever writes to an expired row, this date silently becomes that write's date instead. The repository function carries that warning where a caller will see it.
+Nearest spec: main §7.9; ui §7.
+
+## 2026-09-08 — R-TASK-DONE — A merchant who did the work is credited even if the search went quiet
+Decision: `keywordsClearingSubstanceFloor` ignores the demand and winnability floors that gate detection. A keyword whose products now clear the substance floor is named as cleared whether or not the search is still worth writing about.
+Why: the two facts are independent. The merchant was handed a checklist of product details and filled it in; marking that undone because Google's volume estimate moved in the meantime is the more dishonest of the two answers. The card the checklist was blocking does not come back either way — it expires — so nothing is over-promised by saying the work was done.
+Nearest spec: main §7.9, §6.3; ui §7.
+
+## 2026-09-08 — R-TASK-DONE — The completed section is capped at the twenty most recent, newest first
+Decision: `listCompletedMerchantTasks` returns at most 20 rows, ordered by when they were retired.
+Why: ui §7 collapses completed tasks behind a summary line, so the screen never needs the full history, and an uncapped read grows without limit for a store that has been going for years. Nothing is deleted — the rows stay for the learning loop, they simply stop being sent to a fold nobody has opened. The number is a page size for a collapsed list, not a threshold on any measurement, so it does not belong in `packages/rules`.
+Nearest spec: ui §7; invariant 10 (expiry never deletes).

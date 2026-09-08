@@ -1,9 +1,16 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import type pg from 'pg'
-import { serpSnapshotKey, silentLogger, type CoverageAnalysisOutput } from '@sortiva/core'
+import {
+  emptyFactSheet,
+  serpSnapshotKey,
+  silentLogger,
+  type CoverageAnalysisOutput,
+  type FactSheet,
+} from '@sortiva/core'
 import { MockSeoDataProvider } from '@sortiva/providers/seo/mock'
 import {
   accountScope,
+  confirmAllKeywords,
   listOpenOpportunities,
   markStorePagesGoneNotSeenSince,
   putBeforeProcessing,
@@ -11,7 +18,12 @@ import {
   schema,
   selectGscProperty,
   systemScope,
+  productIdsByShopifyId,
+  reconcileFamilies,
   upsertGscQueryDaily,
+  upsertKeywords,
+  upsertProductFacts,
+  upsertProducts,
   upsertSerpSnapshot,
   upsertStorePages,
   type GscQueryDailyInput,
@@ -287,4 +299,156 @@ describe.skipIf(!available)('what the weekly scan retires, and what it holds ope
       expect(after?.status).toBe('new')
     })
   })
+})
+
+
+/**
+ * A hold is the only card in this product whose expiry can mean a person did
+ * something. These are the two readings the Products screen depends on being
+ * kept apart: the merchant filled in what we asked for, and the search simply
+ * stopped being worth writing about.
+ */
+describe.skipIf(!available)('a hold the merchant was asked to clear', () => {
+  let ctx: TestDb
+  let pool: pg.Pool
+  let accountId: string
+
+  const KEYWORD = 'trail running shoes'
+  const SHOPIFY_IDS = ['5001', '5002', '5003']
+
+  beforeAll(async () => {
+    ctx = await setupTestDb('scan-hold-completion')
+    pool = ctx.pool
+  })
+
+  afterAll(async () => {
+    await ctx?.close()
+  })
+
+  /** One product's worth of stated fact, distinct from every other product's. */
+  function sheetFor(index: number): FactSheet {
+    return {
+      ...emptyFactSheet(),
+      material: `mesh-${index}`,
+      dimensions: `${28 + index}cm`,
+      weight: `${270 + index}g`,
+      care: `machine wash ${index}`,
+      fact_count: 4,
+    }
+  }
+
+  /** One stated fact. Below the per-product floor, so the family has no sources at all. */
+  function thinSheet(): FactSheet {
+    return { ...emptyFactSheet(), material: 'mesh', fact_count: 1 }
+  }
+
+  async function seedCatalogue(sheet: (index: number) => FactSheet): Promise<void> {
+    const scope = accountScope(accountId)
+    await upsertProducts(
+      ctx.db,
+      scope,
+      SHOPIFY_IDS.map((shopifyProductId, index) => ({
+        shopifyProductId,
+        title: `Trailhead ${index + 1}`,
+        rawBodyHtml: null,
+        productType: 'Shoes',
+        tags: [],
+        variants: [],
+        priceRange: null,
+        updatedAt: new Date('2026-09-01T00:00:00Z'),
+        checksum: `sum-${shopifyProductId}`,
+      })),
+    )
+    const ids = await productIdsByShopifyId(ctx.db, scope, SHOPIFY_IDS)
+    for (const [index, shopifyProductId] of SHOPIFY_IDS.entries()) {
+      await upsertProductFacts(ctx.db, scope, {
+        productId: ids.get(shopifyProductId)!,
+        factSheet: sheet(index),
+        fluffDiscarded: true,
+        promptVersion: 'distill.v1',
+        modelId: 'test-model',
+      })
+    }
+    await reconcileFamilies(
+      ctx.db,
+      scope,
+      [
+        {
+          name: 'Trail Running Shoes',
+          memberProductIds: SHOPIFY_IDS.map((id) => ids.get(id)!),
+          differentiationAxes: ['terrain', 'drop', 'width'],
+          mergedFacts: {},
+          groupingSource: 'collection',
+          confidence: 'high',
+        },
+      ],
+      new Map(),
+    )
+  }
+
+  async function seedKeyword(): Promise<void> {
+    const scope = accountScope(accountId)
+    await upsertKeywords(ctx.db, scope, [
+      {
+        term: KEYWORD,
+        language: 'en',
+        country: 'US',
+        volume: 900,
+        difficulty: 20,
+        cpcUsd: null,
+        source: 'auto',
+        enrichedAt: NOW,
+      },
+    ])
+    await confirmAllKeywords(ctx.db, scope)
+  }
+
+  async function heldRow(): Promise<{ id: string; status: string; expired_reason: string | null }> {
+    const { rows } = await pool.query<{ id: string; status: string; expired_reason: string | null }>(
+      "SELECT id, status, expired_reason FROM opportunities WHERE account_id = $1 AND signal_type = 'catalog_richness_gap'",
+      [accountId],
+    )
+    expect(rows).toHaveLength(1)
+    return rows[0]!
+  }
+
+  beforeEach(async () => {
+    await truncateAll(pool)
+    accountId = await insertAccount(pool, 'hold-completion@example.com')
+    await seedKeyword()
+    await seedCatalogue(thinSheet)
+    await runSignalScan(deps(ctx), accountId, 'weekly', 'weekly-2026-W37', { allowSerpSpend: false })
+
+    // Without a real hold on the board, everything below is vacuous.
+    const raised = await heldRow()
+    expect(raised.status).toBe('blocked')
+    expect(raised.expired_reason).toBeNull()
+  })
+
+  it('is retired as the merchant\'s own work once their products carry the detail', async () => {
+    await seedCatalogue(sheetFor)
+    await runSignalScan(deps(ctx), accountId, 'weekly', 'weekly-2026-W38', { allowSerpSpend: false })
+
+    const after = await heldRow()
+    expect(after.status).toBe('expired')
+    expect(after.expired_reason).toBe('catalog_now_sufficient')
+    // Expiry never deletes: the row is still there for the learning loop.
+    expect(await openRowsFor(accountId)).not.toContainEqual(expect.objectContaining({ id: after.id }))
+  })
+
+  it('bites: the same hold going quiet for any other reason is not the merchant\'s work', async () => {
+    // The catalogue is left exactly as thin as it was. What changes is the
+    // search: the merchant drops the keyword, so nothing this pass measures
+    // says anything about their products.
+    await pool.query('DELETE FROM keywords WHERE account_id = $1', [accountId])
+    await runSignalScan(deps(ctx), accountId, 'weekly', 'weekly-2026-W38', { allowSerpSpend: false })
+
+    const after = await heldRow()
+    expect(after.status).toBe('expired')
+    expect(after.expired_reason).toBe('evidence_no_longer_holds')
+  })
+
+  async function openRowsFor(id: string) {
+    return listOpenOpportunities(ctx.db, accountScope(id))
+  }
 })
