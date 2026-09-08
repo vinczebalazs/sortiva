@@ -60,6 +60,192 @@ describe('attribute names', () => {
   })
 })
 
+describe("the store's own option definitions", () => {
+  it('names an axis the merchant chose, with every value they offer', () => {
+    const attributes = productAttributes({
+      productId: 'p1',
+      title: 'Trail Shoe',
+      factSheet: emptyFactSheet(),
+      populatedFields: 4,
+      options: [{ name: 'Terrain', values: ['Trail', 'Road'] }],
+    })
+    expect(attributes.attributes.get('terrain')).toEqual(['road', 'trail'])
+    expect(attributes.sources.get('terrain')).toBe('product_option')
+  })
+
+  it('wins the name over a tag and over the sheet, being the only one nothing inferred', () => {
+    const attributes = productAttributes({
+      productId: 'p1',
+      title: 'Boot',
+      factSheet: { ...emptyFactSheet(), material: 'suede' },
+      populatedFields: 4,
+      tags: ['material:full-grain leather'],
+      options: [{ name: 'Material', values: ['Nubuck'] }],
+    })
+    expect(attributes.attributes.get('material')).toEqual(['nubuck'])
+    expect(attributes.sources.get('material')).toBe('product_option')
+  })
+
+  it('ignores the option Shopify invents for a product with nothing to choose', () => {
+    // Left in, every product in every store would carry one attribute they all
+    // share and agree on, and two unrelated products would look identical.
+    const bare = (id: string) =>
+      productAttributes({
+        productId: id,
+        title: id,
+        factSheet: emptyFactSheet(),
+        populatedFields: 0,
+        options: [{ name: 'Title', values: ['Default Title'] }],
+      })
+    expect(bare('a').attributes.size).toBe(0)
+    expect(attributeSimilarity(bare('a'), bare('b')).nameOverlap).toBe(0)
+  })
+
+  it('still merges split variants that differ on an option, which is the whole premise', () => {
+    const shoe = (id: string, colour: string) =>
+      productAttributes({
+        productId: id,
+        title: `Trailblazer Shoe — ${colour}`,
+        factSheet: { ...emptyFactSheet(), material: 'mesh', care: 'wipe clean', origin: 'vietnam' },
+        populatedFields: 5,
+        options: [{ name: 'Colour', values: [colour] }],
+      })
+    const groups = detectLogicalProducts([shoe('p1', 'Red'), shoe('p2', 'Blue')])
+    expect(groups).toHaveLength(1)
+    expect(groups[0]?.memberIds).toEqual(['p1', 'p2'])
+  })
+
+  it('becomes a differentiation axis for a family whose members offer different values', () => {
+    const shoe = (id: string, terrain: string) =>
+      productAttributes({
+        productId: id,
+        title: `Shoe ${id}`,
+        factSheet: { ...emptyFactSheet(), material: 'mesh' },
+        populatedFields: 5,
+        options: [{ name: 'Terrain', values: [terrain] }],
+      })
+    const { axes, sources } = differentiationAxes([
+      shoe('a', 'Trail'),
+      shoe('b', 'Road'),
+      shoe('c', 'Fell'),
+    ])
+    expect(axes).toContain('terrain')
+    expect(sources['terrain']).toBe('product_option')
+  })
+})
+
+describe("the store's own metafields", () => {
+  const attributesFor = (metafields: Parameters<typeof productAttributes>[0]['metafields']) =>
+    productAttributes({
+      productId: 'p1',
+      title: 'Trail Shoe',
+      factSheet: emptyFactSheet(),
+      populatedFields: 4,
+      metafields,
+    })
+
+  it('reads a line of text the merchant wrote as an attribute', () => {
+    const attributes = attributesFor([
+      { namespace: 'custom', key: 'terrain', value: 'Technical trail', type: 'single_line_text_field' },
+    ])
+    expect(attributes.attributes.get('terrain')).toEqual(['technical trail'])
+    expect(attributes.sources.get('terrain')).toBe('metafield')
+  })
+
+  it('reads a list of lines as several values of one axis', () => {
+    const attributes = attributesFor([
+      {
+        namespace: 'custom',
+        key: 'Fit',
+        value: '["Wide","Standard"]',
+        type: 'list.single_line_text_field',
+      },
+    ])
+    expect(attributes.attributes.get('fit')).toEqual(['standard', 'wide'])
+  })
+
+  it("ignores everything that is not a merchant's line of text", () => {
+    // A rating, a dimension and a reference all have values that are documents
+    // or internal ids, and putting one on a comparison table would show a
+    // merchant `{"value":4.7,"scale_max":5}` where they expected a word.
+    const attributes = attributesFor([
+      { namespace: 'reviews', key: 'rating', value: '{"value":4.7}', type: 'rating' },
+      { namespace: 'custom', key: 'depth', value: '{"value":12,"unit":"cm"}', type: 'dimension' },
+      { namespace: 'app', key: 'related', value: 'gid://shopify/Product/12', type: 'product_reference' },
+      { namespace: 'app', key: 'blob', value: '{"a":1}', type: 'json' },
+      { namespace: 'legacy', key: 'untyped', value: 'trail', type: null },
+    ])
+    expect(attributes.attributes.size).toBe(0)
+  })
+
+  it('drops a value long enough to be a sentence rather than an attribute', () => {
+    const attributes = attributesFor([
+      {
+        namespace: 'custom',
+        key: 'story',
+        value: 'This shoe was designed over four years by a team of trail runners in the Alps.',
+        type: 'single_line_text_field',
+      },
+    ])
+    expect(attributes.attributes.size).toBe(0)
+  })
+
+  it('does not let a store with dozens of metafields drown out its own facts', () => {
+    const many = Array.from({ length: 40 }, (_, index) => ({
+      namespace: 'custom',
+      key: `field_${index}`,
+      value: 'yes',
+      type: 'single_line_text_field',
+    }))
+    const attributes = productAttributes({
+      productId: 'p1',
+      title: 'Trail Shoe',
+      factSheet: { ...emptyFactSheet(), material: 'mesh' },
+      populatedFields: 4,
+      metafields: many,
+    })
+    expect(attributes.attributes.size).toBeLessThanOrEqual(13)
+    expect(attributes.attributes.get('material')).toEqual(['mesh'])
+  })
+
+  it('leaves a store with no metafields exactly as it was', () => {
+    const withNone = productAttributes({
+      productId: 'p1',
+      title: 'Trail Shoe',
+      factSheet: { ...emptyFactSheet(), material: 'mesh' },
+      populatedFields: 4,
+      metafields: [],
+    })
+    const without = productAttributes({
+      productId: 'p1',
+      title: 'Trail Shoe',
+      factSheet: { ...emptyFactSheet(), material: 'mesh' },
+      populatedFields: 4,
+    })
+    expect([...withNone.attributes]).toEqual([...without.attributes])
+  })
+
+  it('gives a family the axis a store kept in a metafield rather than in prose', () => {
+    const shoe = (id: string, terrain: string) =>
+      productAttributes({
+        productId: id,
+        title: `Shoe ${id}`,
+        factSheet: { ...emptyFactSheet(), material: 'mesh' },
+        populatedFields: 5,
+        metafields: [
+          { namespace: 'custom', key: 'terrain', value: terrain, type: 'single_line_text_field' },
+        ],
+      })
+    const { axes, sources } = differentiationAxes([
+      shoe('a', 'Trail'),
+      shoe('b', 'Road'),
+      shoe('c', 'Fell'),
+    ])
+    expect(axes).toContain('terrain')
+    expect(sources['terrain']).toBe('metafield')
+  })
+})
+
 describe('the promo blocklist', () => {
   it('rejects a name that is only about when we are selling something', () => {
     for (const name of ['Summer Sale', 'New Arrivals', 'Featured', 'Best Sellers', 'All Products']) {

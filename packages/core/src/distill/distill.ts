@@ -1,3 +1,4 @@
+import { namedOptionAxes, type ProductOption } from '../catalog/products'
 import type { LlmClient } from '../contracts/llm'
 import { DISTILL_MIN_INPUT_CHARS } from './limits'
 import { buildDistillLlmRequest, type DistillPrompt } from './prompt'
@@ -35,6 +36,11 @@ export interface DistillableProduct {
   readonly descriptionText: string
   /** Merged in as-is: already factual, so it costs nothing and cannot be got wrong. */
   readonly priceRange: { readonly min: number; readonly max: number } | null
+  /**
+   * The store's own option axes, merged in on the same footing as the price.
+   * Absent for a store that defines none, which is ordinary and not a failure.
+   */
+  readonly options?: readonly ProductOption[]
 }
 
 export interface DistillationResult {
@@ -75,7 +81,11 @@ export async function distillProduct(
   if (text.length < DISTILL_MIN_INPUT_CHARS) {
     return {
       productId: product.productId,
-      factSheet: { ...emptyFactSheet(), price_range: product.priceRange },
+      factSheet: {
+        ...emptyFactSheet(),
+        price_range: product.priceRange,
+        variant_axes: axisNames(product.options),
+      },
       populatedFields: 0,
       promptVersion: deps.prompt.version,
       modelId: DISTILL_NO_MODEL,
@@ -102,10 +112,10 @@ export async function distillProduct(
       // Merged, not extracted: the price is already a number in our own
       // database, and a model asked for one would sooner or later invent one.
       price_range: product.priceRange,
-      // Shopify names a product's option axes ("Size", "Colour") in a field the
-      // catalogue sync does not request, so we hold variant *titles* and no axis
-      // names. Left empty rather than guessed; see DECISIONS 2026-09-02 T2.3.
-      variant_axes: [],
+      // The merchant's own names for the ways their product varies. Merged, not
+      // extracted: they are a structured field the store filled in, and a model
+      // asked to name an axis would sooner or later name one nobody chose.
+      variant_axes: axisNames(product.options),
       fact_count: countFacts(extracted),
     },
     populatedFields: countPopulatedFields(extracted),
@@ -148,4 +158,15 @@ function normalise(output: ExtractedFacts): ExtractedFacts {
   }
   result.fluff_discarded = output.fluff_discarded === true
   return result as unknown as ExtractedFacts
+}
+
+/**
+ * The axis names for the sheet: the merchant's own words, placeholder dropped.
+ *
+ * Only the names, not the values. A sheet describes one product and every value
+ * of an axis belongs to it, so listing them would say a shoe is red *and* blue.
+ * What the sheet records is that colour is a way this product varies.
+ */
+function axisNames(options: readonly ProductOption[] | undefined): readonly string[] {
+  return namedOptionAxes(options).map((option) => option.name)
 }

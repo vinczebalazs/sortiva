@@ -8,6 +8,7 @@ import {
   type CatalogEventKind,
   type Logger,
   type PosthogCapture,
+  type ProductRow,
   type ShopifyOrder,
   type ShopifyProduct,
   type StoredVariant,
@@ -26,6 +27,7 @@ import { runtimeLogger } from '../runtime/logging'
 import { tryWithAccountLock } from '../runtime/lock'
 import { registerTask } from '../runtime/tasks'
 import type { IngestionDeps, ShopifyListReader } from './deps'
+import { readProductMetafields } from './metafields'
 import {
   CATALOG_RECONCILE_TASK,
   LANDING_REVENUE_TASK,
@@ -52,16 +54,22 @@ import {
 const PAGE_SIZE = 250
 
 /**
- * How many pages one run reads before handing the rest back to the queue.
+ * How many Shopify requests one run makes before handing the rest back to the
+ * queue.
  *
  * At one request a second this is about two minutes of work. A store with more
  * than this many products finishes over several runs of the same night. It
  * decides nothing a merchant sees.
+ *
+ * Counted in requests rather than pages because a page is no longer one
+ * request: a product whose fingerprint moved since we last looked costs a
+ * second one for its metafields, so on the night a merchant re-imports their
+ * whole catalogue a page can cost two hundred and fifty-one.
  */
-const PAGES_PER_RUN = 120
+const REQUESTS_PER_RUN = 120
 
 const PRODUCT_FIELDS =
-  'id,title,body_html,handle,product_type,vendor,tags,status,updated_at,variants,images'
+  'id,title,body_html,handle,product_type,vendor,tags,status,updated_at,variants,options,images'
 const ORDER_FIELDS = 'id,created_at,currency,total_price,landing_site,cancelled_at,test,line_items'
 
 export interface SweepDeps {
@@ -129,11 +137,14 @@ export async function reconcileStoreCatalog(
   let productsSeen = 0
   let diffCount = 0
 
-  for (let page = 0; page < PAGES_PER_RUN; page += 1) {
+  let requests = 0
+
+  while (requests < REQUESTS_PER_RUN) {
     const path = cursor
       ? `products.json?limit=${PAGE_SIZE}&page_info=${encodeURIComponent(cursor)}`
       : `products.json?limit=${PAGE_SIZE}&fields=${PRODUCT_FIELDS}`
     const answer = await readPage<{ products?: ShopifyProduct[] }>(admin, auth, path)
+    requests += 1
     const batch = (answer.body.products ?? []).map(toProductRow)
     productsSeen += batch.length
 
@@ -151,9 +162,30 @@ export async function reconcileStoreCatalog(
       }))
     })
 
+    // A request of its own per product, so only for the ones whose fingerprint
+    // moved. On an ordinary night that is a handful, and the walk itself stays
+    // two requests for a small store.
+    const enriched: ProductRow[] = []
+    for (const row of batch) {
+      const stored = known.get(row.shopifyProductId)
+      if (stored && stored.checksum === row.checksum) {
+        enriched.push(row)
+        continue
+      }
+      const metafields = await readProductMetafields(admin, auth, row.shopifyProductId, (reason) =>
+        (deps.logger ?? runtimeLogger()).info('catalog_sweep.metafields_skipped', {
+          account_id: payload.accountId,
+          shopify_product_id: row.shopifyProductId,
+          reason,
+        }),
+      )
+      requests += 1
+      enriched.push(metafields === undefined ? row : { ...row, metafields })
+    }
+
     // Written whether or not anything changed: the stamp is what tells the
     // deletion check below which products the store still lists.
-    await upsertProducts(ingestion.db, scope, batch, startedAt)
+    await upsertProducts(ingestion.db, scope, enriched, startedAt)
     diffCount += await recordCatalogChanges(ingestion.db, system, changes)
 
     for (const row of batch) {
@@ -240,7 +272,7 @@ export async function aggregateLandingRevenue(
 
   let aggregate = emptyAggregate()
   let cursor: string | undefined
-  for (let page = 0; page < PAGES_PER_RUN; page += 1) {
+  for (let page = 0; page < REQUESTS_PER_RUN; page += 1) {
     const path = cursor
       ? `orders.json?limit=${PAGE_SIZE}&page_info=${encodeURIComponent(cursor)}`
       : `orders.json?limit=${PAGE_SIZE}&status=any&order=created_at+asc` +

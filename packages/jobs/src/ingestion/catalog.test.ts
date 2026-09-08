@@ -41,6 +41,7 @@ class FakeShopify implements ShopifyListReader {
   readonly requested: string[] = []
   private failAfter: number | undefined
   private failures = 0
+  private listRequests = 0
 
   constructor(
     private readonly products: Record<string, unknown>[],
@@ -48,7 +49,22 @@ class FakeShopify implements ShopifyListReader {
     private readonly pageSize = 2,
   ) {}
 
-  /** Dies once, after this many requests. The next run starts from the checkpoint. */
+  /** Metafields keyed by Shopify product id, as a store that publishes them would answer. */
+  metafields: Record<string, Record<string, unknown>[]> = {}
+  /** Product ids whose metafield read fails, standing in for a product deleted mid-walk. */
+  readonly metafieldFailures = new Set<string>()
+  /** Stands in for the merchant uninstalling the app part-way through a walk. */
+  tokenDiesOnMetafields = false
+
+  /**
+   * Dies once, after this many *list* requests. The next run starts from the
+   * checkpoint.
+   *
+   * List requests only, because that is what the crash-resume test is about: a
+   * walk killed part-way through the pages of a catalogue. A metafield read is
+   * a per-product enrichment the walk is built to carry on without, and killing
+   * one would prove something else.
+   */
   diesAfter(requests: number): this {
     this.failAfter = requests
     return this
@@ -63,10 +79,24 @@ class FakeShopify implements ShopifyListReader {
     path: string,
   ): Promise<{ body: T; nextPageInfo: string | undefined }> {
     this.requested.push(path)
-    if (this.failAfter !== undefined && this.requested.length > this.failAfter) {
+    const isList = path.startsWith('products.json') || path.startsWith('orders.json')
+    if (isList) this.listRequests += 1
+    if (this.failAfter !== undefined && isList && this.listRequests > this.failAfter) {
       this.failAfter = undefined
       this.failures += 1
       throw new Error('the worker died mid-page')
+    }
+
+    const metafieldsFor = /^products\/(\d+)\/metafields\.json/.exec(path)
+    if (metafieldsFor) {
+      const id = metafieldsFor[1]!
+      if (this.metafieldFailures.has(id)) throw new Error('that product is gone')
+      if (this.tokenDiesOnMetafields) {
+        throw Object.assign(new Error('Shopify rejected our token'), {
+          errorClass: 'shopify_token_invalid',
+        })
+      }
+      return { body: { metafields: this.metafields[id] ?? [] } as T, nextPageInfo: undefined }
     }
 
     const list = path.startsWith('orders.json') ? this.orders : this.products
@@ -238,6 +268,104 @@ describe.skipIf(!available)('reading a whole store', () => {
       'product_created',
       'product_created',
     ])
+  })
+
+  it("asks the store for its own option axes and keeps them", async () => {
+    const shopify = new FakeShopify([
+      shopifyProduct(1, {
+        options: [
+          { name: 'Size', position: 1, values: ['UK 8', 'UK 9'] },
+          { name: 'Colour', position: 2, values: ['Black', 'Tan'] },
+        ],
+      }),
+    ])
+    const { outcome } = await runCatalogSync(deps(shopify))
+    expect(outcome.status).toBe('succeeded')
+
+    // Asked for by name: without it in the field list Shopify sends the product
+    // back with no options at all and the store's best-organised data is lost.
+    expect(shopify.requested[0]).toContain('options')
+
+    const { rows } = await harness.pool.query<{ options: unknown }>('select options from products')
+    expect(rows[0]?.options).toEqual([
+      { name: 'Size', values: ['UK 8', 'UK 9'] },
+      { name: 'Colour', values: ['Black', 'Tan'] },
+    ])
+  })
+
+  it('leaves a store that publishes no options exactly as it was', async () => {
+    const shopify = new FakeShopify([shopifyProduct(1)])
+    await runCatalogSync(deps(shopify))
+    const { rows } = await harness.pool.query<{ options: unknown }>('select options from products')
+    expect(rows[0]?.options).toEqual([])
+  })
+
+  it("reads the attributes a store keeps in metafields, which never travel with the product", async () => {
+    const shopify = new FakeShopify([shopifyProduct(1)])
+    shopify.metafields['1'] = [
+      { namespace: 'custom', key: 'terrain', value: 'Technical trail', type: 'single_line_text_field' },
+    ]
+
+    const { outcome } = await runCatalogSync(deps(shopify))
+    expect(outcome.status).toBe('succeeded')
+    expect(shopify.requested).toContain('products/1/metafields.json?limit=250')
+
+    const { rows } = await harness.pool.query<{ metafields: unknown }>(
+      'select metafields from products',
+    )
+    expect(rows[0]?.metafields).toEqual([
+      { namespace: 'custom', key: 'terrain', value: 'Technical trail', type: 'single_line_text_field' },
+    ])
+  })
+
+  it('does not ask again for a product whose fingerprint has not moved', async () => {
+    const shopify = new FakeShopify([shopifyProduct(1)])
+    shopify.metafields['1'] = [
+      { namespace: 'custom', key: 'terrain', value: 'Trail', type: 'single_line_text_field' },
+    ]
+    await runCatalogSync(deps(shopify))
+
+    // A second day's run over an unchanged store. One request per product per
+    // night for an answer we already hold is the cost this check exists to
+    // avoid.
+    const before = shopify.requested.length
+    await runCatalogSync(deps(shopify, '2026-06-21T03:00:00Z'))
+    const second = shopify.requested.slice(before)
+    expect(second.filter((path) => path.includes('metafields.json'))).toEqual([])
+  })
+
+  it('finishes the walk when one product\'s metafields cannot be read', async () => {
+    // A product deleted between the list read and this one answers 404. Its own
+    // row has already been read and is about to be written; taking the whole
+    // catalogue sync down with it would be the wrong trade.
+    const shopify = new FakeShopify([shopifyProduct(1), shopifyProduct(2)])
+    shopify.metafieldFailures.add('1')
+    shopify.metafields['2'] = [
+      { namespace: 'custom', key: 'fit', value: 'Wide', type: 'single_line_text_field' },
+    ]
+
+    const { outcome } = await runCatalogSync(deps(shopify))
+    expect(outcome.status).toBe('succeeded')
+
+    const { rows } = await harness.pool.query<{ shopify_product_id: string; metafields: unknown }>(
+      'select shopify_product_id, metafields from products order by shopify_product_id',
+    )
+    // Left as it was rather than written as "none", so a later read still can.
+    expect(rows[0]?.metafields).toEqual([])
+    expect(rows[1]?.metafields).toEqual([
+      { namespace: 'custom', key: 'fit', value: 'Wide', type: 'single_line_text_field' },
+    ])
+  })
+
+  it('stops for a dead token rather than carrying on without the attributes', async () => {
+    // The one failure that is not this product's problem: it is the store's,
+    // and it sends the merchant to the reconnect screen. Swallowing it here
+    // would leave the walk grinding through a catalogue it can no longer read.
+    const shopify = new FakeShopify([shopifyProduct(1)])
+    shopify.tokenDiesOnMetafields = true
+
+    const { outcome } = await runCatalogSync(deps(shopify))
+    expect(outcome.status).not.toBe('succeeded')
   })
 
   it('resumes at the page it reached rather than at the first one', async () => {

@@ -42,11 +42,21 @@ class FakeShopify implements ShopifyListReader {
     private readonly pageSize = 100,
   ) {}
 
+  /** Metafields keyed by Shopify product id, as a store that publishes them would answer. */
+  metafields: Record<string, Record<string, unknown>[]> = {}
+
   async getPage<T>(
     _auth: { shop: string; accessToken: string },
     path: string,
   ): Promise<{ body: T; nextPageInfo: string | undefined }> {
     this.requested.push(path)
+    const metafieldsFor = /^products\/(\d+)\/metafields\.json/.exec(path)
+    if (metafieldsFor) {
+      return {
+        body: { metafields: this.metafields[metafieldsFor[1]!] ?? [] } as T,
+        nextPageInfo: undefined,
+      }
+    }
     const isOrders = path.startsWith('orders.json')
     const list = isOrders ? this.orders : this.products
     const key = isOrders ? 'orders' : 'products'
@@ -174,6 +184,52 @@ describe.skipIf(!available)('the nightly re-read', () => {
 
     const { rows } = await harness.pool.query<{ n: string }>('select count(*) as n from products')
     expect(rows[0]?.n).toBe('3')
+  })
+
+  it("fills in a store's options tonight, and asks for metafields only where something moved", async () => {
+    const catalogue = [
+      shopifyProduct(1, { options: [{ name: 'Size', values: ['S', 'M'] }] }),
+      shopifyProduct(2, { options: [{ name: 'Size', values: ['L'] }] }),
+    ]
+    const first = new FakeShopify([...catalogue])
+    first.metafields['1'] = [
+      { namespace: 'custom', key: 'terrain', value: 'Trail', type: 'single_line_text_field' },
+    ]
+    await reconcileStoreCatalog(deps(first), { accountId })
+
+    const { rows } = await harness.pool.query<{ options: unknown; metafields: unknown }>(
+      'select options, metafields from products order by shopify_product_id',
+    )
+    expect(rows[0]?.options).toEqual([{ name: 'Size', values: ['S', 'M'] }])
+    expect(rows[0]?.metafields).toEqual([
+      { namespace: 'custom', key: 'terrain', value: 'Trail', type: 'single_line_text_field' },
+    ])
+
+    // A second night over an unchanged store. One extra request per product per
+    // night, for ever, is what this avoids.
+    const second = new FakeShopify([...catalogue])
+    await reconcileStoreCatalog(
+      deps(second, new FakeConnections(accountId), '2026-06-21T03:00:00Z'),
+      { accountId },
+    )
+    expect(second.requested.filter((path) => path.includes('metafields.json'))).toEqual([])
+
+    // And the night after an edit, it asks again for that product alone.
+    const third = new FakeShopify([
+      shopifyProduct(1, {
+        options: [{ name: 'Size', values: ['S', 'M'] }],
+        body_html: '<p>Rewritten.</p>',
+        updated_at: '2026-06-21T22:00:00Z',
+      }),
+      catalogue[1]!,
+    ])
+    await reconcileStoreCatalog(
+      deps(third, new FakeConnections(accountId), '2026-06-22T03:00:00Z'),
+      { accountId },
+    )
+    expect(third.requested.filter((path) => path.includes('metafields.json'))).toEqual([
+      'products/1/metafields.json?limit=250',
+    ])
   })
 
   it('finds the edit a dropped webhook never told us about', async () => {

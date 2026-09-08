@@ -180,11 +180,15 @@ const row: OpportunityRow = {
   expiresAt: null,
 }
 
+/** Marking work applied is addressed by the recommendation, so a press has to find one first. */
+const RECOMMENDATION_ID = '33333333-3333-4333-8333-333333333333'
+
 function refusing(code: string) {
   const toasts: Toast[] = []
   const api: OpportunitiesApi = {
     list: async () => null,
     detail: async () => null,
+    recommendationId: async () => RECOMMENDATION_ID,
     post: async () => ({ ok: false, conflict: code }),
   }
   const surface: ActionSurface = {
@@ -224,7 +228,7 @@ describe('pressing a button on an opportunity the product will not act on', () =
       expect(dismissing.toasts[0]?.message).toBe(conflictMessage(code))
 
       const marking = refusing(code)
-      await marking.actions.markTask(row, 'task-1', 'applied')
+      await marking.actions.markTask(row, 'task-1')
       expect(marking.toasts[0]?.message).toBe(conflictMessage(code))
     }
   })

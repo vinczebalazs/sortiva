@@ -105,7 +105,9 @@ describe('the detail drawer', () => {
   it('lists the tasks with a way to mark each one applied', () => {
     expect(html).toContain('data-drawer-section="tasks"')
     expect(html).toContain('data-task-action="applied"')
-    expect(html).toContain('data-task-action="skipped"')
+    // No "skip": nothing in the contract records a task as skipped, so the
+    // control that used to sit here posted to an address that never existed.
+    expect(html).not.toContain('data-task-action="skipped"')
     // One already applied offers no buttons, only its state.
     expect(html).toContain('data-task-state="applied"')
   })
@@ -305,11 +307,14 @@ function surfaceDouble() {
   return { surface, toasts, hidden, busy, refreshes: () => refreshes }
 }
 
+const RECOMMENDATION_ID = '44444444-4444-4444-8444-444444444444'
+
 function apiDouble(outcome: PostOutcome = { ok: true }) {
   const posts: string[] = []
   const api: OpportunitiesApi = {
     list: async () => null,
     detail: async () => null,
+    recommendationId: async () => RECOMMENDATION_ID,
     post: async (path) => {
       posts.push(path)
       return outcome
@@ -329,20 +334,20 @@ describe('dismissing an opportunity', () => {
     const { api, posts } = apiDouble()
     await createOpportunityActions(api, scene.surface).dismiss(row)
 
-    expect(posts).toEqual([`/${row.id}/dismiss`])
+    expect(posts).toEqual([`/api/opportunities/${row.id}/dismiss`])
     expect(scene.hidden).toEqual([[row.id, true]])
     expect(scene.toasts[0]?.message).toBe(t('opportunities.toast.dismissed'))
     expect(scene.toasts[0]?.undoLabel).toBe(t('opportunities.toast.undo'))
   })
 
-  it('puts the card back and asks the server to restore it when the undo is taken', async () => {
+  it('puts the card back and asks the server to undismiss it when the undo is taken', async () => {
     const { api, posts } = apiDouble()
     await createOpportunityActions(api, scene.surface).dismiss(row)
 
     scene.toasts[0]?.onUndo?.()
     await vi.waitFor(() => expect(posts).toHaveLength(2))
 
-    expect(posts[1]).toBe(`/${row.id}/restore`)
+    expect(posts[1]).toBe(`/api/opportunities/${row.id}/undismiss`)
     expect(scene.hidden.at(-1)).toEqual([row.id, false])
   })
 
@@ -390,6 +395,7 @@ describe('an opportunity the latest scan moved underneath us', () => {
     const api: OpportunitiesApi = {
       list: async () => null,
       detail: async () => null,
+      recommendationId: async () => RECOMMENDATION_ID,
       post: async () => ({ ok: true, body: { scheduledFor: '2026-02-18' } }),
     }
     await createOpportunityActions(api, scene.surface).schedule(row)

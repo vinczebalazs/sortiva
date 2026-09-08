@@ -31,7 +31,25 @@ export type PostOutcome =
 export interface OpportunitiesApi {
   list(): Promise<OpportunityListResponse | null>
   detail(id: string): Promise<OpportunityDetail | null>
+  /**
+   * The whole address, not a fragment appended to some base. Three of these
+   * presses reach a route that is not under `/api/opportunities` at all —
+   * generating advice for a page, and marking that advice applied, are served
+   * by the recommendations endpoints — and a base that silently prefixed every
+   * path is what let this screen spend its whole life posting to three
+   * addresses nobody had built.
+   */
   post(path: string, body?: unknown): Promise<PostOutcome>
+  /**
+   * The id of the advice standing for this opportunity, or null if there is
+   * none yet.
+   *
+   * Marking work applied is addressed by the recommendation rather than by the
+   * opportunity, and the drawer's own read is the only place that id is
+   * published — the opportunity detail response does not carry it. So a press
+   * that marks something applied costs one extra read first.
+   */
+  recommendationId(opportunityId: string): Promise<string | null>
 }
 
 export interface Toast {
@@ -167,11 +185,35 @@ function toastId(): string {
   return `toast-${counter}`
 }
 
+/**
+ * The addresses behind the buttons.
+ *
+ * Written out here as whole paths rather than assembled at each call site, so
+ * that the check which walks every press (`screen-addresses.test.ts`) reads the
+ * same strings the browser sends. Two of them are not under
+ * `/api/opportunities`: advice is generated and applied through the
+ * recommendations routes, which is where those endpoints were actually built.
+ */
+export const OPPORTUNITY_ENDPOINTS = {
+  dismiss: (id: string) => `/api/opportunities/${id}/dismiss`,
+  /** The undo on the dismiss toast. Not `restore`, which never existed. */
+  undismiss: (id: string) => `/api/opportunities/${id}/undismiss`,
+  schedule: (id: string) => `/api/opportunities/${id}/schedule`,
+  generate: () => '/api/recommendations',
+  apply: (recommendationId: string) => `/api/recommendations/${recommendationId}/apply`,
+} as const
+
 export interface OpportunityActions {
   dismiss(row: OpportunityRow): Promise<void>
   schedule(row: OpportunityRow): Promise<void>
   generate(row: OpportunityRow): Promise<void>
-  markTask(row: OpportunityRow, taskId: string, state: 'applied' | 'skipped'): Promise<void>
+  /** One task on the standing recommendation. */
+  markTask(row: OpportunityRow, taskId: string): Promise<void>
+  /**
+   * The whole recommendation, which is a different thing from marking each of
+   * its tasks: only this books the measurement of whether the advice worked.
+   */
+  applyAll(row: OpportunityRow): Promise<void>
 }
 
 export function createOpportunityActions(
@@ -193,12 +235,29 @@ export function createOpportunityActions(
     }
   }
 
+  /**
+   * The recommendation this opportunity's tasks belong to, or a toast saying
+   * the press did not land.
+   *
+   * A merchant can be looking at a task list whose recommendation has since
+   * been withdrawn — regenerating replaces both — so "no recommendation" is a
+   * real answer here and not only a failed read.
+   */
+  async function recommendationFor(row: OpportunityRow): Promise<string | null> {
+    const id = await api.recommendationId(row.id)
+    if (id === null) {
+      surface.toast({ id: toastId(), message: t('opportunities.toast.failed') })
+      surface.refresh()
+    }
+    return id
+  }
+
   return {
     async dismiss(row) {
       // Hidden first, restored if the request fails: a card that lingers for a
       // second after "Dismiss" reads as a button that did not work.
       surface.setHidden(row.id, true)
-      if (!(await run(row, `/${row.id}/dismiss`)).ok) {
+      if (!(await run(row, OPPORTUNITY_ENDPOINTS.dismiss(row.id))).ok) {
         surface.setHidden(row.id, false)
         return
       }
@@ -208,7 +267,7 @@ export function createOpportunityActions(
         undoLabel: t('opportunities.toast.undo'),
         onUndo: () => {
           surface.setHidden(row.id, false)
-          void api.post(`/${row.id}/restore`).then((outcome) => {
+          void api.post(OPPORTUNITY_ENDPOINTS.undismiss(row.id)).then((outcome) => {
             surface.toast({
               id: toastId(),
               message: outcome.ok
@@ -222,7 +281,7 @@ export function createOpportunityActions(
     },
 
     async schedule(row) {
-      const outcome = await run(row, `/${row.id}/schedule`, {})
+      const outcome = await run(row, OPPORTUNITY_ENDPOINTS.schedule(row.id), {})
       if (!outcome.ok) return
       // The day is the server's answer, not ours: the calendar takes at most
       // one topic a day, so the date asked for and the date given can differ.
@@ -237,23 +296,45 @@ export function createOpportunityActions(
     },
 
     async generate(row) {
-      if ((await run(row, `/${row.id}/recommendations`)).ok) surface.refresh()
+      // The opportunity travels in the body: the route is addressed by what it
+      // makes, not by what it is made from.
+      const outcome = await run(row, OPPORTUNITY_ENDPOINTS.generate(), { opportunityId: row.id })
+      if (outcome.ok) surface.refresh()
     },
 
-    async markTask(row, taskId, state) {
-      if ((await run(row, `/${row.id}/tasks/${taskId}`, { state })).ok) surface.refresh()
+    async markTask(row, taskId) {
+      const recommendationId = await recommendationFor(row)
+      if (recommendationId === null) return
+      if ((await run(row, OPPORTUNITY_ENDPOINTS.apply(recommendationId), { taskId })).ok) {
+        surface.refresh()
+      }
+    },
+
+    async applyAll(row) {
+      const recommendationId = await recommendationFor(row)
+      if (recommendationId === null) return
+      // No task named means the whole recommendation, which is what starts the
+      // 28-day clock on measuring whether the advice worked. Marking each task
+      // in turn would leave every one of them applied and nothing ever measured.
+      if ((await run(row, OPPORTUNITY_ENDPOINTS.apply(recommendationId), {})).ok) {
+        surface.refresh()
+      }
     },
   }
 }
 
-/** The list and detail routes, over the app's own API. */
-export function httpOpportunitiesApi(
-  base = '/api/opportunities',
-  fetchImpl: typeof fetch = fetch,
-): OpportunitiesApi {
+/**
+ * The screen's presses, over the app's own API.
+ *
+ * Every address is written whole. An earlier version took a base and appended a
+ * fragment to it, which made "post to this opportunity" the only thing that
+ * could be expressed — and three presses that had to reach elsewhere were given
+ * addresses under the base that no route has ever served.
+ */
+export function httpOpportunitiesApi(fetchImpl: typeof fetch = fetch): OpportunitiesApi {
   async function readJson<T>(path: string): Promise<T | null> {
     try {
-      const response = await fetchImpl(`${base}${path}`, { headers: { accept: 'application/json' } })
+      const response = await fetchImpl(path, { headers: { accept: 'application/json' } })
       if (!response.ok) return null
       return (await response.json()) as T
     } catch {
@@ -262,11 +343,17 @@ export function httpOpportunitiesApi(
   }
 
   return {
-    list: () => readJson<OpportunityListResponse>(''),
-    detail: (id) => readJson<OpportunityDetail>(`/${id}`),
+    list: () => readJson<OpportunityListResponse>('/api/opportunities'),
+    detail: (id) => readJson<OpportunityDetail>(`/api/opportunities/${id}`),
+    async recommendationId(opportunityId) {
+      const read = await readJson<{ recommendation?: { id?: string } | null }>(
+        `/api/recommendations?opportunityId=${encodeURIComponent(opportunityId)}`,
+      )
+      return read?.recommendation?.id ?? null
+    },
     async post(path, body) {
       try {
-        const response = await fetchImpl(`${base}${path}`, {
+        const response = await fetchImpl(path, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify(body ?? {}),

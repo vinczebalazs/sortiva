@@ -91,6 +91,50 @@ describe.skipIf(!available)('the catalogue as we hold it', () => {
     expect(rows[0]?.family_id).toBe(familyId)
   })
 
+  it("keeps the store's own option axes", async () => {
+    await upsertProducts(ctx.db, scope, [
+      { ...product('700', 'aaa'), options: [{ name: 'Size', values: ['S', 'M'] }] },
+    ])
+    const { rows } = await ctx.pool.query<{ options: unknown }>('select options from products')
+    expect(rows[0]?.options).toEqual([{ name: 'Size', values: ['S', 'M'] }])
+  })
+
+  it('leaves options alone when the write did not read them', async () => {
+    // The nightly sweep and a webhook both write a product, and only some reads
+    // carry the option field. A write that never asked must not be able to
+    // report "none" and lose what a read that did ask for found.
+    await upsertProducts(ctx.db, scope, [
+      { ...product('700', 'aaa'), options: [{ name: 'Size', values: ['S', 'M'] }] },
+    ])
+    await upsertProducts(ctx.db, scope, [product('700', 'bbb')])
+
+    const { rows } = await ctx.pool.query<{ options: unknown }>('select options from products')
+    expect(rows[0]?.options).toEqual([{ name: 'Size', values: ['S', 'M'] }])
+  })
+
+  it('records that a store really has no options, when it was asked', async () => {
+    await upsertProducts(ctx.db, scope, [
+      { ...product('700', 'aaa'), options: [{ name: 'Size', values: ['S'] }] },
+    ])
+    await upsertProducts(ctx.db, scope, [{ ...product('700', 'bbb'), options: [] }])
+
+    const { rows } = await ctx.pool.query<{ options: unknown }>('select options from products')
+    expect(rows[0]?.options).toEqual([])
+  })
+
+  it('writes a batch where only some products carried options', async () => {
+    await upsertProducts(ctx.db, scope, [
+      { ...product('700', 'aaa'), options: [{ name: 'Size', values: ['S'] }] },
+      product('701', 'bbb'),
+    ])
+    const { rows } = await ctx.pool.query<{ shopify_product_id: string; options: unknown }>(
+      'select shopify_product_id, options from products order by shopify_product_id',
+    )
+    expect(rows).toHaveLength(2)
+    expect(rows[0]?.options).toEqual([{ name: 'Size', values: ['S'] }])
+    expect(rows[1]?.options).toEqual([])
+  })
+
   it('stores the quarantined description compressed and reads it back', async () => {
     await upsertProducts(ctx.db, scope, [product('700', 'aaa')])
     const { rows } = await ctx.pool.query<{ raw_body_html: Buffer }>(
