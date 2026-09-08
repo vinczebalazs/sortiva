@@ -174,7 +174,7 @@ beforeEach(() => {
   // name. The refusal is the more useful half: if this file ever starts
   // reaching somewhere new, it says where instead of hanging until the timeout.
   realFetch = globalThis.fetch
-  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+  globalThis.fetch = (async (input: RequestInfo | URL) => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
     if (url === DISCOVERY_URL) {
       return new Response(JSON.stringify(GOOGLE_DISCOVERY), {
