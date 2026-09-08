@@ -5635,3 +5635,24 @@ Decision: `resolves()` in `apps/web/app/api/opportunities/_lib/fixture-keys.test
 Why: the second route — "or the catalogue holds the key in final form" — is what let this fault ship. `R-FIXTURE-KEYS` recorded it as deliberately forgiving and reported the fault separately rather than recording it as a key problem, which was right at the time; closing it needs the renderer to answer for every family first, which is the entry above. Three call sites depended on the forgiving route and now resolve properly: the two monthly-summary reasons and the one Appendix A reason a summary email names.
 Consequence: the guard is now a real seam check rather than a spelling check. A producer writing `products.something` as an explanation key fails immediately, naming the key and the file and line it was written on, instead of a merchant reading the admission.
 Nearest spec: invariant 8, invariant 24.
+
+## 2026-09-08 — R-COMPLETED-LINK — OPEN QUESTION, NOT DECIDED: what a merchant should reach from a task they finished
+Status: **stopped for the founder.** Nothing was changed. All three answers below show the merchant something different, so picking one is a product decision rather than a repair.
+
+What exists now, in plain terms. The Products screen has a section called "Knowledge gaps": each entry is a piece of advice we cannot give yet because the merchant's own product pages do not say enough — no material, no dimensions — and it lists which products and which fields. When they fill those in, the weekly pass notices, retires the entry, and it drops into a collapsed "Completed tasks" fold with its subject, the date, and a link labelled **"See what it became"**.
+
+The fault. That link points at the finished task's *own* record on the Opportunities screen (`packages/ui/src/products/ProductsScreen.tsx:124`). Two things make it dead rather than merely odd. The record was retired when the work was done, and `GET /api/opportunities` only ever serves records still open (`listOpenOpportunities`, `packages/db/src/repositories/opportunities.ts:237`) — so nothing on that screen can show it, under any filter. And even if it could, it would show the chore the merchant just finished, which is not "what it became".
+
+What the interface spec asks for (ui §7): completed tasks collapse with the date "and, once the opportunity proceeds, a link to what it became". So the affordance is spec-named and the words on it are right; only its destination has never existed.
+
+What "what it became" would actually be. The finished task is about one search term. Once the catalogue says enough, a later weekly pass can raise a *new* piece of advice about that same search — a different record, with a different identity, and only if the search is still worth writing about. Nothing today records that the second came from the first, and the response the screen reads carries only the finished task's own identity.
+
+The three answers, and what each costs:
+1. **Drop the link.** The fold keeps the subject and the date. Costs nothing, ships today, and the merchant simply gets no route onward. It also means the screen stops offering something the interface spec names.
+2. **Link to the successor** — the advice now standing for that same search. This is the spec's intent read literally. It needs the Products endpoint to look for an open record about the same subject and send its identity, which is a field added to a frozen response shape and work in the lane that owns opportunities; and it needs an answer for the common case where there is no successor, because a search that stopped being worth writing about produces none.
+3. **Link back to the finished task itself and make that work**, relabelling it honestly ("See the task you finished"). This needs the opportunities endpoint to serve retired records, which is a change to what an endpoint returns and affects more than this screen.
+
+Recommendation if one is wanted: (1) now and (2) as its own card, because a dead link is worse than an absent one and (2) is not small.
+
+Related, found while reading and left alone: the Opportunities screen offers filter chips for **completed, dismissed and expired** records (ui §5.1 asks for all three, and the dismissed one is meant to offer "restore"), and the endpoint behind it serves only open records — so none of the three chips can ever show anything. Same root cause as this link. Carded separately in the session report.
+Nearest spec: ui §7; ui §5.1; main §7.9 (expiry never deletes).
