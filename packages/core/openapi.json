@@ -1465,12 +1465,26 @@
                   "type": "object",
                   "properties": {
                     "files": {
-                      "type": "object",
-                      "propertyNames": {
-                        "type": "string"
-                      },
-                      "additionalProperties": {
-                        "type": "string"
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "filename": {
+                            "type": "string"
+                          },
+                          "mimeType": {
+                            "type": "string"
+                          },
+                          "content": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "filename",
+                          "mimeType",
+                          "content"
+                        ],
+                        "additionalProperties": false
                       }
                     }
                   },

@@ -899,7 +899,21 @@ export const applyRecommendationResponseSchema = z.object({
  * could straddle a price change and disagree with each other.
  */
 export const articleExportResponseSchema = z.object({
-  files: z.record(z.string(), z.string()),
+  /**
+   * A list rather than a name-to-contents map, which is what this endpoint has
+   * always answered — each file carries its own name and type because the
+   * merchant saves it under that name and the browser needs the type to hand it
+   * over. The map was declared here and never served; `R-CONTRACT-PROVE` found
+   * it by parsing the real answer, which is the check the declaration had
+   * never faced.
+   */
+  files: z.array(
+    z.object({
+      filename: z.string(),
+      mimeType: z.string(),
+      content: z.string(),
+    }),
+  ),
 })
 
 // ── Webhooks ─────────────────────────────────────────────────────────────────

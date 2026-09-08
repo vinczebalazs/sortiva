@@ -301,13 +301,6 @@ const KNOWN_MISMATCHES: Readonly<Record<string, KnownMismatch>> = {
       '"Connect Search Console" fails there on a deployed server; the onboarding step reads ' +
       'either name and works. Handler: apps/web/app/api/gsc/_lib/handlers.ts:42.',
   },
-  'GET /api/articles/{articleId}/export': {
-    issues: ['files: Invalid input: expected record, received array'],
-    why:
-      'The handler answers a list of files, each with its own name and contents; the contract ' +
-      'declares one object mapping name to contents. The screen and the export bundle both use ' +
-      'the list. Handler: apps/web/app/api/articles/_lib/delivery.ts:70.',
-  },
 }
 
 const DRIVERS: Readonly<Record<string, Driver>> = {
