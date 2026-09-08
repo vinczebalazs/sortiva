@@ -163,6 +163,39 @@ describe('the copy an earlier card had to park in packages/core', () => {
  * put to it.
  */
 describe('no denominators anywhere in the catalogue', () => {
+  /**
+   * A scan over a catalogue proves nothing about the catalogue it is not
+   * reading. Checked on 2026-09-08 by pruning `en.json` to the 37 keys the
+   * other blocks in this file pin by name: every one of the 48 assertions here,
+   * this scan included, stayed green while 97% of everything a merchant reads
+   * had gone. Nothing said how much was in view, so nothing noticed.
+   *
+   * Named families rather than a count alone, because a count is what that
+   * prune would still have cleared once the catalogue grew: the screens and the
+   * email below are where a sentence reporting a count actually lives, and a
+   * denominator cannot appear anywhere else.
+   */
+  it('has the whole catalogue in view (the scan is not vacuously small)', () => {
+    const entries = Object.entries(en)
+    expect(entries.length).toBeGreaterThan(900)
+
+    const keys = entries.map(([key]) => key)
+    for (const family of [
+      'performance.',
+      'dashboard.',
+      'content.',
+      'opportunities.',
+      'email.monthlySummary.',
+    ]) {
+      expect(keys.some((key) => key.startsWith(family)), family).toBe(true)
+    }
+
+    // And that the sentences in view carry quantities at all: a rule about how
+    // two numbers may be joined says nothing over copy containing no numbers.
+    const withQuantity = entries.filter(([, value]) => /\d|\{\w+\}/.test(value))
+    expect(withQuantity.length).toBeGreaterThan(100)
+  })
+
   it('contains no count stated against a total', () => {
     const offenders = Object.entries(en)
       .map(([key, value]) => [key, findNumericDenominator(value)] as const)
