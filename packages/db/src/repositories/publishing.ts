@@ -1,7 +1,7 @@
 import { and, asc, eq, inArray, like, lt, sql } from 'drizzle-orm'
-import { publishMarker } from '@sortiva/core'
+import { publishMarker, type PublishAttemptOutcome } from '@sortiva/core'
 import type { Db } from '../client'
-import { accountSettings, articles, publishIntents, shopifyConns } from '../schema'
+import { accountSettings, articles, publishAttempts, publishIntents, shopifyConns } from '../schema'
 import type { AccountScope, SystemScope } from '../scope'
 import { lockDayForWrite } from './day-lock'
 import {
@@ -462,4 +462,49 @@ export async function hasPendingPublish(db: Db, scope: AccountScope): Promise<bo
     .where(and(eq(publishIntents.accountId, scope.accountId), eq(publishIntents.state, 'pending')))
     .limit(1)
   return row !== undefined
+}
+
+/** One attempt to post, and how it ended. */
+export interface PublishAttemptInput {
+  /**
+   * Null when the attempt cannot be tied to a row any more. The external id
+   * below is the durable link; this is the convenience.
+   */
+  readonly articleId: string | null
+  /** The name the attempt claimed under, which outlives the claim itself. */
+  readonly articleExternalId: string
+  readonly outcome: PublishAttemptOutcome
+  /** Required on every ending but success, and rejected on a success, by the database. */
+  readonly failureClass: string | null
+  readonly endedAt?: Date
+}
+
+/**
+ * Writes down that we asked a shop to publish something, and what it said.
+ *
+ * **This is the only durable trace a refused publish leaves.** The claim that
+ * guards a publication is deleted the moment the shop turns the post away, so
+ * that the next attempt can take the name back — which means the commonest
+ * failure, and the one an outage is made of, vanishes from `publish_intents`
+ * entirely. Any failure rate computed from what survives there reads a healthy
+ * zero straight through the bad day it is supposed to notice.
+ *
+ * Append-only, and never updated afterwards. An attempt that ends uncertain and
+ * is settled by the recovery sweep half an hour later is two facts — we tried,
+ * and we tried again — and a count over an hour only means something if each
+ * row is one attempt that really happened.
+ */
+export async function recordPublishAttempt(
+  db: Db,
+  scope: AccountScope,
+  input: PublishAttemptInput,
+): Promise<void> {
+  await db.insert(publishAttempts).values({
+    accountId: scope.accountId,
+    articleId: input.articleId,
+    articleExternalId: input.articleExternalId,
+    outcome: input.outcome,
+    failureClass: input.failureClass,
+    ...(input.endedAt ? { endedAt: input.endedAt } : {}),
+  })
 }

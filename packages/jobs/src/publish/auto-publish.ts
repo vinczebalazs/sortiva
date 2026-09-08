@@ -4,6 +4,7 @@ import {
   autoPublishReadiness,
   intentExternalId,
   isTokenRejected,
+  publishAttemptFailure,
   publishMarker,
   sendDisposition,
   BundleNotBuildable,
@@ -27,6 +28,7 @@ import {
 } from '@sortiva/db'
 import { runtimeLogger } from '../runtime/logging'
 import { storefrontDomainFor } from './address'
+import { recordAttempt } from './attempts'
 import { buildBundleForArticle } from './bundle'
 import { raiseShopifyReconnect } from './reconnect'
 
@@ -262,8 +264,30 @@ async function sendAndAdopt(
       publishAs: context.publishAs,
     })
   } catch (error) {
+    // Recorded before the claim is handed back, because handing it back deletes
+    // the only other trace this attempt ever had.
+    await recordAttempt({
+      db: deps.db,
+      log,
+      accountId: input.accountId,
+      articleId: input.articleId,
+      articleExternalId: externalId,
+      at: now,
+      ...publishAttemptFailure(error),
+    })
     return handleSendFailure(deps, input, externalId, error, now, log)
   }
+
+  await recordAttempt({
+    db: deps.db,
+    log,
+    accountId: input.accountId,
+    articleId: input.articleId,
+    articleExternalId: externalId,
+    outcome: 'succeeded',
+    failureClass: null,
+    at: now,
+  })
 
   // The single most dangerous instant in the product: the post exists on the
   // merchant's shop and nothing of ours records it. A worker that dies here is

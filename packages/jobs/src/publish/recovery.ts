@@ -18,6 +18,7 @@ import {
   type PublishIntentRow,
 } from '@sortiva/db'
 import { deadLetter } from '../runtime/dlq'
+import { recordAttempt } from './attempts'
 import { tryWithAccountLock } from '../runtime/lock'
 import { runtimeLogger } from '../runtime/logging'
 import { storefrontDomainFor } from './address'
@@ -156,7 +157,8 @@ async function recoverOneClaim(
     // is the one thing that must happen before re-sending. Left pending; if the
     // connection never comes back the claim ages out and is abandoned below on
     // a later pass.
-    if (ageMs >= RECOVERY_ABANDON_AFTER_MS) return abandonClaim(deps, claim, 'connection_lost', log)
+    if (ageMs >= RECOVERY_ABANDON_AFTER_MS)
+      return abandonClaim(deps, claim, 'connection_lost', now, log)
     return 'skipped'
   }
 
@@ -165,7 +167,8 @@ async function recoverOneClaim(
   // one. So it needs no remote lookup — but it does still refuse to create,
   // which is what keeps a deleted remote article from being silently reposted.
   if (revisionN > 0) {
-    if (ageMs >= RECOVERY_ABANDON_AFTER_MS) return abandonClaim(deps, claim, 'update_unrecoverable', log)
+    if (ageMs >= RECOVERY_ABANDON_AFTER_MS)
+      return abandonClaim(deps, claim, 'update_unrecoverable', now, log)
     const outcome = await republishArticleToShopify(deps, { ...input, revisionN })
     return outcome.status === 'updated' ? 're_executed' : 'skipped'
   }
@@ -217,7 +220,7 @@ async function recoverOneClaim(
     }
 
     case 'abandon':
-      return abandonClaim(deps, claim, 'recovery_exhausted', log)
+      return abandonClaim(deps, claim, 'recovery_exhausted', now, log)
   }
 }
 
@@ -229,6 +232,7 @@ async function abandonClaim(
   deps: AutoPublishDeps,
   claim: PublishIntentRow,
   errorClass: string,
+  now: Date,
   log: Logger,
 ): Promise<ClaimOutcome> {
   const closed = await abandonPublishIntent(
@@ -237,6 +241,21 @@ async function abandonClaim(
     claim.articleExternalId,
   )
   if (!closed) return 'skipped'
+
+  // The fourth and last way a publication can end, and the only one this sweep
+  // owns. Written under the same word the dead-letter entry below carries, so
+  // an operator matching an incident against the counts is reading one
+  // vocabulary rather than two.
+  await recordAttempt({
+    db: deps.db,
+    log,
+    accountId: claim.accountId,
+    articleId: articleIdFromIntentExternalId(claim.articleExternalId) ?? null,
+    articleExternalId: claim.articleExternalId,
+    outcome: 'abandoned',
+    failureClass: errorClass,
+    at: now,
+  })
 
   await deadLetter(deps.db, {
     accountId: claim.accountId,

@@ -11,7 +11,9 @@ import {
   openPublishIntent,
   pendingPublishIntents,
   readPublishTarget,
+  recordPublishAttempt,
   recordPublishGrant,
+  releasePublishIntent,
   setDeliveryMode,
   setShopifyPublishAs,
   setTargetBlog,
@@ -222,5 +224,87 @@ describe('one publication, one claim', () => {
     await abandonPublishIntent(harness.db, scope, EXTERNAL)
     expect(await hasPendingPublish(harness.db, scope)).toBe(false)
     expect((await findPublishIntent(harness.db, scope, EXTERNAL))?.state).toBe('abandoned')
+  })
+})
+
+/**
+ * The record a refused publish leaves behind, which is the only one it has: the
+ * claim that guarded the publication is deleted the moment a shop turns the
+ * post away, so without this row the commonest failure — and the one a platform
+ * outage is made of — would leave nothing at all.
+ */
+describe('one row per attempt to post, and how it ended', () => {
+  const EXTERNAL = 'sortiva-11111111-1111-4111-8111-111111111111'
+
+  async function attempts() {
+    const { rows } = await harness.pool.query<{
+      outcome: string
+      failure_class: string | null
+      article_external_id: string
+    }>(
+      'SELECT outcome, failure_class, article_external_id FROM publish_attempts WHERE account_id = $1 ORDER BY ended_at',
+      [accountId],
+    )
+    return rows
+  }
+
+  it('keeps the refusal after the claim that guarded it has been deleted', async () => {
+    await openPublishIntent(harness.db, scope, { articleExternalId: EXTERNAL, revisionN: 0 })
+    await recordPublishAttempt(harness.db, scope, {
+      articleId: null,
+      articleExternalId: EXTERNAL,
+      outcome: 'refused',
+      failureClass: 'shopify_rate_limited',
+    })
+    await releasePublishIntent(harness.db, scope, EXTERNAL)
+
+    expect(await findPublishIntent(harness.db, scope, EXTERNAL)).toBeUndefined()
+    expect(await attempts()).toEqual([
+      { outcome: 'refused', failure_class: 'shopify_rate_limited', article_external_id: EXTERNAL },
+    ])
+  })
+
+  it('records two endings as two rows rather than editing the first', async () => {
+    // An attempt that ends uncertain and is given up on half an hour later is
+    // two facts. Rewriting the first would make an hour's count mean nothing.
+    await recordPublishAttempt(harness.db, scope, {
+      articleId: null,
+      articleExternalId: EXTERNAL,
+      outcome: 'uncertain',
+      failureClass: 'shopify_api_error',
+    })
+    await recordPublishAttempt(harness.db, scope, {
+      articleId: null,
+      articleExternalId: EXTERNAL,
+      outcome: 'abandoned',
+      failureClass: 'recovery_exhausted',
+    })
+
+    expect((await attempts()).map((row) => row.outcome)).toEqual(['uncertain', 'abandoned'])
+  })
+
+  it('refuses a failure that does not say what failed', async () => {
+    // Without the name, an operator is told something went wrong and not what —
+    // which is the whole difference between "the platform is down" and "one
+    // merchant's token expired".
+    await expect(
+      recordPublishAttempt(harness.db, scope, {
+        articleId: null,
+        articleExternalId: EXTERNAL,
+        outcome: 'refused',
+        failureClass: null,
+      }),
+    ).rejects.toThrow()
+  })
+
+  it('refuses a success that names one', async () => {
+    await expect(
+      recordPublishAttempt(harness.db, scope, {
+        articleId: null,
+        articleExternalId: EXTERNAL,
+        outcome: 'succeeded',
+        failureClass: 'shopify_rate_limited',
+      }),
+    ).rejects.toThrow()
   })
 })
