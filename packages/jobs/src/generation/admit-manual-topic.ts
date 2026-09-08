@@ -24,7 +24,8 @@ import {
   type Db,
   type TopicRow,
 } from '@sortiva/db'
-import { rules } from '@sortiva/rules'
+import type { GatesConfig } from '@sortiva/rules'
+import { resolveRulesForGate } from './rules-for-gate'
 import { runtimeLogger } from '../runtime/logging'
 
 /**
@@ -90,7 +91,7 @@ export interface AdmitManualTopicResult {
  * calibration can be substituted here with no change to the gate itself. See
  * DECISIONS 2026-09-03 T4.1.
  */
-function winnabilityFor(gates: ReturnType<typeof rules>['defaults']['gates']): number {
+function winnabilityFor(gates: GatesConfig): number {
   return gates.winnability.limited_intelligence_constant
 }
 
@@ -105,16 +106,22 @@ export async function admitManualTopic(
   const log = deps.logger ?? runtimeLogger()
   const now = (deps.now ?? (() => new Date()))()
   const scope = accountScope(input.accountId)
-  const gates = rules().forLocale(input.locale).gates
-  const rulesVersion = rules().rulesVersion
   const fetchedAt = now.toISOString()
 
-  const [keyword, connection, substanceRows, existingTargetOutcome] = await Promise.all([
+  // Folded into the same round trip as everything else this gate needs, so
+  // honouring an operator's override costs no extra wait.
+  const [keyword, connection, substanceRows, existingTargetOutcome, resolvedRules] = await Promise.all([
     findKeywordByTerm(deps.db, scope, input.cluster.head),
     findGscConnForAccount(deps.db, scope),
     productSubstanceForFamilies(deps.db, scope, input.cluster.familyIds),
     deps.existingTargetCheck.check(input.cluster, input.accountId),
+    resolveRulesForGate(deps.db, input.accountId, input.locale),
   ])
+
+  const gates = resolvedRules.layer.gates
+  // Says which numbers judged this topic: the repo file's, or the repo file's
+  // with an override on top. See `resolveRulesForGate`.
+  const rulesVersion = resolvedRules.rulesVersion
 
   const limitedIntelligence = isLimitedIntelligence(connection ?? null)
   const substance = substanceInventory(substanceRows, gates.substance_floor)
