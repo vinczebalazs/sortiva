@@ -55,9 +55,9 @@ import {
   type ArticleRow,
   type Db,
 } from '@sortiva/db'
-import { rules } from '@sortiva/rules'
 import type { PageFetcher } from '@sortiva/providers'
 import { assembleEvidencePack } from './assemble-evidence-pack'
+import { resolveRulesForGate } from './rules-for-gate'
 import { runtimeLogger } from '../runtime/logging'
 
 /**
@@ -154,8 +154,13 @@ export async function generateArticle(
   const log = deps.logger ?? runtimeLogger()
   const now = (deps.now ?? (() => new Date()))()
   const scope = accountScope(input.accountId)
-  const gates = rules().forLocale(input.locale.languageCode).gates
-  const generation = rules().forLocale(input.locale.languageCode).generation
+  // An operator can move one of these numbers for this store alone. The
+  // version comes back with them and is stamped on both gate decisions below,
+  // so a draft judged by a moved threshold never claims the repo file judged
+  // it. See `resolveRulesForGate`.
+  const resolvedRules = await resolveRulesForGate(deps.db, input.accountId, input.locale.languageCode)
+  const gates = resolvedRules.layer.gates
+  const generation = resolvedRules.layer.generation
 
   const pack = await assembleEvidencePack(
     { db: deps.db, seo: deps.seo, pageFetcher: deps.pageFetcher, now: () => now, logger: log },
@@ -189,6 +194,7 @@ export async function generateArticle(
           // same measurements under the names the copy interpolates, which is
           // the only place the screens look.
           reason_params: gate2.reasonParams,
+          rulesVersion: resolvedRules.rulesVersion,
         },
         reasonUserFacing: gate2.reasonTemplateKey,
       },
@@ -376,7 +382,12 @@ export async function generateArticle(
       topicId: input.topicId,
       gate: 3,
       outcome: gate3.outcome,
-      scoresJson: { ...gate3.audit, reason_params: gate3.reasonParams, model_calls: gate3.calls },
+      scoresJson: {
+        ...gate3.audit,
+        reason_params: gate3.reasonParams,
+        model_calls: gate3.calls,
+        rulesVersion: resolvedRules.rulesVersion,
+      },
       reasonUserFacing: gate3.reasonTemplateKey,
       promptVersion: gate3.verdict?.promptVersion ?? null,
       modelId: gate3.verdict?.modelId ?? null,
