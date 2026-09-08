@@ -357,7 +357,19 @@ async function answerFor(route: RouteDefinition): Promise<unknown> {
  * is the fault this file exists to find.
  */
 const OPEN_MAP_PROBE = 'zz_probe_key_9f1'
-const PROBE_VALUES: readonly unknown[] = ['probe', 1, true, null, {}, []]
+// A well-formed identifier belongs here alongside the loose values: a field
+// declared as one rejects `'probe'`, so without this any absent read of an
+// identifier looks like a field its endpoint could never send. Added when
+// naming the dashboard's reference keys turned a real fix into a false alarm.
+const PROBE_VALUES: readonly unknown[] = [
+  'probe',
+  '00000000-0000-4000-8000-000000000000',
+  1,
+  true,
+  null,
+  {},
+  [],
+]
 
 function plant(body: unknown, segments: readonly string[], key: string, value: unknown): boolean {
   if (body === null || typeof body !== 'object') return false

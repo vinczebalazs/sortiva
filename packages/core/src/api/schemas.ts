@@ -697,7 +697,33 @@ export const attentionResponseSchema = z.object({
         'merchant_task',
         'optimize_unapplied',
       ]),
-      refs: z.record(z.string(), z.string()),
+      /**
+       * What each item points at, named rather than left open.
+       *
+       * This was `Record<string, string>`, and an open map is a hole: every
+       * key survives it, misspellings included. The dashboard read `articleId`
+       * and `opportunityId`; the server has always sent `article_id` and
+       * `opportunity_id`, so four of the five kinds linked a merchant to a
+       * general page instead of the thing wanting their attention — on the
+       * first screen they see. Both spellings were legal here, so nothing
+       * could catch it, and the mock the frontend develops against used the
+       * screen's spelling, which made the links work in development and only
+       * there.
+       *
+       * Named in the underscore form because that is the vocabulary the
+       * notification record already uses, in rows already written and in a
+       * rule of its own that says to name the thing rather than the words.
+       * Every field is optional because which ones an item carries depends on
+       * its kind — but a name that is not one of these no longer passes.
+       */
+      refs: z
+        .object({
+          article_id: uuidSchema.optional(),
+          opportunity_id: uuidSchema.optional(),
+          task_id: uuidSchema.optional(),
+          recommendation_id: uuidSchema.optional(),
+        })
+        .strict(),
       since: isoDateTimeSchema,
     }),
   ),

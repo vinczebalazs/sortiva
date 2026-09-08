@@ -122,12 +122,12 @@ const ATTENTION: AttentionResponse = {
   items: [
     {
       kind: 'merchant_task',
-      refs: { opportunityId: '44444444-4444-4444-8444-444444444444' },
+      refs: { opportunity_id: '44444444-4444-4444-8444-444444444444' },
       since: '2026-08-10T00:00:00.000Z',
     },
     {
       kind: 'export_url_unconfirmed',
-      refs: { articleId: 'article-1' },
+      refs: { article_id: 'article-1' },
       since: '2026-08-08T00:00:00.000Z',
     },
   ],

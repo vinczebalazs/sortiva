@@ -415,7 +415,8 @@ export const RESPONSE_FIXTURES: Record<string, unknown> = {
       {
         id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
         type: 'opportunities_ready',
-        refs: { signalRunId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc' },
+        // Underscored, like everything the server really puts in a `refs` map.
+        refs: { signal_run_id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc' },
         createdAt: NOW,
         seenAt: null,
         readAt: null,
@@ -425,11 +426,20 @@ export const RESPONSE_FIXTURES: Record<string, unknown> = {
   },
   'POST /api/notifications/seen': { ok: true },
   'POST /api/notifications/{notificationId}/read': { ok: true },
+  // Two kinds, not one, and deliberately the two that carry different
+  // references. A mock describing a single kind let the dashboard read a name
+  // no answer in front of it ever contained, which is how its links came to
+  // point at the wrong pages for every merchant while working in development.
   'GET /api/attention': {
     items: [
       {
         kind: 'merchant_task',
-        refs: { opportunityId: fixtureOpportunities[2]!.id },
+        refs: { opportunity_id: fixtureOpportunities[2]!.id },
+        since: NOW,
+      },
+      {
+        kind: 'draft_awaiting_review',
+        refs: { article_id: '66666666-6666-4666-8666-666666666666' },
         since: NOW,
       },
     ],

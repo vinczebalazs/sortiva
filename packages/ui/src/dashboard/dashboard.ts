@@ -174,9 +174,21 @@ export type AttentionKind =
   | 'merchant_task'
   | 'optimize_unapplied'
 
+/**
+ * The names this screen may look for, spelt out rather than left as any
+ * string. A misspelling here used to be a link that quietly went to the wrong
+ * page for every merchant; now it does not compile.
+ */
+export interface AttentionRefs {
+  readonly article_id?: string
+  readonly opportunity_id?: string
+  readonly task_id?: string
+  readonly recommendation_id?: string
+}
+
 export interface AttentionItem {
   readonly kind: AttentionKind
-  readonly refs: Readonly<Record<string, string>>
+  readonly refs: AttentionRefs
   readonly since: string
 }
 
@@ -207,9 +219,13 @@ export function attentionText(kind: AttentionKind, t: Translate = defaultTransla
  * a new reference name never makes a row disappear.
  */
 export function attentionHref(item: AttentionItem): string {
-  if (item.refs.articleId) return `/content/articles/${item.refs.articleId}`
+  // Underscored, because that is what the endpoint sends and now what the
+  // contract declares. Reading the other spelling matched nothing, so every
+  // item fell through to the surface that owns its kind — which is why this
+  // failed quietly instead of breaking.
+  if (item.refs.article_id) return `/content/articles/${item.refs.article_id}`
   if (item.kind === 'merchant_task') return '/products'
-  if (item.refs.opportunityId) return `/opportunities#${item.refs.opportunityId}`
+  if (item.refs.opportunity_id) return `/opportunities#${item.refs.opportunity_id}`
   if (item.kind === 'draft_awaiting_review') return '/content/articles'
   return '/content'
 }
