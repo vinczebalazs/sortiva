@@ -12,10 +12,12 @@
  * sweep's own wake-ups forward cannot be wrong in that way, because it is the
  * same question the sweep will ask.
  *
- * `sweepWeeklyScans` (`packages/jobs/src/scan/weekly.ts`) reads its local day
- * and derives its run id from this file, so the prediction and the thing
- * predicted cannot drift apart.
+ * `sweepWeeklyScans` (`packages/jobs/src/scan/weekly.ts`) reads its local day,
+ * derives its run id, and decides whether the store is scanned at all from
+ * this file, so the prediction and the thing predicted cannot drift apart.
  */
+
+import type { LifecycleGate } from '../lifecycle/gate'
 
 /** The weekday the scan runs on, in the store's own week. */
 const SCAN_WEEKDAY = 'Mon'
@@ -76,6 +78,35 @@ export function weeklyScanRunId(accountId: string, localMondayDate: string): str
 
 export function isScanWeekday(day: ScanLocalDay): boolean {
   return day.weekday === SCAN_WEEKDAY
+}
+
+/**
+ * Whether the weekly scan runs for this store at all, judged on the state of
+ * the account rather than on the calendar.
+ *
+ * A scan buys results pages from the search-data vendor, per store, every
+ * week. Running one for a store nobody is paying for is a bill for nothing, so
+ * three states stop it: the subscription is not active, the merchant has
+ * switched vacation mode on, or deletion has been asked for. A store in any of
+ * them comes back to opportunity cards up to a week old and waits for its next
+ * Monday — the accepted cost of not spending on a store that is not trading
+ * with us.
+ *
+ * **This takes nothing away from what the merchant can already see.** Cards
+ * already on their board stay exactly as they are: nothing here deletes or
+ * hides a row, and the only pass that retires a card is the scan itself, which
+ * is not running. What stops is new analysis, which is the same thing billing
+ * has always stopped.
+ *
+ * Read off `generationAllowed` rather than off the three flags separately, so
+ * that the sweep and the next-scan date the Opportunities screen prints can
+ * never disagree about whether a scan is coming. The name is not a perfect
+ * fit — a signal scan writes no articles — but the set of accounts it covers
+ * is exactly the three states above, and a second predicate over the same
+ * three flags is how the two sides drift apart.
+ */
+export function weeklyScanAllowedFor(gate: Pick<LifecycleGate, 'generationAllowed'>): boolean {
+  return gate.generationAllowed
 }
 
 export interface NextWeeklyScanInput {

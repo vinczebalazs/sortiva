@@ -124,6 +124,7 @@ export {
   isScanWeekday,
   nextWeeklyScanAt,
   scanLocalDay,
+  weeklyScanAllowedFor,
   weeklyScanRunId,
   type NextWeeklyScanInput,
   type ScanLocalDay,
