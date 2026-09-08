@@ -4,12 +4,81 @@ Rewritten after **every** card lands or stops, and re-read before any card is
 launched and before any merge. Its test: a completely fresh session, with none of
 the conversation that produced it, could take over from this file alone.
 
-**Last rewritten:** 2026-09-03, 12:05, by the integrator session running this run,
-after the `T3.5` audit landed (read-only, findings recorded, nothing merged). `main`
-is still at `e698033`, unchanged since this run started — three build sessions
-(`T2.7`, `T9.7`, `T4.0`) are still running. **Everything from here down to "Picking
-this up again" is the previous run's report and is kept as history; read "Right now"
-first for what has actually changed since.**
+**Last rewritten:** 2026-09-07, 23:15, by the integrator session (`sortiva-a8`,
+running in the main worktree). **Everything below the first horizontal rule is
+older history, kept deliberately. Read this head first; it is what is true now.**
+
+## Where things stand at 2026-09-07, 23:15
+
+**`main` is at `8259bfc`, fully green: 318 test files, 4,055 tests, all eleven gate
+commands passing.** That is the first time all night the suite has been clean with
+no known-red test, and it happened after the publish-versus-dismissal deadlock was
+fixed.
+
+**The founder went to sleep at about 23:15 and will read a report in the morning.**
+Their standing instruction, given earlier and unchanged: *finish everything in code;
+only vendor credentials in `.env` are deferred to the last step.* They have answered
+every question put to them tonight, promptly. **The rules of `docs/overnight-run.md`
+apply in full — in particular: do not decide a founder question, do not exceed four
+building sessions, check `uptime` first, and never `git add -A`.**
+
+A sleep hold is running: `caffeinate -dimsu -t 32400`, started 23:16, nine hours.
+
+### The four lanes running right now
+
+| Lane | Card | What it is |
+|---|---|---|
+| C | `R-EXPIRY-GAPS` | three ways a suggestion can get stuck on a merchant's screen for ever |
+| D | `R-SLEEPY-RACE` then `R-WRONG-GATE-REASON` | a test that fails with a wrong answer under load; a day labelled with the wrong gate's reason |
+| F | `R-GATE-NUMBERS` | the last card of three — the sentences finally get their numbers |
+| B | `R-NUL-BYTE` | a source file git treats as binary |
+
+### What the integrator should do next, in this order
+
+1. **Merge and gate each lane as it reports.** Full gate every time; do not batch.
+2. **`T-WAVE6`** — the schema mini-wave, and it is the integrator's own. **The founder
+   authorised it explicitly tonight** ("drop 4" of the four unused storage things), so
+   the migration is permitted even though waves are closed. It drops
+   `article_claims.staleness` and its enum, **and** adds the unique index
+   `rules_overrides (account_id, locale, page_type, key)` — which needs
+   `NULLS NOT DISTINCT` or a `coalesce` expression index, because three of those four
+   columns are nullable and Postgres treats nulls as distinct. Do it when lanes are
+   idle, not alongside them.
+3. **`R-CONTRACT-2`** — three contract corrections no lane may make. Also the
+   integrator's.
+4. Then dispatch from the queue: `R-OPTIMIZE-AXES` (E), `R-INCIDENT-NOTES` (G),
+   `R-OVERRIDE-REACH` (per lane), `R-TASK-DONE`, `R-FIXTURE-KEYS`,
+   `R-INDEXING-SPLIT`, `R-TASK-COPY`, `R-DRAWER-GAPS`, `R-SETTINGS-ONE-PATH`,
+   `R-CONFIRM-URL-ROW`, `R-SCAN-DATE-ZONE`, `R-CRITERIA-LABELS`, `T10.1`–`T10.3`.
+
+### What is waiting on the founder — do not decide any of these
+
+Eleven from before tonight, plus four raised tonight. In the plan, each is a card
+with a done-when rather than prose:
+
+`R-DEAD-STORAGE` (**answered**: finish 1–3, drop 4 — cards written),
+`R-REWRITE-PLACE` (**answered**: in place), `R-HANDLE-RENAME` (**answered**:
+notification — landed), `R-GONE-SUGGESTION-CLOSES` (**answered** — landed).
+**Still open:** `R-LABELS-OR-DASHES`, `R-EXPORT-FALLBACK`, `R-SWEEP-LIFECYCLE`,
+`R-STATE-FIVE`, the "1 ways to grow your store" canonical string, the monthly email
+still naming Monday, the lapsed-subscriber toast, `R-SKIP-TASK`, the two gate
+sentences that borrow approved copy, `R-RESTUDY`, and `R-FINGERPRINT-BLAST`.
+
+### The two things a fresh session would most likely get wrong
+
+1. **`apps/web/app/(public)/_lib/signin-wire.test.ts` is NOT a load flake, and the
+   `R-TESTDB` card's list is wrong about it.** Measured at 23:00 running that file
+   alone: failed 2 of 4, timing out at exactly 5000 ms on work that takes 414 ms when
+   it passes — and it passed 4 of 4 earlier the same evening at a load average of 87,
+   the highest recorded. Carded as `R-SIGNIN-SLOW`. **Treat a red there as unknown,
+   not as noise, and do not raise the timeout before the cause is named.**
+2. **The pattern that has produced eleven findings today**, stated once so it is not
+   rediscovered a twelfth time: *a thing is checked against its own idea of itself,
+   never against what consumes it.* Tonight's clearest instance — three buttons on the
+   Opportunities screen posted to addresses no route serves, and nothing was red
+   because the browser test's stand-in server implemented the invented addresses
+   itself. When reviewing any card, ask what actually consumes the thing it changed.
+
 
 ---
 
