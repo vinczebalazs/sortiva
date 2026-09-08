@@ -135,6 +135,22 @@ export const publishKilledBetweenExecuteAndConfirm: ChaosScenario = {
     if (!article.published_url) {
       throw new Error('the article was published with no address, so nothing can attribute its traffic')
     }
+
+    // The brake that stops publishing when a shop starts refusing counts these
+    // rows. A kill lands after the shop has answered and before the claim is
+    // confirmed, so the row has to be written on the near side of that instant:
+    // one attempt was really made, and the restarts and the sweep that follow
+    // must not add a second or leave it with none.
+    const { rows: recorded } = await ctx.pool.query<{ outcome: string; failure_class: string | null }>(
+      'SELECT outcome, failure_class FROM publish_attempts WHERE account_id = $1',
+      [ctx.accountId],
+    )
+    if (recorded.length !== 1 || recorded[0]!.outcome !== 'succeeded' || recorded[0]!.failure_class !== null) {
+      throw new Error(
+        `expected one recorded publish attempt that succeeded; found ${JSON.stringify(recorded)}. ` +
+          `The count the publishing brake reads is wrong for a run that posted exactly one article.`,
+      )
+    }
   },
 }
 
@@ -145,6 +161,7 @@ async function seedPublishableStore(
   shop.articles.clear()
   shop.calls.length = 0
 
+  await pool.query('DELETE FROM publish_attempts WHERE account_id = $1', [accountId])
   await pool.query('DELETE FROM publish_intents WHERE account_id = $1', [accountId])
   await pool.query(
     'DELETE FROM article_product_refs WHERE article_id IN (SELECT id FROM articles WHERE account_id = $1)',

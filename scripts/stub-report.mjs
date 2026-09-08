@@ -117,16 +117,19 @@ const doubles = await import('../packages/core/src/contracts/doubles.ts')
 // plants real gate-3 rows, runs the sweep with no counter supplied, and watches
 // the switch go up — so what is asserted is the brake firing, not the wiring.
 //
-// The publish error-rate counter stays, and the reason has changed rather than
-// gone. `publish_intents` exists now, but it cannot answer this question: a
-// publish that the shop refuses — the ordinary failure, and the shape of the
-// platform outage this brake is for — deletes its own claim row so the next
-// attempt can take the name back. Counting what is left would report a healthy
-// zero straight through an outage. Closing it needs a durable record of an
-// attempt and its outcome, which is a schema change; see `DECISIONS.md`,
-// 2026-09-08.
-const ops = await import('../packages/core/src/ops/counters.ts')
-new ops.UnrecordedPublishOutcomes()
+// The publish error-rate counter is no longer on this list either, from
+// 2026-09-08 (`R-PUBLISH-ATTEMPTS`), and the import that constructed it is gone
+// with it. Its reason had been true right up to the schema wave that ended it:
+// `publish_intents` deletes its claim row when a shop refuses a post, so the
+// ordinary failure left nothing to count and any rate read off the survivors
+// would have said zero all through an outage. There is now a row per attempt in
+// `publish_attempts`, written by the code that makes the request, and the sweep
+// builds its counter from the database handle it already holds
+// (`publishAttemptCounter`, `packages/jobs/src/sweeps/auto-trips.ts`) — so
+// again there is nothing to wire and nothing to forget. Checked end to end to
+// the standard the notes above set: `auto-trips.test.ts` plants real refused
+// attempts, runs the sweep with no counter supplied, and watches publishing
+// stop.
 
 const stubs = wiredStubs()
 

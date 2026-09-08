@@ -3,6 +3,7 @@ import {
   autoPublishReadiness,
   intentExternalId,
   isTokenRejected,
+  publishAttemptFailure,
   publishMarker,
   BundleNotBuildable,
   RemoteArticleGone,
@@ -20,6 +21,7 @@ import {
 } from '@sortiva/db'
 import { runtimeLogger } from '../runtime/logging'
 import { storefrontDomainFor } from './address'
+import { recordAttempt } from './attempts'
 import { buildBundleForArticle } from './bundle'
 import type { AutoPublishDeps, AutoPublishInput } from './auto-publish'
 import { raiseShopifyReconnect } from './reconnect'
@@ -131,12 +133,16 @@ export async function republishArticleToShopify(
 
   deps.checkpoint?.('republish:claimed')
 
+  // Only the send is inside the guard, so one attempt leaves one row: with the
+  // paperwork below in here too, a confirmation that threw would be written
+  // down as a second, failed attempt at a revision the shop had already taken.
+  let remote
   try {
     // Only the words. No address, no tags, no published state: Shopify leaves
     // an unsent field alone, so the merchant's rename, their own tags and their
     // decision to take the post down all survive this. There is no field for
     // them on an update to pass even by accident.
-    const remote = await deps.shopify.updateArticle({
+    remote = await deps.shopify.updateArticle({
       shop: target.shopHandle,
       accessToken: deps.cipher.decrypt(target.accessTokenCipher),
       blogId: target.targetBlogId as string,
@@ -148,22 +154,17 @@ export async function republishArticleToShopify(
       summary: article.metaDescription ?? '',
       marker: publishMarker(input.articleId),
     })
-
-    deps.checkpoint?.('republish:executed')
-
-    await confirmPublishIntent(deps.db, scope, {
-      articleExternalId: externalId,
-      shopifyArticleId: remote.id,
-      at: now,
-    })
-    log.info('article_republished', {
-      account_id: input.accountId,
-      article_id: input.articleId,
-      revision: input.revisionN,
-      shopify_article_id: remote.id,
-    })
-    return { status: 'updated', remoteArticleId: remote.id, revisionN: input.revisionN }
   } catch (error) {
+    await recordAttempt({
+      db: deps.db,
+      log,
+      accountId: input.accountId,
+      articleId: input.articleId,
+      articleExternalId: externalId,
+      at: now,
+      ...publishAttemptFailure(error),
+    })
+
     if (isTokenRejected(error)) {
       // Nothing was written — Shopify refused us at the door. The claim on this
       // revision goes back so the repair is due again once the merchant has
@@ -192,6 +193,32 @@ export async function republishArticleToShopify(
     }
     throw error
   }
+
+  await recordAttempt({
+    db: deps.db,
+    log,
+    accountId: input.accountId,
+    articleId: input.articleId,
+    articleExternalId: externalId,
+    outcome: 'succeeded',
+    failureClass: null,
+    at: now,
+  })
+
+  deps.checkpoint?.('republish:executed')
+
+  await confirmPublishIntent(deps.db, scope, {
+    articleExternalId: externalId,
+    shopifyArticleId: remote.id,
+    at: now,
+  })
+  log.info('article_republished', {
+    account_id: input.accountId,
+    article_id: input.articleId,
+    revision: input.revisionN,
+    shopify_article_id: remote.id,
+  })
+  return { status: 'updated', remoteArticleId: remote.id, revisionN: input.revisionN }
 }
 
 /**

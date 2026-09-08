@@ -691,4 +691,117 @@ describe.skipIf(!available)('posting an article to the merchant`s shop', () => {
       expect(shop.articles.size).toBe(0)
     })
   })
+  /**
+   * The record every attempt leaves, which is what the automatic brake on
+   * publishing counts.
+   *
+   * The reason it cannot be counted from the claim rows instead is the first
+   * test here: a refusal deletes its claim, deliberately, so that the next
+   * attempt can take the name back — and a failure rate computed from what
+   * survives would read a healthy zero straight through the outage the brake
+   * exists to catch.
+   */
+  describe('every attempt to post writes down how it ended', () => {
+    async function attempts() {
+      return db
+        .select()
+        .from(schema.publishAttempts)
+        .where(eq(schema.publishAttempts.accountId, accountId))
+    }
+
+    it('writes one row when the post lands', async () => {
+      const productId = await seedProduct(49.99)
+      const articleId = await seedArticle(productId)
+
+      await publishArticleToShopify(deps(), { accountId, articleId })
+
+      expect(await attempts()).toMatchObject([
+        { outcome: 'succeeded', failureClass: null, articleId },
+      ])
+    })
+
+    it('writes one row when the shop turns the post away, after the claim is gone', async () => {
+      const productId = await seedProduct(49.99)
+      const articleId = await seedArticle(productId)
+      shop.failNextWith = new ShopifyApiFailure('Shopify rate-limited us.', { retryAfterMs: 2000 })
+
+      await publishArticleToShopify(deps(), { accountId, articleId })
+
+      // The claim is gone, which is correct and is exactly why this row has to
+      // exist: without it the commonest failure leaves no trace at all.
+      expect(await intents()).toEqual([])
+      expect(await attempts()).toMatchObject([
+        { outcome: 'refused', failureClass: 'shopify_rate_limited' },
+      ])
+    })
+
+    it('names a dead token differently from a shop asking us to slow down', async () => {
+      const productId = await seedProduct(49.99)
+      const articleId = await seedArticle(productId)
+      shop.failNextWith = new ShopifyTokenInvalid('acme', 401)
+
+      await publishArticleToShopify(deps(), { accountId, articleId })
+
+      expect(await attempts()).toMatchObject([
+        { outcome: 'refused', failureClass: 'shopify_token_invalid' },
+      ])
+    })
+
+    it('does not write a failure down when it cannot tell whether the post landed', async () => {
+      const productId = await seedProduct(49.99)
+      const articleId = await seedArticle(productId)
+      shop.failNextWith = new Error('the connection went away')
+
+      await publishArticleToShopify(deps(), { accountId, articleId })
+
+      // Counted as a failure, a flaky network would raise the same switch a
+      // real outage does. The claim stays open, so the sweep asks the shop.
+      expect(await attempts()).toMatchObject([{ outcome: 'uncertain' }])
+      expect((await intents())[0]!.state).toBe('pending')
+    })
+
+    it('writes a second row when the sweep finally gives up, rather than editing the first', async () => {
+      const productId = await seedProduct(49.99)
+      const articleId = await seedArticle(productId)
+      shop.failNextWith = new Error('shopify is down')
+      await publishArticleToShopify(deps(), { accountId, articleId })
+
+      const later = new Date(Date.now() + RECOVERY_ABANDON_AFTER_MS + 1000)
+      await sweepPublishRecovery(deps({ now: () => later }))
+
+      // We did try, and then we gave up: two facts about one publication, and
+      // an hour's count only means anything if each row is one real attempt.
+      expect((await attempts()).map((row) => [row.outcome, row.failureClass])).toEqual([
+        ['uncertain', 'unclassified'],
+        ['abandoned', 'recovery_exhausted'],
+      ])
+    })
+
+    it('writes a refusal when a revision finds the merchant deleted the post', async () => {
+      const productId = await seedProduct(49.99)
+      const articleId = await seedArticle(productId)
+      await publishArticleToShopify(deps(), { accountId, articleId })
+      shop.articles.clear()
+
+      await republishArticleToShopify(deps(), { accountId, articleId, revisionN: 1 })
+
+      expect((await attempts()).map((row) => [row.outcome, row.failureClass])).toEqual([
+        ['succeeded', null],
+        ['refused', 'remote_article_gone'],
+      ])
+    })
+
+    it('writes nothing for a publish that never reached the shop', async () => {
+      // The brake measures the shop turning us away. A draft we would not send
+      // in the first place is our own decision and belongs in neither half of
+      // that fraction.
+      const productId = await seedProduct(49.99)
+      const articleId = await seedArticle(productId)
+      await db.delete(schema.products).where(eq(schema.products.id, productId))
+
+      await publishArticleToShopify(deps(), { accountId, articleId })
+
+      expect(await attempts()).toEqual([])
+    })
+  })
 })

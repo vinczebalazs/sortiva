@@ -6,6 +6,7 @@ import {
   insertMinimalOpportunity,
   insertTopic,
   isAccountFlagActive,
+  recordPublishAttempt,
   isGlobalFlagActive,
   systemScope,
   tripAccountFlag,
@@ -257,6 +258,39 @@ function verdicts(rejected: number, total: number): string[] {
   ]
 }
 
+/**
+ * Publish attempts as the product really leaves them behind: one row per
+ * request to a merchant's shop, written through the same function the publish
+ * path uses.
+ *
+ * Planted rather than faked because the defect this card closes is that there
+ * was nothing to plant. A double proves the arithmetic; only real rows prove
+ * the sweep can find them.
+ */
+type PlantedAttempt = { outcome: 'succeeded' | 'refused' | 'uncertain' | 'abandoned'; failureClass: string | null }
+
+const succeeded = (): PlantedAttempt => ({ outcome: 'succeeded', failureClass: null })
+const refused = (failureClass: string): PlantedAttempt => ({ outcome: 'refused', failureClass })
+const uncertain = (failureClass: string): PlantedAttempt => ({ outcome: 'uncertain', failureClass })
+const abandoned = (failureClass: string): PlantedAttempt => ({ outcome: 'abandoned', failureClass })
+
+async function attempted(
+  accountId: string,
+  attempts: readonly PlantedAttempt[],
+  endedAt: Date = NOW,
+): Promise<void> {
+  const scope = accountScope(accountId)
+  for (const [index, attempt] of attempts.entries()) {
+    await recordPublishAttempt(db, scope, {
+      articleId: null,
+      articleExternalId: `sortiva-${accountId}-${index}`,
+      outcome: attempt.outcome,
+      failureClass: attempt.failureClass,
+      endedAt,
+    })
+  }
+}
+
 const sweep = (deps: Parameters<typeof evaluateAutoTrips>[1] = {}) =>
   evaluateAutoTrips(db, { now: () => NOW, log: silentLogger, ...deps })
 
@@ -426,12 +460,86 @@ describe('publishing failing at the far end', () => {
     expect(report.trips).toEqual([])
   })
 
-  it('says it cannot see publish outcomes either', async () => {
-    // This one is still the production default: nothing durably records that a
-    // publish was attempted and refused, so the sweep is told so every run.
+  it('stops publishing when a shop keeps turning posts away, with no counter handed in', async () => {
+    // The whole point of the card: real rows, the production default counter,
+    // and a switch that actually goes up. Before this there was nothing to
+    // count, because a refused post deletes the claim that guarded it.
+    const account = await insertAccount(harness.pool, 'refusing@example.com')
+    await attempted(account, [
+      ...Array.from({ length: 8 }, () => refused('shopify_rate_limited')),
+      ...Array.from({ length: 2 }, () => succeeded()),
+    ])
+
     const report = await sweep()
 
-    expect(report.unmeasurable).toContain('publish_error_rate')
+    expect(report.unmeasurable).not.toContain('publish_error_rate')
+    expect(report.trips.map((t) => t.flag)).toEqual([PUBLISHING_PAUSED_FLAG])
+    expect(report.trips[0]?.reason).toContain('80%')
+    expect(await isGlobalFlagActive(db, SYSTEM, PUBLISHING_PAUSED_FLAG)).toBe(true)
+    // Degrade to pause, never to lower quality — and never wider than needed.
+    expect(await isGlobalFlagActive(db, SYSTEM, ALL_WORK_PAUSED_FLAG)).toBe(false)
+  })
+
+  it('counts an hour in which nobody published as nothing, not as unmeasurable', async () => {
+    // An empty table is not a missing mechanism. `publish_attempts` records this
+    // outcome; a quiet hour holds none of them, and the minimum-sample rule is
+    // what refuses to conclude anything from that.
+    const report = await sweep()
+
+    expect(report.unmeasurable).not.toContain('publish_error_rate')
+    expect(report.trips).toEqual([])
+  })
+
+  it('never stops everybody on posts we could not tell the fate of', async () => {
+    // A dropped connection may have left the article on the merchant's blog.
+    // Counted as failures, these ten would read as a total collapse and pause
+    // publishing for every store the first time a network went flaky.
+    const account = await insertAccount(harness.pool, 'flaky@example.com')
+    await attempted(account, Array.from({ length: 10 }, () => uncertain('shopify_api_error')))
+
+    expect((await sweep()).trips).toEqual([])
+    expect(await isGlobalFlagActive(db, SYSTEM, PUBLISHING_PAUSED_FLAG)).toBe(false)
+  })
+
+  it('keeps those posts in the total, so a bad hour cannot be made to look smaller', async () => {
+    // Six refusals among thirty attempts is 20%, inside the ceiling. Dropping
+    // the twenty-four uncertain ones from the denominator instead makes it six
+    // of six — and stops publishing for everybody on an hour that was mostly
+    // one flaky network.
+    const account = await insertAccount(harness.pool, 'mixed@example.com')
+    await attempted(account, [
+      ...Array.from({ length: 6 }, () => refused('shopify_rate_limited')),
+      ...Array.from({ length: 24 }, () => uncertain('shopify_api_error')),
+    ])
+
+    expect((await sweep()).trips).toEqual([])
+    expect(await isGlobalFlagActive(db, SYSTEM, PUBLISHING_PAUSED_FLAG)).toBe(false)
+  })
+
+  it('counts a publication the sweep finally gave up on as a failure', async () => {
+    // The article did not go out. That it took twenty-five minutes and three
+    // recovery passes to establish makes it no less a failed publish.
+    const account = await insertAccount(harness.pool, 'abandoned@example.com')
+    await attempted(account, [
+      ...Array.from({ length: 6 }, () => abandoned('recovery_exhausted')),
+      ...Array.from({ length: 4 }, () => succeeded()),
+    ])
+
+    expect((await sweep()).trips.map((t) => t.flag)).toEqual([PUBLISHING_PAUSED_FLAG])
+  })
+
+  it('looks only at the attempts inside the window', async () => {
+    // An outage that is already over must not hold publishing down. The window
+    // is an hour, so these are two hours of history and nothing else.
+    const account = await insertAccount(harness.pool, 'recovered-publish@example.com')
+    const twoHoursAgo = new Date(NOW.getTime() - 2 * 60 * 60 * 1000)
+    await attempted(
+      account,
+      Array.from({ length: 10 }, () => refused('shopify_rate_limited')),
+      twoHoursAgo,
+    )
+
+    expect((await sweep()).trips).toEqual([])
     expect(await isGlobalFlagActive(db, SYSTEM, PUBLISHING_PAUSED_FLAG)).toBe(false)
   })
 
