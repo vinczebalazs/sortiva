@@ -113,9 +113,19 @@ export function reasonFor(signal: DetectedSignal, action: string): TemplatedReas
       }
 
     case 'indexing_issue':
-      return {
-        reasonTemplateKey: 'indexing_issue.fix',
-        reasonParams: { reason: signal.reason },
+      // Two different problems with two different remedies: a page Google has
+      // not indexed at all, and a page Google is folding into another of the
+      // merchant's own. The machine word that tells them apart is not
+      // something to print, so it picks the sentence instead of filling one.
+      switch (signal.reason) {
+        case 'not_indexed':
+          return { reasonTemplateKey: 'indexing_issue.fix_not_indexed', reasonParams: {} }
+        case 'canonical_mismatch':
+          return { reasonTemplateKey: 'indexing_issue.fix_canonical', reasonParams: {} }
+        default: {
+          const unhandled: never = signal.reason
+          throw new Error(`reasonFor: no sentence for indexing reason ${String(unhandled)}`)
+        }
       }
 
     default: {
