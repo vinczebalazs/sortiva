@@ -49,7 +49,55 @@ export default tseslint.config(
       // reach a table without naming the account whose data it touches.
       // Audit T0.3 [major]; remediation D5 (stopgap half).
       'sortiva/no-raw-db-access': 'error',
+
+      // Invariant 24 — the sentences the product may not reword have one copy,
+      // in the string catalogue, and are looked up by key.
+      // `sortiva/no-literal-jsx-text` below keeps hand-written copy off
+      // screens, but it reads JSX and nothing else; this one applies
+      // everywhere, because the second copy of the pause line was found in a
+      // route handler answering a request, where no JSX rule ever looks.
+      'sortiva/no-canonical-copy-outside-catalogue': 'error',
     },
+  },
+
+  // The two places a canonical sentence is deliberately written out.
+  //
+  // `packages/core` may not import `packages/ui`, so the billing and
+  // account-deletion promises that core itself has to keep are declared there
+  // as constants and mirrored into the catalogue. The mirroring is not
+  // unguarded: `packages/ui/src/strings/strings.test.ts` imports these very
+  // constants and fails if they and the catalogue disagree, which is the
+  // protection this rule exists to give. Journalled when it was done — see
+  // DECISIONS 2026-08-31 T1.2.
+  //
+  // Do not add to this list. A new sentence belongs in the catalogue, looked up
+  // by key; these two files are a bounded and tested exception, not a pattern.
+  {
+    files: ['packages/core/src/billing/copy.ts', 'packages/core/src/lifecycle/copy.ts'],
+    rules: { 'sortiva/no-canonical-copy-outside-catalogue': 'off' },
+  },
+
+  // A test that holds a canonical sentence has to quote it — quoting it is what
+  // makes it a snapshot rather than a restatement of whatever the code happens
+  // to say today. The same goes for the browser tests that read the sentence
+  // off a rendered page.
+  {
+    files: [
+      '**/*.test.{ts,tsx}',
+      '**/*.spec.{ts,tsx}',
+      '**/fixtures/**',
+      '**/__fixtures__/**',
+      'apps/web/e2e/**',
+    ],
+    rules: { 'sortiva/no-canonical-copy-outside-catalogue': 'off' },
+  },
+
+  // The planted violation that proves this rule fires has to contain the
+  // sentence the rule bans, the same way the vendor-host proof below contains
+  // the host it bans.
+  {
+    files: ['scripts/lint-proofs/**'],
+    rules: { 'sortiva/no-canonical-copy-outside-catalogue': 'off' },
   },
 
   // The rule that bans a vendor host has to name that host, and the test that

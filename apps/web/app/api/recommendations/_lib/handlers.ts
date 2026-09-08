@@ -63,6 +63,10 @@ import { requestArticleRefresh } from '@sortiva/jobs/generation/request-refresh'
 // merchant hears the answer while they are still looking at the button.
 import { resolveTargetQuery } from '@sortiva/jobs/optimize/generate'
 import { rules } from '@sortiva/rules'
+// The string catalogue, not the component barrel, for the reason `./config.ts`
+// records: `@sortiva/ui`'s index pulls React components into a route bundle
+// that renders none of them.
+import { t } from '@sortiva/ui/strings/index'
 import type { AccountHandler } from '../../auth/_lib/session'
 
 /**
@@ -365,10 +369,10 @@ export function makeGenerateRecommendationHandler(deps: RecommendationsDeps): Ac
     }
 
     if (await isAccountFlagActive(deps.db, scope, ACCOUNT_OPTIMIZE_PAUSED_FLAG)) {
-      return conflict(
-        'service_paused',
-        'Delayed — we paused this action rather than continue with lower-quality or stale data.',
-      )
+      // Looked up rather than typed out: this is one of the sentences the
+      // product may not reword, and a second copy of it here is a second thing
+      // to keep in step with the first.
+      return conflict('service_paused', t('appendixA.outage'))
     }
 
     // Guarded: two tabs racing at the same instant cannot both start a

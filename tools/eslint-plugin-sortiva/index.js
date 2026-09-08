@@ -5,6 +5,7 @@ import routeHandlerImports from './rules/route-handler-imports.js'
 import noRawDbAccess from './rules/no-raw-db-access.js'
 import noLiteralJsxText from './rules/no-literal-jsx-text.js'
 import noModuleLoadPathResolution from './rules/no-module-load-path-resolution.js'
+import noCanonicalCopyOutsideCatalogue from './rules/no-canonical-copy-outside-catalogue.js'
 
 const plugin = {
   meta: { name: 'eslint-plugin-sortiva', version: '0.0.0' },
@@ -16,6 +17,7 @@ const plugin = {
     'no-raw-db-access': noRawDbAccess,
     'no-literal-jsx-text': noLiteralJsxText,
     'no-module-load-path-resolution': noModuleLoadPathResolution,
+    'no-canonical-copy-outside-catalogue': noCanonicalCopyOutsideCatalogue,
   },
 }
 
