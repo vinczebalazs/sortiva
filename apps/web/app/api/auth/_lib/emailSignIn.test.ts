@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import NextAuth from 'next-auth'
 import type { AccountStore, EmailMessage, EmailProvider, EmailSendResult } from '@sortiva/core'
+import { requestEmailSignIn, SIGN_IN_EMAIL_ENDPOINT, SIGN_IN_TOKEN_ENDPOINT } from '@sortiva/ui'
 import { buildAuthAdapter, type AuthUserStore, type VerificationTokenStore } from './adapter'
 import { buildAuthConfig } from './config'
 import { memorySessionStore } from './memorySessions'
@@ -135,7 +136,29 @@ function harness() {
     return new Request(path.startsWith('http') ? path : `${ORIGIN}${path}`, init) as never
   }
 
-  return { tokens, store, mailbox, sessions, handlers, request }
+  /**
+   * A `fetch` that answers from the real sign-in handlers, for one browser's
+   * cookies. This is what the sign-in screen is handed in a page; there it is
+   * the browser's own `fetch` and the cookies travel by themselves.
+   */
+  const fetchFor = (jar: Jar): typeof globalThis.fetch =>
+    (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const headers = new Headers((init?.headers ?? {}) as Record<string, string>)
+      if (jar.header) headers.set('cookie', jar.header)
+      const built = new Request(`${ORIGIN}${String(input)}`, {
+        method: init?.method ?? 'GET',
+        headers,
+        ...(init?.body ? { body: init.body as string } : {}),
+      })
+      const response =
+        built.method === 'POST'
+          ? await handlers.POST(built as never)
+          : await handlers.GET(built as never)
+      jar.absorb(response)
+      return response
+    }) as unknown as typeof globalThis.fetch
+
+  return { tokens, store, mailbox, sessions, handlers, request, fetchFor }
 }
 
 type Harness = ReturnType<typeof harness>
@@ -266,12 +289,144 @@ describe('signing in with a link (main §4.1)', () => {
     expect([...h.store.byEmail]).toHaveLength(1)
   })
 
-  it('the sign-in screen offers the link as well as Google', async () => {
+  // The sign-in library's own fallback page, which is not the screen a merchant
+  // sees — that is `/signin`, and it is checked where it is rendered. This is
+  // here because the page is generated from the provider list, so it is a
+  // second reading of what the configuration offers.
+  it('the library’s own fallback page lists both providers', async () => {
     const h = harness()
     const page = await h.handlers.GET(h.request('/api/auth/signin', new Jar()))
     const html = await page.text()
 
     expect(html).toContain('/api/auth/signin/email')
     expect(html).toContain('/api/auth/signin/google')
+  })
+})
+
+/**
+ * **The sign-in screen's email field, wired to the real sign-in library.**
+ *
+ * The block above proves the link flow works when something asks for a link.
+ * This proves the thing that asks is the screen: it runs
+ * `requestEmailSignIn` — the shared component package's own function, the whole
+ * body of the button's click handler — against the real handlers built from the
+ * real configuration. Nothing on the answering side is stubbed except storage
+ * and the mailbox.
+ *
+ * **Assertions are on the destination, never the status**, for the reason the
+ * last case here records: the library answers a refused send with `200`.
+ *
+ * The one link a test in this repository cannot drive is React dispatching the
+ * click, because there is no browser-DOM test environment here. That the field
+ * and the button are on the screen at all is held in `public.test.ts`, where
+ * the component is rendered.
+ */
+describe('pressing “Email me a sign-in link” on the sign-in screen', () => {
+  it('sends the link, and opening it signs the merchant in', async () => {
+    const h = harness()
+    const jar = new Jar()
+
+    const outcome = await requestEmailSignIn({
+      fetch: h.fetchFor(jar),
+      email: 'founder@example.com',
+    })
+
+    expect(outcome).toEqual({ kind: 'link_sent' })
+    expect(h.mailbox.sent.map((m) => m.to)).toEqual(['founder@example.com'])
+
+    const opened = await h.handlers.GET(h.request(linkFrom(h.mailbox.sent[0]!), jar))
+    jar.absorb(opened)
+    expect(opened.headers.get('location')).toBe(`${ORIGIN}/plan`)
+
+    const session = await h.handlers.GET(h.request('/api/auth/session', jar))
+    expect(((await session.json()) as { user?: { id?: string } }).user?.id).toBe('acct_1')
+  })
+
+  it('keeps the place the visitor asked to land', async () => {
+    const h = harness()
+    const jar = new Jar()
+
+    await requestEmailSignIn({
+      fetch: h.fetchFor(jar),
+      email: 'founder@example.com',
+      callbackUrl: '/settings/publishing',
+    })
+
+    // Carried in the link itself rather than a cookie, because the visitor may
+    // open the link in a different browser from the one that asked for it.
+    const link = new URL(linkFrom(h.mailbox.sent[0]!))
+    expect(link.searchParams.get('callbackUrl')).toBe(`${ORIGIN}/settings/publishing`)
+
+    const opened = await h.handlers.GET(h.request(link.toString(), jar))
+    expect(opened.headers.get('location')).toBe(`${ORIGIN}/settings/publishing`)
+  })
+
+  it('reports a failure, and sends nothing, when the address is not one', async () => {
+    const h = harness()
+
+    const outcome = await requestEmailSignIn({
+      fetch: h.fetchFor(new Jar()),
+      email: 'founder-at-example',
+    })
+
+    expect(outcome).toEqual({ kind: 'failed' })
+    expect(h.mailbox.sent).toHaveLength(0)
+  })
+
+  it('reports a failure when the anti-forgery token is refused', async () => {
+    const h = harness()
+    const jar = new Jar()
+    const real = h.fetchFor(jar)
+
+    // The library refuses a send whose token does not match the cookie it
+    // issued. A press that ends here has to be reported as a failure, or the
+    // screen tells a merchant to go and look for an email that was never sent.
+    const tampered = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).endsWith('/csrf')) {
+        await real(input, init)
+        return new Response(JSON.stringify({ csrfToken: 'not-the-issued-token' }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        })
+      }
+      return real(input, init)
+    }) as unknown as typeof globalThis.fetch
+
+    expect(await requestEmailSignIn({ fetch: tampered, email: 'founder@example.com' })).toEqual({
+      kind: 'failed',
+    })
+    expect(h.mailbox.sent).toHaveLength(0)
+  })
+
+  it('records that a refused send answers 200, so no test here may trust one', async () => {
+    const h = harness()
+    const jar = new Jar()
+    const fetch = h.fetchFor(jar)
+
+    const csrf = await fetch(SIGN_IN_TOKEN_ENDPOINT, {
+      method: 'GET',
+      headers: { accept: 'application/json' },
+    })
+    const { csrfToken } = (await csrf.json()) as { csrfToken: string }
+
+    const refused = await fetch(SIGN_IN_EMAIL_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        'X-Auth-Return-Redirect': '1',
+      },
+      body: new URLSearchParams({ csrfToken, callbackUrl: '/plan', email: 'not-an-address' }),
+    })
+
+    expect(refused.status, 'a refused send is not an error status').toBe(200)
+    expect(refused.ok, 'and `ok` is true, which is what makes reading it by hand necessary').toBe(
+      true,
+    )
+
+    // The whole tell is here: the library names its own error screen. Nothing
+    // was posted, and the exchange has to read this as the failure it is.
+    const { url } = (await refused.json()) as { url: string }
+    expect(new URL(url).pathname).toBe('/api/auth/error')
+    expect(h.mailbox.sent).toHaveLength(0)
   })
 })

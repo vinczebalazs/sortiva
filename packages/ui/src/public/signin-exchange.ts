@@ -1,21 +1,23 @@
 /**
- * What pressing "Continue with Google" actually sends.
+ * What the two sign-in buttons actually send.
  *
- * The sign-in library owns the two addresses below and defines their shapes, so
- * nothing here decides anything about them — it decides only that this is the
- * exchange the button performs, and it lives apart from the component so the
- * exchange can be driven against the real sign-in handlers without a browser.
+ * The sign-in library owns the addresses below and defines their shapes, so
+ * nothing here decides anything about them — it decides only that these are the
+ * exchanges the buttons perform, and they live apart from the component so they
+ * can be driven against the real sign-in handlers without a browser.
  *
  * Two requests rather than one because the library refuses a sign-in that does
  * not carry the anti-forgery token it hands out: the first request asks for the
  * token, the second spends it. This is the same shape signing out uses, for the
- * same reason; the two are kept apart because they are different exchanges with
- * different answers, not because either could be written another way.
+ * same reason; the exchanges are kept apart because they are different
+ * exchanges with different answers, not because either could be written another
+ * way.
  *
- * A successful press does not sign anybody in. It starts a handshake: the
- * library answers with the identity provider's address, and the browser leaves
- * for it. Whether an account exists is settled later, when the provider sends
- * the browser back.
+ * Neither press signs anybody in. Google's starts a handshake: the library
+ * answers with the identity provider's address and the browser leaves for it.
+ * The email one posts a link to a mailbox and the visitor stays put; signing in
+ * happens when they open the link, which is a plain page load with no script of
+ * ours involved. Whether an account exists is settled at that point, not here.
  */
 
 /** Where the anti-forgery token comes from. The sign-in library's own address. */
@@ -23,6 +25,9 @@ export const SIGN_IN_TOKEN_ENDPOINT = '/api/auth/csrf'
 
 /** Where the Google handshake is started. The sign-in library's own address. */
 export const SIGN_IN_GOOGLE_ENDPOINT = '/api/auth/signin/google'
+
+/** Where a sign-in link is asked for. The sign-in library's own address. */
+export const SIGN_IN_EMAIL_ENDPOINT = '/api/auth/signin/email'
 
 /** Where a merchant lands once the provider has sent them back. */
 export const AFTER_SIGN_IN = '/plan'
@@ -50,13 +55,14 @@ export interface SignInDeps {
   readonly callbackUrl?: string
 }
 
-export async function requestGoogleSignIn({
-  fetch,
-  tokenEndpoint = SIGN_IN_TOKEN_ENDPOINT,
-  signInEndpoint = SIGN_IN_GOOGLE_ENDPOINT,
-  callbackUrl = AFTER_SIGN_IN,
-}: SignInDeps): Promise<SignInOutcome> {
-  let csrfToken: unknown
+/**
+ * The first of the two requests, shared by both presses. Answers `null` when
+ * the library will not hand a token out, which is a sign-in that cannot start.
+ */
+async function askForToken(
+  fetch: typeof globalThis.fetch,
+  tokenEndpoint: string,
+): Promise<string | null> {
   try {
     const asked = await fetch(tokenEndpoint, {
       method: 'GET',
@@ -64,12 +70,22 @@ export async function requestGoogleSignIn({
       cache: 'no-store',
       headers: { accept: 'application/json' },
     })
-    if (!asked.ok) return { kind: 'failed' }
-    ;({ csrfToken } = (await asked.json()) as { csrfToken?: unknown })
+    if (!asked.ok) return null
+    const { csrfToken } = (await asked.json()) as { csrfToken?: unknown }
+    return typeof csrfToken === 'string' && csrfToken.length > 0 ? csrfToken : null
   } catch {
-    return { kind: 'failed' }
+    return null
   }
-  if (typeof csrfToken !== 'string' || csrfToken.length === 0) return { kind: 'failed' }
+}
+
+export async function requestGoogleSignIn({
+  fetch,
+  tokenEndpoint = SIGN_IN_TOKEN_ENDPOINT,
+  signInEndpoint = SIGN_IN_GOOGLE_ENDPOINT,
+  callbackUrl = AFTER_SIGN_IN,
+}: SignInDeps): Promise<SignInOutcome> {
+  const csrfToken = await askForToken(fetch, tokenEndpoint)
+  if (csrfToken === null) return { kind: 'failed' }
 
   try {
     const response = await fetch(signInEndpoint, {
@@ -102,6 +118,72 @@ function isWithin(url: string, tokenEndpoint: string): boolean {
   const base = tokenEndpoint.slice(0, tokenEndpoint.lastIndexOf('/') + 1)
   try {
     return new URL(url, 'http://sortiva.invalid').pathname.startsWith(base)
+  } catch {
+    return false
+  }
+}
+
+export type EmailSignInOutcome =
+  /** The link is on its way. Nobody is signed in until they open it. */
+  | { readonly kind: 'link_sent' }
+  /** Nothing was sent. The merchant is still signed out and is told so. */
+  | { readonly kind: 'failed' }
+
+export interface EmailSignInDeps extends SignInDeps {
+  /** The address the link goes to. Typed by the visitor, sent as typed. */
+  readonly email: string
+}
+
+/**
+ * Asks the library to email a sign-in link.
+ *
+ * **Reading the answer is the opposite of Google's, and getting it backwards
+ * would report every send as a failure.** A Google press that worked leaves our
+ * site, so a destination still inside our own sign-in routes means it did not.
+ * An email press that worked never leaves: the library names its own
+ * "check your mail" page. So success here is one specific page of ours, not the
+ * absence of one — and everything else, the error page included, is a failure.
+ *
+ * The status is again no help: a refused send answers `200` naming the error
+ * page, exactly as a refused Google press does.
+ */
+export async function requestEmailSignIn({
+  fetch,
+  email,
+  tokenEndpoint = SIGN_IN_TOKEN_ENDPOINT,
+  signInEndpoint = SIGN_IN_EMAIL_ENDPOINT,
+  callbackUrl = AFTER_SIGN_IN,
+}: EmailSignInDeps): Promise<EmailSignInOutcome> {
+  const csrfToken = await askForToken(fetch, tokenEndpoint)
+  if (csrfToken === null) return { kind: 'failed' }
+
+  try {
+    const response = await fetch(signInEndpoint, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        [RETURN_REDIRECT_HEADER]: '1',
+      },
+      body: new URLSearchParams({ csrfToken, callbackUrl, email }).toString(),
+    })
+    if (!response.ok) return { kind: 'failed' }
+    const body = (await response.json()) as { url?: unknown }
+    if (typeof body.url !== 'string' || body.url.length === 0) return { kind: 'failed' }
+    return isLinkSentPage(body.url, tokenEndpoint) ? { kind: 'link_sent' } : { kind: 'failed' }
+  } catch {
+    return { kind: 'failed' }
+  }
+}
+
+/**
+ * The one destination that means the link went out. Derived from the token
+ * address so both stay together if the library is ever mounted elsewhere.
+ */
+function isLinkSentPage(url: string, tokenEndpoint: string): boolean {
+  const base = tokenEndpoint.slice(0, tokenEndpoint.lastIndexOf('/') + 1)
+  try {
+    return new URL(url, 'http://sortiva.invalid').pathname === `${base}verify-request`
   } catch {
     return false
   }
