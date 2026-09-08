@@ -136,7 +136,14 @@ describe.skipIf(!available)('what the weekly scan retires, and what it holds ope
         familyIds: [],
         checksum: PAGE_CHECKSUM,
       },
-    ])
+    ],
+    // The scan's own clock, not the wall clock, so that "the walk did not find
+    // this page" below is a moment after the page was last seen. On the wall
+    // clock it is a moment before, and the page stays live — which is how this
+    // file's deleted-page test came to pass against an implementation that
+    // never excluded a deleted page at all.
+    NOW,
+    )
   }
 
   async function connectSearchConsole(): Promise<void> {
@@ -267,7 +274,12 @@ describe.skipIf(!available)('what the weekly scan retires, and what it holds ope
       // the reason that says the subject was taken away — a different thing
       // from a measurement moving, and the learning loop reads the two
       // differently. This pass must not get there first with the wrong reason.
-      await markStorePagesGoneNotSeenSince(ctx.db, accountScope(accountId), new Date(NOW.getTime() + 60_000))
+      const marked = await markStorePagesGoneNotSeenSince(
+        ctx.db,
+        accountScope(accountId),
+        new Date(NOW.getTime() + 60_000),
+      )
+      expect(marked).toBe(1)
       await ctx.db.delete(schema.requestCache)
       await runSignalScan(deps(ctx), accountId, 'weekly', 'weekly-2026-W38', { allowSerpSpend: false })
 
