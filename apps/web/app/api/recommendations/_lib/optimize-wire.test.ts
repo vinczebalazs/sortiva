@@ -285,7 +285,7 @@ describe.skipIf(!available)('pressing the button reaches a worker', () => {
     // A worker that was never told about this job. Something else is registered
     // so the worker has a task list at all — the point is that this job is not
     // in it, which is the state the product shipped in.
-    registerTask('optimize_wire_probe', async () => {})
+    registerTask('optimize_wire_probe', async () => {}, 'none')
     const pickedUpUnregistered = await runWorkerUntil(async () => (await queuedGenerations()) === 0, 3_000)
 
     expect(pickedUpUnregistered, 'the job ran with nothing registered for it').toBe(false)
