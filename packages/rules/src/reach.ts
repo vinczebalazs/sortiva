@@ -117,7 +117,7 @@ export const RULES_REACH: readonly RulesReachEntry[] = [
   {
     prefix: 'learning.outcomes',
     reach: 'ignored',
-    note: 'Read only by the recommendations API, from the repo file.',
+    note: 'Read by the recommendations API when it books a measurement and by the job that makes it (packages/jobs/src/optimize/measure.ts), both from the repo file.',
   },
   {
     prefix: 'learning.patterns.multiplier_clamp_min',
