@@ -99,3 +99,20 @@ export {
   type RecommendationLabels,
   type RenderRecommendationInput,
 } from './render'
+export {
+  OPPORTUNITY_OUTCOME_MEASURED_EVENT,
+  OPTIMIZE_OUTCOME_KEY,
+  ctrOf,
+  opportunityOutcomeMeasured,
+  optimizeOutcomeJson,
+  optimizeOutcomeLabel,
+  readOptimizeOutcome,
+  storeMedianImpressions,
+  type OptimizeOutcomeConfig,
+  type OptimizeOutcomeLabel,
+  type OptimizeOutcomeMeasured,
+  type OptimizeOutcomeRecord,
+  type OptimizeOutcomeUnmeasurable,
+  type OptimizeUnmeasurableReason,
+  type OptimizeWindowTotals,
+} from './outcome'

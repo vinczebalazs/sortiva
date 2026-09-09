@@ -162,6 +162,12 @@ const SERVER_EVENT_DEFINITIONS = {
     limited_intelligence: 'flag',
   },
   opportunity_status_changed: { from: 'enum', to: 'enum', actor: 'enum' },
+  /**
+   * What became of a piece of work the merchant told us they carried out,
+   * read four weeks later. Only the kind of work and the verdict: the address
+   * measured and the store's own click counts stay here.
+   */
+  opportunity_outcome_measured: { action_type: 'enum', label: 'enum' },
 
   // ---- Quality gates ----
   /**

@@ -302,3 +302,50 @@ export async function releaseAbandonedOptimizeGenerations(
 
   return rows.map((row) => row.id)
 }
+
+/**
+ * Writes what the four-week measurement found, whether or not it found a
+ * verdict.
+ *
+ * `outcome_measured_at` is stamped in both cases and that is deliberate: the
+ * column means "we went and looked", not "we have good news". A page that has
+ * since been taken down was looked at, and leaving the stamp null would make
+ * the row indistinguishable from one whose four weeks are still running — so
+ * the next pass would look again, every week, forever.
+ *
+ * Merged into whatever the column already holds rather than replacing it. A
+ * repair can land on the same opportunity row and writes its own log under its
+ * own key; overwriting the column would silently delete the record of a
+ * published correction. Done in Postgres with `||` rather than by reading and
+ * writing back, so a repair committing between our read and our write is not
+ * lost.
+ *
+ * Guarded on the row having been marked applied and never measured before, so
+ * a redelivered job cannot write a second, different account of the same four
+ * weeks over the first.
+ */
+export async function recordOpportunityOutcome(
+  db: Db,
+  scope: AccountScope,
+  opportunityId: string,
+  outcome: Record<string, unknown>,
+  measuredAt: Date,
+): Promise<boolean> {
+  const [row] = await db
+    .update(opportunities)
+    .set({
+      outcomeJson: sql`coalesce(${opportunities.outcomeJson}, '{}'::jsonb) || ${JSON.stringify(outcome)}::jsonb`,
+      outcomeMeasuredAt: measuredAt,
+      updatedAt: measuredAt,
+    })
+    .where(
+      and(
+        eq(opportunities.id, opportunityId),
+        eq(opportunities.accountId, scope.accountId),
+        sql`${opportunities.appliedAt} is not null`,
+        sql`${opportunities.outcomeMeasuredAt} is null`,
+      ),
+    )
+    .returning({ id: opportunities.id })
+  return row !== undefined
+}

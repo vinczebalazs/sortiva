@@ -53,3 +53,9 @@ export {
   type IntentGapAccountPayload,
   type IntentGapTaskDeps,
 } from './intent-gap-tasks'
+export {
+  measureOpportunityOutcome,
+  type MeasureOpportunityOutcome,
+  type MeasureOpportunityOutcomeDeps,
+  type MeasureOpportunityOutcomeInput,
+} from './measure'
