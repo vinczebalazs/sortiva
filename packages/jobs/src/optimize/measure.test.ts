@@ -263,6 +263,31 @@ describe.skipIf(!available)('four weeks after the merchant said they did the wor
     expect(JSON.stringify(sent[0]?.properties)).not.toContain('shop.example')
   })
 
+  it('does not erase a repair log already written on the same row', async () => {
+    await connectSearchConsole()
+    await seedLivePage()
+    const opportunityId = await seedAppliedOptimize()
+    await seedSearchHistory([
+      ...windowDays(PAGE, 'before', { clicks: 4, impressions: 100, position: 11.4 }),
+      ...windowDays(PAGE, 'after', { clicks: 5, impressions: 125, position: 8.1 }),
+    ])
+    // A drift repair got to this row first and wrote its own record under its
+    // own key. One opportunity, two things to say about it.
+    await harness.pool.query(
+      `UPDATE opportunities SET outcome_json = $1::jsonb WHERE id = $2`,
+      [JSON.stringify({ repair: { kind: 'product_deleted', references: [] } }), opportunityId],
+    )
+
+    await measureOpportunityOutcome(deps(), { accountId, opportunityId })
+
+    const row = await findOpportunityById(db, scope(), opportunityId)
+    const stored = row?.outcomeJson as Record<string, unknown>
+    // Merged by the database rather than read-modify-written, so a repair
+    // committing between our read and our write could not be lost either.
+    expect(stored['repair']).toMatchObject({ kind: 'product_deleted' })
+    expect(stored['measurement']).toMatchObject({ measured: true })
+  })
+
   it('says nothing at all before the four weeks are up', async () => {
     await connectSearchConsole()
     await seedLivePage()
