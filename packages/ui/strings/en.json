@@ -270,7 +270,7 @@
   "signin.emailPlaceholder": "you@yourstore.com",
   "signin.email": "Email me a sign-in link",
   "signin.emailSending": "Sending…",
-  "signin.emailSent": "Check your email — we've sent a sign-in link to {email}. It works once.",
+  "signin.emailSent": "Check your email — we've sent a sign-in link to {email}. It works once, and expires in 15 minutes.",
   "signin.emailUseDifferent": "Use a different address",
   "signin.previewedDomain": "We'll suggest {domain} when you connect your store — nothing is claimed until you confirm it.",
 
