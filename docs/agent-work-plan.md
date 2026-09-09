@@ -501,9 +501,14 @@ Invariants: 12, 13.
 
 - **T7.1a — labels.** What happened to each published article. **Dispatched to Lane D 2026-09-09.** Built as pure domain logic in `packages/core`; the lane was told **not** to register a job, because the registration API was changing underneath it, so **the weekly job still has to be wired afterwards.**
 - **T7.1b — patterns.** `pattern_stats`, n ≥ 3 to activate, multipliers clamped [0.5, 2.0] over 90 days, replacing `T4.6`'s stubs. **Depends on 7.1a.**
-- **T7.1c — opportunity outcomes.** See the card immediately below, which is bigger than the line in `T7.1` suggests.
+- **T7.1c — opportunity outcomes.** **DONE for OPTIMIZE**, merged as `c772899`. See the card below.
 
-**T7.1c — the outcome measurement every merchant books is enqueued to a handler that does not exist** · **Lane E** · **live gap, found 2026-09-09 by the integrator while wiring the lock check**
+**Three follow-ups the outcome card named rather than left implied** · Lane E
+- **REFRESH and FIX outcomes are not built.** The same spec section specifies them; they are anchored to different moments and measured against different numbers, so each is its own card rather than a widening of the OPTIMIZE one.
+- **Nothing wakes the measurements booked before the handler existed.** Those rows sit inert in the queue. Whether to wake them is a decision, not an oversight: waking them measures work whose four weeks may have elapsed long ago against a window nobody was watching.
+- **Pattern aggregation over action type** belongs to `T7.1b`.
+
+**T7.1c — the outcome measurement every merchant books is enqueued to a handler that does not exist** · **DONE, merged as `c772899`** · **Lane E** · **live gap, found 2026-09-09 by the integrator while wiring the lock check**
 Scope: when a merchant marks an OPTIMIZE recommendation applied, `apps/web/app/api/recommendations/_lib/handlers.ts` books a measurement for 28 days later through `enqueueOpportunityOutcomeMeasurement` (`packages/jobs/src/optimize/queue.ts`). **Nothing registers a handler for `opportunity_outcome_measure`.** It is not in the crontab either, so the worker's refuse-to-start check — which covers scheduled names only — never sees it. Verified by resolving every `registerTask` call in the repository while declaring all 35 for the lock check.
 **What that means for a merchant:** they do the work, they tell us they did it, and the product promises to look again in four weeks. Nothing looks. The row keeps its `outcome_due_at` and never gets an outcome, and the Performance table's dashes are partly this.
 **Not the whole story, and worth knowing before scoping:** FIX outcomes *are* written — `packages/db/src/repositories/repair.ts` sets `outcomeJson` on completion. So the shape exists and has a precedent; it is OPTIMIZE and REFRESH that have no writer.
