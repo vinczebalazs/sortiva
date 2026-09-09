@@ -122,7 +122,7 @@ export function registerGenerationTasks(deps: GenerationTaskDeps): void {
 
   registerTask(GENERATION_CYCLE_SWEEP_TASK, async () => {
     await sweepGenerationCycles(deps)
-  })
+  }, 'fans_out')
 
   registerTask(GENERATION_CYCLE_ACCOUNT_TASK, async (payload) => {
     const { accountId } = payload as GenerationCycleAccountPayload
@@ -136,7 +136,7 @@ export function registerGenerationTasks(deps: GenerationTaskDeps): void {
     // generating yesterday's topic today, which is exactly the back-filled
     // burst the calendar's gap rule forbids.
     await runDailyGenerationForAccount({ ...deps, db: deps.getDb(), pool: deps.getPool() }, accountId)
-  })
+  }, 'per_account')
 }
 
 /** Test-only: the task registry is a module singleton, and so is this latch. */

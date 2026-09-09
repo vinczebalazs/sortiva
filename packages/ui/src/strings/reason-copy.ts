@@ -94,6 +94,17 @@ export const SCAN_REASON_PARAMS: Readonly<Record<string, readonly string[]>> = {
   'striking_distance.refresh_ours': ['position', 'impressions'],
   'low_ctr_at_strong_rank.optimize': ['position', 'ctr_ratio', 'impressions'],
   'content_decay.refresh': ['from_position', 'to_position', 'clicks_before', 'clicks_after'],
+  // Three sentences for one signal, because two different things confirm it and
+  // only one of them is a change: either the page Google leads with keeps
+  // moving, or the search simply earns fewer clicks than it did a quarter ago.
+  // The detector records which one carried the finding, and that picks the
+  // sentence rather than filling in a blank.
+  'cannibalization.fix_alternation': ['competing_urls', 'leader_changes'],
+  'cannibalization.fix_aggregate_loss': ['competing_urls', 'leader_changes'],
+  'cannibalization.fix_both': ['competing_urls', 'leader_changes'],
+  // Kept because rows written before 2026-09-09 carry this key. Nothing produces
+  // it any more; deleting its sentence would leave those cards with no
+  // explanation, which the test in this package pins.
   'cannibalization.fix': ['competing_urls', 'leader_changes'],
   'uncovered_commercial_query.create': ['volume'],
   'uncovered_commercial_query.create_with_link': ['volume'],
@@ -159,6 +170,9 @@ export const OPPORTUNITY_REASON_KEYS: readonly string[] = [
   'striking_distance.optimize',
   'low_ctr_at_strong_rank.optimize',
   'content_decay.refresh',
+  'cannibalization.fix_alternation',
+  'cannibalization.fix_aggregate_loss',
+  'cannibalization.fix_both',
   'cannibalization.fix',
   'uncovered_commercial_query.create_with_link',
   'uncovered_commercial_query.create',

@@ -194,7 +194,7 @@ export function registerOpsTasks(getDb: () => Db, deps: AutoTripDeps = {}): void
     // unevaluated.
     await evaluateSpendCaps(db)
     await evaluateAutoTrips(db, deps)
-  })
+  }, 'none')
 }
 
 /** Test-only: the registry is a module singleton and so is this latch. */

@@ -228,7 +228,7 @@ export function registerRetentionTask(deps: RetentionSweepDeps): void {
   registered = true
   registerTask(RETENTION_SWEEP_TASK, async () => {
     await runRetentionSweep(deps)
-  })
+  }, 'fans_out')
 }
 
 /** Test-only: the task registry is a module singleton, and so is this latch. */

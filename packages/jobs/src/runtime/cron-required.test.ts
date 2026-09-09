@@ -72,7 +72,7 @@ describe('a scheduled job with no handler stops the worker', () => {
 
   it('gets past that guard once the handler is registered, which is what stops this being a blanket refusal', async () => {
     resetWorkerLiveness()
-    registerTask('a_job_nobody_registered', async () => {})
+    registerTask('a_job_nobody_registered', async () => {}, 'none')
 
     // A connection string pointing at nothing, so the worker fails at the next
     // step instead. What is being asserted is *which* failure: not the

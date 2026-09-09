@@ -80,7 +80,7 @@ export function registerDriftTasks(deps: DriftTaskDeps): void {
 
   registerTask(DRIFT_SWEEP_TASK, async () => {
     await sweepDrift(deps)
-  })
+  }, 'fans_out')
 
   registerTask(DRIFT_ACCOUNT_TASK, async (payload) => {
     const { accountId } = payload as DriftPassPayload
@@ -91,7 +91,7 @@ export function registerDriftTasks(deps: DriftTaskDeps): void {
       { ...deps, db: deps.getDb(), pool: deps.getPool() },
       { accountId },
     )
-  })
+  }, 'per_account')
 }
 
 /** Test-only: the task registry is a module singleton, and so is this latch. */

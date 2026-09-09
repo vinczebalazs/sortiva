@@ -138,6 +138,10 @@ export function optimizeTaskDeps(): OptimizeTaskDeps {
     // generation, so the pool rather than the query builder — as a factory, so
     // registering the task creates nothing.
     getPool: dbPool,
+    // The four-week measurement's verdict, reported as two enumerated names.
+    // The same capture the search vendor's spend goes through, so one process
+    // has one place events leave from.
+    capture: optimizeCapture(),
     deps: {
       db: db(),
       seo: optimizeSeoProvider(),

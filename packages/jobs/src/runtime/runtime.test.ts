@@ -1103,7 +1103,7 @@ describe.skipIf(!available)('SIGTERM drains a real Graphile worker (tech §2.1)'
       // Long enough that the signal certainly lands mid-flight.
       await new Promise((resolve) => setTimeout(resolve, 400))
       finished.push((payload as { id: string }).id)
-    })
+    }, 'none')
 
     const worker = await startWorker({
       connectionString,
@@ -1153,7 +1153,7 @@ describe.skipIf(!available)('SIGTERM drains a real Graphile worker (tech §2.1)'
   }, 20_000)
 
   it('refuses to enable cron while a scheduled task has no handler', async () => {
-    registerTask('generation_cycle_daily', async () => {})
+    registerTask('generation_cycle_daily', async () => {}, 'none')
     expect(registeredTaskNames()).toEqual(['generation_cycle_daily'])
     await expect(
       startWorker({

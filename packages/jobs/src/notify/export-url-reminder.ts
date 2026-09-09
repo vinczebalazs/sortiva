@@ -108,7 +108,7 @@ export function registerExportUrlReminderTask(
   registered = true
   registerTask(EXPORT_URL_REMINDER_SWEEP_TASK, async () => {
     await sweepExportUrlReminders(deps, source)
-  })
+  }, 'fans_out')
 }
 
 /** Test-only: the task registry is a module singleton, and so is this latch. */

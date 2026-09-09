@@ -45,11 +45,22 @@ const CONTENT_SHAPED_NAMES = [
 ]
 
 /**
- * `prompt_version` names which revision of a prompt ran, never the prompt. It
- * is the one property whose name contains a content word for a reason, so it
- * is listed here rather than silently excluded from the check.
+ * The properties whose names contain a content word for a reason, listed rather
+ * than silently excluded from the check. A bare name exempts that property
+ * wherever it appears; an `event.property` entry exempts it on one event only,
+ * which is the narrower form and the one to prefer.
+ *
+ * - `prompt_version` names which revision of a prompt ran, never the prompt.
+ * - `opportunity_outcome_measured.label` is the four-week verdict, one of
+ *   exactly three words we chose (`improved`, `neutral`, `worse`). It is
+ *   declared as an `enum`, which refuses anything with a space in it or longer
+ *   than sixty-four characters, so the kind rules out prose even though the
+ *   name reads like it might carry some.
  */
-const NAMED_FOR_A_REASON = new Set(['prompt_version'])
+const NAMED_FOR_A_REASON = new Set([
+  'prompt_version',
+  'opportunity_outcome_measured.label',
+])
 
 describe('the events the server may report', () => {
   it('names them in snake_case, matching the browser-side taxonomy', () => {
@@ -98,6 +109,7 @@ describe('no event can be defined so that it carries store content', () => {
     for (const [event, properties] of allServerEventDefinitions()) {
       for (const property of Object.keys(properties)) {
         if (NAMED_FOR_A_REASON.has(property)) continue
+        if (NAMED_FOR_A_REASON.has(`${event}.${property}`)) continue
         const offending = CONTENT_SHAPED_NAMES.filter((word) => property.includes(word))
         expect(offending, `${event}.${property} is named after content`).toEqual([])
       }

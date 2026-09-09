@@ -77,7 +77,7 @@ export function registerReplenishmentTasks(deps: ReplenishmentTaskDeps): void {
 
   registerTask(REPLENISHMENT_SWEEP_TASK, async () => {
     await sweepReplenishment(deps)
-  })
+  }, 'fans_out')
 
   registerTask(REPLENISHMENT_ACCOUNT_TASK, async (payload) => {
     const { accountId } = payload as ReplenishmentAccountPayload
@@ -85,7 +85,7 @@ export function registerReplenishmentTasks(deps: ReplenishmentTaskDeps): void {
       throw new Error('replenishment_account was queued without an accountId')
     }
     await replenishCalendarForAccount({ ...deps, db: deps.getDb(), pool: deps.getPool() }, accountId)
-  })
+  }, 'per_account')
 }
 
 /** Test-only: the task registry is a module singleton, and so is this latch. */

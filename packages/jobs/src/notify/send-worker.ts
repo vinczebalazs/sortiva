@@ -182,13 +182,13 @@ export function registerEmailTasks(deps: EmailWorkerDeps): void {
 
   registerTask(EMAIL_SEND_DRAIN_TASK, async () => {
     await drainEmailQueue(deps)
-  })
+  }, 'fans_out')
 
   registerTask(EMAIL_SEND_TASK, async (rawPayload) => {
     const payload = rawPayload as EmailSendPayload
     if (!payload?.emailSendId) throw new Error('email_send needs an emailSendId')
     await runEmailSend(deps, payload)
-  })
+  }, 'account_from_record')
 }
 
 /** Test-only: the task registry is a module singleton, and so is this latch. */

@@ -77,7 +77,7 @@ export function registerScanTasks(deps: ScanTaskDeps): void {
 
   registerTask(CTR_CURVE_REFIT_TASK, async () => {
     await runCtrCurveRefit(deps)
-  })
+  }, 'none')
 }
 
 /** Test-only: the task registry is a module singleton, and so is this latch. */
@@ -126,11 +126,11 @@ export function registerSignalScanTasks(deps: SignalScanTaskDeps): void {
 
   registerTask(SIGNAL_SCAN_WEEKLY_TASK, async () => {
     await sweepWeeklyScans(toRunDeps(deps))
-  })
+  }, 'fans_out')
 
   registerTask(SIGNAL_SCAN_ONBOARDING_SWEEP_TASK, async () => {
     await sweepOnboardingRuns(toRunDeps(deps))
-  })
+  }, 'fans_out')
 }
 
 /** Test-only: the task registry is a module singleton, and so is this latch. */
