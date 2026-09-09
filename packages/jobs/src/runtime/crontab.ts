@@ -75,6 +75,21 @@ export const CRON_ENTRIES: readonly CronEntry[] = [
       'starts a given account\'s scan finds it already finished and does nothing.',
   },
   {
+    task: 'learning_recompute_weekly',
+    schedule: '30 6 * * 1',
+    why:
+      'What became of each article we published, and what that says about the kind of article ' +
+      'worth publishing next. A fixed weekly UTC moment rather than the per-account-clock sweep ' +
+      'the signal scan uses, because nothing here lands in front of a merchant at a particular ' +
+      'local hour: no email, no article, nothing on a screen changes at the moment it runs. The ' +
+      'verdicts are anchored on the newest day of Search Console data the store actually has, not ' +
+      'on when the job fires, so the hour changes nothing about the answer. It sits after the ' +
+      '05:00 Search Console sync so it judges the freshest data, and well before the monthly ' +
+      'calendar top-up that reads what it learned. Safe to run repeatedly: a verdict is keyed on ' +
+      'the article and the window it covers, and the learned picture is replaced rather than ' +
+      'added to.',
+  },
+  {
     task: 'ctr_curve_refit_weekly',
     schedule: '0 7 * * 1',
     why: 'Refits each store\'s own click-through curve, which is what the low-CTR signal compares against instead of an absolute rate.',

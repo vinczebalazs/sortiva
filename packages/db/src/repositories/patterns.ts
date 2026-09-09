@@ -111,6 +111,11 @@ export async function patternLearningInputs(
     .from(articles)
     .innerJoin(topics, eq(topics.id, articles.topicId))
     .innerJoin(opportunities, eq(opportunities.id, topics.opportunityId))
+    // The account filter here cannot change the result: the ids came from a
+    // read that is already scoped, so no other store's article can be among
+    // them. Kept as a second lock, and named as redundant so nobody later
+    // mistakes it for the thing that makes this read safe — removing it breaks
+    // no test, because there is no way from outside to tell it apart.
     .where(and(eq(articles.accountId, scope.accountId), inArray(articles.id, ids)))
 
   const axesByArticle = new Map<string, readonly PatternAxis[]>(

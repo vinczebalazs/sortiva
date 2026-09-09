@@ -216,6 +216,19 @@ export async function startServerRuntime() {
   const { replenishmentTaskDeps } = await import('./app/api/articles/_lib/config')
   registerReplenishmentTasks(replenishmentTaskDeps())
 
+  // Learning from what the store actually published. Same two-job shape: a
+  // weekly sweep over every planning account, and a per-store job that says
+  // what became of each of its articles and rolls those verdicts up into the
+  // kinds of article that work for this store. Until now nothing wrote either —
+  // every article came back with no verdict, and the calendar top-up scored
+  // every candidate against an empty table.
+  //
+  // No model client and no search vendor: both passes read our own tables and
+  // write our own tables. Handing this either seam would make it possible for a
+  // weekly recompute to start spending money.
+  const { registerLearningTasks } = await import('@sortiva/jobs')
+  registerLearningTasks({ getDb: db, getPool: dbPool, capture: analytics })
+
   // The improve-this-page button, and the weekly comparison of a page against
   // what already ranks for its search. The press recorded what the merchant
   // asked for and queued this; until now nothing answered to the name, so the

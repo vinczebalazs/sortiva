@@ -196,6 +196,13 @@ const SERVER_EVENT_DEFINITIONS = {
     refresh_share: 'count',
     exploration_share: 'count',
   },
+  /**
+   * The weekly verdict on one published article — which of the four it got and
+   * how many days old it was. No id, no title, no click count: the saved
+   * insight this feeds watches how a store's mix of verdicts moves, which needs
+   * neither.
+   */
+  article_labeled: { label: 'enum', age_days: 'count' },
   article_delivered: { article_id: 'id', delivery: 'enum' },
   article_published: { article_id: 'id', delivery: 'enum', published_as: 'enum' },
 
