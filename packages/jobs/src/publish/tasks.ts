@@ -88,7 +88,7 @@ export function registerPublishTasks(deps: PublishTaskDeps): void {
 
   registerTask(PUBLISH_DELIVERY_SWEEP_TASK, async () => {
     await sweepPublishDeliveries(deps)
-  })
+  }, 'fans_out')
 
   registerTask(PUBLISH_INTENT_RECOVERY_SWEEP_TASK, async () => {
     if (!(deps.shopify && deps.cipher)) {
@@ -105,7 +105,7 @@ export function registerPublishTasks(deps: PublishTaskDeps): void {
       shopify: deps.shopify,
       cipher: deps.cipher,
     })
-  })
+  }, 'fans_out')
 
   registerTask(PUBLISH_DELIVERY_ACCOUNT_TASK, async (payload) => {
     const { accountId, date } = payload as PublishDeliveryPayload
@@ -124,7 +124,7 @@ export function registerPublishTasks(deps: PublishTaskDeps): void {
       { ...deps, db: deps.getDb(), pool: deps.getPool() },
       { accountId, date },
     )
-  })
+  }, 'per_account')
 }
 
 /** Test-only: the task registry is a module singleton, and so is this latch. */

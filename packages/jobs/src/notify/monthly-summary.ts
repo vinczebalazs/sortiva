@@ -116,7 +116,7 @@ export function registerMonthlySummaryTask(deps: MonthlySummaryDeps): void {
   registered = true
   registerTask(MONTHLY_SUMMARY_TASK, async () => {
     await sweepMonthlySummaries(deps)
-  })
+  }, 'fans_out')
 }
 
 /** Test-only: the task registry is a module singleton, and so is this latch. */

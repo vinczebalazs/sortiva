@@ -77,7 +77,7 @@ export function registerInventoryTasks(deps: InventoryTaskDeps): void {
         cursor: outcome.cursor,
       } satisfies InventorySyncPayload)
     }
-  })
+  }, 'per_account')
 }
 
 export type InventorySyncStatus =

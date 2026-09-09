@@ -115,7 +115,7 @@ export function registerGscTasks(deps: GscTaskDeps): void {
 
   registerTask(GSC_SYNC_DAILY_TASK, async () => {
     await runDailyGscSync(deps)
-  })
+  }, 'fans_out')
 
   registerTask(GSC_BACKFILL_TASK, async (rawPayload, helpers) => {
     const payload = rawPayload as GscBackfillPayload
@@ -146,7 +146,7 @@ export function registerGscTasks(deps: GscTaskDeps): void {
     if (step.status === 'chunk_done') {
       await helpers.addJob(GSC_BACKFILL_TASK, step.next)
     }
-  })
+  }, 'per_account')
 }
 
 /** Test-only: the task registry is a module singleton, and so is this latch. */

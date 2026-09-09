@@ -69,7 +69,7 @@ export function registerAccountCloseTask(deps: AccountCloseDeps): void {
     const payload = rawPayload as AccountClosePayload
     if (!payload?.accountId) throw new Error('account_close needs an accountId')
     await runAccountClose(deps, payload)
-  })
+  }, 'per_account')
 }
 
 /** Test-only: the task registry is a module singleton, and so is this latch. */

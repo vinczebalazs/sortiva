@@ -138,7 +138,7 @@ export function registerIntentGapTasks(deps: IntentGapTaskDeps): void {
 
   registerTask(INTENT_GAP_SWEEP_TASK, async () => {
     await sweepIntentGapPasses(deps)
-  })
+  }, 'fans_out')
 
   registerTask(INTENT_GAP_ACCOUNT_TASK, async (payload) => {
     const { accountId } = payload as IntentGapAccountPayload
@@ -150,7 +150,7 @@ export function registerIntentGapTasks(deps: IntentGapTaskDeps): void {
     // recorded against the day it actually ran on rather than the day it was
     // asked for.
     await runIntentGapPassForAccount({ ...deps, db: deps.getDb(), pool: deps.getPool() }, accountId)
-  })
+  }, 'per_account')
 }
 
 /** Test-only: the task registry is a module singleton, and so is this latch. */

@@ -172,7 +172,7 @@ export function registerIngestionTasks(makeDeps: () => IngestionDeps): void {
     const { accountId, jobId } = (payload ?? {}) as { accountId?: string; jobId?: string }
     if (!accountId) throw new Error(`${INGESTION_DISPATCH_TASK} needs an accountId`)
     await dispatchIngestion(makeDeps(), { accountId, ...(jobId ? { jobId } : {}) })
-  })
+  }, 'per_account')
 }
 
 /** Test-only: the registry is a module singleton and so is this latch. */

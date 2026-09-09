@@ -174,7 +174,7 @@ export function registerKeywordEnrichTask(makeDeps: () => IngestionDeps): void {
     const { accountId, term } = (payload ?? {}) as { accountId?: string; term?: string }
     if (!accountId || !term) throw new Error(`${KEYWORD_ENRICH_TASK} needs an accountId and a term`)
     await enrichKeyword(makeDeps(), { accountId, term })
-  })
+  }, 'per_account')
 }
 
 /** Test-only: the registry is a module singleton and so is this latch. */

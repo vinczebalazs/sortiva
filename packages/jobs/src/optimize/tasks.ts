@@ -54,7 +54,7 @@ export function registerOptimizeTasks(input: OptimizeTaskDeps): void {
       opportunity_id: payload.opportunityId,
       status: outcome.status,
     })
-  })
+  }, 'per_account')
 }
 
 let registered = false

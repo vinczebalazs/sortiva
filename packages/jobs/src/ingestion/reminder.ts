@@ -69,7 +69,7 @@ export function registerReminderTasks(
   registered = true
   registerTask(OAUTH_REMINDER_SWEEP_TASK, async () => {
     await sweepOauthReminders(getDb(), getNotifications())
-  })
+  }, 'fans_out')
 }
 
 /** Test-only: the registry is a module singleton and so is this latch. */

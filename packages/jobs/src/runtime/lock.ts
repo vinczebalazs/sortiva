@@ -100,6 +100,53 @@ export function holdsAccountLock(accountId: string): boolean {
   return heldAccounts().has(accountId)
 }
 
+/**
+ * A record of which accounts were locked somewhere inside a piece of work,
+ * kept after the locks themselves have gone.
+ *
+ * `held` above answers "is this account locked *right now*", which is the wrong
+ * question for a job that has already finished. Six workers took the account
+ * lock by hand and nothing would have noticed a seventh that forgot — the
+ * registry wraps every job in the kill-switch check for exactly that reason,
+ * and the same argument applies to the lock. This is what lets the registry
+ * check it: the entry is remembered even though the lock is long released.
+ *
+ * Deliberately a set of accounts rather than a boolean. "Some lock was asked
+ * for" would pass a job that locked the wrong store, which is the failure that
+ * matters — two jobs writing one account's rows at once is precisely what the
+ * lock exists to stop.
+ */
+const entries = new AsyncLocalStorage<Set<string>>()
+
+/**
+ * Runs `fn` while remembering every account the lock was asked for inside it.
+ * Nested calls share the outermost record, so a fan-out sweep sees every account
+ * its children asked for.
+ */
+export async function recordingAccountLocks<T>(
+  fn: () => Promise<T>,
+): Promise<{ readonly result: T; readonly locked: ReadonlySet<string> }> {
+  const existing = entries.getStore()
+  if (existing) return { result: await fn(), locked: existing }
+  const record = new Set<string>()
+  const result = await entries.run(record, fn)
+  return { result, locked: record }
+}
+
+/**
+ * Called by both lock entry points when a job *asks* for an account, not when
+ * it gets it.
+ *
+ * The attempt is the right thing to record. `tryWithAccountLock` deliberately
+ * returns without running its body when another worker already holds the
+ * account — backing off is correct behaviour, not a skipped lock — so a check
+ * that demanded acquisition would fail three jobs for doing exactly the right
+ * thing. What no honest job ever does is finish without asking at all.
+ */
+function noteAttempt(accountId: string): void {
+  entries.getStore()?.add(accountId)
+}
+
 export interface AccountLock {
   readonly accountId: string
   /** The dedicated connection holding the lock. Use the pool for step work. */
@@ -220,6 +267,7 @@ export async function withAccountLock<T>(
   options: AccountLockOptions = {},
 ): Promise<T> {
   if (holdsAccountLock(accountId)) throw new AccountLockReentry(accountId)
+  noteAttempt(accountId)
 
   const { client, release } = await acquire(pool, accountId, options)
   const nested = new Set([...heldAccounts(), accountId])
@@ -245,6 +293,7 @@ export async function tryWithAccountLock<T>(
   fn: (lock: AccountLock) => Promise<T>,
 ): Promise<T | undefined> {
   if (holdsAccountLock(accountId)) return undefined
+  noteAttempt(accountId)
 
   const client = await pool.connect()
   let release: () => Promise<void>

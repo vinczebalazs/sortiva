@@ -30,9 +30,9 @@ export function registerBillingTasks(): void {
         `[billing] reconciliation could not read ${report.missing.length} subscription(s) from Stripe`,
       )
     }
-  })
+  }, 'fans_out')
 
   registerTask(STRIPE_DRAIN_TASK, async () => {
     await drainNow()
-  })
+  }, 'fans_out')
 }

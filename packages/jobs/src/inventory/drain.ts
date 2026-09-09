@@ -122,7 +122,7 @@ export function registerCatalogEventTasks(deps: CatalogEventDrainDeps): void {
         cursor: result.cursor,
       })
     }
-  })
+  }, 'per_account')
 }
 
 let registered = false

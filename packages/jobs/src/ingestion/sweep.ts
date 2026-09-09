@@ -340,7 +340,7 @@ export function registerCatalogSweepTasks(deps: SweepDeps): void {
 
   registerTask(RECONCILIATION_SWEEP_TASK, async () => {
     await runReconciliationSweep(deps)
-  })
+  }, 'fans_out')
 
   registerTask(CATALOG_RECONCILE_TASK, async (rawPayload, helpers) => {
     const payload = rawPayload as { accountId: string; cursor?: string; startedAt?: string }
@@ -384,7 +384,7 @@ export function registerCatalogSweepTasks(deps: SweepDeps): void {
       diff_count: outcome.diffCount,
       products_seen: outcome.productsSeen,
     })
-  })
+  }, 'per_account')
 
   registerTask(LANDING_REVENUE_TASK, async (rawPayload) => {
     const payload = rawPayload as { accountId: string; days?: number }
@@ -392,7 +392,7 @@ export function registerCatalogSweepTasks(deps: SweepDeps): void {
     await tryWithAccountLock(ingestion.pool, payload.accountId, async () =>
       aggregateLandingRevenue(deps, payload),
     )
-  })
+  }, 'per_account')
 }
 
 /** Test-only: the task registry is a module singleton, and so is this latch. */

@@ -346,7 +346,7 @@ export function registerShopifyWebhookTasks(deps: WebhookDrainDeps): void {
   registered = true
   registerTask(SHOPIFY_WEBHOOK_DRAIN_TASK, async () => {
     await drainShopifyWebhooks(deps)
-  })
+  }, 'fans_out')
 }
 
 /** Test-only: the task registry is a module singleton, and so is this latch. */

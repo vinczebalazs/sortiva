@@ -76,7 +76,7 @@ function countingTask(name: string): { ran: number[] } {
   const state = { ran: [] as number[] }
   registerTask(name, async () => {
     state.ran.push(Date.now())
-  })
+  }, 'none')
   return state
 }
 
@@ -185,7 +185,7 @@ describe('flipping a switch stops work at the next dequeue', () => {
     const account = await insertAccount(harness.pool, 'quiet@example.com')
     registerTask('some_account_work', async () => {
       throw new Error('this handler must never be reached')
-    })
+    }, 'none')
     await tripGlobalFlag(db, SYSTEM, {
       flag: ALL_WORK_PAUSED_FLAG,
       actor: 'operator@sortiva',
