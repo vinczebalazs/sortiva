@@ -6,7 +6,7 @@ import {
   OPTIMIZE_FAILED_VALIDATION_KEY,
 } from '@sortiva/core'
 import { renderTemplatedLine } from '../opportunities/why'
-import { t } from './index'
+import { t, type StringKey } from './index'
 import {
   ADMISSION_REASON_PARAMS,
   COUNTS_PHRASED_AROUND,
@@ -430,5 +430,55 @@ describe('a key the catalogue has no sentence for', () => {
   it('does the same for a missing reason altogether', () => {
     expect(renderTemplatedLine(null).known).toBe(false)
     expect(renderTemplatedLine(null).text).toBe(t('opportunities.whyUnavailable'))
+  })
+})
+
+/**
+ * A store competing with itself is confirmed by either of two things, and only
+ * one of them is a change: the page Google leads with keeps moving, or the
+ * search simply earns fewer clicks than it did a quarter ago. One sentence
+ * covered both and told every merchant in the second group that Google kept
+ * switching — which, for them, had not happened.
+ *
+ * Which sentence is chosen is decided in `packages/core` and asserted there.
+ * What each one says is here, because this is where the words live.
+ */
+describe('the three sentences for a store competing with itself', () => {
+  const said = (key: string, competing = 3) =>
+    t(`template.${key}` as StringKey, { competing_urls: competing, leader_changes: 2 })
+
+  it('claims a moving leader only in the sentence about a moving leader', () => {
+    expect(said('cannibalization.fix_alternation')).toContain(
+      'Google keeps changing which one it leads with',
+    )
+    expect(said('cannibalization.fix_alternation')).not.toContain('fewer clicks')
+  })
+
+  it('says only that clicks fell, when that is what confirmed it', () => {
+    const sentence = said('cannibalization.fix_aggregate_loss')
+    expect(sentence).toContain('fewer clicks than it did three months ago')
+    expect(sentence, 'nothing changed for this merchant, so nothing may say it did').not.toContain(
+      'keeps changing',
+    )
+  })
+
+  it('says both when both were observed', () => {
+    const sentence = said('cannibalization.fix_both')
+    expect(sentence).toContain('keeps changing which one it leads with')
+    expect(sentence).toContain('fewer clicks than it did three months ago')
+  })
+
+  it('reads naturally for a single competing page', () => {
+    expect(said('cannibalization.fix_alternation', 1)).toContain('1 page of yours is competing')
+    expect(said('cannibalization.fix_alternation', 3)).toContain('3 pages of yours are competing')
+  })
+
+  /**
+   * Cards written before 2026-09-09 carry the single old key. It stays in the
+   * catalogue for that reason and nothing produces it any more, so a merchant's
+   * existing card still renders rather than falling back to "no explanation".
+   */
+  it('still renders a card written before the sentence was split', () => {
+    expect(said('cannibalization.fix', 2)).toContain('2 pages of yours are competing')
   })
 })
