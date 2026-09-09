@@ -42,6 +42,8 @@
 
   "badge.limitedIntelligence": "Limited Intelligence",
   "badge.limitedIntelligence.unavailableHeading": "Not evaluated without Search Console",
+  "badge.evidenceStale": "Held — evidence out of date",
+  "badge.evidenceStale.body": "We measured this in Search Console, and your store isn't connected to it any more. We're keeping the card rather than re-checking it against data we can't see — reconnect and we'll bring it up to date.",
 
   "billing.cancelAnytime": "Cancel anytime.",
   "billing.checkoutCanceled": "No charge was made.",
