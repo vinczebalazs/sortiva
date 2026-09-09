@@ -6581,3 +6581,24 @@ What this settles: `packages/jobs/src/generation/request-refresh.ts` writes work
 
 Consequence, to make this deliberate rather than accidental: the code needs a comment saying so and a test asserting that a dismissed article can still be refreshed on request — otherwise a later reader tidying up "the one path that forgot to consult the list" will helpfully break it. Small card, Lane D's, and it is the whole reason this entry exists rather than nothing.
 Nearest spec: main §7.9, §9.6.5; invariant 10.
+
+## 2026-09-09 — R-LOCK-EVERY-WORKER — Every job declares whether it works on one store, and the runtime holds it to that
+
+Decision: `registerTask` takes a third argument saying whether a job works on one account's data. **There is no default**, so a job cannot be added without somebody deciding, and the runtime fails a job that finishes without having asked for the lock it declared it needed. Thirty-five registrations declared.
+
+Why a declaration and not a scan: the founder chose this option on 2026-09-08 over a source scan, because a scan classified five of thirty-three jobs one way and twenty-eight the other — it was guessing about most of them. The reason it guessed is now visible in the type: **most jobs are neither per-account nor global.** They walk every account and do the per-account work inside, one store at a time, so a two-way answer is wrong before it starts.
+
+**Four values, and two of them say the runtime checks nothing.** `per_account` — the payload names the account, and the check is that *that* account's lock was asked for, not merely that some lock was. `account_from_record` — one account, discovered from the row the job loads (the email sender is handed a message id); the runtime checks a lock was asked for and **cannot check it was the right one**, which is why it is its own value rather than folded into either neighbour. `fans_out` — unchecked, because a sweep that locked every account it touched and one that touched none look identical from outside. `none` — unchecked.
+
+**Two things found while building it, either of which would have made the check wrong.**
+
+It records the **attempt**, not the acquisition. `tryWithAccountLock` deliberately returns without running its body when another worker already holds the account — backing off is correct behaviour, and three jobs rely on it. A check demanding acquisition would have failed those three every time the queue was busy, which is exactly when you least want new failures.
+
+And the check sits **inside** the kill-switch gate, not outside it. A paused job returns having done nothing and therefore takes no lock; checked from outside, the first operator to pause the product would have been handed a flood of failures claiming its jobs were racing each other. Both are covered by tests, and the second is the mutation that fails when the two wrappers are swapped.
+
+**What this does not do**, stated because the day's lesson is that a guard which overstates itself is worse than none: it fires *after* the unsafe work has already run. It converts a silent, permanent and unattributable corruption into a loud failure with a name — which is the only signal that reaches a person — but it does not prevent the race. Preventing it would mean the lock being taken by the runtime rather than by the job, and that is a different card.
+
+Mutation-checked five ways, each restored: accepting any lock rather than the named account's; skipping the check entirely; dropping the helpers argument Graphile passes; stopping the non-blocking lock recording its attempt; and swapping the two wrappers.
+
+Cross-lane: thirty-five registrations across six lanes' directories, which the founder authorised on 2026-09-08 knowing the cost. Done in one pass while the lanes were in copy files, so nothing collided.
+Nearest spec: main §14.3.1–14.3.4; invariant 18; `CLAUDE.md` invariant 18 as corrected 2026-09-08.

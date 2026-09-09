@@ -1565,7 +1565,7 @@ Note added 2026-09-08: the rename machinery exists only for posts **we** publish
 Scope: the "we paused this action rather than continue with lower-quality or stale data" line is one of the sentences the spec requires word for word, and it is hard-coded at `apps/web/app/api/recommendations/_lib/handlers.ts:370` as well as living in the catalogue. The lint rule that catches literal merchant-facing text only looks at screen markup, so nothing would notice the two copies drifting.
 Done when: there is one copy, and the guard that finds hand-written sentences covers this shape too.
 
-**R-LOCK-EVERY-WORKER — six workers take the per-account lock by hand and nothing checks the seventh does** · integrator (shared worker plumbing) · **invariant 18** · **TAKEN 2026-09-08**
+**R-LOCK-EVERY-WORKER — six workers take the per-account lock by hand and nothing checks the seventh does** · **DONE, merged as `66a067c`** · integrator (shared worker plumbing) · **invariant 18** · **TAKEN 2026-09-08**
 Scope: all work for one store must run one thing at a time, which is what stops two jobs writing the same rows at once. Registering a task already wraps it in the kill-switch check automatically — the registry's own reasoning is "a switch that half the code paths consult is not a switch" — and that reasoning applies word for word to the lock, which is *not* wrapped. Six task files take it by hand and nothing would notice a seventh that forgot.
 Read first: `packages/jobs/src/runtime/tasks.ts`; `packages/jobs/src/runtime/lock.ts`.
 Done when: a task that does account work without the lock fails a check by name — and the short list of jobs that legitimately run without one says why, the way the kill-switch exemptions already do.
