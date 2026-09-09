@@ -500,7 +500,16 @@ Invariants: 12, 13.
 **T7.1 is split three ways, 2026-09-09, because it is too big for one session.** `article_labels` and `pattern_stats` exist in the schema and, as of tonight, **no production code read or wrote either.** Re-verify that before taking any piece.
 
 - **T7.1a — labels.** What happened to each published article. **Dispatched to Lane D 2026-09-09.** Built as pure domain logic in `packages/core`; the lane was told **not** to register a job, because the registration API was changing underneath it, so **the weekly job still has to be wired afterwards.**
-- **T7.1b — patterns.** `pattern_stats`, n ≥ 3 to activate, multipliers clamped [0.5, 2.0] over 90 days, replacing `T4.6`'s stubs. **Depends on 7.1a.**
+- **T7.1a — labels. DONE**, merged as `ec02f07`. Every published article gets one of four verdicts weekly, judged against the store's own middle article, with five stated exclusions. **The weekly job is not registered** — that is still to wire.
+- **T7.1b — patterns.** `pattern_stats`, n ≥ 3 to activate, multipliers clamped [0.5, 2.0] over 90 days. **Narrower than this line says:** the multiplier is already *consumed* by `packages/core/src/opportunities/scoring.ts` and by the calendar top-up in `packages/core/src/calendar/replenishment.ts`, both of which behave correctly against the empty table they find today. **It is the writer that is missing.** Start from `ratedArticleLabels`, which `T7.1a` added for this. **Unblocked by `T7.1a`.**
+
+**T7.1-JOB — the weekly label run has no job behind it** · Lane D, small
+Scope: `T7.1a` built the label computation as domain logic and was deliberately told not to register a job, because the registration interface was changing that night. It has changed and settled: `registerTask` now takes a third argument declaring whether a job works on one account's data (`AccountWork` in `packages/jobs/src/runtime/tasks.ts`), and the runtime **fails** a job declared `per_account` that does not ask for that account's lock. So the wiring is no longer a formality.
+Done when: labels are recomputed weekly per store, the job declares its account work honestly and takes the lock, a crontab entry exists, and `pnpm chaos` is still green.
+
+**T7.1-UNRATED-REASON — an article refused a verdict is stored with no figures, and cannot say why** · **needs a schema wave**, then Lane D · raised by `T7.1a`
+Scope: `article_labels` has no column for *why* a verdict was refused, so an unrated row is written with its numbers left null. That is the safe choice — storing an override-published article's clicks under a row saying only "unrated" leaves a real number in the learning loop's own table for a later query to sum, which is exactly what invariant 12 forbids. The cost: a screen wanting to show a young article's early numbers beside "too early to judge" cannot read them from here. **No screen does today**, so this is a cost recorded rather than a defect.
+Done when: a reason column exists and the figures can be kept for the cases where keeping them is safe — the two changes belong in one wave, because the column is what makes the figures safe to store.
 - **T7.1c — opportunity outcomes.** **DONE for OPTIMIZE**, merged as `c772899`. See the card below.
 
 **Three follow-ups the outcome card named rather than left implied** · Lane E
