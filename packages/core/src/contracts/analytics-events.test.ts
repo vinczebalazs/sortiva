@@ -56,10 +56,14 @@ const CONTENT_SHAPED_NAMES = [
  *   declared as an `enum`, which refuses anything with a space in it or longer
  *   than sixty-four characters, so the kind rules out prose even though the
  *   name reads like it might carry some.
+ * - `article_labeled.label` is the weekly verdict on a published article, one
+ *   of exactly four words we chose (`winner`, `neutral`, `underperformer`,
+ *   `unrated`), and an `enum` for the same reason.
  */
 const NAMED_FOR_A_REASON = new Set([
   'prompt_version',
   'opportunity_outcome_measured.label',
+  'article_labeled.label',
 ])
 
 describe('the events the server may report', () => {

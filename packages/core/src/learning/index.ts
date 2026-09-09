@@ -15,3 +15,11 @@ export {
   type StoreLabelling,
   type UnratedArticleLabel,
 } from './labels'
+export {
+  aggregatePatterns,
+  type LabelledArticle,
+  type PatternAxis,
+  type PatternConfig,
+  type PatternDimension,
+  type PatternStatRecord,
+} from './patterns'

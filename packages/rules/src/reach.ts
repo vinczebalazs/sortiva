@@ -107,12 +107,12 @@ export const RULES_REACH: readonly RulesReachEntry[] = [
   {
     prefix: 'learning',
     reach: 'ignored',
-    note: 'The pass that fills the calendar (packages/jobs/src/generation/replenish.ts) reads these from the repo file.',
+    note: 'The pass that fills the calendar (packages/jobs/src/generation/replenish.ts) and the weekly learning run (packages/jobs/src/learning/recompute.ts) both read these from the repo file.',
   },
   {
     prefix: 'learning.labels',
     reach: 'ignored',
-    note: 'Nothing reads these yet — the pass that labels a published article against the store’s own median is not built, so a row here changes nothing anywhere.',
+    note: 'Read by the weekly learning run (packages/jobs/src/learning/recompute.ts) from the repo file, so a store’s own row here changes nothing.',
   },
   {
     prefix: 'learning.outcomes',
