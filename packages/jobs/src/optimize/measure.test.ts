@@ -169,7 +169,7 @@ async function seedAppliedOptimize(url: string = PAGE): Promise<string> {
       evidenceJson: {},
       recommendedAction: 'optimize',
       status: 'accepted',
-      reasonTemplateKey: 'striking_distance',
+      reasonTemplateKey: 'striking_distance.optimize',
       reasonParams: {},
       limitedIntelligence: false,
       rulesVersion: 'test',
@@ -588,7 +588,7 @@ async function attachOverridePublishedArticle(): Promise<void> {
        (account_id, signal_type, entity_type, entity_ref, evidence_json, impact, impact_score,
         confidence, reason_template_key, recommended_action, status, rules_version)
      VALUES ($1, 'uncovered_commercial_query', 'query_cluster', 'boots', '{}'::jsonb, 'low', 0, 0,
-             'uncovered_commercial_query', 'create', 'completed', 'test')
+             'uncovered_commercial_query.create', 'create', 'completed', 'test')
      RETURNING id`,
     [accountId],
   )
