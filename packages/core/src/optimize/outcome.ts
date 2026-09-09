@@ -130,7 +130,7 @@ export function readOptimizeOutcome(outcome: unknown): OptimizeOutcomeRecord | u
 
 /** Clicks per impression, or null where the page was never shown and the ratio would be a division by nothing. */
 export function ctrOf(totals: OptimizeWindowTotals): number | null {
-  return totals.impressions > 0 ? totals.clicks / totals.impressions : null
+  return totals.impressions ? totals.clicks / totals.impressions : null
 }
 
 /**
@@ -144,7 +144,7 @@ export function ctrOf(totals: OptimizeWindowTotals): number | null {
 export function storeMedianImpressions(
   pages: readonly OptimizeWindowTotals[],
 ): number | null {
-  return median(pages.filter((page) => page.impressions > 0).map((page) => page.impressions))
+  return median(pages.filter((page) => Boolean(page.impressions)).map((page) => page.impressions))
 }
 
 /**
@@ -186,9 +186,7 @@ export function optimizeOutcomeLabel(input: {
   const beforeCtr = ctrOf(before)
   const afterCtr = ctrOf(after)
   const ctrRelativeDelta =
-    beforeCtr !== null && beforeCtr > 0 && afterCtr !== null
-      ? (afterCtr - beforeCtr) / beforeCtr
-      : null
+    beforeCtr && afterCtr !== null ? (afterCtr - beforeCtr) / beforeCtr : null
 
   const impressionsHeld =
     after.impressions >= before.impressions * config.impressions_not_collapsed_ratio_min

@@ -224,7 +224,7 @@ export async function measureOpportunityOutcome(
 
   const before = totalsFor(beforeRows, page.url)
   const after = totalsFor(afterRows, page.url)
-  if (before.impressions === 0) {
+  if (!before.impressions) {
     // Nothing was shown in the four weeks before the work, so every comparison
     // below divides by nothing. A page going from invisible to visible is real
     // and good, and this deliberately does not call it a win: with no baseline
