@@ -237,10 +237,12 @@ function verdict(
   const { current, prior } = facts
   const { medianClicks, medianImpressions } = baseline
 
-  const beatsStoreClicks =
-    medianClicks !== null &&
-    medianClicks > 0 &&
-    current.clicks >= config.winnerClicksStoreMedianMultipleMin * medianClicks
+  // The store's middle article, named rather than used inline so the "is there
+  // a baseline at all" question is asked of the store and not of a click count.
+  const middle = medianClicks
+  const clicksToWin =
+    middle === null || middle === 0 ? null : config.winnerClicksStoreMedianMultipleMin * middle
+  const beatsStoreClicks = clicksToWin !== null && current.clicks >= clicksToWin
 
   const positionImprovement =
     prior.position !== null && current.position !== null ? prior.position - current.position : null
