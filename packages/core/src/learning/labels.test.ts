@@ -146,6 +146,15 @@ describe('winner', () => {
     expect(resultFor(results, 'a-star').label).not.toBe('winner')
   })
 
+  it('is not earned by merely being the store’s typical article, or by nearly twice it', () => {
+    const typical = article({ articleId: 'a-typical', current: totals(10, 1000, 12) })
+    const nearly = article({ articleId: 'a-nearly', current: totals(19, 1000, 12) })
+    const { results } = labelStore([...ordinaryStore(), typical, nearly], CONFIG, NOW)
+
+    expect(resultFor(results, 'a-typical').label).toBe('neutral')
+    expect(resultFor(results, 'a-nearly').label).toBe('neutral')
+  })
+
   it('is earned by a real climb that enough people saw', () => {
     const subject = article({
       articleId: 'a-climber',
@@ -198,6 +207,17 @@ describe('underperformer', () => {
     expect(resultFor(results, 'a-buried').label).toBe('underperformer')
   })
 
+  it('is withheld from an old, buried article that nonetheless gets this store’s typical traffic', () => {
+    // Position 45 and three years old, but its clicks are the store's middle.
+    // "Buried" alone is not failure when the store's own normal is right there.
+    const { results } = labelStore(
+      [...ordinaryStore(), article({ ...buried, current: totals(10, 800, 45) })],
+      CONFIG,
+      NOW,
+    )
+    expect(resultFor(results, 'a-buried').label).toBe('neutral')
+  })
+
   it('is withheld from an article mature enough to grade but not old enough to fail', () => {
     const { results } = labelStore(
       [...ordinaryStore(), article({ ...buried, publishedAt: daysAgo(89) })],
@@ -231,23 +251,31 @@ describe('underperformer', () => {
     expect(resultFor(results, 'a-buried').label).toBe('neutral')
   })
 
-  it('loses to a winner when an article could be argued as both', () => {
-    // Clicks far below the store's middle, buried at position 45 on the old
-    // window — but it has climbed 20 places into a well-seen position this
-    // window. That is a story about improvement.
-    const { results } = labelStore(
-      [
-        ...ordinaryStore(),
-        article({
-          articleId: 'a-turning',
-          current: totals(1, 2000, 25),
-          prior: totals(1, 800, 45),
-        }),
-      ],
+  it('loses to a winner when an article genuinely qualifies as both', () => {
+    // This article satisfies both rules at once, which is the only case where
+    // the order of the two checks is visible. It is old enough to fail, gets a
+    // tenth of the store's middle in clicks, and is still past position 30 —
+    // an underperformer on every count. It has also climbed ten places into a
+    // position more people see than the store's middle article, which makes it
+    // a winner. Telling the merchant it is a failure in the week it turned
+    // round would be false at the moment it was least true.
+    const turning = article({
+      articleId: 'a-turning',
+      current: totals(1, 2000, 35),
+      prior: totals(1, 800, 45),
+    })
+    const { results } = labelStore([...ordinaryStore(), turning], CONFIG, NOW)
+    expect(resultFor(results, 'a-turning').label).toBe('winner')
+
+    // And the same article without the climb is the underperformer it would
+    // otherwise be, so what the previous assertion proved is the precedence
+    // rather than a case that could only ever have gone one way.
+    const stuck = labelStore(
+      [...ordinaryStore(), article({ ...turning, prior: totals(1, 800, 36) })],
       CONFIG,
       NOW,
     )
-    expect(resultFor(results, 'a-turning').label).toBe('winner')
+    expect(resultFor(stuck.results, 'a-turning').label).toBe('underperformer')
   })
 })
 
