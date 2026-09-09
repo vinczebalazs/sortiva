@@ -1,0 +1,17 @@
+export {
+  articleAgeDays,
+  labelExclusions,
+  labelStore,
+  labelWindows,
+  ratedLabels,
+  type ArticleLabel,
+  type ArticleLabelConfig,
+  type ArticleLabelFacts,
+  type ArticleLabelResult,
+  type LabelExclusion,
+  type LabelWindowTotals,
+  type RatedArticleLabel,
+  type StoreLabelBaseline,
+  type StoreLabelling,
+  type UnratedArticleLabel,
+} from './labels'
