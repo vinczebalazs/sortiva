@@ -50,14 +50,44 @@ export function reasonFor(signal: DetectedSignal, action: string): TemplatedReas
         },
       }
 
-    case 'cannibalization':
-      return {
-        reasonTemplateKey: 'cannibalization.fix',
-        reasonParams: {
-          competing_urls: signal.competing.length,
-          leader_changes: signal.leaderChanges,
-        },
+    case 'cannibalization': {
+      // Two different things can confirm this finding, and only one of them is
+      // a change: either the page Google leads with keeps moving week to week,
+      // or the search simply earns fewer clicks than it did a quarter ago. One
+      // sentence covering both told every merchant in the second group that
+      // Google keeps switching, which for them had not happened. The ground the
+      // detector recorded picks the sentence rather than filling one.
+      const { validation } = signal
+      if (!validation.validated) {
+        // Only the detector's validated findings become opportunities. One that
+        // failed validation reaching here means it was taken from the wrong
+        // half of the detector's result, and there is no true sentence to give
+        // it — the same refusal `assertClearedToCreate` makes for a CREATE with
+        // no existing-target check behind it.
+        throw new Error(
+          `reasonFor: cannibalization on "${signal.clusterHead}" did not pass validation (${validation.reason}), so it has no reason to show`,
+        )
       }
+      const reasonParams = {
+        competing_urls: signal.competing.length,
+        // Sent but never printed, on purpose: it is legitimately nought on
+        // every finding the falling clicks carried alone. See the note beside
+        // COUNTS_PHRASED_AROUND in packages/ui.
+        leader_changes: signal.leaderChanges,
+      }
+      switch (validation.via) {
+        case 'alternation':
+          return { reasonTemplateKey: 'cannibalization.fix_alternation', reasonParams }
+        case 'aggregate_loss':
+          return { reasonTemplateKey: 'cannibalization.fix_aggregate_loss', reasonParams }
+        case 'both':
+          return { reasonTemplateKey: 'cannibalization.fix_both', reasonParams }
+        default: {
+          const unhandled: never = validation.via
+          throw new Error(`reasonFor: no sentence for cannibalization ground ${String(unhandled)}`)
+        }
+      }
+    }
 
     case 'uncovered_commercial_query':
       return {
