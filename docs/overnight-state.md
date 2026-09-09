@@ -4,119 +4,161 @@ Rewritten after **every** card lands or stops, and re-read before any card is
 launched and before any merge. Its test: a completely fresh session, with none of
 the conversation that produced it, could take over from this file alone.
 
-**Last rewritten:** 2026-09-08, 15:50, by the integrator session (`sortiva-a8`,
+**Last rewritten:** 2026-09-09, 01:20, by the integrator session (`sortiva-a8`,
 running in the main worktree). **Everything below the first horizontal rule is
 older history, kept deliberately. Read this head first; it is what is true now.**
 
-## Where things stand at 2026-09-08, 15:50
+## Where things stand at 2026-09-09, 01:20
 
-**`main` is green on all eleven gate commands: 336 test files, 4,339 tests, run
-three times consecutively with no failures.** Lint, lint proofs, typecheck,
-contracts, build, both smoke boots, chaos and env check all pass. `stubs:report`
-is down from three entries to **one**, and that one is deliberate.
+**`main` is green on all eleven gate commands: 4,444 tests.** Lint, lint proofs
+(17 planted violations), typecheck, contracts (63 routes), build, both smoke
+boots, chaos (10/10) and env check all pass.
 
-**All lane worktrees are idle and merged.** Nothing is in flight.
+**`pnpm stubs:report` lists nothing.** Every stand-in this build ever wired into
+production is gone; the last was the publishing brake's counter.
 
-### The two intermittent test failures are solved, and neither was flakiness
+### The founder is asleep. The standing instruction is to build two things
 
-This mattered because three full-suite failures today were nearly written off as
-load, and the previous version of this file carried a note calling one of them
-"not a load flake" without saying what it was.
+Given at 2026-09-09, ~00:50: **"while I sleep build the learning loop and the
+per-job lock check"**. Both were already founder-approved. Nothing else was
+authorised, and no question may wait on him until morning — record open
+questions in this file and in `DECISIONS.md` and keep going on what is decided.
 
-- **The sign-in test made a live request to Google on every run.** It hands the
-  screen a `fetch` that answers from the real handlers, so it looks
-  self-contained — but the sign-in library reads Google's description of its own
-  endpoints before it can build a URL, using the **process's** `fetch`, not the
-  injected one. That request takes 230 ms from this machine idle, matching the
-  414 ms the test took when it passed, and it hit the five-second limit when it
-  did not. It now answers from a copy in the file, throws by name on anything
-  else it tries to reach, and **runs in 15 ms.**
-- **The rate limiter's pacing test timed the wrong two moments.** The limiter
-  controls when a request is *sent*; the test measured when two requests
-  *arrived*. On a busy machine a request sits between those, and if the first
-  waits longer than the second the arrival gap comes out shorter than the gap the
-  limiter left — 75 ms against a 90 ms floor. Timed from the caller's side now,
-  where delay can only push the number up.
+### The per-job lock check is DONE and merged
 
-**Both were findable by measuring rather than re-running.** And: **capture the
-runner's output to a file** — two of the three failures could not even be named
-because the output was piped through `grep`.
+`R-LOCK-EVERY-WORKER`, merged as `66a067c` and `a9e32d5`. Registering a job now
+takes a third argument saying whether it works on one store's data; there is no
+default, so a new job cannot be added without deciding; and the runtime fails a
+job that finishes without asking for the lock it declared it needed. All 35
+registrations declared, each by reading the handler rather than trusting the
+`*_SWEEP_TASK` / `*_ACCOUNT_TASK` naming.
 
-### What landed today, in a merchant's terms
+**Four values, two of which check nothing and say so** — see `DECISIONS.md`
+2026-09-09. The two traps found while building it, either of which would have
+made the check wrong in production:
 
-- A merchant whose card is declined **is finally emailed** — and so is one whose
-  webhook was lost, who was previously paused and never told at all.
-- A merchant **without a Google account can sign in.**
-- The dashboard's "needs you" list **links to the right things again** — four of
-  five kinds went to a general page, on the first screen a merchant sees.
-- **Two of the three ways to propose a new page** were skipping the check that
-  stops us competing with the merchant's own page. Both were unsafe.
-- One mistyped job name no longer **switches the product's entire clock off.**
-- The quality brake **can fire.**
-- The Connect Search Console button works; eight sentences written for merchants
-  are found; the article judge stops confirming claims the writer never saw; a
-  typed-in topic is judged by its own market's numbers.
-- Our promise never to send a merchant's words to the analytics vendor is now
-  kept **by the code** on the server, not by review — and building that guard
-  found a live violation.
-- The contract check finally compares the contract to the routes on disk; all
-  seven banned vendor libraries are proved rather than three; the chaos suite
-  checks it actually killed something; a stand-in running inside the product is a
-  test failure.
+- It records the **attempt**, not the acquisition. `tryWithAccountLock` returns
+  without running when another worker holds the account; demanding acquisition
+  would have failed three jobs for backing off correctly, precisely when the
+  queue was busiest.
+- The check sits **inside** the kill-switch gate. A paused job takes no lock, so
+  from outside every paused job would report as a lock violation.
 
-### What the integrator does next
+Mutation-checked five ways. Its honest limit is journalled: it fires *after* the
+unsafe work has run. It turns silent corruption into a named failure; it does not
+prevent the race.
 
-1. Dispatch from the queue. Nothing is blocked on anything except the founder
-   list below. Highest value first: **`R-COMMENT-CLAIMS`** (seventeen comments
-   that promise more than the test beside them delivers — the sweep's most
-   valuable output, and two of the seventeen have already cost us), then
-   `R-TASK-COPY`, `R-DRAWER-GAPS`, `R-VENDOR-DOUBLES`, `R-SCAN-DATE-ZONE`
-   formatting, `R-OUTAGE-COPY-TWICE`, `R-GRANT-ENTRY`, `R-TRANSITION-SCAN`,
-   `R-CAP-THIRD-COPY`, `R-REPAIR-LOOPS-SWITCH`.
-2. `R-LOCK-EVERY-WORKER` is carded with a **dead end recorded** — a source scan
-   cannot classify which workers do account work (5 of 33 one way, 29 of 33 the
-   other). Two real options with costs are in the card; the recommended one
-   touches 33 sites across six lanes and wants deciding, not assuming.
-3. `T10.4` needs a Shopify development store and cannot be finished from code.
+### The learning loop is IN PROGRESS — this is the part a fresh session must pick up
 
-### What is waiting on the founder — do not decide any of these
+`T7.2` (refresh candidates) landed on 2026-09-07. **`T7.1` was entirely unbuilt**
+as of tonight: `article_labels` and `pattern_stats` exist in the schema and no
+production code read or wrote either. Verify that again before building — it is
+the claim most likely to have moved.
 
-**`R-PUBLISH-ATTEMPTS`** — the one remaining wired stand-in. Nothing records a
-refused publish, because a refusal deletes its own claim row, and that covers
-rate limits. Recording it means storing something we do not store today.
-**`R-COMPETITOR-AUTOADD`** — the constitution says search-result domains are
-never added to a merchant's competitor list without them; onboarding adds them.
-**`R-NO-BROWSER-TESTS`** — nothing in the repository can test a click; every
-screen is held by static-render assertions only. That is the last unchecked link
-behind two of this week's live screen defects. A cost decision.
-**Notifications are not append-only** and cannot be: opening the bell writes that
-you saw it, and the retention sweep deletes past the window. The narrower true
-property is enforced; the constitution's wording needs correcting.
-**`R-LOCK-NAME`** — invariant 18 names a database function the code deliberately
-does not use. One line of `CLAUDE.md`.
-Then: `R-SWEEP-LIFECYCLE`, `R-RESTUDY`, `R-EVIDENCE-BLACKOUT`, `R-LABELS-OR-DASHES`,
-`R-EXPORT-FALLBACK`, `R-SKIP-TASK`, `R-DISMISS-FOLLOWS-RENAME`, `R-STATE-FIVE`,
-`R-FINGERPRINT-BLAST`, `R-COMPLETED-LINK`, `R-BRAKE-STICKY`, `R-SIGNIN-COPY`
-(six authored sentences, one of which says the link works once and not that it
-lapses in fifteen minutes), `R-VERDICT-UNBUILT`, `R-ONE-TOPIC-INDEX`, the "We
-found 1 ways to grow your store" string, the monthly email naming Monday, the
-lapsed-subscriber copy, and the two gate sentences that borrow approved copy.
+It is too big for one session, so it is split into three:
 
-### The three things a fresh session would most likely get wrong
+- **T7.1a — labels.** What happened to each published article: 28-day maturity,
+  four labels (`winner` / `neutral` / `underperformer` / `unrated`), thresholds
+  **relative to the store's own median, never absolute** (invariant 13), and the
+  exclusions — override-published articles are absent from everything that feeds
+  learning (invariant 12), plus too young, pending repair, unconfirmed export.
+  **Dispatched to Lane D, in flight.** Briefed to build it as pure domain logic
+  in `packages/core` and **not** to register a job, because the registration API
+  was changing underneath it. **The weekly job still has to be wired, by whoever
+  picks this up after Lane D lands.**
+- **T7.1b — patterns.** `pattern_stats` over intent class / family / keyword
+  cluster / action type, n ≥ 3 to activate, multipliers clamped [0.5, 2.0] over
+  90 days, replacing `T4.6`'s stub patterns. **Depends on 7.1a. Not dispatched.**
+- **T7.1c — opportunity outcomes.** OPTIMIZE / REFRESH / FIX outcomes written to
+  `opportunities.outcome_json`, plus the `article_labeled` and
+  `opportunity_outcome_measured` events. Independent of the other two.
+  **Not dispatched.** Note `enqueueOpportunityOutcomeMeasurement` already exists
+  and is called from the apply handler — check what of this is already built
+  before scoping it.
 
-1. **The pattern behind most of this week's findings:** *a thing is checked
-   against its own idea of itself, never against what consumes it.*
-2. **Its sibling, which appeared three times today in code written hours apart,
-   twice by me:** *a guard that proves it is working by requiring an outstanding
-   defect to exist starts lying on the day the defect is fixed* — and the version
-   hardest to see: **a check that generates one test per thing it finds gets
-   quieter, not redder, when it starts finding less.** Assert the size of what
-   you found, not just what you found.
-3. **A precise declaration can turn a real fix into a false alarm.** Naming the
-   dashboard's reference keys as identifiers made the new screen check report
-   them as fields the endpoint could never send, because the values it plants to
-   ask that question did not include a well-formed identifier. When a new check
-   objects to a correct change, suspect the check's vocabulary before the change.
+If the loop slips, the Performance table ships showing a dash in every result
+column. The founder was told that and accepted it.
+
+### In flight right now
+
+- **Lane D** — `T7.1a`, the labels half of the learning loop.
+- **Lane C** — `R-CANNIBAL-COPY`: the self-competition sentence splits into three,
+  chosen by which of the detector's two grounds carried the finding. The sentence
+  currently says Google keeps changing which page it shows, which is false when
+  the finding came from the clicks-falling ground. Copy is founder-approved
+  verbatim.
+- **Lane F** — `R-SIGNIN-EXPIRY` and `R-EVIDENCE-BLACKOUT-COPY`, both
+  founder-approved verbatim.
+
+Lanes A, B, E, G idle.
+
+### The machine is unreliable tonight — this cost three sessions
+
+**DNS resolution intermittently fails.** `host api.anthropic.com` times out while
+a direct request to the same address succeeds. Three lane sessions died on
+"cannot reach the API server"; a fourth died on a request timeout.
+
+Two things follow, and both are now in every brief:
+
+- **Commit in halves, or oftener.** Lane D's publish-attempts card survived a
+  death because its writer half was committed; it lost minutes rather than an
+  hour. The three that died having committed nothing lost everything, which was
+  nothing, because they died while still reading.
+- **A dead session can be resumed rather than restarted.** Sending it a message
+  brings it back with its context and its uncommitted files intact. Tell it what
+  survived and to **re-read its own half-finished files rather than trust its
+  memory of them**, since it was interrupted mid-edit.
+
+### Rules that have each cost this project once, and belong in every brief
+
+1. **Never run `pnpm test` in a lane** — 4,444 tests, it times the session out.
+   Run the touched suites by path. **But `pnpm chaos` and `pnpm lint:prove` are
+   separate commands the ordinary run does not collect**, and that gap broke
+   `main` twice on 2026-09-08.
+2. **Commit in halves.**
+3. **Mutation-check every test.** Several sessions found their own tests were
+   weak this way; that is what it is for.
+4. **Verify every claim in a brief against the working tree before acting on
+   it.** Six briefs on 2026-09-08 described work that was already done or
+   described it wrongly, three of them written by the integrator.
+
+### The pattern this repository keeps finding, now five separate times
+
+**A thing checked against its own idea of itself.** The stand-in scan built its
+own list; the contract check compared the contract to the document generated from
+it; the plural check kept a list of the placeholder names somebody remembered;
+the denominator scan passed over a catalogue pruned to 3% of itself; the
+competitor-cap guard compared one copy of the number to another copy of it.
+
+The antidote, applied five times now: **invert the burden** (everything is a
+count unless a short list says otherwise), **read the real thing** (the routes,
+the catalogue, the working tree), and **give every scan an anti-vacuity test**
+that names the directory where the defect actually lived rather than trusting a
+file count.
+
+### Waiting on the founder — do not decide any of these
+
+- **"We found 1 ways to grow your store organically."** Canonical Appendix A
+  copy, on the first screen after onboarding, for a store whose first scan finds
+  one thing. Named as a known exception with a test that fails if it is reworded.
+- **The denominator rule.** A full report was published for him at
+  `https://claude.ai/code/artifact/4ce6faeb-a7cf-4c1b-ad37-d138790a1e0b`. The
+  short version: the spec bans denominators once, for one reason, about the daily
+  cap; the constitution generalised that to every count; six checks enforce three
+  different versions of it; and five merchant-facing places already ship a
+  percentage the dashboard's check would reject. Recommendation in the report is
+  to narrow it to totals the product itself sets or promises.
+- **`R-RESTUDY` / `R-FINGERPRINT-BLAST`** — parked deliberately by the founder;
+  **no lane may settle it sideways** as part of another card.
+- **Recognising a merchant's own renamed pages** — answered "leave it" on
+  2026-09-08, recorded, no longer open.
+
+### Cannot be done from this repository
+
+`.env` credentials (31 blank, deferred to last by the founder), a Shopify
+development store for `T10.4`, and a first deploy into a Railway account that
+currently has no projects.
+
 ---
 
 ## The run stopped on a rate limit at 20:25, and RESUMED at 21:59
