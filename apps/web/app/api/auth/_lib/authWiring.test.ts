@@ -4,6 +4,7 @@ import { buildAuthAdapter, type AuthUserStore, type VerificationTokenStore } fro
 import { buildAuthConfig, SIGN_IN_LINK_MAX_AGE_SECONDS } from './config'
 import { memorySessionStore } from './memorySessions'
 import { authDeps } from './provisioning'
+import { t } from '@sortiva/ui/strings/index'
 
 /**
  * Email sign-in is optional in the shape `buildAuthConfig` takes — tests that
@@ -142,5 +143,29 @@ describe('what the sign-in adapter records', () => {
 
     expect(updated.email).toBe('founder@example.com')
     expect(rows).toEqual([{ id: 'acct_1', email: 'founder@example.com' }])
+  })
+})
+
+/**
+ * The sign-in link lapses after fifteen minutes. Two places tell a merchant so
+ * — the email, which derives the number from the constant below, and the
+ * confirmation on the sign-in screen, which states it in words the founder
+ * approved. Only one of those can drift.
+ *
+ * So this compares the sentence to the number the server actually enforces,
+ * rather than to a second copy of the number. A guard that compares one copy of
+ * a value to another copy of it has been found five times in this repository
+ * this week and each time proved nothing.
+ */
+describe('the promise made about how long a sign-in link lasts', () => {
+  it('states the number the server enforces, not one somebody typed', () => {
+    const minutes = Math.round(SIGN_IN_LINK_MAX_AGE_SECONDS / 60)
+    const said = t('signin.emailSent', { email: 'founder@example.com' })
+
+    expect(said, 'the confirmation must name the real expiry').toContain(`${minutes} minutes`)
+  })
+
+  it('still tells the merchant the link is single-use', () => {
+    expect(t('signin.emailSent', { email: 'founder@example.com' })).toContain('works once')
   })
 })
