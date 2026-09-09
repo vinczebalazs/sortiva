@@ -497,6 +497,19 @@ Read first: main §9.6.2, §9.6.3, §9.6.7, §9.6.10, §13 `article_labels`/`pat
 Done when: an article at day 27 is `unrated`, at day 28 labelled; multiplier of a 3-winner pattern = 1.25 and stacking stays within clamps; an override article is absent from every pattern query; OPTIMIZE outcome `improved` fires on the fixture delta.
 Invariants: 12, 13.
 
+**T7.1 is split three ways, 2026-09-09, because it is too big for one session.** `article_labels` and `pattern_stats` exist in the schema and, as of tonight, **no production code read or wrote either.** Re-verify that before taking any piece.
+
+- **T7.1a — labels.** What happened to each published article. **Dispatched to Lane D 2026-09-09.** Built as pure domain logic in `packages/core`; the lane was told **not** to register a job, because the registration API was changing underneath it, so **the weekly job still has to be wired afterwards.**
+- **T7.1b — patterns.** `pattern_stats`, n ≥ 3 to activate, multipliers clamped [0.5, 2.0] over 90 days, replacing `T4.6`'s stubs. **Depends on 7.1a.**
+- **T7.1c — opportunity outcomes.** See the card immediately below, which is bigger than the line in `T7.1` suggests.
+
+**T7.1c — the outcome measurement every merchant books is enqueued to a handler that does not exist** · **Lane E** · **live gap, found 2026-09-09 by the integrator while wiring the lock check**
+Scope: when a merchant marks an OPTIMIZE recommendation applied, `apps/web/app/api/recommendations/_lib/handlers.ts` books a measurement for 28 days later through `enqueueOpportunityOutcomeMeasurement` (`packages/jobs/src/optimize/queue.ts`). **Nothing registers a handler for `opportunity_outcome_measure`.** It is not in the crontab either, so the worker's refuse-to-start check — which covers scheduled names only — never sees it. Verified by resolving every `registerTask` call in the repository while declaring all 35 for the lock check.
+**What that means for a merchant:** they do the work, they tell us they did it, and the product promises to look again in four weeks. Nothing looks. The row keeps its `outcome_due_at` and never gets an outcome, and the Performance table's dashes are partly this.
+**Not the whole story, and worth knowing before scoping:** FIX outcomes *are* written — `packages/db/src/repositories/repair.ts` sets `outcomeJson` on completion. So the shape exists and has a precedent; it is OPTIMIZE and REFRESH that have no writer.
+Read first: `packages/jobs/src/optimize/queue.ts`; the apply handler's booking and the `page?.status === 'live'` condition beside it; `packages/db/src/repositories/repair.ts` for the outcome shape already in use; main §9.6.10 (28 days, and labels relative to the store's own median), §9.6.2; invariants 12 and 13.
+Done when: the booked job has a handler; an applied opportunity gets an outcome written to `opportunities.outcome_json` at maturity and not before; the `opportunity_outcome_measured` event fires; an override-published article is excluded (invariant 12); and a page that has since gone stays unmeasured rather than being recorded as a collapse.
+
 **T7.2 — Refresh candidates & cooldown (M7 exit gate)**
 Scope: refresh eligibility (position 5–15 config, impressions ≥ median, 60-day cooldown via `refresh_log`, no pending repair, not override), expected-gain scoring, ≤ 40 % share enforced in replenishment, "Request refresh" endpoint honouring cooldown, our-article OPTIMIZE routed here.
 Read first: main §9.6.5, §10.5, §7.3 (Striking Distance row), ui §6.3 (button state).
