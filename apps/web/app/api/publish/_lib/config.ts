@@ -1,6 +1,6 @@
 import { ShopifyOAuthClient, ShopifyPublishClient, TokenCipher } from '@sortiva/providers'
 import type { ShopifyPublishProvider } from '@sortiva/core'
-import { db } from '@sortiva/db'
+import { db, makeShopifyAuthSource, type ShopifyAuthSource } from '@sortiva/db'
 import type { PublishGrantDeps } from './handlers'
 
 /**
@@ -27,6 +27,28 @@ let oauth: ShopifyOAuthClient | undefined
  * doing that per request would turn a misconfigured key into an error that only
  * appears under load.
  */
+let authSource: ShopifyAuthSource | undefined
+
+/**
+ * How these routes reach a store.
+ *
+ * One per process, because it is what serialises token renewals: Shopify
+ * replaces the refresh token on every renewal and retires the old one, so two
+ * renewals of the same store racing each other leave one of them holding a
+ * token Shopify has already forgotten.
+ */
+function shopifyAuthSource(): ShopifyAuthSource {
+  const exchange = grantExchange()
+  if (!exchange) {
+    // Without credentials there is nothing to renew a token with. The routes
+    // that need one already refuse; this keeps that refusal rather than
+    // pretending a store is reachable.
+    return { authFor: async () => undefined }
+  }
+  authSource ??= makeShopifyAuthSource(db(), publishTokenCipher(), exchange)
+  return authSource
+}
+
 export function publishTokenCipher(): TokenCipher {
   cipher ??= new TokenCipher()
   return cipher
@@ -42,7 +64,7 @@ export function publishTokenCipher(): TokenCipher {
  * absence as "this store cannot be published for", which is true and visible.
  */
 export function publishProvider(): ShopifyPublishProvider | undefined {
-  if (!process.env.SHOPIFY_API_KEY) return undefined
+  if (!process.env.SHOPIFY_CLIENT_ID) return undefined
   publish ??= new ShopifyPublishClient()
   return publish
 }
@@ -77,7 +99,7 @@ export function publishGrantRedirectUri(): string {
  * says", and a second secret would be one more thing to rotate.
  */
 export function publishStateSecret(): string {
-  return process.env.SHOPIFY_API_SECRET ?? process.env.AUTH_SECRET ?? 'development-only-secret'
+  return process.env.SHOPIFY_CLIENT_SECRET ?? process.env.AUTH_SECRET ?? 'development-only-secret'
 }
 
 /**
@@ -87,9 +109,14 @@ export function publishStateSecret(): string {
  * exchange that cannot happen must stop the flow rather than be stood in for.
  */
 function grantExchange(): ShopifyOAuthClient | undefined {
-  if (!process.env.SHOPIFY_API_KEY || !process.env.SHOPIFY_API_SECRET) return undefined
+  if (!process.env.SHOPIFY_CLIENT_ID || !process.env.SHOPIFY_CLIENT_SECRET) return undefined
   oauth ??= new ShopifyOAuthClient()
   return oauth
+}
+
+/** How the publishing jobs reach a store, shared with these routes so renewals stay serialised. */
+export function shopifyAuthFor(accountId: string) {
+  return shopifyAuthSource().authFor(accountId)
 }
 
 export function publishGrantDeps(): PublishGrantDeps {
@@ -100,6 +127,7 @@ export function publishGrantDeps(): PublishGrantDeps {
     ...(provider ? { shopify: provider } : {}),
     ...(exchange ? { oauth: exchange } : {}),
     cipher: publishTokenCipher(),
+    authFor: (accountId) => shopifyAuthSource().authFor(accountId),
     stateSecret: publishStateSecret(),
     redirectUri: publishGrantRedirectUri(),
     settingsUrl: `${appUrl()}/settings/publishing`,

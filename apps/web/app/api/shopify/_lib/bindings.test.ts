@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { TokenCipher } from '@sortiva/providers'
+import { MockShopifyOAuthClient, TokenCipher } from '@sortiva/providers'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
 import { makeConnectionStore, makeDomainStore } from './bindings'
 
@@ -9,11 +9,25 @@ import { makeConnectionStore, makeDomainStore } from './bindings'
  * What matters is that the column never holds the token: encryption happens on
  * the way in and decryption only at the point of use, so a database dump alone
  * yields nothing that can read a merchant's store.
+ *
+ * A token now lasts an hour and buys its own replacement, so "the point of use"
+ * is a request for one rather than a read of a column — and the replacement has
+ * to reach the column under the same encryption as the original.
  */
 
 let harness: TestDb
 let accountId: string
 const cipher = new TokenCipher({ master: Buffer.alloc(32, 7).toString('base64') })
+
+/** Renewing a token is the same conversation with Shopify as granting one. */
+const renewer = () => new MockShopifyOAuthClient()
+
+/** Everything but the token itself, for a grant that never needs renewing. */
+const neverExpires = {
+  expiresAt: null,
+  refreshToken: null,
+  refreshTokenExpiresAt: null,
+} as const
 
 beforeAll(async () => {
   if (!(await databaseAvailable())) {
@@ -37,25 +51,28 @@ beforeEach(async () => {
 
 describe('the stored Shopify token', () => {
   it('goes in encrypted and comes back usable', async () => {
-    const store = makeConnectionStore(harness.db, cipher)
+    const store = makeConnectionStore(harness.db, cipher, renewer())
 
     await store.save({
       accountId,
       shopHandle: 'acme',
       accessToken: 'shpat_a_real_looking_token',
       grantedScopes: ['read_products', 'read_orders', 'read_content', 'read_locales'],
+      ...neverExpires,
     })
 
-    expect(await store.readToken(accountId)).toBe('shpat_a_real_looking_token')
+    const auth = await store.authFor(accountId)
+    expect(await auth!.accessToken()).toBe('shpat_a_real_looking_token')
   })
 
   it('is not in the database in any readable form', async () => {
-    const store = makeConnectionStore(harness.db, cipher)
+    const store = makeConnectionStore(harness.db, cipher, renewer())
     await store.save({
       accountId,
       shopHandle: 'acme',
       accessToken: 'shpat_a_real_looking_token',
       grantedScopes: ['read_products'],
+      ...neverExpires,
     })
 
     const { rows } = await harness.pool.query<{ access_token: string }>(
@@ -69,30 +86,70 @@ describe('the stored Shopify token', () => {
   })
 
   it('cannot be read back with a different key', async () => {
-    await makeConnectionStore(harness.db, cipher).save({
+    await makeConnectionStore(harness.db, cipher, renewer()).save({
       accountId,
       shopHandle: 'acme',
       accessToken: 'shpat_a_real_looking_token',
       grantedScopes: ['read_products'],
+      ...neverExpires,
     })
 
     const stranger = new TokenCipher({ master: Buffer.alloc(32, 9).toString('base64') })
-    await expect(makeConnectionStore(harness.db, stranger).readToken(accountId)).rejects.toThrow()
+    const auth = await makeConnectionStore(harness.db, stranger, renewer()).authFor(accountId)
+    await expect(auth!.accessToken()).rejects.toThrow()
   })
 
   it('answers with nothing for an account that has not connected', async () => {
-    expect(await makeConnectionStore(harness.db, cipher).readToken(accountId)).toBeUndefined()
-    expect(await makeConnectionStore(harness.db, cipher).read(accountId)).toBeUndefined()
+    expect(await makeConnectionStore(harness.db, cipher, renewer()).authFor(accountId)).toBeUndefined()
+    expect(await makeConnectionStore(harness.db, cipher, renewer()).read(accountId)).toBeUndefined()
+  })
+
+  /**
+   * Shopify's tokens die after an hour, and a catalogue walk can outlast one.
+   * The replacement is fetched at the point of use like the original — and it
+   * has to reach the column encrypted, or the hour-old connection would be the
+   * one readable in a database dump.
+   */
+  it('replaces a token that is about to die, and stores the replacement encrypted', async () => {
+    const shopify = renewer()
+    const store = makeConnectionStore(harness.db, cipher, shopify)
+    await store.save({
+      accountId,
+      shopHandle: 'acme',
+      accessToken: 'shpat_nearly_dead',
+      grantedScopes: ['read_products'],
+      expiresAt: new Date(Date.now() - 1000),
+      refreshToken: 'shprt_the_renewal_token',
+      refreshTokenExpiresAt: new Date(Date.now() + 7_776_000_000),
+    })
+
+    const auth = await store.authFor(accountId)
+    const token = await auth!.accessToken()
+
+    expect(token).not.toBe('shpat_nearly_dead')
+    expect(shopify.refreshes).toEqual([{ shop: 'acme', refreshToken: 'shprt_the_renewal_token' }])
+
+    const { rows } = await harness.pool.query<{ access_token: string; refresh_token: string }>(
+      'SELECT access_token, refresh_token FROM shopify_conns WHERE account_id = $1',
+      [accountId],
+    )
+    expect(rows[0]!.access_token).not.toContain(token)
+    expect(rows[0]!.access_token.startsWith('v1.')).toBe(true)
+    // Shopify retires the old renewal token the first time the new one is used,
+    // so the new one has to be kept — encrypted — or the next hour is the last.
+    expect(rows[0]!.refresh_token).not.toContain('shprt_')
+    expect(await (await store.authFor(accountId))!.accessToken()).toBe(token)
   })
 })
 
 describe('the domain a store belongs to', () => {
   it('is found by the store name a webhook names', async () => {
-    await makeConnectionStore(harness.db, cipher).save({
+    await makeConnectionStore(harness.db, cipher, renewer()).save({
       accountId,
       shopHandle: 'acme',
       accessToken: 'shpat_x',
       grantedScopes: ['read_products'],
+      ...neverExpires,
     })
 
     const domains = makeDomainStore(harness.db)

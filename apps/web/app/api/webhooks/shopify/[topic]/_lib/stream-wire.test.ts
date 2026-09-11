@@ -91,13 +91,14 @@ function ingestion(): IngestionDeps {
     shopify: {
       authorizeUrl: () => '',
       verifyCallbackSignature: () => true,
-      exchangeCode: async () => ({ accessToken: '', grantedScopes: [] }),
+      exchangeCode: async () => { throw new Error('no token is traded while recording a change') },
+      refreshAccess: async () => { throw new Error('no token is renewed while recording a change') },
       revokeAccess: async () => {},
     },
     shop: { async getShop() { throw new Error('no Shopify call is made while recording a change') } },
     connections: {
       async read() { return undefined },
-      async readToken() { return undefined },
+      async authFor() { return undefined },
       async markInvalid(_accountId: string, at: Date) { return at },
     },
     domains: {
@@ -186,13 +187,16 @@ describe.skipIf(!available)('a merchant’s edit reaching the product', () => {
 
   it('asks for a re-read of exactly the pages that changed, and no others', async () => {
     await deliver('products/update', product(700), 'd-product')
-    await deliver('pages/update', { id: 901, updated_at: '2026-06-14T10:05:00Z' }, 'd-page')
-    // Stock moved and nothing else did. Recorded for the drift rules, and
-    // deliberately not a reason to read a page again: a stock level cannot
-    // change a page's words.
+    await deliver('collections/update', { id: 901, updated_at: '2026-06-14T10:05:00Z' }, 'd-collection')
+    // The last one in stock sold and nothing else moved. Recorded for the drift
+    // rules, and deliberately not a reason to read the page again: a stock level
+    // cannot change a page's words.
     await deliver(
-      'inventory_levels/update',
-      { inventory_item_id: 42, available: 0, updated_at: '2026-06-14T10:06:00Z' },
+      'products/update',
+      product(700, {
+        updated_at: '2026-06-14T10:06:00Z',
+        variants: [{ id: 7000, title: 'UK 8', sku: 'RTS-700', price: '120.00', inventory_quantity: 0 }],
+      }),
       'd-stock',
     )
     await drainDeliveries()
@@ -200,7 +204,7 @@ describe.skipIf(!available)('a merchant’s edit reaching the product', () => {
     const stream = await readCatalogChanges(harness.db, system, accountId, undefined)
     expect(stream.changes.map((change) => change.kind).sort()).toEqual([
       'availability_changed',
-      'page_updated',
+      'collection_updated',
       'product_created',
     ])
 
@@ -220,7 +224,7 @@ describe.skipIf(!available)('a merchant’s edit reaching the product', () => {
     expect(rereads).toHaveLength(1)
     expect([...(rereads[0]?.payload.targets ?? [])].sort(byId)).toEqual([
       { kind: 'product', shopifyId: '700' },
-      { kind: 'page', shopifyId: '901' },
+      { kind: 'collection', shopifyId: '901' },
     ])
   })
 

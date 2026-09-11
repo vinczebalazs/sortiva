@@ -41,7 +41,7 @@ export async function handleShopifyWebhook(
   topicFromPath: string,
   options: ShopifyReceiverOptions,
 ): Promise<Response> {
-  const secret = options.secret ?? process.env.SHOPIFY_API_SECRET
+  const secret = options.secret ?? process.env.SHOPIFY_CLIENT_SECRET
   if (!secret) {
     // Refusing is the safe direction: without a secret every signature check
     // would pass and anyone could write into a merchant's catalogue record.

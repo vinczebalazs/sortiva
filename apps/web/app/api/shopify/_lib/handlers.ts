@@ -1,6 +1,7 @@
 import {
   assertReadOnlyGrant,
   WriteScopeGranted,
+  type ShopifyAccessGrant,
   type ShopifyOAuthProvider,
   type StoreConnection,
 } from '@sortiva/core'
@@ -30,12 +31,18 @@ export interface ShopifyOauthDeps {
   readonly dashboardUrl: string
   /** The store name detection found, or undefined if it never ran or found none. */
   readShopHandle(accountId: string): Promise<string | undefined>
-  saveConnection(input: {
-    accountId: string
-    shopHandle: string
-    accessToken: string
-    grantedScopes: readonly string[]
-  }): Promise<StoreConnection>
+  saveConnection(
+    input: { accountId: string; shopHandle: string } & ShopifyAccessGrant,
+  ): Promise<StoreConnection>
+  /** Which account currently holds this store, if any. A store belongs to one. */
+  accountHoldingShop(shopHandle: string): Promise<string | undefined>
+  /** When this account first allowed publishing, or null if it never did. */
+  publishGrantedAt(accountId: string): Promise<Date | null>
+  /**
+   * Puts a store that had lost its connection back where it was, and makes the
+   * steps that stopped for the dead token due again.
+   */
+  resumeAfterReconnect(accountId: string): Promise<unknown>
   /** Resumes onboarding now that permission exists. Failures here never fail the callback. */
   resumeIngestion(accountId: string): Promise<void>
   now?(): Date
@@ -52,6 +59,7 @@ export const CALLBACK_CODES = {
   wrongStore: 'shopify_callback_wrong_store',
   writeScope: 'shopify_write_scope_refused',
   exchangeFailed: 'shopify_exchange_failed',
+  storeTaken: 'shopify_store_taken',
 } as const
 
 /**
@@ -127,15 +135,29 @@ export function makeCallbackHandler(getDeps: () => ShopifyOauthDeps): AccountHan
       return redirectWith(deps.dashboardUrl, CALLBACK_CODES.wrongStore)
     }
 
-    let grant: { accessToken: string; grantedScopes: readonly string[] }
+    // A store belongs to one account. Checked before the code is spent, so a
+    // merchant who signed up twice is told plainly rather than meeting a
+    // database error — and so the other account's live connection, which is the
+    // one actually working, is never disturbed.
+    const owner = await deps.accountHoldingShop(shop)
+    if (owner && owner !== scope.accountId) {
+      return redirectWith(deps.dashboardUrl, CALLBACK_CODES.storeTaken)
+    }
+
+    let grant
     try {
       grant = await deps.oauth.exchangeCode({ shop, code })
     } catch {
       return redirectWith(deps.dashboardUrl, CALLBACK_CODES.exchangeFailed)
     }
 
+    // A merchant who has already said yes to publishing is handed that
+    // permission back by Shopify whether we ask for it or not. Refusing their
+    // token would lock out precisely the merchants who trusted us most: they
+    // could never reconnect at all.
+    const publishGrantedBefore = (await deps.publishGrantedAt(scope.accountId)) != null
     try {
-      assertReadOnlyGrant(grant.grantedScopes)
+      assertReadOnlyGrant(grant.grantedScopes, { publishGrantedBefore })
     } catch (error) {
       if (error instanceof WriteScopeGranted) {
         // We promised on the connect screen that this permission cannot change
@@ -146,17 +168,21 @@ export function makeCallbackHandler(getDeps: () => ShopifyOauthDeps): AccountHan
       throw error
     }
 
-    await deps.saveConnection({
-      accountId: scope.accountId,
-      shopHandle: shop,
-      accessToken: grant.accessToken,
-      grantedScopes: grant.grantedScopes,
-    })
+    await deps.saveConnection({ accountId: scope.accountId, shopHandle: shop, ...grant })
 
-    // Onboarding continues in the background. A merchant who has just granted
-    // permission should land on a moving progress screen, not on one waiting for
-    // a sweep — but a queue that is briefly unavailable must not make a
-    // successful connection look like a failure.
+    // A store whose connection had died is waiting on the reconnect screen with
+    // its onboarding steps recorded as failed. Reviving them is what makes this
+    // a reconnection rather than a token quietly replaced under a store nothing
+    // will ever work on again.
+    await deps.resumeAfterReconnect(scope.accountId).catch(() => undefined)
+
+    // Queued, not awaited. Onboarding is a catalogue walk, several model calls
+    // and paid search data — minutes of work — and awaiting it here left the
+    // merchant's browser hanging on the redirect from Shopify until it timed
+    // out and showed an error for a connection that had in fact been made.
+    //
+    // A queue that is briefly unavailable must still not make a successful
+    // connection look like a failure: the nightly sweep picks such a store up.
     await deps.resumeIngestion(scope.accountId).catch(() => undefined)
 
     return Response.redirect(`${deps.dashboardUrl}?connected=shopify`, 302)

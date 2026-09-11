@@ -28,7 +28,8 @@ import { loadPrompt } from '@sortiva/llm/prompts'
 // through a `new URL()` webpack resolves at build time and cannot find. The
 // domain claim's store deep-imports for the same reason. See DECISIONS
 // 2026-09-01 T1.3.
-import { dispatchIngestion } from '@sortiva/jobs/ingestion/dispatch'
+import { enqueueIngestionDispatch } from '@sortiva/jobs/ingestion/queue'
+import { resumeAfterReconnect } from '@sortiva/jobs/ingestion/resume'
 import { readDetectedShopHandle } from '@sortiva/jobs/ingestion/steps'
 import type { IngestionDeps } from '@sortiva/jobs/ingestion/deps'
 import { DbNotificationEmitter } from '@sortiva/jobs/notify/emitter'
@@ -82,7 +83,9 @@ export function tokenCipher(): TokenCipher {
 }
 
 function connections(): ConnectionStoreWithSave {
-  return makeConnectionStore(db(), tokenCipher())
+  // The renewer is the OAuth client: renewing a token is the same conversation
+  // with Shopify as granting one, and it is the store that decides when.
+  return makeConnectionStore(db(), tokenCipher(), shopifyOauthProvider())
 }
 
 /**
@@ -105,7 +108,18 @@ export function shopifyRedirectUri(): string {
  * checks is skipped; only the vendor is.
  */
 export function shopifyOauthProvider(): ShopifyOAuthProvider {
-  if (!process.env.SHOPIFY_API_KEY || !process.env.SHOPIFY_API_SECRET) {
+  if (!process.env.SHOPIFY_CLIENT_ID || !process.env.SHOPIFY_CLIENT_SECRET) {
+    // In production this is not a fallback but a misconfiguration with a
+    // merchant on the other end of it: the fake would send them to a consent
+    // screen for an app that does not exist, and every webhook their store sent
+    // would fail its signature check and be answered with an error. Better a
+    // deployment that refuses to start than one that quietly connects nobody.
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'SHOPIFY_CLIENT_ID and SHOPIFY_CLIENT_SECRET are not set. ' +
+          'Production cannot run on the built-in fake Shopify.',
+      )
+    }
     return new MockShopifyOAuthClient(stateSecret())
   }
   return new ShopifyOAuthClient()
@@ -117,7 +131,7 @@ export function shopifyOauthProvider(): ShopifyOAuthProvider {
  * where it says", and a second secret would be one more thing to rotate.
  */
 export function stateSecret(): string {
-  return process.env.SHOPIFY_API_SECRET ?? process.env.AUTH_SECRET ?? 'development-only-secret'
+  return process.env.SHOPIFY_CLIENT_SECRET ?? process.env.AUTH_SECRET ?? 'development-only-secret'
 }
 
 /**
@@ -280,8 +294,11 @@ export function shopifyOauthDeps(): ShopifyOauthDeps {
     dashboardUrl: `${appUrl()}/dashboard`,
     readShopHandle: (accountId) => readDetectedShopHandle(db(), accountId),
     saveConnection: (input) => store.save(input),
+    accountHoldingShop: (shopHandle) => makeDomainStore(db()).findAccountByShopHandle(shopHandle),
+    publishGrantedAt: async (accountId) => (await store.read(accountId))?.publishGrantedAt ?? null,
+    resumeAfterReconnect: (accountId) => resumeAfterReconnect(db(), accountId),
     resumeIngestion: async (accountId) => {
-      await dispatchIngestion(ingestionDeps(), { accountId })
+      await enqueueIngestionDispatch(db(), { accountId })
     },
   }
 }

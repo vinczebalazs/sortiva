@@ -113,8 +113,8 @@ export async function startServerRuntime() {
   // belongs to the catalog lane; `sweepInventory` is what it calls.
   const { registerInventoryTasks } = await import('@sortiva/jobs')
   const { makeConnectionStore } = await import('./app/api/shopify/_lib/bindings')
-  const { tokenCipher } = await import('./app/api/shopify/_lib/config')
-  const shopifyConnections = () => makeConnectionStore(db(), tokenCipher())
+  const { tokenCipher, shopifyOauthProvider } = await import('./app/api/shopify/_lib/config')
+  const shopifyConnections = () => makeConnectionStore(db(), tokenCipher(), shopifyOauthProvider())
   registerInventoryTasks({
     getDb: db,
     getPool: dbPool,
@@ -122,8 +122,7 @@ export async function startServerRuntime() {
     // once rather than once per caller.
     admin: adminClient(),
     connections: {
-      read: (accountId) => shopifyConnections().read(accountId),
-      readToken: (accountId) => shopifyConnections().readToken(accountId),
+      authFor: (accountId) => shopifyConnections().authFor(accountId),
       markInvalid: (accountId, at) => shopifyConnections().markInvalid(accountId, at),
     },
   })
@@ -148,8 +147,7 @@ export async function startServerRuntime() {
         getPool: dbPool,
         admin: adminClient(),
         connections: {
-          read: (accountId) => shopifyConnections().read(accountId),
-          readToken: (accountId) => shopifyConnections().readToken(accountId),
+          authFor: (accountId) => shopifyConnections().authFor(accountId),
           markInvalid: (accountId, at) => shopifyConnections().markInvalid(accountId, at),
         },
       }),
@@ -304,7 +302,6 @@ export async function startServerRuntime() {
   const { registerAccountCloseTask, registerRetentionTask } = await import('@sortiva/jobs')
   const { makeAccountLifecycleStore } = await import('@sortiva/db')
   const { stripeProvider } = await import('./app/api/billing/_lib/config')
-  const { shopifyOauthProvider } = await import('./app/api/shopify/_lib/config')
   const { decodeGscTokens } = await import('@sortiva/core')
   registerAccountCloseTask({
     getPool: dbPool,

@@ -1,11 +1,13 @@
+import { eq } from 'drizzle-orm'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { SHOPIFY_READ_SCOPES } from '@sortiva/core'
+import { SHOPIFY_READ_SCOPES, signPublishGrantState, staticShopifyAuth } from '@sortiva/core'
 import { accountScope, readAccountSettings, readPublishTarget, schema } from '@sortiva/db'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
-import { FakeShopifyPublishClient } from '@sortiva/providers'
+import { FakeShopifyPublishClient, MockShopifyOAuthClient } from '@sortiva/providers'
 import { withAccount } from '../../auth/_lib/session'
 import {
   makeListBlogsHandler,
+  makePublishGrantCallbackHandler,
   makeSetDeliveryModeHandler,
   makeSetTargetBlogHandler,
   makeStartPublishGrantHandler,
@@ -24,11 +26,14 @@ import {
 
 const available = await databaseAvailable()
 const NOW = new Date('2026-09-03T08:00:00.000Z')
+/** The app secret: it signs our own state value and Shopify signs callbacks with it. */
+const GRANT_SECRET = 'test-secret'
 
 describe.skipIf(!available)('turning auto-publish on', () => {
   let harness: TestDb
   let accountId: string
   let shop: FakeShopifyPublishClient
+  let oauth: MockShopifyOAuthClient
 
   beforeAll(async () => {
     harness = await setupTestDb('web_publish_routes')
@@ -42,6 +47,7 @@ describe.skipIf(!available)('turning auto-publish on', () => {
     await truncateAll(harness.pool)
     accountId = await insertAccount(harness.pool, 'publish-routes@example.com')
     shop = new FakeShopifyPublishClient()
+    oauth = new MockShopifyOAuthClient(GRANT_SECRET)
   })
 
   async function connect(scopes: readonly string[]): Promise<void> {
@@ -57,11 +63,16 @@ describe.skipIf(!available)('turning auto-publish on', () => {
     return {
       db: harness.db,
       shopify: shop,
+      oauth,
       cipher: {
         encrypt: (value) => `enc:${value}`,
         decrypt: (value) => value.replace(/^enc:/, ''),
       },
-      stateSecret: 'test-secret',
+      // How a route reaches the store. Tokens die after an hour and renew
+      // themselves, so a caller asks for one rather than holding it; these
+      // routes make one call each and never outlive a token.
+      authFor: async () => staticShopifyAuth('acme', 'token'),
+      stateSecret: GRANT_SECRET,
       redirectUri: 'https://app.example/api/publish/grant/callback',
       settingsUrl: 'https://app.example/settings/publishing',
       now: () => NOW,
@@ -97,6 +108,76 @@ describe.skipIf(!available)('turning auto-publish on', () => {
     it('refuses for a store that has not connected at all', async () => {
       const response = await call(route(makeStartPublishGrantHandler), { method: 'POST' })
       expect(response.status).toBe(409)
+    })
+  })
+
+  describe('coming back from the posting consent screen', () => {
+    /** A genuine return trip: signed by Shopify, carrying our own state value. */
+    function grantCallback(): Request {
+      const state = signPublishGrantState(
+        { accountId, shop: 'acme', issuedAt: NOW.getTime() },
+        GRANT_SECRET,
+      )
+      const query = oauth.signCallback({
+        shop: 'acme.myshopify.com',
+        code: 'one-time',
+        state,
+        timestamp: '1756000000',
+      })
+      const url = new URL('https://app.example/api/publish/grant/callback')
+      for (const [key, value] of Object.entries(query)) url.searchParams.set(key, value)
+      return new Request(url, { method: 'GET' })
+    }
+
+    async function connRow() {
+      const [row] = await harness.db
+        .select()
+        .from(schema.shopifyConns)
+        .where(eq(schema.shopifyConns.accountId, accountId))
+      return row!
+    }
+
+    /**
+     * Recorded permanently, and this is the only place it is written: it is what
+     * lets the merchant reconnect their store later without the publishing
+     * permission Shopify hands back being thrown away as unasked-for.
+     */
+    it('writes down that this merchant allowed posting, and keeps the renewal token', async () => {
+      await connect(SHOPIFY_READ_SCOPES)
+      oauth.grants({
+        grantedScopes: [...SHOPIFY_READ_SCOPES, 'write_content'],
+        expiresAt: new Date(NOW.getTime() + 3_600_000),
+        refreshToken: 'shprt_renewal',
+        refreshTokenExpiresAt: new Date(NOW.getTime() + 7_776_000_000),
+      })
+
+      const handler = withAccount(makePublishGrantCallbackHandler(deps()), async () => accountId)
+      const response = await handler(grantCallback(), undefined)
+
+      expect(response.headers.get('location')).toContain('publish_grant=granted')
+      const row = await connRow()
+      expect(row.grantedScopes).toContain('write_content')
+      expect(row.publishGrantedAt).toEqual(NOW)
+      // Stored encrypted, and stored at all: a token that cannot be renewed
+      // stops working an hour into the merchant's first day of publishing.
+      expect(row.refreshToken).toBe('enc:shprt_renewal')
+      expect(row.accessTokenExpiresAt).not.toBeNull()
+    })
+
+    /**
+     * Shopify would not trade the code — it was already spent, or it expired
+     * while the merchant left the tab open. A page saying so is something they
+     * can act on; before, this threw and they were shown a crash.
+     */
+    it('sends the merchant back with a reason when Shopify will not trade the code', async () => {
+      await connect(SHOPIFY_READ_SCOPES)
+      oauth.failsWith(new Error('shopify is down'))
+
+      const handler = withAccount(makePublishGrantCallbackHandler(deps()), async () => accountId)
+      const response = await handler(grantCallback(), undefined)
+
+      expect(response.headers.get('location')).toContain('shopify_exchange_failed')
+      expect((await connRow()).publishGrantedAt).toBeNull()
     })
   })
 
