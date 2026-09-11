@@ -13,7 +13,13 @@ import type { CatalogEvent } from '../contracts/opportunities'
  * product *is*.
  */
 
-/** A product as the Admin API hands it over. Only the fields we read are named. */
+/**
+ * A product as we receive it, from a query or from a webhook's body.
+ *
+ * The field names are Shopify's older ones because that is the shape their
+ * webhooks still deliver; the Admin client translates its answers into the same
+ * shape, so one reader serves both.
+ */
 export interface ShopifyProduct {
   readonly id: number | string
   readonly title?: string
@@ -26,7 +32,13 @@ export interface ShopifyProduct {
   readonly updated_at?: string | null
   readonly status?: string | null
   readonly variants?: readonly ShopifyVariant[]
-  readonly images?: readonly { src?: string | null }[]
+  readonly images?: readonly { src?: string | null; alt?: string | null }[]
+  /**
+   * The store's own structured attributes. Absent means the caller did not ask
+   * for them — a webhook body never carries them — which is not the same as the
+   * product having none, and the two are told apart all the way to the column.
+   */
+  readonly metafields?: readonly ShopifyMetafield[]
   /**
    * The merchant's own option definitions — "Size: S/M/L".
    *
@@ -79,6 +91,19 @@ export interface ShopifyVariant {
   readonly available?: boolean | null
 }
 
+/**
+ * One of the product's pictures, as we keep it.
+ *
+ * Kept because an article about a product is published with one: with no stored
+ * address there is nothing to send, and the post goes out as a wall of text on
+ * the merchant's own blog.
+ */
+export interface ProductImage {
+  readonly url: string
+  /** The merchant's own description of the picture, which becomes the published image's alt text. */
+  readonly alt: string | null
+}
+
 /** One variant as we keep it: enough to compare prices and stock, and nothing else. */
 export interface StoredVariant {
   readonly id: string
@@ -126,6 +151,11 @@ export interface ProductRow {
    * paths that write a product leave this alone.
    */
   readonly metafields?: readonly ProductMetafield[]
+  /**
+   * The product's pictures, on the same undefined-means-unread rule: a webhook
+   * body that carried none must not erase the ones we hold.
+   */
+  readonly images?: readonly ProductImage[]
   readonly priceRange: { readonly min: number; readonly max: number; readonly currency?: string } | null
   /** Shopify's own last-modified stamp. */
   readonly updatedAt: Date | null
@@ -149,6 +179,8 @@ export function toProductRow(product: ShopifyProduct): ProductRow {
     tags: splitTags(product.tags),
     variants,
     options: toProductOptions(product.options),
+    ...(product.metafields ? { metafields: toProductMetafields(product.metafields) } : {}),
+    ...(product.images ? { images: toProductImages(product.images) } : {}),
     priceRange:
       prices.length > 0 ? { min: Math.min(...prices), max: Math.max(...prices) } : null,
     updatedAt: parseDate(product.updated_at),
@@ -234,6 +266,23 @@ export function toProductMetafields(
     const value = field.value === null || field.value === undefined ? '' : String(field.value).trim()
     if (value === '') continue
     out.push({ namespace, key, value, type: emptyToNull(field.type ?? null) })
+  }
+  return out
+}
+
+/**
+ * The pictures, in the store's own order, with the ones that have no address
+ * dropped — Shopify reports a picture still being processed without one, and an
+ * article published with it would show a broken image on a merchant's blog.
+ */
+export function toProductImages(
+  raw: readonly { src?: string | null; alt?: string | null }[],
+): readonly ProductImage[] {
+  const out: ProductImage[] = []
+  for (const image of raw) {
+    const url = (image.src ?? '').trim()
+    if (url === '') continue
+    out.push({ url, alt: emptyToNull((image.alt ?? '').trim()) })
   }
   return out
 }

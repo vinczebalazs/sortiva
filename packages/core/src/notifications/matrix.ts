@@ -181,6 +181,25 @@ const ROWS: readonly NotificationChannelRow[] = [
     toggleable: false,
     dedupeKey: { kind: 'sweep_threshold' },
   },
+  /**
+   * Shopify refused a post and automatic posting was switched off. Treated like
+   * a lost connection rather than like an article notice: publishing has
+   * stopped and stays stopped until the merchant acts, so it is a banner they
+   * meet on the way in, it is emailed, and it cannot be switched off — a
+   * merchant who never opens the bell would otherwise find out weeks later that
+   * nothing has gone out.
+   *
+   * Keyed on the article that was refused, so a shop refusing the same article
+   * tomorrow rings once rather than every morning.
+   */
+  {
+    type: 'auto_publish_paused',
+    surface: 'banner',
+    email: 'always',
+    emailDefaultOn: true,
+    toggleable: false,
+    dedupeKey: { kind: 'ref', ref: 'article_id' },
+  },
   {
     type: 'connection_lost_gsc',
     surface: 'banner',

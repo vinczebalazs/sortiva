@@ -13,20 +13,25 @@ import type { CatalogEventKind } from './products'
  * at.
  */
 
-/** Every topic the app subscribes to. Anything else arriving is not ours. */
+/**
+ * Every topic the app subscribes to. Anything else arriving is not ours.
+ *
+ * Deliberately shorter than the changes we care about. Shopify publishes no
+ * topics at all for pages and blog posts, so a merchant's edit to either
+ * reaches us on the nightly re-read and not before — that is a real gap, and
+ * listing topics Shopify does not have would only have hidden it.
+ *
+ * Stock changes are likewise absent. Shopify has a topic for them, but it needs
+ * a permission of its own over a merchant's warehouse figures, which is far
+ * more than a writer of articles should be asking for. A product going out of
+ * stock still reaches us through `products/update` and the nightly pass.
+ */
 export const SHOPIFY_WEBHOOK_TOPICS = [
   'products/create',
   'products/update',
   'products/delete',
   'collections/create',
   'collections/update',
-  'inventory_levels/update',
-  'articles/create',
-  'articles/update',
-  'articles/delete',
-  'pages/create',
-  'pages/update',
-  'pages/delete',
   'app/uninstalled',
   'shop/redact',
   'customers/redact',
@@ -63,16 +68,6 @@ const INTENTS: Readonly<Record<ShopifyWebhookTopic, WebhookIntent>> = {
   'products/delete': { kind: 'catalog', events: ['product_deleted'] },
   'collections/create': { kind: 'catalog', events: ['collection_updated'] },
   'collections/update': { kind: 'catalog', events: ['collection_updated'] },
-  // Stock moved and nothing else did. Reported so the drift rules can see it;
-  // the content inventory deliberately ignores it, because a stock level cannot
-  // change a page's words.
-  'inventory_levels/update': { kind: 'catalog', events: ['availability_changed'] },
-  'articles/create': { kind: 'catalog', events: ['article_updated'] },
-  'articles/update': { kind: 'catalog', events: ['article_updated'] },
-  'articles/delete': { kind: 'catalog', events: ['article_deleted'] },
-  'pages/create': { kind: 'catalog', events: ['page_updated'] },
-  'pages/update': { kind: 'catalog', events: ['page_updated'] },
-  'pages/delete': { kind: 'catalog', events: ['page_deleted'] },
   'app/uninstalled': { kind: 'connection_lost' },
   'shop/redact': { kind: 'privacy', request: 'shop_redact' },
   'customers/redact': { kind: 'privacy', request: 'customers_redact' },
@@ -146,13 +141,10 @@ function isPlainValue(value: unknown): boolean {
 /**
  * Which id inside a webhook body names the thing that changed.
  *
- * Shopify puts the subject's id at the top level of every one of these bodies,
- * except the inventory topics, which name the inventory item rather than the
- * product.
+ * Shopify puts the subject's id at the top level of every one of these bodies.
  */
-export function subjectIdOf(topic: string, body: Record<string, unknown>): string | undefined {
-  const raw =
-    topic === 'inventory_levels/update' ? body['inventory_item_id'] : body['id']
+export function subjectIdOf(_topic: string, body: Record<string, unknown>): string | undefined {
+  const raw = body['id']
   if (raw === null || raw === undefined) return undefined
   const id = String(raw)
   return id.length > 0 ? id : undefined

@@ -5779,6 +5779,7 @@
                               "repair_needed",
                               "connection_lost_shopify",
                               "connection_lost_gsc",
+                              "auto_publish_paused",
                               "payment_failed",
                               "monthly_summary_ready",
                               "export_url_reminder",

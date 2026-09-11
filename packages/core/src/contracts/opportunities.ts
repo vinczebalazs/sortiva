@@ -234,6 +234,12 @@ export const NOTIFICATION_TYPES = [
   'repair_needed',
   'connection_lost_shopify',
   'connection_lost_gsc',
+  /**
+   * Shopify refused a post — the address was taken, the blog was deleted — and
+   * automatic posting was switched off rather than the same article being
+   * refused again every morning behind every article waiting after it.
+   */
+  'auto_publish_paused',
   'payment_failed',
   'monthly_summary_ready',
   'export_url_reminder',

@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
-import { SHOPIFY_READ_SCOPES } from '../catalog/scopes'
+import { SHOPIFY_PUBLISH_SCOPE, SHOPIFY_READ_SCOPES } from '../catalog/scopes'
 
 /**
  * Permission to post on a merchant's blog, which is a second conversation with
@@ -17,8 +17,12 @@ import { SHOPIFY_READ_SCOPES } from '../catalog/scopes'
  * one question with two halves, asked in one place, and answered here.
  */
 
-/** The one write permission Sortiva ever asks for. It posts articles; it cannot touch anything else. */
-export const SHOPIFY_PUBLISH_SCOPE = 'write_content'
+/**
+ * The one write permission Sortiva ever asks for. It posts articles; it cannot
+ * touch anything else. Declared beside the read permissions, because the
+ * install has to recognise it coming back from a merchant who granted it once.
+ */
+export { SHOPIFY_PUBLISH_SCOPE }
 
 /**
  * What the *second* consent screen asks for: everything the first one already

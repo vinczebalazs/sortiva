@@ -11,6 +11,8 @@
  * write?" has a readable answer.
  */
 
+import type { ShopifyAuth } from '../catalog/ports'
+
 /** One of the store's blogs, as the picker shows it. */
 export interface ShopifyBlog {
   readonly id: string
@@ -22,7 +24,16 @@ export interface ShopifyBlog {
 export interface RemoteArticle {
   readonly id: string
   readonly handle: string
-  /** Where a reader would find it. Null while it is an unpublished Shopify draft. */
+  /** The blog it actually sits on, which is not necessarily the one now chosen as the target. */
+  readonly blogHandle: string
+  /**
+   * The address the post has — or, while it is still a draft, the address it
+   * will have the moment the merchant publishes it.
+   *
+   * Recorded for drafts too, deliberately. Nothing asks Shopify again after a
+   * merchant publishes a draft, so an address left blank at posting time stayed
+   * blank for good and the article's traffic was never counted as its own.
+   */
   readonly url: string | null
   /**
    * Our own marker, read back off the remote copy. This is what makes a remote
@@ -34,31 +45,30 @@ export interface RemoteArticle {
   readonly published: boolean
 }
 
+/** Which store to write to, and how to get a token that works for it. */
 export interface ShopifyStoreCredentials {
-  readonly shop: string
-  readonly accessToken: string
+  readonly auth: ShopifyAuth
 }
 
 /**
- * The two per-store facts an article's public address is built from.
+ * The per-store fact an article's public address is built from.
  *
- * Both are per account and the client that talks to Shopify is one per
- * process, so they travel with each call rather than being held anywhere.
+ * It is per account and the client that talks to Shopify is one per process, so
+ * it travels with each call rather than being held anywhere. The other half of
+ * the address — which blog the post sits on — comes back from Shopify with the
+ * post itself, so a merchant who has since chosen a different target blog does
+ * not get the old posts' addresses rewritten.
  */
 export interface ArticleAddressing {
   /**
-   * The blog's name as it appears in its own web address. Shopify addresses a
-   * post by the blog's *name*, not by its number. Recorded alongside the id
-   * when the merchant picks the blog.
-   */
-  readonly blogHandle: string
-  /**
-   * The host the merchant's shoppers actually visit — the domain claimed at
-   * signup, not the `myshopify.com` handle we talk to the Admin API through.
+   * The host the merchant's shoppers actually visit, as the store itself
+   * reports it — not the `myshopify.com` handle we reach the Admin API through,
+   * and not the domain claimed at signup, which is stored stripped of `www.`
+   * and of any subdomain.
    *
-   * Search Console reports a store's traffic under that host, so an article
-   * recorded under the `myshopify` one can never be matched to the clicks it
-   * earns: it would look like it had earned nothing, permanently.
+   * Search Console reports a store's traffic under the host it actually serves,
+   * so an article recorded under any other spelling can never be matched to the
+   * clicks it earns: it would look like it had earned nothing, permanently.
    */
   readonly storefrontDomain: string
 }
@@ -77,6 +87,17 @@ export interface CreateArticleInput extends ShopifyStoreCredentials, ArticleAddr
   readonly marker: string
   /** Whether the post goes live or waits as a Shopify draft for a last look. */
   readonly publishAs: 'live' | 'draft'
+  /**
+   * Whose name appears on the post. Shopify requires one on every article, and
+   * it is the store's own name: a merchant's blog should not carry a byline
+   * naming a tool they use.
+   */
+  readonly author: string
+  /** The article's search title, which Shopify shows in results instead of the headline. */
+  readonly seoTitle?: string
+  readonly seoDescription?: string
+  /** The picture at the top of the post, taken from the products it is about. */
+  readonly image?: { readonly url: string; readonly alt: string | null }
 }
 
 /**
@@ -95,7 +116,6 @@ export interface CreateArticleInput extends ShopifyStoreCredentials, ArticleAddr
  * should arrive, not that a post the merchant unpublished should come back.
  */
 export interface UpdateArticleInput extends ShopifyStoreCredentials, ArticleAddressing {
-  readonly blogId: string
   /** The remote article we are revising. An update names it or does not happen. */
   readonly remoteArticleId: string
   readonly title: string
@@ -151,7 +171,6 @@ export interface ShopifyPublishProvider {
 }
 
 export interface FindArticleByMarkerInput extends ShopifyStoreCredentials, ArticleAddressing {
-  readonly blogId: string
   readonly marker: string
   /**
    * Nothing posted before this moment can be ours: the claim on this

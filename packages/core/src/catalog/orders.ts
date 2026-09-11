@@ -17,8 +17,15 @@
  * is dropped by default instead of being carried along.
  */
 
-/** How far back best-sellers are computed over. Fixed by the product, not calibrated. */
-export const ORDER_WINDOW_DAYS = 90
+/**
+ * How far back best-sellers are computed over.
+ *
+ * Sixty days because that is all Shopify gives an app like ours: reading orders
+ * older than that needs a separate permission Shopify grants case by case, and
+ * asking for ninety days without it silently returned sixty while every column
+ * and label said ninety.
+ */
+export const ORDER_WINDOW_DAYS = 60
 
 /** How many best sellers we keep. */
 export const TOP_PRODUCTS_KEPT = 10
@@ -28,55 +35,62 @@ export interface SafeLineItem {
   /** Shopify's product id, or null for a line that no longer points at one. */
   readonly productId: string | null
   readonly title: string
+  /** Units the buyer still has: refunded and removed ones are already gone from it. */
   readonly quantity: number
-  /** Per unit, in the order's currency. */
+  /** Per unit, after every discount, in the store's own currency. */
   readonly price: number
-  readonly totalDiscount: number
+  /** What the line earned: the units still held, at the discounted price. */
+  readonly net: number
 }
 
 /** One order, reduced to the two things we are allowed to keep. */
 export interface SafeOrder {
   /**
-   * The store's own calendar day, taken from the timestamp Shopify sends in the
-   * store's timezone. Not converted to UTC: "Tuesday's revenue" means the
-   * merchant's Tuesday.
+   * The store's own calendar day. "Tuesday's revenue" means the merchant's
+   * Tuesday, so the moment Shopify reports is read in the store's time zone.
    */
   readonly day: string
   readonly currency: string
   /** The path a buyer arrived on, without its query string. Null when Shopify recorded none. */
   readonly landingUrl: string | null
+  /** What the order earned: its lines, after discounts and refunds, without tax or postage. */
   readonly total: number
   readonly lineItems: readonly SafeLineItem[]
 }
 
 /**
- * An order as the Admin API hands it over.
+ * An order as the Admin client hands it over.
  *
  * Only the fields we read are named, and naming them is the point: everything
- * absent from this list is absent from what we keep. `customer`,
- * `billing_address`, `shipping_address`, `email`, `phone`, `browser_ip`,
- * `client_details` and `note_attributes` are all deliberately not here.
+ * absent from this list is absent from what we keep, and absent from what is
+ * ever asked for. The buyer, their addresses, email, phone, browser details and
+ * anything they typed into a box are all deliberately not here.
  */
 export interface ShopifyOrder {
   readonly id?: number | string
-  readonly created_at?: string | null
+  /** When the order was placed, as Shopify reports it: an instant, in UTC. */
+  readonly createdAt?: string | null
   readonly currency?: string | null
-  readonly total_price?: string | number | null
-  readonly landing_site?: string | null
-  readonly cancelled_at?: string | null
+  /** The page the buyer arrived on in the visit that led to the order. */
+  readonly landingPage?: string | null
+  readonly cancelledAt?: string | null
   readonly test?: boolean | null
-  readonly line_items?: readonly ShopifyLineItem[]
-  /** Everything else Shopify sends. Present in the type so its absence downstream is deliberate. */
-  readonly [other: string]: unknown
+  readonly lineItems?: readonly ShopifyLineItem[]
 }
 
 export interface ShopifyLineItem {
-  readonly product_id?: number | string | null
+  readonly productId?: string | null
   readonly title?: string | null
+  /** Units still held by the buyer, refunds and removals already deducted. */
   readonly quantity?: number | null
-  readonly price?: string | number | null
-  readonly total_discount?: string | number | null
-  readonly [other: string]: unknown
+  /** Per unit, after every discount, in the store's own currency. */
+  readonly unitPrice?: string | number | null
+  /**
+   * Gift cards are excluded from revenue. Selling one takes money for something
+   * not yet chosen; counting it would credit the gift card as a best seller and
+   * then credit the products it eventually buys all over again.
+   */
+  readonly isGiftCard?: boolean | null
 }
 
 /**
@@ -86,40 +100,72 @@ export interface ShopifyLineItem {
  * would otherwise show up as best sellers on a store that has never sold
  * anything, and a cancelled order is not a purchase.
  */
-export function stripOrder(order: ShopifyOrder): SafeOrder | undefined {
+export function stripOrder(order: ShopifyOrder, timeZone: string | null | undefined): SafeOrder | undefined {
   if (order.test === true) return undefined
-  if (order.cancelled_at) return undefined
+  if (order.cancelledAt) return undefined
 
-  const day = storeDayOf(order.created_at)
+  const day = storeDayOf(order.createdAt, timeZone)
   if (!day) return undefined
+
+  const lineItems = (order.lineItems ?? [])
+    .filter((line) => line.isGiftCard !== true)
+    .map((line) => {
+      const quantity = Math.max(0, Math.trunc(Number(line.quantity ?? 0)) || 0)
+      const price = money(line.unitPrice)
+      return {
+        productId: line.productId === null || line.productId === undefined ? null : String(line.productId),
+        title: typeof line.title === 'string' ? line.title : '',
+        quantity,
+        price,
+        net: round2(price * quantity),
+      }
+    })
 
   return {
     day,
     currency: typeof order.currency === 'string' ? order.currency : '',
-    landingUrl: landingPathOf(order.landing_site),
-    total: money(order.total_price),
-    lineItems: (order.line_items ?? []).map((line) => ({
-      productId: line.product_id === null || line.product_id === undefined ? null : String(line.product_id),
-      title: typeof line.title === 'string' ? line.title : '',
-      quantity: Math.max(0, Math.trunc(Number(line.quantity ?? 0)) || 0),
-      price: money(line.price),
-      totalDiscount: money(line.total_discount),
-    })),
+    landingUrl: landingPathOf(order.landingPage),
+    total: round2(lineItems.reduce((sum, line) => sum + line.net, 0)),
+    lineItems,
   }
 }
 
 /**
  * The day an order belongs to, in the store's own reckoning.
  *
- * Shopify stamps `created_at` with the store's UTC offset, so the first ten
- * characters are already the merchant's calendar day. Parsing to a `Date` and
- * formatting it would convert to the server's zone instead, which moves every
- * evening order in a store west of UTC into the following day.
+ * Shopify reports the moment in UTC, so a store in Los Angeles selling
+ * something at five in the afternoon reports it as the small hours of the next
+ * day. Counting that as the next day's takings would misplace every evening
+ * order in a store west of Greenwich, so the store's own time zone decides.
+ *
+ * Without a known time zone the instant is read as it stands, which is right
+ * for a store on UTC and the only honest fallback for one whose zone we could
+ * not read.
  */
-export function storeDayOf(createdAt: string | null | undefined): string | undefined {
+export function storeDayOf(
+  createdAt: string | null | undefined,
+  timeZone: string | null | undefined,
+): string | undefined {
   if (!createdAt) return undefined
-  const day = createdAt.slice(0, 10)
-  return /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : undefined
+  const at = new Date(createdAt)
+  if (Number.isNaN(at.getTime())) {
+    const day = createdAt.slice(0, 10)
+    return /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : undefined
+  }
+  if (!timeZone) return at.toISOString().slice(0, 10)
+  try {
+    // `en-CA` formats as YYYY-MM-DD, which is the shape the column holds.
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(at)
+  } catch {
+    // A time zone Shopify named and this runtime does not know. Better the
+    // store's orders land on a UTC day than on no day at all.
+    return at.toISOString().slice(0, 10)
+  }
 }
 
 /**
@@ -188,6 +234,7 @@ export function emptyAggregate(): OrderAggregate {
 export function accumulateOrders(
   aggregate: OrderAggregate,
   orders: readonly ShopifyOrder[],
+  timeZone: string | null | undefined,
 ): OrderAggregate {
   const products: Record<string, ProductTotals> = { ...aggregate.products }
   const landing: Record<string, LandingDayTotals> = { ...aggregate.landing }
@@ -195,7 +242,7 @@ export function accumulateOrders(
   let ordersSeen = aggregate.ordersSeen
 
   for (const raw of orders) {
-    const order = stripOrder(raw)
+    const order = stripOrder(raw, timeZone)
     if (!order) continue
     ordersSeen += 1
     if (!latestDay || order.day > latestDay) latestDay = order.day
@@ -206,7 +253,7 @@ export function accumulateOrders(
       products[line.productId] = {
         title: line.title || existing?.title || '',
         quantity: (existing?.quantity ?? 0) + line.quantity,
-        revenue: round2((existing?.revenue ?? 0) + line.price * line.quantity - line.totalDiscount),
+        revenue: round2((existing?.revenue ?? 0) + line.net),
       }
     }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { storableWebhookBody } from './webhooks'
+import { isKnownTopic, storableWebhookBody } from './webhooks'
 
 /**
  * Shopify's two customer-privacy messages carry the shopper's email and phone
@@ -113,5 +113,44 @@ describe('everything that is not a privacy request is untouched', () => {
     // changes, silently blanking the body would be the wrong failure.
     const body = { id: 1 }
     expect(storableWebhookBody('orders/create', body)).toBe(body)
+  })
+})
+
+describe('the topics we deliberately do not subscribe to', () => {
+  it('does not claim Shopify announces page or blog-post edits, because it does not', () => {
+    // Six topics that do not exist were listed here and in the spec. Nothing
+    // ever arrived on them, and the gap they hid — a merchant's page edit
+    // waiting for the nightly re-read — looked like a working subscription.
+    const invented = [
+      'pages/create',
+      'pages/update',
+      'pages/delete',
+      'articles/create',
+      'articles/update',
+      'articles/delete',
+    ]
+    for (const topic of invented) expect(isKnownTopic(topic)).toBe(false)
+  })
+
+  it('does not ask to be told about stock levels', () => {
+    // Shopify gates that topic behind a permission over a merchant's warehouse
+    // figures, which a writer of articles has no business holding. A product
+    // selling out still reaches us through `products/update`.
+    expect(isKnownTopic('inventory_levels/update')).toBe(false)
+  })
+
+  it('still subscribes to everything the catalogue and the connection depend on', () => {
+    const needed = [
+      'products/create',
+      'products/update',
+      'products/delete',
+      'collections/create',
+      'collections/update',
+      'app/uninstalled',
+      'shop/redact',
+      'customers/redact',
+      'customers/data_request',
+    ]
+    for (const topic of needed) expect(isKnownTopic(topic)).toBe(true)
   })
 })
