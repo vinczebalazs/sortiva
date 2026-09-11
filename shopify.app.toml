@@ -1,0 +1,66 @@
+# Sortiva's Shopify app settings.
+#
+# This file is the app's configuration, and pushing it with Shopify's
+# command-line tool (`shopify app deploy`) replaces whatever is in the Dev
+# Dashboard. After the first push, change settings here rather than in the
+# dashboard, or the next push will undo them.
+#
+# `client_id` below must be this app's own Client ID, from
+# Dev Dashboard → your app → Settings. Replace the placeholder before pushing.
+#
+# Two things in here cannot be set any other way, which is why the file exists
+# at all: the three privacy topics Shopify requires of every listed app, and the
+# product topics that keep a merchant's catalogue current between nightly reads.
+
+client_id = "REPLACE_WITH_CLIENT_ID"
+name = "Sortiva"
+handle = "sortiva"
+application_url = "https://REPLACE_WITH_YOUR_HOST"
+# Sortiva is its own website with its own sign-in, not a screen inside Shopify's
+# admin. Nothing in the code supports being embedded there.
+embedded = false
+
+[access_scopes]
+# Read-only, and the install screen says so in those words. Permission to post
+# is asked for separately, later, from Settings or at the first publish.
+scopes = "read_products,read_orders,read_content"
+# Asked for only when a merchant turns publishing on. Listing it here is what
+# makes that second request possible at all; it is not granted at install.
+optional_scopes = ["write_content"]
+# Sortiva asks for permissions itself, at two different moments. Without this,
+# Shopify grants everything in `scopes` during installation and ignores what the
+# app asked for — and the install would receive a token it is built to refuse.
+use_legacy_install_flow = true
+
+[auth]
+redirect_urls = [
+  "https://REPLACE_WITH_YOUR_HOST/api/shopify/oauth/callback",
+  "https://REPLACE_WITH_YOUR_HOST/api/publish/grant/callback",
+]
+
+[webhooks]
+api_version = "2026-07"
+
+  # One address for everything. Shopify names the topic in a header on every
+  # delivery, and the receiver reads it from there, so the path only has to be
+  # somewhere that exists.
+  [[webhooks.subscriptions]]
+  topics = [
+    "products/create",
+    "products/update",
+    "products/delete",
+    "collections/create",
+    "collections/update",
+    # The merchant removed us. Their store stops being read, and they are told
+    # what happened rather than finding work silently stopped.
+    "app/uninstalled",
+  ]
+  uri = "https://REPLACE_WITH_YOUR_HOST/api/webhooks/shopify/events"
+
+  # The three Shopify requires of every app it lists. Our answer to the two
+  # customer ones is that we hold nothing about any shopper, which is true by
+  # construction: order reading keeps line items and a landing page and nothing
+  # else, and never asks Shopify for the rest.
+  [[webhooks.subscriptions]]
+  compliance_topics = ["customers/data_request", "customers/redact", "shop/redact"]
+  uri = "https://REPLACE_WITH_YOUR_HOST/api/webhooks/shopify/compliance"

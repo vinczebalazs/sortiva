@@ -156,7 +156,11 @@ defaults:
       # revenue share is the "matters to this business" test: raise it and only
       # the store's biggest lines qualify.
       revenue_share_min: 0.10
-      revenue_window_days: 90
+      # How far back the revenue share is measured over. Sixty days because that
+      # is all Shopify gives an app like ours: reading older orders needs a
+      # separate permission Shopify grants case by case. It was ninety, which
+      # silently measured sixty and called it ninety.
+      revenue_window_days: 60
       keyword_candidates_min: 1
 
     catalog_richness_gap:
