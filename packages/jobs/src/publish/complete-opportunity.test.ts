@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { eq } from 'drizzle-orm'
-import { RECOVERY_GRACE_MS, publishMarker, silentLogger } from '@sortiva/core'
+import { RECOVERY_GRACE_MS, publishMarker, silentLogger, staticShopifyAuth } from '@sortiva/core'
 import {
   accountScope,
   dismissOpportunityGuarded,
@@ -52,7 +52,13 @@ describe.skipIf(!available)('publishing finishes the suggestion behind the artic
   let accountId: string
   let shop: FakeShopifyPublishClient
 
-  const cipher = { decrypt: (value: string) => value.replace(/^enc:/, '') }
+  /**
+   * How a call reaches this store. A token is asked for per request rather than
+   * decrypted once at the start, because a publish can outlast the hour a
+   * Shopify token lives; nothing here renews one, so it answers the same
+   * every time.
+   */
+  const authFor = async () => staticShopifyAuth('acme', 'token')
 
   beforeAll(async () => {
     ctx = await setupTestDb('publish_complete_opportunity')
@@ -150,7 +156,7 @@ describe.skipIf(!available)('publishing finishes the suggestion behind the artic
       db,
       pool: ctx.pool,
       shopify: over.shopify ?? shop,
-      cipher,
+      authFor,
       logger: silentLogger,
       now: over.now ?? (() => NOW),
     }

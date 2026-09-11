@@ -1,8 +1,14 @@
 import { createHmac } from 'node:crypto'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import type { DomainState, StoreConnection } from '@sortiva/core'
-import { StubNotificationEmitter } from '@sortiva/core'
+import type {
+  DomainState,
+  ShopifyAuth,
+  ShopifyOAuthProvider,
+  StoreConnection,
+} from '@sortiva/core'
+import { StubNotificationEmitter, silentLogger, staticShopifyAuth } from '@sortiva/core'
 import {
+  MAX_WEBHOOK_ATTEMPTS,
   readCatalogChanges,
   recordWebhookEvent,
   systemScope,
@@ -42,6 +48,22 @@ let queue: WorkerUtils
 let accountId: string
 const system = systemScope('the webhook tests read across accounts')
 
+/**
+ * The install handshake, which none of these tests goes through: the store is
+ * already connected before anything here starts.
+ */
+const alreadyInstalled: ShopifyOAuthProvider = {
+  authorizeUrl: () => '',
+  verifyCallbackSignature: () => true,
+  exchangeCode: async () => {
+    throw new Error('these tests never install the app')
+  },
+  refreshAccess: async () => {
+    throw new Error('these tests never renew a token')
+  },
+  revokeAccess: async () => {},
+}
+
 class FakeConnections implements ConnectionStore {
   connection: StoreConnection | undefined
 
@@ -59,8 +81,8 @@ class FakeConnections implements ConnectionStore {
     return this.connection
   }
 
-  async readToken(): Promise<string | undefined> {
-    return 'shpat_test'
+  async authFor(): Promise<ShopifyAuth | undefined> {
+    return staticShopifyAuth('acme', 'shpat_test')
   }
 
   async markInvalid(_accountId: string, at: Date): Promise<Date> {
@@ -87,12 +109,7 @@ function world(): World {
     db: harness.db,
     pool: harness.pool,
     fetcher: { async fetch() { throw new Error('webhook handling makes no page fetches') } },
-    shopify: {
-      authorizeUrl: () => '',
-      verifyCallbackSignature: () => true,
-      exchangeCode: async () => ({ accessToken: '', grantedScopes: [] }),
-      revokeAccess: async () => {},
-    },
+    shopify: alreadyInstalled,
     shop: { async getShop() { throw new Error('not used') } },
     connections,
     notifications,
@@ -257,30 +274,100 @@ describe.skipIf(!available)('acting on what Shopify told us', () => {
     expect(stream.changes).toEqual([])
   })
 
-  it('records a blog post and a static page being edited and deleted', async () => {
-    await deliver({ webhookId: 'a1', topic: 'articles/update', body: { id: 900, updated_at: '2026-06-14T10:00:00Z' } })
-    await deliver({ webhookId: 'p1', topic: 'pages/delete', body: { id: 901 } })
+  it('records a collection being created and edited', async () => {
+    await deliver({ webhookId: 'c1', topic: 'collections/create', body: { id: 800, updated_at: '2026-06-14T10:00:00Z' } })
+    await deliver({ webhookId: 'c2', topic: 'collections/update', body: { id: 800, updated_at: '2026-06-14T11:00:00Z' } })
     await drainShopifyWebhooks({ ingestion: () => world().deps })
 
     const stream = await readCatalogChanges(harness.db, system, accountId, undefined)
     expect(stream.changes.map((c) => [c.kind, c.entityId])).toEqual([
-      ['article_updated', '900'],
-      ['page_deleted', '901'],
+      ['collection_updated', '800'],
+      ['collection_updated', '800'],
     ])
   })
 
-  it('names the inventory item rather than the product on a stock change', async () => {
+  it('passes over a delivery on a topic we never subscribed to', async () => {
+    // Shopify publishes no topic at all for a blog post or a static page being
+    // edited, and the topic for stock levels needs a permission over a
+    // merchant's warehouse that a writer of articles has no business asking
+    // for. An edit to either reaches us on the nightly re-read instead — that
+    // gap is real, and subscribing to topics that do not exist would only have
+    // hidden it.
+    await deliver({ webhookId: 'a1', topic: 'articles/update', body: { id: 900, updated_at: '2026-06-14T10:00:00Z' } })
+    await deliver({ webhookId: 'p1', topic: 'pages/delete', body: { id: 901 } })
     await deliver({
       webhookId: 'i1',
       topic: 'inventory_levels/update',
       body: { inventory_item_id: 42, available: 0, updated_at: '2026-06-14T10:00:00Z' },
     })
+
+    const result = await drainShopifyWebhooks({ ingestion: () => world().deps })
+
+    expect(result).toMatchObject({ seen: 3, processed: 0, ignored: 3, failed: 0 })
+    const stream = await readCatalogChanges(harness.db, system, accountId, undefined)
+    expect(stream.changes).toEqual([])
+    // Settled rather than left to be drained for ever.
+    expect(await unprocessedWebhooks(harness.db, system)).toEqual([])
+  })
+
+  it('notices a product going out of stock, which arrives as an edit to the product', async () => {
+    await deliver({ webhookId: 'w1', topic: 'products/update', body: productBody() })
+    await drainShopifyWebhooks({ ingestion: () => world().deps })
+    const afterFirst = await readCatalogChanges(harness.db, system, accountId, undefined)
+
+    // The last one sold. Shopify says so through the product, not through a
+    // warehouse topic.
+    await deliver({
+      webhookId: 'w2',
+      topic: 'products/update',
+      body: productBody({
+        updated_at: '2026-06-15T10:00:00Z',
+        variants: [{ id: 1, title: 'UK 8', sku: 'RTS-8', price: '120.00', available: false }],
+      }),
+    })
     await drainShopifyWebhooks({ ingestion: () => world().deps })
 
-    const stream = await readCatalogChanges(harness.db, system, accountId, undefined)
+    const stream = await readCatalogChanges(harness.db, system, accountId, afterFirst.cursor)
     expect(stream.changes.map((c) => [c.kind, c.entityId])).toEqual([
-      ['availability_changed', '42'],
+      ['availability_changed', '700'],
     ])
+  })
+
+  it('tries a delivery it could not act on again, and gives up on it in the end', async () => {
+    // The commonest reason to be here is the store being busy with its own
+    // nightly sync, which is over in minutes. Stamping such a delivery as done
+    // meant a merchant's edit waited for the next night's re-read.
+    const state = world()
+    state.deps.domains.findAccountByShopHandle = async () => {
+      throw new Error('the store was busy with other work')
+    }
+    await deliver({ webhookId: 'w1', topic: 'products/update', body: productBody() })
+
+    for (let attempt = 1; attempt < MAX_WEBHOOK_ATTEMPTS; attempt += 1) {
+      const result = await drainShopifyWebhooks({
+        ingestion: () => state.deps,
+        logger: silentLogger,
+      })
+      expect(result).toMatchObject({ seen: 1, processed: 0, failed: 1 })
+      // Still there, still unfinished: the next pass picks it up again.
+      const waiting = await unprocessedWebhooks(harness.db, system)
+      expect(waiting.map((row) => [row.webhookId, row.attempts])).toEqual([['w1', attempt]])
+    }
+
+    const lastTry = await drainShopifyWebhooks({
+      ingestion: () => state.deps,
+      logger: silentLogger,
+    })
+    expect(lastTry).toMatchObject({ seen: 1, failed: 1 })
+
+    // A delivery nobody can process must not be re-read on every drain for the
+    // thirty days before it is pruned.
+    expect(await unprocessedWebhooks(harness.db, system)).toEqual([])
+    const { rows } = await harness.pool.query<{ attempts: number; status: string }>(
+      'select attempts, status from webhook_events where webhook_id = $1',
+      ['w1'],
+    )
+    expect(rows[0]).toMatchObject({ attempts: MAX_WEBHOOK_ATTEMPTS, status: 'failed' })
   })
 
   it('answers the two customer-data requests without looking anything up', async () => {
@@ -318,12 +405,12 @@ describe.skipIf(!available)('acting on what Shopify told us', () => {
 
   it('hands the changes to a consumer through the frozen stream contract', async () => {
     await deliver({ webhookId: 'w1', topic: 'products/update', body: productBody() })
-    await deliver({ webhookId: 'a1', topic: 'articles/update', body: { id: 900, updated_at: '2026-06-14T11:00:00Z' } })
+    await deliver({ webhookId: 'c1', topic: 'collections/update', body: { id: 800, updated_at: '2026-06-14T11:00:00Z' } })
     await drainShopifyWebhooks({ ingestion: () => world().deps })
 
     const stream = new DatabaseCatalogEvents(() => harness.db)
     const first = await stream.since(accountId)
-    expect(first.events.map((e) => e.kind)).toEqual(['product_created', 'article_updated'])
+    expect(first.events.map((e) => e.kind)).toEqual(['product_created', 'collection_updated'])
 
     // A consumer that hands its place back gets nothing twice.
     const second = await stream.since(accountId, first.cursor)

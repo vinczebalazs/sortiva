@@ -8,6 +8,7 @@ import {
   type PosthogCapture,
   type RepairRoute,
   type RepairedReference,
+  type ShopifyAuth,
   type ShopifyPublishProvider,
 } from '@sortiva/core'
 import {
@@ -21,7 +22,6 @@ import {
   type Db,
 } from '@sortiva/db'
 import type { PlannedSwap } from './sweep'
-import type { TokenDecryptor } from '../publish/auto-publish'
 import { republishArticleToShopify } from '../publish/republish'
 import { accountLifecycleGate, mayAccountPublishingRun } from '../runtime/gate'
 import { runtimeLogger } from '../runtime/logging'
@@ -60,7 +60,8 @@ export interface RepairExecutionDeps {
   readonly pool: pg.Pool
   /** The one seam that writes to a shop. Absent on a deployment that publishes for nobody. */
   readonly shopify?: ShopifyPublishProvider
-  readonly cipher?: TokenDecryptor
+  /** How to reach a store: its handle, and a token renewed as it ages. */
+  readonly authFor?: (accountId: string) => Promise<ShopifyAuth | undefined>
   readonly notifications?: NotificationEmitter
   readonly capture?: Pick<PosthogCapture, 'capture'>
   readonly logger?: Logger
@@ -178,7 +179,7 @@ export async function settlePendingRepairs(
       continue
     }
 
-    if (!(deps.shopify && deps.cipher)) {
+    if (!(deps.shopify && deps.authFor)) {
       deferred += 1
       log.warn('repair_publish_unconfigured', {
         account_id: input.accountId,
@@ -198,7 +199,7 @@ export async function settlePendingRepairs(
         db: deps.db,
         pool: deps.pool,
         shopify: deps.shopify,
-        cipher: deps.cipher,
+        authFor: deps.authFor,
         ...(deps.notifications ? { notifications: deps.notifications } : {}),
         ...(deps.capture ? { capture: deps.capture } : {}),
         ...(deps.checkpoint ? { checkpoint: deps.checkpoint } : {}),

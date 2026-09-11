@@ -1,12 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import {
-  ENRICHMENT_PAUSED_FLAG,
-  InMemoryRequestCache,
-  emptyFactSheet,
-  serpSnapshotKey,
-  type LlmRequest,
-  type SerpResult,
-} from '@sortiva/core'
+import { ENRICHMENT_PAUSED_FLAG, InMemoryRequestCache, emptyFactSheet, serpSnapshotKey, type LlmRequest, type SerpResult, type ShopifyAccessGrant } from '@sortiva/core'
 import {
   accountScope,
   listCompetitors,
@@ -31,6 +24,16 @@ import { runStep } from '../runtime/runStep'
 import { createRun, findStep } from '../runtime/steps'
 import type { IngestionDeps } from './deps'
 import { keywordsCompetitorsStep, type KeywordsCompetitorsOutput } from './keywords'
+
+/** The grant nothing in this file asks for: these tests never install anything. */
+const NO_GRANT: ShopifyAccessGrant = {
+  accessToken: '',
+  grantedScopes: [],
+  expiresAt: null,
+  refreshToken: null,
+  refreshTokenExpiresAt: null,
+}
+
 
 /**
  * Keyword and competitor discovery against a real database, the model
@@ -115,7 +118,8 @@ function world(
     shopify: {
       authorizeUrl: () => '',
       verifyCallbackSignature: () => true,
-      exchangeCode: async () => ({ accessToken: '', grantedScopes: [] }),
+      exchangeCode: async () => NO_GRANT,
+      refreshAccess: async () => NO_GRANT,
       revokeAccess: async () => {},
     },
     shop: {
@@ -127,7 +131,7 @@ function world(
       async read() {
         return undefined
       },
-      async readToken() {
+      async authFor() {
         return undefined
       },
       async markInvalid(_accountId: string, at: Date) {

@@ -2,9 +2,11 @@ import {
   accountAttribution,
   autoPublishReadiness,
   intentExternalId,
+  isRateLimited,
   isTokenRejected,
   publishAttemptFailure,
   publishMarker,
+  sendDisposition,
   BundleNotBuildable,
   RemoteArticleGone,
   type Logger,
@@ -62,13 +64,24 @@ export type RepublishOutcome =
     }
   | {
       readonly status: 'failed'
-      readonly reason: 'remote_article_gone' | 'product_gone' | 'article_incomplete'
+      readonly reason:
+        | 'remote_article_gone'
+        | 'product_gone'
+        | 'article_incomplete'
+        /** The shop turned the revision away. Nothing was written; it is due again. */
+        | 'shop_refused'
       readonly detail: string
     }
 
 export interface RepublishInput extends AutoPublishInput {
   /** Which revision this is. Every republication needs a number of its own. */
   readonly revisionN: number
+  /**
+   * Set by the recovery sweep, which is finishing a revision a dead worker
+   * already claimed. Without it this would ask for a claim it is holding,
+   * collide with itself, and report the revision as somebody else's work.
+   */
+  readonly claimHeld?: boolean
 }
 
 export async function republishArticleToShopify(
@@ -105,6 +118,9 @@ export async function republishArticleToShopify(
   const article = await findArticleById(deps.db, scope, input.articleId)
   if (!article) return { status: 'skipped', reason: 'article_not_found' }
 
+  const auth = await deps.authFor(input.accountId)
+  if (!auth) return { status: 'skipped', reason: 'connection_lost' }
+
   let bodyHtml: string
   try {
     const bundle = await buildBundleForArticle(
@@ -125,11 +141,13 @@ export async function republishArticleToShopify(
   }
 
   const externalId = intentExternalId(input.articleId, input.revisionN)
-  const intent = await openPublishIntent(deps.db, scope, {
-    articleExternalId: externalId,
-    revisionN: input.revisionN,
-  })
-  if (!intent) return { status: 'skipped', reason: 'already_claimed' }
+  if (!input.claimHeld) {
+    const intent = await openPublishIntent(deps.db, scope, {
+      articleExternalId: externalId,
+      revisionN: input.revisionN,
+    })
+    if (!intent) return { status: 'skipped', reason: 'already_claimed' }
+  }
 
   deps.checkpoint?.('republish:claimed')
 
@@ -143,10 +161,7 @@ export async function republishArticleToShopify(
     // decision to take the post down all survive this. There is no field for
     // them on an update to pass even by accident.
     remote = await deps.shopify.updateArticle({
-      shop: target.shopHandle,
-      accessToken: deps.cipher.decrypt(target.accessTokenCipher),
-      blogId: target.targetBlogId as string,
-      blogHandle: target.targetBlogHandle ?? '',
+      auth,
       storefrontDomain: await storefrontDomainFor(deps.db, input.accountId, target.shopHandle),
       remoteArticleId,
       title: article.title,
@@ -191,6 +206,25 @@ export async function republishArticleToShopify(
       })
       return { status: 'failed', reason: 'remote_article_gone', detail: error.message }
     }
+    if (sendDisposition(error) === 'refused') {
+      // The shop turned the revision away — it was busy, or would not accept
+      // the request. Nothing was written, so the claim goes back and the repair
+      // is simply due again; keeping it would make every later attempt collide
+      // with a claim of our own and, after enough collisions, send a mend
+      // nobody asked about to the dead-letter queue.
+      await releasePublishIntent(deps.db, scope, externalId)
+      const detail = error instanceof Error ? error.message : String(error)
+      log.warn('republish_refused', {
+        account_id: input.accountId,
+        article_id: input.articleId,
+        throttled: isRateLimited(error),
+        error: detail,
+      })
+      return { status: 'failed', reason: 'shop_refused', detail }
+    }
+    // We cannot tell whether the revision landed. The claim stays, and the
+    // recovery sweep settles it by asking the shop — the one case where holding
+    // a claim is the point rather than an oversight.
     throw error
   }
 

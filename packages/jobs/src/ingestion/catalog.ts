@@ -10,8 +10,7 @@ import {
   type CatalogEventKind,
   type OrderAggregate,
   type ProductRow,
-  type ShopifyOrder,
-  type ShopifyProduct,
+  type ShopifyAuth,
   type StoredVariant,
 } from '@sortiva/core'
 import {
@@ -26,17 +25,16 @@ import {
   type Db,
 } from '@sortiva/db'
 import { RetryableFailure, TerminalFailure, TokenInvalidFailure } from '../runtime/errors'
-import { readProductMetafields } from './metafields'
 import { inputVersion } from '../runtime/idempotency'
 import type { StepContext } from '../runtime/runStep'
-import type { IngestionDeps } from './deps'
+import type { IngestionDeps, ShopifyListReader } from './deps'
 import type { StepDefinition } from './steps'
 
 /**
- * Reading a merchant's whole store: every product, and ninety days of orders.
+ * Reading a merchant's whole store: every product, and sixty days of orders.
  *
- * This is the longest thing the product does over a network. A five-hundred
- * product store is roughly eight minutes of paced requests, and a busy store's
+ * This is the longest thing the product does over a network. A large catalogue
+ * is minutes of paced requests, and a busy store's
  * order history is longer, so the step is built on the assumption that it will
  * be interrupted: a deploy, a crash, a killed container.
  *
@@ -51,37 +49,16 @@ import type { StepDefinition } from './steps'
  * The expensive steps that follow are the ones that need it.
  */
 
-/** Shopify's own ceiling on a list request. */
-const PAGE_SIZE = 250
-
 /**
  * How many Shopify requests one run of the step makes before handing the rest
  * back.
  *
- * At one request a second this is about eight minutes of work, which is inside
- * the step's lease with room to spare. Raising it makes a large store finish in
- * fewer runs and each run longer; it decides nothing a merchant sees.
- *
- * Counted in requests rather than pages because a page of products is no longer
- * one request: each product we have not seen before costs a second one for its
- * metafields, so a page can be two hundred and fifty-one requests and a budget
- * in pages would have promised eight minutes and taken hours.
+ * A page of products is one request and carries its variants and attributes
+ * with it, so this is far more of a store than it used to be. Raising it makes
+ * a large store finish in fewer runs and each run longer; it decides nothing a
+ * merchant sees.
  */
 const REQUESTS_PER_RUN = 500
-
-/** Only what we read. Asking for less is also the first line of the customer-data defence. */
-const PRODUCT_FIELDS =
-  'id,title,body_html,handle,product_type,vendor,tags,status,updated_at,variants,options,images'
-
-/**
- * The order fields we ask for, and the list is short on purpose.
- *
- * Shopify will happily send the buyer's name, email, phone and both addresses.
- * We do not ask for them. The reduction in `packages/core` drops them anyway —
- * that is the guarantee — but not requesting them means they never cross the
- * network, never sit in a response buffer, and never reach a log.
- */
-const ORDER_FIELDS = 'id,created_at,currency,total_price,landing_site,cancelled_at,test,line_items'
 
 /** Where a run of the step got to. Committed after every page. */
 export interface CatalogSyncCheckpoint {
@@ -95,6 +72,8 @@ export interface CatalogSyncCheckpoint {
   /** Running totals. Bounded by the catalogue's size plus the days not yet written out. */
   readonly aggregate?: OrderAggregate
   readonly ordersSeen: number
+  /** Set when Shopify refused the order read, so a resumed run does not ask again. */
+  readonly ordersUnavailable?: boolean
 }
 
 export interface CatalogSyncOutput {
@@ -102,14 +81,12 @@ export interface CatalogSyncOutput {
   readonly ordersSeen: number
   readonly changesRecorded: number
   readonly topProducts: number
-}
-
-/** One page of a Shopify list, and where the next one starts. */
-export interface ShopifyPageReader {
-  getPage<T>(
-    input: { shop: string; accessToken: string },
-    path: string,
-  ): Promise<{ body: T; nextPageInfo: string | undefined }>
+  /**
+   * True when Shopify would not let us read the store's orders. Onboarding
+   * carries on without best sellers rather than stopping, and this is what the
+   * merchant is told about.
+   */
+  readonly ordersUnavailable?: boolean
 }
 
 /**
@@ -133,7 +110,7 @@ export const catalogSyncStep: StepDefinition = {
     // The step registry is untyped in its checkpoint — different steps save
     // different shapes — so the shape this one saves is named here, once.
     const ctx = rawCtx as StepContext<CatalogSyncCheckpoint>
-    const auth = await credentials(deps, ctx.accountId)
+    const auth = await storeAuth(deps, ctx.accountId)
     const admin = requireAdmin(deps)
     const scope = accountScope(ctx.accountId)
     const system = systemScope('the catalogue sync records changes for every consumer of the stream')
@@ -159,6 +136,7 @@ export const catalogSyncStep: StepDefinition = {
       orders_seen: state.ordersSeen,
       changes_recorded: state.changesRecorded,
       top_products: ranked,
+      orders_unavailable: state.ordersUnavailable === true,
     })
 
     return {
@@ -166,13 +144,14 @@ export const catalogSyncStep: StepDefinition = {
       ordersSeen: state.ordersSeen,
       changesRecorded: state.changesRecorded,
       topProducts: ranked,
+      ...(state.ordersUnavailable ? { ordersUnavailable: true } : {}),
     }
   },
 }
 
 interface SyncArgs {
-  readonly auth: { shop: string; accessToken: string }
-  readonly admin: ShopifyPageReader
+  readonly auth: ShopifyAuth
+  readonly admin: ShopifyListReader
   readonly scope: ReturnType<typeof accountScope>
   readonly state: CatalogSyncCheckpoint
 }
@@ -200,17 +179,11 @@ async function syncProducts(
   while (requests < REQUESTS_PER_RUN) {
     stopIfShuttingDown(ctx)
 
-    const path = state.productPage
-      ? // With a page cursor Shopify accepts nothing but the cursor and the
-        // size — sending the field list again is rejected outright.
-        `products.json?limit=${PAGE_SIZE}&page_info=${encodeURIComponent(state.productPage)}`
-      : `products.json?limit=${PAGE_SIZE}&fields=${PRODUCT_FIELDS}`
-
     const answer = await withTokenInvalidRouting(() =>
-      args.admin.getPage<{ products?: ShopifyProduct[] }>(args.auth, path),
+      args.admin.listProducts(args.auth, state.productPage ? { after: state.productPage } : {}),
     )
     requests += 1
-    const batch = (answer.body.products ?? []).map(toProductRow)
+    const batch = answer.items.map(toProductRow)
 
     const changes = batch.flatMap((row) =>
       changesFor(
@@ -220,32 +193,7 @@ async function syncProducts(
       ),
     )
 
-    // Only for products we have not seen before or that have changed, because
-    // each one is a request of its own and a store's unchanged products have
-    // nothing new to tell us.
-    const enriched: ProductRow[] = []
-    for (const row of batch) {
-      // Checked here as well as once a page, because a page of two hundred and
-      // fifty products we have never seen is four minutes of paced reads and a
-      // shutdown should not have to wait them out.
-      stopIfShuttingDown(ctx)
-      if (!wantsMetafields(known.get(row.shopifyProductId), row)) {
-        enriched.push(row)
-        continue
-      }
-      const metafields = await withTokenInvalidRouting(() =>
-        readProductMetafields(args.admin, args.auth, row.shopifyProductId, (reason) =>
-          ctx.log.info('catalog_sync.metafields_skipped', {
-            shopify_product_id: row.shopifyProductId,
-            reason,
-          }),
-        ),
-      )
-      requests += 1
-      enriched.push(metafields === undefined ? row : { ...row, metafields })
-    }
-
-    await upsertProducts(deps.db, args.scope, enriched, deps.now?.() ?? new Date())
+    await upsertProducts(deps.db, args.scope, batch, deps.now?.() ?? new Date())
     const recorded = await recordCatalogChanges(deps.db, args.system, changes)
 
     // Refresh what we hold, so a product appearing twice inside one walk is
@@ -263,8 +211,8 @@ async function syncProducts(
       ...state,
       productsSeen: state.productsSeen + batch.length,
       changesRecorded: state.changesRecorded + recorded,
-      ...(answer.nextPageInfo
-        ? { productPage: answer.nextPageInfo }
+      ...(answer.next
+        ? { productPage: answer.next }
         : { phase: 'orders' as const, productPage: undefined }),
     }
     // The position is committed on its own, after the page it describes has
@@ -273,7 +221,7 @@ async function syncProducts(
     // page of the merchant's catalogue silently.
     await ctx.save(state)
 
-    if (!answer.nextPageInfo) return state
+    if (!answer.next) return state
   }
 
   // Out of budget with the store unfinished. The step is retried and picks the
@@ -296,19 +244,29 @@ async function syncOrders(
   for (let page = 0; page < REQUESTS_PER_RUN; page += 1) {
     stopIfShuttingDown(ctx)
 
-    const path = state.orderPage
-      ? `orders.json?limit=${PAGE_SIZE}&page_info=${encodeURIComponent(state.orderPage)}`
-      : // Oldest first, and that ordering is load-bearing: it is what lets a day
-        // be written out and dropped from the running totals as soon as an order
-        // from a later day appears.
-        `orders.json?limit=${PAGE_SIZE}&status=any&order=created_at+asc` +
-        `&created_at_min=${encodeURIComponent(since.toISOString())}&fields=${ORDER_FIELDS}`
+    let answer
+    try {
+      answer = await withTokenInvalidRouting(() =>
+        args.admin.listOrders(args.auth, {
+          createdFrom: since,
+          ...(state.orderPage ? { after: state.orderPage } : {}),
+        }),
+      )
+    } catch (error) {
+      if (!isAccessDenied(error)) throw error
+      // Shopify treats everything about an order as customer data and approves
+      // access to it store by store. Until that approval comes through, this
+      // store has a catalogue and no best sellers — which is worth having, and
+      // far better than onboarding stopping at a wall the merchant cannot climb.
+      ctx.log.warn('catalog_sync.orders_unavailable', {
+        reason: error instanceof Error ? error.message : 'Shopify refused the order read',
+      })
+      state = { ...state, ordersUnavailable: true, orderPage: undefined }
+      await ctx.save(state)
+      return state
+    }
 
-    const answer = await withTokenInvalidRouting(() =>
-      args.admin.getPage<{ orders?: ShopifyOrder[] }>(args.auth, path),
-    )
-    const orders = answer.body.orders ?? []
-    aggregate = accumulateOrders(aggregate, orders)
+    aggregate = accumulateOrders(aggregate, answer.items, answer.timeZone)
 
     const { settled, remaining } = settleLandingDays(aggregate)
     await upsertLandingRevenue(deps.db, args.scope, toLandingRows(settled))
@@ -318,11 +276,11 @@ async function syncOrders(
       ...state,
       ordersSeen: aggregate.ordersSeen,
       aggregate,
-      ...(answer.nextPageInfo ? { orderPage: answer.nextPageInfo } : { orderPage: undefined }),
+      ...(answer.next ? { orderPage: answer.next } : { orderPage: undefined }),
     }
     await ctx.save(state)
 
-    if (!answer.nextPageInfo) {
+    if (!answer.next) {
       // The last day has no later day to close it, so it is written out here.
       await upsertLandingRevenue(deps.db, args.scope, toLandingRows(drainLandingDays(aggregate)))
       return state
@@ -382,21 +340,6 @@ function toLandingRows(
   }))
 }
 
-/**
- * Whether this product's metafields are worth a request of their own.
- *
- * A product whose fingerprint has not moved cannot have changed its attributes
- * in any way we would read, so asking again would be a request per product per
- * night that always came back with what we already hold. The consequence, and
- * it is the one worth knowing: a product whose metafields we have never read
- * stays that way until the merchant next edits it, because "we never asked" and
- * "the store has none" look the same from here.
- */
-function wantsMetafields(stored: ComparableProduct | undefined, row: ProductRow): boolean {
-  if (!stored) return true
-  return stored.checksum !== row.checksum
-}
-
 /** What the change comparison needs to know about a product we already hold. */
 interface ComparableProduct {
   readonly checksum: string | null
@@ -442,22 +385,23 @@ function stopIfShuttingDown(ctx: StepContext<CatalogSyncCheckpoint>): void {
   }
 }
 
-async function credentials(
-  deps: IngestionDeps,
-  accountId: string,
-): Promise<{ shop: string; accessToken: string }> {
-  const connection = await deps.connections.read(accountId)
-  if (!connection || connection.invalidatedAt !== null) {
+export async function storeAuth(deps: IngestionDeps, accountId: string): Promise<ShopifyAuth> {
+  const auth = await deps.connections.authFor(accountId)
+  if (!auth) {
     throw new TerminalFailure('no_connection', 'This store has no working Shopify connection.')
   }
-  const accessToken = await deps.connections.readToken(accountId)
-  if (!accessToken) {
-    throw new TerminalFailure('no_connection', 'The Shopify connection holds no token.')
-  }
-  return { shop: connection.shopHandle, accessToken }
+  return auth
 }
 
-function requireAdmin(deps: IngestionDeps): ShopifyPageReader {
+/** Shopify refused this particular read, rather than the token as a whole. */
+export function isAccessDenied(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    (error as { errorClass?: unknown }).errorClass === 'shopify_access_denied'
+  )
+}
+
+function requireAdmin(deps: IngestionDeps): ShopifyListReader {
   if (!deps.admin) {
     throw new TerminalFailure(
       'no_admin_client',

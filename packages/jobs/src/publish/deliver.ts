@@ -6,6 +6,7 @@ import {
   type Logger,
   type NotificationEmitter,
   type PosthogCapture,
+  type ShopifyAuth,
   type ShopifyPublishProvider,
 } from '@sortiva/core'
 import {
@@ -16,12 +17,13 @@ import {
   type ArticleRow,
   type Db,
 } from '@sortiva/db'
-import { publishArticleToShopify, type TokenDecryptor } from './auto-publish'
+import { publishArticleToShopify } from './auto-publish'
 import { withAccountLock } from '../runtime/lock'
 import { lookupCompletedWork, recordCompletedWork } from '../runtime/ledger'
 import { deriveIdempotencyKey, inputVersion } from '../runtime/idempotency'
 import { accountLifecycleGate, mayAccountPublishingRun } from '../runtime/gate'
 import { runtimeLogger } from '../runtime/logging'
+import { RetryableFailure } from '../runtime/errors'
 
 /**
  * The publish hour: the moment a finished article stops being a draft and
@@ -58,13 +60,14 @@ export interface DeliveryDeps {
   /** The shared connection pool — the per-account lock needs a connection of its own. */
   readonly pool: pg.Pool
   /**
-   * The one seam that writes to a merchant's shop, and the key that unlocks
-   * their token. Optional because an export-only deployment needs neither: an
+   * The one seam that writes to a merchant's shop, and the way to reach their
+   * store. Optional because an export-only deployment needs neither: an
    * auto-publish store on a process without them stops rather than being
    * exported instead, which would deliver in a mode the merchant did not choose.
    */
   readonly shopify?: ShopifyPublishProvider
-  readonly cipher?: TokenDecryptor
+  /** How to reach a store: its handle, and a token renewed as it ages. */
+  readonly authFor?: (accountId: string) => Promise<ShopifyAuth | undefined>
   readonly notifications?: NotificationEmitter
   readonly capture?: Pick<PosthogCapture, 'capture'>
   readonly now?: () => Date
@@ -114,7 +117,7 @@ export async function runExportDeliveryForAccount(
   const outcome = await withAccountLock(deps.pool, input.accountId, async () => {
     const settings = await readAccountSettings(deps.db, scope)
     const auto = settings.delivery === 'auto'
-    if (auto && !(deps.shopify && deps.cipher)) {
+    if (auto && !(deps.shopify && deps.authFor)) {
       // Waiting is visible and correct; exporting instead would deliver in a
       // mode the merchant did not choose, and marking the article published
       // with no address would make it look posted when nothing was.
@@ -173,7 +176,7 @@ export async function runExportDeliveryForAccount(
           db: deps.db,
           pool: deps.pool,
           shopify: deps.shopify as NonNullable<DeliveryDeps['shopify']>,
-          cipher: deps.cipher as NonNullable<DeliveryDeps['cipher']>,
+          authFor: deps.authFor as NonNullable<DeliveryDeps['authFor']>,
           ...(deps.notifications ? { notifications: deps.notifications } : {}),
           ...(deps.capture ? { capture: deps.capture } : {}),
           now: () => now,
@@ -181,6 +184,15 @@ export async function runExportDeliveryForAccount(
         },
         { accountId: input.accountId, articleId: next.id },
       )
+      if (published.status === 'failed' && published.reason === 'shop_busy') {
+        // The shop was busy, not unwilling. The article is still today's, so
+        // the job comes back rather than the day being written off — a rate
+        // limit at the publish hour used to cost the merchant a whole day.
+        throw new RetryableFailure(
+          'shop_busy',
+          `Shopify is rate-limiting ${input.accountId}; this article is still due today.`,
+        )
+      }
       if (published.status !== 'published') {
         // Deliberately no ledger entry: nothing was delivered, so tomorrow's
         // run must be free to try this article again once whatever stopped it

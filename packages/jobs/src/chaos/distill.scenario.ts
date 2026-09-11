@@ -1,5 +1,13 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
-import type { LlmClient, LlmRequest, LlmResult, StoreConnection } from '@sortiva/core'
+import {
+  staticShopifyAuth,
+  type LlmClient,
+  type LlmRequest,
+  type LlmResult,
+  type ShopifyAccessGrant,
+  type ShopifyAuth,
+  type StoreConnection,
+} from '@sortiva/core'
 import { accountScope, productFactsForAccount, schema, upsertProducts } from '@sortiva/db'
 import { MockLlmClient } from '@sortiva/llm'
 import { distillStep } from '../ingestion/distill'
@@ -56,6 +64,15 @@ function sheetFor(): string {
  * in. Every call this wrapper sees is a product distillation still had to pay
  * for; a product already in the ledger never reaches it.
  */
+/** The grant nothing in this scenario asks for: it never installs anything. */
+const NO_GRANT: ShopifyAccessGrant = {
+  accessToken: '',
+  grantedScopes: [],
+  expiresAt: null,
+  refreshToken: null,
+  refreshTokenExpiresAt: null,
+}
+
 class ChaosLlm implements LlmClient {
   killedAt: string | undefined
 
@@ -90,8 +107,8 @@ class ChaosConnections implements ConnectionStore {
     }
   }
 
-  async readToken(): Promise<string | undefined> {
-    return 'shpat_chaos'
+  async authFor(): Promise<ShopifyAuth> {
+    return staticShopifyAuth('chaos-store', 'shpat_chaos')
   }
 
   async markInvalid(_accountId: string, at: Date): Promise<Date> {
@@ -108,7 +125,8 @@ function baseDeps(pool: ChaosContext['pool'], accountId: string): Omit<Ingestion
     shopify: {
       authorizeUrl: () => '',
       verifyCallbackSignature: () => true,
-      exchangeCode: async () => ({ accessToken: '', grantedScopes: [] }),
+      exchangeCode: async () => NO_GRANT,
+      refreshAccess: async () => NO_GRANT,
       revokeAccess: async () => {},
     },
     shop: { async getShop() { throw new Error('not used') } },

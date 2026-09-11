@@ -1,6 +1,13 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
 import type pg from 'pg'
-import type { StoreConnection } from '@sortiva/core'
+import {
+  staticShopifyAuth,
+  type ShopifyAccessGrant,
+  type ShopifyAuth,
+  type ShopifyOrder,
+  type ShopifyProduct,
+  type StoreConnection,
+} from '@sortiva/core'
 import { readCatalogChanges, schema, systemScope } from '@sortiva/db'
 import { catalogSyncStep } from '../ingestion/catalog'
 import type { ConnectionStore, IngestionDeps, ShopifyListReader } from '../ingestion/deps'
@@ -38,6 +45,15 @@ interface State {
 
 const state: State = { jobId: '', stepId: '', key: '', requested: [] }
 
+/** The grant nothing in this scenario asks for: it never installs anything. */
+const NO_GRANT: ShopifyAccessGrant = {
+  accessToken: '',
+  grantedScopes: [],
+  expiresAt: null,
+  refreshToken: null,
+  refreshTokenExpiresAt: null,
+}
+
 /** A store that pages, and that lets the harness kill us between pages. */
 class ChaosShopify implements ShopifyListReader {
   /**
@@ -62,29 +78,21 @@ class ChaosShopify implements ShopifyListReader {
     }
   }
 
-  async getPage<T>(
-    _auth: { shop: string; accessToken: string },
-    path: string,
-  ): Promise<{ body: T; nextPageInfo: string | undefined }> {
-    state.requested.push(path)
-    const offset = Number(new URLSearchParams(path.split('?')[1] ?? '').get('page_info') ?? '0')
-
-    if (path.startsWith('orders.json')) {
-      // A kill point right at the phase boundary: the walk has finished and the
-      // order read has not started, which is the moment the checkpoint changes
-      // shape rather than merely advancing.
-      this.killPoint('orders-page')
-      return { body: { orders: [] } as T, nextPageInfo: undefined }
-    }
+  async listProducts(
+    _auth: ShopifyAuth,
+    options: { after?: string } = {},
+  ): Promise<{ items: readonly ShopifyProduct[]; next: string | undefined }> {
+    const offset = Number(options.after ?? '0')
+    state.requested.push(`products:${offset}`)
 
     // One kill point per page, so the harness can end the process at any point
     // in the walk rather than only at a convenient one.
     this.killPoint(`products-page-${offset}`)
 
-    const products = Array.from({ length: PAGE_SIZE }, (_unused, i) => offset + i + 1)
+    const items = Array.from({ length: PAGE_SIZE }, (_unused, i) => offset + i + 1)
       .filter((id) => id <= TOTAL_PRODUCTS)
       .map((id) => ({
-        id,
+        id: String(id),
         title: `Product ${id}`,
         body_html: `<p>Words about product ${id}.</p>`,
         handle: `product-${id}`,
@@ -92,12 +100,27 @@ class ChaosShopify implements ShopifyListReader {
         tags: 'trail',
         status: 'active',
         updated_at: '2026-06-14T10:00:00Z',
-        variants: [{ id: id * 10, title: 'One size', sku: `SKU-${id}`, price: '50.00', inventory_quantity: 4 }],
+        variants: [
+          { id: String(id * 10), title: 'One size', sku: `SKU-${id}`, price: '50.00', available: true },
+        ],
         images: [],
+        metafields: [],
       }))
 
     const next = offset + PAGE_SIZE < TOTAL_PRODUCTS ? String(offset + PAGE_SIZE) : undefined
-    return { body: { products } as T, nextPageInfo: next }
+    return { items, next }
+  }
+
+  async listOrders(
+    _auth: ShopifyAuth,
+    _options: { createdFrom: Date; after?: string },
+  ): Promise<{ items: readonly ShopifyOrder[]; next: string | undefined; timeZone: string | null }> {
+    state.requested.push('orders')
+    // A kill point right at the phase boundary: the walk has finished and the
+    // order read has not started, which is the moment the checkpoint changes
+    // shape rather than merely advancing.
+    this.killPoint('orders-page')
+    return { items: [], next: undefined, timeZone: 'Europe/London' }
   }
 }
 
@@ -114,8 +137,8 @@ class ChaosConnections implements ConnectionStore {
     }
   }
 
-  async readToken(): Promise<string | undefined> {
-    return 'shpat_chaos'
+  async authFor(): Promise<ShopifyAuth> {
+    return staticShopifyAuth('chaos-store', 'shpat_chaos')
   }
 
   async markInvalid(_accountId: string, at: Date): Promise<Date> {
@@ -132,7 +155,8 @@ function chaosDeps(ctx: ChaosContext, store: ChaosShopify): IngestionDeps {
     shopify: {
       authorizeUrl: () => '',
       verifyCallbackSignature: () => true,
-      exchangeCode: async () => ({ accessToken: '', grantedScopes: [] }),
+      exchangeCode: async () => NO_GRANT,
+      refreshAccess: async () => NO_GRANT,
       revokeAccess: async () => {},
     },
     shop: { async getShop() { throw new Error('not used') } },
@@ -248,9 +272,7 @@ export const catalogSyncKilledMidWalk: ChaosScenario = {
     // store once takes six page requests; if any restart began at page one there
     // would be more requests for page one than passes that legitimately started
     // there — exactly one, the very first.
-    const firstPageRequests = state.requested.filter(
-      (path) => path.startsWith('products.json') && !path.includes('page_info'),
-    )
+    const firstPageRequests = state.requested.filter((asked) => asked === 'products:0')
     if (firstPageRequests.length !== 1) {
       throw new Error(
         `the walk restarted from the beginning ${firstPageRequests.length} times; a resume must ` +

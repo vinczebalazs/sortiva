@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { InMemoryRequestCache, type StoreConnection } from '@sortiva/core'
+import { InMemoryRequestCache, type StoreConnection, staticShopifyAuth, type ShopifyAuth, type ShopifyAccessGrant } from '@sortiva/core'
 import { accountScope, productFactsForAccount, upsertProducts } from '@sortiva/db'
 import {
   databaseAvailable,
@@ -14,6 +14,16 @@ import { runStep } from '../runtime/runStep'
 import { createRun, findStep, getStep } from '../runtime/steps'
 import type { ConnectionStore, IngestionDeps } from './deps'
 import { distillStep, type DistillCheckpoint, type DistillOutput } from './distill'
+
+/** The grant nothing in this file asks for: these tests never install anything. */
+const NO_GRANT: ShopifyAccessGrant = {
+  accessToken: '',
+  grantedScopes: [],
+  expiresAt: null,
+  refreshToken: null,
+  refreshTokenExpiresAt: null,
+}
+
 
 /**
  * Distillation against a real database and the model wrapper's own test double,
@@ -74,8 +84,8 @@ class FakeConnections implements ConnectionStore {
     return this.connection
   }
 
-  async readToken(): Promise<string | undefined> {
-    return 'shpat_test'
+  async authFor(): Promise<ShopifyAuth> {
+    return staticShopifyAuth('test-store', 'shpat_test')
   }
 
   async markInvalid(_accountId: string, at: Date): Promise<Date> {
@@ -91,7 +101,8 @@ function deps(llm?: MockLlmClient): IngestionDeps {
     shopify: {
       authorizeUrl: () => '',
       verifyCallbackSignature: () => true,
-      exchangeCode: async () => ({ accessToken: '', grantedScopes: [] }),
+      exchangeCode: async () => NO_GRANT,
+      refreshAccess: async () => NO_GRANT,
       revokeAccess: async () => {},
     },
     shop: { async getShop() { throw new Error('not used') } },

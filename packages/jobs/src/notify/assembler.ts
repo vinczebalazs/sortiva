@@ -58,6 +58,9 @@ const LANDING: Record<EmailableType, string> = {
   repair_needed: '/content',
   connection_lost_shopify: '/settings',
   connection_lost_gsc: '/settings',
+  // Where the merchant turns posting back on once they have dealt with
+  // whatever the shop refused.
+  auto_publish_paused: '/settings',
   payment_failed: '/settings',
   export_url_reminder: '/content',
   // No screen to land on — the account is gone and read access was revoked

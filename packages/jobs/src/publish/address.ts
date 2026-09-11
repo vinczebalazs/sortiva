@@ -1,4 +1,4 @@
-import { accountScope, findDomainForAccount, type Db } from '@sortiva/db'
+import { accountScope, findDomainForAccount, findShopifyConnForAccount, type Db } from '@sortiva/db'
 
 /**
  * The host a published article's address is recorded under.
@@ -10,20 +10,26 @@ import { accountScope, findDomainForAccount, type Db } from '@sortiva/db'
  * working, ranking article would look like it had earned nothing, for ever,
  * and nobody would notice for months.
  *
- * The domain the merchant claimed at signup is that host, and it is per
- * account, while the client that posts to Shopify is one per process. So it is
- * read here, beside the publish that needs it, and handed to the client with
- * the rest of the call.
+ * And not the domain the merchant claimed at signup either, which is the same
+ * trap one step further in. That one is stored normalised: `www.` removed and
+ * cut back to the registrable domain. A store serving on `www.shop.com` or on
+ * `store.brand.com` therefore has a claimed domain that is a *different string*
+ * from the host its pages are actually served under, and every article of
+ * theirs would be filed under an address Search Console never reports.
  *
- * The fallback is for a case that should not be reachable — an account holds a
- * claimed domain before it can hold a Shopify connection — and keeps the old
- * behaviour rather than inventing a new way for a publish to be refused.
+ * So the store's own answer wins: the host Shopify says the storefront serves
+ * on, recorded when the connection was made. The claimed domain is the fallback
+ * for a connection made before that was stored, and the shop handle the
+ * fallback of last resort — neither is a new way for a publish to be refused.
  */
 export async function storefrontDomainFor(
   db: Db,
   accountId: string,
   shopHandle: string,
 ): Promise<string> {
-  const domain = await findDomainForAccount(db, accountScope(accountId))
+  const scope = accountScope(accountId)
+  const connection = await findShopifyConnForAccount(db, scope)
+  if (connection?.storefrontHost) return connection.storefrontHost
+  const domain = await findDomainForAccount(db, scope)
   return domain?.domainNormalized ?? `${shopHandle}.myshopify.com`
 }

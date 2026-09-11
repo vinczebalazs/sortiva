@@ -289,7 +289,12 @@ async function settleFailure<C>(
   // reconnect, so it moves the account to awaiting_shopify_auth rather than
   // filling the dead-letter queue with work nobody can fix.
   if (error instanceof TokenInvalidFailure) {
-    await guardedTransition(db, stepId, 'running', 'failed_terminal', { lastError: message })
+    // The class is recorded, not just the message: a merchant who reconnects
+    // has to put exactly the steps that stopped for a dead token back to work.
+    await guardedTransition(db, stepId, 'running', 'failed_terminal', {
+      lastError: message,
+      lastErrorClass: errorClass,
+    })
     log.warn('step.awaiting_reauth', {
       duration_ms,
       provider: error.provider,
@@ -303,6 +308,7 @@ async function settleFailure<C>(
     const at = nextAttemptAt(claimed.attempts, now(), args.random)!
     await guardedTransition(db, stepId, 'running', 'failed_retryable', {
       lastError: message,
+      lastErrorClass: errorClass,
       nextAttemptAt: at,
     })
     log.warn('step.failed', {
@@ -316,7 +322,10 @@ async function settleFailure<C>(
     return { status: 'retry_scheduled', nextAttemptAt: at, errorClass }
   }
 
-  await guardedTransition(db, stepId, 'running', 'failed_terminal', { lastError: message })
+  await guardedTransition(db, stepId, 'running', 'failed_terminal', {
+    lastError: message,
+    lastErrorClass: errorClass,
+  })
   log.error('step.failed', {
     duration_ms,
     error_class: errorClass,

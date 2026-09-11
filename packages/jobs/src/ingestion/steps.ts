@@ -97,7 +97,7 @@ export const detectStep: StepDefinition = {
 
 export interface OauthWaitOutput {
   readonly shopHandle: string
-  readonly shopId: number
+  readonly shopId: string
   readonly grantedScopes: readonly string[]
 }
 
@@ -131,16 +131,25 @@ export const oauthWaitStep: StepDefinition = {
   async execute(deps, ctx): Promise<OauthWaitOutput> {
     const connection = await deps.connections.read(ctx.accountId)
     if (!connection) throw new TerminalFailure('no_connection', 'No Shopify connection to verify.')
-    assertReadOnlyGrant(connection.grantedScopes)
+    assertReadOnlyGrant(connection.grantedScopes, {
+      publishGrantedBefore: connection.publishGrantedAt != null,
+    })
 
-    const token = await deps.connections.readToken(ctx.accountId)
-    if (!token) {
+    const auth = await deps.connections.authFor(ctx.accountId)
+    if (!auth) {
       throw new TerminalFailure('no_connection', 'The Shopify connection holds no token.')
     }
 
-    const shop = await withTokenInvalidRouting(() =>
-      deps.shop.getShop({ shop: connection.shopHandle, accessToken: token }),
-    )
+    const shop = await withTokenInvalidRouting(() => deps.shop.getShop(auth))
+
+    // Learned here and stored, because both are needed later at moments where
+    // asking again would be a network call in the middle of something else: the
+    // host the storefront serves on is what every published article's address
+    // is built from, and the store's name is the byline each one carries.
+    await deps.connections.recordStoreIdentity?.(ctx.accountId, {
+      ...(shop.primaryDomain ? { storefrontHost: shop.primaryDomain } : {}),
+      ...(shop.name ? { shopName: shop.name } : {}),
+    })
 
     await deps.domains.transition(ctx.accountId, ['awaiting_shopify_auth'], 'ingesting')
     ctx.log.info('oauth_wait.verified', {

@@ -3,6 +3,7 @@ import {
   publishMarker,
   readRepairOutcome,
   silentLogger,
+  staticShopifyAuth,
   type LlmClient,
   type SeoDataProvider,
 } from '@sortiva/core'
@@ -48,7 +49,12 @@ const shop = new FakeShopifyPublishClient()
  */
 const state = { anyProductId: '' }
 
-const cipher = { decrypt: (value: string) => value.replace(/^enc:/, '') }
+/**
+ * How the scenario reaches the fake shop. Static rather than renewing: what is
+ * under test here is what a crash does to a publication, and a token that
+ * renewed itself mid-scenario would be a second moving part in a test about one.
+ */
+const authFor = async () => staticShopifyAuth('chaos-store', 'shpat_chaos')
 
 const seo: SeoDataProvider = {
   keywordMetrics: () => Promise.reject(new Error('not expected to be called')),
@@ -201,7 +207,7 @@ export const driftRepairAcrossPublish: ChaosScenario = {
           db,
           pool: ctx.pool,
           shopify: shop,
-          cipher,
+          authFor,
           now: () => NOW,
           logger: silentLogger,
         },
@@ -230,7 +236,7 @@ export const driftRepairAcrossPublish: ChaosScenario = {
         db,
         pool: ctx.pool,
         shopify: shop,
-        cipher,
+        authFor,
         now: () => NOW,
         logger: silentLogger,
         checkpoint: (label: string) => {

@@ -271,3 +271,16 @@ export async function closeRunAsSkipped(db: Db, jobId: string): Promise<number> 
     .where(and(eq(ingestionJobs.id, jobId), eq(ingestionJobs.status, 'running')))
   return rows.length
 }
+
+
+/**
+ * The steps of a run that have not finished one way or another.
+ *
+ * Used to tell a store that was still onboarding when its connection broke from
+ * one that had already finished: the first resumes where it stopped, the second
+ * goes straight back to being ready.
+ */
+export async function remainingSteps(db: Db, jobId: string): Promise<readonly JobStepRow[]> {
+  const rows = await db.select().from(jobSteps).where(eq(jobSteps.jobId, jobId))
+  return rows.filter((row) => !SATISFIED.includes(row.state))
+}

@@ -29,7 +29,17 @@ import { runRetentionSweep } from './retention'
  */
 
 const DAY = 86_400_000
-const DELETED_AT = new Date('2026-09-02T12:00:00.000Z')
+/**
+ * The moment the account in these tests was deleted, always eight days before
+ * now rather than a date typed in.
+ *
+ * The rows these tests prune are aged against the *database's* clock (`now() -
+ * 31 days`), while the sweep runs against the clock the test hands it. A fixed
+ * date drifts away from the real one every day it is not edited, and this file
+ * went red one morning in September 2026 when the gap grew past the retention
+ * window — a failure that said nothing about the sweep.
+ */
+const DELETED_AT = new Date(Date.now() - 8 * DAY)
 
 let harness: TestDb
 let db: Db

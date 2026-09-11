@@ -4,13 +4,11 @@ import {
   classifyProductChange,
   drainLandingDays,
   emptyAggregate,
+  storeDayOf,
   toProductRow,
   type CatalogEventKind,
   type Logger,
   type PosthogCapture,
-  type ProductRow,
-  type ShopifyOrder,
-  type ShopifyProduct,
   type StoredVariant,
 } from '@sortiva/core'
 import {
@@ -26,8 +24,8 @@ import {
 import { runtimeLogger } from '../runtime/logging'
 import { tryWithAccountLock } from '../runtime/lock'
 import { registerTask } from '../runtime/tasks'
-import type { IngestionDeps, ShopifyListReader } from './deps'
-import { readProductMetafields } from './metafields'
+import { isAccessDenied } from './catalog'
+import type { IngestionDeps } from './deps'
 import {
   CATALOG_RECONCILE_TASK,
   LANDING_REVENUE_TASK,
@@ -50,27 +48,14 @@ import {
  * nothing, and leaves the same rows behind.
  */
 
-/** Shopify's own ceiling on a list request. */
-const PAGE_SIZE = 250
-
 /**
  * How many Shopify requests one run makes before handing the rest back to the
  * queue.
  *
- * At one request a second this is about two minutes of work. A store with more
- * than this many products finishes over several runs of the same night. It
- * decides nothing a merchant sees.
- *
- * Counted in requests rather than pages because a page is no longer one
- * request: a product whose fingerprint moved since we last looked costs a
- * second one for its metafields, so on the night a merchant re-imports their
- * whole catalogue a page can cost two hundred and fifty-one.
+ * A store with more products than these pages hold finishes over several runs
+ * of the same night. It decides nothing a merchant sees.
  */
 const REQUESTS_PER_RUN = 120
-
-const PRODUCT_FIELDS =
-  'id,title,body_html,handle,product_type,vendor,tags,status,updated_at,variants,options,images'
-const ORDER_FIELDS = 'id,created_at,currency,total_price,landing_site,cancelled_at,test,line_items'
 
 export interface SweepDeps {
   readonly ingestion: () => IngestionDeps
@@ -110,12 +95,11 @@ export async function reconcileStoreCatalog(
   const system = systemScope('the nightly sweep records changes for every consumer of the stream')
 
   const connection = await ingestion.connections.read(payload.accountId)
-  const token = await ingestion.connections.readToken(payload.accountId)
-  if (!connection || connection.invalidatedAt !== null || !token) return undefined
+  const auth = await ingestion.connections.authFor(payload.accountId)
+  if (!connection || connection.invalidatedAt !== null || !auth) return undefined
   const admin = ingestion.admin
   if (!admin) return undefined
 
-  const auth = { shop: connection.shopHandle, accessToken: token }
   // The moment the walk began, carried across runs — and also the stamp every
   // product this walk sees is given. Making the two the same value is what makes
   // "which products did the store stop listing" answerable exactly: after the
@@ -140,12 +124,9 @@ export async function reconcileStoreCatalog(
   let requests = 0
 
   while (requests < REQUESTS_PER_RUN) {
-    const path = cursor
-      ? `products.json?limit=${PAGE_SIZE}&page_info=${encodeURIComponent(cursor)}`
-      : `products.json?limit=${PAGE_SIZE}&fields=${PRODUCT_FIELDS}`
-    const answer = await readPage<{ products?: ShopifyProduct[] }>(admin, auth, path)
+    const answer = await admin.listProducts(auth, cursor ? { after: cursor } : {})
     requests += 1
-    const batch = (answer.body.products ?? []).map(toProductRow)
+    const batch = answer.items.map(toProductRow)
     productsSeen += batch.length
 
     const changes = batch.flatMap((row) => {
@@ -162,30 +143,9 @@ export async function reconcileStoreCatalog(
       }))
     })
 
-    // A request of its own per product, so only for the ones whose fingerprint
-    // moved. On an ordinary night that is a handful, and the walk itself stays
-    // two requests for a small store.
-    const enriched: ProductRow[] = []
-    for (const row of batch) {
-      const stored = known.get(row.shopifyProductId)
-      if (stored && stored.checksum === row.checksum) {
-        enriched.push(row)
-        continue
-      }
-      const metafields = await readProductMetafields(admin, auth, row.shopifyProductId, (reason) =>
-        (deps.logger ?? runtimeLogger()).info('catalog_sweep.metafields_skipped', {
-          account_id: payload.accountId,
-          shopify_product_id: row.shopifyProductId,
-          reason,
-        }),
-      )
-      requests += 1
-      enriched.push(metafields === undefined ? row : { ...row, metafields })
-    }
-
     // Written whether or not anything changed: the stamp is what tells the
     // deletion check below which products the store still lists.
-    await upsertProducts(ingestion.db, scope, enriched, startedAt)
+    await upsertProducts(ingestion.db, scope, batch, startedAt)
     diffCount += await recordCatalogChanges(ingestion.db, system, changes)
 
     for (const row of batch) {
@@ -196,7 +156,7 @@ export async function reconcileStoreCatalog(
       })
     }
 
-    cursor = answer.nextPageInfo
+    cursor = answer.next
     if (!cursor) {
       diffCount += await recordDeletions(deps, payload.accountId, connection.shopHandle, startedAt, now())
       return { productsSeen, diffCount, finished: true }
@@ -249,9 +209,17 @@ async function recordDeletions(
 /**
  * Yesterday's takings per landing page, for every connected store.
  *
- * Separate from the ninety-day pass the onboarding sync does: that one exists to
+ * Separate from the sixty-day pass the onboarding sync does: that one exists to
  * fill in history, this one keeps it current at the cost of a single day's
  * orders. Nothing reads either yet — V1 captures revenue and shows none of it.
+ *
+ * Only days that are **over in the store's own time zone** are written, and
+ * that is the whole difficulty. A day is written by replacing it, so writing
+ * today's takings at three in the morning would replace yesterday's complete
+ * figure with the three hours of it that had happened by then. So the read
+ * starts far enough back to cover any day that might still be open, and every
+ * day that has not ended where the merchant lives is dropped rather than
+ * written.
  */
 export async function aggregateLandingRevenue(
   deps: SweepDeps,
@@ -262,36 +230,52 @@ export async function aggregateLandingRevenue(
   const scope = accountScope(payload.accountId)
 
   const connection = await ingestion.connections.read(payload.accountId)
-  const token = await ingestion.connections.readToken(payload.accountId)
-  if (!connection || connection.invalidatedAt !== null || !token) return undefined
+  const auth = await ingestion.connections.authFor(payload.accountId)
+  if (!connection || connection.invalidatedAt !== null || !auth) return undefined
   const admin = ingestion.admin
   if (!admin) return undefined
 
-  const auth = { shop: connection.shopHandle, accessToken: token }
-  const since = new Date(now().getTime() - (payload.days ?? 1) * 86_400_000)
+  // Two days back by default rather than one: a store far enough west is still
+  // living in the day before ours, and reading only the last twenty-four hours
+  // would see part of it.
+  const since = new Date(now().getTime() - (payload.days ?? 2) * 86_400_000)
 
   let aggregate = emptyAggregate()
+  let timeZone: string | null = null
   let cursor: string | undefined
   for (let page = 0; page < REQUESTS_PER_RUN; page += 1) {
-    const path = cursor
-      ? `orders.json?limit=${PAGE_SIZE}&page_info=${encodeURIComponent(cursor)}`
-      : `orders.json?limit=${PAGE_SIZE}&status=any&order=created_at+asc` +
-        `&created_at_min=${encodeURIComponent(since.toISOString())}&fields=${ORDER_FIELDS}`
-    const answer = await readPage<{ orders?: ShopifyOrder[] }>(admin, auth, path)
-    aggregate = accumulateOrders(aggregate, answer.body.orders ?? [])
-    cursor = answer.nextPageInfo
+    let answer
+    try {
+      answer = await admin.listOrders(auth, {
+        createdFrom: since,
+        ...(cursor ? { after: cursor } : {}),
+      })
+    } catch (error) {
+      // The store's order data is not ours to read yet. Nothing to record, and
+      // nothing broken: the catalogue sync has already said so where a merchant
+      // can see it.
+      if (isAccessDenied(error)) return { days: 0 }
+      throw error
+    }
+    timeZone = answer.timeZone
+    aggregate = accumulateOrders(aggregate, answer.items, answer.timeZone)
+    cursor = answer.next
     if (!cursor) break
   }
 
+  const today = storeDayOf(now().toISOString(), timeZone)
   // A replace per day, so running this twice over the same orders writes the
-  // same numbers rather than adding them again.
-  const rows = drainLandingDays(aggregate).map((row) => ({
-    date: row.day,
-    landingUrl: row.landingUrl,
-    ordersN: row.orders,
-    revenue: row.revenue,
-    currency: row.currency,
-  }))
+  // same numbers rather than adding them again — and only for days that can no
+  // longer gain orders, so a replace is never a truncation.
+  const rows = drainLandingDays(aggregate)
+    .filter((row) => today === undefined || row.day < today)
+    .map((row) => ({
+      date: row.day,
+      landingUrl: row.landingUrl,
+      ordersN: row.orders,
+      revenue: row.revenue,
+      currency: row.currency,
+    }))
   await upsertLandingRevenue(ingestion.db, scope, rows)
   return { days: rows.length }
 }
@@ -322,14 +306,6 @@ export async function runReconciliationSweep(deps: SweepDeps): Promise<{ account
 
   log.info('reconciliation_sweep_started', { accounts: stores.length })
   return { accounts: stores.length }
-}
-
-async function readPage<T>(
-  admin: ShopifyListReader,
-  auth: { shop: string; accessToken: string },
-  path: string,
-): Promise<{ body: T; nextPageInfo: string | undefined }> {
-  return admin.getPage<T>(auth, path)
 }
 
 let registered = false

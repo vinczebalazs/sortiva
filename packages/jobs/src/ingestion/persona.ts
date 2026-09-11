@@ -297,10 +297,10 @@ async function readShopSettings(
   try {
     const connection = await deps.connections.read(ctx.accountId)
     if (!connection || connection.invalidatedAt !== null) return undefined
-    const token = await deps.connections.readToken(ctx.accountId)
-    if (!token) return undefined
+    const auth = await deps.connections.authFor(ctx.accountId)
+    if (!auth) return undefined
 
-    const shop = await deps.shop.getShop({ shop: connection.shopHandle, accessToken: token })
+    const shop = await deps.shop.getShop(auth)
     return {
       primaryLocale: shop.primaryLocale,
       countryCode: shop.countryCode,

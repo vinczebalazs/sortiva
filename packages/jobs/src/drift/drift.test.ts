@@ -5,6 +5,7 @@ import {
   buildAttentionList,
   readRepairOutcome,
   silentLogger,
+  staticShopifyAuth,
 } from '@sortiva/core'
 import {
   accountScope,
@@ -50,7 +51,12 @@ describe.skipIf(!available)('the daily check on published articles', () => {
   let accountId: string
   let shop: FakeShopifyPublishClient
 
-  const cipher = { decrypt: (value: string) => value.replace(/^enc:/, '') }
+  /**
+   * How a call reaches this store. A token is asked for per request rather
+   * than decrypted once, because a repair can outlast the hour a Shopify token
+   * lives; nothing in these tests renews one, so it answers the same every time.
+   */
+  const authFor = async () => staticShopifyAuth('acme', 'token')
 
   beforeAll(async () => {
     ctx = await setupTestDb('drift')
@@ -81,7 +87,7 @@ describe.skipIf(!available)('the daily check on published articles', () => {
       db,
       pool: ctx.pool,
       shopify: shop,
-      cipher,
+      authFor,
       logger: silentLogger,
       now: () => NOW,
     }
@@ -423,15 +429,14 @@ describe.skipIf(!available)('the daily check on published articles', () => {
     const goneId = await seedProduct({ shopifyId: 'shopify-gone', title: 'Steel bottle 750', familyId })
     await seedProduct({ shopifyId: 'shopify-alt', title: 'Steel bottle 1000', familyId })
     const remote = await shop.createArticle({
-      shop: 'acme',
-      accessToken: 'token',
+      auth: staticShopifyAuth('acme', 'token'),
       blogId: 'blog-1',
-      blogHandle: 'news',
       storefrontDomain: 'acme.com',
       title: 'Best bottles',
       bodyHtml: '<p>The Steel bottle 750 is the one to buy.</p>',
       handle: 'best-bottles',
       summary: 'How to choose a bottle.',
+      author: 'Acme',
       marker: 'seeded',
       publishAs: 'live',
     })
@@ -521,15 +526,14 @@ describe.skipIf(!available)('the daily check on published articles', () => {
     const goneId = await seedProduct({ shopifyId: 'shopify-gone', title: 'Steel bottle 750', familyId })
     await seedProduct({ shopifyId: 'shopify-alt', title: 'Steel bottle 1000', familyId })
     const remote = await shop.createArticle({
-      shop: 'acme',
-      accessToken: 'token',
+      auth: staticShopifyAuth('acme', 'token'),
       blogId: 'blog-1',
-      blogHandle: 'news',
       storefrontDomain: 'acme.com',
       title: 'Best bottles',
       bodyHtml: '<p>The Steel bottle 750 is the one to buy.</p>',
       handle: 'best-bottles',
       summary: 'How to choose a bottle.',
+      author: 'Acme',
       marker: 'seeded',
       publishAs: 'live',
     })

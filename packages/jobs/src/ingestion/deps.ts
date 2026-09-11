@@ -8,7 +8,10 @@ import type {
   PosthogCapture,
   SeedKeywordsPrompt,
   SeoDataProvider,
+  ShopifyAuth,
   ShopifyOAuthProvider,
+  ShopifyOrder,
+  ShopifyProduct,
   StoreConnection,
   StoreDomainStore,
   StorePageFetcher,
@@ -25,9 +28,14 @@ import type {
 
 /** The store's own record, as read back to confirm a freshly granted token works. */
 export interface ShopSnapshot {
-  readonly id: number
+  readonly id: string
   readonly name: string
   readonly myshopifyDomain: string
+  /**
+   * The host the storefront actually serves on. What a published article's
+   * address is built from, and what Search Console reports traffic under.
+   */
+  readonly primaryDomain?: string | null
   /**
    * The shop owner's own working clock. Deliberately *not* what we publish
    * against: articles go out on the audience's clock, which comes from the
@@ -42,12 +50,11 @@ export interface ShopSnapshot {
 }
 
 export interface ShopReader {
-  getShop(input: { shop: string; accessToken: string }): Promise<ShopSnapshot>
+  getShop(auth: ShopifyAuth): Promise<ShopSnapshot>
 }
 
 /**
- * Reading one page of a list the store publishes, and being told where the next
- * page starts.
+ * Reading a store's catalogue and its orders.
  *
  * Deliberately the same client as `ShopReader` in production rather than a
  * second one: a second client would be a second set of rate-limit, retry and
@@ -55,18 +62,39 @@ export interface ShopReader {
  * changed something.
  */
 export interface ShopifyListReader {
-  getPage<T>(
-    input: { shop: string; accessToken: string },
-    path: string,
-  ): Promise<{ body: T; nextPageInfo: string | undefined }>
+  listProducts(
+    auth: ShopifyAuth,
+    options?: { after?: string; first?: number },
+  ): Promise<{ items: readonly ShopifyProduct[]; next: string | undefined }>
+  listOrders(
+    auth: ShopifyAuth,
+    options: { createdFrom: Date; after?: string; first?: number },
+  ): Promise<{
+    items: readonly ShopifyOrder[]
+    next: string | undefined
+    /** The store's own time zone: what its orders' calendar days are counted in. */
+    timeZone: string | null
+  }>
 }
 
-/** Reading and writing one store's connection, tokens decrypted at the edge. */
+/** Reading and writing one store's connection. */
 export interface ConnectionStore {
   read(accountId: string): Promise<StoreConnection | undefined>
-  /** The decrypted token, for a caller about to make a call with it. */
-  readToken(accountId: string): Promise<string | undefined>
+  /**
+   * How to reach this store: the handle, and a token that is renewed as it
+   * ages. Undefined when there is no working connection to reach it with.
+   */
+  authFor(accountId: string): Promise<ShopifyAuth | undefined>
   markInvalid(accountId: string, at: Date): Promise<Date>
+  /**
+   * Records what the store says about itself — the host it serves on, its name
+   * — learned by asking Shopify once the connection works. Optional so a test
+   * that drives a step which never reads it can leave it out.
+   */
+  recordStoreIdentity?(
+    accountId: string,
+    identity: { storefrontHost?: string; shopName?: string },
+  ): Promise<void>
 }
 
 export interface IngestionDeps {

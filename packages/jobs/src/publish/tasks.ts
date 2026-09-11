@@ -91,7 +91,7 @@ export function registerPublishTasks(deps: PublishTaskDeps): void {
   }, 'fans_out')
 
   registerTask(PUBLISH_INTENT_RECOVERY_SWEEP_TASK, async () => {
-    if (!(deps.shopify && deps.cipher)) {
+    if (!(deps.shopify && deps.authFor)) {
       // A process with no way to write to a shop has nothing to recover. Said
       // out loud rather than passed over: a silent no-op here would look
       // identical to a sweep that ran and found nothing.
@@ -99,11 +99,11 @@ export function registerPublishTasks(deps: PublishTaskDeps): void {
       return
     }
     await sweepPublishRecovery({
-      ...(deps as Omit<AutoPublishDeps, 'db' | 'pool' | 'shopify' | 'cipher'>),
+      ...(deps as Omit<AutoPublishDeps, 'db' | 'pool' | 'shopify' | 'authFor'>),
       db: deps.getDb(),
       pool: deps.getPool(),
       shopify: deps.shopify,
-      cipher: deps.cipher,
+      authFor: deps.authFor,
     })
   }, 'fans_out')
 
