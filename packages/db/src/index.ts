@@ -36,6 +36,13 @@ export {
   type IngestionStatusStore,
   type IngestionStatusStoreOptions,
 } from './stores/ingestion'
+export {
+  makeShopifyAuthSource,
+  tokenColumns,
+  type ShopifyAuthSource,
+  type ShopifyAuthSourceOptions,
+  type ShopifyTokenCrypto,
+} from './stores/shopify-tokens'
 export { makeNotificationStore, type NotificationStoreOptions } from './stores/notifications'
 export { makeEmailStore, type EmailStoreOptions } from './stores/email'
 export {

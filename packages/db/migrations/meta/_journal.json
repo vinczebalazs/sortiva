@@ -99,6 +99,20 @@
       "when": 1788884243503,
       "tag": "0013_t_wave7_publish_attempts_one_topic_a_day_and_gate_rules_version",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1789075217983,
+      "tag": "0014_t_wave8_email_delivered_state",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1789167306982,
+      "tag": "0015_shopify_expiring_tokens_and_images",
+      "breakpoints": true
     }
   ]
 }

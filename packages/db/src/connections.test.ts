@@ -23,6 +23,17 @@ import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb
 let harness: TestDb
 let accountId: string
 
+/**
+ * A moment after the connection was made.
+ *
+ * Nothing here is about clock arithmetic: a refusal is only believed when it
+ * happened to the connection that exists, so every test that reports one has to
+ * date it after the connection it is reporting about.
+ */
+function after(connectedAt: Date, millis = 1_000): Date {
+  return new Date(connectedAt.getTime() + millis)
+}
+
 beforeAll(async () => {
   if (!(await databaseAvailable())) {
     throw new Error('Postgres is not reachable. Run `pnpm db:up` before the test suite.')
@@ -70,27 +81,22 @@ describe('storing a Shopify connection', () => {
     await saveShopifyConnection(harness.db, scope, {
       shopHandle: 'acme',
       accessTokenCipher: 'cipher',
-      grantedScopes: ['read_products', 'read_orders', 'read_content', 'read_locales'],
+      grantedScopes: ['read_products', 'read_orders', 'read_content'],
     })
 
     const row = await findShopifyConnForAccount(harness.db, scope)
-    expect(row?.grantedScopes).toEqual([
-      'read_products',
-      'read_orders',
-      'read_content',
-      'read_locales',
-    ])
+    expect(row?.grantedScopes).toEqual(['read_products', 'read_orders', 'read_content'])
     expect(row?.grantedScopes.some((s) => s.startsWith('write_'))).toBe(false)
   })
 
   it('reconnecting replaces the connection instead of making a second one', async () => {
     const scope = accountScope(accountId)
-    await saveShopifyConnection(harness.db, scope, {
+    const first = await saveShopifyConnection(harness.db, scope, {
       shopHandle: 'acme',
       accessTokenCipher: 'first',
       grantedScopes: ['read_products'],
     })
-    await markShopifyConnectionInvalid(harness.db, scope, new Date())
+    await markShopifyConnectionInvalid(harness.db, scope, after(first.connectedAt))
 
     await saveShopifyConnection(harness.db, scope, {
       shopHandle: 'acme',
@@ -111,31 +117,57 @@ describe('storing a Shopify connection', () => {
 describe('when Shopify stops accepting our token', () => {
   it('keeps the first moment, so a worker running twice cannot ring the bell twice', async () => {
     const scope = accountScope(accountId)
-    await saveShopifyConnection(harness.db, scope, {
+    const conn = await saveShopifyConnection(harness.db, scope, {
       shopHandle: 'acme',
       accessTokenCipher: 'cipher',
       grantedScopes: ['read_products'],
     })
 
-    const first = await markShopifyConnectionInvalid(harness.db, scope, new Date('2026-09-01T10:00:00Z'))
-    const second = await markShopifyConnectionInvalid(harness.db, scope, new Date('2026-09-01T11:00:00Z'))
+    const brokeAt = after(conn.connectedAt, 60_000)
+    const first = await markShopifyConnectionInvalid(harness.db, scope, brokeAt)
+    const second = await markShopifyConnectionInvalid(harness.db, scope, after(conn.connectedAt, 120_000))
 
-    expect(first?.toISOString()).toBe('2026-09-01T10:00:00.000Z')
+    expect(first?.toISOString()).toBe(brokeAt.toISOString())
     expect(second?.toISOString()).toBe(first?.toISOString())
+  })
+
+  it('never reports a connection made after the failure as broken', async () => {
+    // A merchant reconnects while the job that failed on the old token is still
+    // winding down. That job then reports a refusal that happened *before* the
+    // new connection existed. Believing it would put the reconnect banner back
+    // up on a store that had just this second fixed itself, and the merchant
+    // would reconnect again to no effect.
+    const scope = accountScope(accountId)
+    const conn = await saveShopifyConnection(harness.db, scope, {
+      shopHandle: 'acme',
+      accessTokenCipher: 'cipher',
+      grantedScopes: ['read_products'],
+    })
+
+    const beforeTheReconnect = new Date(conn.connectedAt.getTime() - 60_000)
+    expect(await markShopifyConnectionInvalid(harness.db, scope, beforeTheReconnect)).toBeUndefined()
+    expect(await shopifyConnectionState(harness.db, scope)).toBe('connected')
+
+    // And a refusal of the connection that actually exists is still recorded.
+    const brokeAt = after(conn.connectedAt, 60_000)
+    expect((await markShopifyConnectionInvalid(harness.db, scope, brokeAt))?.toISOString()).toBe(
+      brokeAt.toISOString(),
+    )
+    expect(await shopifyConnectionState(harness.db, scope)).toBe('lost')
   })
 
   it('is what tells the never-connected screen from the reconnect screen', async () => {
     const scope = accountScope(accountId)
     expect(await shopifyConnectionState(harness.db, scope)).toBe('never_connected')
 
-    await saveShopifyConnection(harness.db, scope, {
+    const conn = await saveShopifyConnection(harness.db, scope, {
       shopHandle: 'acme',
       accessTokenCipher: 'cipher',
       grantedScopes: ['read_products'],
     })
     expect(await shopifyConnectionState(harness.db, scope)).toBe('connected')
 
-    await markShopifyConnectionInvalid(harness.db, scope, new Date())
+    await markShopifyConnectionInvalid(harness.db, scope, after(conn.connectedAt))
     expect(await shopifyConnectionState(harness.db, scope)).toBe('lost')
   })
 })

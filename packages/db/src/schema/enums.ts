@@ -103,6 +103,8 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'repair_needed',
   'connection_lost_shopify',
   'connection_lost_gsc',
+  /** The shop refused a post, so posting was switched off until the merchant looks at it. */
+  'auto_publish_paused',
   'payment_failed',
   'monthly_summary_ready',
   'export_url_reminder',
@@ -110,10 +112,11 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'account_deletion_confirmed',
 ])
 
-/** Where one email got to: queued, sent, or stopped. */
+/** Where one email got to: queued, sent, confirmed delivered, or stopped. */
 export const emailSendStateEnum = pgEnum('email_send_state', [
   'queued',
   'sent',
+  'delivered',
   'failed',
   'suppressed',
 ])

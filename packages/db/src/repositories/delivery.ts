@@ -129,6 +129,8 @@ export interface LiveProductRow {
     readonly available: boolean
     readonly compareAtPrice: number | null
   }[]
+  /** The product's pictures, in the store's own order. Empty until the store's next full sync. */
+  readonly images: readonly { readonly url: string; readonly alt: string | null }[]
 }
 
 /**
@@ -155,6 +157,7 @@ export async function liveProductsByIds(
       title: products.title,
       priceRange: products.priceRange,
       variants: products.variants,
+      images: products.images,
     })
     .from(products)
     .where(and(eq(products.accountId, scope.accountId), inArray(products.id, [...productIds])))
@@ -164,6 +167,7 @@ export async function liveProductsByIds(
     title: row.title,
     priceRange: (row.priceRange ?? null) as LiveProductRow['priceRange'],
     variants: (row.variants ?? []) as LiveProductRow['variants'],
+    images: (row.images ?? []) as LiveProductRow['images'],
   }))
 }
 

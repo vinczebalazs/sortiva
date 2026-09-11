@@ -41,6 +41,8 @@ export interface PublishTargetRow {
   readonly accessTokenCipher: string
   /** Whether posts go live or wait as a Shopify draft. */
   readonly publishAs: 'live' | 'draft'
+  /** The store's own name, which is the byline every post carries. */
+  readonly shopName: string | null
 }
 
 /**
@@ -62,6 +64,7 @@ export async function readPublishTarget(
       targetBlogHandle: shopifyConns.targetBlogHandle,
       invalidatedAt: shopifyConns.invalidatedAt,
       accessTokenCipher: shopifyConns.accessToken,
+      shopName: shopifyConns.shopName,
       publishAs: accountSettings.shopifyPublishAs,
     })
     .from(shopifyConns)
@@ -83,14 +86,27 @@ export async function readPublishTarget(
 export async function recordPublishGrant(
   db: Db,
   scope: AccountScope,
-  input: { shopHandle: string; accessTokenCipher: string; grantedScopes: readonly string[] },
+  input: {
+    shopHandle: string
+    accessTokenCipher: string
+    accessTokenExpiresAt?: Date | null
+    refreshTokenCipher?: string | null
+    refreshTokenExpiresAt?: Date | null
+    grantedScopes: readonly string[]
+    /** When the merchant allowed publishing. Kept for good, across later reconnects. */
+    publishGrantedAt?: Date
+  },
 ): Promise<boolean> {
   const rows = await db
     .update(shopifyConns)
     .set({
       accessToken: input.accessTokenCipher,
+      accessTokenExpiresAt: input.accessTokenExpiresAt ?? null,
+      refreshToken: input.refreshTokenCipher ?? null,
+      refreshTokenExpiresAt: input.refreshTokenExpiresAt ?? null,
       grantedScopes: [...input.grantedScopes],
       invalidatedAt: null,
+      ...(input.publishGrantedAt ? { publishGrantedAt: input.publishGrantedAt } : {}),
     })
     .where(
       and(eq(shopifyConns.accountId, scope.accountId), eq(shopifyConns.shopHandle, input.shopHandle)),
