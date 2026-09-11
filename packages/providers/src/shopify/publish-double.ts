@@ -27,28 +27,33 @@ import {
  * question always got the right answer here and the wrong one against a real
  * blog with more posts than fit in a single response — which is precisely why a
  * defect that could post a merchant's article twice sat in the code untested.
- * So this hands back one page at a time, of a size a test can shrink; it keeps
- * the marker where a real shop keeps it, in a metafield that has to be asked
- * for per article rather than in the list; and it refuses to say "not there"
- * when it ran out of pages before it ran out of articles.
+ * So this hands back one page at a time, of a size a test can shrink, and it
+ * refuses to say "not there" when it ran out of pages before it ran out of
+ * articles.
+ *
+ * Like the real shop, it searches every blog rather than one: the blog a post
+ * went to is whichever blog was chosen at the time, and a merchant may have
+ * changed that since.
  *
  * `calls` is the record a test asserts against: two creates for one article is
  * the failure the whole two-phase protocol exists to prevent, and it is visible
- * here as a list rather than inferred from a count. `list_page` and `metafield`
- * entries are what prove a search really paged rather than peeked.
+ * here as a list rather than inferred from a count.
  */
 
-/** One article on the fake shop, including what a list response would not show. */
+/** One article on the fake shop, including what a caller never sees. */
 interface FakeArticle extends RemoteArticle {
   readonly blogId: string
-  readonly blogHandle: string
   /** The host this shop's articles are addressed under, as the caller gave it. */
   readonly storefrontDomain: string
   readonly bodyHtml: string
+  readonly summary: string
   readonly title: string
+  readonly author: string
+  readonly seoTitle: string | null
+  readonly imageUrl: string | null
   /** When the shop says it was created — what the creation-time filter reads. */
   readonly createdAt: Date
-  /** Where the real marker lives: not in the list response, and not visible to the merchant. */
+  /** Where the real marker lives: a metafield the merchant never sees. */
   readonly metafieldMarker: string
   /**
    * The merchant's own tags. We never send any, and a revision must not clear
@@ -58,12 +63,12 @@ interface FakeArticle extends RemoteArticle {
 }
 
 export type FakeShopCall = {
-  op: 'create' | 'update' | 'find' | 'list' | 'create_blog' | 'list_page' | 'metafield'
+  op: 'create' | 'update' | 'find' | 'list' | 'create_blog' | 'list_page'
   marker?: string
 }
 
 export interface FakeShopifyPublishClientOptions {
-  /** How many articles one page of the blog's list holds. Shopify's own ceiling is 250. */
+  /** How many articles one page of the shop's list holds. */
   pageSize?: number
   /** How many pages one search reads before it refuses to answer. */
   maxLookupPages?: number
@@ -113,13 +118,13 @@ export class FakeShopifyPublishClient implements ShopifyPublishProvider {
     return this.blogs
   }
 
+  /** Repeat-safe, like the real one: the same title twice is one blog, not two. */
   async createBlog(input: ShopifyStoreCredentials & { title: string }): Promise<ShopifyBlog> {
     this.calls.push({ op: 'create_blog' })
-    const blog = {
-      id: `blog-${this.blogs.length + 1}`,
-      title: input.title,
-      handle: input.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-    }
+    const handle = input.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+    const existing = this.blogs.find((blog) => blog.handle === handle)
+    if (existing) return existing
+    const blog = { id: `blog-${this.blogs.length + 1}`, title: input.title, handle }
     this.blogs.push(blog)
     return blog
   }
@@ -131,11 +136,13 @@ export class FakeShopifyPublishClient implements ShopifyPublishProvider {
       id: `remote-${this.nextId++}`,
       handle: input.handle,
       blogId: input.blogId,
-      blogHandle: input.blogHandle,
       storefrontDomain: input.storefrontDomain,
-      shop: input.shop,
       title: input.title,
       bodyHtml: input.bodyHtml,
+      summary: input.summary,
+      author: input.author,
+      seoTitle: input.seoTitle ?? null,
+      imageUrl: input.image?.url ?? null,
       marker: input.marker,
       published: input.publishAs === 'live',
     })
@@ -149,30 +156,29 @@ export class FakeShopifyPublishClient implements ShopifyPublishProvider {
     // `articles` and calls update; nothing here may answer by creating one.
     if (!existing) throw new RemoteArticleGone(input.remoteArticleId)
     // Shopify leaves an unsent field alone, and so does this: the handle, the
-    // published state, the address and any tags stay whatever the merchant last
-    // made them. A double that reset them would let a repair which overwrites a
-    // merchant's rename pass its tests.
+    // published state, the address, the author and any tags stay whatever the
+    // merchant last made them. A double that reset them would let a repair which
+    // overwrites a merchant's rename pass its tests.
     const updated: FakeArticle = {
       ...existing,
       title: input.title,
       bodyHtml: input.bodyHtml,
-      marker: input.marker,
-      metafieldMarker: input.marker,
+      summary: input.summary,
     }
     this.articles.set(input.remoteArticleId, updated)
     return updated
   }
 
   /**
-   * The search a real shop makes expensive: one page of the blog at a time, and
-   * one request per article to read a marker the list does not carry.
+   * The search a real shop makes expensive: one page of the shop's recent posts
+   * at a time, across every blog.
    */
   async findArticleByMarker(input: FindArticleByMarkerInput): Promise<RemoteArticle | undefined> {
     this.calls.push({ op: 'find', marker: input.marker })
 
     const since = input.notBefore.getTime() - LOOKUP_CLOCK_SKEW_MS
     const candidates = [...this.articles.values()]
-      .filter((article) => article.blogId === input.blogId && article.createdAt.getTime() >= since)
+      .filter((article) => article.createdAt.getTime() >= since)
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
 
     for (let page = 0; page < this.maxLookupPages; page += 1) {
@@ -180,13 +186,12 @@ export class FakeShopifyPublishClient implements ShopifyPublishProvider {
       if (offset >= candidates.length) return undefined
       this.calls.push({ op: 'list_page' })
       for (const article of candidates.slice(offset, offset + this.pageSize)) {
-        this.calls.push({ op: 'metafield' })
         if (article.metafieldMarker === input.marker) return article
       }
       if (offset + this.pageSize >= candidates.length) return undefined
     }
 
-    // More blog than the search was allowed to read. Answering "not there"
+    // More shop than the search was allowed to read. Answering "not there"
     // would authorise posting the article a second time.
     throw new MarkerLookupIncomplete(input.marker)
   }
@@ -194,7 +199,7 @@ export class FakeShopifyPublishClient implements ShopifyPublishProvider {
   /** Puts an article on the shop directly, the way a merchant's own posts got there. */
   plantArticle(input: {
     blogId: string
-    blogHandle: string
+    blogHandle?: string
     shop: string
     handle: string
     /** Defaults to the shop's own host, which is where a merchant's own posts sit. */
@@ -207,11 +212,14 @@ export class FakeShopifyPublishClient implements ShopifyPublishProvider {
       id: `remote-${this.nextId++}`,
       handle: input.handle,
       blogId: input.blogId,
-      blogHandle: input.blogHandle,
+      ...(input.blogHandle ? { blogHandle: input.blogHandle } : {}),
       storefrontDomain: input.storefrontDomain ?? `${input.shop}.myshopify.com`,
-      shop: input.shop,
       title: input.title ?? input.handle,
       bodyHtml: '',
+      summary: '',
+      author: input.shop,
+      seoTitle: null,
+      imageUrl: null,
       marker: input.marker ?? '',
       published: true,
       ...(input.createdAt ? { createdAt: input.createdAt } : {}),
@@ -222,31 +230,38 @@ export class FakeShopifyPublishClient implements ShopifyPublishProvider {
     id: string
     handle: string
     blogId: string
-    blogHandle: string
+    blogHandle?: string
     storefrontDomain: string
-    shop: string
     title: string
     bodyHtml: string
+    summary: string
+    author: string
+    seoTitle: string | null
+    imageUrl: string | null
     marker: string
     published: boolean
     createdAt?: Date
     tags?: readonly string[]
   }): FakeArticle {
+    const blogHandle =
+      input.blogHandle ?? this.blogs.find((blog) => blog.id === input.blogId)?.handle ?? 'news'
     const article: FakeArticle = {
       id: input.id,
       handle: input.handle,
-      // The address a shopper would open: the store's own domain, and the
-      // blog's *name* rather than its number.
-      url: input.published
-        ? `https://${input.storefrontDomain}/blogs/${input.blogHandle}/${input.handle}`
-        : null,
+      blogHandle,
+      // The address a shopper would open — recorded for a draft too, which is
+      // the address it will have the moment the merchant publishes it.
+      url: `https://${input.storefrontDomain}/blogs/${blogHandle}/${input.handle}`,
       marker: input.marker,
       published: input.published,
       blogId: input.blogId,
-      blogHandle: input.blogHandle,
       storefrontDomain: input.storefrontDomain,
       bodyHtml: input.bodyHtml,
+      summary: input.summary,
       title: input.title,
+      author: input.author,
+      seoTitle: input.seoTitle,
+      imageUrl: input.imageUrl,
       createdAt: input.createdAt ?? this.now(),
       metafieldMarker: input.marker,
       tags: input.tags ?? [],

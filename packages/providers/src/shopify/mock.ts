@@ -1,13 +1,15 @@
 import { createHmac } from 'node:crypto'
 import {
   SHOPIFY_READ_SCOPES,
+  ShopifyGrantGone,
   type ShopifyAccessGrant,
+  type ShopifyAuth,
   type ShopifyCallbackParams,
   type ShopifyOAuthProvider,
 } from '@sortiva/core'
 import { assertShop, verifyCallbackHmac } from './oauth'
 import type { ShopProfile } from './admin'
-import { ShopifyTokenInvalid } from './admin'
+import { ShopifyTokenInvalid } from './graphql'
 
 /**
  * The in-memory Shopify used by every test and by local development, where
@@ -18,14 +20,19 @@ import { ShopifyTokenInvalid } from './admin'
  */
 export class MockShopifyOAuthClient implements ShopifyOAuthProvider {
   readonly exchanges: { shop: string; code: string }[] = []
+  readonly refreshes: { shop: string; refreshToken: string }[] = []
   readonly revocations: { shop: string; accessToken: string }[] = []
   private grant: ShopifyAccessGrant = {
     accessToken: 'shpat_mock_token',
     grantedScopes: [...SHOPIFY_READ_SCOPES],
+    expiresAt: null,
+    refreshToken: null,
+    refreshTokenExpiresAt: null,
   }
   private failure: Error | undefined
+  private refreshFailure: Error | undefined
 
-  constructor(private readonly apiSecret = 'mock-shopify-secret') {}
+  constructor(private readonly clientSecret = 'mock-shopify-secret') {}
 
   /** Sets what the next exchange returns — a narrower grant, a write scope, anything. */
   grants(grant: Partial<ShopifyAccessGrant>): this {
@@ -35,6 +42,12 @@ export class MockShopifyOAuthClient implements ShopifyOAuthProvider {
 
   failsWith(error: Error): this {
     this.failure = error
+    return this
+  }
+
+  /** Makes the next renewal fail the way a retired refresh token does. */
+  refusesRefresh(error: Error = new ShopifyGrantGone('mock-store', 'the refresh token was refused')): this {
+    this.refreshFailure = error
     return this
   }
 
@@ -49,7 +62,7 @@ export class MockShopifyOAuthClient implements ShopifyOAuthProvider {
   }
 
   verifyCallbackSignature(params: ShopifyCallbackParams): boolean {
-    return verifyCallbackHmac(params.query, this.apiSecret)
+    return verifyCallbackHmac(params.query, this.clientSecret)
   }
 
   /** Records the hand-back; a grant already gone is not an error. */
@@ -65,6 +78,21 @@ export class MockShopifyOAuthClient implements ShopifyOAuthProvider {
     return this.grant
   }
 
+  /** Answers with a token whose name says which renewal produced it, as Shopify's rotation does. */
+  async refreshAccess(input: { shop: string; refreshToken: string }): Promise<ShopifyAccessGrant> {
+    assertShop(input.shop)
+    this.refreshes.push(input)
+    if (this.refreshFailure) throw this.refreshFailure
+    const round = this.refreshes.length
+    return {
+      ...this.grant,
+      accessToken: `${this.grant.accessToken}_renewed_${round}`,
+      refreshToken: `${this.grant.refreshToken ?? 'shprt_mock'}_${round}`,
+      expiresAt: new Date(Date.now() + 3_600_000),
+      refreshTokenExpiresAt: new Date(Date.now() + 7_776_000_000),
+    }
+  }
+
   /** Signs a query the way Shopify does, so a test can build a genuine callback. */
   signCallback(query: Readonly<Record<string, string>>): Record<string, string> {
     const message = Object.keys(query)
@@ -74,7 +102,7 @@ export class MockShopifyOAuthClient implements ShopifyOAuthProvider {
       .join('&')
     return {
       ...query,
-      hmac: createHmac('sha256', this.apiSecret).update(message, 'utf8').digest('hex'),
+      hmac: createHmac('sha256', this.clientSecret).update(message, 'utf8').digest('hex'),
     }
   }
 }
@@ -82,7 +110,7 @@ export class MockShopifyOAuthClient implements ShopifyOAuthProvider {
 /** Answers shop reads from memory, and can be told to start rejecting our token. */
 export class MockShopifyAdminClient {
   private profile: ShopProfile = {
-    id: 1,
+    id: '1',
     name: 'Mock Store',
     myshopifyDomain: 'mock-store.myshopify.com',
     primaryDomain: 'mock-store.example',
@@ -105,9 +133,9 @@ export class MockShopifyAdminClient {
     return this
   }
 
-  async getShop(input: { shop: string; accessToken: string }): Promise<ShopProfile> {
-    this.calls.push(`shop.json:${input.shop}`)
-    if (this.rejecting) throw new ShopifyTokenInvalid(input.shop, 401)
+  async getShop(auth: ShopifyAuth): Promise<ShopProfile> {
+    this.calls.push(`shop:${auth.shop}`)
+    if (this.rejecting) throw new ShopifyTokenInvalid(auth.shop, 401)
     return this.profile
   }
 }

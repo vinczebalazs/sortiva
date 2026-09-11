@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 import {
   isShopHandle,
   SHOPIFY_READ_SCOPE_PARAM,
+  ShopifyGrantGone,
   type ShopifyAccessGrant,
   type ShopifyCallbackParams,
   type ShopifyOAuthProvider,
@@ -11,15 +12,22 @@ import {
  * The install handshake with Shopify, and the only code in the repository that
  * talks to them about permission.
  *
- * Three jobs: build the address the merchant's browser is sent to, prove that
- * the redirect back really came from Shopify, and trade the one-time code for a
- * lasting token. Everything else about the connection — which permissions we
- * ask for, what happens when a token dies — is policy and lives in
- * `packages/core/catalog`.
+ * Four jobs: build the address the merchant's browser is sent to, prove that
+ * the redirect back really came from Shopify, trade the one-time code for a
+ * token, and trade the refresh token for the next one. Everything else about
+ * the connection — which permissions we ask for, what happens when a token
+ * dies — is policy and lives in `packages/core/catalog`.
  */
 
-/** The Admin API version we pin. Shopify retires versions on a published schedule. */
-export const SHOPIFY_API_VERSION = '2025-01'
+/**
+ * The Admin API version every call is made against.
+ *
+ * Shopify serves each version for a year and then quietly answers requests for
+ * it with the oldest version it still supports, so a pin that is never moved
+ * does not break — it drifts, and the behaviour we tested stops being the
+ * behaviour we get. Move it deliberately, with the tests, at least yearly.
+ */
+export const SHOPIFY_API_VERSION = '2026-07'
 
 export class ShopifyOAuthFailure extends Error {
   override readonly name = 'ShopifyOAuthFailure'
@@ -35,32 +43,44 @@ export class ShopifyOAuthFailure extends Error {
 }
 
 export interface ShopifyOAuthClientOptions {
-  apiKey?: string
-  apiSecret?: string
+  clientId?: string
+  clientSecret?: string
   /** Injected by tests so the exchange can be driven against a local server. */
   fetchImpl?: typeof fetch
   /** Overrides the `https://<shop>.myshopify.com` base. Tests only. */
   storeBaseUrl?: (shop: string) => string
+  /** Tests only: the clock expiry times are counted from. */
+  now?: () => Date
+}
+
+interface TokenResponse {
+  access_token?: unknown
+  scope?: unknown
+  expires_in?: unknown
+  refresh_token?: unknown
+  refresh_token_expires_in?: unknown
 }
 
 export class ShopifyOAuthClient implements ShopifyOAuthProvider {
-  private readonly apiKey: string
-  private readonly apiSecret: string
+  private readonly clientId: string
+  private readonly clientSecret: string
   private readonly fetchImpl: typeof fetch
   private readonly storeBaseUrl: (shop: string) => string
+  private readonly now: () => Date
 
   constructor(options: ShopifyOAuthClientOptions = {}) {
-    const apiKey = options.apiKey ?? process.env.SHOPIFY_API_KEY
-    const apiSecret = options.apiSecret ?? process.env.SHOPIFY_API_SECRET
-    if (!apiKey || !apiSecret) {
+    const clientId = options.clientId ?? process.env.SHOPIFY_CLIENT_ID
+    const clientSecret = options.clientSecret ?? process.env.SHOPIFY_CLIENT_SECRET
+    if (!clientId || !clientSecret) {
       throw new Error(
-        'SHOPIFY_API_KEY and SHOPIFY_API_SECRET are not set. Use MockShopifyOAuthClient outside production.',
+        'SHOPIFY_CLIENT_ID and SHOPIFY_CLIENT_SECRET are not set. Use MockShopifyOAuthClient outside production.',
       )
     }
-    this.apiKey = apiKey
-    this.apiSecret = apiSecret
+    this.clientId = clientId
+    this.clientSecret = clientSecret
     this.fetchImpl = options.fetchImpl ?? fetch
     this.storeBaseUrl = options.storeBaseUrl ?? ((shop) => `https://${shop}.myshopify.com`)
+    this.now = options.now ?? (() => new Date())
   }
 
   /**
@@ -76,7 +96,7 @@ export class ShopifyOAuthClient implements ShopifyOAuthProvider {
   authorizeUrl(input: { shop: string; redirectUri: string; state: string }): string {
     assertShop(input.shop)
     const url = new URL(`${this.storeBaseUrl(input.shop)}/admin/oauth/authorize`)
-    url.searchParams.set('client_id', this.apiKey)
+    url.searchParams.set('client_id', this.clientId)
     url.searchParams.set('scope', SHOPIFY_READ_SCOPE_PARAM)
     url.searchParams.set('redirect_uri', input.redirectUri)
     url.searchParams.set('state', input.state)
@@ -90,7 +110,7 @@ export class ShopifyOAuthClient implements ShopifyOAuthProvider {
    * account.
    */
   verifyCallbackSignature(params: ShopifyCallbackParams): boolean {
-    return verifyCallbackHmac(params.query, this.apiSecret)
+    return verifyCallbackHmac(params.query, this.clientSecret)
   }
 
   /**
@@ -107,10 +127,15 @@ export class ShopifyOAuthClient implements ShopifyOAuthProvider {
     let response: Response
     try {
       response = await this.fetchImpl(
-        `${this.storeBaseUrl(input.shop)}/admin/api/${SHOPIFY_API_VERSION}/api_permissions/current.json`,
+        `${this.storeBaseUrl(input.shop)}/admin/api/${SHOPIFY_API_VERSION}/graphql.json`,
         {
-          method: 'DELETE',
-          headers: { 'x-shopify-access-token': input.accessToken, accept: 'application/json' },
+          method: 'POST',
+          headers: {
+            'x-shopify-access-token': input.accessToken,
+            'content-type': 'application/json',
+            accept: 'application/json',
+          },
+          body: JSON.stringify({ query: 'mutation { appUninstall { userErrors { message } } }' }),
         },
       )
     } catch (cause) {
@@ -119,56 +144,131 @@ export class ShopifyOAuthClient implements ShopifyOAuthProvider {
         cause,
       })
     }
-    if (response.ok || response.status === 401 || response.status === 404) return
-    throw new ShopifyOAuthFailure(`Shopify refused to revoke the grant (${response.status}).`, {
-      retryable: response.status >= 500 || response.status === 429,
-    })
+    if (response.status === 401 || response.status === 404) return
+    if (!response.ok) {
+      throw new ShopifyOAuthFailure(`Shopify refused to revoke the grant (${response.status}).`, {
+        retryable: response.status >= 500 || response.status === 429,
+      })
+    }
+    const body = (await response.json().catch(() => undefined)) as
+      | { errors?: { message?: string }[]; data?: { appUninstall?: { userErrors?: { message?: string }[] } } }
+      | undefined
+    const problems = [
+      ...(body?.errors ?? []),
+      ...(body?.data?.appUninstall?.userErrors ?? []),
+    ].map((problem) => problem.message ?? 'unknown')
+    if (problems.length > 0) {
+      throw new ShopifyOAuthFailure(`Shopify refused to revoke the grant: ${problems.join('; ')}`)
+    }
   }
 
+  /**
+   * The one-time code for the store's first token.
+   *
+   * `expiring: '1'` asks for the kind of token Shopify now requires of apps
+   * created after April 2026: an hour-long access token plus a refresh token.
+   * Without it the exchange hands back a token that never expires, which the
+   * API refuses for apps like ours.
+   */
   async exchangeCode(input: { shop: string; code: string }): Promise<ShopifyAccessGrant> {
     assertShop(input.shop)
+    return this.tokenRequest(input.shop, {
+      client_id: this.clientId,
+      client_secret: this.clientSecret,
+      code: input.code,
+      expiring: '1',
+    }, 'exchange the code')
+  }
+
+  /**
+   * The next access token, bought with the stored refresh token.
+   *
+   * Shopify answers with a new refresh token too and retires the old one the
+   * first time the new one is used — which is why the caller serialises
+   * renewals per store and stores the answer before using it.
+   */
+  async refreshAccess(input: { shop: string; refreshToken: string }): Promise<ShopifyAccessGrant> {
+    assertShop(input.shop)
+    try {
+      return await this.tokenRequest(input.shop, {
+        client_id: this.clientId,
+        client_secret: this.clientSecret,
+        grant_type: 'refresh_token',
+        refresh_token: input.refreshToken,
+      }, 'renew the token')
+    } catch (error) {
+      // A refused refresh token will never become valid again: the merchant
+      // uninstalled us, or it expired unused for ninety days.
+      if (error instanceof ShopifyOAuthFailure && !error.retryable) {
+        throw new ShopifyGrantGone(input.shop, error.message)
+      }
+      throw error
+    }
+  }
+
+  private async tokenRequest(
+    shop: string,
+    body: Record<string, string>,
+    purpose: string,
+  ): Promise<ShopifyAccessGrant> {
     let response: Response
     try {
-      response = await this.fetchImpl(`${this.storeBaseUrl(input.shop)}/admin/oauth/access_token`, {
+      response = await this.fetchImpl(`${this.storeBaseUrl(shop)}/admin/oauth/access_token`, {
         method: 'POST',
         headers: { 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify({
-          client_id: this.apiKey,
-          client_secret: this.apiSecret,
-          code: input.code,
-        }),
+        body: JSON.stringify(body),
       })
     } catch (cause) {
-      throw new ShopifyOAuthFailure('Could not reach Shopify to exchange the code.', {
+      throw new ShopifyOAuthFailure(`Could not reach Shopify to ${purpose}.`, {
         retryable: true,
         cause,
       })
     }
 
     if (!response.ok) {
-      // A used or expired code is a dead end: the merchant has to start again.
-      // Only a Shopify-side fault is worth retrying.
-      throw new ShopifyOAuthFailure(`Shopify refused the code exchange (${response.status}).`, {
-        retryable: response.status >= 500,
+      // A used or expired code, or a retired refresh token, is a dead end: the
+      // merchant has to start again. Only a Shopify-side fault is worth retrying.
+      throw new ShopifyOAuthFailure(`Shopify refused to ${purpose} (${response.status}).`, {
+        retryable: response.status >= 500 || response.status === 429,
       })
     }
 
-    const payload = (await response.json().catch(() => undefined)) as
-      | { access_token?: unknown; scope?: unknown }
-      | undefined
-    const accessToken = typeof payload?.access_token === 'string' ? payload.access_token : undefined
-    if (!accessToken) {
-      throw new ShopifyOAuthFailure('Shopify answered the code exchange without a token.')
-    }
-    const scope = typeof payload?.scope === 'string' ? payload.scope : ''
-    return {
-      accessToken,
-      grantedScopes: scope
-        .split(',')
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0),
-    }
+    const payload = (await response.json().catch(() => undefined)) as TokenResponse | undefined
+    return grantFrom(payload, this.now(), purpose)
   }
+}
+
+/** Shopify's token answer, as the grant we keep. */
+export function grantFrom(
+  payload: TokenResponse | undefined,
+  now: Date,
+  purpose = 'issue a token',
+): ShopifyAccessGrant {
+  const accessToken = typeof payload?.access_token === 'string' ? payload.access_token : undefined
+  if (!accessToken) {
+    throw new ShopifyOAuthFailure(`Shopify answered the request to ${purpose} without a token.`)
+  }
+  const scope = typeof payload?.scope === 'string' ? payload.scope : ''
+  const refreshToken =
+    typeof payload?.refresh_token === 'string' && payload.refresh_token.length > 0
+      ? payload.refresh_token
+      : null
+  return {
+    accessToken,
+    grantedScopes: scope
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0),
+    expiresAt: secondsFrom(now, payload?.expires_in),
+    refreshToken,
+    refreshTokenExpiresAt: refreshToken ? secondsFrom(now, payload?.refresh_token_expires_in) : null,
+  }
+}
+
+function secondsFrom(now: Date, seconds: unknown): Date | null {
+  const value = typeof seconds === 'string' ? Number(seconds) : seconds
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return null
+  return new Date(now.getTime() + value * 1000)
 }
 
 /**
@@ -181,7 +281,7 @@ export class ShopifyOAuthClient implements ShopifyOAuthProvider {
  */
 export function verifyCallbackHmac(
   query: Readonly<Record<string, string>>,
-  apiSecret: string,
+  clientSecret: string,
 ): boolean {
   const provided = query['hmac']
   if (!provided) return false
@@ -192,7 +292,7 @@ export function verifyCallbackHmac(
     .map((key) => `${key}=${query[key]}`)
     .join('&')
 
-  const expected = createHmac('sha256', apiSecret).update(message, 'utf8').digest('hex')
+  const expected = createHmac('sha256', clientSecret).update(message, 'utf8').digest('hex')
   return safeEqualHex(provided, expected)
 }
 
