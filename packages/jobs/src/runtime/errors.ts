@@ -83,7 +83,7 @@ export class StepOwnershipLost extends Error {
  */
 function isClassifiedFailure(
   error: unknown,
-): error is { retryable: boolean; errorClass: string; message: string } {
+): error is Error & { retryable: boolean; errorClass: string; message: string } {
   return (
     error instanceof Error &&
     typeof (error as { retryable?: unknown }).retryable === 'boolean' &&
@@ -97,8 +97,31 @@ export function classify(error: unknown): {
   message: string
 } {
   if (error instanceof StepFailure || isClassifiedFailure(error)) {
-    return { retryable: error.retryable, errorClass: error.errorClass, message: error.message }
+    return {
+      retryable: error.retryable,
+      errorClass: error.errorClass,
+      message: withCause(error),
+    }
   }
-  const message = error instanceof Error ? error.message : String(error)
+  const message = error instanceof Error ? withCause(error) : String(error)
   return { retryable: true, errorClass: 'unclassified', message }
+}
+
+/**
+ * A wrapper's own sentence, plus the sentence of whatever actually went wrong.
+ *
+ * Every step that wraps a lower-level error explains what it was trying to do —
+ * "could not read acme.com to work out what it runs on" — and the cause says
+ * *why*, which is the half an operator needs: a refused connection, a redirect
+ * loop and a response that blew the size budget all reached the dead-letter row
+ * as the same sentence, and were then indistinguishable.
+ *
+ * One level only. A chain of five wrappers would produce a line nobody reads,
+ * and the stack is recorded beside this for anyone who needs the rest.
+ */
+function withCause(error: Error): string {
+  const cause = (error as { cause?: unknown }).cause
+  if (!(cause instanceof Error) || !cause.message) return error.message
+  if (error.message.includes(cause.message)) return error.message
+  return `${error.message} (${cause.message})`
 }

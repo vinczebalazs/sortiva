@@ -660,3 +660,33 @@ describe('a store whose first step failed once', () => {
     resetIngestionTaskRegistration()
   })
 })
+
+/**
+ * What an operator is told when a store cannot be read.
+ *
+ * The step wraps whatever went wrong in its own sentence — "could not read
+ * acme.example to work out what it runs on" — and that sentence was all that
+ * reached the row and the log. A refused connection, a redirect loop and a
+ * response too big for the budget were one indistinguishable failure, which is
+ * how a size limit nobody had written down stayed invisible for so long.
+ */
+describe('a store that could not be read', () => {
+  it('records why, not only that', async () => {
+    const { jobId } = await createRun(harness.db, accountId, 'claim:acme.example')
+    const w = world('acme.example')
+    w.fetcher.answers.set(
+      'https://acme.example/',
+      new Error('Body exceeded 600000 bytes.'),
+    )
+
+    const result = await dispatchIngestion(w.deps, { accountId })
+    expect(result?.stoppedBecause).toBe('retry_scheduled')
+
+    const { rows } = await harness.pool.query<{ last_error: string }>(
+      "SELECT last_error FROM job_steps WHERE job_id = $1 AND step = 'detect'",
+      [jobId],
+    )
+    expect(rows[0]!.last_error).toContain('Could not read acme.example')
+    expect(rows[0]!.last_error).toContain('Body exceeded 600000 bytes.')
+  })
+})

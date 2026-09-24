@@ -50,10 +50,17 @@ import type { StepDefinition } from './steps'
 const ABOUT_PATHS = ['/pages/about', '/pages/about-us', '/pages/our-story', '/about']
 
 /**
- * The homepage is small; a storefront's markup is not. The persona reads the
- * page's prose and its language tags, neither of which is at the bottom.
+ * The documented budget, the same one the single outbound fetcher uses
+ * everywhere: about 1.5 MB. tech §2 names this fetch — the persona's homepage
+ * and about page — as one of the calls that share it.
+ *
+ * It used to be 600 KB, and the cost was quieter than detection's: a page over
+ * the budget is refused rather than truncated, and this caller treats a refusal
+ * as "no such page", so a big storefront's own words simply never reached the
+ * persona. The store onboarded, its profile was built from the catalogue alone,
+ * and nothing anywhere said a page had been skipped.
  */
-const PAGE_BUDGET = { timeoutMs: 8_000, maxBytes: 600_000, maxRedirects: 3 }
+const PAGE_BUDGET = { timeoutMs: 8_000, maxBytes: 1_500_000, maxRedirects: 3 }
 
 export interface PersonaStepOutput {
   readonly language: string

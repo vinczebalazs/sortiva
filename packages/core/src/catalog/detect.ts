@@ -46,10 +46,17 @@ const MYSHOPIFY_HOST = /\b([a-z0-9][a-z0-9-]{0,59})\.myshopify\.com\b/i
 const ADMIN_STORE_PATH = /admin\.shopify\.com\/store\/([a-z0-9][a-z0-9-]{0,59})\b/i
 
 /**
- * The homepage is small; a storefront's markup is not. Detection only needs the
- * head and the first chunk of body, so it reads far less than the preview does.
+ * The documented budget, which is the one the single outbound fetcher uses
+ * everywhere: about 1.5 MB.
+ *
+ * It used to be 600 KB here, on the reasoning that detection only needs the head
+ * and the first chunk of body. That reasoning is wrong in the one direction that
+ * matters: the fetcher **refuses** a response over the budget rather than
+ * truncating it, so a heavy storefront was not read partially, it was not read
+ * at all — and the store dead-lettered before it had begun. Reproduced against
+ * two real shops: one over the old cap failed, one under it worked.
  */
-const HOMEPAGE_BUDGET = { timeoutMs: 8_000, maxBytes: 600_000, maxRedirects: 3 }
+const HOMEPAGE_BUDGET = { timeoutMs: 8_000, maxBytes: 1_500_000, maxRedirects: 3 }
 /** A product feed page, which is JSON rather than markup. */
 const PROBE_BUDGET = { timeoutMs: 6_000, maxBytes: 200_000, maxRedirects: 2 }
 
