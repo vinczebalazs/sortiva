@@ -15,7 +15,7 @@ import { ShopifyPublishClient } from './publish'
  * requests, so they are made where the requests are.
  */
 
-const API_KEY = 'test-api-key'
+const CLIENT_ID = 'test-api-key'
 const SHOP = { shop: 'acme', accessToken: 'shpat_real' }
 
 interface Recorded {
@@ -35,7 +35,7 @@ let pageSize = 250
 
 function client(options: { maxLookupPages?: number } = {}): ShopifyPublishClient {
   return new ShopifyPublishClient({
-    apiKey: API_KEY,
+    clientId: CLIENT_ID,
     storeBaseUrl: () => base,
     // The pacing is the read client's, tested there. Left to sleep for real,
     // a case that reads three pages would take three seconds.

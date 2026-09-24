@@ -41,7 +41,7 @@ import {
  */
 
 export interface ShopifyPublishClientOptions {
-  apiKey?: string
+  clientId?: string
   fetchImpl?: typeof fetch
   storeBaseUrl?: (shop: string) => string
   limiter?: ShopifyRateLimiterOptions
@@ -90,20 +90,20 @@ interface RestMetafield {
 }
 
 export class ShopifyPublishClient implements ShopifyPublishProvider {
-  private readonly apiKey: string
+  private readonly clientId: string
   private readonly fetchImpl: typeof fetch
   private readonly storeBaseUrl: (shop: string) => string
   private readonly limiters: ShopifyRateLimiters
   private readonly maxLookupPages: number
 
   constructor(options: ShopifyPublishClientOptions = {}) {
-    const apiKey = options.apiKey ?? process.env.SHOPIFY_API_KEY
-    if (!apiKey) {
+    const clientId = options.clientId ?? process.env.SHOPIFY_CLIENT_ID
+    if (!clientId) {
       throw new Error(
-        'SHOPIFY_API_KEY is not set. Use FakeShopifyPublishClient outside production.',
+        'SHOPIFY_CLIENT_ID is not set. Use FakeShopifyPublishClient outside production.',
       )
     }
-    this.apiKey = apiKey
+    this.clientId = clientId
     this.fetchImpl = options.fetchImpl ?? fetch
     this.storeBaseUrl = options.storeBaseUrl ?? ((shop) => `https://${shop}.myshopify.com`)
     this.limiters = new ShopifyRateLimiters(options.limiter ?? {})
@@ -118,7 +118,7 @@ export class ShopifyPublishClient implements ShopifyPublishProvider {
   publishAuthorizeUrl(input: { shop: string; redirectUri: string; state: string }): string {
     assertShop(input.shop)
     const url = new URL(`${this.storeBaseUrl(input.shop)}/admin/oauth/authorize`)
-    url.searchParams.set('client_id', this.apiKey)
+    url.searchParams.set('client_id', this.clientId)
     url.searchParams.set('scope', SHOPIFY_PUBLISH_SCOPE_PARAM)
     url.searchParams.set('redirect_uri', input.redirectUri)
     url.searchParams.set('state', input.state)

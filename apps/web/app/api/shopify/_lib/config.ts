@@ -105,7 +105,7 @@ export function shopifyRedirectUri(): string {
  * checks is skipped; only the vendor is.
  */
 export function shopifyOauthProvider(): ShopifyOAuthProvider {
-  if (!process.env.SHOPIFY_API_KEY || !process.env.SHOPIFY_API_SECRET) {
+  if (!process.env.SHOPIFY_CLIENT_ID || !process.env.SHOPIFY_CLIENT_SECRET) {
     return new MockShopifyOAuthClient(stateSecret())
   }
   return new ShopifyOAuthClient()
@@ -117,7 +117,7 @@ export function shopifyOauthProvider(): ShopifyOAuthProvider {
  * where it says", and a second secret would be one more thing to rotate.
  */
 export function stateSecret(): string {
-  return process.env.SHOPIFY_API_SECRET ?? process.env.AUTH_SECRET ?? 'development-only-secret'
+  return process.env.SHOPIFY_CLIENT_SECRET ?? process.env.AUTH_SECRET ?? 'development-only-secret'
 }
 
 /**

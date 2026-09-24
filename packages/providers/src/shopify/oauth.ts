@@ -35,8 +35,8 @@ export class ShopifyOAuthFailure extends Error {
 }
 
 export interface ShopifyOAuthClientOptions {
-  apiKey?: string
-  apiSecret?: string
+  clientId?: string
+  clientSecret?: string
   /** Injected by tests so the exchange can be driven against a local server. */
   fetchImpl?: typeof fetch
   /** Overrides the `https://<shop>.myshopify.com` base. Tests only. */
@@ -44,21 +44,21 @@ export interface ShopifyOAuthClientOptions {
 }
 
 export class ShopifyOAuthClient implements ShopifyOAuthProvider {
-  private readonly apiKey: string
-  private readonly apiSecret: string
+  private readonly clientId: string
+  private readonly clientSecret: string
   private readonly fetchImpl: typeof fetch
   private readonly storeBaseUrl: (shop: string) => string
 
   constructor(options: ShopifyOAuthClientOptions = {}) {
-    const apiKey = options.apiKey ?? process.env.SHOPIFY_API_KEY
-    const apiSecret = options.apiSecret ?? process.env.SHOPIFY_API_SECRET
-    if (!apiKey || !apiSecret) {
+    const clientId = options.clientId ?? process.env.SHOPIFY_CLIENT_ID
+    const clientSecret = options.clientSecret ?? process.env.SHOPIFY_CLIENT_SECRET
+    if (!clientId || !clientSecret) {
       throw new Error(
-        'SHOPIFY_API_KEY and SHOPIFY_API_SECRET are not set. Use MockShopifyOAuthClient outside production.',
+        'SHOPIFY_CLIENT_ID and SHOPIFY_CLIENT_SECRET are not set. Use MockShopifyOAuthClient outside production.',
       )
     }
-    this.apiKey = apiKey
-    this.apiSecret = apiSecret
+    this.clientId = clientId
+    this.clientSecret = clientSecret
     this.fetchImpl = options.fetchImpl ?? fetch
     this.storeBaseUrl = options.storeBaseUrl ?? ((shop) => `https://${shop}.myshopify.com`)
   }
@@ -76,7 +76,7 @@ export class ShopifyOAuthClient implements ShopifyOAuthProvider {
   authorizeUrl(input: { shop: string; redirectUri: string; state: string }): string {
     assertShop(input.shop)
     const url = new URL(`${this.storeBaseUrl(input.shop)}/admin/oauth/authorize`)
-    url.searchParams.set('client_id', this.apiKey)
+    url.searchParams.set('client_id', this.clientId)
     url.searchParams.set('scope', SHOPIFY_READ_SCOPE_PARAM)
     url.searchParams.set('redirect_uri', input.redirectUri)
     url.searchParams.set('state', input.state)
@@ -90,7 +90,7 @@ export class ShopifyOAuthClient implements ShopifyOAuthProvider {
    * account.
    */
   verifyCallbackSignature(params: ShopifyCallbackParams): boolean {
-    return verifyCallbackHmac(params.query, this.apiSecret)
+    return verifyCallbackHmac(params.query, this.clientSecret)
   }
 
   /**
@@ -133,8 +133,8 @@ export class ShopifyOAuthClient implements ShopifyOAuthProvider {
         method: 'POST',
         headers: { 'content-type': 'application/json', accept: 'application/json' },
         body: JSON.stringify({
-          client_id: this.apiKey,
-          client_secret: this.apiSecret,
+          client_id: this.clientId,
+          client_secret: this.clientSecret,
           code: input.code,
         }),
       })
@@ -181,7 +181,7 @@ export class ShopifyOAuthClient implements ShopifyOAuthProvider {
  */
 export function verifyCallbackHmac(
   query: Readonly<Record<string, string>>,
-  apiSecret: string,
+  clientSecret: string,
 ): boolean {
   const provided = query['hmac']
   if (!provided) return false
@@ -192,7 +192,7 @@ export function verifyCallbackHmac(
     .map((key) => `${key}=${query[key]}`)
     .join('&')
 
-  const expected = createHmac('sha256', apiSecret).update(message, 'utf8').digest('hex')
+  const expected = createHmac('sha256', clientSecret).update(message, 'utf8').digest('hex')
   return safeEqualHex(provided, expected)
 }
 

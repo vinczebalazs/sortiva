@@ -552,7 +552,7 @@ const DRIVERS: Readonly<Record<string, Driver>> = {
       params: { topic: 'products-update' },
       rawBody,
       headers: {
-        'x-shopify-hmac-sha256': createHmac('sha256', process.env.SHOPIFY_API_SECRET ?? '')
+        'x-shopify-hmac-sha256': createHmac('sha256', process.env.SHOPIFY_CLIENT_SECRET ?? '')
           .update(rawBody)
           .digest('base64'),
         'x-shopify-webhook-id': 'route-answers-delivery',
@@ -750,8 +750,8 @@ describe.skipIf(!available)('the answers themselves', () => {
     process.env.APP_URL ??= 'http://localhost:3000'
     process.env.AUTH_SECRET ??= 'route-answers-test-secret'
     process.env.ENCRYPTION_MASTER_KEY ??= Buffer.alloc(32, 7).toString('base64')
-    process.env.SHOPIFY_API_KEY ??= 'test-shopify-key'
-    process.env.SHOPIFY_API_SECRET ??= 'test-shopify-secret'
+    process.env.SHOPIFY_CLIENT_ID ??= 'test-shopify-key'
+    process.env.SHOPIFY_CLIENT_SECRET ??= 'test-shopify-secret'
     process.env.AUTH_GOOGLE_ID ??= 'test-google-client-id'
     process.env.AUTH_GOOGLE_SECRET ??= 'test-google-client-secret'
     process.env.GSC_OAUTH_CLIENT_ID ??= 'test-gsc-client-id'

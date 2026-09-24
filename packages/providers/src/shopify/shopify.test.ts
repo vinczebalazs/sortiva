@@ -12,8 +12,8 @@ import { ShopifyOAuthClient, ShopifyOAuthFailure, verifyWebhookHmac } from './oa
  * forged callback is refused.
  */
 
-const API_KEY = 'test-api-key'
-const API_SECRET = 'test-api-secret'
+const CLIENT_ID = 'test-api-key'
+const CLIENT_SECRET = 'test-api-secret'
 
 let server: Server
 let base: string
@@ -78,8 +78,8 @@ afterAll(async () => {
 
 function client(): ShopifyOAuthClient {
   return new ShopifyOAuthClient({
-    apiKey: API_KEY,
-    apiSecret: API_SECRET,
+    clientId: CLIENT_ID,
+    clientSecret: CLIENT_SECRET,
     storeBaseUrl: () => base,
   })
 }
@@ -102,7 +102,7 @@ describe('the consent screen we send merchants to', () => {
       'read_products,read_orders,read_content,read_locales',
     )
     expect(url.toString()).not.toContain('write_')
-    expect(url.searchParams.get('client_id')).toBe(API_KEY)
+    expect(url.searchParams.get('client_id')).toBe(CLIENT_ID)
     expect(url.searchParams.get('state')).toBe('signed-state')
   })
 
@@ -127,7 +127,7 @@ describe('proving the redirect really came from Shopify', () => {
       .sort()
       .map((k) => `${k}=${query[k]}`)
       .join('&')
-    return { ...query, hmac: createHmac('sha256', API_SECRET).update(message, 'utf8').digest('hex') }
+    return { ...query, hmac: createHmac('sha256', CLIENT_SECRET).update(message, 'utf8').digest('hex') }
   }
 
   it('accepts a genuinely signed callback', () => {
@@ -162,16 +162,16 @@ describe('proving the redirect really came from Shopify', () => {
 describe('webhook signatures', () => {
   it('verifies against the exact bytes that were sent, not a re-serialisation', () => {
     const raw = '{"shop_domain":"acme.myshopify.com",  "id": 1}'
-    const header = createHmac('sha256', API_SECRET).update(raw).digest('base64')
+    const header = createHmac('sha256', CLIENT_SECRET).update(raw).digest('base64')
 
-    expect(verifyWebhookHmac(raw, header, API_SECRET)).toBe(true)
+    expect(verifyWebhookHmac(raw, header, CLIENT_SECRET)).toBe(true)
     // The same payload, re-serialised, no longer matches — which is the point.
-    expect(verifyWebhookHmac(JSON.stringify(JSON.parse(raw)), header, API_SECRET)).toBe(false)
+    expect(verifyWebhookHmac(JSON.stringify(JSON.parse(raw)), header, CLIENT_SECRET)).toBe(false)
   })
 
   it('refuses an empty or malformed signature', () => {
-    expect(verifyWebhookHmac('{}', '', API_SECRET)).toBe(false)
-    expect(verifyWebhookHmac('{}', 'not-base64!!', API_SECRET)).toBe(false)
+    expect(verifyWebhookHmac('{}', '', CLIENT_SECRET)).toBe(false)
+    expect(verifyWebhookHmac('{}', 'not-base64!!', CLIENT_SECRET)).toBe(false)
   })
 })
 
@@ -186,7 +186,7 @@ describe('trading the code for a token', () => {
 
     expect(grant.accessToken).toBe('shpat_real')
     expect(grant.grantedScopes).toEqual(['read_products', 'read_orders'])
-    expect(lastExchangeBody).toMatchObject({ client_id: API_KEY, client_secret: API_SECRET, code: 'one-time-code' })
+    expect(lastExchangeBody).toMatchObject({ client_id: CLIENT_ID, client_secret: CLIENT_SECRET, code: 'one-time-code' })
   })
 
   it('treats a rejected code as final and a Shopify fault as worth retrying', async () => {
@@ -248,8 +248,8 @@ describe('handing the store grant back', () => {
   } {
     const calls: { url: string; method: string; token: string | null }[] = []
     const client = new ShopifyOAuthClient({
-      apiKey: API_KEY,
-      apiSecret: API_SECRET,
+      clientId: CLIENT_ID,
+      clientSecret: CLIENT_SECRET,
       storeBaseUrl: (shop) => `https://${shop}.myshopify.test`,
       fetchImpl: async (input, init) => {
         const headers = new Headers(init?.headers)

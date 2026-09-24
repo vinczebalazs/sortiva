@@ -42,7 +42,7 @@ export function publishTokenCipher(): TokenCipher {
  * absence as "this store cannot be published for", which is true and visible.
  */
 export function publishProvider(): ShopifyPublishProvider | undefined {
-  if (!process.env.SHOPIFY_API_KEY) return undefined
+  if (!process.env.SHOPIFY_CLIENT_ID) return undefined
   publish ??= new ShopifyPublishClient()
   return publish
 }
@@ -77,7 +77,7 @@ export function publishGrantRedirectUri(): string {
  * says", and a second secret would be one more thing to rotate.
  */
 export function publishStateSecret(): string {
-  return process.env.SHOPIFY_API_SECRET ?? process.env.AUTH_SECRET ?? 'development-only-secret'
+  return process.env.SHOPIFY_CLIENT_SECRET ?? process.env.AUTH_SECRET ?? 'development-only-secret'
 }
 
 /**
@@ -87,7 +87,7 @@ export function publishStateSecret(): string {
  * exchange that cannot happen must stop the flow rather than be stood in for.
  */
 function grantExchange(): ShopifyOAuthClient | undefined {
-  if (!process.env.SHOPIFY_API_KEY || !process.env.SHOPIFY_API_SECRET) return undefined
+  if (!process.env.SHOPIFY_CLIENT_ID || !process.env.SHOPIFY_CLIENT_SECRET) return undefined
   oauth ??= new ShopifyOAuthClient()
   return oauth
 }

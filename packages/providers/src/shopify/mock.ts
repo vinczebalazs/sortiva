@@ -25,7 +25,7 @@ export class MockShopifyOAuthClient implements ShopifyOAuthProvider {
   }
   private failure: Error | undefined
 
-  constructor(private readonly apiSecret = 'mock-shopify-secret') {}
+  constructor(private readonly clientSecret = 'mock-shopify-secret') {}
 
   /** Sets what the next exchange returns — a narrower grant, a write scope, anything. */
   grants(grant: Partial<ShopifyAccessGrant>): this {
@@ -49,7 +49,7 @@ export class MockShopifyOAuthClient implements ShopifyOAuthProvider {
   }
 
   verifyCallbackSignature(params: ShopifyCallbackParams): boolean {
-    return verifyCallbackHmac(params.query, this.apiSecret)
+    return verifyCallbackHmac(params.query, this.clientSecret)
   }
 
   /** Records the hand-back; a grant already gone is not an error. */
@@ -74,7 +74,7 @@ export class MockShopifyOAuthClient implements ShopifyOAuthProvider {
       .join('&')
     return {
       ...query,
-      hmac: createHmac('sha256', this.apiSecret).update(message, 'utf8').digest('hex'),
+      hmac: createHmac('sha256', this.clientSecret).update(message, 'utf8').digest('hex'),
     }
   }
 }
