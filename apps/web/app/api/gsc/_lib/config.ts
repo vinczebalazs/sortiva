@@ -2,6 +2,7 @@ import type { GscConnectDeps } from '@sortiva/core'
 import { makeGscConnectStore } from '@sortiva/db'
 import { enqueueGscBackfill } from '@sortiva/jobs/gsc/queue'
 import { GscOAuthProvider, PosthogServerCapture, TokenCipher } from '@sortiva/providers'
+import type { OAuthReturn } from './state'
 
 /**
  * The connect flow's process-wide wiring, built lazily: the Google credentials
@@ -27,14 +28,31 @@ export function gscRedirectUri(): string {
 
 /**
  * Where the merchant lands after the flow, with the outcome in the query string.
- * One constant, so the day the front end names that screen differently there is
- * one line to change.
+ *
+ * Two screens, because connecting Search Console starts from two places: the
+ * dashboard's onboarding card, and Settings → Connections. It used to be one
+ * fixed path, and the wrong one — every merchant was returned to Settings,
+ * which had no property picker on it, so the screen said "connected" while no
+ * property had been chosen, no history import had been queued, and the account
+ * stayed on limited data. The screen was telling the truth about the grant and
+ * a lie about the connection.
+ *
+ * The name comes out of the signed state and is turned into a path **here**, so
+ * a forged state can choose between these two and nothing else.
  */
-export const GSC_RETURN_PATH = '/settings/connections'
+const RETURN_PATHS: Readonly<Record<OAuthReturn, string>> = {
+  dashboard: '/dashboard',
+  connections: '/settings/connections',
+}
 
-export function gscReturnUrl(outcome: 'granted' | 'denied' | 'failed'): string {
+export const GSC_RETURN_PATH = RETURN_PATHS.connections
+
+export function gscReturnUrl(
+  outcome: 'granted' | 'denied' | 'failed',
+  returnTo: OAuthReturn = 'connections',
+): string {
   const origin = (process.env.APP_URL ?? '').replace(/\/$/, '')
-  return `${origin}${GSC_RETURN_PATH}?gsc=${outcome}`
+  return `${origin}${RETURN_PATHS[returnTo]}?gsc=${outcome}`
 }
 
 export function gscConnectDeps(): GscConnectDeps {

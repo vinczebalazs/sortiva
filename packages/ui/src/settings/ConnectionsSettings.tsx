@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { SearchConsoleStep } from '../onboarding/SearchConsoleStep'
 import { LimitedIntelligenceBadge } from '../shell'
 import { t as defaultTranslate, type StringKey, type Translate } from '../strings'
 import type { SettingsAccountView } from './types'
@@ -22,6 +23,8 @@ export interface ConnectionsSettingsProps {
   readonly gscStartEndpoint?: string
   readonly gscDisconnectEndpoint?: string
   readonly shopifyStartEndpoint?: string
+  /** Called once a property has been chosen, so the page can re-read the account. */
+  readonly onGscSettled?: () => void
 }
 
 const SHOPIFY_STATUS_KEY: Readonly<Record<SettingsAccountView['connections']['shopify'], StringKey>> = {
@@ -38,6 +41,7 @@ export function ConnectionsSettings({
   gscStartEndpoint = '/api/gsc/oauth/start',
   gscDisconnectEndpoint,
   shopifyStartEndpoint = '/api/shopify/oauth/start',
+  onGscSettled,
 }: ConnectionsSettingsProps) {
   const [busy, setBusy] = useState(false)
   const [disconnected, setDisconnected] = useState(false)
@@ -58,7 +62,14 @@ export function ConnectionsSettings({
   async function connectOrReconnectGsc() {
     setBusy(true)
     try {
-      const response = await fetch(gscStartEndpoint, { method: 'POST' })
+      // Which screen to come back to. The flow starts from here and from the
+      // dashboard's onboarding card, and the picker below only appears on the
+      // screen the merchant actually returns to.
+      const response = await fetch(gscStartEndpoint, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ returnTo: 'connections' }),
+      })
       if (!response.ok) throw new Error('start failed')
       const body = (await response.json()) as { url?: string }
       if (!body.url) throw new Error('no redirect')
@@ -114,6 +125,17 @@ export function ConnectionsSettings({
             <p className="sortiva-settings__saved" role="status">
               {t('settings.connections.gsc.granted')}
             </p>
+          ) : null}
+          {/*
+            Granting access is not connecting. Until this picker was mounted
+            here, a merchant who connected from this screen was told
+            "connected", was never asked which site is theirs, and stayed on
+            limited data with nothing on screen to act on. It is the same
+            component the dashboard uses, so both routes into the connection
+            ask the same question and start the same import (main §6.7).
+          */}
+          {gscOutcome === 'granted' ? (
+            <SearchConsoleStep initialPhase="picker" returnTo="connections" t={t} onSettled={onGscSettled} />
           ) : null}
           {gscOutcome === 'denied' ? (
             <p className="sortiva-settings__note" role="status">

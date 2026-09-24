@@ -14,7 +14,7 @@ import {
 } from '@sortiva/core'
 import type { AccountHandler } from '../../auth/_lib/session'
 import { gscConnectDeps, gscRedirectUri, gscReturnUrl } from './config'
-import { createOAuthState, OAuthStateInvalid, verifyOAuthState } from './state'
+import { createOAuthState, isOAuthReturn, OAuthStateInvalid, verifyOAuthState } from './state'
 
 /**
  * The four requests the Search Console connection is made of, plus the redirect
@@ -31,12 +31,25 @@ function deps(options: GscHandlerOptions): GscConnectDeps {
   return options.deps ?? gscConnectDeps()
 }
 
-/** `POST /api/gsc/oauth/start` */
+/**
+ * `POST /api/gsc/oauth/start`
+ *
+ * The body may name which screen the merchant should come back to. It is a
+ * name, not a path, and anything unrecognised falls back to Connections rather
+ * than being honoured — the caller is telling us where it is, not where to send
+ * the browser.
+ */
 export function makeGscStartHandler(options: GscHandlerOptions = {}): AccountHandler {
-  return async (_request, { scope }) => {
+  return async (request, { scope }) => {
     const now = options.now?.() ?? new Date()
+    const body = await request
+      .json()
+      .then((value: unknown) => value as { returnTo?: unknown })
+      .catch(() => ({}) as { returnTo?: unknown })
+    const returnTo = isOAuthReturn(body.returnTo) ? body.returnTo : 'connections'
+
     const { redirectUrl } = startGscConnect(deps(options), {
-      state: createOAuthState(scope.accountId, now),
+      state: createOAuthState(scope.accountId, returnTo, now),
       redirectUri: gscRedirectUri(),
     })
     // `url` is the name every other redirect-answering route uses and the one
@@ -59,11 +72,15 @@ export function makeGscCallbackHandler(options: GscHandlerOptions = {}): Account
 
     // The merchant pressed "no" on Google's consent screen. Not an error: the
     // step is optional and stays optional.
+    // A refusal and a missing state both arrive before the destination can be
+    // read, so they land on Connections — the screen a merchant can always get
+    // back to, whichever one they started from.
     if (url.searchParams.get('error') || !code) return redirect(gscReturnUrl('denied'))
     if (!state) return redirect(gscReturnUrl('failed'))
 
+    let returnTo
     try {
-      verifyOAuthState(state, scope.accountId, options.now?.() ?? new Date())
+      returnTo = verifyOAuthState(state, scope.accountId, options.now?.() ?? new Date())
     } catch (error) {
       if (error instanceof OAuthStateInvalid) return redirect(gscReturnUrl('failed'))
       throw error
@@ -75,8 +92,9 @@ export function makeGscCallbackHandler(options: GscHandlerOptions = {}): Account
       redirectUri: gscRedirectUri(),
     })
 
-    // Access granted, property not yet chosen — the picker is the next screen.
-    return redirect(gscReturnUrl('granted'))
+    // Access granted, property not yet chosen — the picker is the next screen,
+    // and it is on whichever of the two screens the merchant started from.
+    return redirect(gscReturnUrl('granted', returnTo))
   }
 }
 

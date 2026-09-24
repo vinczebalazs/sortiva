@@ -175,8 +175,10 @@ export const ROUTES: readonly RouteDefinition[] = [
   {
     method: 'POST',
     path: '/api/gsc/oauth/start',
-    summary: 'Begin Google OAuth for Search Console (webmasters.readonly).',
+    summary:
+      'Begin Google OAuth for Search Console (webmasters.readonly). The body names which of the two screens to come back to.',
     auth: 'session',
+    body: s.gscStartRequestSchema,
     response: s.redirectResponseSchema,
   },
   {

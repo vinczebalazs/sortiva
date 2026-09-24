@@ -6,10 +6,13 @@ import { SettingsNav } from '../_lib/nav'
 /**
  * Settings → Connections (ui §9.3).
  *
- * This is also the fixed return address Google sends a merchant back to after
- * the Search Console consent screen (`apps/web/app/api/gsc/_lib/config.ts`'s
- * `GSC_RETURN_PATH`), with the outcome in `?gsc=`. The path is not this
- * screen's to choose — it is already load-bearing elsewhere.
+ * One of the two screens Google can send a merchant back to after the Search
+ * Console consent screen, with the outcome in `?gsc=`. Which one is decided by
+ * where they started, carried in the signed OAuth state; this screen simply
+ * renders what it was handed. When the answer is `granted`, the property picker
+ * appears here — granting access is not the same as being connected, and until
+ * it was mounted this screen said "connected" over a connection that had never
+ * chosen a property.
  */
 
 export const dynamic = 'force-dynamic'

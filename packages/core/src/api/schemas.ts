@@ -123,6 +123,15 @@ export const accountResponseSchema = z.object({
 
 export const redirectResponseSchema = z.object({ url: z.string().url() })
 
+/**
+ * Which screen to return the merchant to when the Search Console consent flow
+ * ends. A name of one of two screens, never a path: the server turns it into a
+ * path, so nothing a caller sends can decide where a browser is sent.
+ */
+export const gscStartRequestSchema = z.object({
+  returnTo: z.enum(['dashboard', 'connections']).optional(),
+})
+
 export const settingsSchema = z.object({
   /** Export is the default; publishing on the merchant's behalf is a separate, later consent. */
   delivery: z.enum(['export', 'auto']),

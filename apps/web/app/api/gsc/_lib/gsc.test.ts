@@ -143,7 +143,7 @@ describe.skipIf(!available)('connecting Search Console', () => {
   })
 
   it('refuses a callback whose state was not signed for this account', async () => {
-    const somebodyElse = createOAuthState('00000000-0000-4000-8000-000000000000')
+    const somebodyElse = createOAuthState('00000000-0000-4000-8000-000000000000', 'connections')
     const response = await as(makeGscCallbackHandler({ deps: deps() }))(
       new Request(`https://app.test/api/gsc/oauth/callback?code=abc&state=${somebodyElse}`),
       {},
@@ -266,7 +266,7 @@ describe.skipIf(!available)('connecting Search Console', () => {
   })
 
   async function connect(): Promise<void> {
-    const state = createOAuthState(accountId)
+    const state = createOAuthState(accountId, 'connections')
     const response = await as(makeGscCallbackHandler({ deps: deps() }))(
       new Request(`https://app.test/api/gsc/oauth/callback?code=abc&state=${state}`),
       {},
@@ -283,4 +283,155 @@ describe.skipIf(!available)('connecting Search Console', () => {
       {},
     )
   }
+})
+
+/**
+ * Where a merchant ends up, and whether the connection is actually made.
+ *
+ * The defect: every merchant was returned to Settings → Connections, which had
+ * no property picker on it. The screen said "connected" while no property had
+ * been chosen, no history import had been queued, and the account stayed on
+ * limited data — a connection that looked finished and had not started.
+ *
+ * Both journeys are driven here through the real handlers against a real
+ * database, because the thing that was broken is where the browser is sent, and
+ * a test of either handler alone would have passed throughout.
+ */
+describe.skipIf(!available)('coming back from Google', () => {
+  let harness: TestDb
+  let accountId: string
+  let provider: FakeProvider
+  let capture: MockPosthogCapture
+  let backfills: string[]
+
+  beforeAll(async () => {
+    harness = await setupTestDb('gsc_return')
+  })
+
+  afterAll(async () => {
+    await harness?.close()
+  })
+
+  beforeEach(async () => {
+    await truncateAll(harness.pool)
+    accountId = await insertAccount(harness.pool, `ret-${Math.random().toString(36).slice(2)}@example.com`)
+    await harness.pool.query(
+      `INSERT INTO domains (account_id, domain_normalized, state) VALUES ($1, $2, 'ingesting')`,
+      [accountId, 'example.com'],
+    )
+    capture = new MockPosthogCapture()
+    provider = new FakeProvider([{ siteUrl: 'sc-domain:example.com', permissionLevel: 'siteOwner' }])
+    backfills = []
+  })
+
+  function deps(): GscConnectDeps {
+    return {
+      store: makeGscConnectStore({
+        database: harness.db,
+        enqueueBackfill: async (_database, id) => {
+          backfills.push(id)
+        },
+      }),
+      provider,
+      codec: new TokenCipher(),
+      capture,
+    }
+  }
+
+  const as = (handler: Parameters<typeof withAccount>[0]) => withAccount(handler, async () => accountId)
+
+  /** The whole journey: press connect on one screen, consent, come back, choose the property. */
+  async function journey(from: 'dashboard' | 'connections'): Promise<string> {
+    const started = await as(makeGscStartHandler({ deps: deps() }))(
+      new Request('https://app.test/api/gsc/oauth/start', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ returnTo: from }),
+      }),
+      {},
+    )
+    const consent = new URL(((await started.json()) as { url: string }).url)
+    const state = consent.searchParams.get('state')!
+
+    const back = await as(makeGscCallbackHandler({ deps: deps() }))(
+      new Request(`https://app.test/api/gsc/oauth/callback?code=abc&state=${encodeURIComponent(state)}`),
+      {},
+    )
+    expect(back.status).toBe(302)
+    return back.headers.get('location')!
+  }
+
+  /** What the picker on whichever screen they landed on then does. */
+  async function chooseProperty(): Promise<void> {
+    const chosen = await as(makeGscSelectPropertyHandler({ deps: deps() }))(
+      new Request('https://app.test/api/gsc/property', {
+        method: 'POST',
+        body: JSON.stringify({ siteUrl: 'sc-domain:example.com' }),
+      }),
+      {},
+    )
+    expect(chosen.status).toBe(200)
+  }
+
+  it('finishes on the dashboard for a merchant who started there, with the property stored', async () => {
+    const landed = await journey('dashboard')
+    expect(landed).toContain('/dashboard?gsc=granted')
+
+    await chooseProperty()
+    const [row] = await harness.db.select().from(gscConns).where(eq(gscConns.accountId, accountId))
+    expect(row!.property).toBe('sc-domain:example.com')
+    expect(backfills).toEqual([accountId])
+  })
+
+  it('finishes on Settings for a merchant who started there, with the property stored', async () => {
+    const landed = await journey('connections')
+    expect(landed).toContain('/settings/connections?gsc=granted')
+
+    await chooseProperty()
+    const [row] = await harness.db.select().from(gscConns).where(eq(gscConns.accountId, accountId))
+    expect(row!.property).toBe('sc-domain:example.com')
+    expect(backfills).toEqual([accountId])
+  })
+
+  it('refuses to be sent anywhere but those two, whatever the caller asks for', async () => {
+    const started = await as(makeGscStartHandler({ deps: deps() }))(
+      new Request('https://app.test/api/gsc/oauth/start', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ returnTo: 'https://evil.example/steal' }),
+      }),
+      {},
+    )
+    const consent = new URL(((await started.json()) as { url: string }).url)
+    const state = consent.searchParams.get('state')!
+    expect(state).not.toContain('evil.example')
+
+    const back = await as(makeGscCallbackHandler({ deps: deps() }))(
+      new Request(`https://app.test/api/gsc/oauth/callback?code=abc&state=${encodeURIComponent(state)}`),
+      {},
+    )
+    expect(back.headers.get('location')).toContain('/settings/connections?gsc=granted')
+  })
+
+  it('refuses a state whose destination was tampered with, rather than honouring it', async () => {
+    const started = await as(makeGscStartHandler({ deps: deps() }))(
+      new Request('https://app.test/api/gsc/oauth/start', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ returnTo: 'dashboard' }),
+      }),
+      {},
+    )
+    const consent = new URL(((await started.json()) as { url: string }).url)
+    const forged = consent.searchParams.get('state')!.replace('.dashboard.', '.connections.')
+
+    const back = await as(makeGscCallbackHandler({ deps: deps() }))(
+      new Request(`https://app.test/api/gsc/oauth/callback?code=abc&state=${encodeURIComponent(forged)}`),
+      {},
+    )
+    // The signature covers the destination, so editing it invalidates the whole
+    // state rather than redirecting somewhere else.
+    expect(back.headers.get('location')).toContain('gsc=failed')
+    expect(provider.exchanges).toBe(0)
+  })
 })

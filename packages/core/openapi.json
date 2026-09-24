@@ -4551,7 +4551,7 @@
     "/api/gsc/oauth/start": {
       "post": {
         "operationId": "post-gsc-oauth-start",
-        "summary": "Begin Google OAuth for Search Console (webmasters.readonly).",
+        "summary": "Begin Google OAuth for Search Console (webmasters.readonly). The body names which of the two screens to come back to.",
         "tags": [
           "gsc"
         ],
@@ -4560,6 +4560,27 @@
             "sessionCookie": []
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "returnTo": {
+                    "type": "string",
+                    "enum": [
+                      "dashboard",
+                      "connections"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -4584,6 +4605,58 @@
           },
           "401": {
             "description": "No session. Every authenticated route resolves account_id from the session, never from the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "message": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "message"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request failed schema validation.",
             "content": {
               "application/json": {
                 "schema": {

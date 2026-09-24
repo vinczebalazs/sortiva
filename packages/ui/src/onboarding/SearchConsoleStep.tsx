@@ -40,6 +40,12 @@ export interface SearchConsoleStepProps {
   readonly skipEndpoint?: string
   /** Called once the step is settled, so the page can re-read the run. */
   readonly onSettled?: (outcome: 'connected' | 'skipped') => void
+  /**
+   * Which screen the merchant should be returned to when they come back from
+   * Google. A name, never a path: the server turns it into one, so this cannot
+   * send a browser anywhere it chooses.
+   */
+  readonly returnTo?: 'dashboard' | 'connections'
 }
 
 type Phase = 'connect' | 'loading' | 'picker' | 'backfilling' | 'skipped'
@@ -64,6 +70,7 @@ export function SearchConsoleStep({
   selectEndpoint = '/api/gsc/property',
   skipEndpoint = '/api/gsc/skip',
   onSettled,
+  returnTo = 'dashboard',
 }: SearchConsoleStepProps) {
   const [phase, setPhase] = useState<Phase>(initialPhase === 'picker' ? 'loading' : 'connect')
   const [properties, setProperties] = useState<readonly GscProperty[]>([])
@@ -92,7 +99,11 @@ export function SearchConsoleStep({
     setBusy(true)
     setFailed(false)
     try {
-      const response = await fetch(startEndpoint, { method: 'POST' })
+      const response = await fetch(startEndpoint, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ returnTo }),
+      })
       if (!response.ok) throw new Error('oauth start failed')
       const body = (await response.json()) as { url?: string }
       if (!body.url) throw new Error('no redirect')

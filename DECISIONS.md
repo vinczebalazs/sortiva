@@ -7003,3 +7003,21 @@ Context: the writer produces Markdown — internal links, comparison tables, ste
 **Worth scrutinising.** A refused link renders as the literal Markdown the writer typed — `[here](javascript:alert(1))` — which is safe but ugly. Nothing warns anybody that it happened. If the writer ever produces such a link, a reader sees brackets; the alternative, dropping the text entirely, loses the sentence. I chose the visible one.
 
 Nearest spec: main §9.3 (the article as it publishes), §14.1; invariant 21 (nothing ever touches theme code).
+
+## 2026-09-24 — REMEDIATION card 6 — Search Console can actually be connected, from either screen
+
+Context: a merchant granted Google access, came back, and was told "connected". No property had been chosen, no history import had been queued, and the account stayed on limited data — the engine reads Search Console before it decides anything, so the store was running on the catalogue alone. The screen was telling the truth about the grant and a lie about the connection.
+
+**The cause was one constant.** The callback redirected to a fixed path, Settings → Connections, and the only screen that mounted the property picker was the dashboard. So the mount existed, worked, and had never once fired. A merchant who started from the dashboard was taken to a screen they had not asked for; a merchant who started from Settings stayed there and was shown nothing to do.
+
+**Where the merchant goes now travels in the signed OAuth state.** Two things were possible: a path in the state, or a *name* of one of two screens. It is a name, and the callback turns it into a path itself, so a forged state can choose between the dashboard and Settings and nothing else — a signed path would be safe exactly as long as the signature held. It is inside the signed payload rather than beside it in the query string, so it cannot be swapped between the consent screen and the return; a test edits it and the whole state is refused rather than honoured.
+
+The state format went from v1 to v2. A consent screen left open across the deploy fails and the merchant is asked to connect again; they live ten minutes, so that is the whole of the window.
+
+**The picker is now mounted on Connections too**, the same component the dashboard uses, so both ways into the connection ask the same question and start the same sixteen-month import — which is what main §6.7 says should happen from Settings, the dashboard nudge or the Limited Intelligence badge alike.
+
+**What is proved.** Both journeys, driven through the real handlers against a real Postgres: start from the dashboard → consent → land on `/dashboard?gsc=granted` → choose the property → the property is stored and the import is queued; and the same starting from Settings, landing back on Settings. Plus the two refusals: a caller asking to be returned to `https://evil.example/steal` gets Settings, and a state whose destination has been edited is refused outright with no token exchanged.
+
+**Not proved:** nobody has clicked through this in a browser. The handlers, the redirect target and the stored row are real; that the picker renders on the Connections screen is asserted by its mount and by the existing component's own tests, not by a rendered page.
+
+Nearest spec: main §6.7 (connecting, and what triggers the backfill), §7.11 (limited intelligence); ui §9.3 (the picker belongs on Connections).
