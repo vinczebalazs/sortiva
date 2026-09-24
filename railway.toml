@@ -34,7 +34,17 @@ preDeployCommand = ["pnpm db:migrate"]
 #
 # --max-old-space-size pinned per tech §2.1 so a leak OOMs loudly instead of
 # silently billing a swollen resident set.
-startCommand = "NEXT_MANUAL_SIG_HANDLE=1 node --max-old-space-size=384 apps/web/node_modules/next/dist/bin/next start -p $PORT"
+#
+# `apps/web` is the application directory, and it is an argument rather than the
+# service's working directory on purpose. `next start` with no directory starts
+# the application in the directory it was run from, which here is the repository
+# root — where there is no build, because the build output is in `apps/web`.
+#
+# Setting the service's working directory to `apps/web` instead would fix this
+# one command and break two others: the migration that runs before the deploy is
+# invoked from the root, and the thresholds config is read from a path relative
+# to it. One argument moves the one thing that needs moving.
+startCommand = "NEXT_MANUAL_SIG_HANDLE=1 node --max-old-space-size=384 apps/web/node_modules/next/dist/bin/next start apps/web -p $PORT"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 30
 restartPolicyType = "ON_FAILURE"
@@ -46,4 +56,4 @@ numReplicas = 1
 sleepApplication = false
 
 [environments.production.deploy]
-startCommand = "NEXT_MANUAL_SIG_HANDLE=1 node --max-old-space-size=384 apps/web/node_modules/next/dist/bin/next start -p $PORT"
+startCommand = "NEXT_MANUAL_SIG_HANDLE=1 node --max-old-space-size=384 apps/web/node_modules/next/dist/bin/next start apps/web -p $PORT"
