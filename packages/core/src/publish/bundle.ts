@@ -1,4 +1,5 @@
 import type { ArticleBody } from '../generation/draft'
+import { renderArticleMarkdown } from './markdown'
 import {
   renderPlaceholders,
   resolveProductReferences,
@@ -131,8 +132,26 @@ function stripClaimMarkers(text: string): string {
   return text.replace(/\[\[\s*[a-zA-Z0-9_]+\s*\]\]/g, '')
 }
 
+/**
+ * The small cosmetic repairs a model's prose needs: doubled spaces mid-sentence,
+ * a space left in front of a comma.
+ *
+ * Indentation at the start of a line is left alone, because in Markdown it is
+ * not whitespace — it is what makes a nested list nested and a code block a code
+ * block. Collapsing it used to be harmless only because the HTML builder threw
+ * the structure away anyway; now that the HTML is rendered from this text, a
+ * flattened indent is a flattened list on a merchant's storefront.
+ */
 function tidy(text: string): string {
-  return text.replace(/[ \t]{2,}/g, ' ').replace(/ +([.,;:!?])/g, '$1').trim()
+  return text
+    .split('\n')
+    .map((line) => {
+      const indent = /^[ \t]*/.exec(line)![0]
+      const rest = line.slice(indent.length).replace(/[ \t]{2,}/g, ' ').replace(/ +([.,;:!?])/g, '$1')
+      return `${indent}${rest}`
+    })
+    .join('\n')
+    .trim()
 }
 
 function markdownBody(article: BundleArticle, resolved: ReadonlyMap<string, ResolvedReference>): string {
@@ -150,38 +169,23 @@ function markdownBody(article: BundleArticle, resolved: ReadonlyMap<string, Reso
   return `${lines.join('\n').trimEnd()}\n`
 }
 
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-}
-
 /**
  * The article as a fragment, not a page.
  *
  * A merchant pastes this into their own blog editor, which supplies the
  * document around it — a full `<html>` document with our own styling would
  * fight their theme rather than fit inside it.
+ *
+ * Built from the **same Markdown the merchant downloads**, rather than
+ * assembled a second time from the article's parts. Two builders for one
+ * article is how the file and the post come to disagree; one source and one
+ * renderer is what makes them the same words. The renderer's settings — raw
+ * HTML escaped, no autolinking, link schemes on an allowlist — are in
+ * `markdown.ts`, because they are safety decisions about somebody else's
+ * storefront rather than formatting preferences.
  */
 function htmlBody(article: BundleArticle, resolved: ReadonlyMap<string, ResolvedReference>): string {
-  // Escaping happens before the markers are replaced, because a rendered
-  // mention is deliberately HTML (a link) and escaping it afterwards would
-  // print the tag rather than follow it.
-  const render = (text: string) =>
-    tidy(renderPlaceholders(escapeHtml(stripClaimMarkers(text)), resolved, 'html'))
-  const parts: string[] = [`<h1>${escapeHtml(article.title)}</h1>`, `<p>${render(article.body.intro)}</p>`]
-  for (const section of article.body.sections) {
-    parts.push(`<h2>${escapeHtml(section.heading)}</h2>`, `<p>${render(section.body)}</p>`)
-  }
-  if (article.body.faq.length > 0) {
-    parts.push('<h2>FAQ</h2>')
-    for (const entry of article.body.faq) {
-      parts.push(`<h3>${escapeHtml(entry.question)}</h3>`, `<p>${render(entry.answer)}</p>`)
-    }
-  }
-  return `${parts.join('\n')}\n`
+  return `${renderArticleMarkdown(markdownBody(article, resolved))}\n`
 }
 
 /** The metadata block: what to put in the page's own fields, plus the images to use. */

@@ -6981,3 +6981,25 @@ Context: the product has one outbound page fetcher, and tech §2 says every non-
 *Not verified against a real store:* the reproduction is a local server serving a 900 KB page through the real fetcher and the real detection. The two named shops were not re-fetched here.
 
 Nearest spec: main §3.2 (the fetch budget), tech §2 (one fetcher, same budget, and it names the persona's pages).
+
+## 2026-09-24 — REMEDIATION card 5 — The writer's Markdown is published as real HTML
+
+Context: the writer produces Markdown — internal links, comparison tables, step lists, paragraph breaks — and the third quality gate grades it as Markdown. The function that built the HTML escaped that text and wrapped each section body in a single paragraph tag. No Markdown library existed anywhere in the repository.
+
+**Confirmed before it was fixed, by rendering a fixture article and reading the output.** Two independent reviews had inferred this from the source and neither had run it; the card says to look first, and looking was worth it, because the output was worse than the description. In one paragraph tag: `[sizing guide](/pages/sizing)` with its brackets, `- the **last**` with its hyphen and asterisks, a comparison table as four lines of pipes, and every paragraph of the section run together, because a browser collapses those newlines. Only the product mentions became links, because those were substituted as HTML by a different path.
+
+**The fix.** `markdown-it`, in `packages/core` — the package that owns the builder — with the HTML rendered from **the same Markdown the merchant downloads** rather than assembled a second time from the article's parts. One source and one renderer is what stops a downloaded copy and a published copy disagreeing.
+
+**Three settings, each a safety decision rather than a preference**, because this HTML goes into somebody else's storefront and is built from model output about product copy we did not write:
+
+- Raw HTML in the source is **escaped, not passed through**. A `<script>` tag in the prose — from the model, or carried in from a product description — publishes as visible text.
+- **No autolinking.** A bare string that looks like an address stays text, so an article cannot link somewhere nobody chose.
+- **Link targets are on an allowlist**: relative links (which is how an article links inside the merchant's own shop), `http`, `https`, `mailto`. Anything else renders as plain text rather than as a control a reader can press. An allowlist rather than a ban list, so the question is "is this one of the four things a link may be" rather than "did we remember to ban this scheme".
+
+**One thing had to change underneath.** The cosmetic tidy-up that removes doubled spaces and space-before-punctuation collapsed runs of spaces anywhere in the text, including the leading indent that makes a nested list nested. That was harmless only while the HTML builder threw the structure away. It now leaves leading whitespace alone, because in Markdown an indent is not whitespace, it is meaning.
+
+**What is proved.** Fourteen assertions over rendered output, element by element: a link is an anchor, a table is a table with headers and cells, a list is a list, a nested list has two levels, paragraphs are separate, a product mention links to that product, and the HTML and the Markdown come from one build. Plus the refusals: no tag survives raw HTML in the source, and a `javascript:` or `data:` link produces no anchor at all.
+
+**Worth scrutinising.** A refused link renders as the literal Markdown the writer typed — `[here](javascript:alert(1))` — which is safe but ugly. Nothing warns anybody that it happened. If the writer ever produces such a link, a reader sees brackets; the alternative, dropping the text entirely, loses the sentence. I chose the visible one.
+
+Nearest spec: main §9.3 (the article as it publishes), §14.1; invariant 21 (nothing ever touches theme code).

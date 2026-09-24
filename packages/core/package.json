@@ -14,12 +14,14 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
+    "@sortiva/providers": "workspace:*",
     "@sortiva/rules": "workspace:*",
+    "@types/markdown-it": "^14.2.0",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8",
-    "@sortiva/providers": "workspace:*"
+    "vitest": "^2.1.8"
   },
   "dependencies": {
+    "markdown-it": "^15.0.2",
     "tldts": "^7.4.11",
     "zod": "^4.5.4"
   }
