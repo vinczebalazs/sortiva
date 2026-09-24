@@ -7147,3 +7147,55 @@ And one the first run did not catch, which runs the other way: **agreeing that a
 **How it was measured.** The distillation set, run through the same runner `pnpm eval` uses, from a throwaway script that saves the predictions so both scorers could see the same answers. 50 model calls, 69.5 seconds.
 
 Nearest spec: main §14.2 (field-level F1 ≥ 0.85 and zero fabricated values); §6.3 (the fact sheet is all that flows downstream).
+
+## 2026-09-24 — REMEDIATION-EVAL card 4 — Why the judge and the human graders disagree about grounding: nine times out of fifteen the judge is marking down general knowledge, which the founder has ruled is not a product claim
+
+No code changed. This reads the evidence card 5 acts on.
+
+**What grounding is.** One of six criteria the article judge scores 1–5. It asks whether everything the article asserts about a product can be traced to the facts the store itself holds about that product — its material, weight, capacity, care instructions, origin, and so on. It is one of the two criteria an article must score 4 on to be published, so it is where the gate lives or dies.
+
+**The evidence.** All twenty cases graded by the real model against the current judge prompt (`judge.v2`), after card 1 made the two unanswerable cases answerable. Five cases agree with the human grade exactly (`003`, `009`, `018`, `019`, `020`). The other fifteen are classified below by what the judge's own sentence says it marked down.
+
+### Kind one — a general statement about a category. Nine cases.
+
+Under the founder's decision these should not be marked down at all: "linen wicks moisture faster than cotton" is knowledge, not a claim about a product.
+
+| Case | What the judge objected to |
+|---|---|
+| `006-comparison-strong` | "the Trail Light will not keep anything cold" — the bottle's material, tritan copolyester, **is** in the facts; what is added is what that material does |
+| `008-thin-but-correct` | glass "will break if dropped on a hard floor", steel "will dent instead" — the judge's own sentence calls these "general material tendencies" and marks them down anyway |
+| `010-how-to-strong` | the seasoning temperature, the bake time, the water-bead test — how to season cast iron, not a claim about the store's two pans |
+| `011-never-answers` | "a well-seasoned pan will last for generations" |
+| `012-overstated` | the method's temperatures and coat counts |
+| `013-sizing-strong` | "a 22-litre daypack will not hold a sleeping bag" |
+| `014-generic-rewrite` | "30 and 50 litres for most weekend trips" |
+| `015-terse-but-right` | "which is what carries a weekend load properly" |
+| `016-danish-strong` | linen wicks faster than cotton; the cotton duvet "gets clammy on a warm night" |
+
+**The shape that recurs, and the one card 5 has to name.** Six of these nine attach a general truth to a named product: the material is in the store's facts, and what the article adds is what that material does in the world. The founder's line — "wider lasts suit wide feet" is knowledge, "this shoe is built on a wider last" is a product claim — puts these on the knowledge side, because the product attribute they rest on is recorded and only the consequence is general.
+
+### Kind two — a claim about a specific product the store's facts do not carry. One case.
+
+| Case | What the judge objected to |
+|---|---|
+| `004-intent-mismatch` | "the Ridge Wide and the Fell Wide are built on wider lasts". Verified against the pack: the facts hold material, weight, use cases, origin and one compatibility note for all three shoes, and **nothing about last width**. The word "Wide" is in the product's name, which is not a recorded fact about its shape. |
+
+The judge is right and the expected score of 4 is generous. `006` carries a second objection of this kind alongside its first.
+
+### Kind three — something else: the judge marks grounding down for an article that makes no product claims at all. Five cases.
+
+`002-serp-rewrite`, `005-sales-pitch`, `007-refuses-to-recommend`, `017-danish-filler`: in each, the judge's reason is that none of the store's facts appear anywhere. Nothing untrue was asserted; the article simply never mentions the products. The judge is scoring "did you use our facts" where the criterion asks "is what you said traceable".
+
+`001-wide-feet-strong` is its own case: the judge accepted the claims and marked down the **arithmetic** — the article states a 25 g gap between two shoes and then calls a 45 g figure "that spread", which is the gap to a third shoe. The figures all trace; the reasoning over them does not. That is a real defect being reported under the wrong criterion.
+
+### Which kind dominates, and what follows
+
+**Kind one, by nine to one.** A prompt clarification is the right instrument and can plausibly close most of the gap. The expected answers are not the problem in nine of the fifteen disagreements; in exactly one they are.
+
+**Two things card 5 must not do.** It must not touch the absence case. In all five kind-three cases the human graders also marked grounding down — to 2 or 3 rather than to 1 — so gold and judge disagree about *how much*, not about direction, and a prompt that told the judge to ignore absence entirely would push those cases to 5 and make the error worse, not better. And it must not be tuned: the per-criterion error on this set moves by two or three tenths between identical runs (grounding measured 1.44, 1.25 and 0.95 today on the same twenty cases and the same prompt), so a single run cannot settle a third decimal place and the direction and the case-level reasons are what to read.
+
+### One question for the founder, not blocking
+
+Should grounding say anything about an article that makes no product claims at all? Today the judge marks it down hard for that and the human graders mark it down gently; neither is written down anywhere. It changes nothing about what gets published — those five articles are rejected on information gain and usefulness whatever grounding says — so card 5 leaves it exactly as it is and this is recorded rather than decided.
+
+Nearest spec: main §8.4 (grounding held to 4; gate on the minimum), §14.2 (judge eval, append-only cases).
