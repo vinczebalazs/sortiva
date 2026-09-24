@@ -1,0 +1,587 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Sortiva Shopify-útiterv (Copy)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@500;600&display=swap">
+<style>
+  :root {
+    --ground: #e8e9f0;
+    --surface: #ffffff;
+    --sunken: #f5f6fa;
+    --ink: #191b23;
+    --ink2: #454a5c;
+    --muted: #6f7488;
+    --line: #e2e4ec;
+    --line-soft: #edeef3;
+    --accent: #6470f3;
+    --accent-soft: #eeeffe;
+    --founder: #e8890c;
+    --founder-soft: #fdf3e4;
+    --founder-ink: #955200;
+    --pilot: #12a150;
+    --pilot-soft: #e7f7ee;
+    --pilot-ink: #0b7a3b;
+    --dev: #6470f3;
+    --dev-soft: #eeeffe;
+    --dev-ink: #4450d6;
+    --verify: #0e9bb8;
+    --verify-soft: #e5f6fa;
+    --verify-ink: #0a7087;
+    --shadow: 0 1px 2px rgba(21,25,42,.04), 0 8px 24px -6px rgba(21,25,42,.08);
+    --font-head: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-body: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #111219;
+      --surface: #1a1c25;
+      --sunken: #20232e;
+      --ink: #eceef5;
+      --ink2: #c5c9d8;
+      --muted: #9ba1b5;
+      --line: #2e3140;
+      --line-soft: #252834;
+      --accent: #8c95ff;
+      --accent-soft: #262a4a;
+      --founder: #f0a13a;
+      --founder-soft: #3a2a12;
+      --founder-ink: #f4b865;
+      --pilot: #3cc57a;
+      --pilot-soft: #15301f;
+      --pilot-ink: #6fd79c;
+      --dev: #8c95ff;
+      --dev-soft: #262a4a;
+      --dev-ink: #b3b9ff;
+      --verify: #36b9d4;
+      --verify-soft: #10303a;
+      --verify-ink: #7fd3e6;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -6px rgba(0,0,0,.45);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #111219;
+    --surface: #1a1c25;
+    --sunken: #20232e;
+    --ink: #eceef5;
+    --ink2: #c5c9d8;
+    --muted: #9ba1b5;
+    --line: #2e3140;
+    --line-soft: #252834;
+    --accent: #8c95ff;
+    --accent-soft: #262a4a;
+    --founder: #f0a13a;
+    --founder-soft: #3a2a12;
+    --founder-ink: #f4b865;
+    --pilot: #3cc57a;
+    --pilot-soft: #15301f;
+    --pilot-ink: #6fd79c;
+    --dev: #8c95ff;
+    --dev-soft: #262a4a;
+    --dev-ink: #b3b9ff;
+    --verify: #36b9d4;
+    --verify-soft: #10303a;
+    --verify-ink: #7fd3e6;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -6px rgba(0,0,0,.45);
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 880px;
+    margin: 0 auto;
+    padding-inline: 20px;
+    padding-block: 44px 72px;
+    display: grid;
+    gap: 28px;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-head);
+    font-weight: 600;
+    text-wrap: balance;
+    margin: 0;
+    color: var(--ink);
+  }
+  h1 { font-size: clamp(1.9rem, 4.2vw, 2.6rem); line-height: 1.15; letter-spacing: -0.01em; }
+  h2 { font-size: 1.3rem; line-height: 1.3; }
+  h3 { font-size: 1.08rem; line-height: 1.35; }
+  p { margin: 0; }
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.86em;
+    background: var(--sunken);
+    border: 1px solid var(--line-soft);
+    border-radius: 6px;
+    padding: 0.05em 0.35em;
+    overflow-wrap: anywhere;
+  }
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+  .eyebrow {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── Intro ── */
+  .intro { display: grid; gap: 16px; }
+  .lede { font-size: 1.06rem; color: var(--ink2); max-width: 68ch; }
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 6px 0 0;
+  }
+  .facts div {
+    background: var(--surface);
+    border: 1px solid var(--line-soft);
+    border-radius: 14px;
+    padding: 12px 16px;
+  }
+  .facts dt { font-size: 0.82rem; color: var(--muted); }
+  .facts dd {
+    margin: 2px 0 0;
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 1.15rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .callout {
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--founder);
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 12px 16px;
+    max-width: 72ch;
+    color: var(--ink2);
+  }
+  .callout strong { color: var(--ink); }
+
+  /* ── Panels ── */
+  .panel {
+    background: var(--surface);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    padding: 24px 24px 20px;
+    display: grid;
+    gap: 16px;
+  }
+  .panel-head { display: grid; gap: 4px; }
+  .panel-head p { color: var(--muted); font-size: 0.92rem; }
+
+  /* ── Schedule chart ── */
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.85rem; color: var(--ink2); }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .sw { width: 14px; height: 10px; border-radius: 3px; background: var(--c); display: inline-block; }
+  .sw.range {
+    background: color-mix(in srgb, var(--muted) 22%, transparent);
+    outline: 1px dashed var(--muted);
+    outline-offset: -1px;
+  }
+  .chart-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .chart { min-width: 680px; display: grid; gap: 7px; font-size: 0.85rem; }
+  .row { display: grid; grid-template-columns: 12.5rem 1fr; align-items: center; gap: 12px; }
+  .row-label { color: var(--ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row-label b { font-family: var(--font-head); font-weight: 600; color: var(--muted); margin-right: 6px; font-variant-numeric: tabular-nums; }
+  .track {
+    position: relative;
+    height: 20px;
+    background-image: linear-gradient(to right, var(--line-soft) 1px, transparent 1px);
+    background-size: calc(100% / 15) 100%;
+    border-right: 1px solid var(--line-soft);
+  }
+  .bar, .ext {
+    position: absolute;
+    top: 3px;
+    height: 14px;
+    border-radius: 4px;
+  }
+  .bar { left: calc(var(--s) * 100% / 15); width: calc((var(--a) - var(--s)) * 100% / 15); background: var(--c); }
+  .ext {
+    left: calc(var(--a) * 100% / 15);
+    width: calc((var(--b) - var(--a)) * 100% / 15);
+    background: color-mix(in srgb, var(--c) 24%, transparent);
+    outline: 1px dashed color-mix(in srgb, var(--c) 70%, transparent);
+    outline-offset: -1px;
+    border-radius: 0 4px 4px 0;
+  }
+  .bar + .ext { margin-left: 0; }
+  .c-founder { --c: var(--founder); }
+  .c-pilot { --c: var(--pilot); }
+  .c-dev { --c: var(--dev); }
+  .c-verify { --c: var(--verify); }
+  .axis .track { background-image: none; border-right: 0; height: 22px; }
+  .tick {
+    position: absolute;
+    left: calc(var(--w) * 100% / 15);
+    transform: translateX(-50%);
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .tick:first-child { transform: none; }
+  .milestones .track { height: 30px; background-image: none; border-right: 0; }
+  .ms {
+    position: absolute;
+    left: calc(var(--w) * 100% / 15);
+    top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transform: translateX(-7px);
+    white-space: nowrap;
+    font-size: 0.8rem;
+    color: var(--ink2);
+  }
+  .ms::before {
+    content: "";
+    width: 11px;
+    height: 11px;
+    transform: rotate(45deg);
+    background: var(--c, var(--accent));
+    border-radius: 2px;
+    flex: none;
+  }
+  .ms.late { flex-direction: row-reverse; transform: translateX(calc(-100% + 7px)); }
+  .ms.late::before { background: transparent; outline: 2px solid var(--accent); outline-offset: -2px; }
+  .chart-note { font-size: 0.82rem; color: var(--muted); }
+
+  /* ── Steps ── */
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; }
+  .step {
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    gap: 4px 12px;
+    padding-block: 22px;
+    border-top: 1px solid var(--line-soft);
+  }
+  .step:first-child { border-top: 0; padding-top: 4px; }
+  .num {
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 1.5rem;
+    line-height: 1.2;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .step-body { display: grid; gap: 10px; min-width: 0; }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; font-size: 0.8rem; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    background: var(--sunken);
+    color: var(--ink2);
+    border: 1px solid var(--line-soft);
+  }
+  .chip.founder { background: var(--founder-soft); color: var(--founder-ink); border-color: transparent; }
+  .chip.pilot { background: var(--pilot-soft); color: var(--pilot-ink); border-color: transparent; }
+  .chip.dev { background: var(--dev-soft); color: var(--dev-ink); border-color: transparent; }
+  .chip.verify { background: var(--verify-soft); color: var(--verify-ink); border-color: transparent; }
+  .when { color: var(--muted); }
+  .why { color: var(--ink2); max-width: 70ch; }
+  .step ul { margin: 0; padding-left: 1.15rem; display: grid; gap: 6px; max-width: 72ch; color: var(--ink); }
+  .step li::marker { color: var(--muted); }
+  .done {
+    font-size: 0.9rem;
+    color: var(--ink2);
+    background: var(--sunken);
+    border-radius: 10px;
+    padding: 8px 12px;
+    max-width: 72ch;
+  }
+  .done b { color: var(--ink); font-weight: 600; }
+
+  /* ── Closing sections ── */
+  .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .pair .panel ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 8px; color: var(--ink); }
+  .sources { display: grid; gap: 8px; font-size: 0.86rem; color: var(--muted); }
+  .sources ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 4px; }
+
+  @media (max-width: 720px) {
+    .facts { grid-template-columns: 1fr; }
+    .pair { grid-template-columns: 1fr; }
+    .panel { padding: 20px 16px 16px; }
+    .step { grid-template-columns: 2.2rem 1fr; }
+    .num { font-size: 1.25rem; }
+  }
+</style>
+
+<main class="page">
+  <header class="intro">
+    <p class="eyebrow">Útiterv · becslés · 2026. szeptember 16.</p>
+    <h1>Sortiva sok Shopify-boltra</h1>
+    <p class="lede">Az automatikus cikkírás és közzététel kész. Ma viszont egy boltra szóló Shopify-appra épül, Stripe-os számlázással, önálló webappként. Sok bolthoz nyilvános Shopify-app kell, az App Store pedig négy dolgot vár el: Shopify-számlázást, a Shopify adminba beágyazott felületet, GraphQL API-t és Shopify-ból induló telepítést.</p>
+    <dl class="facts">
+      <div><dt>Pilot valódi boltokon</dt><dd>1–3 hét</dd></div>
+      <div><dt>Átépítés az App Store-hoz</dt><dd>kb. 4–8 hét</dd></div>
+      <div><dt>Megjelenés az App Store-ban</dt><dd>kb. 7–15 hét</dd></div>
+    </dl>
+    <p class="callout"><strong>A sorrendet ez határozza meg:</strong> nyilvános appot éles boltra csak a Shopify jóváhagyása után lehet telepíteni. Addig a valódi boltos pilot egyedi appokkal megy, boltonként eggyel, a mostani kóddal.</p>
+  </header>
+
+  <section class="panel" aria-labelledby="schedule-title">
+    <div class="panel-head">
+      <h2 id="schedule-title">Ütemezés</h2>
+      <p>Hetek a kezdéstől. A teli sáv a gyors esetet mutatja, a halvány folytatás az óvatos becslést. Becslés, nem vállalás.</p>
+    </div>
+    <div class="legend" aria-hidden="true">
+      <span><i class="sw c-founder"></i>Alapítói feladat</span>
+      <span><i class="sw c-pilot"></i>Pilot</span>
+      <span><i class="sw c-dev"></i>Fejlesztés</span>
+      <span><i class="sw c-verify"></i>Teszt és bírálat</span>
+      <span><i class="sw range"></i>Óvatos becslés</span>
+    </div>
+    <div class="chart-scroll">
+      <div class="chart" role="img" aria-label="Ütemezés hetekben. Döntések 0–2. hét, fiókok és kérelmek 0–4., pilot 0–3., GraphQL-kliens 0–2., beágyazott app 1–5., számlázás 1–3,5., telepítés 3–6,5., belső teszt 4–8,5., adatlap 3–8,5., Shopify-bírálat 5–14,5. hét. Megjelenés legkorábban a 7., óvatos becsléssel a 14–15. héten.">
+        <div class="row axis">
+          <span></span>
+          <div class="track">
+            <span class="tick" style="--w:0">0. hét</span>
+            <span class="tick" style="--w:2">2.</span>
+            <span class="tick" style="--w:4">4.</span>
+            <span class="tick" style="--w:6">6.</span>
+            <span class="tick" style="--w:8">8.</span>
+            <span class="tick" style="--w:10">10.</span>
+            <span class="tick" style="--w:12">12.</span>
+            <span class="tick" style="--w:14">14.</span>
+          </div>
+        </div>
+        <div class="row"><span class="row-label"><b>1</b>Döntések és spec</span><div class="track c-founder"><span class="bar" style="--s:0;--a:1"></span><span class="ext" style="--a:1;--b:2"></span></div></div>
+        <div class="row"><span class="row-label"><b>2</b>Fiókok és kérelmek</span><div class="track c-founder"><span class="bar" style="--s:0;--a:2"></span><span class="ext" style="--a:2;--b:4"></span></div></div>
+        <div class="row"><span class="row-label"><b>3</b>Pilot a mostani kóddal</span><div class="track c-pilot"><span class="bar" style="--s:0;--a:1"></span><span class="ext" style="--a:1;--b:3"></span></div></div>
+        <div class="row"><span class="row-label"><b>4</b>GraphQL-kliens</span><div class="track c-dev"><span class="bar" style="--s:0;--a:1.5"></span><span class="ext" style="--a:1.5;--b:2"></span></div></div>
+        <div class="row"><span class="row-label"><b>5</b>Beágyazott app</span><div class="track c-dev"><span class="bar" style="--s:1;--a:3"></span><span class="ext" style="--a:3;--b:5"></span></div></div>
+        <div class="row"><span class="row-label"><b>6</b>Számlázás</span><div class="track c-dev"><span class="bar" style="--s:1;--a:2"></span><span class="ext" style="--a:2;--b:3.5"></span></div></div>
+        <div class="row"><span class="row-label"><b>7</b>Telepítés, első beállítás</span><div class="track c-dev"><span class="bar" style="--s:3;--a:4"></span><span class="ext" style="--a:4;--b:6.5"></span></div></div>
+        <div class="row"><span class="row-label"><b>8</b>Belső teszt</span><div class="track c-verify"><span class="bar" style="--s:4;--a:5"></span><span class="ext" style="--a:5;--b:8.5"></span></div></div>
+        <div class="row"><span class="row-label"><b>9</b>Adatlap</span><div class="track c-founder"><span class="bar" style="--s:3;--a:5"></span><span class="ext" style="--a:5;--b:8.5"></span></div></div>
+        <div class="row"><span class="row-label"><b>9</b>Shopify-bírálat</span><div class="track c-verify"><span class="bar" style="--s:5;--a:7"></span><span class="ext" style="--a:7;--b:14.5"></span></div></div>
+        <div class="row milestones">
+          <span class="row-label"><b>10</b>Megjelenés</span>
+          <div class="track">
+            <span class="ms" style="--w:7">legkorábban</span>
+            <span class="ms late" style="--w:14.5">óvatosan</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="chart-note">A 4. és a 6. lépés nem vár a pilotra; párhuzamosan futhatnak vele. A bírálat idejét nem mi szabjuk meg, ezért ott a legszélesebb a sáv.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="steps-title">
+    <div class="panel-head">
+      <h2 id="steps-title">Lépések</h2>
+      <p>Mindegyik lépésből egy vagy több kártya lesz a build planben. A „Kész, ha” sor a kártya elfogadási feltétele.</p>
+    </div>
+    <ol class="steps">
+      <li class="step">
+        <span class="num">1</span>
+        <div class="step-body">
+          <h3>Döntések és spec-módosítások</h3>
+          <div class="meta"><span class="chip founder">Alapító</span><span class="chip">1–2 hét</span><span class="when">Most indítható</span></div>
+          <p class="why">Ezek nélkül a fejlesztés rossz irányba indulna, és a mostani spec több pontja kifejezetten tiltja az új megoldást.</p>
+          <ul>
+            <li>Terjesztés: nyilvános app az App Store-ban. Egyedi appot csak egy boltra lehet telepíteni.</li>
+            <li>Számlázás: a Shopify-boltoknál Shopify App Pricing a Stripe helyett. A csomagokat a Partner Dashboardon kell megadni, a csomagválasztó oldalt a Shopify adja. Ár és próbaidő.</li>
+            <li>Fiók = bolt. Az e-mail-cím csak az értesítésekhez kell.</li>
+            <li>A sortiva.app ingyenes webshop-elemzése marketingoldal marad, a gombja az App Store-adatlapra visz.</li>
+            <li>Rendelésablak: 60 nap (nem kell külön engedély) vagy 90 nap (<code>read_all_orders</code>, indoklással kérhető).</li>
+            <li>Spec: main §4.1, §4.2, §5, §6.1–6.2, §9.5; tech §3; ui §2; Appendix A; a 16-os és 21-es invariáns szövege. Minden döntés a <code>DECISIONS.md</code>-be.</li>
+          </ul>
+          <p class="done"><b>Kész, ha:</b> a spec módosítva, a döntések naplózva.</p>
+        </div>
+      </li>
+
+      <li class="step">
+        <span class="num">2</span>
+        <div class="step-body">
+          <h3>Fiókok, engedélykérések, jogi szövegek</h3>
+          <div class="meta"><span class="chip founder">Alapító</span><span class="chip">2–4 hét átfutás</span><span class="when">Most indítható</span></div>
+          <p class="why">Ezeknél nem a munka tart sokáig, hanem a várakozás, ezért érdemes az első napon elindítani őket.</p>
+          <ul>
+            <li>Shopify Partner-fiók, az app létrehozása, 2–3 dev store.</li>
+            <li>Kérelem a védett vásárlói adatokhoz, mert a rendelések ide tartoznak. Valószínűleg az 1. szint elég, mert nevet, címet, e-mailt és telefonszámot nem kérünk le. Az adatvédelmi kérdőív kitöltése.</li>
+            <li>Ha 90 napos a rendelésablak: <code>read_all_orders</code> kérelem.</li>
+            <li>Adatvédelmi nyilatkozat és ÁSZF, support-cím, végleges domain, levélküldő aldomain SPF, DKIM és DMARC beállítással.</li>
+            <li>Kulcsok: Anthropic, DataForSEO, Resend, PostHog, titkosítási mesterkulcs.</li>
+          </ul>
+          <p class="done"><b>Kész, ha:</b> minden kulcs a titoktárban van, és a kérelmek be vannak adva.</p>
+        </div>
+      </li>
+
+      <li class="step">
+        <span class="num">3</span>
+        <div class="step-body">
+          <h3>Pilot a mostani kóddal</h3>
+          <div class="meta"><span class="chip pilot">Közös</span><span class="chip">1–3 hét</span><span class="when">Most indítható</span></div>
+          <p class="why">Amíg az App Store-változat készül, itt derül ki, milyenek a cikkek egy valódi boltban. Ez a terv legnagyobb bizonytalansága.</p>
+          <ul>
+            <li>A Railway indítóparancs javítása (<code>railway.toml</code>), első élesítés.</li>
+            <li>Az első éles minőségteszt (<code>pnpm eval</code>) és a promptok javítása.</li>
+            <li>Termékképek a cikkekbe. Ehhez sémabővítés kell.</li>
+            <li>API-verzió: <code>2025-01</code> helyett <code>2026-07</code>. Rendelésablak az 1. lépés döntése szerint.</li>
+            <li>App-kulcs boltonként, mert ma egyetlen <code>SHOPIFY_API_KEY</code> van, egyedi appból pedig boltonként egy kell.</li>
+            <li>Számlázás: egyedi appnál a Shopify-számlázás nem használható, ezért a pilot idején marad a Stripe, vagy ingyenes. Aktív előfizetés nélkül a rendszer nem ír cikket.</li>
+            <li>Dev store teszt (T10.4), aztán 1–3 barátságos bolt.</li>
+          </ul>
+          <p class="done"><b>Kész, ha:</b> valódi boltban valódi cikkek mennek ki automatikusan, és látszik a minőségük.</p>
+        </div>
+      </li>
+
+      <li class="step">
+        <span class="num">4</span>
+        <div class="step-body">
+          <h3>GraphQL-kliens a REST helyett</h3>
+          <div class="meta"><span class="chip dev">Fejlesztés</span><span class="chip">1,5–2 hét</span><span class="when">Most indítható</span></div>
+          <ul>
+            <li>A <code>packages/providers/src/shopify</code> átírása: termékek a metafieldekkel együtt egy kérésben, rendelések tételei, oldalak, blogok, cikkek, a bolt adatai.</li>
+            <li>A REST-hívások kivezetése innen is: <code>jobs/src/ingestion/catalog.ts</code>, <code>sweep.ts</code>, <code>metafields.ts</code>, <code>jobs/src/inventory/source.ts</code>, <code>core/src/catalog/detect.ts</code>.</li>
+            <li>Közzététel <code>blogCreate</code>, <code>articleCreate</code> és <code>articleUpdate</code> hívással, a saját azonosító továbbra is metafieldben. A „kiment-e már?” keresés is GraphQL-lel.</li>
+            <li>A hívásszámláló igazítása a GraphQL költségalapú korlátjához; nagy katalógusnál tömeges lekérdezés.</li>
+            <li>A tesztdublők frissítése. A crash-teszt továbbra is azonosítónként pontosan egy cikket mutasson a boltban.</li>
+          </ul>
+          <p class="done"><b>Kész, ha:</b> a kódban nem maradt REST-hívás, és a <code>pnpm chaos</code> zöld.</p>
+        </div>
+      </li>
+
+      <li class="step">
+        <span class="num">5</span>
+        <div class="step-body">
+          <h3>Beágyazott app és belépés</h3>
+          <div class="meta"><span class="chip dev">Fejlesztés</span><span class="chip">2–3 hét</span><span class="when">Az 1. lépés után</span></div>
+          <p class="why">A legnagyobb egyedi tétel, mert megváltozik, mi azonosítja a fiókot. Ma az e-mail-cím, utána a bolt.</p>
+          <ul>
+            <li><code>shopify.app.toml</code>: olvasási jogok; a <code>write_content</code> utólag kérhető jogként (<code>optional_scopes</code>); a 16 változásértesítés (webhook) és a hiányzó <code>collections/delete</code>; beágyazás; a Shopify által kezelt telepítés.</li>
+            <li>App Bridge és Shopify session token: a <code>withAccount</code> (<code>apps/web/app/api/auth/_lib/session.ts</code>) az ellenőrzött tokenből olvassa ki a boltot, abból pedig a fiókot.</li>
+            <li>Token exchange: offline hozzáférési token átirányítás nélkül, titkosítva tárolva.</li>
+            <li>CSP <code>frame-ancestors</code>, navigáció az App Bridge menüjével, a saját oldalsáv egyszerűsítése.</li>
+            <li>A Search Console-bekötés felső szintű ablakban nyíljon, mert a Google bejelentkezése nem fut iframe-ben.</li>
+          </ul>
+          <p class="done"><b>Kész, ha:</b> a Sortiva a Shopify adminon belül, külön belépés nélkül használható.</p>
+        </div>
+      </li>
+
+      <li class="step">
+        <span class="num">6</span>
+        <div class="step-body">
+          <h3>Számlázás Shopify-on</h3>
+          <div class="meta"><span class="chip dev">Fejlesztés</span><span class="chip">1–1,5 hét</span><span class="when">Az 1. lépés után</span></div>
+          <ul>
+            <li>Csomagok a Partner Dashboardon; a csomagválasztó oldalt a Shopify adja.</li>
+            <li>Az előfizetés állapotát háttérfeladat írja a helyi táblába. A cikkírás előtti jogosultság-ellenőrzés továbbra is csak ezt olvassa, és nem hív külső API-t.</li>
+            <li>A Shopify mostani leírása szerint az aktív előfizetést a Partner API adja vissza, a régi webhook pedig kivezetés alatt áll. Ezt a munka indulásakor újra ellenőrizni kell.</li>
+            <li>A Stripe kivezetése a Shopify-boltoknál: <code>core/src/billing</code>, <code>api/billing</code>, <code>api/webhooks/stripe</code>, <code>(public)/plan</code>, <code>BillingCard</code>. A lint-ellenőrzés és a pillanatkép-tesztek frissítése.</li>
+            <li>Csomagváltás support nélkül; újratelepítéskor újra jóváhagyás.</li>
+          </ul>
+          <p class="done"><b>Kész, ha:</b> dev store-on végigmegy a próbaidő, a fizetés, a lemondás és az újratelepítés.</p>
+        </div>
+      </li>
+
+      <li class="step">
+        <span class="num">7</span>
+        <div class="step-body">
+          <h3>Telepítés és első beállítás</h3>
+          <div class="meta"><span class="chip dev">Fejlesztés</span><span class="chip">1–1,5 hét</span><span class="when">Az 5. lépés után</span></div>
+          <ul>
+            <li>Telepítés után azonnali hitelesítés és fiók a bolthoz. A domain a bolt fő domainjéből jön, az „egy domain, egy fiók” szabály marad.</li>
+            <li>Kiesik a domain megadása, a platformfelismerés és a külön Shopify-összekötés. Az új állapotokhoz sémahullám kell.</li>
+            <li>Írási jog a Beállításokból: <code>shopify.scopes.request(['write_content'])</code>, utána blogválasztó.</li>
+            <li>Eltávolítás (<code>app/uninstalled</code>) és újratelepítés kezelése.</li>
+          </ul>
+          <p class="done"><b>Kész, ha:</b> egy dev store-on a telepítéstől az első lehetőségekig minden végigmegy.</p>
+        </div>
+      </li>
+
+      <li class="step">
+        <span class="num">8</span>
+        <div class="step-body">
+          <h3>Belső teszt dev store-okon</h3>
+          <div class="meta"><span class="chip verify">Közös</span><span class="chip">1–2 hét</span><span class="when">A 4–7. lépés után</span></div>
+          <ul>
+            <li>A T10.4 újraírva: telepítés, token, szinkron, írási jog, kétfázisú közzététel, webhook-aláírás, GDPR-webhookok, számlázás.</li>
+            <li><code>pnpm chaos</code> és <code>pnpm eval</code> zöld.</li>
+            <li>Az App Store követelménylistájának végigellenőrzése, pontonként.</li>
+          </ul>
+          <p class="done"><b>Kész, ha:</b> minden pont zöld, és egy kívülálló segítség nélkül végig tud menni a telepítésen.</p>
+        </div>
+      </li>
+
+      <li class="step">
+        <span class="num">9</span>
+        <div class="step-body">
+          <h3>Adatlap, beadás, bírálat</h3>
+          <div class="meta"><span class="chip founder">Alapító</span><span class="chip">Előkészítés a 3. héttől</span><span class="when">Beadás a 8. lépés után</span></div>
+          <ul>
+            <li>Adatlap: név, rövid és hosszú leírás, képernyőképek, csomagok, support, adatvédelmi link.</li>
+            <li>Útmutató a bírálónak: melyik dev store, milyen lépésekben, mit hol lát.</li>
+            <li>A bírálat hetekig tart, és a javítási körökre is kell idő.</li>
+          </ul>
+          <p class="done"><b>Kész, ha:</b> a Shopify jóváhagyta az appot.</p>
+        </div>
+      </li>
+
+      <li class="step">
+        <span class="num">10</span>
+        <div class="step-body">
+          <h3>Indulás és bővítés</h3>
+          <div class="meta"><span class="chip">Közös</span><span class="when">A jóváhagyás után</span></div>
+          <ul>
+            <li>A pilot boltok átköltöztetése a nyilvános appra: az egyedi app eltávolítása, a nyilvános telepítése.</li>
+            <li>A háttérfeladatok külön Railway-szolgáltatásba, amikor lassítani kezdik a felületet.</li>
+            <li>A költségkorlátok beállítása valós DataForSEO- és modellárakkal.</li>
+            <li>A sortiva.app gombja az App Store-adatlapra mutat.</li>
+          </ul>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <div class="pair">
+    <section class="panel" aria-labelledby="risk-title">
+      <h2 id="risk-title">Ami csúsztathatja</h2>
+      <ul>
+        <li>A cikkek minőségét valódi modellel még senki nem látta. Ha sok promptjavítás kell, a pilot elhúzódik.</li>
+        <li>A bírálat ideje és a javítási körök száma nem rajtunk múlik.</li>
+        <li>A <code>read_all_orders</code> engedélyt nem biztos, hogy megkapjuk. A rendszernek 60 napos rendelésablakkal is működnie kell.</li>
+        <li>A fiók = bolt váltás sok képernyőt és tesztet érint.</li>
+      </ul>
+    </section>
+    <section class="panel" aria-labelledby="work-title">
+      <h2 id="work-title">Hogyan lesz ebből munka</h2>
+      <ul>
+        <li>Az 1. lépés specmódosításai nélkül egyetlen kártya sem indulhat, mert a mostani invariánsok tiltják az új megoldást.</li>
+        <li>Két sémahullám kell: a képekhez (3.) és a bolt alapú fiókhoz, illetve az új telepítési állapotokhoz (5–7.).</li>
+        <li>A 4. és a 6. lépés külön sávban, párhuzamosan mehet; az 5. és a 7. egymásra épül.</li>
+        <li>A pilot tanulságai (prompt, képek, API-verzió) az App Store-változatba is átkerülnek.</li>
+      </ul>
+    </section>
+  </div>
+
+  <footer class="sources">
+    <p class="eyebrow">Források</p>
+    <ul>
+      <li><a href="https://shopify.dev/docs/apps/launch/shopify-app-store/app-store-requirements">Shopify App Store-követelmények</a></li>
+      <li><a href="https://shopify.dev/docs/apps/launch/distribution">Terjesztési módok</a> · <a href="https://community.shopify.dev/t/unlisted-shopify-app-review-required-before-installation/33101">nyilvános app telepítése bírálat előtt</a></li>
+      <li><a href="https://shopify.dev/docs/apps/launch/billing/managed-pricing">Shopify App Pricing</a></li>
+      <li><a href="https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/token-exchange">Token exchange</a> · <a href="https://shopify.dev/docs/apps/build/authentication-authorization/app-installation/manage-access-scopes">utólag kérhető jogok</a></li>
+      <li><a href="https://shopify.dev/docs/apps/launch/protected-customer-data">Védett vásárlói adatok</a> · <a href="https://shopify.dev/changelog/apps-now-need-shopify-approval-to-read-orders-older-than-60-days">60 napnál régebbi rendelések</a></li>
+      <li><a href="https://shopify.dev/docs/api/usage/versioning">API-verziók</a></li>
+    </ul>
+  </footer>
+</main>
+
+</body></html>
