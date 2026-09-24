@@ -9,11 +9,18 @@
  * had ever started the thing.
  *
  * So this does the one thing none of them did. It runs the built server the way
- * the platform runs it, waits for it to answer, and asks for two pages: the
- * landing page, which is the public funnel, and the health check, which is what
- * the platform polls to decide whether to keep the container. Both must answer
- * 200. A server that will not start does not answer at all, and Next answers
- * 500 to everything when its start-up hook throws, so either failure lands here.
+ * the platform runs it, waits for it to answer, and asks it for three things:
+ * the landing page, which is the public funnel; the health check, which is what
+ * the platform polls to decide whether to keep the container; and the preview
+ * endpoint, which is the funnel's only moving part. A server that will not start
+ * does not answer at all, and Next answers 500 to everything when its start-up
+ * hook throws, so either failure lands here.
+ *
+ * The preview is here because two pages were not enough: the landing page
+ * rendered perfectly while every preview answered 500, for a reason that only
+ * exists in a built application — a file path the bundler rewrote. Nothing that
+ * reads source could see it, and neither could a check that only asked for
+ * pages.
  *
  * It deliberately does not build: `pnpm build` is the step before it, and a
  * smoke check that rebuilds hides which of the two failed.
@@ -69,6 +76,31 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 async function get(url) {
   try {
     const response = await fetch(url, { redirect: 'manual' })
+    return { status: response.status, body: (await response.text()).slice(0, 400) }
+  } catch (error) {
+    return { status: 0, body: String(error?.cause?.code ?? error?.message ?? error) }
+  }
+}
+
+/**
+ * Asks the preview for a card the way the landing page does, and reports what
+ * came back.
+ *
+ * It deliberately does **not** expect a card. Getting one means passing a real
+ * bot challenge and paying for a model call, which a check that runs on every
+ * build must not do. What it proves instead is that the request reached the
+ * preview's own code: the bot challenge refusing a junk token is a *working*
+ * preview, and the failure this exists to catch — the prompt file not being
+ * where the built application looks for it — is a 500 raised before any of that
+ * is reached.
+ */
+async function postPreview(url) {
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ url: 'https://example.com', turnstileToken: 'smoke-check-not-a-real-token' }),
+    })
     return { status: response.status, body: (await response.text()).slice(0, 400) }
   } catch (error) {
     return { status: 0, body: String(error?.cause?.code ?? error?.message ?? error) }
@@ -181,6 +213,25 @@ if (broken.length > 0) {
   )
 }
 
-console.log(`\nThe ${dev ? 'development' : 'built'} application started and served both pages in ${((Date.now() - started) / 1000).toFixed(1)}s.`)
+const preview = await postPreview(`${base}/api/preview`)
+if (preview.status === 500 || preview.status === 0) {
+  console.log(`FAIL  POST /api/preview -> ${preview.status}`)
+  fail(
+    'the preview endpoint failed before it could refuse anything',
+    `  POST /api/preview -> ${preview.status}\n  ${preview.body}`,
+  )
+}
+if (preview.status === 503) {
+  console.log(`FAIL  POST /api/preview -> 503`)
+  fail(
+    'the preview refused before it reached its own wiring, so this check could not see whether it works',
+    'TURNSTILE_SECRET_KEY is unset. The endpoint answers 503 at the bot challenge, before the\n' +
+      'prompt file and the vendor clients are built — which is the half this check exists to\n' +
+      'exercise. Set the key (any value will do; the token below is refused either way).',
+  )
+}
+console.log(`PASS  POST /api/preview -> ${preview.status} (reached the preview, refused the junk token)`)
+
+console.log(`\nThe ${dev ? 'development' : 'built'} application started and served the funnel in ${((Date.now() - started) / 1000).toFixed(1)}s.`)
 stopServer()
 process.exit(0)

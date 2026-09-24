@@ -7021,3 +7021,19 @@ The state format went from v1 to v2. A consent screen left open across the deplo
 **Not proved:** nobody has clicked through this in a browser. The handlers, the redirect target and the stored row are real; that the picker renders on the Connections screen is asserted by its mount and by the existing component's own tests, not by a rendered page.
 
 Nearest spec: main §6.7 (connecting, and what triggers the backfill), §7.11 (limited intelligence); ui §9.3 (the picker belongs on Connections).
+
+## 2026-09-24 — REMEDIATION card 7 — The public preview answers again, and the smoke check now asks it to
+
+Context: the preview is the product's only unauthenticated surface and the whole of the landing funnel. Every request to it answered 500, before any vendor was reached.
+
+**The cause.** The route read its prompt from a file URL built out of the module's own address. The bundler treats that as a reference to an asset it should move into the build output, rewrites it, and what arrives at `fileURLToPath` is no longer a real file URL — so the read threw on the first line of the request. `packages/llm/src/prompts.ts` had already hit this and solved it by composing the path from `fileURLToPath(import.meta.url)` instead, which the bundler cannot see; `DECISIONS.md` recommended the preview make the same switch on 2026-09-01 and nothing had. Nothing blocked it: the rule limiting what the preview may import covers only files under `packages/core/src/preview/`, and this config already deep-imports the LLM package.
+
+**Reproduced both ways.** Before committing, I put the old form back, rebuilt, and ran the smoke check: `POST /api/preview -> 500`, with `TypeError: The "path" argument must be of type string or an instance of URL. Received an instance of URL` — the bundler's rewritten object, exactly as described. Restored, rebuilt, and it answers 403. That is the one thing worth more than the fix: the check can see the defect.
+
+**The smoke check now exercises the preview**, which is the half that would have caught this. It posts a well-formed request with a junk bot-challenge token and requires the answer **not** to be a 500. It deliberately does not expect a card: getting one means passing a real challenge and paying for a model call, and a check that runs on every build must not spend money. A challenge refusing a junk token is a working preview.
+
+**It also refuses to pass on a 503.** With no Turnstile secret the endpoint stops at the bot challenge — before the prompt file and the vendor clients are built, which is the half this exists to exercise. Answering "fine" there would be the exact failure the whole programme is about: a check reporting success without doing the work. So a 503 fails, and says why and what to set.
+
+**One thing carried forward rather than fixed.** The loader reads from the repository tree when first asked, which is how the deployment runs today. `next.config.mjs` does not list the prompts directory under `outputFileTracingIncludes`, and neither did the old form. Harmless now; the day anyone sets `output: 'standalone'`, every prompt in the product goes missing the same way this one did, and `signals.config.yaml` is already listed there as the precedent for what to add.
+
+Nearest spec: main §3 (the preview funnel), §14.2 (prompts are versioned files); tech §2.

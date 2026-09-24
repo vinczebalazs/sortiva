@@ -195,11 +195,11 @@ describe('clientIpOf', () => {
 })
 
 describe('the versioned prompt file (main §14.2)', () => {
-  it('loads, and its filename matches the version stamped on every capture', async () => {
-    const { PREVIEW_PROMPT_URL, PREVIEW_PROMPT_VERSION, previewPrompt } = await import('./config')
+  it('loads, and its version matches the one stamped on every capture', async () => {
+    const { PREVIEW_PROMPT_VERSION, previewPrompt } = await import('./config')
 
-    expect(PREVIEW_PROMPT_URL.href.endsWith(`${PREVIEW_PROMPT_VERSION}.md`)).toBe(true)
     const loaded = previewPrompt()
+    expect(loaded.version).toBe(PREVIEW_PROMPT_VERSION)
     expect(loaded.version).toBe('preview.v1')
     expect(loaded.text.length).toBeGreaterThan(200)
     // The prompt must tell the model to answer in the site's own language

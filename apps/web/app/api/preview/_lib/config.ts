@@ -1,12 +1,10 @@
-import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 import { OutboundScrapeCap, PreviewRateLimiter, type PreviewPrompt } from '@sortiva/core'
 import { db, PostgresCostLedger, PostgresRequestCache } from '@sortiva/db'
-// Deep import, not the `@sortiva/llm` barrel: the barrel re-exports the prompt
-// loader, whose `new URL('../prompts/', import.meta.url)` names a *directory*,
-// which webpack cannot resolve — `next build` fails on it. See the note on
-// PREVIEW_PROMPT_URL below and DECISIONS 2026-09-01 T1.3.
+// Deep imports rather than the `@sortiva/llm` barrel, which drags the whole
+// package into this bundle. Both of these are small modules with no side
+// effects at import.
 import { AnthropicLlmClient } from '@sortiva/llm/client'
+import { loadPrompt } from '@sortiva/llm/prompts'
 import { CloudflareTurnstile, GuardedPageFetcher, PosthogServerCapture } from '@sortiva/providers'
 import { OpsFlagPreviewSwitch, PostgresPreviewCache } from './store'
 
@@ -71,26 +69,31 @@ export function previewCapture(): PosthogServerCapture {
  * Prompts are versioned files (`prompts/<name>.v<N>.md`) and the version is
  * stamped on every model call, so a stored artefact stays reproducible.
  *
- * Read here rather than through `@sortiva/llm`'s `loadPrompt`, which cannot be
- * bundled by Next: it composes its path from a directory URL, and webpack
- * resolves `new URL(...)` at build time and fails on a directory. A single
- * literal file URL is the form webpack handles — `packages/rules` already loads
- * `signals.config.yaml` exactly this way. `loadPrompt` needs a one-line change
- * in `packages/llm` before any Next-side card can call it; T1.3 was not
- * permitted to make it. See DECISIONS 2026-09-01 T1.3.
+ * Loaded through `@sortiva/llm`'s own loader, like every other prompt in the
+ * product. This file used to read the prompt itself, from a file URL built out
+ * of this module's own address — and **that is why every public preview
+ * answered 500**. The bundler rewrites such a URL into a path inside the build
+ * output, where a prompt written for the repository tree does not exist, so the
+ * read failed before any vendor was reached. The loader composes its path
+ * instead, which is opaque to the bundler; it was changed to do so for exactly
+ * this reason, and the switch has been recommended in `DECISIONS.md` since
+ * 2026-09-01.
+ *
+ * The loader reads from the repository tree when it is first asked, which is
+ * how the deployment runs today. If `next.config.mjs` ever sets
+ * `output: 'standalone'`, the prompts directory needs an
+ * `outputFileTracingIncludes` entry, exactly as `signals.config.yaml` already
+ * has — it is listed under neither today, and that is the day this breaks
+ * again.
  */
 export const PREVIEW_PROMPT_VERSION = 'preview.v1'
-export const PREVIEW_PROMPT_URL = new URL(
-  '../../../../../../packages/llm/prompts/preview.v1.md',
-  import.meta.url,
-)
 
 let prompt: PreviewPrompt | undefined
 
 export function previewPrompt(): PreviewPrompt {
-  prompt ??= {
-    version: PREVIEW_PROMPT_VERSION,
-    text: readFileSync(fileURLToPath(PREVIEW_PROMPT_URL), 'utf8'),
+  if (!prompt) {
+    const loaded = loadPrompt('preview', 1)
+    prompt = { version: loaded.version, text: loaded.text }
   }
   return prompt
 }
