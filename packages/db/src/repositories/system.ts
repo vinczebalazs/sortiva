@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, gt, inArray, isNull, sql } from 'drizzle-orm'
 import type { Db } from '../client'
 import {
   incidentFindings,
@@ -60,11 +60,15 @@ export async function readCachedRequest(
   db: Db,
   _scope: SystemScope,
   cacheKey: string,
+  // The caller's clock, not the database's: a job that runs on an injected
+  // clock writes expiry stamps from it, so the read must judge them by it too,
+  // or the same job sees its own fresh entry as expired.
+  now: Date = new Date(),
 ): Promise<RequestCacheRow | undefined> {
   const [row] = await db
     .select()
     .from(requestCache)
-    .where(and(eq(requestCache.cacheKey, cacheKey), sql`${requestCache.expiresAt} > now()`))
+    .where(and(eq(requestCache.cacheKey, cacheKey), gt(requestCache.expiresAt, now)))
     .limit(1)
   return row
 }

@@ -159,6 +159,7 @@ export async function readIntentGapSignals(
         serpCacheKey: snapshot.cacheKey,
         serpFetchedAt: snapshot.fetchedAt,
       }),
+      now,
     )
     if (!held) {
       skipped.push({ page: candidate.page, reason: 'no_cached_analysis' })

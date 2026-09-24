@@ -164,7 +164,7 @@ export async function analyseIntentGap(
     .filter((result) => result.url !== input.page.url)
     .slice(0, config.serp_top_n)
 
-  const held = await readCachedRequest(deps.db, system, cacheKey)
+  const held = await readCachedRequest(deps.db, system, cacheKey, now)
   if (held) {
     // Replayed, not re-derived: the gap set is worked out from the stored
     // answer, so a change to the consensus floor in `packages/rules` takes

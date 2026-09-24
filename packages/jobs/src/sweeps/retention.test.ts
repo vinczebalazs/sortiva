@@ -121,27 +121,40 @@ describe('the seven-day hold on a deleted account’s domain', () => {
 })
 
 describe('pruning by age', () => {
-  async function webhookAged(id: string, days: number): Promise<void> {
+  // Rows are aged from the clock the sweep will be given, never from the
+  // database's: a test that pins the sweep to a fixed date while ageing rows
+  // from real time passes the week it is written and fails a month later.
+  async function webhookAged(id: string, days: number, from: Date = new Date()): Promise<void> {
     await harness.pool.query(
       `insert into webhook_events (webhook_id, source, topic, payload, received_at, status)
-       values ($1, 'shopify', 'products/update', '{"shop_handle":"acme"}'::jsonb, now() - ($2 || ' days')::interval, 'processed')`,
-      [id, String(days)],
+       values ($1, 'shopify', 'products/update', '{"shop_handle":"acme"}'::jsonb, $3::timestamptz - ($2 || ' days')::interval, 'processed')`,
+      [id, String(days), from],
     )
   }
 
-  async function notificationAged(accountId: string, key: string, days: number): Promise<void> {
+  async function notificationAged(
+    accountId: string,
+    key: string,
+    days: number,
+    from: Date = new Date(),
+  ): Promise<void> {
     await harness.pool.query(
       `insert into notifications (account_id, type, dedupe_key, payload_json, created_at)
-       values ($1, 'article_published', $2, '{}'::jsonb, now() - ($3 || ' days')::interval)`,
-      [accountId, key, String(days)],
+       values ($1, 'article_published', $2, '{}'::jsonb, $4::timestamptz - ($3 || ' days')::interval)`,
+      [accountId, key, String(days), from],
     )
   }
 
-  async function emailAged(accountId: string, key: string, days: number): Promise<void> {
+  async function emailAged(
+    accountId: string,
+    key: string,
+    days: number,
+    from: Date = new Date(),
+  ): Promise<void> {
     await harness.pool.query(
       `insert into email_sends (account_id, type, dedupe_key, template_version, state, queued_at)
-       values ($1, 'article_published', $2, 'v1', 'sent', now() - ($3 || ' days')::interval)`,
-      [accountId, key, String(days)],
+       values ($1, 'article_published', $2, 'v1', 'sent', $4::timestamptz - ($3 || ' days')::interval)`,
+      [accountId, key, String(days), from],
     )
   }
 
@@ -195,12 +208,12 @@ describe('pruning by age', () => {
 
   it('is idempotent: a second run the same night deletes nothing', async () => {
     const accountId = await insertAccount(harness.pool, 'twice@example.com')
-    await webhookAged('old-delivery', 31)
-    await notificationAged(accountId, 'old', 91)
-    await emailAged(accountId, 'old', 366)
+    const now = new Date(DELETED_AT.getTime() + 8 * DAY)
+    await webhookAged('old-delivery', 31, now)
+    await notificationAged(accountId, 'old', 91, now)
+    await emailAged(accountId, 'old', 366, now)
     await deletedAccountWithDomain('twice.example')
 
-    const now = new Date(DELETED_AT.getTime() + 8 * DAY)
     const first = await runRetentionSweep(deps(now))
     const second = await runRetentionSweep(deps(now))
 
