@@ -14,7 +14,7 @@ This is a **plan**, not a spec and not a licence. `CLAUDE.md` still governs: one
 4. Work the phases in §4 in order. Each numbered item is a task card: it says what is wrong in plain words, where, what "done" means, which lane owns it (build plan §3), and which invariants it touches.
 5. §5 is the complete finding ledger, so you can check nothing was dropped.
 
-**The single most important instruction:** do not start fixing individual bugs on `main` today. Phase A merges a branch that already fixes thirteen of them and rewrites the files another eleven live in. Fixing those on `main` first means doing the work twice and then resolving a conflict between two fixes.
+**Phase A is done.** It was completed on 2026-09-24: the working tree was committed in eight commits, the `shopify-hardening` branch was merged into `main`, and the full gate passed including 4,661 tests and ten of ten chaos scenarios. Start at Phase B. The thirteen findings that branch fixes are closed; the eleven it touched without fixing are marked in §5 and still need doing.
 
 ---
 
@@ -50,7 +50,7 @@ Thirteen of the ninety-five are **already fixed** on an unmerged branch (§1.3).
 
 **The problem.** `main` talks to Shopify over the REST API pinned to version `2025-01`, which is retired, and stores the access token with no expiry and no refresh token. The app registration Sortiva uses issues tokens that expire after about an hour. So on `main`, a merchant connects their store, the first catalogue read may work, and within the hour every Shopify call fails with a permission error, which the code reads as a dead token and uses to disconnect the store. The merchant is asked to reconnect, and the cycle repeats forever.
 
-**Work already done, and not merged.** The branch `shopify-hardening` is six commits, 109 files, about 13,000 added lines. It is not merged into `main` and not pushed. It:
+**Work already done, and now merged.** The branch `shopify-hardening` was six commits, 109 files, about 13,000 added lines. It was merged into `main` on 2026-09-24 (merge commit `5dc0504`) with the full gate green. It:
 
 - **Replaces REST with GraphQL entirely**, pinned to `2026-07`. No REST call remains anywhere (`packages/providers/src/shopify/graphql.ts` is new; verified by search).
 - **Adds token expiry and refresh**, serialised per store so two workers cannot both renew and leave one holding a token Shopify has forgotten (schema wave `0015`).
@@ -61,13 +61,17 @@ Thirteen of the ninety-five are **already fixed** on an unmerged branch (§1.3).
 - **Retries failed webhook deliveries** instead of marking them done.
 - **Adds `shopify.app.toml`**, which is the only place Shopify accepts the three privacy webhook topics a listing requires. **No webhook of any kind arrives until this file is pushed**, and pushing it needs a Shopify login, which is the founder's.
 
-**Verified effect on the bug ledger:** thirteen confirmed findings are fixed by this branch. A further eleven live in files the branch rewrote but are **not** fixed and must be redone against the merged result — they are marked in §5.
+**Verified effect on the bug ledger:** thirteen confirmed findings are fixed by this branch and are now closed. A further eleven live in files it rewrote but are **not** fixed; they were confirmed against pre-merge `main`, so re-confirm each against the merged code before carding it. They are marked in §5.
 
 **What the branch does not do.** It sets `embedded = false`. It is the *custom-app, standalone-web-app* path made to work — which is exactly what the pilot needs. It is **not** the Shopify App Store path. Do not mistake merging it for being ready to list.
 
-### 1.4 The working tree is dirty and collides with that branch
+### 1.4 What the merge had to decide, in case it was decided wrongly
 
-Twenty-three modified files and four untracked ones are uncommitted on `main`, including migration `0014` and a rewrite of the landing-revenue sweep. The branch's migration is numbered `0015` and, per its own commit message, "applies cleanly once `0014` is committed on main". The branch and the working tree both edit `packages/jobs/src/ingestion/sweep.ts`, `packages/providers/src/shopify/{oauth,publish,mock}.ts` and two test files. **Commit the working tree before merging the branch**, or the merge will be resolved against a moving target.
+Three conflicts needed judgement rather than a side, and a reviewer should check them:
+
+- **The Shopify credential rename** from `SHOPIFY_API_KEY` and `SHOPIFY_API_SECRET` to `SHOPIFY_CLIENT_ID` and `SHOPIFY_CLIENT_SECRET` was made on both sides independently, and they agree. The third variable that repeated the secret for webhook signatures is gone.
+- **The migration journal** keeps `0014` and `0015` in that order. Verified by applying both to an empty database.
+- **The catalogue sweep** was the one real trap. The branch predates the landing-revenue split into a fan-out job plus a per-store job, so taking its side would have deleted that fix and restored the bug where the scheduled job failed twenty-five times. The fix is kept; only the REST page helper that the GraphQL move made unnecessary was dropped.
 
 ---
 
@@ -161,21 +165,15 @@ Lane letters are from the build plan §3. Sizes: **S** one card, **M** two or th
 
 ---
 
-### Phase A — Make the tree coherent
+### Phase A — Make the tree coherent · **DONE 2026-09-24**
 
-**Nothing else starts until this is done.** Everything downstream is conflict management otherwise.
+Recorded for the reader who wants to know what happened, not work to do.
 
-**A1 — Commit the working tree.** S · integrator
-Twenty-three modified and four untracked files sit on `main`, including migration `0014` (adds a `delivered` value to the email-send state) and a rewrite of the landing-revenue sweep into a sweep plus a per-store job. `DECISIONS.md` already carries entries for both. Commit them as they stand; do not improve them in the same commit.
-*Done when:* `git status` is clean and the eleven-command gate is green.
+**A1 — Commit the working tree.** Done. Eight commits: the Shopify credential rename, schema mini-wave `0014`, the analytics provisioning script, the landing-revenue split, the two-clocks test fix, the dev launcher, the decision journal, and these documents.
 
-**A2 — Merge `shopify-hardening` into `main`.** M · integrator
-Six commits, 109 files. Expect conflicts in `packages/jobs/src/ingestion/sweep.ts`, `packages/providers/src/shopify/{oauth,publish,mock}.ts`, `packages/providers/src/shopify/{publish,shopify}.test.ts`, `apps/web/app/api/shopify/_lib/config.ts` and the Shopify webhook receiver. Migration `0015` must apply after `0014`.
-*Done when:* the gate is green, including `db:migrate` against a freshly created empty database, and `pnpm chaos` is still ten of ten.
-*Read first:* the six commit messages — they are unusually detailed and explain each behaviour change.
+**A2 — Merge `shopify-hardening` into `main`.** Done, merge commit `5dc0504`. Eight conflicts, three of which needed judgement (§1.4). Gate green: lint, lint:prove, typecheck, 349 test files and 4,661 tests, contracts (63 routes), build, smoke:boot, smoke:dev, chaos ten of ten, env:check, stubs:report, and `db:migrate` against a fresh database.
 
-**A3 — Re-verify the eleven findings the branch touched but did not fix.** S · integrator
-Listed in §5 with the marker `branch-touched`. They were confirmed against `main`; the code around them has moved. Confirm each still reproduces before carding it.
+**A3 — Re-verify the eleven findings the branch touched but did not fix.** **Still to do, and it is the first task.** Listed in §5 with the marker `branch-touched`. They were confirmed against pre-merge `main` and the code around them has moved. Confirm each still reproduces before carding it.
 
 ---
 
@@ -351,7 +349,7 @@ From the competitor research, in its own recommended order. **Every item needs a
 
 106 confirmed defects. Eleven were reproduced by running the app; ninety-five came from the code review, each confirmed by a second independent reviewer. Ten further claims were refuted and are not listed. Thirteen are fixed by the unmerged branch.
 
-Markers: **`branch-fixed`** — fixed by `shopify-hardening`, verify after merge and close. **`branch-touched`** — the branch rewrote this file but did not fix this; re-confirm against merged `main` before carding.
+Markers: **`branch-touched`** — the Shopify merge rewrote this file but did not fix this finding; re-confirm against merged `main` before carding it.
 
 ### 5.1 Reproduced by running the app
 
@@ -369,7 +367,7 @@ Markers: **`branch-fixed`** — fixed by `shopify-hardening`, verify after merge
 | low | The dev seed reports 40 products and inserts none | `packages/db/src/seed.ts:59` | F2 |
 | low | Calendar accepts an inverted date range; Connections screen contradicts itself; Turnstile key not valid on localhost | `various` | E |
 
-### 5.2 Fixed by the unmerged branch — verify after Phase A, then close
+### 5.2 Fixed by the Shopify merge — closed
 
 | Sev | Finding | Where |
 |---|---|---|
