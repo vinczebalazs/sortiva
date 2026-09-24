@@ -7109,3 +7109,41 @@ Context: the eval suite is the only check on what this product writes into a mer
 **What did not change.** No pass mark, no gold file, no prompt. The `field_f1` and `criterion_mae` scores are computed by the same code as before; only what is reported from them is new.
 
 Nearest spec: main §14.2 (the three sets and their pass marks).
+
+## 2026-09-24 — REMEDIATION-EVAL card 3 — The "invented a fact" check now reports inventions, and the distillation score is 0.752 rather than 0.805
+
+Context: distillation is the step that turns a merchant's product description into a fact sheet, and the sheet is the only thing about a product's words that anything downstream ever sees. Its eval has a hard fail — **zero invented field values**, no aggregate may absorb one — which fired on 36 of 50 cases. Much of that was the scorer.
+
+**What the scorer did wrong.** It compared `field=value` pairs after lower-casing, and reported any pair the expected sheet did not contain as an invented value. Three consequences, none of them an invention:
+
+- **A list was joined into one string.** The five claims on a bike light became one pair, so getting four of them right and adding a fifth was a whole fabrication rather than four hits and a miss.
+- **A trailing full stop changed the value.** "Wipe clean with a damp cloth." and "Wipe clean with a damp cloth" were different answers.
+- **An empty list was an assertion.** Where the expected sheet had items and the model returned none, it was reported as inventing `verifiable_claims=` — nothing was made up; the model declined to answer.
+
+And one the first run did not catch, which runs the other way: **agreeing that a field is empty scored as a hit.** A sheet where four of the ten fields are empty on both sides earned four free true positives for saying nothing. Ninety-nine of the 254 hits in the run below were that. The scorer was overstating the model as well as accusing it.
+
+**What it does now.** A field with one answer compares as before. A list compares item by item, so four right out of five is four hits and a miss. Case, surrounding space and trailing punctuation are not part of an answer; a full stop inside a number is. A field with nothing in it — null, blank or an empty list — asserts nothing and contributes nothing on either side.
+
+**Measured on the same fifty predictions, scored twice.** One run of the real model, every prediction saved, then scored with the old scorer and the new one, so the difference is the scorer alone with no re-sampling in it.
+
+| | old scorer | new scorer |
+|---|---|---|
+| field F1 | 0.804 | **0.752** |
+| precision | 0.801 | 0.714 |
+| recall | 0.806 | 0.795 |
+| right / invented / missed | 254 / 63 / 61 | 155 / 62 / 40 |
+| cases flagged for an invented value | 36 of 50 | **35 of 50** |
+
+**The number went down, and that is the point.** The repair removes phantom credit (99 hits) as well as phantom blame, and the set still fails both of its marks. No pass mark, no gold file and no prompt changed.
+
+**One flagged case became clean, not three.** The brief expected the empty-list false alarm to clear three. In this run only `046-brand-not-origin` had that as its *only* complaint; the other cases with an empty list also had a real disagreement, and a case is flagged if it has one. So the honest count barely moved while the composition of it changed completely.
+
+**What the real disagreements are, now they are visible.** All three are things the prompt already forbids in as many words, so they are a prompt problem for a later card rather than a scorer one — and no card in this batch is chartered to touch the distillation prompt.
+
+- **The same fact filed twice.** `021-bike-light` puts IPX6 in certifications, correctly, and then again in verifiable claims as "IPX6 water resistance".
+- **A use case read off the product, not out of the text.** `047` calls an umbrella "travel", `038` calls a basket "storage", `041` calls a knife "chopping". None is stated in the description.
+- **A right answer, differently qualified.** `023-running-shoe` answers "245 g" where the store says "245 g in a UK 8". That scores as an invention *and* a miss, one disagreement counted twice. Whether the qualifier belongs in the value is a question about the sheet, not about the scorer.
+
+**How it was measured.** The distillation set, run through the same runner `pnpm eval` uses, from a throwaway script that saves the predictions so both scorers could see the same answers. 50 model calls, 69.5 seconds.
+
+Nearest spec: main §14.2 (field-level F1 ≥ 0.85 and zero fabricated values); §6.3 (the fact sheet is all that flows downstream).

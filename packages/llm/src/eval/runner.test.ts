@@ -51,6 +51,58 @@ describe('metrics', () => {
     expect(fieldF1({ material: '', weight: '200' }, { weight: '200' }).f1).toBe(1)
   })
 
+  describe('what is not a fabrication (remediation eval card 3)', () => {
+    it('compares a list item by item, so four right out of five is four hits and a miss', () => {
+      const score = fieldF1(
+        { verifiable_claims: ['800 lumens', 'IPX6', 'runtime 10 hours', 'USB-C'] },
+        { verifiable_claims: ['800 lumens', 'IPX6', 'runtime 10 hours', 'USB-C', 'weighs 95 g'] },
+      )
+      expect(score.truePositives).toBe(4)
+      expect(score.fabricated).toEqual([])
+      expect(score.falseNegatives).toBe(1)
+    })
+
+    it('does not call a trailing full stop an invented value', () => {
+      const score = fieldF1(
+        { care: 'Wipe clean with a damp cloth.' },
+        { care: 'Wipe clean with a damp cloth' },
+      )
+      expect(score.fabricated).toEqual([])
+      expect(score.f1).toBe(1)
+    })
+
+    it('treats an empty list as an answer not given, never as an answer invented', () => {
+      const score = fieldF1(
+        { verifiable_claims: [] },
+        { verifiable_claims: ['holds 18 L', 'measures 38 x 30 x 14 cm'] },
+      )
+      // Nothing was made up here; the model declined to answer.
+      expect(score.fabricated).toEqual([])
+      expect(score.falseNegatives).toBe(2)
+      expect(score.recall).toBe(0)
+    })
+
+    it('scores nothing at all for agreeing that a field is empty', () => {
+      const score = fieldF1(
+        { compatibility: [], material: 'leather' },
+        { compatibility: [], material: 'leather' },
+      )
+      // The old scorer counted `compatibility=` as a hit on both sides, so a
+      // sheet of empty fields earned free credit for saying nothing.
+      expect(score.truePositives).toBe(1)
+      expect(score.f1).toBe(1)
+    })
+
+    it('still calls an invented list item what it is', () => {
+      const score = fieldF1(
+        { certifications: ['OEKO-TEX', 'GOTS'] },
+        { certifications: ['OEKO-TEX'] },
+      )
+      expect(score.fabricated).toEqual(['certifications=gots'])
+      expect(score.truePositives).toBe(1)
+    })
+  })
+
   it('charges the full gold value when a criterion is simply omitted', () => {
     const mae = meanAbsoluteError([{ predicted: {}, gold: { information_gain: 4 } }])
     expect(mae.perCriterion.information_gain).toBe(4)

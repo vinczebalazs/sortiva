@@ -9,6 +9,11 @@
  * Both hard-fail conditions are separate from the aggregate score on purpose: an
  * average can absorb a fabrication or a false pass, which is exactly the failure
  * mode the spec refuses to tolerate.
+ *
+ * What counts as a fabrication is therefore load-bearing in both directions. A
+ * scorer that misses one lets a lie through; a scorer that reports one where
+ * none happened turns the hard fail into noise, which ends the same way —
+ * nobody reads it.
  */
 
 export interface F1Score {
@@ -23,16 +28,24 @@ export interface F1Score {
 }
 
 /**
- * Field-level F1 over `field=value` pairs. Comparing pairs rather than field
- * names is what makes "said the material is leather when it is nylon" a
- * fabrication rather than a correct field.
+ * Field-level F1 over `field=value` claims. Comparing a field *with its value*
+ * rather than the field name is what makes "said the material is leather when
+ * it is nylon" a fabrication rather than a correctly-populated field.
+ *
+ * A fact sheet has two kinds of field: one answer (material, origin) or a list
+ * of them (certifications, verifiable claims). A list is compared item by item,
+ * so four right out of five is four hits and a miss — not, as it was until the
+ * lists were joined into one string, a single whole fabrication. And an answer
+ * a list did not give is nothing at all here: the model declining to answer is
+ * a *miss*, never an invention, and reporting it as an invented value was the
+ * scorer accusing the model of something it had not done.
  */
 export function fieldF1(
   predicted: Readonly<Record<string, unknown>>,
   gold: Readonly<Record<string, unknown>>,
 ): F1Score {
-  const predictedPairs = new Set(pairs(predicted))
-  const goldPairs = new Set(pairs(gold))
+  const predictedPairs = claims(predicted)
+  const goldPairs = claims(gold)
 
   const truePositives = [...predictedPairs].filter((p) => goldPairs.has(p))
   const fabricated = [...predictedPairs].filter((p) => !goldPairs.has(p))
@@ -106,14 +119,39 @@ function record(sums: Map<string, { total: number; count: number }>, key: string
   sums.set(key, entry)
 }
 
-function pairs(record: Readonly<Record<string, unknown>>): string[] {
-  return Object.entries(record)
-    .filter(([, value]) => value !== null && value !== undefined && value !== '')
-    .map(([key, value]) => `${key}=${normalise(value)}`)
+/**
+ * One sheet as a set of comparable claims: `field=value` for a single answer,
+ * and one entry per item for a list field. A field with nothing in it — null,
+ * blank, or an empty list — contributes no claim, because it asserts nothing.
+ */
+function claims(record: Readonly<Record<string, unknown>>): Set<string> {
+  const out = new Set<string>()
+  for (const [field, value] of Object.entries(record)) {
+    for (const item of valuesOf(value)) out.add(`${field}=${item}`)
+  }
+  return out
 }
 
+function valuesOf(value: unknown): string[] {
+  if (value === null || value === undefined) return []
+  if (Array.isArray(value)) return value.flatMap(valuesOf)
+  const text = normalise(value)
+  return text === '' ? [] : [text]
+}
+
+/**
+ * Case, surrounding space and **trailing punctuation** are not part of an
+ * answer: "Wipe clean with a damp cloth." and "Wipe clean with a damp cloth"
+ * are the same fact, and counting the full stop as an invented value is the
+ * scorer inventing the problem. Only trailing punctuation goes — a full stop
+ * inside a number ("1.9 kg") is part of the value.
+ */
 function normalise(value: unknown): string {
-  if (typeof value === 'string') return value.trim().toLowerCase()
-  if (Array.isArray(value)) return value.map(normalise).sort().join('|')
-  return JSON.stringify(value)
+  const text = typeof value === 'string' ? value : (JSON.stringify(value) ?? '')
+  return text
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .replace(/[.,;:!]+$/, '')
+    .trim()
 }
