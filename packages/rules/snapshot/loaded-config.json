@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "rules_version": "bf05523957f291fe727af6087a988d54c4135f75e53dea1e5d9b4a958dca633f",
+  "rules_version": "130edf622b0b8be2f60367c2eb32e2f078fd270c20c40b64d8fdc39cdf1786cd",
   "defaults": {
     "signals": {
       "striking_distance": {
@@ -67,7 +67,7 @@
         "priority": "P0",
         "needs_gsc": false,
         "revenue_share_min": 0.1,
-        "revenue_window_days": 90,
+        "revenue_window_days": 60,
         "keyword_candidates_min": 1
       },
       "catalog_richness_gap": {
@@ -435,7 +435,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -802,7 +802,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -1169,7 +1169,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -1536,7 +1536,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -1903,7 +1903,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -2270,7 +2270,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -2637,7 +2637,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -3004,7 +3004,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -3371,7 +3371,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -3738,7 +3738,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -4105,7 +4105,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -4472,7 +4472,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -4839,7 +4839,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -5206,7 +5206,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -5573,7 +5573,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -5940,7 +5940,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -6307,7 +6307,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -6674,7 +6674,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -7041,7 +7041,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -7408,7 +7408,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {
@@ -7775,7 +7775,7 @@
           "priority": "P0",
           "needs_gsc": false,
           "revenue_share_min": 0.1,
-          "revenue_window_days": 90,
+          "revenue_window_days": 60,
           "keyword_candidates_min": 1
         },
         "catalog_richness_gap": {

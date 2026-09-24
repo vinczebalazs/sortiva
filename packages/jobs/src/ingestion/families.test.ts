@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { emptyFactSheet, toProductRow, type FactSheet, type StoreConnection } from '@sortiva/core'
+import { emptyFactSheet, toProductRow, type FactSheet, type StoreConnection, staticShopifyAuth, type ShopifyAuth, type ShopifyAccessGrant } from '@sortiva/core'
 import {
   accountScope,
   listFamilies,
@@ -19,6 +19,16 @@ import { runStep } from '../runtime/runStep'
 import { createRun, findStep } from '../runtime/steps'
 import type { ConnectionStore, IngestionDeps } from './deps'
 import { familyGroupStep, type FamilyGroupOutput } from './families'
+
+/** The grant nothing in this file asks for: these tests never install anything. */
+const NO_GRANT: ShopifyAccessGrant = {
+  accessToken: '',
+  grantedScopes: [],
+  expiresAt: null,
+  refreshToken: null,
+  refreshTokenExpiresAt: null,
+}
+
 
 /**
  * Family grouping against a real database.
@@ -43,8 +53,8 @@ class FakeConnections implements ConnectionStore {
       invalidatedAt: null,
     }
   }
-  async readToken(): Promise<string | undefined> {
-    return 'shpat_test'
+  async authFor(): Promise<ShopifyAuth> {
+    return staticShopifyAuth('test-store', 'shpat_test')
   }
   async markInvalid(_accountId: string, at: Date): Promise<Date> {
     return at
@@ -68,7 +78,8 @@ function deps(captured: CapturedEvent[] = []): IngestionDeps {
     shopify: {
       authorizeUrl: () => '',
       verifyCallbackSignature: () => true,
-      exchangeCode: async () => ({ accessToken: '', grantedScopes: [] }),
+      exchangeCode: async () => NO_GRANT,
+      refreshAccess: async () => NO_GRANT,
       revokeAccess: async () => {},
     },
     shop: {

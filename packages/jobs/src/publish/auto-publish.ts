@@ -3,6 +3,7 @@ import {
   accountAttribution,
   autoPublishReadiness,
   intentExternalId,
+  isRateLimited,
   isTokenRejected,
   publishAttemptFailure,
   publishMarker,
@@ -13,6 +14,7 @@ import {
   type Logger,
   type NotificationEmitter,
   type PosthogCapture,
+  type ShopifyAuth,
   type ShopifyPublishProvider,
 } from '@sortiva/core'
 import {
@@ -24,6 +26,7 @@ import {
   openPublishIntent,
   readPublishTarget,
   releasePublishIntent,
+  setDeliveryMode,
   type Db,
 } from '@sortiva/db'
 import { runtimeLogger } from '../runtime/logging'
@@ -63,8 +66,12 @@ export interface AutoPublishDeps {
   readonly pool: pg.Pool
   /** The one seam that writes to a shop. */
   readonly shopify: ShopifyPublishProvider
-  /** Tokens are stored encrypted; they are decrypted here, at the point of use. */
-  readonly cipher: TokenDecryptor
+  /**
+   * How to reach the store: the handle, and a token renewed as it ages. A
+   * publish can be minutes of work, and Shopify's tokens last an hour, so the
+   * token is fetched per request rather than decrypted once at the start.
+   */
+  readonly authFor: (accountId: string) => Promise<ShopifyAuth | undefined>
   readonly notifications?: NotificationEmitter
   readonly capture?: Pick<PosthogCapture, 'capture'>
   readonly now?: () => Date
@@ -106,6 +113,12 @@ export type AutoPublishOutcome =
          * kept so the recovery sweep asks the shop before anything is re-sent.
          */
         | 'shop_unreachable'
+        /**
+         * The shop is rate-limiting us. Nothing was written and the article is
+         * still due today, so the caller comes back in minutes rather than
+         * writing the day off.
+         */
+        | 'shop_busy'
       readonly detail: string
     }
 
@@ -126,11 +139,8 @@ export interface AutoPublishInput {
  * to worry about.
  */
 interface PublishContext {
-  readonly shop: string
-  readonly accessToken: string
+  readonly auth: ShopifyAuth
   readonly blogId: string
-  /** The blog's name in its own web address — what a post's public address is built from. */
-  readonly blogHandle: string
   /** The store's own domain, which is the host the address is recorded under. */
   readonly storefrontDomain: string
   readonly publishAs: 'live' | 'draft'
@@ -138,6 +148,13 @@ interface PublishContext {
   readonly slug: string
   readonly summary: string
   readonly bodyHtml: string
+  /** Whose name goes on the post: the store's own, never ours. */
+  readonly author: string
+  /** The search title, which Shopify shows in results instead of the headline. */
+  readonly seoTitle?: string
+  readonly seoDescription?: string
+  /** The picture at the top of the post, taken from a product it is about. */
+  readonly image?: { readonly url: string; readonly alt: string | null }
 }
 
 type Prepared = { readonly ok: true; readonly context: PublishContext } | { readonly ok: false; readonly outcome: AutoPublishOutcome }
@@ -199,19 +216,31 @@ async function preparePublish(
     throw error
   }
 
+  const auth = await deps.authFor(input.accountId)
+  if (!auth) {
+    log.info('auto_publish_skipped', { account_id: input.accountId, reason: 'connection_lost' })
+    return { ok: false, outcome: { status: 'skipped', reason: 'connection_lost' } }
+  }
+
+  const image = bundle.metadata.images[0]
   return {
     ok: true,
     context: {
-      shop: target.shopHandle,
-      accessToken: deps.cipher.decrypt(target.accessTokenCipher),
+      auth,
       blogId: target.targetBlogId as string,
-      blogHandle: target.targetBlogHandle ?? '',
       storefrontDomain: await storefrontDomainFor(deps.db, input.accountId, target.shopHandle),
       publishAs: target.publishAs,
       title: article.title,
       slug: article.slug,
       summary: article.metaDescription ?? '',
       bodyHtml: bundle.html,
+      // The store's own name, so a merchant's blog does not carry a byline
+      // naming a tool they use. Falls back to the shop handle for a connection
+      // made before the name was stored.
+      author: target.shopName ?? target.shopHandle,
+      seoTitle: article.title,
+      ...(article.metaDescription ? { seoDescription: article.metaDescription } : {}),
+      ...(image ? { image: { url: image.url, alt: image.alt } } : {}),
     },
   }
 }
@@ -251,10 +280,8 @@ async function sendAndAdopt(
   let remote
   try {
     remote = await deps.shopify.createArticle({
-      shop: context.shop,
-      accessToken: context.accessToken,
+      auth: context.auth,
       blogId: context.blogId,
-      blogHandle: context.blogHandle,
       storefrontDomain: context.storefrontDomain,
       title: context.title,
       bodyHtml: context.bodyHtml,
@@ -262,6 +289,10 @@ async function sendAndAdopt(
       summary: context.summary,
       marker: publishMarker(input.articleId),
       publishAs: context.publishAs,
+      author: context.author,
+      ...(context.seoTitle ? { seoTitle: context.seoTitle } : {}),
+      ...(context.seoDescription ? { seoDescription: context.seoDescription } : {}),
+      ...(context.image ? { image: context.image } : {}),
     })
   } catch (error) {
     // Recorded before the claim is handed back, because handing it back deletes
@@ -466,6 +497,19 @@ async function handleSendFailure(
 
   await releasePublishIntent(deps.db, accountScope(input.accountId), externalId)
 
+  // A rate limit is a refusal that says "not now" rather than "not this".
+  // Nothing was written, and the next attempt will very likely work, so the job
+  // comes back in minutes instead of the article waiting until tomorrow — which
+  // is what happens to anything the day's run writes off as blocked.
+  if (isRateLimited(error)) {
+    log.warn('auto_publish_send_throttled', {
+      account_id: input.accountId,
+      article_id: input.articleId,
+      error: detail,
+    })
+    return { status: 'failed', reason: 'shop_busy', detail }
+  }
+
   if (isTokenRejected(error)) {
     await raiseShopifyReconnect(deps.db, {
       accountId: input.accountId,
@@ -477,12 +521,65 @@ async function handleSendFailure(
     return { status: 'skipped', reason: 'connection_lost' }
   }
 
+  // The shop read the request and would not have it: a web address already in
+  // use, a blog the merchant deleted, a field it rejected. Tomorrow's run would
+  // choose the same oldest article and be refused the same way, so this store's
+  // publishing would stop for good, silently, with everything behind it waiting
+  // on an article that can never go out.
+  //
+  // So auto-publishing is switched off and the merchant is told what the shop
+  // said. Their articles keep being written and keep waiting for them; nothing
+  // is lost, and turning publishing back on is theirs to do once the cause is
+  // gone. Stopping loudly is the only ending here that a merchant can act on.
+  await pauseAutoPublishing(deps, input, detail, now, log)
+
   log.warn('auto_publish_send_refused', {
     account_id: input.accountId,
     article_id: input.articleId,
     error: detail,
   })
   return { status: 'failed', reason: 'shop_refused', detail }
+}
+
+/**
+ * Turns auto-publishing off after the shop refused a post, and says so.
+ *
+ * Deliberately the merchant's own switch rather than a new kind of pause: they
+ * can see it in Settings, they can turn it back on, and nothing in the product
+ * has to learn about a second sort of stopped. Until they do, drafts are
+ * delivered the way an export account's are.
+ */
+async function pauseAutoPublishing(
+  deps: AutoPublishDeps,
+  input: AutoPublishInput,
+  detail: string,
+  now: Date,
+  log: Logger,
+): Promise<void> {
+  const paused = await setDeliveryMode(deps.db, accountScope(input.accountId), 'export')
+  if (!paused) return
+
+  await deps.notifications
+    ?.emit(
+      'auto_publish_paused',
+      // References only, never words: a payload carrying the shop's own
+      // sentence is refused outright, and the notification a merchant needs
+      // most would be the one that never rang. What the shop said is in the
+      // log and in the publish attempt; the merchant is told plainly and sent
+      // to Settings.
+      { article_id: input.articleId },
+      // Keyed on the article, the way the notification table says this kind is
+      // keyed: a shop refusing the same article again rings once, not daily.
+      input.articleId,
+      accountAttribution(input.accountId),
+    )
+    .catch((error: unknown) => {
+      log.warn('auto_publish_pause_notification_failed', {
+        account_id: input.accountId,
+        error: String(error),
+      })
+      return { created: false }
+    })
 }
 
 /**

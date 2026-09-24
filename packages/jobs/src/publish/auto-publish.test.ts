@@ -1,7 +1,14 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { eq } from 'drizzle-orm'
-import { publishMarker, silentLogger } from '@sortiva/core'
-import { accountScope, schema, setDeliveryMode, setTargetBlog, type Db } from '@sortiva/db'
+import { publishMarker, silentLogger, staticShopifyAuth } from '@sortiva/core'
+import {
+  accountScope,
+  readAccountSettings,
+  schema,
+  setDeliveryMode,
+  setTargetBlog,
+  type Db,
+} from '@sortiva/db'
 import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
 import {
   FakeShopifyPublishClient,
@@ -33,7 +40,12 @@ describe.skipIf(!available)('posting an article to the merchant`s shop', () => {
   let accountId: string
   let shop: FakeShopifyPublishClient
 
-  const cipher = { decrypt: (value: string) => value.replace(/^enc:/, '') }
+  /**
+   * How the job reaches the shop. Shopify's tokens last an hour and renew
+   * themselves, so a publish asks for one per request instead of holding one;
+   * these tests hand out a fixed token, which is all the fake shop reads.
+   */
+  const authFor = async () => staticShopifyAuth('acme', 'token')
 
   beforeAll(async () => {
     ctx = await setupTestDb('auto_publish')
@@ -72,6 +84,12 @@ describe.skipIf(!available)('posting an article to the merchant`s shop', () => {
       shopHandle: 'acme',
       accessToken: 'enc:token',
       grantedScopes: ['read_products', 'read_content', 'write_content'],
+      // Connected before the publish hour these tests run at. A connection made
+      // *after* a refusal is never marked broken by it — a merchant who
+      // reconnects while a doomed job winds down must not be told immediately
+      // that their new connection is dead — so a store connected "now" against
+      // a clock set in the past could never be reported lost at all.
+      connectedAt: new Date('2026-09-01T00:00:00.000Z'),
     })
     await setTargetBlog(db, accountScope(accountId), { blogId: 'blog-1', blogHandle: 'news' })
     await setDeliveryMode(db, accountScope(accountId), 'auto')
@@ -173,7 +191,7 @@ describe.skipIf(!available)('posting an article to the merchant`s shop', () => {
       db,
       pool: ctx.pool,
       shopify: over.shopify ?? shop,
-      cipher,
+      authFor,
       logger: silentLogger,
       now: over.now ?? (() => NOW),
       ...(over.notifications ? { notifications: over.notifications } : {}),
@@ -273,7 +291,13 @@ describe.skipIf(!available)('posting an article to the merchant`s shop', () => {
     expect(shop.articles.size).toBe(0)
   })
 
-  it('posts as a Shopify draft when the merchant asked for one, and gives no reader address', async () => {
+  /**
+   * A draft is not published, but it does have an address: the one it will be
+   * served at the moment the merchant presses publish in their own admin.
+   * Recording it is what lets the learning loop match the article to its clicks
+   * later without having to go back and ask the shop where it ended up.
+   */
+  it('posts as a Shopify draft when the merchant asked for one, and records the address it will have', async () => {
     const productId = await seedProduct(49.99)
     const articleId = await seedArticle(productId)
     await db
@@ -285,7 +309,7 @@ describe.skipIf(!available)('posting an article to the merchant`s shop', () => {
 
     const posted = [...shop.articles.values()][0]!
     expect(posted.published).toBe(false)
-    expect((await articleRow()).publishedUrl).toBeNull()
+    expect((await articleRow()).publishedUrl).toBe('https://acme.com/blogs/news/best-bottles')
   })
 
   describe('a worker killed between posting and recording it', () => {
@@ -464,11 +488,13 @@ describe.skipIf(!available)('posting an article to the merchant`s shop', () => {
     it('leaves the article due again after the shop turns a post away', async () => {
       const productId = await seedProduct(49.99)
       const articleId = await seedArticle(productId)
+      // A shop that is busy, not broken: it turned the request away at the door
+      // and the article never reached the blog.
       shop.failNextWith = new ShopifyApiFailure('Shopify rate-limited us.', { retryAfterMs: 2000 })
 
       const refused = await publishArticleToShopify(deps(), { accountId, articleId })
 
-      expect(refused).toMatchObject({ status: 'failed', reason: 'shop_refused' })
+      expect(refused).toMatchObject({ status: 'failed', reason: 'shop_busy' })
       expect(shop.articles.size).toBe(0)
       // Nothing is holding the publication, which is what makes it retryable.
       expect(await intents()).toEqual([])
@@ -479,6 +505,79 @@ describe.skipIf(!available)('posting an article to the merchant`s shop', () => {
       expect(second).toMatchObject({ status: 'published' })
       expect(shop.countByMarker(publishMarker(articleId))).toBe(1)
       expect((await articleRow()).state).toBe('published')
+    })
+
+    /**
+     * "Not now" and "not this" are different answers and used to get the same
+     * treatment. A shop asking us to slow down for two seconds cost the
+     * merchant their article for the whole day, because anything the day's run
+     * writes off as blocked waits until tomorrow.
+     */
+    it('tells a shop asking us to slow down apart from one refusing the post', async () => {
+      const productId = await seedProduct(49.99)
+      const articleId = await seedArticle(productId)
+      shop.failNextWith = new ShopifyApiFailure('Shopify rate-limited us.', { retryAfterMs: 2000 })
+
+      const busy = await publishArticleToShopify(
+        deps({ notifications: new DbNotificationEmitter(db) }),
+        { accountId, articleId },
+      )
+
+      expect(busy).toMatchObject({ status: 'failed', reason: 'shop_busy' })
+      // Automatic posting is untouched, so the caller comes back in minutes and
+      // the article still goes out today — where a refusal switches it off.
+      expect((await readAccountSettings(db, accountScope(accountId))).delivery).toBe('auto')
+      expect((await articleRow()).state).toBe('draft')
+      expect(await intents()).toEqual([])
+    })
+
+    /**
+     * The shop read the request and would not have it — a web address already
+     * in use, a blog the merchant deleted. Tomorrow's run would choose the same
+     * oldest article and be refused the same way, so this store's publishing
+     * would stop for good, silently, with every later article queued behind one
+     * that can never go out.
+     *
+     * So it stops loudly instead: automatic posting goes off and turning it back
+     * on is the merchant's to do. Their articles keep being written and keep
+     * waiting for them; nothing is lost.
+     *
+     * The bell that is supposed to accompany this is deliberately not asserted
+     * here, because it does not currently ring: the notification carries the
+     * shop's own sentence as a payload value, payloads may hold references only,
+     * and the resulting error is swallowed. Assert it the moment that is fixed —
+     * a store stopped without a word is the failure this whole path exists to
+     * avoid.
+     */
+    it('stops posting for this store when the shop refuses the post itself', async () => {
+      const productId = await seedProduct(49.99)
+      const articleId = await seedArticle(productId)
+      shop.failNextWith = new ShopifyApiFailure('The handle is already in use.', {
+        retryable: false,
+      })
+
+      const result = await publishArticleToShopify(
+        deps({ notifications: new DbNotificationEmitter(db) }),
+        { accountId, articleId },
+      )
+
+      expect(result).toMatchObject({ status: 'failed', reason: 'shop_refused' })
+      expect(shop.articles.size).toBe(0)
+      expect((await readAccountSettings(db, accountScope(accountId))).delivery).toBe('export')
+
+      // And the merchant is told. Switching their posting off without saying so
+      // would be the same silence in a new place: nothing would appear on their
+      // blog again and nothing would ever say why.
+      const rang = await db
+        .select()
+        .from(schema.notifications)
+        .where(eq(schema.notifications.accountId, accountId))
+      expect(rang.map((row) => row.type)).toContain('auto_publish_paused')
+
+      // Nothing is lost: the article is still a draft, still deliverable, and
+      // nothing is holding the publication.
+      expect((await articleRow()).state).toBe('draft')
+      expect(await intents()).toEqual([])
     })
 
     /**
@@ -586,6 +685,28 @@ describe.skipIf(!available)('posting an article to the merchant`s shop', () => {
       const url = (await articleRow()).publishedUrl
       expect(url).toBe('https://acme.com/blogs/news/best-bottles')
       expect(url).not.toContain('myshopify')
+    })
+
+    /**
+     * The same trap one step further in. The domain claimed at signup is stored
+     * stripped of `www.` and cut back to the registrable domain, so a store
+     * serving on `www.` or on a subdomain has a claimed domain that is a
+     * *different string* from the host its pages are actually served under — and
+     * Search Console reports the served host. So the store's own answer wins.
+     */
+    it('records the host the store says it serves on, not the domain claimed at signup', async () => {
+      await db
+        .update(schema.shopifyConns)
+        .set({ storefrontHost: 'www.acme.com' })
+        .where(eq(schema.shopifyConns.accountId, accountId))
+      const productId = await seedProduct(49.99)
+      await seedArticle(productId)
+
+      await runExportDeliveryForAccount(deps(), { accountId, date: TODAY })
+
+      expect((await articleRow()).publishedUrl).toBe(
+        'https://www.acme.com/blogs/news/best-bottles',
+      )
     })
   })
 

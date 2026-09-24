@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
-import { publishMarker, silentLogger } from '@sortiva/core'
+import { publishMarker, silentLogger, staticShopifyAuth } from '@sortiva/core'
 import { schema } from '@sortiva/db'
 import { FakeShopifyPublishClient } from '@sortiva/providers'
 import { rules } from '@sortiva/rules'
@@ -39,14 +39,19 @@ const TOPIC_DATE = '2026-09-03'
 const shop = new FakeShopifyPublishClient()
 const state = { articleId: '', productId: '' }
 
-const cipher = { decrypt: (value: string) => value.replace(/^enc:/, '') }
+/**
+ * How the scenario reaches the fake shop. Static rather than renewing: what is
+ * under test here is what a crash does to a publication, and a token that
+ * renewed itself mid-scenario would be a second moving part in a test about one.
+ */
+const authFor = async () => staticShopifyAuth('chaos-store', 'shpat_chaos')
 
 function deps(ctx: ChaosContext, now: Date) {
   return {
     db: drizzle(ctx.pool, { schema }),
     pool: ctx.pool,
     shopify: shop,
-    cipher,
+    authFor,
     logger: silentLogger,
     now: () => now,
     /**

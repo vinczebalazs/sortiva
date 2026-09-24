@@ -195,6 +195,14 @@ function decodeCursor(cursor: string | undefined): { receivedAt: string; webhook
  * receiver answer Shopify immediately and lose nothing if the process dies
  * between answering and working.
  */
+/**
+ * How many times a delivery is tried before it is given up on. Shopify itself
+ * retries a delivery we never answered; this is about the ones we answered and
+ * then could not process — a store locked by its own nightly sync, a database
+ * hiccup — which are worth a few attempts and not an unbounded number.
+ */
+export const MAX_WEBHOOK_ATTEMPTS = 5
+
 export async function unprocessedWebhooks(
   db: Db,
   _scope: SystemScope,
@@ -215,24 +223,37 @@ export async function unprocessedWebhooks(
 }
 
 /**
- * Marks a delivery dealt with.
+ * Marks a delivery dealt with — or, for a failure, records what went wrong and
+ * leaves it to be tried again.
  *
  * Guarded on the row still being unprocessed, so two workers handed the same
  * delivery cannot both claim to have finished it — whichever loses matches zero
  * rows and stops, exactly like every other transition in the product.
+ *
+ * A failure deliberately leaves the row unfinished. Stamping it as done was how
+ * a delivery that arrived while the store's nightly sync held the lock — the
+ * ordinary case, not a rare one — was recorded as failed and never looked at
+ * again, so a merchant's product edit waited for the next night's re-read
+ * instead of the next drain.
  */
 export async function markWebhookProcessed(
   db: Db,
   _scope: SystemScope,
   webhookId: string,
-  outcome: { status: 'processed' | 'ignored' | 'failed'; error?: string },
+  outcome: { status: 'processed' | 'ignored' | 'failed'; error?: string; attempts?: number },
   now: Date = new Date(),
 ): Promise<boolean> {
+  const attempts = outcome.attempts ?? 0
   const [row] = await db
     .update(webhookEvents)
     .set({
       status: outcome.status,
-      processedAt: now,
+      // A failure that has already been tried the maximum number of times is
+      // finished with, whatever its state: a delivery nobody can process must
+      // not be re-read on every drain for the thirty days before it is pruned.
+      ...(outcome.status === 'failed' && attempts + 1 < MAX_WEBHOOK_ATTEMPTS
+        ? { attempts: attempts + 1 }
+        : { processedAt: now, attempts: attempts + 1 }),
       lastError: outcome.error ?? null,
     })
     .where(and(eq(webhookEvents.webhookId, webhookId), isNull(webhookEvents.processedAt)))

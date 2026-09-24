@@ -3,15 +3,24 @@ import {
   findAccountByShopHandle,
   findDomainForAccount,
   findShopifyConnForAccount,
+  makeShopifyAuthSource,
   markShopifyConnectionInvalid,
-  readShopifyTokenCipher,
+  recordStoreIdentity,
   saveShopifyConnection,
   setDomainPlatform,
   systemScope,
   transitionDomainState,
   type Database,
 } from '@sortiva/db'
-import type { DomainState, StoreConnection, StoreDomainStore } from '@sortiva/core'
+import {
+  SHOPIFY_PUBLISH_SCOPE,
+  type DomainState,
+  type ShopifyAccessGrant,
+  type ShopifyAuth,
+  type ShopifyTokenRenewer,
+  type StoreConnection,
+  type StoreDomainStore,
+} from '@sortiva/core'
 import type { ConnectionStore } from '@sortiva/jobs/ingestion/deps'
 import type { TokenCipher } from '@sortiva/providers'
 
@@ -30,18 +39,19 @@ import type { TokenCipher } from '@sortiva/providers'
  * repository it calls already names the account it acts for.
  */
 export interface ConnectionStoreWithSave extends ConnectionStore {
-  save(input: {
-    accountId: string
-    shopHandle: string
-    accessToken: string
-    grantedScopes: readonly string[]
-  }): Promise<StoreConnection>
+  save(
+    input: { accountId: string; shopHandle: string; storefrontHost?: string | null; shopName?: string | null } & ShopifyAccessGrant,
+  ): Promise<StoreConnection>
 }
 
 export function makeConnectionStore(
   database: Database,
   cipher: TokenCipher,
+  renewer: ShopifyTokenRenewer,
 ): ConnectionStoreWithSave {
+  // Tokens last an hour and renew themselves; the source is what decides when,
+  // and serialises renewals so two workers cannot spend the same refresh token.
+  const auth = makeShopifyAuthSource(database, cipher, renewer)
 
   return {
     async read(accountId: string): Promise<StoreConnection | undefined> {
@@ -53,19 +63,27 @@ export function makeConnectionStore(
         grantedScopes: row.grantedScopes,
         connectedAt: row.connectedAt,
         invalidatedAt: row.invalidatedAt,
+        publishGrantedAt: row.publishGrantedAt,
+        storefrontHost: row.storefrontHost,
       }
     },
 
-    async readToken(accountId: string): Promise<string | undefined> {
-      const stored = await readShopifyTokenCipher(database, accountScope(accountId))
-      return stored ? cipher.decrypt(stored) : undefined
+    authFor(accountId: string): Promise<ShopifyAuth | undefined> {
+      return auth.authFor(accountId)
     },
 
     async save(input): Promise<StoreConnection> {
       const row = await saveShopifyConnection(database, accountScope(input.accountId), {
         shopHandle: input.shopHandle,
-        accessTokenCipher: cipher.encrypt(input.accessToken),
         grantedScopes: input.grantedScopes,
+        ...tokenCiphers(cipher, input),
+        ...(input.storefrontHost === undefined ? {} : { storefrontHost: input.storefrontHost }),
+        ...(input.shopName === undefined ? {} : { shopName: input.shopName }),
+        // A grant that carries publishing records that the merchant allowed it,
+        // which outlives this token and every later reconnect.
+        ...(input.grantedScopes.includes(SHOPIFY_PUBLISH_SCOPE)
+          ? { publishGrantedAt: new Date() }
+          : {}),
       })
       return {
         accountId: row.accountId,
@@ -73,13 +91,32 @@ export function makeConnectionStore(
         grantedScopes: row.grantedScopes,
         connectedAt: row.connectedAt,
         invalidatedAt: row.invalidatedAt,
+        publishGrantedAt: row.publishGrantedAt,
+        storefrontHost: row.storefrontHost,
       }
+    },
+
+    async recordStoreIdentity(
+      accountId: string,
+      identity: { storefrontHost?: string; shopName?: string },
+    ): Promise<void> {
+      await recordStoreIdentity(database, accountScope(accountId), identity)
     },
 
     async markInvalid(accountId: string, at: Date): Promise<Date> {
       const stamped = await markShopifyConnectionInvalid(database, accountScope(accountId), at)
       return stamped ?? at
     },
+  }
+}
+
+/** The token half of a grant, encrypted for storage. */
+function tokenCiphers(cipher: TokenCipher, grant: ShopifyAccessGrant) {
+  return {
+    accessTokenCipher: cipher.encrypt(grant.accessToken),
+    accessTokenExpiresAt: grant.expiresAt,
+    refreshTokenCipher: grant.refreshToken === null ? null : cipher.encrypt(grant.refreshToken),
+    refreshTokenExpiresAt: grant.refreshTokenExpiresAt,
   }
 }
 

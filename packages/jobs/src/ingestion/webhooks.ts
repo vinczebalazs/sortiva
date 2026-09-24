@@ -17,6 +17,7 @@ import {
 import {
   accountScope,
   markWebhookProcessed,
+  MAX_WEBHOOK_ATTEMPTS,
   recordCatalogChanges,
   storedProductState,
   systemScope,
@@ -108,13 +109,21 @@ export async function drainShopifyWebhooks(
       })
     } catch (error) {
       failed += 1
+      // The attempt count travels with the failure: the row stays unfinished
+      // and is drained again, up to the ceiling. The commonest reason to be
+      // here is the store being busy with its own nightly sync, which is over
+      // in minutes — while before this, one such collision meant a merchant's
+      // edit waited for the next night's re-read.
       await markWebhookProcessed(ingestion.db, system, receipt.webhookId, {
         status: 'failed',
         error: error instanceof Error ? error.message : String(error),
+        attempts: receipt.attempts,
       })
       log.error('shopify_webhook_failed', {
         topic: receipt.topic,
         webhook_id: receipt.webhookId,
+        attempts: receipt.attempts + 1,
+        will_retry: receipt.attempts + 1 < MAX_WEBHOOK_ATTEMPTS,
         error: error instanceof Error ? error.message : String(error),
       })
     }

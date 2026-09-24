@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { stripOrder, type ShopifyOrder } from '@sortiva/core'
 import { databaseAvailable, setupTestDb, type TestDb } from './testing'
 
 /**
@@ -43,12 +44,25 @@ const CUSTOMER_WORDS = new Set([
 ])
 
 /**
- * Matches whole underscore-delimited words, not substrings. A substring match
- * flags `limited_intelligence` because "intelligence" contains "tel", and a rule
- * that cries wolf gets an allowlist entry rather than a fix.
+ * Matches whole words, not substrings. A substring match flags
+ * `limited_intelligence` because "intelligence" contains "tel", and a rule that
+ * cries wolf gets an allowlist entry rather than a fix.
+ *
+ * Words are separated by an underscore or by a capital letter, so the rule reads
+ * a database column (`shipping_city`) and a field name as Shopify's API states
+ * it (`shippingAddress`) the same way. Columns are lower-case throughout, so the
+ * second rule costs them nothing.
  */
+function wordsIn(name: string): string[] {
+  return name
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .toLowerCase()
+    .split('_')
+    .filter((word) => word.length > 0)
+}
+
 function looksLikeCustomerField(columnName: string): boolean {
-  return columnName.split('_').some((word) => CUSTOMER_WORDS.has(word))
+  return wordsIn(columnName).some((word) => CUSTOMER_WORDS.has(word))
 }
 
 /** Every entry is a merchant-level or product-level field, never a shopper's. */
@@ -60,6 +74,8 @@ const ALLOWED: Record<string, string> = {
     "the merchant's own address — captured at send time because the account row it would otherwise be read from is erased about a week later",
   'notification_prefs.email_article_published': 'a preference flag; "email" is the channel',
   'notification_prefs.email_digest_frequency': 'a preference flag; "email" is the channel',
+  'shopify_conns.shop_name':
+    "the merchant's own shop name, e.g. 'Acme Outfitters' — a business, not a person; it is the byline every article we post has to carry",
   'product_families.name': "a product family's name, e.g. 'trail running shoes'",
 }
 
@@ -207,6 +223,87 @@ describe.skipIf(!available)('invariant 4 — no customer field reaches storage',
       await shopperKeysInJsonb(),
       'a shopper key is sitting inside a JSONB column',
     ).toEqual([])
+  })
+})
+
+/**
+ * The other half of the same promise, and the half that comes first.
+ *
+ * The scan above proves no column can hold a shopper. This proves nothing
+ * downstream has a shopper to write in the first place: the object the order
+ * reader hands the write path is built from a fixed list of fields, so a field
+ * Shopify adds next year is dropped rather than carried.
+ *
+ * Reading orders over Shopify's GraphQL API made this stronger, because the
+ * query names the fields it wants and a shopper's details are never asked for.
+ * The order handed over here carries them anyway — the same word rule, applied
+ * to what survives the read.
+ */
+describe('invariant 4 — no customer field survives the read that feeds storage', () => {
+  /** Keys anywhere inside a value, however deeply nested. */
+  function keysWithin(value: unknown, into: Set<string> = new Set()): Set<string> {
+    if (Array.isArray(value)) {
+      for (const entry of value) keysWithin(entry, into)
+    } else if (value !== null && typeof value === 'object') {
+      for (const [key, nested] of Object.entries(value)) {
+        into.add(key)
+        keysWithin(nested, into)
+      }
+    }
+    return into
+  }
+
+  /** An order node carrying more than the reader declares — and more than we ask for. */
+  const withShopper = {
+    id: '5001',
+    createdAt: '2026-06-14T16:42:11Z',
+    currency: 'EUR',
+    landingPage: '/collections/trail-shoes?gclid=abc',
+    test: false,
+    cancelledAt: null,
+    email: 'ada@example.com',
+    phone: '+44 7700 900123',
+    customer: { firstName: 'Ada', lastName: 'Lovelace', email: 'ada@example.com' },
+    shippingAddress: { address1: '12 Marylebone Road', city: 'London', zip: 'NW1 5LA' },
+    billingAddress: { address1: '12 Marylebone Road', city: 'London', zip: 'NW1 5LA' },
+    clientIp: '203.0.113.42',
+    lineItems: [
+      {
+        productId: '700',
+        title: 'Ridgeline Trail Shoe',
+        quantity: 2,
+        unitPrice: '37.50',
+        isGiftCard: false,
+        customAttributes: [{ key: 'Engraving', value: 'Ada' }],
+      },
+    ],
+  } as unknown as ShopifyOrder
+
+  it('hands storage an order with no shopper key anywhere in it', () => {
+    const safe = stripOrder(withShopper, 'Europe/Berlin')
+    expect(safe).toBeDefined()
+
+    const offenders = [...keysWithin(safe)].filter(looksLikeCustomerField)
+    expect(
+      offenders,
+      `the order reader kept a key that could name a shopper: ${offenders.join(', ')}`,
+    ).toEqual([])
+  })
+
+  it('the rule is not vacuous: the order it was given is full of them', () => {
+    const given = [...keysWithin(withShopper)].filter(looksLikeCustomerField).sort()
+    expect(given).toEqual([
+      'billingAddress',
+      'city',
+      'clientIp',
+      'customer',
+      'email',
+      'firstName',
+      'lastName',
+      'phone',
+      'shippingAddress',
+      'zip',
+    ])
   })
 })
 

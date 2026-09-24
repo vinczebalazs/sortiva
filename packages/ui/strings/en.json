@@ -309,6 +309,7 @@
   "notification.optimizeRecommendationReady.generic": "Your page recommendations are ready.",
   "notification.merchantTaskCreated": "{subject} needs something from you before we can act on it.",
   "notification.merchantTaskCreated.generic": "An opportunity needs something from you before we can act on it.",
+  "notification.autoPublishPaused": "Shopify would not accept your latest article, so we have paused automatic publishing. Your articles are still being written and are waiting for you. Turn publishing back on in Settings once you have had a look.",
   "notification.articlePublished": "Published: {title}",
   "notification.articlePublished.generic": "An article was published.",
   "notification.draftReadyForReview": "Ready for your review: {title}",

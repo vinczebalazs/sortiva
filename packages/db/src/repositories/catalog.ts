@@ -46,6 +46,8 @@ export interface ProductInput {
   readonly options?: unknown
   /** The store's own metafields, on the same undefined-means-unread rule. */
   readonly metafields?: unknown
+  /** The product's pictures, on the same rule: a read that did not ask for them leaves them alone. */
+  readonly images?: unknown
   readonly updatedAt: Date | null
   readonly checksum: string
 }
@@ -80,7 +82,10 @@ export async function upsertProducts(
 
   const groups = new Map<string, ProductInput[]>()
   for (const product of batch) {
-    const key = `${product.options === undefined ? '-' : 'o'}${product.metafields === undefined ? '-' : 'm'}`
+    const key =
+      `${product.options === undefined ? '-' : 'o'}` +
+      `${product.metafields === undefined ? '-' : 'm'}` +
+      `${product.images === undefined ? '-' : 'i'}`
     const bucket = groups.get(key) ?? []
     bucket.push(product)
     groups.set(key, bucket)
@@ -89,6 +94,7 @@ export async function upsertProducts(
   for (const bucket of groups.values()) {
     const hasOptions = bucket[0]!.options !== undefined
     const hasMetafields = bucket[0]!.metafields !== undefined
+    const hasImages = bucket[0]!.images !== undefined
 
     const values = bucket.map((product) => ({
       accountId: scope.accountId,
@@ -103,6 +109,7 @@ export async function upsertProducts(
       priceRange: product.priceRange as never,
       ...(hasOptions ? { options: product.options as never } : {}),
       ...(hasMetafields ? { metafields: product.metafields as never } : {}),
+      ...(hasImages ? { images: product.images as never } : {}),
       updatedAt: product.updatedAt,
       checksum: product.checksum,
       syncedAt: now,
@@ -122,6 +129,7 @@ export async function upsertProducts(
           priceRange: sql`excluded.price_range`,
           ...(hasOptions ? { options: sql`excluded.options` } : {}),
           ...(hasMetafields ? { metafields: sql`excluded.metafields` } : {}),
+          ...(hasImages ? { images: sql`excluded.images` } : {}),
           updatedAt: sql`excluded.updated_at`,
           checksum: sql`excluded.checksum`,
           syncedAt: sql`excluded.synced_at`,

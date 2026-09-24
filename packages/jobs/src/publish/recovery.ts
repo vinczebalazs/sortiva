@@ -152,7 +152,8 @@ async function recoverOneClaim(
           targetBlogId: target.targetBlogId,
         })
       : { ok: false as const, code: 'write_scope_required' as const }
-  if (!ready.ok || !target) {
+  const auth = ready.ok && target ? await deps.authFor(claim.accountId) : undefined
+  if (!ready.ok || !target || !auth) {
     // We cannot ask the shop anything without a working connection, and asking
     // is the one thing that must happen before re-sending. Left pending; if the
     // connection never comes back the claim ages out and is abandoned below on
@@ -169,22 +170,41 @@ async function recoverOneClaim(
   if (revisionN > 0) {
     if (ageMs >= RECOVERY_ABANDON_AFTER_MS)
       return abandonClaim(deps, claim, 'update_unrecoverable', now, log)
-    const outcome = await republishArticleToShopify(deps, { ...input, revisionN })
+    // Under the claim this sweep is holding, not a new one. Asking for a second
+    // claim on the same revision collides with the one the dead worker left,
+    // reports "already claimed", and does nothing — for twenty-five minutes,
+    // until the claim ages out and a mend nobody had a problem with is
+    // abandoned into the dead-letter queue.
+    const outcome = await republishArticleToShopify(deps, { ...input, revisionN, claimHeld: true })
     return outcome.status === 'updated' ? 're_executed' : 'skipped'
   }
 
-  const found = await deps.shopify.findArticleByMarker({
-    shop: target.shopHandle,
-    accessToken: deps.cipher.decrypt(target.accessTokenCipher),
-    blogId: target.targetBlogId as string,
-    blogHandle: target.targetBlogHandle ?? '',
-    storefrontDomain: await storefrontDomainFor(deps.db, claim.accountId, target.shopHandle),
-    marker: publishMarker(articleId),
-    // Nothing posted before the claim was opened can be ours, which is what
-    // lets the shop narrow a blog of thousands of posts to the few written
-    // since. Without it the only honest search is the whole blog.
-    notBefore: claim.createdAt,
-  })
+  let found
+  try {
+    found = await deps.shopify.findArticleByMarker({
+      auth,
+      storefrontDomain: await storefrontDomainFor(deps.db, claim.accountId, target.shopHandle),
+      marker: publishMarker(articleId),
+      // Nothing posted before the claim was opened can be ours, which is what
+      // lets the shop narrow years of posts to the few written since. Without
+      // it the only honest search is every article the shop has.
+      notBefore: claim.createdAt,
+    })
+  } catch (error) {
+    // The question itself failed — the shop was unreachable, or the search ran
+    // out of pages. The claim may not be answered by guessing, so it waits; but
+    // it must not wait for ever, or one store's unanswerable claim holds up
+    // every article queued behind it indefinitely.
+    if (ageMs >= RECOVERY_ABANDON_AFTER_MS) {
+      return abandonClaim(deps, claim, 'lookup_unrecoverable', now, log)
+    }
+    log.warn('publish_recovery_lookup_failed', {
+      account_id: claim.accountId,
+      article_id: articleId,
+      error: error instanceof Error ? error.message : String(error),
+    })
+    return 'skipped'
+  }
 
   const decision = recoveryDecision({ ageMs, remoteArticleId: found?.id })
   switch (decision.action) {

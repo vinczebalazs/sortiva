@@ -16,7 +16,7 @@ import { DbOpportunitySource } from '@sortiva/jobs/scan/opportunity-source'
 import { DbNotificationEmitter } from '@sortiva/jobs/notify/emitter'
 // This lane's own publishing composition root, one directory over: which
 // Shopify write client and which token cipher exist in this process.
-import { publishProvider, publishTokenCipher } from '../../publish/_lib/config'
+import { publishProvider, shopifyAuthFor } from '../../publish/_lib/config'
 import type { DeliveryDeps } from './delivery'
 import type { LibraryDeps } from './library'
 import type { OverrideRouteDeps } from './override'
@@ -131,7 +131,7 @@ export function replenishmentTaskDeps(): ReplenishmentTaskDeps {
  * records that it did — so giving it any of the paid seams would make it
  * possible for a publish to start writing prose.
  *
- * The Shopify write client and the token cipher are here because an
+ * The Shopify write client and the way to reach a store are here because an
  * auto-publish store's hand-over *is* a write to their shop. Both are absent
  * when this deployment has no Shopify credentials, and an auto-publish store is
  * then left waiting with that said out loud in the log — never exported
@@ -142,7 +142,7 @@ export function publishTaskDeps(): PublishTaskDeps {
   return {
     getDb: db,
     getPool: dbPool,
-    ...(shopify ? { shopify, cipher: publishTokenCipher() } : {}),
+    ...(shopify ? { shopify, authFor: shopifyAuthFor } : {}),
     notifications: new DbNotificationEmitter(db),
     capture: generationCapture(),
   }
@@ -153,8 +153,8 @@ export function publishTaskDeps(): PublishTaskDeps {
  *
  * The same services the publish hour is given, for the same reason: a repair
  * that mends an article ends by putting the corrected version back on the
- * merchant's shop, through the same posting seam and the same token cipher, so
- * a second client here would be a second place a merchant's credentials are
+ * merchant's shop, through the same posting seam and the same tokens, so a
+ * second client here would be a second place a merchant's credentials are
  * read. On a deployment with no Shopify write client the pass still runs — it
  * still finds what has gone wrong and still tells the merchant — and simply
  * leaves the re-posting owed until one exists.
@@ -164,7 +164,7 @@ export function driftTaskDeps(): DriftTaskDeps {
   return {
     getDb: db,
     getPool: dbPool,
-    ...(shopify ? { shopify, cipher: publishTokenCipher() } : {}),
+    ...(shopify ? { shopify, authFor: shopifyAuthFor } : {}),
     notifications: new DbNotificationEmitter(db),
     capture: generationCapture(),
   }

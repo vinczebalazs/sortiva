@@ -4,6 +4,7 @@ import {
   PublishScopeMissing,
   signPublishGrantState,
   verifyPublishGrantState,
+  type ShopifyAuth,
   type ShopifyOAuthProvider,
   type ShopifyPublishProvider,
 } from '@sortiva/core'
@@ -41,6 +42,8 @@ export interface PublishGrantDeps {
   readonly oauth?: Pick<ShopifyOAuthProvider, 'exchangeCode' | 'verifyCallbackSignature'>
   /** Tokens are stored encrypted; this is the only place in these routes that sees a plain one. */
   readonly cipher: { encrypt(value: string): string; decrypt(value: string): string }
+  /** How to reach the store: its handle, and a token renewed as it ages. */
+  readonly authFor: (accountId: string) => Promise<ShopifyAuth | undefined>
   readonly stateSecret: string
   readonly redirectUri: string
   /** Where the merchant's browser lands after the consent screen. */
@@ -56,6 +59,7 @@ const CODES = {
   blogNotFound: 'blog_not_found',
   grantRefused: 'shopify_publish_scope_missing',
   badCallback: 'shopify_callback_unverified',
+  exchangeFailed: 'shopify_exchange_failed',
 } as const
 
 function error(status: number, code: string, message: string): Response {
@@ -137,7 +141,15 @@ export function makePublishGrantCallbackHandler(deps: PublishGrantDeps): Account
     const code = query['code']
     if (!code) return redirectWith(deps.settingsUrl, CODES.badCallback)
 
-    const grant = await deps.oauth.exchangeCode({ shop: state.shop, code })
+    let grant
+    try {
+      grant = await deps.oauth.exchangeCode({ shop: state.shop, code })
+    } catch {
+      // Shopify would not trade the code — it was already spent, or it expired
+      // while the merchant left the tab open. A page saying so is what the
+      // merchant can act on; an unhandled error here showed them a crash.
+      return redirectWith(deps.settingsUrl, CODES.exchangeFailed)
+    }
     try {
       assertPublishGrant(grant.grantedScopes)
     } catch (caught) {
@@ -150,7 +162,13 @@ export function makePublishGrantCallbackHandler(deps: PublishGrantDeps): Account
     const stored = await recordPublishGrant(deps.db, scope, {
       shopHandle: state.shop,
       accessTokenCipher: deps.cipher.encrypt(grant.accessToken),
+      accessTokenExpiresAt: grant.expiresAt,
+      refreshTokenCipher: grant.refreshToken === null ? null : deps.cipher.encrypt(grant.refreshToken),
+      refreshTokenExpiresAt: grant.refreshTokenExpiresAt,
       grantedScopes: grant.grantedScopes,
+      // Recorded permanently: it is what lets this merchant reconnect later
+      // without their publishing permission being thrown away as unasked-for.
+      publishGrantedAt: deps.now?.() ?? new Date(),
     })
     if (!stored) return redirectWith(deps.settingsUrl, CODES.notConnected)
 
@@ -181,10 +199,9 @@ export function makeListBlogsHandler(deps: PublishGrantDeps): AccountHandler {
       return error(409, CODES.writeScopeRequired, t('settings.publishing.errors.writeScopeRequired'))
     }
 
-    const blogs = await deps.shopify.listBlogs({
-      shop: target.shopHandle,
-      accessToken: deps.cipher.decrypt(target.accessTokenCipher),
-    })
+    const auth = await deps.authFor(scope.accountId)
+    if (!auth) return notConnected()
+    const blogs = await deps.shopify.listBlogs({ auth })
     return Response.json({ blogs })
   }
 }
@@ -217,10 +234,9 @@ export function makeSetTargetBlogHandler(deps: PublishGrantDeps): AccountHandler
       return error(409, CODES.writeScopeRequired, t('settings.publishing.errors.writeScopeRequired'))
     }
 
-    const credentials = {
-      shop: target.shopHandle,
-      accessToken: deps.cipher.decrypt(target.accessTokenCipher),
-    }
+    const auth = await deps.authFor(scope.accountId)
+    if (!auth) return notConnected()
+    const credentials = { auth }
     const chosen = createNamed
       ? await deps.shopify.createBlog({ ...credentials, title: createNamed })
       : (await deps.shopify.listBlogs(credentials)).find((blog) => blog.id === blogId)

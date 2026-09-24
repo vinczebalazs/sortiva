@@ -2,9 +2,12 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import {
   InMemoryRequestCache,
   emptyFactSheet,
+  staticShopifyAuth,
   toProductRow,
   type FactSheet,
   type LlmRequest,
+  type ShopifyAuth,
+  type ShopifyOAuthProvider,
   type StoreConnection,
   type StorePage,
   type StorePageFetcher,
@@ -68,6 +71,23 @@ function personaAnswer(overrides: Record<string, unknown> = {}): string {
   })
 }
 
+
+/**
+ * The install handshake, which none of these tests goes through: the store is
+ * already connected before anything here starts.
+ */
+const alreadyInstalled: ShopifyOAuthProvider = {
+  authorizeUrl: () => '',
+  verifyCallbackSignature: () => true,
+  exchangeCode: async () => {
+    throw new Error('these tests never install the app')
+  },
+  refreshAccess: async () => {
+    throw new Error('these tests never renew a token')
+  },
+  revokeAccess: async () => {},
+}
+
 class FakeFetcher implements StorePageFetcher {
   readonly requested: string[] = []
   readonly answers = new Map<string, string>()
@@ -105,8 +125,8 @@ class FakeConnections implements ConnectionStore {
       invalidatedAt: this.invalid ? new Date('2026-09-02T09:00:00Z') : null,
     }
   }
-  async readToken(): Promise<string | undefined> {
-    return 'shpat_test'
+  async authFor(): Promise<ShopifyAuth | undefined> {
+    return this.invalid ? undefined : staticShopifyAuth('acme', 'shpat_test')
   }
   async markInvalid(_accountId: string, at: Date): Promise<Date> {
     return at
@@ -142,9 +162,10 @@ function world(
   })
 
   const shopProfile: ShopSnapshot = {
-    id: 42,
+    id: '42',
     name: 'Acme',
     myshopifyDomain: 'acme.myshopify.com',
+    primaryDomain: 'acme.example',
     // The merchant runs the shop from Bali. It must not follow them there.
     ianaTimezone: 'Asia/Makassar',
     countryCode: 'SE',
@@ -157,12 +178,7 @@ function world(
     db: harness.db,
     pool: harness.pool,
     fetcher,
-    shopify: {
-      authorizeUrl: () => '',
-      verifyCallbackSignature: () => true,
-      exchangeCode: async () => ({ accessToken: '', grantedScopes: [] }),
-      revokeAccess: async () => {},
-    },
+    shopify: alreadyInstalled,
     shop: {
       async getShop() {
         if (options.shop === 'unavailable') throw new Error('Shopify is having an hour')

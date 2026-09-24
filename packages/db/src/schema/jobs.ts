@@ -65,6 +65,14 @@ export const jobSteps = pgTable(
     checkpoint: jsonb('checkpoint'),
     attempts: integer('attempts').notNull().default(0),
     lastError: text('last_error'),
+    /**
+     * The kind of the last failure, as the runtime classified it. Kept beside
+     * the message because a message is for a human and this is for code: a
+     * merchant reconnecting a dead Shopify token has to put exactly the steps
+     * that stopped for *that* reason back to work, without disturbing a step
+     * that failed for any other.
+     */
+    lastErrorClass: text('last_error_class'),
     // When to try again after a retryable failure: 1m, then 5m, then 25m, each
     // with jitter so a whole cohort of failures does not retry in lockstep.
     nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
@@ -198,6 +206,13 @@ export const webhookEvents = pgTable(
     receivedAt: timestamp('received_at', { withTimezone: true }).notNull().defaultNow(),
     processedAt: timestamp('processed_at', { withTimezone: true }),
     status: webhookStatusEnum('status').notNull().default('received'),
+    /**
+     * How many times processing this delivery has failed. A failure leaves the
+     * row unfinished so the next drain picks it up again, and this is what
+     * stops "again" meaning "for ever": a delivery that cannot be processed is
+     * given up on rather than re-read every few minutes until it is pruned.
+     */
+    attempts: integer('attempts').notNull().default(0),
     lastError: text('last_error'),
   },
   (t) => [

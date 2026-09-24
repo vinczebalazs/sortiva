@@ -1,4 +1,4 @@
-import { and, eq, isNull, lt, sql } from 'drizzle-orm'
+import { and, eq, isNull, lt, lte, sql } from 'drizzle-orm'
 import type { Db } from '../client'
 import { domains, shopifyConns } from '../schema'
 import type { AccountScope, SystemScope } from '../scope'
@@ -29,30 +29,75 @@ export async function saveShopifyConnection(
     shopHandle: string
     /** Already encrypted. This layer never sees a token. */
     accessTokenCipher: string
+    accessTokenExpiresAt?: Date | null
+    /** Already encrypted, and null for a grant Shopify issued without one. */
+    refreshTokenCipher?: string | null
+    refreshTokenExpiresAt?: Date | null
     grantedScopes: readonly string[]
+    /** The host the storefront actually serves on, as the store reports it. */
+    storefrontHost?: string | null
+    /** Set on a grant that carries permission to publish; never cleared once set. */
+    publishGrantedAt?: Date | null
   },
 ): Promise<ShopifyConnRow> {
+  const tokens = {
+    accessToken: input.accessTokenCipher,
+    accessTokenExpiresAt: input.accessTokenExpiresAt ?? null,
+    refreshToken: input.refreshTokenCipher ?? null,
+    refreshTokenExpiresAt: input.refreshTokenExpiresAt ?? null,
+  }
   const [row] = await db
     .insert(shopifyConns)
     .values({
       accountId: scope.accountId,
       shopHandle: input.shopHandle,
-      accessToken: input.accessTokenCipher,
       grantedScopes: [...input.grantedScopes],
+      ...tokens,
+      ...(input.storefrontHost === undefined ? {} : { storefrontHost: input.storefrontHost }),
+      ...(input.publishGrantedAt ? { publishGrantedAt: input.publishGrantedAt } : {}),
     })
     .onConflictDoUpdate({
       target: shopifyConns.accountId,
       set: {
         shopHandle: input.shopHandle,
-        accessToken: input.accessTokenCipher,
         grantedScopes: [...input.grantedScopes],
         connectedAt: new Date(),
         invalidatedAt: null,
+        ...tokens,
+        // Left alone when the caller says nothing, so a reconnect that has not
+        // re-read the store keeps the host it already knew.
+        ...(input.storefrontHost === undefined ? {} : { storefrontHost: input.storefrontHost }),
+        // Only ever set. "This merchant once allowed publishing" stays true
+        // after a connection is lost, which is what lets a reconnect keep a
+        // write grant instead of throwing it away as unasked-for.
+        ...(input.publishGrantedAt ? { publishGrantedAt: input.publishGrantedAt } : {}),
       },
     })
     .returning()
   if (!row) throw new Error('failed to save the Shopify connection')
   return row
+}
+
+/**
+ * Records what the store says about itself: the host it serves on, and its
+ * name.
+ *
+ * Both are learned by asking Shopify after a connection is made, and both are
+ * needed later at moments when asking again would be a network call in the
+ * middle of something else — building a published article's address, and
+ * putting a byline on it.
+ */
+export async function recordStoreIdentity(
+  db: Db,
+  scope: AccountScope,
+  input: { storefrontHost?: string; shopName?: string },
+): Promise<void> {
+  const patch = {
+    ...(input.storefrontHost === undefined ? {} : { storefrontHost: input.storefrontHost }),
+    ...(input.shopName === undefined ? {} : { shopName: input.shopName }),
+  }
+  if (Object.keys(patch).length === 0) return
+  await db.update(shopifyConns).set(patch).where(eq(shopifyConns.accountId, scope.accountId))
 }
 
 /** The stored ciphertext, for a caller that is about to decrypt it and make a call. */
@@ -85,7 +130,17 @@ export async function markShopifyConnectionInvalid(
   const [row] = await db
     .update(shopifyConns)
     .set({ invalidatedAt: at })
-    .where(and(eq(shopifyConns.accountId, scope.accountId), isNull(shopifyConns.invalidatedAt)))
+    .where(
+      and(
+        eq(shopifyConns.accountId, scope.accountId),
+        isNull(shopifyConns.invalidatedAt),
+        // Not a connection made *after* the refusal being reported. A merchant
+        // who reconnects while a job that failed on the old token is still
+        // winding down would otherwise be told immediately that their brand new
+        // connection is broken.
+        lte(shopifyConns.connectedAt, at),
+      ),
+    )
     .returning({ invalidatedAt: shopifyConns.invalidatedAt })
   if (row?.invalidatedAt) return row.invalidatedAt
 

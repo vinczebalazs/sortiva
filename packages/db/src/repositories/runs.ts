@@ -117,3 +117,31 @@ export async function transitionAccountJobStep(
     .returning()
   return row
 }
+
+
+/**
+ * Makes the steps that stopped because Shopify refused our token due again.
+ *
+ * Narrow on purpose. A merchant reconnecting their store is saying one thing —
+ * "the token works again" — and it must revive exactly the work that stopped
+ * for that reason. A step that failed terminally for its own reasons stays
+ * failed, because nothing about a new token makes it more likely to succeed.
+ *
+ * The attempt counter is reset with it: the old attempts were all spent against
+ * a token that could not work, and counting them against the new one would
+ * exhaust the retries before the first real try.
+ */
+export async function resumeStepsAfterReauth(db: Db, jobId: string): Promise<number> {
+  const rows = await db
+    .update(jobSteps)
+    .set({ state: 'pending', attempts: 0, nextAttemptAt: null, updatedAt: new Date() })
+    .where(
+      and(
+        eq(jobSteps.jobId, jobId),
+        eq(jobSteps.state, 'failed_terminal'),
+        eq(jobSteps.lastErrorClass, 'shopify_token_invalid'),
+      ),
+    )
+    .returning({ id: jobSteps.id })
+  return rows.length
+}

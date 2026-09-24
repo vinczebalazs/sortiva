@@ -106,6 +106,13 @@
       "when": 1789075217983,
       "tag": "0014_t_wave8_email_delivered_state",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1789167306982,
+      "tag": "0015_shopify_expiring_tokens_and_images",
+      "breakpoints": true
     }
   ]
 }

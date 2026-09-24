@@ -87,6 +87,13 @@ export const products = pgTable(
      */
     options: jsonb('options').notNull().default(sql`'[]'::jsonb`),
     metafields: jsonb('metafields').notNull().default(sql`'[]'::jsonb`),
+    /**
+     * The product's pictures (`[{url, alt}, ...]`), in the store's own order.
+     * An article about a product is published with one of them; with no stored
+     * address there is nothing to send and the post goes out as a wall of text.
+     * Filled from each store's next full sync.
+     */
+    images: jsonb('images').notNull().default(sql`'[]'::jsonb`),
     /** Shopify's `updated_at`. Distillation re-runs only when this moves, so an unchanged product costs nothing. */
     updatedAt: timestamp('updated_at', { withTimezone: true }),
     /**

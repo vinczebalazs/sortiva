@@ -10,8 +10,8 @@ import { signOauthState, verifyOauthState } from './state'
  *
  * Every case here is about somebody arriving at the callback who should not
  * finish it: a forged signature, a state from another account, a store name that
- * does not match, a grant carrying write permission. Each has to end without a
- * token being stored.
+ * does not match, a grant carrying write permission, a store somebody else has
+ * already connected. Each has to end without a token being stored.
  */
 
 const SECRET = 'app-secret'
@@ -22,13 +22,17 @@ interface Harness {
   deps: ShopifyOauthDeps
   oauth: MockShopifyOAuthClient
   saved: { accountId: string; shopHandle: string; accessToken: string; grantedScopes: readonly string[] }[]
+  /** Accounts whose onboarding was handed to the queue. */
   resumed: string[]
+  /** Accounts whose stopped work was made due again after a reconnect. */
+  revived: string[]
 }
 
 function harness(overrides: Partial<ShopifyOauthDeps> = {}): Harness {
   const oauth = new MockShopifyOAuthClient(SECRET)
   const saved: Harness['saved'] = []
   const resumed: string[] = []
+  const revived: string[] = []
 
   const deps: ShopifyOauthDeps = {
     oauth,
@@ -48,13 +52,27 @@ function harness(overrides: Partial<ShopifyOauthDeps> = {}): Harness {
         invalidatedAt: null,
       }
     },
+    // Nobody holds this store unless a test says so.
+    async accountHoldingShop() {
+      return undefined
+    },
+    // Never granted publishing, unless a test says so.
+    async publishGrantedAt() {
+      return null
+    },
+    async resumeAfterReconnect(accountId) {
+      revived.push(accountId)
+      return undefined
+    },
+    // The composition root wires this to an enqueue: it writes a job row and
+    // returns, and a worker does the walking afterwards.
     async resumeIngestion(accountId) {
       resumed.push(accountId)
     },
     ...overrides,
   }
 
-  return { deps, oauth, saved, resumed }
+  return { deps, oauth, saved, resumed, revived }
 }
 
 function callbackRequest(query: Record<string, string>): Request {
@@ -159,6 +177,104 @@ describe('coming back from Shopify', () => {
     expect(response.headers.get('location')).toContain(CALLBACK_CODES.writeScope)
     // The screen said this permission cannot change anything in their store.
     expect(h.saved).toHaveLength(0)
+  })
+
+  /**
+   * The exception, and it is the merchant's own doing. A store that went
+   * through the publishing screen and said yes is handed that permission back
+   * by Shopify whether we ask for it or not, so refusing the token would lock
+   * out precisely the merchants who trusted us most: they could never reconnect
+   * their own store again.
+   */
+  it('keeps a write permission this merchant had already allowed', async () => {
+    const h = harness({ publishGrantedAt: async () => new Date('2026-07-01T00:00:00Z') })
+    h.oauth.grants({ grantedScopes: ['read_products', 'write_content'] })
+
+    const response = await makeCallbackHandler(() => h.deps)(callbackRequest(goodQuery(h)), context())
+
+    expect(response.headers.get('location')).toContain('connected=shopify')
+    expect(h.saved).toHaveLength(1)
+    expect(h.saved[0]!.grantedScopes).toContain('write_content')
+  })
+
+  it('still refuses a write permission nobody on this account ever allowed', async () => {
+    const h = harness({ publishGrantedAt: async () => null })
+    h.oauth.grants({ grantedScopes: ['read_products', 'write_content'] })
+
+    const response = await makeCallbackHandler(() => h.deps)(callbackRequest(goodQuery(h)), context())
+
+    expect(response.headers.get('location')).toContain(CALLBACK_CODES.writeScope)
+    expect(h.saved).toHaveLength(0)
+  })
+
+  /**
+   * A store belongs to one account. A merchant who signed up twice used to meet
+   * a database error here — after their one-time code had already been spent,
+   * so there was nothing left to retry with and the account that *did* hold the
+   * store had had its live connection disturbed on the way past.
+   */
+  it('turns away a store another account already holds, before the code is spent', async () => {
+    const h = harness({ accountHoldingShop: async () => OTHER_ACCOUNT })
+
+    const response = await makeCallbackHandler(() => h.deps)(callbackRequest(goodQuery(h)), context())
+
+    expect(response.headers.get('location')).toContain(CALLBACK_CODES.storeTaken)
+    expect(h.saved).toHaveLength(0)
+    // The one-time code is untouched, so nothing of the other account's
+    // connection was traded away to produce this refusal.
+    expect(h.oauth.exchanges).toEqual([])
+  })
+
+  it('lets the account that already holds the store connect it again', async () => {
+    const h = harness({ accountHoldingShop: async () => ACCOUNT })
+
+    const response = await makeCallbackHandler(() => h.deps)(callbackRequest(goodQuery(h)), context())
+
+    expect(response.headers.get('location')).toContain('connected=shopify')
+    expect(h.saved).toHaveLength(1)
+  })
+
+  /**
+   * A store whose connection had died is waiting on the reconnect screen with
+   * its onboarding steps recorded as failed. Reviving them is what makes this a
+   * reconnection rather than a token quietly replaced under a store nothing
+   * will ever work on again.
+   */
+  it('makes the work that stopped for a dead token due again', async () => {
+    const h = harness()
+
+    await makeCallbackHandler(() => h.deps)(callbackRequest(goodQuery(h)), context())
+
+    expect(h.revived).toEqual([ACCOUNT])
+  })
+
+  /**
+   * Onboarding is a catalogue walk, several model calls and paid search data —
+   * minutes of work. Running it inside the callback left the merchant's browser
+   * hanging on Shopify's redirect until it timed out and showed an error for a
+   * connection that had in fact been made.
+   */
+  it('answers the browser with the store`s catalogue still unread', async () => {
+    let walked = false
+    const queue: (() => void)[] = []
+    const h = harness({
+      async resumeIngestion() {
+        // What the enqueue leaves behind: a job row for a worker to pick up.
+        queue.push(() => {
+          walked = true
+        })
+      },
+    })
+
+    const response = await makeCallbackHandler(() => h.deps)(callbackRequest(goodQuery(h)), context())
+
+    expect(response.headers.get('location')).toBe('https://app.example/dashboard?connected=shopify')
+    expect(queue).toHaveLength(1)
+    // The merchant is back on the dashboard and the walk has not begun.
+    expect(walked).toBe(false)
+
+    for (const job of queue) job()
+    expect(walked).toBe(true)
   })
 
   it('does not turn a Shopify outage into a lost connection', async () => {

@@ -33,7 +33,22 @@ interface ShopFailureShape {
 
 /** A token the merchant has to renew, whatever threw it. */
 export function isTokenRejected(error: unknown): boolean {
-  return (error as ShopFailureShape | null)?.name === 'ShopifyTokenInvalid'
+  const shape = (error ?? {}) as ShopFailureShape
+  // By class as well as by name, because a grant Shopify refuses to renew comes
+  // from the token store rather than from the shop client and carries a name of
+  // its own — but means exactly the same thing to a merchant.
+  return shape.name === 'ShopifyTokenInvalid' || shape.errorClass === 'shopify_token_invalid'
+}
+
+/**
+ * The shop turned the request away for being too frequent, not for being wrong.
+ *
+ * Told apart from other refusals because the response is different in kind:
+ * nothing is broken, nothing needs a merchant, and the same request will work
+ * shortly. A publish that treats it like a refusal loses the article its day.
+ */
+export function isRateLimited(error: unknown): boolean {
+  return (error as ShopFailureShape | null)?.errorClass === 'shopify_rate_limited'
 }
 
 export function sendDisposition(error: unknown): SendDisposition {

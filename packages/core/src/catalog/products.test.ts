@@ -75,6 +75,53 @@ describe('reading a product', () => {
     expect(axes).toHaveLength(1)
   })
 
+  it('keeps each picture with the words the merchant wrote for it', () => {
+    // An article about a product is published with one of its pictures, and the
+    // merchant's own description of it becomes the published image's alt text.
+    // A picture Shopify is still processing has no address yet, and publishing
+    // that would put a broken image on the merchant's blog.
+    const row = toProductRow(
+      product({
+        images: [
+          { src: 'https://cdn.shopify.com/a.jpg', alt: 'Side view of the shoe' },
+          { src: 'https://cdn.shopify.com/b.jpg', alt: '' },
+          { src: '', alt: 'still uploading' },
+        ],
+      }),
+    )
+    expect(row.images).toEqual([
+      { url: 'https://cdn.shopify.com/a.jpg', alt: 'Side view of the shoe' },
+      { url: 'https://cdn.shopify.com/b.jpg', alt: null },
+    ])
+  })
+
+  it('says nothing about pictures when the read did not ask for them', () => {
+    // Same rule as the options: a webhook body carries no pictures, and writing
+    // "none" over the ones we hold would strip the images off every product in
+    // the store the first time a merchant edited one.
+    expect(toProductRow(product({ images: undefined })).images).toBeUndefined()
+    expect(toProductRow(product({ images: [] })).images).toEqual([])
+  })
+
+  it('keeps the store own structured attributes, which now travel with the product', () => {
+    const row = toProductRow(
+      product({
+        metafields: [
+          { namespace: 'specs', key: 'drop_mm', value: 4, type: 'number_integer' },
+          { namespace: 'specs', key: 'empty', value: '  ' },
+        ],
+      }),
+    )
+    expect(row.metafields).toEqual([
+      { namespace: 'specs', key: 'drop_mm', value: '4', type: 'number_integer' },
+    ])
+  })
+
+  it('says nothing about attributes when the read did not ask for them', () => {
+    expect(toProductRow(product()).metafields).toBeUndefined()
+    expect(toProductRow(product({ metafields: [] })).metafields).toEqual([])
+  })
+
   it('treats a made-to-order variant as available whatever the count says', () => {
     const row = toProductRow(
       product({ variants: [{ id: 3, inventory_quantity: 0, inventory_policy: 'continue' }] }),
@@ -202,12 +249,27 @@ describe('what each Shopify topic means', () => {
   it('routes the catalogue topics into the change stream', () => {
     expect(intentFor('products/create')).toEqual({ kind: 'catalog', events: ['product_created'] })
     expect(intentFor('products/delete')).toEqual({ kind: 'catalog', events: ['product_deleted'] })
-    expect(intentFor('articles/update')).toEqual({ kind: 'catalog', events: ['article_updated'] })
-    expect(intentFor('pages/delete')).toEqual({ kind: 'catalog', events: ['page_deleted'] })
-    expect(intentFor('inventory_levels/update')).toEqual({
+    expect(intentFor('collections/create')).toEqual({
       kind: 'catalog',
-      events: ['availability_changed'],
+      events: ['collection_updated'],
     })
+    expect(intentFor('collections/update')).toEqual({
+      kind: 'catalog',
+      events: ['collection_updated'],
+    })
+  })
+
+  it('subscribes to no topic Shopify does not actually publish', () => {
+    // Shopify has no topics for pages or blog posts, so a merchant's edit to
+    // either reaches us on the nightly re-read and not before. That is a real
+    // gap; listing the topics anyway would only have hidden it.
+    expect(isKnownTopic('articles/update')).toBe(false)
+    expect(isKnownTopic('pages/delete')).toBe(false)
+
+    // Stock has a topic, but it needs a permission of its own over a merchant's
+    // warehouse figures — far more than a writer of articles should ask for. A
+    // product going out of stock still reaches us through `products/update`.
+    expect(isKnownTopic('inventory_levels/update')).toBe(false)
   })
 
   it('sends a product edit to be compared rather than assuming what changed', () => {
@@ -231,9 +293,9 @@ describe('what each Shopify topic means', () => {
 })
 
 describe('reading a webhook body', () => {
-  it('finds the subject id, including the inventory case that names something else', () => {
+  it('finds the subject id, which every body carries at its top level', () => {
     expect(subjectIdOf('products/update', { id: 700 })).toBe('700')
-    expect(subjectIdOf('inventory_levels/update', { inventory_item_id: 42, id: 9 })).toBe('42')
+    expect(subjectIdOf('collections/update', { id: 42 })).toBe('42')
     expect(subjectIdOf('products/update', {})).toBeUndefined()
   })
 

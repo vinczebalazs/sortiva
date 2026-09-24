@@ -1,4 +1,4 @@
-import { withAccount, type AccountContext } from '../../../auth/_lib/session'
+import { withAccountFromBrowser, type AccountContext } from '../../../auth/_lib/session'
 import { publishGrantDeps } from '../../_lib/config'
 import { makePublishGrantCallbackHandler } from '../../_lib/handlers'
 
@@ -8,6 +8,6 @@ import { makePublishGrantCallbackHandler } from '../../_lib/handlers'
 export const dynamic = 'force-dynamic'
 
 // `publishGrantDeps()` deferred to request time — see the note in `_lib/config.ts`.
-export const GET = withAccount((request: Request, context: AccountContext) =>
+export const GET = withAccountFromBrowser((request: Request, context: AccountContext) =>
   makePublishGrantCallbackHandler(publishGrantDeps())(request, context),
 )

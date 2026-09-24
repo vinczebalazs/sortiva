@@ -52,6 +52,33 @@ export function withAccount<Ctx = unknown>(
 }
 
 /**
+ * The same guard, for the two routes a *browser* arrives at: the returns from
+ * Shopify's consent screens.
+ *
+ * They are API routes by address only. What reaches them is a merchant's tab,
+ * redirected by Shopify, and a signed-in session that has since expired — a
+ * merchant who left the consent screen open over lunch — met a page of raw JSON
+ * saying "Sign in to continue", with no way on and nothing to click. They are
+ * sent to the sign-in screen instead, with the address they were heading for,
+ * so signing in finishes the connection rather than abandoning it.
+ */
+export function withAccountFromBrowser<Ctx = unknown>(
+  handler: AccountHandler<Ctx>,
+  readSession: SessionReader = sessionFromAuthJs,
+): (request: Request, context: Ctx) => Promise<Response> {
+  return async (request, context) => {
+    const accountId = await readSession()
+    if (!accountId) {
+      const next = new URL(request.url)
+      const signIn = new URL('/signin', next.origin)
+      signIn.searchParams.set('next', `${next.pathname}${next.search}`)
+      return Response.redirect(signIn.toString(), 302)
+    }
+    return handler(request, { scope: accountScope(accountId), route: context })
+  }
+}
+
+/**
  * The error envelope every route shares (`errorResponseSchema` in
  * `packages/core`): `code` is the contract, `message` is for humans.
  */

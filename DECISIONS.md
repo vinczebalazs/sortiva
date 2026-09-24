@@ -6785,3 +6785,51 @@ Decision 2 (`packages/jobs/src/sweeps/retention.test.ts`): the helpers that inse
 Alongside: `eslint.config.mjs` ignores `.claude/worktrees/**`. `pnpm lint` had reported 46 errors, all from the nested worktree of another branch; the main tree was clean.
 
 Nearest spec: main §14.3.6 (request cache); tech §1 (retention).
+## 2026-09-12 — SHOPIFY-HARDENING — The whole Shopify integration moves to Shopify's current API, and the merchant-facing failures found with it
+
+Context: an audit of the Shopify integration against Shopify's own documentation found that every call we make uses their **legacy** interface, which they stopped accepting for new apps like ours in April 2025 — an App Store submission built this way is refused. Alongside that, a dozen things were found that a real merchant would have met and we would not have seen. The founder directed the rewrite first, and answered every product question it raised before it started.
+
+**What the merchant now gets that they did not.**
+
+- **Their connection keeps working.** Shopify's tokens for apps created after April 2026 — ours — last an hour and must be renewed. Nothing here renewed anything, so a store would have connected, worked for an hour, and then told its merchant to reconnect, hourly, for ever. Tokens are now fetched per request and renewed shortly before they expire, and a token Shopify refuses is renewed once and the request tried again before anybody is told anything.
+- **Reconnecting works.** It did not. A store whose connection died moved to the reconnect screen; the merchant reconnected; the new token was stored — and nothing moved the store back. Every scheduled thing that works on a store looks for stores that are ready, so that account's calendar, opportunity scans and learning silently stopped for good, with a working connection and no error anywhere. Now the steps that stopped for the dead token are made due again, and a store that had finished onboarding goes straight back to ready.
+- **A merchant who already allowed publishing can reconnect at all.** Shopify hands a returning merchant back every permission they ever granted. The install refused any token carrying write permission — correctly, for a first install — which meant the merchants who had trusted us most could never reconnect. It is now accepted only for an account that had granted publishing through the publishing screen, and still refused otherwise.
+- **The browser no longer hangs after "Approve".** The callback ran the whole of onboarding — a catalogue walk, several model calls, paid search data — while the merchant's browser waited on the redirect, and timed out showing an error for a connection that had in fact been made. It is queued now.
+- **Their store is not told it is sold out.** Availability was read as "stock count above zero", which is what a store that does not track stock reports for everything it sells. Made-to-order, print-on-demand and digital stores read as entirely unavailable, and every article referencing one was flagged for repair. Shopify's own "available for sale" answer is used now.
+- **Their published articles can be matched to the traffic they earn.** An article's address was built from the domain claimed at signup, which is stored stripped of `www.` and of any subdomain. A store serving on `www.` or on a subdomain therefore filed every article under an address Search Console never reports — so a working article looked like it had earned nothing, permanently, and the learning loop learned from those zeros. The address now comes from the host the store itself says it serves on, recorded when the connection is made.
+- **One refused article no longer stops publishing for ever.** Shopify refusing a post — a web address already in use, a blog the merchant deleted — released the claim and skipped the day. The next day chose the same oldest article and was refused again, so everything queued behind it waited indefinitely and the only trace was a log line. Publishing is now switched off for that store with the merchant told what the shop said, which they can act on and undo.
+- **A rate limit costs minutes, not a day.** It was treated as "blocked", which wrote off the day's article.
+- **Their blog posts are found again.** Re-reading an article after a webhook used an address Shopify does not have; the resulting 404 was read as "the merchant deleted it", and the article was dropped from our inventory.
+- **Their edits arrive the same day.** A webhook that failed — most often because the store's own nightly sync held its lock, which is the ordinary case — was marked done and never retried, so the edit waited for the next night's re-read. A failure now leaves the delivery unfinished and it is drained again, up to five attempts.
+- **Posts carry the store's own name, a picture and a search description**, and no longer print the title twice (the body opened with its own headline, which every Shopify theme prints above it).
+
+**Decisions the founder made, and what each costs.**
+
+- **Best sellers cover 60 days, permanently** — not the spec's 90. Shopify gives an app like ours 60 days of orders; more needs `read_all_orders`, which they grant case by case. The 90-day window silently measured 60 and labelled it 90. The spec and the revenue-share threshold in `packages/rules` now say 60; the stored column names still say `revenue_90d`, which is now a lie in the schema and is listed below as not done.
+- **Revenue means net product sales**: units still held after refunds, at the price after every discount, excluding tax, postage and gift cards. It used to include tax and postage and ignore both refunds and ordinary discounts.
+- **Order data being refused does not stop onboarding.** Shopify approves access to order data store by store; until that approval, reading orders is refused. That refusal used to be read as a dead token, so a merchant who had just connected was told to reconnect — and reconnecting got the same refusal. Onboarding now finishes without best sellers.
+- **`read_locales` is dropped** from the permissions asked for: it was never used, and the store's language comes from its primary domain, which needs no permission.
+- **The stock webhook is dropped.** Shopify gates it behind a permission over a merchant's warehouse figures. The `articles/*` and `pages/*` topics are dropped because **Shopify has no such topics** — the spec named six webhooks that do not exist. A merchant's edit to a page or post therefore reaches us on the nightly pass and not before, which is a real gap and is now written down as one.
+- **Publishing pauses and notifies** on a refusal, rather than skipping past the article.
+- **A draft's address is recorded when it is posted** — the address it will have — because nothing asked Shopify again after a merchant published a draft, so those articles' traffic was never counted as theirs.
+- **A second account connecting a store another account holds is refused with a message**, rather than meeting a database error.
+
+**My own calls, and their costs.**
+
+- *Where the marker search looks.* The "did our post land?" search now covers the whole shop rather than the chosen blog. A merchant who changes their target blog between a crash and the recovery sweep would otherwise have been asked nothing about the blog the post actually went to, and would have got the same article twice. It costs a slightly wider search.
+- *A search filter Shopify ignores is now a failure.* Shopify answers an unknown filter with a warning and the unfiltered list. For the recovery search that mattered: "not there" is what authorises posting again, and an unfiltered answer that found nothing would have authorised a duplicate post.
+- *Renewals are serialised per store with a row lock, and the network call happens inside that lock.* Shopify retires the old refresh token when the new one is first used and warns against two renewals at once. The cost is a database transaction held open for the length of one HTTP request.
+- *Marking a connection lost is refused for a connection made after the failure being reported*, so a merchant who reconnects while a job that failed on the old token is still winding down is not immediately told their new connection is broken.
+- *The published article's search title is set from the article's own title.* Shopify's themes otherwise compose their own; setting it makes what we intend explicit, at the cost of overriding a theme's pattern.
+
+**Not done, and why.**
+
+- **The install flow still breaks Shopify's App Store rules** (2.3.1/2.3.2: an install must be startable from Shopify, with Shopify sign-in first). Ours is sign up → claim a domain → read the homepage → connect. The founder deferred this deliberately; it reshapes onboarding and the spec.
+- **`shopify.app.toml` is written but not pushed.** It is the only place Shopify accepts the three privacy topics from, and pushing it needs the founder's Shopify login. Until it is pushed, **no webhooks arrive at all**, and the privacy topics an App Store listing requires are not registered. Its placeholders — client id and host — must be filled in first.
+- **`revenue_90d` / `qty_90d` columns still carry their old names** while holding 60 days. Renaming them is a migration of its own.
+- **Unpublished pages and posts are dropped from the content inventory**, which is right — an unpublished page is not coverage of anything — but the first walk after this ships will mark every such row gone in one go, and that spike is the shape the log comment calls "a walk that went wrong".
+- **A merchant unpublishing a page is noticed on the nightly walk, not on the webhook**: the re-read cannot tell "unpublished" from "deleted" and adds nothing either way.
+
+Files: `packages/providers/src/shopify/*` (new `graphql.ts`; `admin.ts`, `publish.ts`, `limiter.ts`, `oauth.ts`, the two doubles rewritten), `packages/core/src/catalog/*`, `packages/core/src/publish/*`, `packages/db` (schema wave `0015`, `stores/shopify-tokens.ts`), `packages/jobs/src/{ingestion,publish,drift,inventory,notify}/*`, `apps/web/app/api/{shopify,publish}/*`, `apps/web/instrumentation-node.ts`, `shopify.app.toml`, `docs/sortiva-spec.md`, `packages/rules/signals.config.yaml`.
+
+Nearest spec: main §6.2, §9.5, §12.3, §14.1, §14.3.7, §14.6, §17.3; invariants 4, 18, 19, 21, 25.

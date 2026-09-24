@@ -1,5 +1,12 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
-import { emptyFactSheet, toProductRow, type StoreConnection } from '@sortiva/core'
+import {
+  emptyFactSheet,
+  staticShopifyAuth,
+  toProductRow,
+  type ShopifyAccessGrant,
+  type ShopifyAuth,
+  type StoreConnection,
+} from '@sortiva/core'
 import {
   accountScope,
   listFamilies,
@@ -41,6 +48,15 @@ interface State {
 
 const state: State = { jobId: '', stepId: '', key: '', commits: 0 }
 
+/** The grant nothing in this scenario asks for: it never installs anything. */
+const NO_GRANT: ShopifyAccessGrant = {
+  accessToken: '',
+  grantedScopes: [],
+  expiresAt: null,
+  refreshToken: null,
+  refreshTokenExpiresAt: null,
+}
+
 class ChaosConnections implements ConnectionStore {
   constructor(private readonly accountId: string) {}
 
@@ -54,8 +70,8 @@ class ChaosConnections implements ConnectionStore {
     }
   }
 
-  async readToken(): Promise<string | undefined> {
-    return 'shpat_chaos'
+  async authFor(): Promise<ShopifyAuth> {
+    return staticShopifyAuth('chaos-store', 'shpat_chaos')
   }
 
   async markInvalid(_accountId: string, at: Date): Promise<Date> {
@@ -108,7 +124,8 @@ function baseDeps(ctx: Pick<ChaosContext, 'pool' | 'accountId'>): IngestionDeps 
     shopify: {
       authorizeUrl: () => '',
       verifyCallbackSignature: () => true,
-      exchangeCode: async () => ({ accessToken: '', grantedScopes: [] }),
+      exchangeCode: async () => NO_GRANT,
+      refreshAccess: async () => NO_GRANT,
       revokeAccess: async () => {},
     },
     shop: { async getShop() { throw new Error('not used') } },

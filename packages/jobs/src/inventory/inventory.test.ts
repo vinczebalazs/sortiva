@@ -17,7 +17,8 @@ import {
   truncateAll,
   type TestDb,
 } from '@sortiva/db/testing'
-import { silentLogger } from '@sortiva/core'
+import { silentLogger, staticShopifyAuth } from '@sortiva/core'
+import type { ShopifyAuth, StoreContentKind, StoreContentRecord } from '@sortiva/core'
 import { runInventorySync } from './tasks'
 import type { InventoryConnectionStore, InventoryTaskDeps, ShopifyAdminReader } from './deps'
 
@@ -25,11 +26,11 @@ import type { InventoryConnectionStore, InventoryTaskDeps, ShopifyAdminReader } 
  * The inventory end to end, against a real database and a stand-in store.
  *
  * There is no Partner account and no dev store, so the store is a fixture: a
- * shop with two hand-picked collections, one rule-based one, three products,
- * two static pages and two blogs whose posts are spread across them. It answers
- * exactly the shapes Shopify's admin interface answers, including the awkward
- * ones — the two separate collection lists, and the search title and description
- * arriving as a separate request per page.
+ * shop with three collections, three products, two static pages and three blog
+ * posts spread across two blogs. It answers in the shapes the one Shopify client
+ * answers in — a page of things plus an opaque marker for where the next page
+ * starts, each thing already carrying its search title and description, and each
+ * post already naming the blog it sits under.
  *
  * What is being proved is the thing the card asks for: that a whole store ends
  * up in the inventory with the right kind recorded against every address, and
@@ -46,21 +47,23 @@ interface FixtureThing {
   seoTitle?: string
   seoDescription?: string
   memberIds?: string[]
+  /** Posts only: the blog they sit under, which their address is built from. */
+  blogHandle?: string
 }
 
 interface FixtureStore {
   domain: string
-  customCollections: FixtureThing[]
-  smartCollections: FixtureThing[]
+  /** Hand-picked and rule-based alike: the store lists both together. */
+  collections: FixtureThing[]
   products: FixtureThing[]
   pages: FixtureThing[]
-  blogs: { id: string; handle: string; articles: FixtureThing[] }[]
+  articles: FixtureThing[]
 }
 
 function fixtureStore(): FixtureStore {
   return {
     domain: 'shop.example',
-    customCollections: [
+    collections: [
       {
         id: '11',
         handle: 'walking-boots',
@@ -77,8 +80,6 @@ function fixtureStore(): FixtureStore {
         body_html: '<p>Jackets and overtrousers.</p>',
         memberIds: ['33'],
       },
-    ],
-    smartCollections: [
       {
         id: '21',
         handle: 'under-100',
@@ -96,134 +97,111 @@ function fixtureStore(): FixtureStore {
       { id: '41', handle: 'sizing', title: 'Sizing guide', body_html: '<h2>Widths</h2>' },
       { id: '42', handle: 'about', title: 'About us', body_html: '<p>Since 1994.</p>' },
     ],
-    blogs: [
+    articles: [
       {
-        id: '51',
-        handle: 'news',
-        articles: [
-          { id: '61', handle: 'spring-range', title: 'The spring range', body_html: '<p>New.</p>' },
-        ],
+        id: '61',
+        handle: 'spring-range',
+        title: 'The spring range',
+        body_html: '<p>New.</p>',
+        blogHandle: 'news',
       },
       {
-        id: '52',
-        handle: 'guides',
-        articles: [
-          { id: '71', handle: 'boot-care', title: 'Caring for boots', body_html: '<p>Dry them.</p>' },
-          { id: '72', handle: 'first-hike', title: 'Your first hike', body_html: '<p>Start small.</p>' },
-        ],
+        id: '71',
+        handle: 'boot-care',
+        title: 'Caring for boots',
+        body_html: '<p>Dry them.</p>',
+        blogHandle: 'guides',
+      },
+      {
+        id: '72',
+        handle: 'first-hike',
+        title: 'Your first hike',
+        body_html: '<p>Start small.</p>',
+        blogHandle: 'guides',
       },
     ],
   }
 }
 
 /**
- * A stand-in for Shopify's admin interface, counting what was asked of it.
+ * A stand-in for the store's admin interface, counting what was asked of it.
  *
  * The count matters as much as the answers: a walk that re-read the whole store
  * every night, or that asked for the same page twice in one run, would still
  * produce a correct inventory and would still be wrong.
  */
 class FakeAdmin implements ShopifyAdminReader {
-  readonly paths: string[] = []
+  readonly calls: string[] = []
 
   constructor(private readonly store: FixtureStore) {}
 
-  async get<T>(_auth: { shop: string; accessToken: string }, path: string): Promise<T> {
-    this.paths.push(path)
-    return this.route(path) as T
+  async getShop(_auth: ShopifyAuth): Promise<{ myshopifyDomain: string; primaryDomain: string | null }> {
+    this.calls.push('shop')
+    return { myshopifyDomain: 'demo.myshopify.com', primaryDomain: this.store.domain }
   }
 
-  private route(path: string): unknown {
-    const [route, query = ''] = path.split('?')
-    const params = new URLSearchParams(query)
-    const limit = Number(params.get('limit') ?? '50')
-    const sinceId = params.get('since_id') ?? undefined
-    const segments = (route ?? '').replace(/\.json$/, '').split('/')
-
-    if (segments[0] === 'shop') return { shop: { domain: this.store.domain } }
-    if (segments[0] === 'blogs' && segments.length === 1) {
-      return { blogs: this.store.blogs.map((blog) => ({ id: blog.id, handle: blog.handle })) }
+  async listContent(
+    _auth: ShopifyAuth,
+    options: { kind: StoreContentKind; after?: string; first?: number },
+  ): Promise<{ items: readonly StoreContentRecord[]; next: string | undefined }> {
+    this.calls.push(`list:${options.kind}`)
+    const all = this.ofKind(options.kind)
+    // The marker is the store's to shape and the walk's to hand back untouched;
+    // a position in the list is as good a shape as any.
+    const from = options.after ? Number(options.after) : 0
+    const items = all
+      .slice(from, from + (options.first ?? 100))
+      .map((thing) => asRecord(thing, options.kind))
+    return {
+      items,
+      next: from + items.length < all.length ? String(from + items.length) : undefined,
     }
-    if (segments[0] === 'blogs' && segments[2] === 'articles') {
-      const blog = this.store.blogs.find((candidate) => candidate.id === segments[1])
-      return { articles: window(blog?.articles ?? [], limit, sinceId) }
-    }
-    if (segments[0] === 'custom_collections') {
-      return { custom_collections: window(this.store.customCollections, limit, sinceId) }
-    }
-    if (segments[0] === 'smart_collections') {
-      return { smart_collections: window(this.store.smartCollections, limit, sinceId) }
-    }
-    if (segments[0] === 'products' && segments.length === 1) {
-      return { products: window(this.store.products, limit, sinceId) }
-    }
-    if (segments[0] === 'pages' && segments.length === 1) {
-      return { pages: window(this.store.pages, limit, sinceId) }
-    }
-    if (segments.at(-1) === 'metafields') return { metafields: this.metafields(segments) }
-    if (segments[0] === 'collections' && segments[2] === 'products') {
-      const collection = this.collection(segments[1])
-      return { products: (collection?.memberIds ?? []).map((id) => ({ id })) }
-    }
-
-    // A single thing, by id — how a webhook-driven re-read asks.
-    const single = this.single(segments[0] ?? '', segments[1] ?? '')
-    if (single) return single
-    throw new Error(`Shopify answered 404 for ${path}.`)
   }
 
-  private single(kind: string, id: string): Record<string, unknown> | undefined {
-    if (kind === 'collections') {
-      const found = this.collection(id)
-      return found ? { collection: found } : undefined
-    }
-    if (kind === 'products') {
-      const found = this.store.products.find((candidate) => candidate.id === id)
-      return found ? { product: found } : undefined
-    }
-    if (kind === 'pages') {
-      const found = this.store.pages.find((candidate) => candidate.id === id)
-      return found ? { page: found } : undefined
-    }
-    if (kind === 'articles') {
-      for (const blog of this.store.blogs) {
-        const found = blog.articles.find((candidate) => candidate.id === id)
-        if (found) return { article: { ...found, blog_id: blog.id } }
-      }
-    }
-    return undefined
+  async readContent(
+    _auth: ShopifyAuth,
+    target: { kind: StoreContentKind; shopifyId: string },
+  ): Promise<StoreContentRecord | undefined> {
+    this.calls.push(`read:${target.kind}:${target.shopifyId}`)
+    const found = this.ofKind(target.kind).find((thing) => thing.id === target.shopifyId)
+    return found ? asRecord(found, target.kind) : undefined
   }
 
-  private collection(id: string | undefined): FixtureThing | undefined {
-    return [...this.store.customCollections, ...this.store.smartCollections].find(
-      (candidate) => candidate.id === id,
-    )
+  async collectionMemberIds(_auth: ShopifyAuth, collectionId: string): Promise<readonly string[]> {
+    this.calls.push(`members:${collectionId}`)
+    return this.store.collections.find((c) => c.id === collectionId)?.memberIds ?? []
   }
 
-  private metafields(segments: string[]): { namespace: string; key: string; value: string }[] {
-    const owner = this.single(segments[0] ?? '', segments[1] ?? '')
-    const thing = owner ? (Object.values(owner)[0] as FixtureThing | undefined) : undefined
-    const out: { namespace: string; key: string; value: string }[] = []
-    if (thing?.seoTitle) out.push({ namespace: 'global', key: 'title_tag', value: thing.seoTitle })
-    if (thing?.seoDescription) {
-      out.push({ namespace: 'global', key: 'description_tag', value: thing.seoDescription })
+  private ofKind(kind: StoreContentKind): FixtureThing[] {
+    switch (kind) {
+      case 'collection':
+        return this.store.collections
+      case 'product':
+        return this.store.products
+      case 'page':
+        return this.store.pages
+      case 'blog_article':
+        return this.store.articles
     }
-    return out
   }
 }
 
-/** Shopify's "everything after this id", which is how the walk resumes. */
-function window(all: readonly FixtureThing[], limit: number, sinceId: string | undefined) {
-  const from = sinceId ? all.findIndex((thing) => thing.id === sinceId) + 1 : 0
-  return all.slice(from, from + limit)
+function asRecord(thing: FixtureThing, kind: StoreContentKind): StoreContentRecord {
+  return {
+    kind,
+    shopifyId: thing.id,
+    handle: thing.handle,
+    title: thing.title,
+    bodyHtml: thing.body_html,
+    seoTitle: thing.seoTitle ?? null,
+    seoDescription: thing.seoDescription ?? null,
+    ...(thing.blogHandle ? { blogHandle: thing.blogHandle } : {}),
+  }
 }
 
 const connected: InventoryConnectionStore = {
-  async read() {
-    return { shopHandle: 'demo' }
-  },
-  async readToken() {
-    return 'shpat_token'
+  async authFor() {
+    return staticShopifyAuth('demo', 'shpat_token')
   },
   async markInvalid() {
     return undefined
@@ -334,9 +312,9 @@ describe.skipIf(!available)('a whole store into the inventory', () => {
 
   it('re-reads only the page the store said changed', async () => {
     await walkWholeStore()
-    admin.paths.length = 0
+    admin.calls.length = 0
 
-    store.customCollections[1]!.body_html = '<p>Jackets, overtrousers and gaiters.</p>'
+    store.collections[1]!.body_html = '<p>Jackets, overtrousers and gaiters.</p>'
     const outcome = await runInventorySync(deps, {
       accountId,
       targets: [{ kind: 'collection', shopifyId: '12' }],
@@ -346,7 +324,7 @@ describe.skipIf(!available)('a whole store into the inventory', () => {
     expect(outcome.status === 'done' && outcome.result.changedUrls).toEqual([
       'https://shop.example/collections/waterproofs',
     ])
-    expect(admin.paths.some((path) => path.startsWith('products.json'))).toBe(false)
+    expect(admin.calls.some((call) => call.startsWith('list:'))).toBe(false)
     expect(await listStorePages(ctx.db, accountScope(accountId))).toHaveLength(11)
   })
 
@@ -485,7 +463,7 @@ describe.skipIf(!available)('a whole store into the inventory', () => {
     // The post leaves the shop. For an export-delivery store our articles live
     // somewhere this walk cannot look at all, so a walk not finding one is
     // evidence of nothing — and this row is our record of what we delivered.
-    store.blogs[1]!.articles = store.blogs[1]!.articles.filter((a) => a.handle !== 'boot-care')
+    store.articles = store.articles.filter((a) => a.handle !== 'boot-care')
     await walkWholeStore()
 
     const rows = await listStorePages(ctx.db, accountScope(accountId))
@@ -521,7 +499,7 @@ describe.skipIf(!available)('a whole store into the inventory', () => {
 
     /** The merchant's edit, on the shop. Only the handle moves. */
     function renameOnTheShop(): void {
-      store.blogs[1]!.articles[0]!.handle = 'looking-after-boots'
+      store.articles[1]!.handle = 'looking-after-boots'
     }
 
     async function rowsByUrl() {
@@ -593,7 +571,7 @@ describe.skipIf(!available)('a whole store into the inventory', () => {
       await walkWholeStore()
 
       // A different post on the same blog, edited on the same night.
-      store.blogs[1]!.articles[1]!.title = 'Your first hike, revised'
+      store.articles[2]!.title = 'Your first hike, revised'
       await receiveArticleUpdate('72')
 
       const rows = await rowsByUrl()
@@ -639,7 +617,7 @@ describe.skipIf(!available)('a whole store into the inventory', () => {
       impact: 'medium',
     })
 
-    store.customCollections = store.customCollections.filter((c) => c.handle !== 'waterproofs')
+    store.collections = store.collections.filter((c) => c.handle !== 'waterproofs')
     await walkWholeStore()
 
     expect((await listStorePages(ctx.db, scope)).find((p) => p.url === WATERPROOFS)?.status).toBe('gone')
@@ -651,7 +629,7 @@ describe.skipIf(!available)('a whole store into the inventory', () => {
   it('records nothing at all for a store whose connection is gone', async () => {
     const gone: InventoryTaskDeps = {
       ...deps,
-      connections: { ...connected, async readToken() { return undefined } },
+      connections: { ...connected, async authFor() { return undefined } },
     }
 
     const outcome = await runInventorySync(gone, { accountId })

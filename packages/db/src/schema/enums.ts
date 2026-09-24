@@ -103,6 +103,8 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'repair_needed',
   'connection_lost_shopify',
   'connection_lost_gsc',
+  /** The shop refused a post, so posting was switched off until the merchant looks at it. */
+  'auto_publish_paused',
   'payment_failed',
   'monthly_summary_ready',
   'export_url_reminder',

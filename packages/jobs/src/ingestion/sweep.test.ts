@@ -1,5 +1,12 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import type { StoreConnection } from '@sortiva/core'
+import {
+  staticShopifyAuth,
+  type ShopifyAuth,
+  type ShopifyOAuthProvider,
+  type ShopifyOrder,
+  type ShopifyProduct,
+  type StoreConnection,
+} from '@sortiva/core'
 import { listLandingRevenue, readCatalogChanges, systemScope, accountScope } from '@sortiva/db'
 import {
   TEST_DATABASE_URL,
@@ -38,37 +45,67 @@ let accountId: string
 let queue: WorkerUtils | undefined
 const system = systemScope('the sweep tests read the change stream')
 
+/** One thing the sweep asked the store for, as the stand-in saw it. */
+interface ListRequest {
+  readonly list: 'products' | 'orders'
+  readonly after: string | undefined
+  /** For an order read: the start of the window that was asked for. */
+  readonly createdFrom?: Date
+}
+
+
+/**
+ * The install handshake, which none of these tests goes through: the store is
+ * already connected before anything here starts.
+ */
+const alreadyInstalled: ShopifyOAuthProvider = {
+  authorizeUrl: () => '',
+  verifyCallbackSignature: () => true,
+  exchangeCode: async () => {
+    throw new Error('these tests never install the app')
+  },
+  refreshAccess: async () => {
+    throw new Error('these tests never renew a token')
+  },
+  revokeAccess: async () => {},
+}
+
 class FakeShopify implements ShopifyListReader {
-  readonly requested: string[] = []
+  readonly requests: ListRequest[] = []
 
   constructor(
-    public products: Record<string, unknown>[],
-    public orders: Record<string, unknown>[] = [],
+    public products: ShopifyProduct[],
+    public orders: ShopifyOrder[] = [],
     private readonly pageSize = 100,
+    /** The store's own time zone, which decides which calendar day an order belongs to. */
+    private readonly timeZone: string | null = 'Europe/London',
   ) {}
 
-  /** Metafields keyed by Shopify product id, as a store that publishes them would answer. */
-  metafields: Record<string, Record<string, unknown>[]> = {}
+  async listProducts(
+    _auth: ShopifyAuth,
+    options: { after?: string; first?: number } = {},
+  ): Promise<{ items: readonly ShopifyProduct[]; next: string | undefined }> {
+    this.requests.push({ list: 'products', after: options.after })
+    return this.page(this.products, options.after)
+  }
 
-  async getPage<T>(
-    _auth: { shop: string; accessToken: string },
-    path: string,
-  ): Promise<{ body: T; nextPageInfo: string | undefined }> {
-    this.requested.push(path)
-    const metafieldsFor = /^products\/(\d+)\/metafields\.json/.exec(path)
-    if (metafieldsFor) {
-      return {
-        body: { metafields: this.metafields[metafieldsFor[1]!] ?? [] } as T,
-        nextPageInfo: undefined,
-      }
-    }
-    const isOrders = path.startsWith('orders.json')
-    const list = isOrders ? this.orders : this.products
-    const key = isOrders ? 'orders' : 'products'
-    const offset = Number(new URLSearchParams(path.split('?')[1] ?? '').get('page_info') ?? '0')
-    const slice = list.slice(offset, offset + this.pageSize)
-    const next = offset + this.pageSize < list.length ? String(offset + this.pageSize) : undefined
-    return { body: { [key]: slice } as T, nextPageInfo: next }
+  async listOrders(
+    _auth: ShopifyAuth,
+    options: { createdFrom: Date; after?: string; first?: number },
+  ): Promise<{ items: readonly ShopifyOrder[]; next: string | undefined; timeZone: string | null }> {
+    this.requests.push({ list: 'orders', after: options.after, createdFrom: options.createdFrom })
+    // The real client asks Shopify for the window and gets nothing older back.
+    const inWindow = this.orders.filter(
+      (order) => new Date(order.createdAt ?? 0).getTime() >= options.createdFrom.getTime(),
+    )
+    return { ...this.page(inWindow, options.after), timeZone: this.timeZone }
+  }
+
+  private page<T>(list: readonly T[], after: string | undefined): { items: readonly T[]; next: string | undefined } {
+    const offset = after ? Number(after.replace('cursor-', '')) : 0
+    const items = list.slice(offset, offset + this.pageSize)
+    const nextOffset = offset + this.pageSize
+    return { items, next: nextOffset < list.length ? `cursor-${nextOffset}` : undefined }
   }
 }
 
@@ -89,8 +126,10 @@ class FakeConnections implements ConnectionStore {
     return this.connection
   }
 
-  async readToken(): Promise<string | undefined> {
-    return this.connection && this.connection.invalidatedAt === null ? 'shpat_test' : undefined
+  async authFor(): Promise<ShopifyAuth | undefined> {
+    return this.connection && this.connection.invalidatedAt === null
+      ? staticShopifyAuth(this.connection.shopHandle, 'shpat_test')
+      : undefined
   }
 
   async markInvalid(_accountId: string, at: Date): Promise<Date> {
@@ -108,12 +147,7 @@ function deps(
     db: harness.db,
     pool: harness.pool,
     fetcher: { async fetch() { throw new Error('the sweep makes no page fetches') } },
-    shopify: {
-      authorizeUrl: () => '',
-      verifyCallbackSignature: () => true,
-      exchangeCode: async () => ({ accessToken: '', grantedScopes: [] }),
-      revokeAccess: async () => {},
-    },
+    shopify: alreadyInstalled,
     shop: { async getShop() { throw new Error('not used') } },
     admin,
     connections,
@@ -128,9 +162,14 @@ function deps(
   return { ingestion: () => ingestion, now: () => new Date(today) }
 }
 
-function shopifyProduct(id: number, overrides: Record<string, unknown> = {}) {
+/**
+ * A product as the Admin client hands it over: its option axes and its
+ * metafields travel with it, so a page of the catalogue is one request whatever
+ * the store keeps on its products.
+ */
+function shopifyProduct(id: number, overrides: Partial<ShopifyProduct> = {}): ShopifyProduct {
   return {
-    id,
+    id: String(id),
     title: `Product ${id}`,
     body_html: `<p>Words about product ${id}.</p>`,
     handle: `product-${id}`,
@@ -138,8 +177,25 @@ function shopifyProduct(id: number, overrides: Record<string, unknown> = {}) {
     tags: 'trail',
     status: 'active',
     updated_at: '2026-06-14T10:00:00Z',
-    variants: [{ id: id * 10, title: 'One size', sku: `SKU-${id}`, price: '50.00', inventory_quantity: 4 }],
+    variants: [{ id: id * 10, title: 'One size', sku: `SKU-${id}`, price: '50.00', available: true }],
     images: [],
+    options: [],
+    metafields: [],
+    ...overrides,
+  }
+}
+
+function shopifyOrder(createdAt: string, overrides: Partial<ShopifyOrder> = {}): ShopifyOrder {
+  return {
+    id: '1',
+    createdAt,
+    currency: 'GBP',
+    landingPage: '/collections/trail-shoes',
+    cancelledAt: null,
+    test: false,
+    lineItems: [
+      { productId: '1', title: 'Product 1', quantity: 1, unitPrice: '50.00', isGiftCard: false },
+    ],
     ...overrides,
   }
 }
@@ -191,15 +247,17 @@ describe.skipIf(!available)('the nightly re-read', () => {
     expect(rows[0]?.n).toBe('3')
   })
 
-  it("fills in a store's options tonight, and asks for metafields only where something moved", async () => {
+  it("fills in a store's options and attributes tonight, at no cost per product", async () => {
     const catalogue = [
-      shopifyProduct(1, { options: [{ name: 'Size', values: ['S', 'M'] }] }),
-      shopifyProduct(2, { options: [{ name: 'Size', values: ['L'] }] }),
+      shopifyProduct(1, {
+        options: [{ name: 'Size', position: 1, values: ['S', 'M'] }],
+        metafields: [
+          { namespace: 'custom', key: 'terrain', value: 'Trail', type: 'single_line_text_field' },
+        ],
+      }),
+      shopifyProduct(2, { options: [{ name: 'Size', position: 1, values: ['L'] }] }),
     ]
     const first = new FakeShopify([...catalogue])
-    first.metafields['1'] = [
-      { namespace: 'custom', key: 'terrain', value: 'Trail', type: 'single_line_text_field' },
-    ]
     await reconcileStoreCatalog(deps(first), { accountId })
 
     const { rows } = await harness.pool.query<{ options: unknown; metafields: unknown }>(
@@ -209,32 +267,19 @@ describe.skipIf(!available)('the nightly re-read', () => {
     expect(rows[0]?.metafields).toEqual([
       { namespace: 'custom', key: 'terrain', value: 'Trail', type: 'single_line_text_field' },
     ])
+    expect(rows[1]?.options).toEqual([{ name: 'Size', values: ['L'] }])
 
-    // A second night over an unchanged store. One extra request per product per
-    // night, for ever, is what this avoids.
+    // Both arrive inside the page the products came in. A whole store's
+    // attributes cost one request, not one per product per night for ever.
+    expect(first.requests.filter((request) => request.list === 'products')).toHaveLength(1)
+
+    // A second night over an unchanged store costs exactly the same.
     const second = new FakeShopify([...catalogue])
     await reconcileStoreCatalog(
       deps(second, new FakeConnections(accountId), '2026-06-21T03:00:00Z'),
       { accountId },
     )
-    expect(second.requested.filter((path) => path.includes('metafields.json'))).toEqual([])
-
-    // And the night after an edit, it asks again for that product alone.
-    const third = new FakeShopify([
-      shopifyProduct(1, {
-        options: [{ name: 'Size', values: ['S', 'M'] }],
-        body_html: '<p>Rewritten.</p>',
-        updated_at: '2026-06-21T22:00:00Z',
-      }),
-      catalogue[1]!,
-    ])
-    await reconcileStoreCatalog(
-      deps(third, new FakeConnections(accountId), '2026-06-22T03:00:00Z'),
-      { accountId },
-    )
-    expect(third.requested.filter((path) => path.includes('metafields.json'))).toEqual([
-      'products/1/metafields.json?limit=250',
-    ])
+    expect(second.requests).toHaveLength(first.requests.length)
   })
 
   it('finds the edit a dropped webhook never told us about', async () => {
@@ -389,16 +434,8 @@ describe.skipIf(!available)('the nightly re-read', () => {
   })
 
   it('brings the day takings up to date without doubling them', async () => {
-    const order = {
-      id: 1,
-      created_at: '2026-06-19T12:00:00+00:00',
-      currency: 'GBP',
-      total_price: '50.00',
-      landing_site: '/collections/trail-shoes',
-      customer: { email: 'ada@example.com' },
-      line_items: [{ product_id: 1, title: 'Product 1', quantity: 1, price: '50.00', total_discount: '0.00' }],
-    }
-    const world = deps(new FakeShopify([], [order]))
+    const shopify = new FakeShopify([], [shopifyOrder('2026-06-19T12:00:00Z')])
+    const world = deps(shopify)
 
     await aggregateLandingRevenue(world, { accountId, days: 2 })
     await aggregateLandingRevenue(world, { accountId, days: 2 })
@@ -407,6 +444,33 @@ describe.skipIf(!available)('the nightly re-read', () => {
     expect(rows.map((r) => [r.date, r.landingUrl, r.ordersN, r.revenue])).toEqual([
       ['2026-06-19', '/collections/trail-shoes', 1, '50.00'],
     ])
+
+    // Two days back, not one: a store far enough west is still living in the
+    // day before ours, and a single day's read would see only part of it.
+    const orderReads = shopify.requests.filter((request) => request.list === 'orders')
+    expect(orderReads[0]?.createdFrom?.toISOString()).toBe('2026-06-18T03:00:00.000Z')
+  })
+
+  it('leaves out a day that is still running where the merchant lives', async () => {
+    // Our clock says the small hours of the 20th; in Auckland it is already
+    // the afternoon of the 20th and the day's orders are still coming in.
+    // Writing a day replaces it, so writing this one now would replace it
+    // again tomorrow — but in between, the merchant's own figure for the day
+    // would be whatever had happened by three in the morning, our time.
+    const shopify = new FakeShopify(
+      [],
+      // Ten in the morning on the 19th in Auckland, and one in the afternoon
+      // on the 20th — a day that has not finished there yet.
+      [shopifyOrder('2026-06-18T22:00:00Z'), shopifyOrder('2026-06-20T01:00:00Z', { id: '2' })],
+      100,
+      'Pacific/Auckland',
+    )
+
+    const result = await aggregateLandingRevenue(deps(shopify), { accountId, days: 2 })
+
+    expect(result).toEqual({ days: 1 })
+    const rows = await listLandingRevenue(harness.db, accountScope(accountId))
+    expect(rows.map((r) => r.date)).toEqual(['2026-06-19'])
   })
 })
 

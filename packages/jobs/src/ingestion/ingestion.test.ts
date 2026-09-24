@@ -1,7 +1,11 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import {
   StubNotificationEmitter,
+  staticShopifyAuth,
   type DomainState,
+  type ShopifyAuth,
+  type ShopifyOrder,
+  type ShopifyProduct,
   type StoreConnection,
   type StorePage,
   type StorePageFetcher,
@@ -13,6 +17,7 @@ import { MockSeoDataProvider } from '@sortiva/providers'
 import { createRun } from '../runtime/steps'
 import { dispatchIngestion } from './dispatch'
 import type { ConnectionStore, IngestionDeps, ShopReader, ShopSnapshot } from './deps'
+import { resumeAfterReconnect } from './resume'
 import { readDetectedShopHandle } from './steps'
 
 /**
@@ -63,6 +68,8 @@ class FakeFetcher implements StorePageFetcher {
 class FakeConnections implements ConnectionStore {
   private connection: StoreConnection | undefined
   private token: string | undefined
+  /** What the store said about itself, once somebody asked it. */
+  identity: { storefrontHost?: string; shopName?: string } | undefined
 
   grant(input: { accountId: string; shopHandle: string; token: string; scopes: string[] }): void {
     this.connection = {
@@ -79,8 +86,16 @@ class FakeConnections implements ConnectionStore {
     return this.connection
   }
 
-  async readToken(): Promise<string | undefined> {
-    return this.token
+  async authFor(): Promise<ShopifyAuth | undefined> {
+    if (!this.connection || this.connection.invalidatedAt !== null || !this.token) return undefined
+    return staticShopifyAuth(this.connection.shopHandle, this.token)
+  }
+
+  async recordStoreIdentity(
+    _accountId: string,
+    identity: { storefrontHost?: string; shopName?: string },
+  ): Promise<void> {
+    this.identity = identity
   }
 
   async markInvalid(_accountId: string, at: Date): Promise<Date> {
@@ -97,12 +112,16 @@ class FakeConnections implements ConnectionStore {
  * does with a store that has products is `catalog.test.ts`.
  */
 class EmptyStore {
-  async getPage<T>(
-    _auth: { shop: string; accessToken: string },
-    path: string,
-  ): Promise<{ body: T; nextPageInfo: string | undefined }> {
-    const key = path.startsWith('orders.json') ? 'orders' : 'products'
-    return { body: { [key]: [] } as T, nextPageInfo: undefined }
+  async listProducts(): Promise<{ items: readonly ShopifyProduct[]; next: string | undefined }> {
+    return { items: [], next: undefined }
+  }
+
+  async listOrders(): Promise<{
+    items: readonly ShopifyOrder[]
+    next: string | undefined
+    timeZone: string | null
+  }> {
+    return { items: [], next: undefined, timeZone: 'Europe/London' }
   }
 }
 
@@ -113,12 +132,18 @@ class FakeShopReader implements ShopReader {
     this.rejecting = true
   }
 
-  async getShop(input: { shop: string }): Promise<ShopSnapshot> {
-    if (this.rejecting) throw new ShopifyTokenInvalid(input.shop, 401)
+  /** The merchant reconnected: the store answers again. */
+  acceptsToken(): void {
+    this.rejecting = false
+  }
+
+  async getShop(auth: ShopifyAuth): Promise<ShopSnapshot> {
+    if (this.rejecting) throw new ShopifyTokenInvalid(auth.shop, 401)
     return {
-      id: 42,
+      id: '42',
       name: 'Acme Candles',
-      myshopifyDomain: `${input.shop}.myshopify.com`,
+      myshopifyDomain: `${auth.shop}.myshopify.com`,
+      primaryDomain: 'acme.example',
       ianaTimezone: 'Europe/London',
       countryCode: 'GB',
       currency: 'GBP',
@@ -345,6 +370,30 @@ describe('a Shopify store being onboarded', () => {
     expect(states['gsc_connect']).toBe('pending')
   })
 
+  it('learns what the store calls itself and where it serves, once', async () => {
+    await createRun(harness.db, accountId, 'claim:acme.example')
+    const w = world('acme.example')
+    w.fetcher.serves('https://acme.example/', { headers: { 'x-shopid': '9' }, body: 'acme.myshopify.com' })
+    await dispatchIngestion(w.deps, { accountId })
+    w.connections.grant({
+      accountId,
+      shopHandle: 'acme',
+      token: 'shpat_x',
+      scopes: ['read_products', 'read_orders', 'read_content'],
+    })
+
+    await dispatchIngestion(w.deps, { accountId })
+
+    // Both are needed later at moments where asking again would be a network
+    // call in the middle of something else: every published article's address
+    // is built from the host the storefront serves on, and the store's name is
+    // the byline each one carries.
+    expect(w.connections.identity).toEqual({
+      storefrontHost: 'acme.example',
+      shopName: 'Acme Candles',
+    })
+  })
+
   it('recognises work already done rather than paying for it twice', async () => {
     await createRun(harness.db, accountId, 'claim:acme.example')
     const w = world('acme.example')
@@ -440,6 +489,84 @@ describe('when Shopify rejects the token we hold', () => {
     await dispatchIngestion(w.deps, { accountId })
 
     expect(w.notifications.emitted).toHaveLength(1)
+  })
+})
+
+/**
+ * Losing a connection is a pause. Without the other half of it the pause was
+ * permanent in the quietest possible way: the store moved to "waiting for
+ * Shopify", the merchant reconnected, the new token was stored — and nothing
+ * moved the store back, so its calendar, its scans and its learning simply
+ * stopped, with a working connection and no error anywhere.
+ */
+describe('when the merchant reconnects the store', () => {
+  it('puts the steps that stopped for the dead token back to work', async () => {
+    const { jobId } = await createRun(harness.db, accountId, 'claim:acme.example')
+    const w = world('acme.example')
+    w.fetcher.serves('https://acme.example/', { headers: { 'x-shopid': '9' }, body: 'acme.myshopify.com' })
+    await dispatchIngestion(w.deps, { accountId })
+    w.connections.grant({ accountId, shopHandle: 'acme', token: 'stale', scopes: ['read_products'] })
+    w.shop.rejectsToken()
+    await dispatchIngestion(w.deps, { accountId })
+    expect((await stepStates(jobId))['oauth_wait']).toBe('failed_terminal')
+
+    // The merchant goes through the connect screen again and the new token is
+    // stored; this is what happens next.
+    w.connections.grant({
+      accountId,
+      shopHandle: 'acme',
+      token: 'fresh',
+      scopes: ['read_products', 'read_orders', 'read_content'],
+    })
+    w.shop.acceptsToken()
+    expect(await resumeAfterReconnect(harness.db, accountId)).toBe('resumed_onboarding')
+
+    expect((await stepStates(jobId))['oauth_wait']).toBe('pending')
+    const resumed = await dispatchIngestion(w.deps, { accountId })
+    expect(resumed?.executed).toContain('oauth_wait')
+    expect(await domainState()).not.toBe('awaiting_shopify_auth')
+  })
+
+  it('leaves alone a step that failed for its own reasons', async () => {
+    const { jobId } = await createRun(harness.db, accountId, 'claim:acme.example')
+    const w = world('acme.example')
+    w.fetcher.serves('https://acme.example/', { headers: { 'x-shopid': '9' }, body: 'acme.myshopify.com' })
+    await dispatchIngestion(w.deps, { accountId })
+    w.connections.grant({ accountId, shopHandle: 'acme', token: 'stale', scopes: ['read_products'] })
+    w.shop.rejectsToken()
+    await dispatchIngestion(w.deps, { accountId })
+
+    // A different step, dead for a reason a new token says nothing about.
+    await harness.pool.query(
+      `update job_steps set state = 'failed_terminal', last_error_class = 'no_domain'
+         where job_id = $1 and step = 'catalog_sync'`,
+      [jobId],
+    )
+
+    await resumeAfterReconnect(harness.db, accountId)
+
+    const states = await stepStates(jobId)
+    expect(states['oauth_wait']).toBe('pending')
+    expect(states['catalog_sync']).toBe('failed_terminal')
+  })
+
+  it('returns a store that had already finished onboarding to work rather than to the connect screen', async () => {
+    const { jobId } = await createRun(harness.db, accountId, 'claim:acme.example')
+    await harness.pool.query(`update job_steps set state = 'succeeded' where job_id = $1`, [jobId])
+    // The connection broke after onboarding was over, so the store is sitting
+    // on the reconnect screen with no work left to redo.
+    await harness.pool.query(
+      `update domains set state = 'awaiting_shopify_auth' where account_id = $1`,
+      [accountId],
+    )
+
+    expect(await resumeAfterReconnect(harness.db, accountId)).toBe('restored_ready')
+    expect(await domainState()).toBe('ready_for_planning')
+  })
+
+  it('does nothing for a store that is not waiting on Shopify at all', async () => {
+    await createRun(harness.db, accountId, 'claim:acme.example')
+    expect(await resumeAfterReconnect(harness.db, accountId)).toBe('nothing_to_resume')
   })
 })
 

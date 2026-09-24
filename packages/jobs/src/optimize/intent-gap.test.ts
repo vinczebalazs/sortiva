@@ -56,7 +56,16 @@ const BUDGETS = rules().defaults.budgets
  */
 const PAST_THE_ALLOWANCE =
   BUDGETS.intent_gap.analyses_per_account_per_day * MODEL_CALLS_PER_PAID_ANALYSIS_MAX + 1
-const NOW = new Date('2026-09-03T09:00:00.000Z')
+/**
+ * Today, rather than a date written into the file.
+ *
+ * One of these cases turns on a cached answer being found again, and the
+ * database decides whether a cached row is still live by comparing its expiry
+ * against its own clock. A fixture date therefore stops working the moment the
+ * real calendar passes it by more than the cache's lifetime — which is a test
+ * that goes red on a morning when nothing changed.
+ */
+const NOW = new Date()
 const PAGE = 'https://shop.example/collections/hiking-boots'
 const QUERY = 'waterproof hiking boots'
 const LOCALE = { language: 'en', country: 'GB' }

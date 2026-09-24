@@ -162,12 +162,39 @@ async function resolveArticleBundle(
     },
     references,
     live,
-    // Empty in the running product, and correctly so rather than as a
-    // placeholder: nothing in the schema holds a Shopify image address. The
-    // catalogue sync reads them and drops them, so there is nowhere to read
-    // one back from. See DECISIONS 2026-09-04 T5.1.
-    images: [] as readonly BundleImage[],
+    // One picture per product the article is actually about, in the order the
+    // article mentions them, so the lead image belongs to the product the piece
+    // leads with. Products synced before the catalogue kept image addresses
+    // have none, and the article simply goes out without one.
+    images: leadImages(references, rows),
   })
 
   return { bundle }
+}
+
+/**
+ * The first picture of each product the article names, in the order the article
+ * names them.
+ *
+ * One per product rather than all of them: these become the article's own
+ * images, and a post that opened with nine photographs of the same jacket would
+ * be a worse post. A product whose pictures we have not read yet contributes
+ * none, which is why an article can still be published with no image at all.
+ */
+function leadImages(
+  references: readonly ProductReference[],
+  rows: readonly LiveProductRow[],
+): readonly BundleImage[] {
+  const byId = new Map(rows.map((row) => [row.id, row]))
+  const images: BundleImage[] = []
+  const seen = new Set<string>()
+  for (const reference of references) {
+    if (!reference.productId || seen.has(reference.productId)) continue
+    seen.add(reference.productId)
+    const row = byId.get(reference.productId)
+    const image = row?.images[0]
+    if (!image) continue
+    images.push({ url: image.url, alt: image.alt ?? row!.title })
+  }
+  return images
 }

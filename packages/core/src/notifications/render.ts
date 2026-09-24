@@ -75,6 +75,7 @@ const LINES: Record<NotificationType, LineSpec> = {
   },
   connection_lost_shopify: { key: 'notification.connectionLostShopify', required: [] },
   connection_lost_gsc: { key: 'notification.connectionLostGsc', required: [] },
+  auto_publish_paused: { key: 'notification.autoPublishPaused', required: [] },
   payment_failed: { key: 'notification.paymentFailed', required: [] },
   monthly_summary_ready: {
     key: 'notification.monthlySummaryReady',

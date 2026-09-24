@@ -4,6 +4,7 @@ import type {
   InventoryTarget,
   Logger,
   ShopArticleOfOurs,
+  ShopifyAuth,
 } from '@sortiva/core'
 import {
   articleIdFromIntentExternalId,
@@ -99,17 +100,13 @@ export async function runInventorySync(
 ): Promise<InventorySyncStatus> {
   const log = deps.logger ?? runtimeLogger()
   const db = deps.getDb()
-  const connection = await deps.connections.read(payload.accountId)
-  const token = await deps.connections.readToken(payload.accountId)
-  if (!connection || !token) {
+  const auth = await deps.connections.authFor(payload.accountId)
+  if (!auth) {
     log.info('inventory_sync_skipped', { account_id: payload.accountId, reason: 'not_connected' })
     return { status: 'disconnected' }
   }
 
-  const syncDeps = inventoryDeps(deps, db, {
-    shopHandle: connection.shopHandle,
-    accessToken: token,
-  })
+  const syncDeps = inventoryDeps(deps, db, auth)
 
   try {
     if (payload.targets && payload.targets.length > 0) {
@@ -182,9 +179,9 @@ export async function sweepInventory(deps: InventoryTaskDeps): Promise<{ account
 function inventoryDeps(
   deps: InventoryTaskDeps,
   db: Db,
-  credentials: { shopHandle: string; accessToken: string },
+  auth: ShopifyAuth,
 ): InventorySyncDeps {
-  const source = new ShopifyInventorySource(deps.admin, async () => credentials)
+  const source = new ShopifyInventorySource(deps.admin, async () => auth)
   return {
     source,
     writer: {
@@ -266,8 +263,17 @@ function logResult(
   })
 }
 
+/**
+ * A token Shopify refused, and one it will no longer renew, are the same news to
+ * this job: only the merchant can fix either. Recognised by the class the
+ * provider stamps on both rather than by name, so a third way of losing a grant
+ * does not quietly become a retryable failure.
+ */
 function isTokenInvalid(error: unknown): boolean {
-  return error instanceof Error && error.name === 'ShopifyTokenInvalid'
+  return (
+    error instanceof Error &&
+    (error as { errorClass?: unknown }).errorClass === 'shopify_token_invalid'
+  )
 }
 
 let registered = false

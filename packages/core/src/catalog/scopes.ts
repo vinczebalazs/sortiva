@@ -8,12 +8,15 @@
  * posts is the main reason a merchant hesitates at this screen, so the install
  * must be provably harmless.
  */
-export const SHOPIFY_READ_SCOPES = [
-  'read_products',
-  'read_orders',
-  'read_content',
-  'read_locales',
-] as const
+export const SHOPIFY_READ_SCOPES = ['read_products', 'read_orders', 'read_content'] as const
+
+/**
+ * Permission to post articles. Named here rather than only where publishing
+ * lives, because the install has to be able to recognise it: a store that
+ * granted it before and is reconnecting is handed it back by Shopify whether we
+ * ask or not.
+ */
+export const SHOPIFY_PUBLISH_SCOPE = 'write_content'
 
 export type ShopifyReadScope = (typeof SHOPIFY_READ_SCOPES)[number]
 
@@ -31,17 +34,29 @@ export class WriteScopeGranted extends Error {
 }
 
 /**
- * Refuses a grant that carries any write permission.
+ * Refuses a grant that carries write permission the merchant never gave.
  *
- * This is not defensive noise. The app's configured scopes live in the Shopify
- * Partner dashboard, outside this repository, and a merchant re-installing an
- * app that once had write scopes can be handed them again without anyone here
- * changing a line. Storing that token silently would make "read-only" — which
- * we say on the connect screen in those words — untrue.
+ * This is not defensive noise. The app's configured permissions live in
+ * Shopify's dashboard, outside this repository, and a merchant installing an
+ * app that once had write permissions can be handed them again without anyone
+ * here changing a line. Storing that token silently would make "read-only" —
+ * which we say on the connect screen in those words — untrue.
+ *
+ * The exception, and it is the merchant's own doing: a store that already went
+ * through the publishing screen and said yes. When such a store reconnects,
+ * Shopify hands back everything it has ever granted, publishing included, and
+ * refusing that token would lock out precisely the merchants who trusted us
+ * most — they could never reconnect at all. Permission to publish is the only
+ * thing that may come back this way; anything else is still refused.
  */
-export function assertReadOnlyGrant(granted: readonly string[]): void {
+export function assertReadOnlyGrant(
+  granted: readonly string[],
+  options: { publishGrantedBefore?: boolean } = {},
+): void {
   const write = granted.filter((scope) => scope.startsWith('write_'))
-  if (write.length > 0) throw new WriteScopeGranted(write)
+  if (write.length === 0) return
+  if (options.publishGrantedBefore && write.every((scope) => scope === SHOPIFY_PUBLISH_SCOPE)) return
+  throw new WriteScopeGranted(write)
 }
 
 /** True when this connection may publish. False for every connection this card creates. */
