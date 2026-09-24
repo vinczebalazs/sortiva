@@ -3,12 +3,14 @@ import { eq } from 'drizzle-orm'
 import { jobDlq, jobSteps } from '@sortiva/db'
 import { silentLogger } from '@sortiva/core'
 import {
+  TEST_DATABASE_URL,
   databaseAvailable,
   insertAccount,
   setupTestDb,
   truncateAll,
   type TestDb,
 } from '@sortiva/db/testing'
+import { TRUNCATE_QUEUE_SQL, installQueueSchema, type WorkerUtils } from './testing'
 import { setRuntimeLogger } from './logging'
 import { createRun, findStep, getStep } from './steps'
 import { deriveIdempotencyKey } from './idempotency'
@@ -24,12 +26,18 @@ import { TerminalFailure } from './errors'
  * fail for good, replayed, run again — and then handed to the runner a third
  * time to show that finished work is recognised and skipped rather than
  * repeated.
+ *
+ * The real queue is installed here rather than stubbed, because the defect this
+ * suite now also guards is that the replay left the step pending and asked
+ * nobody to run it. "The work was queued" is a claim about a row in the queue,
+ * so the queue has to be real for the assertion to mean anything.
  */
 
 const available = await databaseAvailable()
 
 describe.skipIf(!available)('replaying a dead-lettered step', () => {
   let test: TestDb
+  let workerUtils: WorkerUtils
   let accountId: string
   let jobId: string
   let stepId: string
@@ -38,14 +46,19 @@ describe.skipIf(!available)('replaying a dead-lettered step', () => {
   beforeAll(async () => {
     test = await setupTestDb('tops_replay')
     setRuntimeLogger(silentLogger)
+    const url = new URL(TEST_DATABASE_URL)
+    url.pathname = `/${test.databaseName}`
+    workerUtils = await installQueueSchema(url.toString())
   })
 
   afterAll(async () => {
+    await workerUtils?.release()
     await test.close()
   })
 
   beforeEach(async () => {
     await truncateAll(test.pool)
+    await test.pool.query(TRUNCATE_QUEUE_SQL)
     accountId = await insertAccount(test.pool, `replay-${Date.now()}-${Math.random()}@sortiva.test`)
     ;({ jobId } = await createRun(test.db, accountId, `replay:${accountId}`))
     stepId = (await findStep(test.db, jobId, 'detect'))!.id
@@ -54,6 +67,18 @@ describe.skipIf(!available)('replaying a dead-lettered step', () => {
 
   const run = (handler: () => Promise<unknown>) =>
     runStep({ db: test.db, pool: test.pool, accountId, jobId, stepId, idempotencyKey: key, handler })
+
+  /** How many onboarding dispatches are sitting in the real queue for this account. */
+  async function queuedDispatches(): Promise<number> {
+    // The queue's own view exposes the job key but not the payload, and the key
+    // is the account by construction — see `enqueueIngestionDispatch`.
+    const { rows } = await test.pool.query<{ n: string }>(
+      `SELECT count(*) AS n FROM graphile_worker.jobs
+        WHERE task_identifier = 'ingestion_dispatch' AND key = $1`,
+      [`ingestion_dispatch:${accountId}`],
+    )
+    return Number(rows[0]!.n)
+  }
 
   it('puts the step back on the queue, re-runs the work, and refuses to run it twice', async () => {
     let executions = 0
@@ -73,6 +98,12 @@ describe.skipIf(!available)('replaying a dead-lettered step', () => {
     const outcome = await replayDlqEntry(test.db, entry!.id, 'operator')
     expect(outcome.status).toBe('replayed')
     expect((await getStep(test.db, stepId))!.state).toBe('pending')
+
+    // And somebody was actually asked to run it. Returning the step to pending
+    // used to be the whole of a replay: the operator was told the work was
+    // queued and no job existed, so the step waited for a dispatch that only a
+    // merchant's own next action would have caused.
+    expect(await queuedDispatches()).toBe(1)
 
     // 3. The work really runs again — the failure is retried, not skipped.
     const second = await run(async () => {

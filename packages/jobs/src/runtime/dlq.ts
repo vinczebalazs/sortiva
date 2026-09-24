@@ -1,5 +1,6 @@
 import { and, desc, eq, isNull, sql } from 'drizzle-orm'
 import { jobDlq, jobSteps, type Db } from '@sortiva/db'
+import { enqueueIngestionDispatch } from '../ingestion/queue'
 
 export type DlqEntry = typeof jobDlq.$inferSelect
 
@@ -67,9 +68,15 @@ export async function listOpenDlq(db: Db, limit = 100): Promise<DlqEntry[]> {
  * idempotency key means completed sub-work no-ops and only the failed remainder
  * runs.
  *
- * Marks the entry replayed and returns its step to `pending`, so the normal
- * dispatcher picks it up. The step keeps its checkpoint, and the idempotency
- * ledger means completed sub-work no-ops.
+ * Marks the entry replayed, returns its step to `pending`, **and asks for that
+ * store's run to take its next step**. The step keeps its checkpoint, and the
+ * idempotency ledger means completed sub-work no-ops.
+ *
+ * That last part is not decoration. Returning the step to `pending` used to be
+ * the whole of it, and nothing dispatched afterwards: an operator pressed
+ * replay, was told the work was queued, and it was not — the row sat pending
+ * with no retry time on it, so even the retry sweep could not see it. A replay
+ * that reports success and does nothing is worse than one that fails.
  *
  * The outcome is explicit rather than a bare row, because two of the three cases
  * look like success and are not:
@@ -83,7 +90,8 @@ export async function listOpenDlq(db: Db, limit = 100): Promise<DlqEntry[]> {
  *    tick over a button that did nothing.
  */
 export type DlqReplayOutcome =
-  | { status: 'replayed'; entry: DlqEntry }
+  /** `dispatched` is false when the entry named no account, so nothing could be asked to run. */
+  | { status: 'replayed'; entry: DlqEntry; dispatched: boolean }
   | { status: 'already_replayed' }
   | { status: 'step_missing'; entry: DlqEntry }
 
@@ -108,5 +116,12 @@ export async function replayDlqEntry(
     .returning({ id: jobSteps.id })
   if (!reset) return { status: 'step_missing', entry }
 
-  return { status: 'replayed', entry }
+  // An entry with a step but no account cannot be dispatched — there is nothing
+  // to name in the payload. The step is back to pending either way; what the
+  // caller is told is the difference between "it is moving" and "it is ready
+  // for whoever moves it".
+  if (!entry.accountId) return { status: 'replayed', entry, dispatched: false }
+
+  await enqueueIngestionDispatch(db, { accountId: entry.accountId })
+  return { status: 'replayed', entry, dispatched: true }
 }

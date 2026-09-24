@@ -42,6 +42,7 @@ import { assertCrontabTasksExist, CRON_ENTRIES, crontab } from './crontab'
 import { installSignalHandlers, startWorker } from './worker'
 import { clearTasks, registerTask, registeredTaskNames, taskList } from './tasks'
 import { makeWorkerUtils } from 'graphile-worker'
+import { installQueueSchema, type WorkerUtils } from './testing'
 
 /**
  * T0.4 done-when, one describe block per line of the card:
@@ -251,16 +252,25 @@ describe.skipIf(!available)('step state machine against Postgres', () => {
   let accountId: string
   let jobId: string
 
+  let queueUtils: WorkerUtils
+
   beforeAll(async () => {
     ctx = await setupTestDb('worker_runtime')
     pool = ctx.pool
     // Every runStep below emits structured lines; the cases that care supply
     // their own capturing logger.
     setRuntimeLogger(silentLogger)
+    // A replay now asks for the run to take its next step, which means writing
+    // to the queue. The queue's tables are the worker's own rather than our
+    // migrations', so a database built from migrations alone has none.
+    const url = new URL(TEST_DATABASE_URL)
+    url.pathname = `/${ctx.databaseName}`
+    queueUtils = await installQueueSchema(url.toString())
   })
 
   afterAll(async () => {
     setRuntimeLogger(undefined)
+    await queueUtils?.release()
     await ctx?.close()
   })
 

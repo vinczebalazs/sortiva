@@ -11,11 +11,21 @@ import {
   type StorePageFetcher,
 } from '@sortiva/core'
 import { MockShopifyOAuthClient, ShopifyTokenInvalid } from '@sortiva/providers'
-import { databaseAvailable, insertAccount, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
+import {
+  TEST_DATABASE_URL,
+  databaseAvailable,
+  insertAccount,
+  setupTestDb,
+  truncateAll,
+  type TestDb,
+} from '@sortiva/db/testing'
 import { MockLlmClient } from '@sortiva/llm'
 import { MockSeoDataProvider } from '@sortiva/providers'
 import { createRun } from '../runtime/steps'
-import { dispatchIngestion } from './dispatch'
+import { clearTasks, taskList } from '../runtime/tasks'
+import { TRUNCATE_QUEUE_SQL, installQueueSchema, type WorkerUtils } from '../runtime/testing'
+import { dispatchIngestion, registerIngestionTasks, resetIngestionTaskRegistration } from './dispatch'
+import { sweepStalledIngestionRuns } from './retry-sweep'
 import type { ConnectionStore, IngestionDeps, ShopReader, ShopSnapshot } from './deps'
 import { resumeAfterReconnect } from './resume'
 import { readDetectedShopHandle } from './steps'
@@ -32,6 +42,7 @@ import { readDetectedShopHandle } from './steps'
  */
 
 let harness: TestDb
+let workerUtils: WorkerUtils
 let accountId: string
 
 class FakeFetcher implements StorePageFetcher {
@@ -272,14 +283,22 @@ beforeAll(async () => {
     throw new Error('Postgres is not reachable. Run `pnpm db:up` before the test suite.')
   }
   harness = await setupTestDb('ingestion_dispatch')
+  // The retry sweep queues a real job, and the case below runs it. The queue's
+  // tables are the worker's own, not our migrations', so a test that exercises
+  // queued work installs them the way the worker would.
+  const url = new URL(TEST_DATABASE_URL)
+  url.pathname = `/${harness.databaseName}`
+  workerUtils = await installQueueSchema(url.toString())
 }, 60_000)
 
 afterAll(async () => {
+  await workerUtils?.release()
   await harness?.close()
 })
 
 beforeEach(async () => {
   await truncateAll(harness.pool)
+  await harness.pool.query(TRUNCATE_QUEUE_SQL)
   accountId = await insertAccount(harness.pool, `merchant-${Date.now()}@example.com`)
   await harness.pool.query('INSERT INTO domains (account_id, domain_normalized) VALUES ($1,$2)', [
     accountId,
@@ -574,5 +593,70 @@ describe('an account with nothing to dispatch', () => {
   it('does nothing rather than inventing a run', async () => {
     const w = world('acme.example')
     expect(await dispatchIngestion(w.deps, { accountId })).toBeUndefined()
+  })
+})
+
+/**
+ * The defect this suite exists to have caught and did not: a step that fails in
+ * a way worth retrying writes down when to come back, and until the sweep
+ * existed nobody ever did.
+ *
+ * Driven the whole way round rather than at the sweep: the store's first step
+ * fails the way a slow storefront fails it, time passes, and the run finishes
+ * with **nothing a person did** in between. The only link not exercised here is
+ * the queue library handing the row it wrote to the handler it was registered
+ * with, which is what `bootstrapWorker` does and what the worker's own tests
+ * cover.
+ */
+describe('a store whose first step failed once', () => {
+  it('finishes on its own, with nobody touching it', async () => {
+    const { jobId } = await createRun(harness.db, accountId, 'claim:acme.example')
+    const w = world('acme.example')
+    // Nothing answers for the storefront on the first attempt.
+    w.fetcher.refuses('https://acme.example/')
+
+    const first = await dispatchIngestion(w.deps, { accountId })
+    expect(first?.stoppedBecause).toBe('retry_scheduled')
+    expect((await stepStates(jobId))['detect']).toBe('failed_retryable')
+
+    // The storefront is back. Nobody tells us that; the only thing that happens
+    // next is time passing.
+    w.fetcher.serves('https://acme.example/', {
+      headers: { 'x-shopid': '9' },
+      body: '<script>window.Shopify = {}; "acme-candles.myshopify.com"</script>',
+    })
+
+    // Time passing, which is the only thing that happens between the failure
+    // and the recovery. Moved on the row rather than on a clock the sweep is
+    // handed, because the dispatcher reads the real clock too — a fake time
+    // known only to the sweep would queue a job the dispatcher then refused.
+    await harness.pool.query(
+      "UPDATE job_steps SET next_attempt_at = now() - interval '1 second' WHERE job_id = $1 AND step = 'detect'",
+      [jobId],
+    )
+
+    const swept = await sweepStalledIngestionRuns({ getDb: () => harness.db })
+    expect(swept).toEqual({ due: 1, queued: 1 })
+
+    // The queued job, run by the handler the worker would run it with.
+    clearTasks()
+    resetIngestionTaskRegistration()
+    registerIngestionTasks(() => w.deps)
+    const queued = await harness.pool.query<{ task_identifier: string; key: string }>(
+      "SELECT task_identifier, key FROM graphile_worker.jobs WHERE task_identifier = 'ingestion_dispatch'",
+    )
+    expect(queued.rows).toHaveLength(1)
+    expect(queued.rows[0]!.key).toBe(`ingestion_dispatch:${accountId}`)
+
+    const handler = taskList()['ingestion_dispatch']!
+    await handler({ accountId }, {} as never)
+
+    // The step that failed has succeeded, and the run is where a first-time
+    // store belongs: waiting for the merchant to press Approve.
+    expect((await stepStates(jobId))['detect']).toBe('succeeded')
+    expect(await domainState()).toBe('awaiting_shopify_auth')
+
+    clearTasks()
+    resetIngestionTaskRegistration()
   })
 })

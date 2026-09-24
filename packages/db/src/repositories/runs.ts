@@ -1,7 +1,7 @@
-import { and, desc, eq, inArray } from 'drizzle-orm'
+import { and, desc, eq, inArray, isNotNull, lte } from 'drizzle-orm'
 import type { Db } from '../client'
 import { ingestionJobs, jobSteps } from '../schema'
-import type { AccountScope } from '../scope'
+import type { AccountScope, SystemScope } from '../scope'
 
 export type IngestionJobRow = typeof ingestionJobs.$inferSelect
 export type JobStepRow = typeof jobSteps.$inferSelect
@@ -144,4 +144,44 @@ export async function resumeStepsAfterReauth(db: Db, jobId: string): Promise<num
     )
     .returning({ id: jobSteps.id })
   return rows.length
+}
+
+/**
+ * Runs that asked to be tried again and nobody came back for.
+ *
+ * When a step fails in a way worth retrying, the runtime stamps the time to try
+ * again on the row and stops. Something then has to ask for that run to take
+ * its next step once that time passes — and until the sweep that calls this
+ * existed, nothing did. A store could stop halfway through onboarding, show
+ * "we'll retry automatically" on the progress screen, and sit there for ever.
+ *
+ * The condition is deliberately narrow: a step that is waiting for a **person**
+ * — the Shopify consent screen, the profile confirmation — is also sitting
+ * still, and sweeping those would queue a job every five minutes for every
+ * store that is politely waiting for its merchant. Only a scheduled retry whose
+ * time has come counts as stalled here.
+ *
+ * The index migration `0000` created on `(state, next_attempt_at)` for exactly
+ * this query had never been used by anything.
+ */
+export async function accountsWithRetryDue(
+  db: Db,
+  _scope: SystemScope,
+  now: Date = new Date(),
+  limit = 500,
+): Promise<string[]> {
+  const rows = await db
+    .selectDistinct({ accountId: ingestionJobs.accountId })
+    .from(jobSteps)
+    .innerJoin(ingestionJobs, eq(ingestionJobs.id, jobSteps.jobId))
+    .where(
+      and(
+        eq(ingestionJobs.status, 'running'),
+        eq(jobSteps.state, 'failed_retryable'),
+        isNotNull(jobSteps.nextAttemptAt),
+        lte(jobSteps.nextAttemptAt, now),
+      ),
+    )
+    .limit(limit)
+  return rows.map((row) => row.accountId)
 }

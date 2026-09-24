@@ -65,6 +65,19 @@ export const CRON_ENTRIES: readonly CronEntry[] = [
       'already finished and does nothing.',
   },
   {
+    task: 'ingestion_retry_sweep',
+    schedule: '*/5 * * * *',
+    why:
+      'A step of a store\'s onboarding that fails in a way worth retrying writes down when to try ' +
+      'again and stops. Only two things ever asked a run to take its next step — the domain claim ' +
+      'and the return from the Shopify consent screen — and both are long finished by the time that ' +
+      'moment arrives, so the retry was scheduled and nobody came: the store sat half-onboarded for ' +
+      'ever while its progress screen said we would retry automatically. Five minutes because that ' +
+      'is the shortest backoff the runtime schedules. Re-running costs nothing: the job key is the ' +
+      'account, so a store already queued keeps its one job, and a dispatch with nothing dispatchable ' +
+      'returns having done nothing.',
+  },
+  {
     task: 'signal_scan_onboarding_sweep',
     schedule: '*/5 * * * *',
     why:

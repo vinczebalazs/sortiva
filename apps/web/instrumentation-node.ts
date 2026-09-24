@@ -74,12 +74,17 @@ export async function startServerRuntime() {
   // onboarding, because it is queued from a form long after onboarding is over
   // and runs ahead of the sweeps so the chip on their screen fills in.
   const { registerKeywordEnrichTask } = await import('@sortiva/jobs/ingestion/enrich')
+  // The thing that comes back for a store whose onboarding stopped and asked to
+  // be tried again. Without it a retry was written down and nobody ever read
+  // it: one slow storefront and the store sat half-onboarded for good.
+  const { registerIngestionRetrySweepTask } = await import('@sortiva/jobs/ingestion/retry-sweep')
   const { adminClient, ingestionDeps, notificationEmitter, seoProvider } = await import(
     './app/api/shopify/_lib/config'
   )
   registerIngestionTasks(ingestionDeps)
   registerReminderTasks(db, notificationEmitter)
   registerKeywordEnrichTask(ingestionDeps)
+  registerIngestionRetrySweepTask({ getDb: db })
 
   // Search Console: the nightly pull of each connected store's clicks,
   // impressions and positions, and the one-time import of its history. Handed

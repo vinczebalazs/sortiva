@@ -60,7 +60,13 @@ try {
 
     if (outcome.status === 'replayed') {
       console.log(`Replayed ${outcome.entry.step} for account ${outcome.entry.accountId ?? 'none'}.`)
-      console.log('Its step is back to pending; the worker will pick it up on its next dispatch.')
+      if (outcome.dispatched) {
+        console.log('Its step is back to pending and a worker has been asked to take it.')
+      } else {
+        console.log(
+          'Its step is back to pending. The entry names no account, so nothing could be asked to run it — this needs a person.',
+        )
+      }
       console.log('Work that already completed will be recognised and skipped — only the failed remainder runs.')
     } else if (outcome.status === 'already_replayed') {
       console.log('Nothing to do: that entry was already replayed (or there is no entry with that id).')
