@@ -24,17 +24,32 @@ function subscription(overrides: Partial<LocalSubscription> = {}): LocalSubscrip
 }
 
 describe('entitlement is the local row and nothing else (main §4.2)', () => {
-  it('is entitled only while the status is active', () => {
+  it('is entitled while the status is active or comped, and never otherwise', () => {
     expect(isEntitled(subscription({ status: 'active' }))).toBe(true)
+    expect(isEntitled(subscription({ status: 'comped' }))).toBe(true)
     expect(isEntitled(subscription({ status: 'past_due' }))).toBe(false)
     expect(isEntitled(subscription({ status: 'canceled' }))).toBe(false)
     expect(isEntitled(subscription({ status: 'incomplete_expired' }))).toBe(false)
     expect(isEntitled(null)).toBe(false)
   })
 
+  /**
+   * A comped account is entitled and is not in any billing predicament, so
+   * there is nothing to tell the merchant. A banner about payment on an account
+   * nobody is charging would only produce a support question.
+   */
+  it('shows a comped account no billing banner, and lets it write and publish', () => {
+    const gate = billingGate(subscription({ status: 'comped', currentPeriodEnd: null }))
+    expect(gate.generationAllowed).toBe(true)
+    expect(gate.publishingAllowed).toBe(true)
+    expect(gate.banner).toEqual({ kind: 'none' })
+    expect(gate.status).toBe('comped')
+  })
+
   it('keeps read access open in every billing state', () => {
     const states: LocalSubscription['status'][] = [
       'active',
+      'comped',
       'past_due',
       'canceled',
       'incomplete_expired',

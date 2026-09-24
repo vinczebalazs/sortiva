@@ -270,6 +270,33 @@ describe.skipIf(!available)('handing over an article at the publish hour', () =>
     expect(result).toEqual({ status: 'skipped', reason: 'vacation' })
   })
 
+  /**
+   * The second of the two gates entitlement closes. A comped store — the pilot,
+   * a partner, one of ours — has never paid and must still be able to hand an
+   * article over, or it writes them and nobody ever sees one.
+   */
+  it('publishes for a comped store, which has never paid anything', async () => {
+    await db
+      .update(schema.subscriptions)
+      .set({ status: 'comped', stripeSubscriptionId: null, priceId: null })
+      .where(eq(schema.subscriptions.accountId, accountId))
+    await seedArticle({ title: 'Best bottles', gateOutcome: 'passed' })
+
+    const result = await runExportDeliveryForAccount(deps(), { accountId, date: TODAY })
+
+    expect(result.status).toBe('delivered')
+    expect((await articleStates())['Best bottles']!.state).toBe('published')
+  })
+
+  it('stops for a store with no subscription row at all, and the article stays readable', async () => {
+    await db.delete(schema.subscriptions).where(eq(schema.subscriptions.accountId, accountId))
+    await seedArticle({ title: 'Best bottles', gateOutcome: 'passed' })
+
+    const result = await runExportDeliveryForAccount(deps(), { accountId, date: TODAY })
+    expect(result).toEqual({ status: 'skipped', reason: 'not_entitled' })
+    expect((await articleStates())['Best bottles']!.state).toBe('draft')
+  })
+
   it('stops when the payment failed, and the article stays readable', async () => {
     await db
       .update(schema.subscriptions)

@@ -7,6 +7,13 @@ import { PAYMENT_FAILED_BANNER } from './copy'
  */
 export type SubscriptionStatus =
   | 'active'
+  /**
+   * Entitled without paying: the pilot store, partner stores and our own. A
+   * comped row has no payment behind it, so it carries no Stripe ids and no
+   * period end, and nothing about it expires on its own — it stays until
+   * somebody takes it away by hand.
+   */
+  | 'comped'
   | 'past_due'
   | 'canceled'
   /**
@@ -27,16 +34,20 @@ export interface LocalSubscription {
 }
 
 /**
- * Entitled means exactly `active`, and nothing else.
+ * Entitled means `active` or `comped`, and nothing else. The absence of a row
+ * is not entitlement, which is what keeps a store nobody has decided about from
+ * quietly getting the product for free.
  *
  * Deliberately not a date comparison. A subscription cancelled at period end
  * stays `active` in Stripe until the period actually ends, and Stripe then
  * sends `customer.subscription.updated` moving it to `canceled`. Re-deriving
  * that here from `current_period_end` would put a second opinion next to the
  * source of truth and get it wrong every time a clock or a retry disagrees.
+ * `comped` has no period at all for the same reason: it ends when a person ends
+ * it, not when a clock runs out.
  */
 export function isEntitled(subscription: LocalSubscription | null | undefined): boolean {
-  return subscription?.status === 'active'
+  return subscription?.status === 'active' || subscription?.status === 'comped'
 }
 
 export function entitlementStatus(
@@ -99,6 +110,9 @@ function bannerFor(
   // That window is what the "setting up your account…" interstitial covers,
   // and it resolves to `active` or `incomplete_expired` on its own.
   if (status === 'canceled' || status === 'incomplete_expired') return { kind: 'canceled' }
+  // `comped` shows no banner at all. There is nothing for the merchant to fix,
+  // nothing to renew and nothing ending, and a banner about billing on an
+  // account nobody is billing would only invite a support question.
   if (status === 'active' && subscription?.cancelAtPeriodEnd) {
     // Entitlement runs to the end of the period they paid for; the three
     // cancellation facts render alongside this.

@@ -357,6 +357,56 @@ describe.skipIf(!available)('the daily generation cycle', () => {
     expect(taken!.scheduledDate).toBe('2026-09-03')
   })
 
+  /**
+   * The pilot store pays nothing, and a store with no subscription row is not
+   * entitled, so without this it would write nothing at all — for ever, with
+   * every screen looking healthy.
+   *
+   * Asserted through the whole cycle rather than through `isEntitled`, because
+   * the bug being guarded against is not "the function returns the wrong
+   * boolean" but "a free store produces no article".
+   */
+  it('writes an article for a comped store, which has never paid anything', async () => {
+    await db
+      .update(schema.subscriptions)
+      .set({ status: 'comped', stripeSubscriptionId: null, priceId: null })
+      .where(eq(schema.subscriptions.accountId, accountId))
+    const { familyId, productIds } = await seedFamily()
+    await seedTopic(familyId, TODAY)
+
+    const llm = new MockLlmClient()
+    enqueueWholeRun(llm, productIds[0]!)
+
+    expect(await runDailyGenerationForAccount(deps(llm), accountId)).toMatchObject({
+      status: 'generated',
+      outcome: 'graded',
+    })
+    const articles = await db
+      .select()
+      .from(schema.articles)
+      .where(eq(schema.articles.accountId, accountId))
+    expect(articles).toHaveLength(1)
+  })
+
+  /**
+   * The other half of the same guarantee: comped entitles, and the *absence* of
+   * a row still does not. A store nobody has decided about must not get the
+   * product by default.
+   */
+  it('stops before spending anything for a store with no subscription row at all', async () => {
+    await db.delete(schema.subscriptions).where(eq(schema.subscriptions.accountId, accountId))
+    const { familyId } = await seedFamily()
+    await seedTopic(familyId, TODAY)
+
+    const llm = new MockLlmClient()
+    expect(await runDailyGenerationForAccount(deps(llm), accountId)).toEqual({
+      status: 'skipped',
+      reason: 'not_entitled',
+    })
+    expect(llm.callCount).toBe(0)
+    expect(await topicStates()).toEqual({ [TODAY]: 'planned' })
+  })
+
   it('stops before spending anything when the payment failed', async () => {
     const { familyId } = await seedFamily()
     await seedTopic(familyId, TODAY)

@@ -137,6 +137,7 @@ export function phaseAfterDeliveryConflict(code: string | null): WriteGrantPhase
 
 const BILLING_STATUS_KEYS: Readonly<Record<SubscriptionStatus, StringKey>> = {
   active: 'settings.account.billing.status.active',
+  comped: 'settings.account.billing.status.comped',
   past_due: 'settings.account.billing.status.past_due',
   canceled: 'settings.account.billing.status.canceled',
   incomplete: 'settings.account.billing.status.incomplete',

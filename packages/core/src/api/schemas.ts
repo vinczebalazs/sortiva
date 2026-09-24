@@ -106,7 +106,7 @@ export const accountResponseSchema = z.object({
     // `incomplete` — the first payment is still being authorised — is a fifth
     // status added by card T1.2a; see `packages/db/src/schema/enums.ts`. Like
     // `incomplete_expired` it is not entitled, so no consumer's gating changes.
-    status: z.enum(['active', 'past_due', 'canceled', 'incomplete', 'incomplete_expired', 'none']),
+    status: z.enum(['active', 'comped', 'past_due', 'canceled', 'incomplete', 'incomplete_expired', 'none']),
     cancelAtPeriodEnd: z.boolean(),
     currentPeriodEnd: isoDateTimeSchema.nullable(),
   }),

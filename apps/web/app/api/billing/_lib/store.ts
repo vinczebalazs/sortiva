@@ -104,10 +104,17 @@ export function makeBillingStore(options: BillingStoreOptions = {}): BillingStor
           stateObservedAt: subscriptions.stateObservedAt,
         })
         .from(subscriptions)
-        .where(lte(subscriptions.syncedAt, olderThan))
+        // A comped row has no payment behind it and no subscription at the
+        // vendor, so there is nothing to re-derive it from. Including it would
+        // send the nightly pass to Stripe with a null id, and Stripe answering
+        // "no such subscription" is what this sweep treats as a wrong key —
+        // which would report every comped store as a billing incident, nightly.
+        .where(and(lte(subscriptions.syncedAt, olderThan), isNotNull(subscriptions.stripeSubscriptionId)))
         .orderBy(subscriptions.syncedAt)
         .limit(limit)
-      return rows
+      return rows.filter(
+        (row): row is StaleSubscription => row.stripeSubscriptionId !== null,
+      )
     },
 
     /**

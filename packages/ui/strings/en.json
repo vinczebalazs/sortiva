@@ -130,6 +130,7 @@
   "settings.account.vacation.explain": "Pauses new articles and publishing. Your data, opportunities, calendar, and reporting stay live.",
   "settings.account.billing.heading": "Billing",
   "settings.account.billing.status.active": "Active",
+  "settings.account.billing.status.comped": "Active — no charge",
   "settings.account.billing.status.past_due": "Payment failed",
   "settings.account.billing.status.canceled": "Canceled",
   "settings.account.billing.status.incomplete": "Payment pending",

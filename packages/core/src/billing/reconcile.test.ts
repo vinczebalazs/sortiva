@@ -75,6 +75,32 @@ describe('nightly reconciliation (tech §3)', () => {
     expect(billing.rows.get(ACCOUNT)?.status).toBe('active')
   })
 
+  /**
+   * A comped account has no subscription at the vendor to be re-derived from.
+   * Left in the scan it would be fetched with a null id, and "Stripe knows
+   * nothing about this" is what the sweep treats as a wrong key — so every
+   * comped store would be reported as a billing incident, every night.
+   */
+  it('never scans a comped row, because there is nothing at the vendor to compare it to', async () => {
+    const { billing, deps } = harness(remotePastDue, NOW)
+    billing.rows.set(ACCOUNT, {
+      accountId: ACCOUNT,
+      stripeSubscriptionId: null,
+      priceId: null,
+      status: 'comped',
+      currentPeriodEnd: null,
+      cancelAtPeriodEnd: false,
+      syncedAt: STALE,
+      stateObservedAt: STALE,
+    })
+
+    const report = await reconcileSubscriptions(deps)
+
+    expect(report.scanned).toBe(0)
+    expect(report.missing).toEqual([])
+    expect(billing.rows.get(ACCOUNT)?.status).toBe('comped')
+  })
+
   it('reports, never guesses, when Stripe returns nothing for a subscription we hold', async () => {
     const { billing, deps } = harness(null, NOW)
     await seed(billing, STALE)

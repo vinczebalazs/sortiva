@@ -81,7 +81,7 @@ export interface LifecycleStateRow {
   deletedAt: Date | null
   vacationMode: boolean
   subscription: {
-    status: 'active' | 'past_due' | 'canceled' | 'incomplete' | 'incomplete_expired'
+    status: 'active' | 'comped' | 'past_due' | 'canceled' | 'incomplete' | 'incomplete_expired'
     cancelAtPeriodEnd: boolean
     currentPeriodEnd: Date | null
   } | null

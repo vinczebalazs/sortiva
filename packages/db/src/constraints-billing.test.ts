@@ -51,6 +51,7 @@ describe.skipIf(!available)('billing schema, card T1.2a', () => {
     it('accepts every status the product can store', async () => {
       for (const status of [
         'active',
+        'comped',
         'past_due',
         'canceled',
         'incomplete',
@@ -77,6 +78,45 @@ describe.skipIf(!available)('billing schema, card T1.2a', () => {
       )
       expect(rows[0].status).toBe('incomplete')
       expect(rows[0].status).not.toBe('incomplete_expired')
+    })
+
+    /**
+     * A comped account is entitled and has no payment behind it, so the two
+     * payment columns have to accept nothing at all. Before card 1 they were
+     * both NOT NULL, which is what made "free store" unrepresentable.
+     */
+    it('stores a comped row with no payment columns filled in', async () => {
+      const accountId = await insertAccount(pool, 'comped@example.com')
+      await pool.query(
+        `INSERT INTO subscriptions (account_id, status) VALUES ($1, 'comped')`,
+        [accountId],
+      )
+      const { rows } = await pool.query(
+        `SELECT status, stripe_subscription_id, price_id, current_period_end
+           FROM subscriptions WHERE account_id = $1`,
+        [accountId],
+      )
+      expect(rows[0]).toMatchObject({
+        status: 'comped',
+        stripe_subscription_id: null,
+        price_id: null,
+        current_period_end: null,
+      })
+    })
+
+    /**
+     * The unique index on the payment id has to tolerate more than one row with
+     * nothing in that column, or the second comped store could never be created.
+     * Postgres allows repeated nulls in a unique index; this asserts it rather
+     * than assuming it, because the whole pilot rests on it.
+     */
+    it('allows a second comped row alongside the first', async () => {
+      const first = await insertAccount(pool, 'comped-one@example.com')
+      const second = await insertAccount(pool, 'comped-two@example.com')
+      await pool.query(`INSERT INTO subscriptions (account_id, status) VALUES ($1, 'comped')`, [first])
+      await pool.query(`INSERT INTO subscriptions (account_id, status) VALUES ($1, 'comped')`, [second])
+      const { rows } = await pool.query(`SELECT count(*)::int AS n FROM subscriptions WHERE status = 'comped'`)
+      expect(rows[0].n).toBe(2)
     })
 
     it('still refuses a status that is not in the enum', async () => {

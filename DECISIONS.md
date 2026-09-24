@@ -6899,3 +6899,25 @@ I lean central, because the failure is in a rule the prompts are all following (
 **Meanwhile:** unchanged, and the judge's 10% no-answer rate stands.
 
 Nearest spec: main §14.2 (schema validation on every call, retry once, then `failed_validation`); invariant 25.
+
+## 2026-09-24 — REMEDIATION card 1 — A store can be entitled without paying: `comped`
+
+Context: entitlement means one thing in this product — a `subscriptions` row whose status says so. Two gates ask: the daily cycle that writes an article, and the publish hour that hands one over. A store with no row passes neither, so the free pilot store would have written nothing and published nothing, for ever, with every screen looking healthy. Nothing in the product could express "entitled, not charged".
+
+Decision: a sixth subscription status, `comped`, which entitles exactly as `active` does. `isEntitled` is now "active or comped" and everything else — both gates, the banner logic, the 402 — follows from that one function, which is why the change is three lines of logic and a schema change rather than a new concept threaded through the codebase.
+
+**Why a status rather than a flag on the account.** A boolean beside the subscription row would mean entitlement had two sources, and every future reader would have to know to consult both. Invariant 16 says entitlement is the local subscription status; this keeps that true. It also survives the move to Shopify billing, where a store the founder does not charge — the pilot, a partner, one of ours — needs exactly this state.
+
+**What the schema needed.** `comped` added to the `subscription_status` enum, and `stripe_subscription_id` and `price_id` made nullable, because a comped row has no payment behind it and those two columns were `NOT NULL`. That pair is what made a free store unrepresentable, not the enum. Migration `0016_comped_entitlement`, applied to a freshly created empty database and verified by reading the enum and the column nullability back out of it.
+
+**The founder authorised the migration in this card**, and withdrew the rule that only schema-wave cards may add one (commit `83dd221`). The rule existed so parallel agents could not edit one database at once; the work is one session at a time now.
+
+**One consequence that is not obvious.** The nightly reconciliation walks stale subscription rows and asks Stripe about each one. A comped row has nothing at Stripe, so it would be fetched with a null id, and Stripe answering "no such subscription" is what that sweep reads as *the wrong API key* — it would have reported every comped store as a billing incident, nightly, for ever. The staleness query now excludes rows with no payment id, and the in-memory double excludes them the same way so the double and the SQL still mean the same thing.
+
+**How a founder sets it: `pnpm comp`.** `grant`, `revoke` and `list`, naming the store by the email it signed up with or by its claimed domain (`https://www.store.com/` finds `store.com`). `grant` requires `--actor` and `--reason` and prints a journal line to paste here, because this is entitlement granted outside the way everyone else gets it and in six months the only record of why a store was free is that line. It refuses to overwrite a row that has a payment behind it: quietly switching a paying merchant to free would leave the charge running with nothing in our records saying they were paying. An ambiguous name stops rather than picking a store, because granting the wrong one means writing to a stranger's storefront. Every path above was run against a throwaway database, including both refusals.
+
+**What is proved, and by what.** A comped store with no payment runs the real daily cycle against a real Postgres and an article row exists afterwards (`daily-cycle.test.ts`); a comped store's finished article goes out at the real publish hour and its state becomes `published` (`deliver.test.ts`); a store with **no** subscription row still fails both, spending nothing and leaving the day planned. Those are two tests rather than one continuous run — nothing yet drives generation and delivery end to end in a single test, so "writes an article and publishes it" is proved in two halves that share a starting state, not as one journey.
+
+**Nothing expires a comp.** No period end, no clock, no renewal. It ends when somebody runs `revoke`, which is deliberate: a free store that silently stopped working on a date nobody chose is the failure this card exists to remove, not one to reintroduce.
+
+Nearest spec: main §4.2 (entitlement is the local row), §14.6; invariant 16 — whose text names the Stripe webhook worker as the only writer of `subscriptions.status`. That is now false: `pnpm comp` writes it too. Card 2 rewrites the invariant when it removes the purchase layer; until then the invariant is stale in that one respect and this entry is the record.

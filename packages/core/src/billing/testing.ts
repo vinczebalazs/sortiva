@@ -21,8 +21,9 @@ import type {
 
 interface StoredRow extends LocalSubscription {
   accountId: string
-  stripeSubscriptionId: string
-  priceId: string
+  /** Null on a comped row: entitlement with no payment and nothing at the vendor. */
+  stripeSubscriptionId: string | null
+  priceId: string | null
   /** The staleness clock: when we last contacted Stripe about this row. */
   syncedAt: Date
   /** The ordering floor: when we read the state this row holds. */
@@ -83,6 +84,11 @@ export class InMemoryBillingStore implements BillingStore {
   async staleSubscriptions(olderThan: Date, limit: number): Promise<readonly StaleSubscription[]> {
     return [...this.rows.values()]
       .filter((row) => row.syncedAt.getTime() <= olderThan.getTime())
+      // Same exclusion as the SQL: a comped row has nothing at the vendor to be
+      // reconciled against, so the nightly pass must never see it.
+      .filter((row): row is StoredRow & { stripeSubscriptionId: string } =>
+        row.stripeSubscriptionId !== null,
+      )
       .sort((a, b) => a.syncedAt.getTime() - b.syncedAt.getTime())
       .slice(0, limit)
       .map((row) => ({

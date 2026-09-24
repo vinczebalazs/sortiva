@@ -56,8 +56,14 @@ export const subscriptions = pgTable(
     accountId: uuid('account_id')
       .primaryKey()
       .references(() => accounts.id, { onDelete: 'cascade' }),
-    stripeSubscriptionId: text('stripe_subscription_id').notNull(),
-    priceId: text('price_id').notNull(),
+    /**
+     * Null on a comped account: there is no payment behind it and nothing at
+     * the vendor to reconcile against. Everything that reads this column has to
+     * cope with that, and the nightly reconciliation skips such rows entirely
+     * rather than asking Stripe about a subscription that does not exist.
+     */
+    stripeSubscriptionId: text('stripe_subscription_id'),
+    priceId: text('price_id'),
     status: subscriptionStatusEnum('status').notNull(),
     currentPeriodEnd: timestamp('current_period_end', { withTimezone: true }),
     cancelAtPeriodEnd: boolean('cancel_at_period_end').notNull().default(false),

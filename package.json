@@ -30,6 +30,7 @@
     "dlq": "tsx scripts/replay-dlq.mjs",
     "posthog:apply": "tsx scripts/posthog-provision.mjs --apply",
     "switch": "tsx scripts/kill-switch.mjs",
+    "comp": "tsx scripts/comp-account.mjs",
     "rules": "tsx scripts/rules-override.mjs",
     "smoke:dev": "node scripts/smoke-boot.mjs --dev"
   },

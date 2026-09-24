@@ -44,6 +44,8 @@ export interface ShopifyBlog {
 
 export type SubscriptionStatus =
   | 'active'
+  /** Entitled without paying. No payment details, nothing to renew, nothing to fix. */
+  | 'comped'
   | 'past_due'
   | 'canceled'
   | 'incomplete'

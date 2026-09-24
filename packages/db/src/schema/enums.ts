@@ -10,8 +10,16 @@ import { pgEnum } from 'drizzle-orm/pg-core'
 export const planEnum = pgEnum('plan', ['pro'])
 
 /**
- * The local mirror of Stripe's subscription status; `active` is the only one
- * that entitles anything.
+ * What an account is entitled to, locally. Mostly a mirror of Stripe's
+ * subscription status; `active` and `comped` are the two values that entitle
+ * anything.
+ *
+ * `comped` is entitlement without payment, and it is a product state rather
+ * than a test fixture: the pilot store, partner stores and our own stores are
+ * all entitled this way, and it is what Shopify billing will need too, since a
+ * store the founder does not charge still has to be able to write and publish.
+ * A comped row therefore has no payment behind it — `stripe_subscription_id`
+ * and `price_id` are null on it, which is why those two columns are nullable.
  *
  * `incomplete` is a fifth value beyond the four the specs enumerate. It exists
  * because Stripe distinguishes a merchant whose
@@ -24,6 +32,7 @@ export const planEnum = pgEnum('plan', ['pro'])
  */
 export const subscriptionStatusEnum = pgEnum('subscription_status', [
   'active',
+  'comped',
   'past_due',
   'canceled',
   'incomplete',

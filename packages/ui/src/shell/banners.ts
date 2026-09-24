@@ -100,6 +100,7 @@ export const MAX_VISIBLE_BANNERS = 2
 export interface BannerContext {
   readonly subscriptionStatus:
     | 'active'
+    | 'comped'
     | 'past_due'
     | 'canceled'
     | 'incomplete'
