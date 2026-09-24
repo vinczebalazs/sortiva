@@ -43,11 +43,25 @@
     }
   },
   {
+    "kind": "insight",
+    "key": "search-data-spend-per-day",
+    "name": "Search-data spend per day",
+    "description": "Everything the search-data vendor billed us each day, for every request whoever it was made for, failed requests included — the vendor charges for work done, not answers received. The same record the daily cap is counted from.",
+    "query": {
+      "kind": "TrendsQuery",
+      "series": [
+        { "kind": "EventsNode", "event": "dataforseo_request", "math": "sum", "math_property": "usd_cost" }
+      ],
+      "interval": "day",
+      "dateRange": { "date_from": "-30d" }
+    }
+  },
+  {
     "kind": "dashboard",
     "key": "cost-per-domain",
     "name": "Cost per domain",
     "description": "Top spenders, cost per published article by domain, and the split between the model vendor and the search-data vendor. Always both — LLM-only is the number that misleads.",
-    "tiles": ["cost-top-spenders", "cost-per-published-article", "cost-llm-vs-seo-split"]
+    "tiles": ["cost-top-spenders", "cost-per-published-article", "cost-llm-vs-seo-split", "search-data-spend-per-day"]
   },
   {
     "kind": "alert",
@@ -62,9 +76,10 @@
     "kind": "alert",
     "key": "alert-global-spend-over-cap",
     "name": "Global daily search-data spend is over its cap",
-    "description": "The vendor bill is one bill, so this ceiling is product-wide. Mirrors the global trip.",
-    "insight": "cost-llm-vs-seo-split",
+    "description": "The vendor bill is one bill, so this ceiling is product-wide. Mirrors the global trip. It watches today as it accumulates, not just finished days: spend only ever goes up within a day, so a partial day over the cap is already over it.",
+    "insight": "search-data-spend-per-day",
     "threshold": { "type": "absolute", "bounds": { "upper": 50.0 } },
+    "check_ongoing_interval": true,
     "calculation_interval": "hourly"
   }
 ]

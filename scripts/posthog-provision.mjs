@@ -23,10 +23,10 @@ import { fileURLToPath } from 'node:url'
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 const DEFINITIONS_DIR = join(repoRoot, 'ops', 'posthog', 'definitions')
+const RECIPIENTS_FILE = join(repoRoot, 'ops', 'posthog', 'alert-recipients.json')
 
-const { loadDefinitions, checkDrift, apply, HttpPosthogAdminApi, DefinitionError } = await import(
-  '../packages/providers/src/posthog/provision.ts'
-)
+const { loadDefinitions, loadRecipients, checkDrift, apply, HttpPosthogAdminApi, DefinitionError } =
+  await import('../packages/providers/src/posthog/provision.ts')
 
 const mode = process.argv.includes('--apply') ? 'apply' : 'check'
 
@@ -36,8 +36,10 @@ function fail(message) {
 }
 
 let definitions
+let recipients
 try {
   definitions = loadDefinitions(DEFINITIONS_DIR)
+  recipients = loadRecipients(RECIPIENTS_FILE)
 } catch (error) {
   if (error instanceof DefinitionError) fail(error.message)
   throw error
@@ -71,8 +73,18 @@ if (!personalApiKey || !projectId) {
 
 const api = new HttpPosthogAdminApi({ host, projectId, personalApiKey })
 
+// A recipient nobody can find is a problem with the repo's files, said as one.
+async function orFail(work) {
+  try {
+    return await work()
+  } catch (error) {
+    if (error instanceof DefinitionError) fail(error.message)
+    throw error
+  }
+}
+
 if (mode === 'check') {
-  const drift = await checkDrift(api, definitions)
+  const drift = await orFail(() => checkDrift(api, definitions, { recipients }))
   if (drift.length > 0) {
     console.error(`FAIL  the analytics project has drifted from the repo (${drift.length}):`)
     for (const item of drift) console.error(`      - ${item.detail}`)
@@ -82,7 +94,7 @@ if (mode === 'check') {
   process.exit(0)
 }
 
-const result = await apply(api, definitions)
+const result = await orFail(() => apply(api, definitions, { recipients }))
 console.log(
   `APPLIED  created ${result.created.length}, updated ${result.updated.length}, already correct ${result.unchanged.length}`,
 )
