@@ -6833,3 +6833,69 @@ Context: an audit of the Shopify integration against Shopify's own documentation
 Files: `packages/providers/src/shopify/*` (new `graphql.ts`; `admin.ts`, `publish.ts`, `limiter.ts`, `oauth.ts`, the two doubles rewritten), `packages/core/src/catalog/*`, `packages/core/src/publish/*`, `packages/db` (schema wave `0015`, `stores/shopify-tokens.ts`), `packages/jobs/src/{ingestion,publish,drift,inventory,notify}/*`, `apps/web/app/api/{shopify,publish}/*`, `apps/web/instrumentation-node.ts`, `shopify.app.toml`, `docs/sortiva-spec.md`, `packages/rules/signals.config.yaml`.
 
 Nearest spec: main §6.2, §9.5, §12.3, §14.1, §14.3.7, §14.6, §17.3; invariants 4, 18, 19, 21, 25.
+
+## 2026-09-24 — REMEDIATION card 0 — The eval suite ran for the first time. Two of the three sets fail, and the article judge cannot grade two of its twenty cases at all
+
+Context: `pnpm eval` is the only check on what this product writes into a merchant's store. It had never been run. It grades three things against hand-written expected answers, each with one real model call per case: **distillation** (fifty product descriptions in seven languages → a fact sheet per product), **judge** (twenty finished articles → a 1–5 score on each of six criteria, which is the gate that decides whether an article may be published), and **persona.smoke** (ten stores → the store's language, country and publishing clock). Run on 2026-09-24 against the real Anthropic key, 80 model calls plus 4 repair attempts.
+
+**The scores, as measured.**
+
+| Set | Pass mark (main §14.2) | Measured | Verdict |
+|---|---|---|---|
+| distillation | field-level F1 ≥ 0.85 | **0.811** | fail |
+| distillation | zero fabricated field values | **34 of 50 cases flagged** | fail |
+| judge | per-criterion error ≤ 0.5 | **information gain 0.61 · grounding 1.44 · intent match 0.83 · actionability 0.44 · language 0.72 · usefulness 0.50** | fail on four of six |
+| judge | no article humans failed is passed | **0 false passes** | pass |
+| persona.smoke | language, country and clock exact for all ten | **10 of 10** | pass |
+| persona.smoke | every description substantive | **10 of 10** | pass |
+
+Two of the twenty judge cases (`012-overstated`, `016-danish-strong`) produced **no score at all**: the model's answer failed the shape check twice and the call gave up. The judge MAE figures above are over the eighteen that answered.
+
+**What the numbers mean for a merchant, in order of how much it matters.**
+
+1. **As it stands, no article would ever be published.** The gate passes an article only if grounding and information gain are both 4 or better and the rest 3 or better. Across all eighteen gradeable cases the judge returned a verdict of *reject* — including all seven articles the human graders considered good. The judge marks grounding at 1–3 almost everywhere (gold says 5 on the good ones), and grounding is one of the two criteria held to 4. So the pilot store would write an article a day and hold every one of them back. The engine's own rule is to pause rather than lower quality, so nothing would go out and nothing would look broken.
+
+2. **The judge may be right and the expected answers wrong.** I read case `001-wide-feet-strong` — the article the gold file scores 5 for grounding — against the facts the judge is shown. The article asserts that two of the three shoes are built on a wider last, that the standard model's last is narrower, and that it is cheaper to replace. None of those three is in the store's recorded facts; the facts cover material, weight, use cases, origin and one compatibility note. Grounding asks exactly whether every product claim traces to those facts, so a 3 is defensible and the gold's 5 is generous. This is not a scoring bug — it is a disagreement about where the line sits, and it decides what reaches a real storefront.
+
+3. **A tenth of judge calls cannot answer, because the model is never shown the shape it must answer in.** The wrapper validates the answer against a JSON schema locally and never sends that schema to the model: not as a tool, not as a response format, not in the prompt text. The judge prompt says "matching the schema exactly" without saying what the schema is, so the model has to guess that the six scores nest under `scores` and the six sentences under `justifications`. When it guesses a flat object instead, validation fails, the one permitted repair attempt fails the same way, and the step ends in `failed_validation` — which in production is a paused article with no score. The two sets that never failed validation, distillation and persona, are the two whose prompts print the JSON shape inline. The prompts for drafting, the optimise recommendation, the claim plan and the intent gap all use the judge's wording, so the same exposure is there and is not yet measured.
+
+4. **The "fabricated fact" hard fail fires on things that are not fabrications.** The scorer compares `field=value` pairs after lower-casing, and any predicted pair absent from the expected sheet is reported as a fabrication. Three consequences, all seen: a list field is joined into one string, so an answer that gets four of five list items right is one whole fabrication rather than four hits and a miss; a trailing full stop makes `care` a fabrication (case 001); and an **empty** list where the expected sheet has items is reported as `fabricated verifiable_claims=` — nothing was invented, the model declined to answer. Three of the thirty-four flagged cases are that last kind. Under the aggregate F1 of 0.811 the real, substantive disagreement is that the model repeats one fact in two fields — putting "IPX6 water resistance" in verifiable claims as well as certifications — and occasionally reads the product title as a stated use case, both of which the prompt forbids in as many words.
+
+5. **`pnpm eval` cannot pass on wall clock either.** Each test in the suite is allowed 300 seconds. Distillation's fifty cases took 68.5s and persona's ten took 53.1s, but the judge's twenty cases took 369s of model time measured case by case. So even with everything above fixed, the judge set would be killed by its own timeout.
+
+**How it was run, and what that costs in fidelity.** `pnpm eval` computes these scores and prints none of them — a passing set prints nothing and a failing one prints only the numbers that breached. I therefore ran the sets through the project's own `runEvalSet` and `EVAL_RUNNERS` from a throwaway script under the gitignored `tmp/`, which makes exactly the same model calls with exactly the same assertions and prints the full result. Nothing in `packages/llm` was changed. The two figures `pnpm eval` would add beyond what is above are the stack traces it prints on failure. The suite records no spend of its own: the eval deliberately runs with an unrecorded ledger so the bill lands on the CI job rather than on a merchant's account, so the cost of this run is not measured anywhere.
+
+**Nothing was changed.** Gold cases are append-only, the six pass marks are spec text, and both remaining problems — where the grounding line sits, and how the model learns the answer shape — are decisions rather than repairs. They are written up as the two questions below.
+
+Nearest spec: main §14.2 (eval sets and their pass marks), §8.4 (gate on the minimum), §14.4 (degrade to pause).
+
+## 2026-09-24 — REMEDIATION card 0 — OPEN FOUNDER QUESTION: the judge rejects every article in the eval set, including the good ones. Is the judge too harsh, or are the expected scores too generous?
+
+Question, not a decision. The judge is the call that decides whether a finished article is published. Run against the twenty graded examples, it rejected all eighteen it could grade, the seven good ones included, almost always because it scored *grounding* — is every claim about a product traceable to the facts the store holds — at 3 or below where the gate needs 4.
+
+**Why it is not obvious who is wrong.** The good example I read in full asserts three things about the shoes that the store's recorded facts do not contain. On the rule as written, marking that down is correct. But the same reading applied to every article means a useful buying guide can never clear the gate, because a guide that only restates fact sheets is the thing the *information gain* criterion rejects. The two criteria can be set so that nothing satisfies both.
+
+**Why I am not deciding it.** Either answer changes what reaches a real storefront. Making the judge more lenient publishes articles containing sentences no store fact supports, which is the failure the whole gate exists to prevent. Leaving it publishes nothing. And the fix for "the expected scores are too generous" is a new expected answer, which the spec makes append-only for good reason and which is a judgement about quality rather than about code.
+
+**What changes on each answer.** If the judge is right, the graded examples need new gold sheets written by you (append-only: new cases, the old ones left in place or superseded explicitly), and the writer's instructions need to stop it making claims the facts do not carry — otherwise the gate is correct and the writer is the problem. If the expected scores are right, the judge's prompt needs a new version that says what counts as traceable — for instance that a general statement about a category is not a product claim — and the eval re-run to show it improved. If neither, the floors themselves are the thing to look at, and those are spec text in main §8.4.
+
+**Meanwhile:** nothing is published, which is the safe direction and is what the engine already does. No pilot article can clear Gate 3 until this is answered.
+
+Nearest spec: main §8.4 (gate on the minimum; grounding and information gain held to 4), §14.2 (judge eval, append-only cases).
+
+## 2026-09-24 — REMEDIATION card 0 — OPEN FOUNDER QUESTION: should the model be shown the answer shape centrally, or should each prompt print it?
+
+Question, not a decision. Every model call is validated against a JSON schema after the fact, and the schema is never sent to the model. Prompts that print their expected JSON inline (distillation, persona) never failed validation in this run. The judge's prompt does not print it, and two of its twenty calls failed twice and produced nothing — in production, an article paused with no score and nobody told why.
+
+The prompts for drafting, the optimise recommendation, the claim plan, the intent-gap analysis and topic classification all use the judge's wording ("matching the schema exactly", with no schema). None is covered by an eval set, so the same failure is unmeasured there.
+
+**The two shapes of fix.**
+
+- **Central, in the wrapper**: the client appends the schema to the request, so every call type is covered by one change and no prompt can ever be written without its shape again. It changes every prompt's input at once, which means every call's cached answers and every stamped prompt version now describe a slightly different question than before, and it needs a decision about whether a prompt's stamped version still identifies the request when the wrapper adds text to it.
+- **Per prompt**: each prompt file gets a new version printing its own shape. Nothing shared moves; the fix arrives one prompt at a time; a prompt written later can still forget. Judge would become `judge.v3` and the production constant moves with it.
+
+I lean central, because the failure is in a rule the prompts are all following ("match the schema") that nothing gives them the means to follow. But it touches every call the product makes, and the prompt-version stamping question is one I should not settle alone.
+
+**Meanwhile:** unchanged, and the judge's 10% no-answer rate stands.
+
+Nearest spec: main §14.2 (schema validation on every call, retry once, then `failed_validation`); invariant 25.
