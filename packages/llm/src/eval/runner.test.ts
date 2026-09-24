@@ -2,7 +2,13 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { discoverEvalSets, loadEvalSet, runEvalSet, type EvalSetConfig } from './runner'
+import {
+  discoverEvalSets,
+  formatEvalResult,
+  loadEvalSet,
+  runEvalSet,
+  type EvalSetConfig,
+} from './runner'
 import { fieldF1, meanAbsoluteError } from './metrics'
 
 /** The evaluation machinery, including both hard-fail rules. */
@@ -126,5 +132,57 @@ describe('eval sets', () => {
     const [set] = discoverEvalSets(root)
     const result = await runEvalSet(set!, { test: async () => ({ grounding: 3 }) })
     expect(result.failures[0]).toMatch(/"grounding" MAE 2\.000 exceeds 0\.5/)
+  })
+})
+
+describe('what a run reports (remediation eval card 2)', () => {
+  it('says what every case scored on a set that passes, not only on one that fails', async () => {
+    const gold = { material: 'leather', weight: '200' }
+    const root = makeSet({ name: 'distillation', minF1: 0.85 }, [
+      { id: '001', input: {}, gold },
+      { id: '002', input: {}, gold },
+    ])
+    const [set] = discoverEvalSets(root)
+    const result = await runEvalSet(set!, { test: async () => gold })
+
+    expect(result.passed).toBe(true)
+    expect(result.cases.map((c) => c.caseId)).toEqual(['001', '002'])
+    expect(result.cases[0]!.detail).toContain('F1 1.000')
+    expect(result.precision).toBe(1)
+    expect(result.recall).toBe(1)
+
+    const printed = formatEvalResult(result)
+    expect(printed).toContain('distillation — PASS')
+    expect(printed).toContain('field F1 1.000')
+    expect(printed).toContain('001')
+  })
+
+  it('prints every criterion the judge was graded on, not only the ones that breached', async () => {
+    const root = makeSet({ name: 'judge', metric: 'criterion_mae', maxMae: 0.5 }, [
+      { id: '001', input: {}, gold: { grounding: 5, gain: 4, passed: true } },
+    ])
+    const [set] = discoverEvalSets(root)
+    const result = await runEvalSet(set!, { test: async () => ({ grounding: 3, gain: 4, passed: false }) })
+
+    const printed = formatEvalResult(result)
+    // `gain` is inside the pass mark and would have gone unmentioned before.
+    expect(printed).toContain('gain')
+    expect(printed).toContain('grounding')
+    expect(result.cases[0]!.detail).toContain('grounding 3/5')
+    expect(result.cases[0]!.detail).toContain('judge rejects it, humans passed it')
+  })
+
+  it('names the field an exact-match case got wrong and what it answered instead', async () => {
+    const root = makeSet({ name: 'persona', metric: 'exact_match' }, [
+      { id: '001', input: {}, gold: { country: 'DE', main_language: 'de' } },
+    ])
+    const [set] = discoverEvalSets(root)
+    const result = await runEvalSet(set!, {
+      test: async () => ({ country: 'AT', main_language: 'de' }),
+    })
+
+    expect(result.exactMatches).toBe(0)
+    expect(result.cases[0]!.detail).toContain('country "AT", expected "DE"')
+    expect(formatEvalResult(result)).toContain('exactly right: 0 of 1')
   })
 })

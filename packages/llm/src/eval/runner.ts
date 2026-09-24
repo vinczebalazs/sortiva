@@ -76,6 +76,22 @@ export interface EvalSetResult {
   readonly failures: readonly string[]
   readonly f1?: number
   readonly mae?: MaeScore
+  /**
+   * What every case actually scored, pass or fail.
+   *
+   * A set that reports only its breaches reports nothing on the run where it
+   * passes, and "nothing" is what a suite that is not running looks like too.
+   * These numbers are the output of an eval; the verdict is a comparison drawn
+   * from them.
+   */
+  readonly cases: readonly CaseResult[]
+  /** Aggregate precision and recall behind the F1, for `field_f1` sets. */
+  readonly precision?: number
+  readonly recall?: number
+  /** How many cases matched their gold answer exactly, for `exact_match` sets. */
+  readonly exactMatches?: number
+  /** Wall clock, model calls included — the figure the suite's own timeout has to clear. */
+  readonly durationMs: number
 }
 
 /**
@@ -158,8 +174,10 @@ export async function runEvalSet(
 ): Promise<EvalSetResult> {
   const { config, cases } = set
 
+  const startedAt = Date.now()
+
   if (cases.length === 0) {
-    return { name: config.name, passed: true, caseCount: 0, failures: [] }
+    return { name: config.name, passed: true, caseCount: 0, failures: [], cases: [], durationMs: 0 }
   }
 
   const runner = registry[config.runner]
@@ -171,6 +189,8 @@ export async function runEvalSet(
       failures: [
         `no runner registered for "${config.runner}" — ${cases.length} case(s) would silently not run`,
       ],
+      cases: [],
+      durationMs: Date.now() - startedAt,
     }
   }
 
@@ -184,6 +204,7 @@ export async function runEvalSet(
     let truePositives = 0
     let falsePositives = 0
     let falseNegatives = 0
+    const caseResults: CaseResult[] = []
 
     for (const [index, testCase] of cases.entries()) {
       const score = fieldF1(
@@ -196,9 +217,21 @@ export async function runEvalSet(
 
       // Any fabricated field value fails outright, checked per case so the
       // aggregate cannot absorb it.
-      if (!config.allowFabricatedFacts && score.fabricated.length > 0) {
+      const fabricated = !config.allowFabricatedFacts && score.fabricated.length > 0
+      if (fabricated) {
         failures.push(`case ${testCase.id}: fabricated ${score.fabricated.join(', ')}`)
       }
+
+      caseResults.push({
+        caseId: testCase.id,
+        passed: !fabricated,
+        detail:
+          `F1 ${score.f1.toFixed(3)} · ${score.truePositives} right, ${score.falseNegatives} missed` +
+          (score.fabricated.length === 0
+            ? ', nothing invented'
+            : `, invented ${score.fabricated.join(', ')}`),
+        f1: score,
+      })
     }
 
     const precision = truePositives + falsePositives === 0 ? 1 : truePositives / (truePositives + falsePositives)
@@ -208,7 +241,17 @@ export async function runEvalSet(
     if (config.minF1 !== undefined && f1 < config.minF1) {
       failures.push(`field F1 ${f1.toFixed(3)} is below the required ${config.minF1}`)
     }
-    return { name: config.name, passed: failures.length === 0, caseCount: cases.length, failures, f1 }
+    return {
+      name: config.name,
+      passed: failures.length === 0,
+      caseCount: cases.length,
+      failures,
+      f1,
+      precision,
+      recall,
+      cases: caseResults,
+      durationMs: Date.now() - startedAt,
+    }
   }
 
   if (config.metric === 'criterion_mae') {
@@ -228,25 +271,113 @@ export async function runEvalSet(
 
     // No draft that humans failed may be graded as passing. A gold case marks
     // itself failed with `passed: false`.
-    if (!config.allowFalsePass) {
-      for (const [index, testCase] of cases.entries()) {
-        const gold = testCase.gold as { passed?: boolean }
-        const predicted = predictions[index] as { passed?: boolean }
-        if (gold.passed === false && predicted.passed === true) {
-          failures.push(`case ${testCase.id}: false pass — humans failed this draft`)
-        }
+    const caseResults: CaseResult[] = []
+    for (const [index, testCase] of cases.entries()) {
+      const gold = testCase.gold as Record<string, unknown> & { passed?: boolean }
+      const predicted = predictions[index] as Record<string, unknown> & { passed?: boolean }
+      const falsePass =
+        !config.allowFalsePass && gold.passed === false && predicted.passed === true
+      if (falsePass) {
+        failures.push(`case ${testCase.id}: false pass — humans failed this draft`)
       }
+
+      const scored = Object.keys(gold)
+        .filter((key) => typeof gold[key] === 'number')
+        .map((key) => `${key} ${String(predicted[key] ?? '—')}/${String(gold[key])}`)
+      caseResults.push({
+        caseId: testCase.id,
+        passed: !falsePass,
+        detail:
+          `${scored.join(' · ')} · judge ${predicted.passed ? 'passes' : 'rejects'} it` +
+          (gold.passed === undefined ? '' : `, humans ${gold.passed ? 'passed' : 'failed'} it`),
+      })
     }
 
-    return { name: config.name, passed: failures.length === 0, caseCount: cases.length, failures, mae }
+    return {
+      name: config.name,
+      passed: failures.length === 0,
+      caseCount: cases.length,
+      failures,
+      mae,
+      cases: caseResults,
+      durationMs: Date.now() - startedAt,
+    }
   }
 
+  const caseResults: CaseResult[] = []
   for (const [index, testCase] of cases.entries()) {
-    if (JSON.stringify(predictions[index]) !== JSON.stringify(testCase.gold)) {
-      failures.push(`case ${testCase.id}: does not match gold exactly`)
-    }
+    const matched = JSON.stringify(predictions[index]) === JSON.stringify(testCase.gold)
+    if (!matched) failures.push(`case ${testCase.id}: does not match gold exactly`)
+    caseResults.push({
+      caseId: testCase.id,
+      passed: matched,
+      detail: matched ? 'exactly as expected' : disagreements(predictions[index], testCase.gold),
+    })
   }
-  return { name: config.name, passed: failures.length === 0, caseCount: cases.length, failures }
+  return {
+    name: config.name,
+    passed: failures.length === 0,
+    caseCount: cases.length,
+    failures,
+    exactMatches: caseResults.filter((c) => c.passed).length,
+    cases: caseResults,
+    durationMs: Date.now() - startedAt,
+  }
+}
+
+/** Which fields an exact-match case got wrong, and what it said instead. */
+function disagreements(predicted: unknown, gold: unknown): string {
+  if (typeof gold !== 'object' || gold === null) return `answered ${JSON.stringify(predicted)}`
+  const answer = (predicted ?? {}) as Record<string, unknown>
+  const wrong = Object.entries(gold as Record<string, unknown>)
+    .filter(([key, value]) => JSON.stringify(answer[key]) !== JSON.stringify(value))
+    .map(([key, value]) => `${key} ${JSON.stringify(answer[key]) ?? 'missing'}, expected ${JSON.stringify(value)}`)
+  return wrong.join(' · ')
+}
+
+/**
+ * The whole of what a set measured, printed on a pass as well as on a failure.
+ *
+ * The first run of this suite had to be done from a throwaway script, because
+ * `pnpm eval` printed the breaches and nothing else: a passing set said nothing
+ * at all, and the scores are the point of running it.
+ */
+export function formatEvalResult(result: EvalSetResult): string {
+  const lines: string[] = []
+  const seconds = (result.durationMs / 1000).toFixed(1)
+  lines.push(
+    `\n${result.name} — ${result.passed ? 'PASS' : 'FAIL'} · ${result.caseCount} case(s) · ${seconds}s`,
+  )
+
+  if (result.f1 !== undefined) {
+    lines.push(
+      `  field F1 ${result.f1.toFixed(3)}` +
+        (result.precision === undefined
+          ? ''
+          : ` (precision ${result.precision.toFixed(3)}, recall ${result.recall!.toFixed(3)})`),
+    )
+    const invented = result.cases.filter((c) => !c.passed).length
+    lines.push(`  cases with an invented value: ${invented} of ${result.caseCount}`)
+  }
+
+  if (result.mae) {
+    for (const [criterion, value] of Object.entries(result.mae.perCriterion)) {
+      lines.push(`  ${criterion.padEnd(24)} error against the human grade ${value.toFixed(3)}`)
+    }
+    lines.push(`  ${'overall'.padEnd(24)} error against the human grade ${result.mae.overall.toFixed(3)}`)
+  }
+
+  if (result.exactMatches !== undefined) {
+    lines.push(`  exactly right: ${result.exactMatches} of ${result.caseCount}`)
+  }
+
+  for (const c of result.cases) {
+    lines.push(`  ${c.passed ? ' ' : '!'} ${c.caseId.padEnd(26)} ${c.detail}`)
+  }
+
+  for (const failure of result.failures) lines.push(`  BREACH: ${failure}`)
+
+  return lines.join('\n')
 }
 
 /**

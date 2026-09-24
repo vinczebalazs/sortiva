@@ -7083,3 +7083,29 @@ The two cases that could not be graded at all this morning — `012-overstated` 
 **What this does not prove.** The ten other prompts that used the judge's wording with no shape printed — drafting, the optimise recommendation, the claim plan, the intent gap, topic classification — are covered by the same line of code and by no eval set. Their exposure was never measured and still is not; what is true is that they can no longer be told to match a schema they were never shown.
 
 Nearest spec: main §14.2 (schema validation on every call, one retry, then `failed_validation`), §14.3.6 (the request cache key); invariant 25.
+
+## 2026-09-24 — REMEDIATION-EVAL card 2 — `pnpm eval` can finish, and now says what it measured
+
+Context: the eval suite is the only check on what this product writes into a merchant's store, and until today nobody had run it. When somebody did, they could not run it with the command that exists: the first run had to be done from a throwaway script calling the machinery directly. Three separate things stood in the way, and all three are fixed here.
+
+**It could not see the key.** Vitest reads `.env` files but hands only `VITE_`-prefixed values to the code under test, so `ANTHROPIC_API_KEY` never arrived. Every set would have refused to run, correctly and loudly, with a message about a missing key — while the key sat in the file beside it. The eval config now parses `.env` itself, the same way `scripts/smoke-boot.mjs` and the Playwright harness already do, and an exported value still wins so CI supplies its own. Verified before and after with a throwaway spec that printed nothing but whether the key had arrived: `false`, then `true`.
+
+**It could not finish.** Each set was allowed 300 seconds and the judge's twenty cases take between 260 and 300 seconds of model time, measured three times today. The suite would have been killed within seconds of finishing — the money spent, no score returned. Each set now gets thirty minutes, which is the slowest set with room for a repair attempt, a rate-limit backoff and a slow afternoon.
+
+**It printed nothing worth having.** A passing set printed nothing at all and a failing one printed only the numbers that breached. A run costs about eighty model calls; a run that spends that and reports a verdict has thrown away what it paid for. Every set now prints, pass or fail: its wall clock, its aggregate score, and one line per case saying what that case scored. The judge prints all six criteria, not only the ones over the line — the two that were *inside* the pass mark were invisible before, and "inside the pass mark" is a fact about the run, not an absence of one.
+
+**The first complete run of `pnpm eval` in this project's history**, immediately after: 393 seconds, all three sets run to completion, exit code 1 because two of them fail on their merits.
+
+| Set | Pass mark | Measured | |
+|---|---|---|---|
+| distillation | F1 ≥ 0.85 | 0.805 | fail |
+| distillation | no invented values | 36 of 50 cases flagged | fail |
+| judge | per-criterion error ≤ 0.5 | gain 0.65 · grounding 0.95 · intent 1.00 · actionability 0.45 · language 0.75 · usefulness 0.70 | fail on five of six |
+| judge | no false passes | 0 | pass |
+| persona.smoke | all ten exact | 10 of 10 | pass |
+
+**Two of those numbers are not what they look like, and card 3 is about the first.** The distillation fabrication count counts things that were never fabricated — an empty answer, a trailing full stop, one wrong item in a five-item list. And the judge's per-criterion errors move by two or three tenths between runs of the identical set against the identical prompt: grounding measured 1.44 this morning, 1.25 at lunchtime and 0.95 here. That is sampling noise on twenty cases, and it means no single run settles whether a prompt change helped. Card 5 will have to read the direction and the case-level disagreements, not the third decimal place.
+
+**What did not change.** No pass mark, no gold file, no prompt. The `field_f1` and `criterion_mae` scores are computed by the same code as before; only what is reported from them is new.
+
+Nearest spec: main §14.2 (the three sets and their pass marks).
