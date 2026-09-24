@@ -149,7 +149,7 @@ async function signIn(h: Harness, email: string): Promise<Jar> {
     h.request(
       '/api/auth/signin/email',
       jar,
-      new URLSearchParams({ email, csrfToken, callbackUrl: '/plan' }),
+      new URLSearchParams({ email, csrfToken, callbackUrl: '/dashboard' }),
     ),
   )
   jar.absorb(asked)

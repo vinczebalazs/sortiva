@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { t as defaultTranslate, type Translate } from '../strings'
 import { rememberPreviewedDomain } from './previewed-domain'
 import {
+  AFTER_SIGN_IN,
   requestEmailSignIn,
   requestGoogleSignIn,
   type EmailSignInOutcome,
@@ -19,8 +20,8 @@ import {
  * nothing more — a domain is never claimed on somebody's behalf, because a
  * claim is exclusive and one made by mistake locks a business out of its own
  * address. It is put into the tab's own storage on arrival, because the rest of
- * the journey leaves our site twice — the identity provider, then Stripe — and
- * a link parameter survives neither hop.
+ * the journey leaves our site for the identity provider, and a link parameter
+ * does not survive that hop.
  *
  * Both buttons run two requests rather than submitting a form. It was a form,
  * and the form did not work: the sign-in library refuses a post that does not
@@ -117,7 +118,7 @@ export function SignInLinkSent({
 export function SignIn({
   t = defaultTranslate,
   previewedDomain,
-  next = '/plan',
+  next = AFTER_SIGN_IN,
   signIn = (callbackUrl) =>
     requestGoogleSignIn({ fetch: globalThis.fetch.bind(globalThis), callbackUrl }),
   sendSignInLink = (email, callbackUrl) =>

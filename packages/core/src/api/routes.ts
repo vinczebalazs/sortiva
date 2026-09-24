@@ -71,43 +71,13 @@ export const ROUTES: readonly RouteDefinition[] = [
     rateLimited: true,
   },
 
-  // ── Account, billing, settings ────────────────────────────────────────────
+  // ── Account and settings ──────────────────────────────────────────────────
   {
     method: 'GET',
     path: '/api/account',
     summary: 'Session account: domain state, entitlement, connections, service status.',
     auth: 'session',
     response: s.accountResponseSchema,
-  },
-  {
-    method: 'GET',
-    path: '/api/billing/plan',
-    summary: 'The Pro plan card: live Stripe amounts, cap line, inclusions.',
-    // The plan screen shows a live price and a monthly/annual toggle, and no
-    // amount may be hardcoded anywhere in our code — Stripe is the only source
-    // of truth for what things cost — so the screen has to ask for it.
-    // Added by card T1.2a under the founder's licence to re-freeze the route
-    // table; it is the one route that table gained.
-    // Public: the plan screen is reachable before signup, and it exposes only
-    // list prices Stripe Checkout would show anyway. No account row is read, so
-    // there is nothing here to scope.
-    auth: 'public',
-    response: s.planResponseSchema,
-  },
-  {
-    method: 'POST',
-    path: '/api/billing/checkout',
-    summary: 'Create a Stripe Checkout session. We render no card form, ever.',
-    auth: 'session',
-    body: s.checkoutRequestSchema,
-    response: s.redirectResponseSchema,
-  },
-  {
-    method: 'POST',
-    path: '/api/billing/portal',
-    summary: 'Create a Stripe Customer Portal link.',
-    auth: 'session',
-    response: s.redirectResponseSchema,
   },
   {
     method: 'GET',
@@ -593,13 +563,6 @@ export const ROUTES: readonly RouteDefinition[] = [
   },
 
   // ── Webhooks ──────────────────────────────────────────────────────────────
-  {
-    method: 'POST',
-    path: '/api/webhooks/stripe',
-    summary: 'Verify the signature, insert-or-ignore by event id, return 200, process async.',
-    auth: 'public',
-    response: s.webhookAckSchema,
-  },
   {
     method: 'POST',
     path: '/api/webhooks/shopify/{topic}',

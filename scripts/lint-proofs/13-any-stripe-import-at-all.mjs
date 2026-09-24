@@ -5,7 +5,7 @@
 // wave 1, and a bad merge there silently weakens the check that proves every
 // other check still works. A lane adds a file here; nobody edits a shared one.
 export default {
-  name: 'raw stripe import outside the billing wrapper (invariant 25)',
+  name: 'any stripe import at all — there is no payment processor in this product (invariant 25)',
   file: 'packages/core/src/__lintproof__/raw-stripe-import.ts',
   source: [
     "import Stripe from 'stripe'",

@@ -151,14 +151,11 @@ async function seedGscConnection(context: SeedContext): Promise<void> {
   })
 }
 
-/** A live subscription, which is what the generating and publishing routes gate on. */
+/** An entitled account, which is what the generating and publishing routes gate on. */
 async function seedEntitlement(context: SeedContext): Promise<void> {
   await context.db.insert(schema.subscriptions).values({
     accountId: context.accountId,
-    stripeSubscriptionId: `sub_${context.accountId.slice(0, 8)}`,
-    priceId: 'price_test_monthly',
-    status: 'active',
-    currentPeriodEnd: new Date('2026-10-08T09:00:00.000Z'),
+    status: 'comped',
   })
 }
 
@@ -259,11 +256,6 @@ const UNDRIVABLE: Readonly<Record<string, string>> = {
   'POST /api/preview':
     'the only unauthenticated route: it verifies a Cloudflare bot-challenge token, fetches a ' +
     "stranger's website and writes a summary with a model call. All three are live outside calls.",
-  'GET /api/billing/plan':
-    'reads the live prices out of Stripe on every request, because no amount may be hardcoded ' +
-    'anywhere in our code.',
-  'POST /api/billing/checkout': 'creates a Stripe Checkout session through Stripe.',
-  'POST /api/billing/portal': "creates a Stripe Customer Portal link through Stripe's API.",
   'GET /api/publish/blogs':
     "lists the blogs on the merchant's Shopify store, which means their access token and a call " +
     'to Shopify.',
@@ -536,16 +528,6 @@ const DRIVERS: Readonly<Record<string, Driver>> = {
     return { params: { notificationId: notification!.id } }
   },
   'GET /api/attention': bare,
-  'POST /api/webhooks/stripe': () => {
-    const rawBody = JSON.stringify({
-      id: 'evt_route_answers',
-      object: 'event',
-      type: 'customer.subscription.updated',
-      created: Math.floor(NOW.getTime() / 1000),
-      data: { object: { id: 'sub_route_answers', object: 'subscription', status: 'active' } },
-    })
-    return { rawBody, headers: { 'stripe-signature': stripeSignature(rawBody) } }
-  },
   'POST /api/webhooks/shopify/{topic}': () => {
     const rawBody = JSON.stringify({ id: 1, title: 'Trail shoe' })
     return {
@@ -568,15 +550,6 @@ const DRIVERS: Readonly<Record<string, Driver>> = {
     })
     return { rawBody, headers: resendSignatureHeaders(rawBody) }
   },
-}
-
-/** Stripe's own scheme: `t=<unix>,v1=<hex hmac of "<t>.<body>">`. */
-function stripeSignature(rawBody: string): string {
-  const timestamp = Math.floor(Date.now() / 1000)
-  const digest = createHmac('sha256', process.env.STRIPE_WEBHOOK_SECRET ?? '')
-    .update(`${timestamp}.${rawBody}`)
-    .digest('hex')
-  return `t=${timestamp},v1=${digest}`
 }
 
 /** The Svix scheme Resend uses: the signature covers `<id>.<timestamp>.<body>`. */
@@ -757,10 +730,7 @@ describe.skipIf(!available)('the answers themselves', () => {
     process.env.GSC_OAUTH_CLIENT_ID ??= 'test-gsc-client-id'
     process.env.GSC_OAUTH_CLIENT_SECRET ??= 'test-gsc-client-secret'
     // The webhook receivers verify a signature before touching the body, so the
-    // three drivers below sign what they send with these. Setting the Stripe
-    // key lets its client be constructed; no route driven here calls Stripe.
-    process.env.STRIPE_SECRET_KEY ??= 'sk_test_route_answers'
-    process.env.STRIPE_WEBHOOK_SECRET ??= 'whsec_route_answers'
+    // drivers below sign what they send with these.
     process.env.RESEND_WEBHOOK_SECRET ??= `whsec_${Buffer.alloc(24, 3).toString('base64')}`
     // The SEO vendor is billable per call; its own mock mode is what every
     // other database-backed suite runs against.

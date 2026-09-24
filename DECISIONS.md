@@ -6921,3 +6921,29 @@ Decision: a sixth subscription status, `comped`, which entitles exactly as `acti
 **Nothing expires a comp.** No period end, no clock, no renewal. It ends when somebody runs `revoke`, which is deliberate: a free store that silently stopped working on a date nobody chose is the failure this card exists to remove, not one to reintroduce.
 
 Nearest spec: main §4.2 (entitlement is the local row), §14.6; invariant 16 — whose text names the Stripe webhook worker as the only writer of `subscriptions.status`. That is now false: `pnpm comp` writes it too. Card 2 rewrites the invariant when it removes the purchase layer; until then the invariant is stale in that one respect and this entry is the record.
+
+## 2026-09-24 — REMEDIATION card 2 — The Stripe purchase layer is removed, and the constitution's invariant 16 is amended to say so
+
+Context: the pilot is free and, when billing returns, it is Shopify's. Seven confirmed defects sat on code that was going anyway, so it goes rather than gets repaired. Founder-authorised; this amends both `CLAUDE.md` and the spec.
+
+**Gone.** The Stripe provider and its test double; the Stripe webhook route with its receiver, its event parser and its event processing; the three billing routes (plan, checkout, portal); the public plan page and the purchase screen; the billing card on Settings → Account; the nightly subscription reconciliation and its crontab entry; the price formatting and the interval toggle; the four money analytics events and the two payment steps in the activation funnel dashboard; `stripe` as a dependency; the four `STRIPE_*` environment variables.
+
+**Kept.** Entitlement, the `subscriptions` row, its status, and the two gates that read it. The dunning banner and the `past_due` state stay too: nothing can reach that status while there is no processor, but the status is a real product concept that returns with Shopify billing, and a status the database can still hold has to render as something.
+
+`stripe_events` stays in the database, unused. Migrations are forward-only and dropping a table nobody reads buys nothing.
+
+**The canonical cap line moved rather than disappearing.** "Up to 1 article per day, quality permitting" (main Appendix A) was rendered by the plan card, from the plan API, and the plan card is gone. It now renders on the landing page's pricing block, from the string catalogue, and a test asserts it appears on a screen a visitor can actually reach — not only in a constant. Without that test the sentence could have survived as an unrendered string and nothing would have failed.
+
+**The landing page's pricing block: a call I made, easily reversed.** It used to show a live amount read from Stripe. The block now carries no amount at all: the plan label, the cap line, what is included, and the same sign-up link the rest of the page uses. The alternative was deleting the pricing section outright. I kept it because what the block is *for* — the daily ceiling and the reason there is one — never depended on a number, and because the code already had a no-price state with copy written for it. **If you would rather the landing page said nothing about pricing at all, that is one deletion.**
+
+**Three things the removal touched that were not obvious.**
+
+- **Account deletion no longer cancels anything.** Closing an account used to cancel the subscription first and fail the whole job if that call was refused, because a deleted account still being charged was the worst outcome available to it. There is no processor to tell, so the job's first act is now handing the store's own access grant back. This closes the high-severity finding about deletion leaving a subscription running: the race is gone rather than fixed.
+- **Every sign-in landed on the plan page.** It now lands on the dashboard, which reads the account and shows whatever state it is really in. That closes the dropped "sign-in lands on a Subscribe button" defect as a side effect.
+- **The lint rule that guarded the Stripe wrapper now bans `stripe` everywhere.** It used to permit the import inside `packages/providers/src/stripe/`; that directory is gone, so the allowed list is empty and any import of it is an error. The planted proof that keeps the rule honest was renamed to say so.
+
+**Invariant 16 is rewritten** in `CLAUDE.md`. It named the Stripe webhook worker as the only writer of entitlement and required no Stripe call in a request path. It now says there is no payment processor, that `active` and `comped` entitle, that `pnpm comp` is the only writer today, and that whatever writes the status when Shopify billing arrives may not be a request path. **main §4.2 still describes signup into a plan screen into Stripe Checkout and is now wrong**; the spec edit is not in this card, and this entry is the record until it is made.
+
+**What is not proved.** The gate is green and the whole suite passes, but no merchant has signed in against this build. "Lands on the dashboard" is asserted by the sign-in tests and by the funnel test, which walks signup → claim → progress through the real route handlers against a real Postgres, with no payment step in it any more.
+
+Nearest spec: main §4.2, §14.6; tech §3; invariants 16 and 24.

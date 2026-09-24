@@ -3,15 +3,13 @@
     "kind": "insight",
     "key": "funnel-lure-to-activated",
     "name": "Funnel — lure to activated account",
-    "description": "The whole acquisition path in one chart: a stranger pastes a URL, gets a preview, signs up, pays, claims their domain, connects their store, confirms their profile. The last step is the activation moment, not the signup.",
+    "description": "The whole acquisition path in one chart: a stranger pastes a URL, gets a preview, signs up, claims their domain, connects their store, confirms their profile. The last step is the activation moment, not the signup. No payment step: nothing is charged.",
     "query": {
       "kind": "FunnelsQuery",
       "series": [
         { "kind": "EventsNode", "event": "preview_requested" },
         { "kind": "EventsNode", "event": "preview_served" },
         { "kind": "EventsNode", "event": "signup_completed" },
-        { "kind": "EventsNode", "event": "checkout_started" },
-        { "kind": "EventsNode", "event": "subscription_activated" },
         { "kind": "EventsNode", "event": "domain_claimed" },
         { "kind": "EventsNode", "event": "shopify_oauth_granted" },
         { "kind": "EventsNode", "event": "profile_confirmed" }

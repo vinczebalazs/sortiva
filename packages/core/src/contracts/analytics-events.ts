@@ -105,13 +105,13 @@ const SERVER_EVENT_DEFINITIONS = {
   /** Search Console was connected. Which *kind* of property, never the address. */
   gsc_connected: { property_kind: 'enum' },
   /** The account was deleted at the merchant's request. */
-  account_deleted: { had_subscription: 'flag' },
+  account_deleted: {},
 
   // ---- Money ----
-  checkout_started: { interval: 'enum', price_id: 'id' },
-  subscription_activated: { previous_status: 'enum', price_id: 'id' },
-  payment_failed: { previous_status: 'enum' },
-  subscription_canceled: { previous_status: 'enum', status: 'enum' },
+  // Nothing reports a purchase any more: there is no purchase to report. The
+  // four events that did — checkout started, subscription activated, payment
+  // failed, subscription cancelled — were removed with the code that emitted
+  // them, so the declaration does not outlive the thing it described.
   /** A job or a reconciliation gave up and parked the work for a human. */
   dlq_entry_created: {
     step: 'enum',

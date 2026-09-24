@@ -1,7 +1,5 @@
 import type { ReactNode } from 'react'
 import { t as defaultTranslate, type Translate } from '../strings'
-import { PlanCard, PlanUnavailable } from './PlanCard'
-import type { PlanResponse } from './plan'
 
 /**
  * Everything on the landing page below the address field: how the product
@@ -13,10 +11,12 @@ import type { PlanResponse } from './plan'
  * ships is what was designed, and a marketing edit is a change to one JSON file
  * rather than to markup.
  *
- * The pricing block shows the same card as the purchase screen, reading the
- * same live amounts from Stripe. A visitor who has not signed up sees no
- * button that would take payment: the call to action is the same sign-up link
- * as everywhere else on the page.
+ * The pricing block carries no amount. It used to read a live price from the
+ * payment processor, and that whole layer is gone; what the block is actually
+ * for — the daily ceiling, in the words the product is held to, and the reason
+ * there is a ceiling at all — never depended on a number. The call to action is
+ * the same sign-up link as everywhere else on the page, and no button here has
+ * ever taken payment.
  */
 
 export interface LandingSectionProps {
@@ -141,34 +141,47 @@ export function LandingQualityBar({ t = defaultTranslate }: LandingSectionProps)
   )
 }
 
+/** What the plan includes, in the order the block lists them. */
+const PLAN_INCLUSION_KEYS = [
+  'landing.pricing.inclusion.opportunities',
+  'landing.pricing.inclusion.publishing',
+  'landing.pricing.inclusion.searchConsole',
+  'landing.pricing.inclusion.calendar',
+] as const
+
 export interface LandingPricingProps extends LandingSectionProps {
-  /**
-   * The live plan, or null when Stripe could not be read. The block still
-   * renders — the cap line and the reasoning behind it are the point of it —
-   * with the amount replaced rather than the section removed.
-   */
-  readonly plan: PlanResponse | null
   /** The sign-up call to action; the same one the rest of the page uses. */
   readonly action: ReactNode
 }
 
-export function LandingPricing({ plan, action, t = defaultTranslate }: LandingPricingProps) {
+export function LandingPricing({ action, t = defaultTranslate }: LandingPricingProps) {
   return (
     <section className="sortiva-landing__section" id="pricing" data-section="pricing">
       <p className="sortiva-landing__eyebrow">{t('landing.pricing.eyebrow')}</p>
 
       <div className="sortiva-landing__pricing">
-        {plan ? (
-          <PlanCard
-            plan={plan}
-            interval="monthly"
-            label={t('landing.pricing.planLabel')}
-            action={action}
-            t={t}
-          />
-        ) : (
-          <PlanUnavailable label={t('landing.pricing.planLabel')} action={action} t={t} />
-        )}
+        <section className="sortiva-plan" data-testid="plan-card">
+          <header className="sortiva-plan__head">
+            <p className="sortiva-plan__label">{t('landing.pricing.planLabel')}</p>
+          </header>
+
+          <hr className="sortiva-plan__rule" />
+
+          {/* Appendix A, word for word. Never rendered with a denominator. */}
+          <p className="sortiva-plan__cap" data-testid="plan-cap-line">
+            {t('appendixA.pricingCap')}
+          </p>
+
+          <ul className="sortiva-plan__inclusions">
+            {PLAN_INCLUSION_KEYS.map((key) => (
+              <li key={key}>{t(key)}</li>
+            ))}
+          </ul>
+
+          <div className="sortiva-plan__action">{action}</div>
+
+          <p className="sortiva-plan__cancel">{t('billing.cancelAnytime')}</p>
+        </section>
 
         <div className="sortiva-landing__pricing-aside">
           <h3 className="sortiva-landing__card-title">{t('landing.pricing.asideHeading')}</h3>

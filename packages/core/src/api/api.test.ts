@@ -30,7 +30,7 @@ describe('route table', () => {
       '/api/performance/overview',
       '/api/notifications',
       '/api/settings',
-      '/api/webhooks/stripe',
+      '/api/webhooks/shopify/{topic}',
     ]) {
       expect(paths).toContain(required)
     }

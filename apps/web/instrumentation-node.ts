@@ -35,12 +35,7 @@ export async function startServerRuntime() {
   // (measured; DECISIONS 2026-09-01 R5). `railway.toml` sets it on the start
   // command. The flip side is that Next no longer exits on the signal by itself,
   // so one of the two paths below must always register a handler that does.
-  // The nightly subscription reconciliation is already in the worker's crontab;
-  // this is where its handler joins the registry. Lanes
-  // register their tasks here, before the worker reads the list.
-  const { registerBillingTasks } = await import('./app/api/webhooks/stripe/_lib/tasks')
-  registerBillingTasks()
-
+  // Lanes register their tasks here, before the worker reads the list.
   // The automatic brakes: one sweep that reads our own counters and pauses
   // whatever crossed a ceiling — the day's vendor spending, the share of drafts
   // the quality gate is refusing, and a store's daily allowance of a paid
@@ -287,9 +282,8 @@ export async function startServerRuntime() {
   // database from growing forever. Two jobs, and they are the reason a deleted
   // account is actually deleted rather than merely marked:
   //
-  //  - `account_close` tells Stripe, Shopify and Google that a merchant has
-  //    gone. It is a job and not part of the delete request because a Stripe
-  //    call may never sit in a request path, and because a queued step is
+  //  - `account_close` tells Shopify and Google that a merchant has gone. It is
+  //    a job and not part of the delete request because a queued step is
   //    retried and dead-letters where somebody is alerted.
   //  - the nightly retention sweep erases deleted accounts once their
   //    seven-day domain hold has passed, erases a store's data when its
@@ -301,7 +295,6 @@ export async function startServerRuntime() {
   // are decrypted in exactly one place on the way out to be handed back.
   const { registerAccountCloseTask, registerRetentionTask } = await import('@sortiva/jobs')
   const { makeAccountLifecycleStore } = await import('@sortiva/db')
-  const { stripeProvider } = await import('./app/api/billing/_lib/config')
   const { decodeGscTokens } = await import('@sortiva/core')
   registerAccountCloseTask({
     getPool: dbPool,
@@ -314,9 +307,6 @@ export async function startServerRuntime() {
         openGoogleRefreshToken: (cipher) =>
           decodeGscTokens(tokenCipher(), cipher).refreshToken,
       }),
-    billing: () => ({
-      cancelNow: (subscriptionId) => stripeProvider().cancelSubscription(subscriptionId),
-    }),
     revoker: () => ({
       revokeShopify: ({ shopHandle, accessToken }) =>
         shopifyOauthProvider().revokeAccess({ shop: shopHandle, accessToken }),

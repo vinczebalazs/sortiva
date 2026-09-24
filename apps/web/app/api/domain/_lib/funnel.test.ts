@@ -1,12 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import {
-  DOMAIN_CLAIMED_EVENT,
-  drainStripeEvents,
-  provisionAccount,
-  SIGNUP_COMPLETED_EVENT,
-  type RemoteSubscription,
-} from '@sortiva/core'
-import { stripeEventFixtures } from '@sortiva/core/billing/testing'
+import { DOMAIN_CLAIMED_EVENT, provisionAccount, SIGNUP_COMPLETED_EVENT } from '@sortiva/core'
 import {
   TEST_DATABASE_URL,
   databaseAvailable,
@@ -20,20 +13,23 @@ import {
   installQueueSchema,
   type WorkerUtils,
 } from '@sortiva/jobs/runtime/testing'
-import { MockPosthogCapture, MockStripeProvider } from '@sortiva/providers'
+import { MockPosthogCapture } from '@sortiva/providers'
 import { makeAccountRouteHandler } from '../../account/_lib/handler'
 import { makeDbAccountStore } from '../../auth/_lib/provisioning'
 import { withAccount } from '../../auth/_lib/session'
-import { makeCheckoutHandler } from '../../billing/_lib/handlers'
-import { billingWorkerDeps, handleStripeWebhook } from '../../webhooks/stripe/_lib/receiver'
 import { makeClaimHandler } from './handler'
 import { makeDomainClaimStore } from './store'
 
 /**
- * **The M1 exit gate.** One merchant walks the whole funnel — sign up, pay,
- * connect a domain, land on the progress state — through the real route
- * handlers, the real session wrapper, the real repositories and a real
- * Postgres. Only Stripe and PostHog are doubles.
+ * **The M1 exit gate.** One merchant walks the whole funnel — sign up, connect a
+ * domain, land on the progress state — through the real route handlers, the
+ * real session wrapper, the real repositories and a real Postgres. Only PostHog
+ * is a double.
+ *
+ * There is no payment step. There used to be one between signing up and
+ * claiming, and removing the purchase layer removed it; what a merchant now
+ * meets after signing in is the dashboard, and what the dashboard reads is the
+ * account response asserted below.
  *
  * It is not the browser test the card asks for: no screen exists to drive
  * (Lane F has not started, `packages/ui` holds only the M0 mock server). This
@@ -44,15 +40,11 @@ import { makeDomainClaimStore } from './store'
 
 const available = await databaseAvailable()
 
-const CUSTOMER = 'cus_funnel'
-const SUBSCRIPTION = 'sub_funnel'
-const PRICES = { monthly: 'price_monthly', annual: 'price_annual' }
 const APP_URL = 'https://app.sortiva.test'
 
-describe.skipIf(!available)('M1 funnel: signup → plan → claim → progress', () => {
+describe.skipIf(!available)('M1 funnel: signup → claim → progress', () => {
   let harness: TestDb
   let capture: MockPosthogCapture
-  let stripe: MockStripeProvider
   let workerUtils: WorkerUtils
 
   beforeAll(async () => {
@@ -75,15 +67,6 @@ describe.skipIf(!available)('M1 funnel: signup → plan → claim → progress',
     await truncateAll(harness.pool)
     await harness.pool.query(TRUNCATE_QUEUE_SQL)
     capture = new MockPosthogCapture()
-    stripe = new MockStripeProvider()
-    stripe.setSubscription({
-      subscriptionId: SUBSCRIPTION,
-      customerId: CUSTOMER,
-      status: 'active',
-      priceId: PRICES.monthly,
-      currentPeriodEnd: new Date('2026-10-01T00:00:00Z'),
-      cancelAtPeriodEnd: false,
-    } satisfies RemoteSubscription)
   })
 
   const session = (id: string) => async () => id
@@ -103,38 +86,7 @@ describe.skipIf(!available)('M1 funnel: signup → plan → claim → progress',
     expect(afterSignup.domain).toBeNull()
     expect(afterSignup.subscription.status).toBe('none')
 
-    // ── 2. Plan → Stripe Checkout ────────────────────────────────────────────
-    const checkout = withAccount(
-      makeCheckoutHandler({ database: harness.db, stripe, prices: PRICES, appUrl: APP_URL }),
-      session(accountId),
-    )
-    const checkoutResponse = await checkout(
-      new Request(`${APP_URL}/api/billing/checkout`, {
-        method: 'POST',
-        body: JSON.stringify({ interval: 'monthly' }),
-      }),
-      undefined,
-    )
-    expect(checkoutResponse.status).toBe(200)
-    expect((await checkoutResponse.json()).url).toContain('http')
-
-    // Stripe pays and tells us over the webhook; entitlement is our local row,
-    // never a Stripe call in a request path (invariant 16).
-    const fixtures = stripeEventFixtures({
-      accountId,
-      customerId: CUSTOMER,
-      subscriptionId: SUBSCRIPTION,
-      priceId: PRICES.monthly,
-    })
-    await deliver(fixtures.checkoutCompleted('evt_1', 1_700_000_000))
-    await deliver(fixtures.subscriptionUpdated('evt_2', 1_700_000_100, { status: 'active' }))
-    await drainStripeEvents(billingWorkerDeps({ database: harness.db, pool: harness.pool, stripe }))
-
-    const afterPayment = await (await account()(get('/api/account'), undefined)).json()
-    expect(afterPayment.subscription.status).toBe('active')
-    expect(afterPayment.domain).toBeNull()
-
-    // ── 3. Claim the domain ──────────────────────────────────────────────────
+    // ── 2. Claim the domain ──────────────────────────────────────────────────
     const claim = withAccount(
       makeClaimHandler({
         deps: { store: makeDomainClaimStore({ database: harness.db }), capture },
@@ -153,7 +105,7 @@ describe.skipIf(!available)('M1 funnel: signup → plan → claim → progress',
     expect(claimed.normalized).toBe('acme-supply.co.uk')
     expect(capture.of(DOMAIN_CLAIMED_EVENT)).toHaveLength(1)
 
-    // ── 4. The progress state ────────────────────────────────────────────────
+    // ── 3. The progress state ────────────────────────────────────────────────
     // What the dashboard reads to stop rendering "Connect your domain" and
     // start rendering the ingestion stepper.
     const afterClaim = await (await account()(get('/api/account'), undefined)).json()
@@ -162,7 +114,9 @@ describe.skipIf(!available)('M1 funnel: signup → plan → claim → progress',
       state: 'ingesting',
       platform: null,
     })
-    expect(afterClaim.subscription.status).toBe('active')
+    // Still no subscription row, and the claim went through anyway: nothing in
+    // the funnel asks anybody to pay.
+    expect(afterClaim.subscription.status).toBe('none')
 
     // And what the stepper's steps come from: a durable run whose first step is
     // waiting for a worker, with every later step pending behind it — the
@@ -182,16 +136,4 @@ describe.skipIf(!available)('M1 funnel: signup → plan → claim → progress',
     return new Request(`${APP_URL}${path}`)
   }
 
-  async function deliver(event: Record<string, unknown>): Promise<void> {
-    const body = JSON.stringify(event)
-    const response = await handleStripeWebhook(
-      new Request(`${APP_URL}/api/webhooks/stripe`, {
-        method: 'POST',
-        headers: { 'stripe-signature': stripe.sign(body) },
-        body,
-      }),
-      { database: harness.db, pool: harness.pool, stripe, drain: false },
-    )
-    expect(response.status).toBe(200)
-  }
 })

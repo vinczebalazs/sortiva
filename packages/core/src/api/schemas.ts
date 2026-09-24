@@ -85,7 +85,7 @@ export const previewResponseSchema = z.object({
   generic: z.boolean(),
 })
 
-// ── Account, billing, settings ───────────────────────────────────────────────
+// ── Account and settings ─────────────────────────────────────────────────────
 
 export const domainStateSchema = z.enum([
   'ingesting',
@@ -121,39 +121,7 @@ export const accountResponseSchema = z.object({
   servicePaused: z.boolean(),
 })
 
-export const checkoutRequestSchema = z.object({ interval: z.enum(['monthly', 'annual']) })
 export const redirectResponseSchema = z.object({ url: z.string().url() })
-
-/**
- * The plan card: the price, the monthly/annual toggle, the verbatim cap line
- * and the inclusions.
- *
- * Amounts come from Stripe on every response — the app never hardcodes a dollar
- * amount anywhere — in minor units with their currency, so the client formats
- * and the API bakes in no locale. The
- * −20% annual saving is not a field: it is whatever the two amounts say it is,
- * which is the point of reading them from Stripe.
- */
-export const planResponseSchema = z.object({
-  planKey: z.literal('pro'),
-  name: z.string(),
-  /** Fixed copy, used word for word, and never rendered with a denominator behind it. */
-  capLine: z.string(),
-  inclusions: z.array(z.string()),
-  cancelAnytime: z.string(),
-  /** The three cancellation facts, stated wherever cancellation is offered rather than only in the terms. */
-  cancellationFacts: z.array(z.string()),
-  prices: z.array(
-    z.object({
-      interval: z.enum(['monthly', 'annual']),
-      priceId: z.string(),
-      /** Cents, or the currency's smallest unit. Null for a metered price. */
-      unitAmountMinor: z.number().int().nullable(),
-      /** ISO 4217, lower-case, as Stripe returns it. */
-      currency: z.string(),
-    }),
-  ),
-})
 
 export const settingsSchema = z.object({
   /** Export is the default; publishing on the merchant's behalf is a separate, later consent. */

@@ -3,7 +3,6 @@ import {
   type AccessRevoker,
   type AccountLifecycleStore,
   type Logger,
-  type SubscriptionCanceller,
 } from '@sortiva/core'
 import { runtimeLogger } from '../runtime/logging'
 import { withAccountLock } from '../runtime/lock'
@@ -29,7 +28,6 @@ import type pg from 'pg'
 export interface AccountCloseDeps {
   readonly getPool: () => pg.Pool
   readonly store: () => AccountLifecycleStore
-  readonly billing: () => SubscriptionCanceller
   readonly revoker: () => AccessRevoker
   readonly log?: Logger
 }
@@ -40,11 +38,11 @@ export async function runAccountClose(
 ): Promise<void> {
   const log = deps.log ?? runtimeLogger()
   // Blocking rather than try-and-skip: this is the last thing that will ever
-  // happen for this account, and skipping it would leave a subscription
-  // running with nothing scheduled to try again.
+  // happen for this account, and skipping it would leave a merchant's access
+  // grants in our database with nothing scheduled to try again.
   await withAccountLock(deps.getPool(), payload.accountId, async () => {
     const result = await closeAccount(
-      { store: deps.store(), billing: deps.billing(), revoker: deps.revoker(), log },
+      { store: deps.store(), revoker: deps.revoker(), log },
       { accountId: payload.accountId },
     )
     if (result.kind === 'skipped') {
@@ -53,7 +51,6 @@ export async function runAccountClose(
     }
     log.info('account_closed', {
       account_id: payload.accountId,
-      subscription_cancelled: result.subscriptionCancelled,
       shopify_revoked: result.revoked.shopify ?? 'none',
       google_revoked: result.revoked.google ?? 'none',
     })

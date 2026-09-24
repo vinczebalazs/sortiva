@@ -68,11 +68,6 @@ export interface AccountLifecycleStore {
   clearGrants(accountId: string): Promise<void>
 }
 
-/** Cancelling now, not at period end: a deleted account is not billed again. */
-export interface SubscriptionCanceller {
-  cancelNow(subscriptionId: string): Promise<void>
-}
-
 /**
  * Handing an access grant back to the vendor that issued it.
  *

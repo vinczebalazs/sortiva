@@ -687,13 +687,6 @@ const DRIVERS: readonly ScreenDriver[] = [
     },
   },
   {
-    screen: 'Plan — the public plan page',
-    modules: ['apps/web/app/(public)/_lib/plan.ts'],
-    run: async () => {
-      await page('../../(public)/plan/page', { searchParams: Promise.resolve({}) })
-    },
-  },
-  {
     screen: 'Onboarding — setup progress',
     modules: ['packages/ui/src/onboarding/useIngestionStatus.ts'],
     run: async () => {
@@ -768,16 +761,11 @@ const DRIVERS: readonly ScreenDriver[] = [
   },
   {
     screen: 'Settings — Account',
-    modules: [
-      'packages/ui/src/settings/AccountSettings.tsx',
-      'packages/ui/src/settings/BillingCard.tsx',
-    ],
+    modules: ['packages/ui/src/settings/AccountSettings.tsx'],
     run: async () => {
       await run(
         await element('AccountSettings', {
           settings: await answerProps('GET /api/settings'),
-          account: await answerProps('GET /api/account'),
-          plan: await answerProps('GET /api/billing/plan'),
         }),
       )
     },
@@ -795,26 +783,6 @@ const DRIVERS: readonly ScreenDriver[] = [
     run: async () => {
       const rows = await answerProps('GET /api/performance/search-console')
       await run(await element('SearchConsoleScreen', { queries: rows, pages: rows }))
-    },
-  },
-  {
-    screen: 'Plan — buying a subscription',
-    modules: ['packages/ui/src/public/PlanPurchase.tsx'],
-    run: async () => {
-      await run(
-        await element('PlanPurchase', {
-          plan: await answerProps('GET /api/billing/plan'),
-          pricesAvailable: true,
-          navigate: () => {},
-        }),
-      )
-    },
-  },
-  {
-    screen: 'Plan — coming back from checkout',
-    modules: ['packages/ui/src/public/CheckoutReturn.tsx'],
-    run: async () => {
-      await run(await element('CheckoutSettlingUp', { waitMs: 1 }))
     },
   },
   {
@@ -903,11 +871,6 @@ const EMPTIED_PASS_STOPS: Readonly<Record<string, string>> = {
     'the connections list stops asking for the word for a connection state that is now blank, so ' +
     'the fallbacks in the rows under it are not reached.',
   'Settings — Connections':
-    'the same component driven directly rather than through its page, and the same stop.',
-  'Settings — Account, as the page assembles it':
-    'the billing card stops asking for the word for a subscription state that is now blank, so ' +
-    'the fallbacks below it are not reached.',
-  'Settings — Account':
     'the same component driven directly rather than through its page, and the same stop.',
   'Settings — Store profile':
     'the competitors and families sections both stop — one on a word keyed by a value that is ' +

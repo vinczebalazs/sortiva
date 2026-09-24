@@ -127,7 +127,7 @@ describe('the vendor library does nothing on its own', () => {
 
   it('defaults to the same host the server-side wrapper uses', () => {
     expect(options.api_host).toBe(DEFAULT_POSTHOG_HOST)
-    expect(browserAnalyticsInitOptions('/plan', 'https://eu.example.test').api_host).toBe(
+    expect(browserAnalyticsInitOptions('/signin', 'https://eu.example.test').api_host).toBe(
       'https://eu.example.test',
     )
   })

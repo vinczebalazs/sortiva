@@ -19,7 +19,6 @@ function record(overrides: Partial<AccountLifecycleRecord> = {}): AccountLifecyc
 
 interface World {
   store: AccountLifecycleStore
-  billing: { cancelNow: (id: string) => Promise<void> }
   revoker: AccessRevoker
   calls: string[]
   marked: { accountId: string; at: Date; domainReleaseAt: Date }[]
@@ -28,7 +27,7 @@ interface World {
 
 function world(
   row: AccountLifecycleRecord | undefined,
-  faults: { stripe?: Error; shopify?: Error; google?: Error; markReturns?: boolean } = {},
+  faults: { shopify?: Error; google?: Error; markReturns?: boolean } = {},
 ): World {
   const calls: string[] = []
   const marked: World['marked'] = []
@@ -59,12 +58,6 @@ function world(
       },
       async clearGrants() {
         calls.push('clear-grants')
-      },
-    },
-    billing: {
-      async cancelNow(id) {
-        calls.push(`cancel:${id}`)
-        if (faults.stripe) throw faults.stripe
       },
     },
     revoker: {
@@ -148,7 +141,6 @@ describe('the half a merchant waits for', () => {
       {
         event: 'account_deleted',
         attribution: { kind: 'account', accountId: 'acc-1', domain: 'example.com' },
-        properties: { had_subscription: true },
       },
     ])
     expect(JSON.stringify(events)).not.toContain('merchant@example.com')
@@ -158,34 +150,24 @@ describe('the half a merchant waits for', () => {
 const deleted = { deletedAt: new Date('2026-09-02T12:00:00.000Z') }
 
 describe('the half that talks to vendors', () => {
-  it('cancels the subscription once, hands both grants back, then destroys the tokens', async () => {
+  it('hands both grants back, then destroys the tokens', async () => {
     const w = world(record(deleted))
-    const result = await closeAccount(
-      { store: w.store, billing: w.billing, revoker: w.revoker },
-      { accountId: 'acc-1' },
-    )
-    expect(w.calls).toEqual([
-      'cancel:sub_123',
-      'revoke:shopify',
-      'revoke:google',
-      'clear-grants',
-    ])
-    expect(result).toEqual({
-      kind: 'closed',
-      subscriptionCancelled: true,
-      revoked: { shopify: true, google: true },
-    })
+    const result = await closeAccount({ store: w.store, revoker: w.revoker }, { accountId: 'acc-1' })
+    expect(w.calls).toEqual(['revoke:shopify', 'revoke:google', 'clear-grants'])
+    expect(result).toEqual({ kind: 'closed', revoked: { shopify: true, google: true } })
   })
 
-  it('fails the job rather than proceeding when the subscription will not cancel', async () => {
-    // Retried, and dead-lettered if it keeps failing. A deleted account whose
-    // card is still being charged has to be somebody's alert, not a silent log
-    // line.
-    const w = world(record(deleted), { stripe: new Error('stripe is down') })
-    await expect(
-      closeAccount({ store: w.store, billing: w.billing, revoker: w.revoker }, { accountId: 'acc-1' }),
-    ).rejects.toThrow('stripe is down')
-    expect(w.calls).toEqual(['cancel:sub_123'])
+  /**
+   * There is no payment to stop. The job used to cancel a subscription first and
+   * fail outright if that call was refused, because a deleted account still
+   * being charged was the worst outcome available to it. With no purchase layer
+   * that outcome cannot happen, and the job's first act is now handing back the
+   * store's own grant.
+   */
+  it('closes nothing at a payment vendor, because there is none', async () => {
+    const w = world(record(deleted))
+    await closeAccount({ store: w.store, revoker: w.revoker }, { accountId: 'acc-1' })
+    expect(w.calls.some((call) => call.startsWith('cancel'))).toBe(false)
   })
 
   it('finishes when a vendor refuses to take its grant back, and says which', async () => {
@@ -194,7 +176,6 @@ describe('the half that talks to vendors', () => {
     const result = await closeAccount(
       {
         store: w.store,
-        billing: w.billing,
         revoker: w.revoker,
         log: {
           debug() {},
@@ -216,27 +197,16 @@ describe('the half that talks to vendors', () => {
   })
 
   it('calls no vendor for an account that never connected anything', async () => {
-    const w = world(
-      record({ ...deleted, stripeSubscriptionId: null, shopifyToken: null, googleRefreshToken: null }),
-    )
-    const result = await closeAccount(
-      { store: w.store, billing: w.billing, revoker: w.revoker },
-      { accountId: 'acc-1' },
-    )
+    const w = world(record({ ...deleted, shopifyToken: null, googleRefreshToken: null }))
+    const result = await closeAccount({ store: w.store, revoker: w.revoker }, { accountId: 'acc-1' })
     expect(w.calls).toEqual(['clear-grants'])
-    expect(result).toMatchObject({
-      subscriptionCancelled: false,
-      revoked: { shopify: null, google: null },
-    })
+    expect(result).toMatchObject({ revoked: { shopify: null, google: null } })
   })
 
   it('refuses to touch the grants of an account whose deletion was never requested', async () => {
     const w = world(record())
     expect(
-      await closeAccount(
-        { store: w.store, billing: w.billing, revoker: w.revoker },
-        { accountId: 'acc-1' },
-      ),
+      await closeAccount({ store: w.store, revoker: w.revoker }, { accountId: 'acc-1' }),
     ).toEqual({ kind: 'skipped', why: 'not_deleted' })
     expect(w.calls).toEqual([])
   })
@@ -244,10 +214,7 @@ describe('the half that talks to vendors', () => {
   it('does nothing for an account already erased by the sweep', async () => {
     const w = world(undefined)
     expect(
-      await closeAccount(
-        { store: w.store, billing: w.billing, revoker: w.revoker },
-        { accountId: 'gone' },
-      ),
+      await closeAccount({ store: w.store, revoker: w.revoker }, { accountId: 'gone' }),
     ).toEqual({ kind: 'skipped', why: 'not_found' })
   })
 })

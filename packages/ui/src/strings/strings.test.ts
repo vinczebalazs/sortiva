@@ -5,7 +5,6 @@ import {
   CANCELLATION_FACTS,
   PLAN_CANCEL_ANYTIME,
   PLAN_CAP_LINE,
-  CHECKOUT_CANCELED_NOTE,
   findNumericDenominator,
 } from '@sortiva/core'
 import en from '../../strings/en.json'
@@ -124,7 +123,6 @@ describe('the copy an earlier card had to park in packages/core', () => {
   it('agrees with the parked billing copy', () => {
     expect(t('appendixA.pricingCap')).toBe(PLAN_CAP_LINE)
     expect(t('billing.cancelAnytime')).toBe(PLAN_CANCEL_ANYTIME)
-    expect(t('billing.checkoutCanceled')).toBe(CHECKOUT_CANCELED_NOTE)
     expect([
       t('appendixA.cancellationFact.articlesStay'),
       t('appendixA.cancellationFact.generationStops'),

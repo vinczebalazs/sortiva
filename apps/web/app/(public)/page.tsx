@@ -10,7 +10,6 @@ import {
   PreviewForm,
   t,
 } from '@sortiva/ui'
-import { loadPlan } from './_lib/plan'
 
 /**
  * The landing page: one address field, and the card it produces.
@@ -28,8 +27,6 @@ import { loadPlan } from './_lib/plan'
 const SIGN_IN = '/signin'
 
 export default async function LandingPage() {
-  const plan = await loadPlan()
-
   const getStarted = (
     <a className="sortiva-landing__primary" href={SIGN_IN}>
       {t('landing.nav.getStarted')}
@@ -58,7 +55,7 @@ export default async function LandingPage() {
 
         <LandingHowItWorks />
         <LandingQualityBar />
-        <LandingPricing plan={plan} action={getStarted} />
+        <LandingPricing action={getStarted} />
         <LandingFaq />
         <LandingClosing action={getStarted} />
         <LandingFooter />

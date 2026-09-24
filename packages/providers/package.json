@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "shopify, gsc, seo, email, stripe, posthog \u2014 each behind an interface with a test double.",
+  "description": "shopify, gsc, seo, email, posthog \u2014 each behind an interface with a test double.",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
@@ -21,8 +21,7 @@
     "@sortiva/ui": "workspace:*",
     "posthog-node": "^5.51.4",
     "react": "^19.0.0",
-    "resend": "^6.25.0",
-    "stripe": "^22.6.0"
+    "resend": "^6.25.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.2",

@@ -9,7 +9,10 @@
 const DEFAULT_SDKS = [
   { module: '@anthropic-ai/sdk', allow: ['packages/llm/'], wrapper: '@sortiva/llm' },
   { module: 'resend', allow: ['packages/providers/src/email/'], wrapper: 'EmailProvider (@sortiva/providers)' },
-  { module: 'stripe', allow: ['packages/providers/src/stripe/'], wrapper: 'StripeProvider (@sortiva/providers)' },
+  // No allowed directory at all: the purchase layer is gone and nothing in this
+  // product may talk to a payment processor. When billing returns it is
+  // Shopify's, through the Shopify wrapper below, and this line stays as it is.
+  { module: 'stripe', allow: [], wrapper: 'nothing — there is no payment processor in this product' },
   { module: 'posthog-node', allow: ['packages/providers/src/posthog/'], wrapper: 'PosthogCapture (@sortiva/providers)' },
   // The browser half of the same rule. A screen reaching the vendor's browser
   // library directly could capture anything at all, which is what the

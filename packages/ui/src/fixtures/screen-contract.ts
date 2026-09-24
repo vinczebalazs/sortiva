@@ -246,12 +246,6 @@ export const SCREEN_FIXTURE_DEPENDENCIES: readonly ScreenFixtureDependency[] = [
     note: 'Every field here is a plain `PATCH /api/settings` with no conflict of its own — unlike `delivery`, none of these has a precondition that can refuse it.',
   },
   {
-    screen: 'Settings — Account, the billing card',
-    route: 'GET /api/billing/plan',
-    fields: ['capLine', 'cancellationFacts', 'inclusions'],
-    note: 'The three cancellation facts render on the card itself, word for word, per main §14.6 — never paraphrased. Status and the next billing date come from `GET /api/account`\'s `subscription`, not from this route, because this route is public and carries no account-specific date.',
-  },
-  {
     screen: 'Settings — Account, deleting the account',
     route: 'POST /api/account/delete',
     fields: ['ok'],

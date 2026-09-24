@@ -52,7 +52,6 @@ export const VIEW_CONTENT: Readonly<Record<string, ViewContent>> = {
   // is found for — the closest thing the product holds to commercial data.
   '/performance': 'store_data',
   '/performance/search-console': 'store_data',
-  '/plan': 'no_store_data',
   '/signin': 'no_store_data',
   '/ui-gallery/banner-stack': 'no_store_data',
   // Redirects straight to `/settings/publishing`; renders nothing of its own.

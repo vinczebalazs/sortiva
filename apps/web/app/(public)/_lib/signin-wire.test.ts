@@ -260,7 +260,7 @@ describe('pressing “Continue with Google” on the sign-in screen', () => {
         'content-type': 'application/x-www-form-urlencoded',
         'X-Auth-Return-Redirect': '1',
       },
-      body: new URLSearchParams({ callbackUrl: '/plan' }).toString(),
+      body: new URLSearchParams({ callbackUrl: '/dashboard' }).toString(),
     })
 
     expect(refused.status, 'a refused sign-in is not an error status').toBe(200)

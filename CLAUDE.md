@@ -36,7 +36,7 @@ Specs are law and live in `/docs`: `sortiva-spec.md` (**main**), `sortiva-ui-spe
 15. Veto is available any time up to dequeue. All state transitions are guarded updates (`UPDATE … WHERE state = expected`); a zero-row guard means stop; the API returns 409 with a machine-readable code. (main §8.7, §14.3.1, tech §3)
 
 **Money**
-16. Entitlement = local `subscriptions.status` written only by the Stripe webhook worker, nightly-reconciled. No Stripe API call in any request path or at scheduler dequeue. Billing state gates generation/publishing only — **read access is never revoked**. We render no card form, ever. Snapshot test asserts the literal string "up to 1 article per day, quality permitting". (main §4.2, tech §3)
+16. Entitlement = local `subscriptions.status`, and nothing else. `active` and `comped` entitle; the absence of a row does not. There is **no payment processor**: the purchase layer was removed on 2026-09-24 and importing `stripe` anywhere is a lint error. The only writer of that status today is the `pnpm comp` admin script; when billing returns it is Shopify's, and whatever writes the status then may not be a request path. Billing state gates generation/publishing only — **read access is never revoked**. We render no card form, ever. Snapshot test asserts the literal string "up to 1 article per day, quality permitting". (main §4.2, tech §3; `DECISIONS.md` 2026-09-24 cards 1 and 2)
 17. Spend caps are enforced from `ops_flags` / DB counters in our code, checked at dequeue; PostHog is telemetry and alerting only, never the control plane. (main §14.5, §14.7)
 
 **Effectively-once**

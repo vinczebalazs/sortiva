@@ -170,7 +170,7 @@ async function askForLink(h: Harness, email: string): Promise<{ jar: Jar; respon
   jar.absorb(csrfResponse)
   const { csrfToken } = (await csrfResponse.json()) as { csrfToken: string }
 
-  const body = new URLSearchParams({ email, csrfToken, callbackUrl: '/plan' })
+  const body = new URLSearchParams({ email, csrfToken, callbackUrl: '/dashboard' })
   const response = await h.handlers.POST(h.request('/api/auth/signin/email', jar, body))
   jar.absorb(response)
   return { jar, response }
@@ -201,7 +201,7 @@ describe('signing in with a link (main §4.1)', () => {
     const opened = await h.handlers.GET(h.request(linkFrom(h.mailbox.sent[0]!), jar))
     jar.absorb(opened)
     expect(opened.status).toBe(302)
-    expect(opened.headers.get('location')).toBe(`${ORIGIN}/plan`)
+    expect(opened.headers.get('location')).toBe(`${ORIGIN}/dashboard`)
 
     const session = await h.handlers.GET(h.request('/api/auth/session', jar))
     const body = (await session.json()) as { user?: { id?: string } }
@@ -217,7 +217,7 @@ describe('signing in with a link (main §4.1)', () => {
     const link = linkFrom(h.mailbox.sent[0]!)
 
     const first = await h.handlers.GET(h.request(link, jar))
-    expect(first.headers.get('location')).toBe(`${ORIGIN}/plan`)
+    expect(first.headers.get('location')).toBe(`${ORIGIN}/dashboard`)
 
     // A second opening — a forwarded email, or a mail scanner following the URL.
     const second = await h.handlers.GET(h.request(link, new Jar()))
@@ -252,7 +252,7 @@ describe('signing in with a link (main §4.1)', () => {
     await askForLink(h, 'founder@example.com')
 
     const forged = `${ORIGIN}/api/auth/callback/email?${new URLSearchParams({
-      callbackUrl: '/plan',
+      callbackUrl: '/dashboard',
       token: 'not-a-real-token',
       email: 'founder@example.com',
     })}`
@@ -336,7 +336,7 @@ describe('pressing “Email me a sign-in link” on the sign-in screen', () => {
 
     const opened = await h.handlers.GET(h.request(linkFrom(h.mailbox.sent[0]!), jar))
     jar.absorb(opened)
-    expect(opened.headers.get('location')).toBe(`${ORIGIN}/plan`)
+    expect(opened.headers.get('location')).toBe(`${ORIGIN}/dashboard`)
 
     const session = await h.handlers.GET(h.request('/api/auth/session', jar))
     expect(((await session.json()) as { user?: { id?: string } }).user?.id).toBe('acct_1')
@@ -415,7 +415,7 @@ describe('pressing “Email me a sign-in link” on the sign-in screen', () => {
         'content-type': 'application/x-www-form-urlencoded',
         'X-Auth-Return-Redirect': '1',
       },
-      body: new URLSearchParams({ csrfToken, callbackUrl: '/plan', email: 'not-an-address' }),
+      body: new URLSearchParams({ csrfToken, callbackUrl: '/dashboard', email: 'not-an-address' }),
     })
 
     expect(refused.status, 'a refused send is not an error status').toBe(200)

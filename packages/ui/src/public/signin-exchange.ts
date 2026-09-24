@@ -29,8 +29,15 @@ export const SIGN_IN_GOOGLE_ENDPOINT = '/api/auth/signin/google'
 /** Where a sign-in link is asked for. The sign-in library's own address. */
 export const SIGN_IN_EMAIL_ENDPOINT = '/api/auth/signin/email'
 
-/** Where a merchant lands once the provider has sent them back. */
-export const AFTER_SIGN_IN = '/plan'
+/**
+ * Where a merchant lands once the provider has sent them back.
+ *
+ * The dashboard, because there is nowhere else to send them: signing in used to
+ * land on a plan screen with a Subscribe button, and there is no purchase to
+ * make. The dashboard reads the account and shows whatever state it is actually
+ * in — connect your store, still ingesting, or the real thing.
+ */
+export const AFTER_SIGN_IN = '/dashboard'
 
 /**
  * Asks the library to answer in JSON rather than with a redirect. Without it a

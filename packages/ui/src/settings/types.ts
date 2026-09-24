@@ -67,10 +67,3 @@ export interface SettingsAccountView {
     readonly lastScanAt: string | null
   }
 }
-
-/** The billing card's plan facts — never a price, which comes from Stripe only. */
-export interface SettingsPlanView {
-  readonly capLine: string
-  readonly inclusions: readonly string[]
-  readonly cancellationFacts: readonly string[]
-}

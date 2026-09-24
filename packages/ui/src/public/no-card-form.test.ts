@@ -1,27 +1,21 @@
 import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
-import { createElement } from 'react'
-import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import { RESPONSE_FIXTURES } from '../msw/fixtures'
-import { PlanCard } from './PlanCard'
-import { PlanUnavailable } from './PlanCard'
-import type { PlanResponse } from './plan'
 
 /**
  * We render no card form, ever.
  *
- * Purchase goes to Stripe Checkout and card changes go to Stripe's Customer
- * Portal, both of them pages on Stripe's own domain. The point is not tidiness:
- * a card number that never touches our markup never touches our servers or our
- * logs, which is what keeps the product out of the strictest tier of payment
- * compliance and deletes a whole class of breach with it.
+ * There is no purchase layer at all now, and when billing returns it will be
+ * Shopify's own screens. The point is not tidiness: a card number that never
+ * touches our markup never touches our servers or our logs, which is what keeps
+ * the product out of the strictest tier of payment compliance and deletes a
+ * whole class of breach with it. The rule outlives any particular payment
+ * vendor, which is why this file checks the whole repository rather than the
+ * screens that happen to be about money.
  *
- * That is a promise about the entire repository rather than about one
- * component, so this reads every tracked file rather than the three screens
- * that happen to be about money. It is worth the seconds it costs: a card field
- * would most likely arrive by someone reaching for a payment widget in a hurry,
- * and a test that only watched the plan screen would not see it.
+ * It is worth the seconds it costs: a card field would most likely arrive by
+ * someone reaching for a payment widget in a hurry, and a test watching one
+ * screen would not see it.
  */
 
 /** Things that only appear when a page is collecting card details. */
@@ -68,27 +62,5 @@ describe('no card form anywhere in the product', () => {
     }
 
     expect(offenders).toEqual([])
-  })
-
-  it('sells the plan with one button that leaves for Stripe, and no field of any kind', () => {
-    const plan = RESPONSE_FIXTURES['GET /api/billing/plan'] as PlanResponse
-    const html = renderToStaticMarkup(
-      createElement(PlanCard, {
-        plan,
-        interval: 'monthly',
-        showCardSafety: true,
-        action: createElement('button', { type: 'button' }, 'Subscribe'),
-      }),
-    )
-
-    expect(html).not.toContain('<input')
-    expect(html).not.toContain('<form')
-    expect(html).toContain('Payment is handled entirely by Stripe Checkout')
-  })
-
-  it('asks for nothing when the price cannot be read either', () => {
-    const html = renderToStaticMarkup(createElement(PlanUnavailable, {}))
-    expect(html).not.toContain('<input')
-    expect(html).not.toContain('<form')
   })
 })

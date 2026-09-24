@@ -2,8 +2,7 @@
 // the note in `../shell/notifications.ts` for why the barrel cannot be
 // imported from a client component.
 import { timezoneForCountry } from '@sortiva/core/persona/timezones'
-import type { StringKey } from '../strings'
-import type { AccountSettingsData, SubscriptionStatus } from './types'
+import type { AccountSettingsData } from './types'
 
 /**
  * The Settings screens' own arithmetic, kept out of the components so it can
@@ -131,22 +130,6 @@ export function phaseAfterDeliveryConflict(code: string | null): WriteGrantPhase
   if (code === 'write_scope_required') return { kind: 'grant_needed' }
   if (code === 'target_blog_unresolved') return { kind: 'blog_picker' }
   return { kind: 'failed', reason: 'save' }
-}
-
-// ── Billing card ──────────────────────────────────────────────────────────────
-
-const BILLING_STATUS_KEYS: Readonly<Record<SubscriptionStatus, StringKey>> = {
-  active: 'settings.account.billing.status.active',
-  comped: 'settings.account.billing.status.comped',
-  past_due: 'settings.account.billing.status.past_due',
-  canceled: 'settings.account.billing.status.canceled',
-  incomplete: 'settings.account.billing.status.incomplete',
-  incomplete_expired: 'settings.account.billing.status.incomplete_expired',
-  none: 'settings.account.billing.status.none',
-}
-
-export function billingStatusKey(status: SubscriptionStatus): StringKey {
-  return BILLING_STATUS_KEYS[status]
 }
 
 // ── Delivery-dependent visibility ────────────────────────────────────────────

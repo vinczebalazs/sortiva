@@ -167,11 +167,6 @@ export const CRON_ENTRIES: readonly CronEntry[] = [
     why: 'Sends the 7-day reminder that an exported article has not been published yet.',
   },
   {
-    task: 'subscription_reconciliation_nightly',
-    schedule: '0 2 * * *',
-    why: 'Re-fetches any subscription we have not heard about in over a day, so a missed webhook cannot leave someone wrongly entitled or wrongly cut off. This is the only place we call Stripe on a schedule; no request path ever does.',
-  },
-  {
     task: 'retention_sweep_daily',
     schedule: '0 1 * * *',
     why:

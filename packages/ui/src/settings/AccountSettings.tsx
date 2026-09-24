@@ -2,19 +2,20 @@
 
 import { useState } from 'react'
 import { SUPPORTED_LANGUAGES, t as defaultTranslate, type Translate } from '../strings'
-import { BillingCard } from './BillingCard'
 import { DeleteAccountModal } from './DeleteAccountModal'
-import type { AccountSettingsData, EmailDigestFrequency, SettingsAccountView, SettingsPlanView } from './types'
+import type { AccountSettingsData, EmailDigestFrequency } from './types'
 
 /**
- * ui §9.4 — vacation mode, billing, email preferences, interface language, and
- * the one irreversible control in the product.
+ * ui §9.4 — vacation mode, email preferences, interface language, and the one
+ * irreversible control in the product.
+ *
+ * No billing card: there is nothing for a merchant to do about payment while
+ * the purchase layer is gone, and a card offering a portal that does not exist
+ * would be a broken promise on the one screen where trust matters most.
  */
 
 export interface AccountSettingsProps {
   readonly settings: AccountSettingsData
-  readonly account: SettingsAccountView
-  readonly plan: SettingsPlanView
   readonly t?: Translate
   readonly patchEndpoint?: string
   readonly onDeleted?: () => void
@@ -39,8 +40,6 @@ async function patchSettings(
 
 export function AccountSettings({
   settings: initial,
-  account,
-  plan,
   t = defaultTranslate,
   patchEndpoint = '/api/settings',
   // The deletion route revokes the session's own tokens but does not clear the
@@ -76,8 +75,6 @@ export function AccountSettings({
           onChange={(event) => void save({ vacationMode: event.target.checked })}
         />
       </div>
-
-      <BillingCard subscription={account.subscription} plan={plan} t={t} />
 
       <div className="sortiva-settings__row" data-setting="email_preferences">
         <h2>{t('settings.account.email.heading')}</h2>

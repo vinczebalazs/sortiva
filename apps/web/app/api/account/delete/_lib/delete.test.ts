@@ -2,7 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { ACCOUNT_DELETION_FACTS, closeAccount, domainReleaseAt } from '@sortiva/core'
 import { makeAccountLifecycleStore } from '@sortiva/db'
 import { databaseAvailable, setupTestDb, truncateAll, type TestDb } from '@sortiva/db/testing'
-import { MockShopifyOAuthClient, MockStripeProvider } from '@sortiva/providers'
+import { MockShopifyOAuthClient } from '@sortiva/providers'
 import { buildAuthAdapter } from '../../../auth/_lib/adapter'
 import { withAccount } from '../../../auth/_lib/session'
 import {
@@ -58,7 +58,7 @@ describe.skipIf(!available)('POST /api/account/delete', () => {
       [accountId],
     )
     await harness.pool.query(
-      "INSERT INTO subscriptions (account_id, stripe_subscription_id, price_id, status) VALUES ($1, 'sub_leaving', 'price_1', 'active')",
+      "INSERT INTO subscriptions (account_id, status) VALUES ($1, 'comped')",
       [accountId],
     )
     await harness.pool.query(
@@ -141,10 +141,9 @@ describe.skipIf(!available)('POST /api/account/delete', () => {
     expect(queued).toHaveLength(1)
   })
 
-  it('cancels the subscription once and hands both grants back, when the job runs', async () => {
+  it('hands both grants back, when the job runs', async () => {
     await route(accountId)(post({ confirmation: 'DELETE' }), undefined)
 
-    const stripe = new MockStripeProvider()
     const shopify = new MockShopifyOAuthClient()
     const googleRevoked: string[] = []
     const store = makeAccountLifecycleStore({ database: harness.db })
@@ -152,7 +151,6 @@ describe.skipIf(!available)('POST /api/account/delete', () => {
     const result = await closeAccount(
       {
         store,
-        billing: { cancelNow: (id) => stripe.cancelSubscription(id) },
         revoker: {
           revokeShopify: ({ shopHandle, accessToken }) =>
             shopify.revokeAccess({ shop: shopHandle, accessToken }),
@@ -164,8 +162,7 @@ describe.skipIf(!available)('POST /api/account/delete', () => {
       { accountId },
     )
 
-    expect(result).toMatchObject({ kind: 'closed', subscriptionCancelled: true })
-    expect(stripe.cancelled).toEqual(['sub_leaving'])
+    expect(result).toMatchObject({ kind: 'closed' })
     expect(shopify.revocations).toEqual([{ shop: 'leaving', accessToken: 'shpat_cipher' }])
     expect(googleRevoked, 'no Search Console connection to hand back').toEqual([])
 

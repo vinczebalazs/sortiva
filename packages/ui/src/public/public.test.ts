@@ -2,15 +2,10 @@ import { readFileSync } from 'node:fs'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import { RESPONSE_FIXTURES } from '../msw/fixtures'
 import { t } from '../strings'
-import { CheckoutCanceled, checkoutOutcomeOf } from './CheckoutReturn'
 import { LandingPricing } from './Landing'
-import { PlanCard, PlanUnavailable } from './PlanCard'
 import { PreviewCard, signupHrefFor } from './PreviewCard'
 import { SignIn, SignInLinkSent } from './SignIn'
-import { formatAmount } from './money'
-import { offeredIntervals, priceFor, type PlanResponse } from './plan'
 import { RATE_LIMITED_STATUS, isSubmittable, previewStateFrom, type PreviewState } from './preview-state'
 
 /**
@@ -23,8 +18,6 @@ import { RATE_LIMITED_STATUS, isSubmittable, previewStateFrom, type PreviewState
  */
 
 const render = (element: Parameters<typeof renderToStaticMarkup>[0]) => renderToStaticMarkup(element)
-
-const PLAN = RESPONSE_FIXTURES['GET /api/billing/plan'] as PlanResponse
 
 // ── The teaser, verbatim ─────────────────────────────────────────────────────
 
@@ -59,26 +52,26 @@ describe('the plan cap line', () => {
     )
   })
 
-  it('renders on the plan card, taken from the API rather than restated', () => {
-    const html = render(
-      createElement(PlanCard, { plan: PLAN, interval: 'monthly', action: null }),
-    )
+  it('renders on the pricing block, from the catalogue rather than restated', () => {
+    const html = render(createElement(LandingPricing, { action: null }))
     expect(html).toContain('Up to 1 article per day, quality permitting')
-    expect(PLAN.capLine).toBe(t('appendixA.pricingCap'))
   })
 
-  it('survives Stripe being unreadable — the promise is true whatever the price', () => {
-    const html = render(createElement(PlanUnavailable, {}))
-    expect(html).toContain('Up to 1 article per day, quality permitting')
-    expect(text(html)).toContain(t('plan.priceUnavailable'))
-  })
-
-  it('promises no number of articles anywhere on the plan card', () => {
-    const html = render(
-      createElement(PlanCard, { plan: PLAN, interval: 'monthly', action: null }),
-    )
+  it('promises no number of articles anywhere on the pricing block', () => {
+    const html = render(createElement(LandingPricing, { action: null }))
     // Invariant 23: the cap is a ceiling, never "x of y" or "x/30".
     expect(text(html)).not.toMatch(/\b\d+\s*(?:of|\/)\s*\d+\b/)
+  })
+
+  /**
+   * The promise is about what the product does, not about what it costs, so it
+   * has to outlive the purchase layer that used to carry it. When the plan
+   * screen went, this sentence could have gone with it and nothing would have
+   * failed.
+   */
+  it('is on a screen a visitor can actually reach, not only in a constant', () => {
+    const html = render(createElement(LandingPricing, { action: null }))
+    expect(html).toContain(t('appendixA.pricingCap'))
   })
 })
 
@@ -282,52 +275,18 @@ describe('after the link has been sent', () => {
   })
 })
 
-// ── Coming back from Stripe ──────────────────────────────────────────────────
+// ── No amount anywhere ───────────────────────────────────────────────────────
 
-describe('the return from Checkout', () => {
-  it('recognises only the two outcomes Stripe sends back', () => {
-    expect(checkoutOutcomeOf('success')).toBe('success')
-    expect(checkoutOutcomeOf('canceled')).toBe('canceled')
-    expect(checkoutOutcomeOf('anything else')).toBeNull()
-    expect(checkoutOutcomeOf(null)).toBeNull()
-  })
-
-  it('says plainly that backing out cost nothing', () => {
-    const html = render(createElement(CheckoutCanceled, {}))
-    expect(html).toContain('No charge was made.')
-    expect(text(html).toLowerCase()).not.toContain('fail')
-  })
-})
-
-// ── The amount, which is Stripe's and nobody else's ──────────────────────────
-
-describe('the price on the card', () => {
-  it('formats what Stripe reports', () => {
-    expect(formatAmount({ unitAmountMinor: 8900, currency: 'usd' }, 'en-US')).toBe('$89')
-    expect(formatAmount({ unitAmountMinor: 8950, currency: 'usd' }, 'en-US')).toBe('$89.50')
-  })
-
-  it('knows the currencies with no minor unit', () => {
-    expect(formatAmount({ unitAmountMinor: 12000, currency: 'jpy' }, 'en-US')).toBe('¥12,000')
-  })
-
-  it('has nothing to show when Stripe reported no amount', () => {
-    expect(formatAmount({ unitAmountMinor: null, currency: 'usd' })).toBeNull()
-  })
-
-  it('offers only the billing periods Stripe actually has a price for', () => {
-    expect(offeredIntervals(PLAN)).toEqual(['monthly', 'annual'])
-    const monthlyOnly = { ...PLAN, prices: PLAN.prices.filter((p) => p.interval === 'monthly') }
-    expect(offeredIntervals(monthlyOnly)).toEqual(['monthly'])
-    expect(priceFor(monthlyOnly, 'annual')).toBeUndefined()
-  })
-
-  it('is nowhere in this repository — the card reads it from the response', () => {
-    const html = render(
-      createElement(LandingPricing, { plan: null, action: null }),
-    )
+/**
+ * The product quoted a live amount read from the payment processor, and never
+ * wrote one down. The processor is gone; the rule it enforced is worth keeping
+ * as a rule about this repository, because a hardcoded price is how a marketing
+ * page and a checkout quietly come to disagree.
+ */
+describe('the price', () => {
+  it('is nowhere on the pricing block', () => {
+    const html = render(createElement(LandingPricing, { action: null }))
     expect(html).not.toMatch(/[$€£]\s?\d/)
-    expect(text(html)).toContain(t('plan.priceUnavailable'))
   })
 })
 

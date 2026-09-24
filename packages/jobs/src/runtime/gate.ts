@@ -202,9 +202,7 @@ export const UNGATED_TASKS: ReadonlyMap<string, string> = new Map([
   ['spend_cap_sweep', 'the brake itself; pausing the product must not switch off the thing that would catch the next runaway'],
   ['retention_sweep_daily', 'deletion and store-redaction deadlines are legal obligations with a clock, not merchant work'],
   ['account_close', 'a merchant who asked to leave leaves; nothing about an incident changes that'],
-  ['subscription_reconciliation_nightly', 'billing state has to stay true, or the pause is followed by wrongly cutting people off'],
   ['email_send_drain', 'the mail queue is how anyone is told anything, including that we paused'],
-  ['stripe_event_drain', 'the same reason as the nightly reconciliation, on the webhook path'],
 ])
 
 export interface KillSwitchReader {

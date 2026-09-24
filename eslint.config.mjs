@@ -197,19 +197,13 @@ export default tseslint.config(
     rules: { 'sortiva/no-raw-db-access': 'off' },
   },
 
-  // A composition root, not a query. This file never reads a table: it takes the
-  // shared connection pool and hands it to the billing store, which is what makes
-  // the per-account lock engage in production — before that, the lock ran only in
-  // tests, the one place it was not needed. Naming concrete infrastructure is what
-  // a composition root is for; the rule cannot tell "supplies a pool" from "queries
-  // with one", so the distinction is recorded here instead.
-  //
-  // The durable version moves this construction into `apps/web/instrumentation.ts`,
-  // the process's actual composition root, and passes the pool down. That is a
-  // refactor, not a fix, and it belongs with the D5 card.
+  // Composition roots, not queries. None of these files reads a table: each
+  // takes concrete infrastructure — a pool, a database factory, a cipher — and
+  // hands it to something that does. Naming concrete infrastructure is what a
+  // composition root is for; the rule cannot tell "supplies a pool" from
+  // "queries with one", so the distinction is recorded here instead.
   {
     files: [
-      'apps/web/app/api/webhooks/stripe/_lib/receiver.ts',
       // The process's actual composition root, which the note above names as
       // where this construction eventually belongs. It reads no table: it hands
       // the database factory to the spend-cap sweep's task registration, the

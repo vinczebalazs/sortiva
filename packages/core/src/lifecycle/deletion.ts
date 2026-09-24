@@ -1,6 +1,6 @@
 import { accountAttribution, type PosthogCapture } from '../contracts/analytics'
 import type { Logger } from '../observability/logger'
-import type { AccessRevoker, AccountLifecycleStore, SubscriptionCanceller } from './ports'
+import type { AccessRevoker, AccountLifecycleStore } from './ports'
 import { domainReleaseAt } from './retention'
 
 /**
@@ -81,7 +81,6 @@ export async function requestAccountDeletion(
   deps.capture?.capture({
     event: ACCOUNT_DELETED_EVENT,
     attribution: accountAttribution(input.accountId, record.domainNormalized ?? undefined),
-    properties: { had_subscription: record.stripeSubscriptionId !== null },
   })
 
   return {
@@ -93,7 +92,6 @@ export async function requestAccountDeletion(
 
 export interface CloseAccountDeps {
   readonly store: AccountLifecycleStore
-  readonly billing: SubscriptionCanceller
   readonly revoker: AccessRevoker
   readonly log?: Logger
 }
@@ -101,7 +99,6 @@ export interface CloseAccountDeps {
 export type CloseAccountResult =
   | {
       readonly kind: 'closed'
-      readonly subscriptionCancelled: boolean
       /**
        * Which grants we managed to hand back. Null means there was nothing to
        * hand back; false means the vendor refused and we destroyed the token
@@ -115,11 +112,14 @@ export type CloseAccountResult =
 /**
  * The vendor half, run as a job and safe to run again.
  *
- * Safe to repeat because each step is: cancelling an already-cancelled
- * subscription is a no-op at Stripe, revoking an already-revoked grant is a
+ * Safe to repeat because each step is: revoking an already-revoked grant is a
  * no-op at the vendor, and the token delete is a delete. A retry after a
  * half-finished attempt therefore finishes the job rather than repeating its
  * effects.
+ *
+ * Nothing here closes a subscription. There is no payment processor to tell,
+ * and when billing returns through Shopify, uninstalling the app is what ends
+ * it — Shopify's own doing, not a call we make.
  */
 export async function closeAccount(
   deps: CloseAccountDeps,
@@ -130,15 +130,6 @@ export async function closeAccount(
   // The guard that stops this job erasing a live account's grants if it is ever
   // enqueued by mistake.
   if (!record.deletedAt) return { kind: 'skipped', why: 'not_deleted' }
-
-  let subscriptionCancelled = false
-  if (record.stripeSubscriptionId) {
-    // Deliberately unguarded. A deleted account whose card is still being
-    // charged is the worst outcome available here, so a refusal fails the job
-    // and it is retried; the tokens below are handed back on the next attempt.
-    await deps.billing.cancelNow(record.stripeSubscriptionId)
-    subscriptionCancelled = true
-  }
 
   const revoked = {
     shopify: record.shopifyToken
@@ -152,7 +143,7 @@ export async function closeAccount(
   }
 
   await deps.store.clearGrants(input.accountId)
-  return { kind: 'closed', subscriptionCancelled, revoked }
+  return { kind: 'closed', revoked }
 }
 
 async function bestEffort(
