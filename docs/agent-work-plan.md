@@ -68,7 +68,7 @@ Three different answers, by shape:
 
 **Repository ownership (added 2026-09-07, after a card was misplaced because the table did not say).** `packages/db/src/repositories/*` is not divided by lane above, every lane needs functions there, and until now it was resolved by custom. **A repository file belongs to the lane that owns the domain it serves** — `repositories/inventory.ts` is Lane C's by the same reading that makes `core/inventory` Lane C's, `repositories/publishing.ts` is Lane D's, and so on. This is the same drift that let `apps/web/app/api/settings` go unowned until ten endpoints diverged; the table now answers the question instead of leaving it to whoever is confident.
 
-**Schema ownership:** nobody. Migrations land only in schema-wave cards (T0.3, T2.0, T4.0, T8.0), each authored by the lane that needs the wave most and reviewed by the integrator. A feature card needing an extra column writes a `DECISIONS.md` entry and either waits for the next wave or asks the integrator to hot-add a mini-wave — it never adds a migration itself.
+**Schema ownership: whoever needs the column.** Migrations are forward-only, live in `packages/db/migrations`, and a card that needs a column or an enum value adds one itself alongside the code that uses it, with a `DECISIONS.md` entry. The schema-wave rule this paragraph used to state — migrations only in T0.3, T2.0, T4.0, T8.0, everything else queued behind the integrator — was withdrawn by the founder on 2026-09-24. It existed so that four agents working in parallel could not edit the database at once; the work is now one session at a time, so the rule only delayed cards. The historical cards further down this file still say schema waves are closed, because that is what they were told at the time.
 
 ---
 
@@ -1869,7 +1869,7 @@ Audit output is always a written report with `[severity] §ref — finding / spe
 1. Read the card's cited sections before writing code. Do not cite them in the commit message or in code comments — the commit title says what changed, in words.
 2. Undictated choices go to `DECISIONS.md` immediately. Large ones (user-visible behaviour, an interface another lane consumes) stop the session and ask.
 3. New thresholds go to `packages/rules`, never inline. New copy goes to `packages/ui/strings`, never inline.
-4. Stay inside your lane's directories; migrations only in schema-wave cards; contracts change only through the integrator.
+4. Stay inside your lane's directories; add the migration your card needs; contracts change only through the integrator.
 5. Never mark a card done with failing checks; park it explicitly with what remains.
 6. Flagged cards get a fresh-session audit before anything builds on them.
 7. Specs are edited only by the spec keepers; if the spec is wrong, say so in the session report and in `DECISIONS.md` — never implement around it.

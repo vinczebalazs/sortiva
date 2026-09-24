@@ -8,7 +8,7 @@ Specs are law and live in `/docs`: `sortiva-spec.md` (**main**), `sortiva-ui-spe
 2. **One task card per session.** Finish or explicitly park it before touching another.
 3. **Every choice the specs don't dictate → `DECISIONS.md`, immediately**, with date, card ID, rationale, nearest spec §. If it changes user-visible behaviour or an interface another lane consumes: stop and ask.
 4. **If your code touches behaviour outside your card's citations, find the owning section in the pointer map and read it first.**
-5. **You own only your lane's directories** (build plan §3). Touching another lane's directory, or a migration outside a schema-wave card, is a review failure.
+5. **You own only your lane's directories** (build plan §3). Touching another lane's directory is a review failure.
 
 ## Invariants (silent violation corrupts the product)
 
@@ -94,7 +94,7 @@ Specs are law and live in `/docs`: `sortiva-spec.md` (**main**), `sortiva-ui-spe
 
 - Monorepo: `apps/web` (Next.js App Router: UI + `/api/*` routes + worker bootstrap) · `packages/core` (domain logic; **cannot import Next, React, or any provider SDK** — a test proves it) · `packages/db` (schema, migrations, repositories) · `packages/rules` (`signals.config.yaml`, typed loader, `rules_version`) · `packages/llm` (instrumented client, prompts as `prompts/<name>.v<N>.md`, schemas, eval sets) · `packages/providers` (`shopify`, `gsc`, `seo` (DataForSEO), `email` (Resend), `stripe`, `posthog` — each behind an interface with a test double) · `packages/jobs` (Graphile tasks: one file per step/job) · `packages/ui` (shared components incl. why-line renderer, opportunity card) · `docs/`.
 - Route handlers contain no domain logic: parse → call `core` → serialise. Every repository method requires an `accountId` scope parameter; there is no unscoped table access outside migrations and admin scripts.
-- Migrations are forward-only, live in `packages/db/migrations`, and are added **only by schema-wave cards** (build plan). Feature cards that need a column file a DECISIONS entry and wait for the next wave, or negotiate with the integrator.
+- Migrations are forward-only and live in `packages/db/migrations`. A card that needs a column or an enum value adds the migration itself, in the same change as the code that uses it, and records it in `DECISIONS.md` (founder decision, 2026-09-24: the schema-wave rule is withdrawn — it was there to keep parallel agents off one database at once, and the work is no longer parallel).
 - Thresholds: `packages/rules` only, each with a plain-language note saying what the number decides and what changing it would do — never a bare spec § reference. Copy: `packages/ui/strings/*.json` only (externalised from day one), canonical strings keyed by their Appendix A row.
 - Every job step: derived idempotency key, guarded transition, checkpoint if > 60 s, typed failure class. Every external write: through `publish_intents`.
 - **No spec citations in code.** The build is the source of truth. A comment earns its place by saying what the code can't show — intent, a constraint from outside the file, a tradeoff, a warning about a non-obvious consequence — in plain language. `§14.3.6` is not an explanation; "so a crash after the vendor answered doesn't make us pay twice" is. Where the build departs from a spec, that goes in `DECISIONS.md` and into the session report, never into a comment.

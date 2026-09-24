@@ -93,7 +93,7 @@ Entitlement means exactly one thing today: a local subscription row with status 
 
 Add a **comped** state that entitles. It is a real product concept, not a fixture: it survives into Shopify billing, where it is what partners and the founder's own stores will use.
 
-Needs a column or enum value, so it needs a schema wave. Migrations land only in schema-wave cards, so file the `DECISIONS.md` entry and ask the integrator for a mini-wave rather than adding a migration yourself.
+Needs a column or enum value. **Add the migration in this card** — the founder withdrew the schema-wave rule on 2026-09-24, so a card that needs a column adds one itself and records it in `DECISIONS.md`.
 
 Give the founder a way to set it on one store. An admin script is the right shape; there is precedent in `scripts/`.
 
@@ -315,7 +315,7 @@ lint · lint:prove · typecheck · test · contracts:check · build · smoke:boo
 
 Plus `db:migrate` against a freshly created empty database whenever migrations change, and `pnpm build` again after `smoke:dev`, which replaces the production build. If Postgres is unreachable, `pnpm db:up`; if Docker is not running, start it.
 
-**Schema.** Migrations land only in schema-wave cards. Card 1 needs one: file the `DECISIONS.md` entry and ask for a mini-wave rather than adding a migration yourself.
+**Schema.** A card that needs a column or an enum value adds the migration itself, forward-only, in `packages/db/migrations`, with a `DECISIONS.md` entry. (Founder decision, 2026-09-24, replacing the schema-wave rule this line used to carry.)
 
 **When you are blocked.** The founder is away. If a card needs a decision that is not in the table above, write the question into `DECISIONS.md` in plain terms, skip that card, and move to the next. Do not stop the session, and do not guess at a user-visible behaviour nobody chose.
 
