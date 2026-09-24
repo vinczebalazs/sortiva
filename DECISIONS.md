@@ -7242,3 +7242,25 @@ Card 5's instruction is not to iterate towards a passing number, and it is not b
 **So the question that goes back to the founder** is narrower than this morning's. It is no longer "is the judge too harsh". With the line drawn where you drew it, the judge and the expected answers agree on thirteen of twenty cases, and the residue is two things: an absence rule nobody has written down, and three articles whose expected grounding score of 5 rests on sentences that assert a product attribute the store does not record. Changing those expected answers is append-only gold work and a judgement about quality, which is yours. Nothing here touched a gold file.
 
 Nearest spec: main §8.4 (grounding held to 4; gate on the minimum), §14.2 (judge eval, append-only cases; a prompt change is a new version).
+
+## 2026-09-24 — REMEDIATION-EVAL card 6 — `draft.v3`: the writer may not say what a product *is* without a fact behind it. Its effect is not measured by anything, and cannot be
+
+Context: card 4 found one kind of grounding disagreement where the grader is right and the article is wrong — an article asserting a product attribute the store does not record. Under `judge.v3` there are three such cases (`001`, `004`, `018`): two shoes said to be "built on wider lasts" where the store's facts hold material, weight, use cases and origin and nothing about lasts; a toothbrush whose handle is "roughly two thirds of the object by weight" where the store records only total weights. Where the grader is right, the writer is the thing to fix.
+
+**The hole in the writer's instructions.** The writer works from a closed list of approved claims and must cite every sentence that makes one. `draft.v2` listed five kinds of sentence that need a citation: a figure, a superlative, an absolute, an attributed statement, a comparison. "Built on a wider last" is none of the five. It carries no number, claims no extreme, admits no exception, quotes nobody and measures nothing against anything — so the rule as written permitted it, and the grader was right to catch what the writer was never told not to write.
+
+**What `draft.v3` adds.** A sixth kind: **a product attribute** — anything saying what one of these products *is*, what it is made of or how it is built, with or without a number in it — and the note that a product's name is not a fact about it, because a shoe called Wide is named that, not shaped that.
+
+**And the other half of the line, in the grader's own words.** Explaining how a kind of thing works is not a claim about a product and needs no citation: "wider lasts suit wide feet" is knowledge about footwear and no claim will ever be offered for it. This is the same sentence `judge.v3` was given, deliberately — if the writer's line and the grader's line sat in different places, a writer avoiding everything it could not cite would produce exactly the specification list the information-gain criterion rejects, and the two criteria would be set so that nothing could satisfy both.
+
+**One exception, so the prompt cannot contradict the code.** A figure needs an approved claim wherever it appears, general statement or not. The check for numbers, measurements, percentages and durations is mechanical and reads the sentence itself rather than the writer's markers, so a prompt that licensed an uncited "water boils at 100°C" would produce articles that fail a gate the writer was told they would pass.
+
+`DRAFT_PROMPT_MAJOR_VERSION` moves to 3. `draft.v2` stays on disk untouched, so the version stamped on anything already written keeps meaning what it said.
+
+### Nothing measures this, and nothing in this batch could
+
+Say it plainly rather than implying the change was verified. The judge eval grades **twenty fixed, pre-written articles**; changing how the writer is instructed cannot move a single one of its scores, because the writer never runs in it. **No eval set covers the writer at all** — there is no `draft.eval`, and there is no set of articles with expected content to grade one against. What is verified here is that the prompt file exists, that the product loads version 3, that the whole test suite passes and that the rule it adds does not contradict the deterministic citation check.
+
+Its actual effect is visible only when a real article is written against a real store's facts and graded — which is the pilot store's first generation cycle, and has not happened.
+
+Nearest spec: main §8.2–8.4 (the claim plan, the writer, the gate), §14.2 (a prompt change is a new version file).

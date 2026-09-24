@@ -1,6 +1,16 @@
 /**
  * Which version of the writing prompt the generation cycle asks with.
  *
+ * v3 closes the gap the article grader kept finding: a sentence saying what a
+ * product *is* — "built on a wider last", "double-walled" — needed no citation
+ * under v2, because it carries no figure, superlative, absolute, attribution
+ * or comparison, and those were the five kinds the rule listed. It is now the
+ * sixth, along with the reminder that a product called Wide is named that and
+ * not shaped that. The same version draws the other half of the line, in the
+ * same words the grader uses: explaining how a kind of thing works is not a
+ * claim about a product and needs no claim behind it. Founder decision,
+ * 2026-09-24.
+ *
  * Named in one place rather than written into each `loadPrompt` call, so that
  * a test can hold the very prompt the product uses against the answer schema
  * it will be validated by — and so a version bump cannot leave the chaos suite
@@ -10,7 +20,7 @@
  * and this number moving, which is what keeps the `prompt_version` stamped on
  * an article written last month meaning what it said at the time.
  */
-export const DRAFT_PROMPT_MAJOR_VERSION = 2
+export const DRAFT_PROMPT_MAJOR_VERSION = 3
 
 /**
  * Which version of the grading prompt the generation cycle asks with, named
