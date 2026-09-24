@@ -7052,3 +7052,34 @@ Context: `railway.toml` started Next from the repository root, and the build out
 **`NEXT_MANUAL_SIG_HANDLE=1` is untouched**, and the journal entry that recorded it as an outstanding recommendation has been marked applied. It was applied; the entry read as a thing still to do and was the opposite of load-bearing information. Without that variable Next exits on SIGTERM before our own handler finishes, so in-flight jobs are killed rather than drained on every deploy.
 
 Nearest spec: tech §2.1 (the two-service topology and the graceful drain), tech §5 (migrations before traffic).
+
+## 2026-09-24 — REMEDIATION-EVAL card 1 — FOUNDER DECISION, now answered: the model is shown the answer shape centrally, in the wrapper, not prompt by prompt
+
+This answers the open question logged earlier today ("should the model be shown the answer shape centrally, or should each prompt print it?"). **Founder's answer: centrally.**
+
+**Why.** Every prompt in the product tells the model to return JSON "matching the schema exactly", and until now nothing told it what the schema was — not as a tool definition, not as a response format, not in the prompt text. The failure is in a rule the prompts are all obeying and were never given the means to obey, so it is fixed once, in the place every call passes through, rather than eleven times. A prompt written next year cannot forget it.
+
+**The stamping worry in the open question does not apply.** The request cache is keyed on the prompt version, the model id, the system text and the messages together. Appending the schema to the system text changes every key by construction, so an answer cached before this change can never be replayed against a request that now asks a slightly different question. There is a test for exactly that.
+
+**What changed.** `packages/llm/src/schema-prompt.ts` turns a JSON Schema into a short instruction block — the schema itself, pretty-printed, and one sentence saying to use those property names, nested that way, and return nothing else. `AnthropicLlmClient.complete()` appends it to the system text before the cache key is computed and before the request is sent. A call with no schema is untouched. The test double does the same thing, because its job is to model production's cost curve and the schema is input tokens paid for on every real call.
+
+**Measured, on the judge set, 20 real calls.**
+
+| | before (this morning's first run) | after |
+|---|---|---|
+| cases that produced a score | 18 of 20 | **20 of 20** |
+| grounding MAE | 1.44 | 1.25 |
+| information gain MAE | 0.61 | 0.65 |
+| intent match MAE | 0.83 | 1.10 |
+| actionability MAE | 0.44 | 0.55 |
+| language MAE | 0.72 | 0.90 |
+| usefulness MAE | 0.50 | 0.70 |
+| false passes | 0 | 0 |
+
+The two cases that could not be graded at all this morning — `012-overstated` and `016-danish-strong` — both answered first time. Three cases (`007`, `014`, `017`) still needed the one permitted repair attempt and all three succeeded on it, where before a repair attempt failed the same way the first one did.
+
+**Read the other rows with care.** The set still fails four criteria and the movement in them is not evidence of anything: eighteen of these cases are now being compared against a different eighteen, because two new cases entered the average and every case was re-sampled. The one number this card is responsible for is the first row. The rest are the starting line for cards 4 and 5, not a result.
+
+**What this does not prove.** The ten other prompts that used the judge's wording with no shape printed — drafting, the optimise recommendation, the claim plan, the intent gap, topic classification — are covered by the same line of code and by no eval set. Their exposure was never measured and still is not; what is true is that they can no longer be told to match a schema they were never shown.
+
+Nearest spec: main §14.2 (schema validation on every call, one retry, then `failed_validation`), §14.3.6 (the request cache key); invariant 25.

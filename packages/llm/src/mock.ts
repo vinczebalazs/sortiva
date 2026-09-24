@@ -11,6 +11,7 @@ import {
   type RequestCache,
 } from '@sortiva/core'
 import { llmCacheKey } from './key'
+import { systemWithSchema } from './schema-prompt'
 import { CALL_TYPE_TIER, MODELS, estimateTokens, overrideModel, usdCost } from './models'
 import { validateCompletion } from './validate'
 
@@ -115,15 +116,22 @@ export class MockLlmClient implements LlmClient {
 
   async complete<T = unknown>(request: LlmRequest): Promise<LlmResult<T>> {
     const modelId = this.modelFor(request).id
-    const first = await this.callOnce(request, modelId, [...request.messages])
+    // The schema goes into the system text here for the same reason the live
+    // client does it: the double exists to model production's cost curve and
+    // its cache keys, and the schema is input tokens paid for on every call.
+    const call: LlmRequest = {
+      ...request,
+      system: systemWithSchema(request.system, request.schema),
+    }
+    const first = await this.callOnce(call, modelId, [...call.messages])
 
-    const validated = validateCompletion(first.text, request.schema)
-    if (validated.ok) return this.finish<T>(request, modelId, [first], validated.value, 1)
+    const validated = validateCompletion(first.text, call.schema)
+    if (validated.ok) return this.finish<T>(call, modelId, [first], validated.value, 1)
 
     // Retry **once** with the validation error appended, exactly as
     // the live client does, so `attempts` means the same thing in both.
     const repairMessages: LlmRequest['messages'] = [
-      ...request.messages,
+      ...call.messages,
       { role: 'assistant', content: first.text },
       {
         role: 'user',
@@ -133,16 +141,16 @@ export class MockLlmClient implements LlmClient {
           '\n\nReturn the corrected response. Output JSON only, matching the schema exactly.',
       },
     ]
-    const second = await this.callOnce(request, modelId, repairMessages)
+    const second = await this.callOnce(call, modelId, repairMessages)
 
-    const revalidated = validateCompletion(second.text, request.schema)
+    const revalidated = validateCompletion(second.text, call.schema)
     if (revalidated.ok) {
-      return this.finish<T>(request, modelId, [first, second], revalidated.value, 2)
+      return this.finish<T>(call, modelId, [first, second], revalidated.value, 2)
     }
 
     throw new LlmValidationFailure(
-      request.callType,
-      request.promptVersion,
+      call.callType,
+      call.promptVersion,
       modelId,
       revalidated.errors,
     )

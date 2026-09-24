@@ -22,6 +22,7 @@ import {
   usdCost,
   type ModelSpec,
 } from './models'
+import { systemWithSchema } from './schema-prompt'
 import { validateCompletion } from './validate'
 
 export { llmCacheKey }
@@ -43,7 +44,9 @@ export { llmCacheKey }
  *  3. On a miss, calls the model and writes the raw response to the cache
  *     **before processing it**, so a crash between the model
  *     answering and us finishing costs nothing on retry.
- *  4. Validates against the call's JSON Schema; on failure retries **once** with
+ *  4. Validates against the call's JSON Schema — which it has also shown the
+ *     model, appended to the system text, so the answer shape is something the
+ *     model was told rather than something it had to guess; on failure retries **once** with
  *     the validation error appended; on the second failure raises the typed
  *     `failed_validation` rather than handing back something half-parsed.
  *  5. Records every model call twice: as an `$ai_generation` analytics event,
@@ -119,17 +122,24 @@ export class AnthropicLlmClient implements LlmClient {
 
   async complete<T = unknown>(request: LlmRequest): Promise<LlmResult<T>> {
     const spec = this.modelFor(request)
-    const first = await this.callModel(request, spec, [...request.messages])
+    // The one place the model is shown the shape it has to answer in. Every
+    // call type is covered by this line, including the ten prompts no eval set
+    // grades; see `schema-prompt.ts` for why it goes in the system text.
+    const call: LlmRequest = {
+      ...request,
+      system: systemWithSchema(request.system, request.schema),
+    }
+    const first = await this.callModel(call, spec, [...call.messages])
 
-    const validated = validateCompletion(first.text, request.schema)
+    const validated = validateCompletion(first.text, call.schema)
     if (validated.ok) {
-      return this.finish<T>(request, spec, [first], first, validated.value, 1)
+      return this.finish<T>(call, spec, [first], first, validated.value, 1)
     }
 
     // Retry **once**, with the validation error appended. More attempts mean
     // paying repeatedly to talk a model into a shape it keeps missing.
     const repairMessages: LlmRequest['messages'] = [
-      ...request.messages,
+      ...call.messages,
       { role: 'assistant', content: first.text },
       {
         role: 'user',
@@ -139,16 +149,16 @@ export class AnthropicLlmClient implements LlmClient {
           '\n\nReturn the corrected response. Output JSON only, matching the schema exactly.',
       },
     ]
-    const second = await this.callModel(request, spec, repairMessages)
+    const second = await this.callModel(call, spec, repairMessages)
 
-    const revalidated = validateCompletion(second.text, request.schema)
+    const revalidated = validateCompletion(second.text, call.schema)
     if (revalidated.ok) {
-      return this.finish<T>(request, spec, [first, second], second, revalidated.value, 2)
+      return this.finish<T>(call, spec, [first, second], second, revalidated.value, 2)
     }
 
     throw new LlmValidationFailure(
-      request.callType,
-      request.promptVersion,
+      call.callType,
+      call.promptVersion,
       spec.id,
       revalidated.errors,
     )

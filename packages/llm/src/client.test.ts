@@ -239,6 +239,64 @@ describe('AnthropicLlmClient', () => {
     })
   })
 
+  describe('the model is shown the shape it must answer in (remediation eval card 1)', () => {
+    it('sends the schema to the model, whatever the prompt does or does not print', async () => {
+      const anthropic = fakeAnthropic(['{"summary":"a leather boot"}'])
+      await client({ anthropic: anthropic.client }).complete(
+        request({ system: 'You extract product facts.' }),
+      )
+
+      const sent = anthropic.calls[0] as { system: string }
+      expect(sent.system).toContain('You extract product facts.')
+      // The property name the judge used to have to guess.
+      expect(sent.system).toContain('"summary"')
+      expect(sent.system).toContain('required')
+    })
+
+    it('still sends it when the prompt has no system text of its own', async () => {
+      const anthropic = fakeAnthropic(['{"summary":"a leather boot"}'])
+      await client({ anthropic: anthropic.client }).complete(request())
+
+      const sent = anthropic.calls[0] as { system?: string }
+      expect(sent.system).toContain('"summary"')
+    })
+
+    it('sends no schema block when the call has no schema to satisfy', async () => {
+      const anthropic = fakeAnthropic(['free prose'])
+      await client({ anthropic: anthropic.client }).complete(
+        request({ schema: undefined, system: 'Be terse.' }),
+      )
+
+      const sent = anthropic.calls[0] as { system: string }
+      expect(sent.system).toBe('Be terse.')
+    })
+
+    it('cannot replay an answer cached before the schema was part of the question', async () => {
+      const cache = new InMemoryRequestCache()
+      const stale = llmCacheKey('distill.v1', MODELS.haiku.id, 'You extract product facts.', [
+        { role: 'user', content: 'Describe this product.' },
+      ])
+      await cache.writeBeforeProcessing({
+        cacheKey: stale,
+        kind: 'llm',
+        responseJson: {
+          text: '{"summary":"answered before the change"}',
+          usage: { inputTokens: 1, outputTokens: 1, cacheReadInputTokens: 0, cacheCreationInputTokens: 0 },
+          modelId: MODELS.haiku.id,
+        },
+        expiresAt: new Date(Date.now() + 60_000),
+      })
+
+      const anthropic = fakeAnthropic(['{"summary":"answered after it"}'])
+      const result = await client({ anthropic: anthropic.client, cache }).complete<{
+        summary: string
+      }>(request({ system: 'You extract product facts.' }))
+
+      expect(result.output.summary).toBe('answered after it')
+      expect(result.cacheHit).toBe(false)
+    })
+  })
+
   it('keys the cache on prompt version, model and prompt hash (main §14.3.6)', () => {
     const messages = [{ role: 'user' as const, content: 'hello' }]
     const a = llmCacheKey('distill.v1', 'claude-haiku-4-5', undefined, messages)

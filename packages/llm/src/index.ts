@@ -15,4 +15,5 @@ export {
   type ModelTier,
 } from './models'
 export { loadPrompt, renderPrompt, resetPromptCache, type Prompt } from './prompts'
+export { systemWithSchema } from './schema-prompt'
 export { extractJson, validateCompletion, type ValidationOutcome } from './validate'
