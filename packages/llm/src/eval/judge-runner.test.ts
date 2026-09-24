@@ -171,7 +171,7 @@ describe('judge.eval, the grading', () => {
   it('sends the versioned prompt and runs on the judge tier, never a cheaper one', async () => {
     const client = perfectClient()
     await judgeEvalRunner(client)(set.cases[0]!.input, set.config)
-    expect(client.calls[0]?.promptVersion).toBe('judge.v2')
+    expect(client.calls[0]?.promptVersion).toBe('judge.v3')
     expect(client.calls[0]?.modelId).toBe('claude-sonnet-5')
   })
 })

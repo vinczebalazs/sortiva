@@ -16,11 +16,18 @@ export const DRAFT_PROMPT_MAJOR_VERSION = 2
  * Which version of the grading prompt the generation cycle asks with, named
  * here for the same reason and used by the same callers.
  *
- * v2 differs from v1 in one respect: it requires the grader's written
+ * v2 differed from v1 in one respect: it requires the grader's written
  * objections to be in English whatever language the article is in. Those
  * sentences are shown to the merchant inside our own English screens, so one
  * arriving in the store's language would produce a card that changes language
- * halfway through. Founder decision, 2026-09-04. Nothing about what is asked,
- * what is scored or what it is scored against changed with it.
+ * halfway through. Founder decision, 2026-09-04.
+ *
+ * v3 says where the grounding line sits. Grounding asks whether what an
+ * article says about a *product* traces to the facts the store holds about it;
+ * a general statement about a category — that glass breaks and steel dents —
+ * is not a claim about a product and is not marked down. Until this was
+ * written down the grader was rejecting every article it saw, good ones
+ * included, for explaining how things work. It is not a lower bar: inventing a
+ * specification is scored exactly as it was. Founder decision, 2026-09-24.
  */
-export const JUDGE_PROMPT_MAJOR_VERSION = 2
+export const JUDGE_PROMPT_MAJOR_VERSION = 3

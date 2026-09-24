@@ -7199,3 +7199,46 @@ The judge is right and the expected score of 4 is generous. `006` carries a seco
 Should grounding say anything about an article that makes no product claims at all? Today the judge marks it down hard for that and the human graders mark it down gently; neither is written down anywhere. It changes nothing about what gets published — those five articles are rejected on information gain and usefulness whatever grounding says — so card 5 leaves it exactly as it is and this is recorded rather than decided.
 
 Nearest spec: main §8.4 (grounding held to 4; gate on the minimum), §14.2 (judge eval, append-only cases).
+
+## 2026-09-24 — REMEDIATION-EVAL card 5 — FOUNDER DECISION, now answered: grounding applies to claims about a product, not to general statements about a category. `judge.v3` says so, and the gate stops rejecting everything
+
+This answers the second open question logged this morning ("is the judge too harsh, or are the expected scores too generous?"), in part.
+
+**Founder's answer.** Grounding asks whether what an article says about a *product* traces to the facts the store holds about it. A general statement about a category — "wider lasts suit wide feet", "glass breaks and steel dents" — is knowledge, not a claim about a product, and is not marked down. **This is not a lower bar, and no pass mark moved.** Inventing a specification, a certification, an origin or a comparison is scored exactly as it was. The gate catching unsupported product claims is the product working.
+
+**What changed.** `packages/llm/prompts/judge.v3.md` — a new version, never an edit in place, so the `judge.v2` stamped on anything already graded keeps meaning what it said. It adds four paragraphs to the grounding criterion: what makes a claim a claim *about a product*, that a general statement about a category is not one, what to do where the two meet (the store records a bottle as single-wall plastic and the article says it will not keep a drink cold — the fact is the material, the rest is what that material does, and that is grounded), and a closing line that none of it lowers the bar. The examples deliberately use no product from the eval set: writing the answer key into the prompt would make the set measure nothing. `JUDGE_PROMPT_MAJOR_VERSION` moves to 3, and the eval set now asks with `judge.v3`.
+
+**Measured, 20 real calls each, same twenty cases, same day.**
+
+| Criterion | `judge.v2` | `judge.v3` | Pass mark |
+|---|---|---|---|
+| information gain | 0.65 | 0.60 | ≤ 0.5 |
+| **factual grounding** | **1.25** | **0.90** | ≤ 0.5 |
+| search intent match | 1.10 | 0.85 | ≤ 0.5 |
+| actionability | 0.55 | 0.55 | ≤ 0.5 |
+| language quality | 0.90 | 0.75 | ≤ 0.5 |
+| ecommerce usefulness | 0.70 | 0.70 | ≤ 0.5 |
+| false passes | 0 | 0 | 0 |
+| articles the gate would publish | 2 | **5** | — |
+
+**The case-level movement is the real evidence, because the aggregate is noisy.** Grounding measured 1.44, 1.25 and 0.95 today on `judge.v2` alone, so a three-tenths shift proves little by itself. What does prove it: seven cases moved up on grounding and the judge's own sentences say why, in the new prompt's terms. `008-thin-but-correct` went 3 → 5, "the breakage-vs-denting statement is general material knowledge, not an invented spec". `006-comparison-strong` 3 → 5, "a reasonable extension of its recorded plastic construction rather than an invented spec". `010-how-to-strong` 2 → 4, `013-sizing-strong` 4 → 5, `015-terse-but-right` 4 → 5, `016-danish-strong` 3 → 4, `012-overstated` 1 → 2. Every one of them is a case card 4 classified as kind one. Nothing card 4 classified as kind two moved.
+
+**What this means for a merchant.** This morning the gate rejected every article it could grade, the good ones included, and the pilot store would have published nothing at all. It now passes five of the twenty, and **none of the five is an article the human graders failed**. Three of those five (`006`, `013`, `016`) are ones the human grades would also publish; two (`008`, `015`) are ones the human grades would hold back for thin information gain rather than for grounding. Three the human grades would publish (`001`, `010`, `018`) are still held back.
+
+### Grounding is still at 0.90 against a pass mark of 0.5, so this stops here
+
+Card 5's instruction is not to iterate towards a passing number, and it is not being iterated. What remains, by where the eighteen points of total grounding error now sit:
+
+**Seven points — the absence rule nobody has decided (card 4's kind three).** `002` (judge 1, humans 2), `005` (1 vs 3), `007` (1 vs 3), `017` (1 vs 3). Each is an article that makes no product claims at all; the judge scores 1 and the human graders 2 or 3. `judge.v3` deliberately says nothing about this, because the graders mark it down too and a prompt that silenced it would push these to 5 and make the error worse. The open question in card 4 stands.
+
+**Seven points — three cases where the judge names an invented product attribute and the expected score is 5 (card 4's kind two).** This is the founder's call and the reason the gold question is not closed:
+
+- `001-wide-feet-strong` (judge 2, gold 5) — "invents 'last width' as the defining attribute of the Wide-named shoes when the store facts say nothing about last shape", and states the standard model's material as "plain mesh" where the store records "engineered mesh". Verified: the facts for all three shoes hold material, weight, use cases, origin and one compatibility note, and nothing about lasts. This is the set's flagship good article.
+- `004-intent-mismatch` (2 vs 4) — the same last-width invention.
+- `018-honest-tradeoff` (3 vs 5) — "the handle is roughly two thirds of the object by weight"; the store records total product weights, not a split between handle and bristles.
+
+**Four points** — one point each on `010`, `011`, `014`, `016`, which is ordinary grader disagreement at this scale.
+
+**So the question that goes back to the founder** is narrower than this morning's. It is no longer "is the judge too harsh". With the line drawn where you drew it, the judge and the expected answers agree on thirteen of twenty cases, and the residue is two things: an absence rule nobody has written down, and three articles whose expected grounding score of 5 rests on sentences that assert a product attribute the store does not record. Changing those expected answers is append-only gold work and a judgement about quality, which is yours. Nothing here touched a gold file.
+
+Nearest spec: main §8.4 (grounding held to 4; gate on the minimum), §14.2 (judge eval, append-only cases; a prompt change is a new version).
