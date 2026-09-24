@@ -30,7 +30,8 @@ import type { IngestionDeps, ShopifyListReader } from './deps'
 import { readProductMetafields } from './metafields'
 import {
   CATALOG_RECONCILE_TASK,
-  LANDING_REVENUE_TASK,
+  LANDING_REVENUE_ACCOUNT_TASK,
+  LANDING_REVENUE_SWEEP_TASK,
   RECONCILIATION_SWEEP_TASK,
   enqueueCatalogReconcile,
   enqueueLandingRevenue,
@@ -314,13 +315,32 @@ export async function runReconciliationSweep(deps: SweepDeps): Promise<{ account
 
   for (const store of stores) {
     await enqueueCatalogReconcile(ingestion.db, { accountId: store.accountId, startedAt })
-    await enqueueLandingRevenue(ingestion.db, { accountId: store.accountId })
   }
 
   // The store's own pages, on the same clock. Owned by the inventory lane.
   await deps.syncInventory?.()
 
   log.info('reconciliation_sweep_started', { accounts: stores.length })
+  return { accounts: stores.length }
+}
+
+/**
+ * Starts a landing-revenue pass for every store we can still read, one job per
+ * store for the same reason the reconciliation sweep queues rather than walks.
+ */
+export async function runLandingRevenueSweep(deps: SweepDeps): Promise<{ accounts: number }> {
+  const ingestion = deps.ingestion()
+  const log = deps.logger ?? runtimeLogger()
+  const stores = await accountsWithLiveShopifyConnectionAndHandle(
+    ingestion.db,
+    systemScope('the daily landing-revenue sweep chooses which stores to work for'),
+  )
+
+  for (const store of stores) {
+    await enqueueLandingRevenue(ingestion.db, { accountId: store.accountId })
+  }
+
+  log.info('landing_revenue_sweep_started', { accounts: stores.length })
   return { accounts: stores.length }
 }
 
@@ -386,7 +406,11 @@ export function registerCatalogSweepTasks(deps: SweepDeps): void {
     })
   }, 'per_account')
 
-  registerTask(LANDING_REVENUE_TASK, async (rawPayload) => {
+  registerTask(LANDING_REVENUE_SWEEP_TASK, async () => {
+    await runLandingRevenueSweep(deps)
+  }, 'fans_out')
+
+  registerTask(LANDING_REVENUE_ACCOUNT_TASK, async (rawPayload) => {
     const payload = rawPayload as { accountId: string; days?: number }
     const ingestion = deps.ingestion()
     await tryWithAccountLock(ingestion.pool, payload.accountId, async () =>

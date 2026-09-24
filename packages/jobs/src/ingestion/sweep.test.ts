@@ -11,7 +11,12 @@ import {
 } from '@sortiva/db/testing'
 import { TRUNCATE_QUEUE_SQL, installQueueSchema, type WorkerUtils } from '../runtime/testing'
 import type { ConnectionStore, IngestionDeps, ShopifyListReader } from './deps'
-import { aggregateLandingRevenue, reconcileStoreCatalog, runReconciliationSweep } from './sweep'
+import {
+  aggregateLandingRevenue,
+  reconcileStoreCatalog,
+  runLandingRevenueSweep,
+  runReconciliationSweep,
+} from './sweep'
 
 /**
  * The nightly re-read, which exists because webhooks drop silently.
@@ -354,9 +359,32 @@ describe.skipIf(!available)('the nightly re-read', () => {
     const { rows } = await harness.pool.query<{ task_identifier: string }>(
       `select j.task_identifier from graphile_worker.jobs j order by j.task_identifier`,
     )
-    expect(rows.map((r) => r.task_identifier)).toEqual([
-      'catalog_reconcile',
-      'landing_revenue_aggregate_daily',
+    expect(rows.map((r) => r.task_identifier)).toEqual(['catalog_reconcile'])
+  })
+
+  it('queues a landing-revenue pass, carrying its account, for every store we can still read', async () => {
+    await harness.pool.query(
+      `insert into shopify_conns (account_id, shop_handle, access_token, granted_scopes)
+       values ($1, 'acme', 'cipher', '{read_products}')`,
+      [accountId],
+    )
+    const other = await insertAccount(harness.pool, `dead-${Date.now()}@example.com`)
+    await harness.pool.query(
+      `insert into shopify_conns (account_id, shop_handle, access_token, granted_scopes, invalidated_at)
+       values ($1, 'gone', 'cipher', '{read_products}', now())`,
+      [other],
+    )
+
+    const result = await runLandingRevenueSweep(deps(new FakeShopify([])))
+    expect(result.accounts).toBe(1)
+
+    const { rows } = await harness.pool.query<{ task_identifier: string; payload: { accountId?: string } }>(
+      `select t.identifier as task_identifier, j.payload
+         from graphile_worker._private_jobs as j
+         join graphile_worker._private_tasks as t on t.id = j.task_id`,
+    )
+    expect(rows).toEqual([
+      { task_identifier: 'landing_revenue_aggregate_account', payload: { accountId } },
     ])
   })
 
