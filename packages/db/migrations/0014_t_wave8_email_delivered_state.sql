@@ -1,0 +1,1 @@
+ALTER TYPE "public"."email_send_state" ADD VALUE 'delivered' BEFORE 'failed';

@@ -10,7 +10,7 @@ import type { EmailContent } from './content'
  * production against Postgres and Resend.
  */
 
-export type EmailSendState = 'queued' | 'sent' | 'failed' | 'suppressed'
+export type EmailSendState = 'queued' | 'sent' | 'delivered' | 'failed' | 'suppressed'
 
 export interface EmailSendRecord {
   readonly id: string

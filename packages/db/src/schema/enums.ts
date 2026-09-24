@@ -110,10 +110,11 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'account_deletion_confirmed',
 ])
 
-/** Where one email got to: queued, sent, or stopped. */
+/** Where one email got to: queued, sent, confirmed delivered, or stopped. */
 export const emailSendStateEnum = pgEnum('email_send_state', [
   'queued',
   'sent',
+  'delivered',
   'failed',
   'suppressed',
 ])
