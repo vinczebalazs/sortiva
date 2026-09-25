@@ -7264,3 +7264,27 @@ Say it plainly rather than implying the change was verified. The judge eval grad
 Its actual effect is visible only when a real article is written against a real store's facts and graded — which is the pilot store's first generation cycle, and has not happened.
 
 Nearest spec: main §8.2–8.4 (the claim plan, the writer, the gate), §14.2 (a prompt change is a new version file).
+
+## 2026-09-25 — FOUNDER DECISION: one permission request at install, covering read and write. Export-only stays, as a setting nobody's granted scopes decide
+
+Decision, taken by the founder on 2026-09-25, in response to the conflict raised when scoping the embedded-app rebuild: managed installation in an embedded Shopify app grants what the app asks for at install, which the two-stage consent was built to avoid.
+
+**What is decided.** Sortiva asks for read **and** write in one request, at install. The separate `write_content` grant — asked from Settings or at the first publish attempt — goes. **Export-only remains a real choice** in the publishing flow: a merchant can have articles handed to them to publish themselves rather than posted to their store. What changes is that the choice is a *setting they pick*, not a consequence of which permissions they happened to grant. The two must not be tied together.
+
+**What this amends.** Invariant 21's first clause — "Read and write are separate consents: initial Shopify OAuth requests read scopes only; `write_content` is a second grant made only from Settings or first publish attempt" — is now false and must be rewritten. The rest of invariant 21 stands untouched: auto-publish still cannot enable without a resolved target blog, OPTIMIZE/FIX still never write to Shopify, nothing touches theme code or redirects, and export accounts still never receive silent edits.
+
+**What it costs, recorded rather than argued.** The founder's own competitor research (`docs/remediation-plan.md` §2.2) lists "read and write are separate permissions" among the prohibitions it calls sellable, each mapping to a competitor's one-star reviews. That differentiator is being traded for an install flow that works the way Shopify's embedded apps work. The trust claim that survives is the stronger half and is a fact about the product rather than about a permission screen: we never edit anything the merchant wrote, and an export account never receives a silent edit.
+
+**What it touches, in the order it would have to be done.**
+
+1. `shopify.app.toml` — `write_content` moves from `optional_scopes` into `scopes`; `use_legacy_install_flow` exists only to make the two-stage ask possible and goes with it.
+2. The canonical string in main Appendix A, *"Read-only — we can't change anything in your store with this permission. Auto-publishing is a separate optional setting you control later."* It becomes untrue at the moment the install asks for write. Invariant 24 pins canonical strings verbatim with snapshot tests, so this is a spec edit, not a copy tweak.
+3. Four more strings in `packages/ui/strings/en.json` that describe the two-stage ask: the landing page's how-it-works and its FAQ answer on write access, the Settings write-grant explanation, and the dashboard's "Shopify — read-only" connection label.
+4. `apps/web/app/api/publish/grant/{start,callback}` — the second OAuth pass, and the `write_scope_required` branch in the delivery-mode handler, which refuses to switch auto-publish on until write has been granted. That refusal is exactly the tie the founder has now cut.
+5. Spec main §6.2 and §9.5, whose text describes the second pass.
+
+**Not yet decided, and flagged rather than assumed:** whether the delivery-mode toggle should still refuse to turn auto-publish on when the granted scopes lack `write_content` — which after this change can only happen to a store that installed under the old flow or revoked the permission afterwards. Untying the *setting* from the grant is decided; what to do when the permission genuinely is not there is a different question and is not answered here.
+
+**Status: recorded, not implemented.** Timing is with the founder: this is either a card before Batch 2 or part of the embedded rebuild, and the two leave different amounts of dead code in the meantime. Nothing has been changed.
+
+Nearest spec: main §6.2 (Shopify OAuth and scopes), §9.5 (auto-publish and the second grant), Appendix A (canonical copy); invariants 21 and 24.
