@@ -1,11 +1,13 @@
 import { env } from '../config/env.ts'
 import { createPool } from '../db/pool.ts'
 import { AnthropicLlm } from '../vendors/anthropic/client.ts'
+import { DataForSeoDemand } from '../vendors/dataforseo/client.ts'
 import { CONFIG } from '../core/config.ts'
 import { ALL_JOBS } from './all.ts'
 import type { Deps } from './deps.ts'
 import { taskList } from './runtime/task.ts'
 import { CRONTAB, nightlySweep } from './sweepers.ts'
+import { dailySweep } from './topics.ts'
 import { startWorker } from './worker.ts'
 
 // The worker process: every job and sweeper, against the real vendors.
@@ -19,13 +21,14 @@ const deps: Deps = {
     baseUrlFor: (shop) => `https://${shop}`,
   },
   llm: new AnthropicLlm(pool, { apiKey: env('ANTHROPIC_API_KEY') }),
+  demand: new DataForSeoDemand(pool, { login: env('DATAFORSEO_LOGIN'), password: env('DATAFORSEO_PASSWORD') }),
   webhookDebounceMs: CONFIG.webhookDebounceMs,
   hooks: {},
 }
 
 const runner = await startWorker({
   connectionString: env('DATABASE_URL'),
-  taskList: { ...taskList(deps, ALL_JOBS), nightly_sweep: nightlySweep(pool) },
+  taskList: { ...taskList(deps, ALL_JOBS), nightly_sweep: nightlySweep(pool), daily_sweep: dailySweep(pool) },
   crontab: CRONTAB,
 })
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {

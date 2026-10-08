@@ -1,0 +1,98 @@
+{
+  "recordedAt": "2026-10-08T16:50:38.254Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "You plan blog articles for an online shop. You see the shop's profile and its products, grouped by kind, each with the checked facts we hold about it. Propose articles that this shop can write credibly and that people actually search for.\n\nEach article:\n- answers a question a shopper has before or after buying this kind of product: how to choose, how to use, how to care for it, how two kinds the shop sells differ, what a feature means;\n- is about a kind of product or a group of products, never about one single item for sale;\n- can be written from the facts of the products it mentions, and mentions one to four of them by their reference (P1, P2…);\n- targets one search phrase: the words a shopper would type into Google, in English, two to six words, lower case, no brand names, no prices, no years.\n\nDo not propose anything about prices, discounts, delivery, competitors or the shop itself. Do not propose topics listed as already covered, nor close rewordings of them. Respect the owner's \"never say\" list. Propose fewer articles rather than weak ones; return an empty list if nothing fits.\n\nFor each article give: working_title (a plain headline in English), target_query, products (the references), group (the product kind it belongs to).",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<profile>\nSells: Northpaw Dog Supply sells walking gear for dogs, including a front-clip no-pull harness, a 6 ft biothane leash, a 30 ft training long line and a rechargeable LED collar light. It also sells beds and blankets, namely a memory foam dog bed with a removable cover and a machine-washable fleece dog blanket.\nAudience: Dog owners who walk and train their dogs, including those dealing with leash pulling or walking in low light, and who want a comfortable bed or blanket for their dog at home.\nCountry: US\nTone: friendly\nNever say: —\n</profile>\n\n<products>\n<group name=\"Bed\">\n  P1: Memory Foam Dog Bed\n    - The Memory Foam Dog Bed is made by Northpaw.\n    - The Memory Foam Dog Bed is available in sizes M and L.\n    - The Memory Foam Dog Bed has 4 in of memory foam on a 1 in support base.\n    - The Memory Foam Dog Bed has a removable cover.\n    - The Memory Foam Dog Bed's cover is machine washable at 40 °C.\n    - The Memory Foam Dog Bed has a water-resistant liner.\n    - The Memory Foam Dog Bed has a non-slip bottom.\n    - The Memory Foam Dog Bed in size M measures 30 × 20 in.\n    - The Memory Foam Dog Bed in size L measures 40 × 28 in.\n</group>\n<group name=\"Blanket\">\n  P2: Fleece Dog Blanket\n    - The Fleece Dog Blanket is made of double-layer polar fleece.\n    - The Fleece Dog Blanket measures 40 × 30 in.\n    - The Fleece Dog Blanket is machine washable.\n    - The Fleece Dog Blanket can be tumble dried on low.\n    - The Fleece Dog Blanket fits in the car boot or on the sofa.\n    - The Fleece Dog Blanket is made by Northpaw.\n</group>\n<group name=\"Harness\">\n  P3: Front-Clip No-Pull Harness\n    - The Front-Clip No-Pull Harness is a harness.\n    - The Front-Clip No-Pull Harness is made by Northpaw.\n    - The Front-Clip No-Pull Harness is available in sizes XS, S, M, L, and XL.\n    - The Front-Clip No-Pull Harness has a leash ring on the chest that turns the dog sideways when it pulls.\n    - The Front-Clip No-Pull Harness has four adjustment points.\n    - The Front-Clip No-Pull Harness has a padded neoprene chest plate.\n    - The Front-Clip No-Pull Harness has reflective stitching.\n    - The Front-Clip No-Pull Harness fits a chest girth of 13–42 in across sizes XS to XL.\n</group>\n<group name=\"Leash\">\n  P4: Biothane Leash, 6 ft\n    - The Biothane Leash is 6 ft long.\n    - The Biothane Leash is made of coated webbing that does not absorb water or smell.\n    - The Biothane Leash is 5/8 in wide.\n    - The Biothane Leash has a brass snap hook.\n    - The Biothane Leash can be wiped clean.\n    - The Biothane Leash has a breaking strength of 600 lb.\n    - The Biothane Leash is made by Northpaw.\n  P5: Training Long Line, 30 ft\n    - The Training Long Line is 30 ft long.\n    - The Training Long Line is a leash.\n    - The Training Long Line is made by Northpaw.\n    - The Training Long Line is made of lightweight biothane.\n    - The Training Long Line is intended for recall practice.\n    - The Training Long Line has no handle loop.\n    - The Training Long Line floats in water.\n    - The Training Long Line has a stainless steel swivel clip.\n</group>\n<group name=\"Light\">\n  P6: Rechargeable LED Collar Light\n    - The Rechargeable LED Collar Light clips onto any collar or harness.\n    - The Rechargeable LED Collar Light has three modes: steady, slow flash, and fast flash.\n    - The Rechargeable LED Collar Light is visible from about 1,000 ft.\n    - The Rechargeable LED Collar Light charges via USB-C.\n    - The Rechargeable LED Collar Light runs for 6 hours on steady mode.\n    - The Rechargeable LED Collar Light is rated IPX7 waterproof.\n    - The Rechargeable LED Collar Light is made by Northpaw.\n    - The Rechargeable LED Collar Light is rechargeable.\n</group>\n</products>\n\n<already_covered>\n- Harness size guide\n- How to choose a dog harness\n- Dog leash length guide: 4 ft, 6 ft or long line?\n- Orthopedic dog beds explained\n</already_covered>\n\n<at_most>20</at_most>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "topics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "working_title": {
+                    "type": "string"
+                  },
+                  "target_query": {
+                    "type": "string"
+                  },
+                  "products": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "group": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "working_title",
+                  "target_query",
+                  "products",
+                  "group"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "topics"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfq7bAVTjqrBmBnjwXASJ",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "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"
+      },
+      {
+        "type": "text",
+        "text": "{\"topics\":[{\"working_title\":\"How Does a No-Pull Harness Work? The Front Clip Explained\",\"target_query\":\"how does a no pull harness work\",\"products\":[\"P3\"],\"group\":\"Harness\"},{\"working_title\":\"How to Stop Your Dog Pulling on the Leash: Gear and Training Tips\",\"target_query\":\"stop dog pulling on leash\",\"products\":[\"P3\",\"P4\"],\"group\":\"Harness\"},{\"working_title\":\"What Is Biothane? Why This Leash Material Won't Soak Up Water or Smell\",\"target_query\":\"what is biothane leash\",\"products\":[\"P4\",\"P5\"],\"group\":\"Leash\"},{\"working_title\":\"How to Clean a Dog Leash and Keep It From Smelling\",\"target_query\":\"how to clean dog leash\",\"products\":[\"P4\",\"P5\"],\"group\":\"Leash\"},{\"working_title\":\"How to Use a Long Line for Recall Training\",\"target_query\":\"long line recall training\",\"products\":[\"P5\"],\"group\":\"Leash\"},{\"working_title\":\"Walking Your Dog at Night: How to Stay Safe and Be Seen\",\"target_query\":\"walking dog at night safety\",\"products\":[\"P6\",\"P3\"],\"group\":\"Light\"},{\"working_title\":\"How to Choose a Dog Collar Light: Brightness, Modes, Battery and Waterproofing\",\"target_query\":\"best dog collar light\",\"products\":[\"P6\"],\"group\":\"Light\"},{\"working_title\":\"How to Wash a Memory Foam Dog Bed (Cover, Liner and Foam)\",\"target_query\":\"how to wash memory foam dog bed\",\"products\":[\"P1\"],\"group\":\"Bed\"},{\"working_title\":\"What Size Dog Bed Does Your Dog Need?\",\"target_query\":\"what size dog bed\",\"products\":[\"P1\"],\"group\":\"Bed\"},{\"working_title\":\"How to Wash a Fleece Dog Blanket Without Ruining It\",\"target_query\":\"how to wash dog blanket\",\"products\":[\"P2\"],\"group\":\"Blanket\"},{\"working_title\":\"Using a Dog Blanket to Protect Your Sofa and Car\",\"target_query\":\"dog blanket for couch\",\"products\":[\"P2\"],\"group\":\"Blanket\"},{\"working_title\":\"Dog Bed or Dog Blanket: Which Does Your Dog Need?\",\"target_query\":\"dog bed vs blanket\",\"products\":[\"P1\",\"P2\"],\"group\":\"Bed\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 2423,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1471,
+      "output_tokens_details": {
+        "thinking_tokens": 685
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

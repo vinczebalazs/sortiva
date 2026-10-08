@@ -2,6 +2,7 @@ import { ShopifyClient, type ClientOptions } from '../connectors/shopify/client.
 import { ShopifyConnector } from '../connectors/shopify/connector.ts'
 import { StoredTokens, type ShopifyAppConfig } from '../connectors/shopify/tokens.ts'
 import type { StoreConnector } from '../connectors/types.ts'
+import type { Demand } from '../core/demand.ts'
 import type { LearnDeps } from '../core/learn/sync.ts'
 import type { Llm } from '../core/llm.ts'
 import type { Db } from '../db/pool.ts'
@@ -17,6 +18,7 @@ export type Deps = {
   shopifyApp: ShopifyAppConfig
   shopifyClient?: ClientOptions
   llm: Llm
+  demand: Demand
   webhookDebounceMs: number
   hooks: Hooks
 }

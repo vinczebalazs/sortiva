@@ -25,5 +25,5 @@ export function nightlySweep(db: Db): Task {
   }
 }
 
-// Hourly, because stores sit in different timezones; each store is picked once, in its own night.
-export const CRONTAB = `0 * * * * nightly_sweep\n`
+// Hourly, because stores sit in different timezones; each store is picked once, in its own night and at its own publish hour.
+export const CRONTAB = `0 * * * * nightly_sweep\n0 * * * * daily_sweep\n`

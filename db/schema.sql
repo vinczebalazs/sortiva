@@ -19,9 +19,12 @@ create table stores (
   publish_as text not null default 'live' check (publish_as in ('live', 'draft')),
   review_first boolean not null default false,
   target_blog_id text,
+  -- The merchant chose "create a blog called …" before one existed; it is created when auto-publish first needs it.
+  blog_to_create text,
   publish_hour smallint not null default 9 check (publish_hour between 0 and 23),
   setup_step text not null default 'reading' check (setup_step in ('reading', 'no_products', 'profile', 'search_console', 'delivery', 'done')),
   catalog_synced_at timestamptz,
+  topics_discovered_at timestamptz,
   installed_at timestamptz not null default now(),
   closed_at timestamptz,
   delete_after timestamptz
@@ -147,6 +150,17 @@ create table topics (
   unique (store_id, canonical_key)
 );
 
+-- One row per store per local calendar day: what the daily run did. The primary key is rule 4.
+create table schedule_days (
+  store_id bigint not null references stores(id) on delete cascade,
+  local_date date not null,
+  outcome text not null check (outcome in ('scheduled', 'skipped', 'empty')),
+  topic_id bigint references topics(id),
+  reason text check (reason in ('paused_by_merchant', 'paused_by_operator', 'not_entitled', 'budget', 'permission', 'skipped_by_merchant')),
+  decided_at timestamptz not null default now(),
+  primary key (store_id, local_date)
+);
+
 create table not_interested (
   store_id bigint not null references stores(id) on delete cascade,
   canonical_key text not null,
@@ -244,7 +258,8 @@ create table vendor_calls (
   request_hash text not null,
   request jsonb not null,
   response jsonb,
-  status text not null default 'pending' check (status in ('pending', 'done', 'failed')),
+  -- 'superseded': an answer too old to serve, replaced by a fresh call; kept because it was paid for.
+  status text not null default 'pending' check (status in ('pending', 'done', 'failed', 'superseded')),
   estimated_cost_usd numeric not null,
   cost_usd numeric,
   created_at timestamptz not null default now(),

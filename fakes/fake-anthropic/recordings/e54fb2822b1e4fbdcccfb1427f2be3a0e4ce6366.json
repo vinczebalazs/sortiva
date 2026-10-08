@@ -1,0 +1,98 @@
+{
+  "recordedAt": "2026-10-08T16:49:58.904Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "You plan blog articles for an online shop. You see the shop's profile and its products, grouped by kind, each with the checked facts we hold about it. Propose articles that this shop can write credibly and that people actually search for.\n\nEach article:\n- answers a question a shopper has before or after buying this kind of product: how to choose, how to use, how to care for it, how two kinds the shop sells differ, what a feature means;\n- is about a kind of product or a group of products, never about one single item for sale;\n- can be written from the facts of the products it mentions, and mentions one to four of them by their reference (P1, P2…);\n- targets one search phrase: the words a shopper would type into Google, in English, two to six words, lower case, no brand names, no prices, no years.\n\nDo not propose anything about prices, discounts, delivery, competitors or the shop itself. Do not propose topics listed as already covered, nor close rewordings of them. Respect the owner's \"never say\" list. Propose fewer articles rather than weak ones; return an empty list if nothing fits.\n\nFor each article give: working_title (a plain headline in English), target_query, products (the references), group (the product kind it belongs to).",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<profile>\nSells: Tidewell Candles sells candles: scented container candles and unscented taper candles. The range includes an 8 oz sea salt soy candle hand-poured in Portland, Maine, a 12 oz cedar candle in a coconut and soy wax blend with a crackling cherry-wood wick, and a pair of 10-inch pure beeswax tapers made with beeswax from Maine apiaries.\nAudience: People shopping for home candles who care about the wax and wick, such as soy, coconut-soy or pure beeswax, hand-poured or locally sourced in Maine.\nCountry: US\nTone: friendly\nNever say: —\n</profile>\n\n<products>\n<group name=\"Candle\">\n  P1: Sea Salt Soy Candle, 8 oz\n    - The Sea Salt Soy Candle is 8 oz.\n    - The Sea Salt Soy Candle is made of 100% soy wax.\n    - The Sea Salt Soy Candle is poured by hand in Portland, Maine.\n    - The Sea Salt Soy Candle has a cotton wick.\n    - The Sea Salt Soy Candle's wick is lead-free.\n    - The Sea Salt Soy Candle has a burn time of about 45 hours.\n    - The Sea Salt Soy Candle comes in an 8 oz amber glass jar.\n    - The Sea Salt Soy Candle's jar has a tin lid.\n    - The Sea Salt Soy Candle has scent notes of sea salt, driftwood, and sage.\n    - The Sea Salt Soy Candle is made by Tidewell.\n  P2: Cedar Wood-Wick Candle, 12 oz\n    - The Cedar Wood-Wick Candle is 12 oz.\n    - The Cedar Wood-Wick Candle is made by Tidewell.\n    - The Cedar Wood-Wick Candle is made with a coconut and soy wax blend.\n    - The Cedar Wood-Wick Candle has a cherry-wood wick that crackles as it burns.\n    - The Cedar Wood-Wick Candle has a burn time of about 60 hours.\n    - The Cedar Wood-Wick Candle comes in a 12 oz ceramic vessel.\n    - The Cedar Wood-Wick Candle's vessel is reusable.\n    - The Cedar Wood-Wick Candle's wick should be trimmed to 3 mm before each burn.\n    - The Cedar Wood-Wick Candle has scent notes of cedar, black pepper, and vetiver.\n</group>\n<group name=\"Taper\">\n  P3: Beeswax Taper Candles, pair\n    - The Beeswax Taper Candles come as a pair.\n    - The Beeswax Taper Candles set contains two tapers that are 10 inches long.\n    - The Beeswax Taper Candles are made of pure beeswax from Maine apiaries.\n    - The Beeswax Taper Candles are unscented.\n    - The Beeswax Taper Candles have a standard 7/8-inch base that fits most candlesticks.\n    - Each Beeswax Taper Candle burns about 8 hours.\n    - The Beeswax Taper Candles are dripless when kept away from drafts.\n</group>\n</products>\n\n<already_covered>\n—\n</already_covered>\n\n<at_most>6</at_most>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "topics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "working_title": {
+                    "type": "string"
+                  },
+                  "target_query": {
+                    "type": "string"
+                  },
+                  "products": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "group": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "working_title",
+                  "target_query",
+                  "products",
+                  "group"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "topics"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfq7Yn8yyFsKXNuGxiNpV",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQSiQoKEAgSGAI4AUIIdGhpbmtpbmcSDMlT/bUsPsoC3L1NPRoMSykilew+sD6w72mkIjB3CDgnkQ9aK7YRFrfgoLkh8CjFVsBVmuXbdW084cLgJYTuzkxMdrVM69HnObMNyeAqpglIbPvDsbFQAKcFBDloQ0FLWh56AH+JOaoM4aOgjzKo+pjGNDxtGtGEWCx9KUZMQyHQCAIddoWqB1J9nIyJUTjQA6GTAIFPz0oejYj2v20TUHBQ8lh9lOmiNgE7/sbqT1Q30NcsiINlb6O8v0jno1CVn49X4jesOiFSQAm28lpWi72i+vkpcx89wG3otP8uyn2Ht58+tg+SvOYYzDmqo6mUtPLdgyz03ZiOFtXTDdhUUhGr6MNBTY3SlLyjSPbi1Je3rUHQP6HfWPUkieIsmomfX4vVVRLDTHkZNVr5xKMn5WhVz2bBssHrthccvnSx/zC6nezV1/JmOE/2Ml7ihSAUGTrcVW5JWMt+/hkF+AmvK2uvCtLboitHbCyAYSNC5+zD3Gdw9VZ/pIFZ88Aq66WjSYMf1K3PjQGm6I4KEf+Xg2HGL8nhUaMBJ3mmPr2UgCdjNaAvQv0i+byODO+uhh/4aiY5FXHog/5PFt3urZvP0YIthjtHbJJeiSBZmXbxt2J8EIPsHqN9hxMk2Fn64R+3eV3qy/PmTETBsKFnnMI4dsN1v/96egEKh4NXHas7w7uXHBKRezbruut18wZVoaAqK2MwRS9ZzYuuqo6GppzIQGv2Yt3/ohv/PpU43qBbyVE0TGlTkcasJBUxPiaKR2Saq5+OZE3OT0rtuQF33r+Nfi2W12F0aguYVsvSvXeh9jSF0ZKMmMa2QnVcuWy5y3AJxHskZwtezPq9SSVnyexmqlJDBwg2tjz+7c9HKi/fx1aktL7jNA6W4vnq0oJfZRZfwEAo3QTgp/HD5TKRYcIvNUPOUhBKbWUz3yt7iVkvt/aJgDGWA3SCTWNNNXbP/cO14UURjalKoZYS5yv0sbLLsARyWPc1Xow2XxszY05UmV+xFM/WgGS3rtxwUEYX99fhknFtokntRwG+yg+jacixR3G+yIyZFeES+Ks2Sx2vvqLzOcjkUnire7CbWYZThlCuf8mt0iTfaJeiT4c+p3nmTzHeU25CdYIMZjdEtLycD1pvnJuN7DcCuzh+ASgGcjJzgAsGvAeC/WJByrLuDPynEsur1cLa44sahzvkXDP5q0iOqQ4PyYoz61XsLmWPoLQdZLU58sYsZ0hsv2VTBTFHG4wmFWwgm9MKDrptT6gMgQWA2mXxvKBQwFHS3GwYtQ+vtlbQw87RqV/Ajpp7PADFifNQLWlYSomjgUouWa+xnzPQ1ecHquBovTjS6yhzaT4p4Mo+QQ5cqDhsRkd/6H893B59kqdA677KwPnuKZb1RnwM8G06SQjgSHGrhU1QUJ0aSUMsp7096sCNzRt4r6TnDtmFqQdJgf2AvlxRMdTrYXdNxsbzAINHnXO3poAI7MliDg1oJpBlFmHH7Sfhv4dYSSXRcettxdZ14m+zQufiIlP2J/IUALv6nPDB8UbwbWzoxF5zHbQT6oGzRn5nbvGNI5nHPts9Qi2td8MrDkaiXQ8FfGMhAS3g2CxuF8m5egy8mBmfaj1Hrou3R52haIEsrxit7DTAVisFrp4cCKB8sRMCifxR4ZOnAuBdxiVwrlT6iSMsyIR5RobN86ZmcMbHzWNUXSAxFBgB"
+      },
+      {
+        "type": "text",
+        "text": "{\"topics\":[{\"working_title\":\"Soy vs. Coconut-Soy Wax: What's the Difference in a Candle?\",\"target_query\":\"soy vs coconut soy wax\",\"products\":[\"P1\",\"P2\"],\"group\":\"Candle\"},{\"working_title\":\"Wood Wick vs. Cotton Wick: Which Candle Is Right for You?\",\"target_query\":\"wood wick vs cotton wick\",\"products\":[\"P1\",\"P2\"],\"group\":\"Candle\"},{\"working_title\":\"How to Trim a Wooden Wick Before Every Burn\",\"target_query\":\"how to trim wooden wick\",\"products\":[\"P2\"],\"group\":\"Candle\"},{\"working_title\":\"Beeswax vs. Soy Candles: How the Two Waxes Compare\",\"target_query\":\"beeswax vs soy candles\",\"products\":[\"P1\",\"P3\"],\"group\":\"Candle\"},{\"working_title\":\"How to Keep Taper Candles From Dripping\",\"target_query\":\"how to stop tapers dripping\",\"products\":[\"P3\"],\"group\":\"Taper\"},{\"working_title\":\"Taper Candle Base Sizes: Will It Fit Your Candlestick?\",\"target_query\":\"standard taper candle base size\",\"products\":[\"P3\"],\"group\":\"Taper\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1879,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 740,
+      "output_tokens_details": {
+        "thinking_tokens": 334
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

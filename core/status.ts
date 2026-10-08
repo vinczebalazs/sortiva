@@ -47,7 +47,7 @@ export async function banners(db: DbClient, storeId: number): Promise<Banner[]> 
     gsc_disconnected: boolean
   }>(
     `select f.paused_by_merchant, f.entitled, coalesce(f.budget_paused_on = ${LOCAL_TODAY}, false) as budget_today,
-            f.permissions_lost, (s.delivery_mode = 'auto_publish' and (s.target_blog_id is null or f.blog_missing)) as no_blog,
+            f.permissions_lost, (s.delivery_mode = 'auto_publish' and ((s.target_blog_id is null and s.blog_to_create is null) or f.blog_missing)) as no_blog,
             f.gsc_disconnected
      from store_flags f join stores s on s.id = f.store_id where f.store_id = $1`,
     [storeId],
@@ -64,7 +64,27 @@ export async function banners(db: DbClient, storeId: number): Promise<Banner[]> 
   return out
 }
 
-export type ThinState = { thin: boolean; usable: number; total: number }
+export type PauseReason = 'not_entitled' | 'paused_by_operator' | 'paused_by_merchant' | 'budget' | 'permission'
+
+/** Why nothing should be written for this store today, or null when it may go ahead. */
+export async function pauseReason(db: DbClient, storeId: number): Promise<PauseReason | null> {
+  const { rows } = await db.query<{ entitled: boolean; operator: boolean; merchant: boolean; budget: boolean; permission: boolean }>(
+    `select entitled, paused_by_operator as operator, paused_by_merchant as merchant,
+            coalesce(budget_paused_on = ${LOCAL_TODAY}, false) as budget, cardinality(permissions_lost) > 0 as permission
+     from store_flags where store_id = $1`,
+    [storeId],
+  )
+  const f = rows[0]
+  if (!f) return null
+  if (!f.entitled) return 'not_entitled'
+  if (f.operator) return 'paused_by_operator'
+  if (f.merchant) return 'paused_by_merchant'
+  if (f.budget) return 'budget'
+  if (f.permission) return 'permission'
+  return null
+}
+
+export type ThinState ={ thin: boolean; usable: number; total: number }
 
 export async function thinState(db: DbClient, storeId: number): Promise<ThinState> {
   const { rows } = await db.query<{ usable: number; total: number }>(

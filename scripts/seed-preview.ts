@@ -13,6 +13,8 @@ import { taskList } from '../jobs/runtime/task.ts'
 import { startWorker } from '../jobs/worker.ts'
 import { fixture } from '../scenarios/fixtures/index.ts'
 import { AnthropicLlm } from '../vendors/anthropic/client.ts'
+import { startFakeDataForSeo } from '../fakes/fake-dataforseo/server.ts'
+import { DataForSeoDemand } from '../vendors/dataforseo/client.ts'
 
 /**
  * Rebuilds the local database and fills it with fixture stores through the real pipeline, with the
@@ -32,10 +34,12 @@ const pool = createPool()
 const shopify = await startFakeShopify({ clientId: 'preview', clientSecret: 'preview' })
 // RECORD=1 records model answers the fixtures do not have yet, as the scenarios do.
 const anthropic = await startFakeAnthropic({ record: process.env.RECORD === '1', apiKey: optionalEnv('ANTHROPIC_API_KEY') })
+const dataforseo = await startFakeDataForSeo({ record: process.env.RECORD_DATAFORSEO === '1', realLogin: optionalEnv('DATAFORSEO_LOGIN'), realPassword: optionalEnv('DATAFORSEO_PASSWORD') })
 const deps: Deps = {
   pool,
   shopifyApp: { clientId: 'preview', clientSecret: 'preview', apiVersion: PINNED_VERSION, baseUrlFor: shopify.baseUrlFor },
   llm: new AnthropicLlm(pool, { apiKey: 'preview', baseURL: anthropic.url }),
+  demand: new DataForSeoDemand(pool, { login: dataforseo.login, password: dataforseo.password, baseUrl: dataforseo.url }),
   webhookDebounceMs: 1000,
   hooks: {},
 }
@@ -54,6 +58,7 @@ for (;;) {
 await worker.stop()
 await shopify.close()
 await anthropic.close()
+await dataforseo.close()
 const { rows } = await pool.query('select shop_domain, setup_step from stores order by id')
 for (const r of rows) console.log(`http://localhost:3000/dev?shop=${r.shop_domain}   (${r.setup_step})`)
 await pool.end()

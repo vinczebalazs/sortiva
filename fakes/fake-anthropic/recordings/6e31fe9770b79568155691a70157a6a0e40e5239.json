@@ -1,0 +1,98 @@
+{
+  "recordedAt": "2026-10-08T16:51:00.189Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "Egy webáruház blogcikkeit tervezed. Látod a bolt profilját és a termékeit fajták szerint csoportosítva, mindegyik mellett az általunk ellenőrzött tényekkel. Javasolj olyan cikkeket, amelyeket ez a bolt hitelesen meg tud írni, és amelyekre az emberek valóban keresnek.\n\nMinden cikk:\n- olyan kérdésre válaszol, amely a vásárlóban az ilyen termék megvétele előtt vagy után felmerül: hogyan válasszon, hogyan használja, hogyan ápolja, miben különbözik a bolt két terméktípusa, mit jelent egy tulajdonság;\n- egy termékfajtáról vagy termékcsoportról szól, soha nem egyetlen eladó tételről;\n- megírható az általa említett termékek tényeiből, és egy-négy terméket említ a hivatkozásukkal (P1, P2…);\n- egy keresőkifejezést céloz: azokat a szavakat, amelyeket a vásárló a Google-be írna, magyarul, két-hat szóban, kisbetűvel, márkanév, ár és évszám nélkül.\n\nNe javasolj semmit árakról, kedvezményekről, szállításról, versenytársakról vagy magáról a boltról. Ne javasolj olyan témát, amely a már lefedettek között szerepel, és ezek közeli átfogalmazását sem. Tartsd tiszteletben a tulajdonos „soha ne írd” listáját. Inkább kevesebb cikket javasolj, mint gyengét; ha semmi sem illik, adj vissza üres listát.\n\nMinden cikkhez add meg: working_title (egyszerű magyar cím), target_query, products (a hivatkozások), group (a termékfajta, amelyhez tartozik).",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<profile>\nSells: A Pedálbolt kerékpáros kiegészítőket árul. A kínálatban első és hátsó kerékpárlámpák, illetve ezekből összeállított lámpaszett szerepel, USB-C-n tölthető kivitelben. Emellett edzett acél U-lakatot és láncos zárat, valamint sárgaréz kerékpárcsengőt is kínál.\nAudience: Olyan kerékpárosok vásárolnak itt, akik világítást, lakatot vagy csengőt keresnek a kerékpárjukhoz.\nCountry: HU\nTone: expert\nNever say: —\n</profile>\n\n<products>\n<group name=\"Csengő\">\n  P1: Sárgaréz csengő\n    - A Sárgaréz csengő harangja tömör sárgarézből készült.\n    - A Sárgaréz csengő harangjának átmérője 55 mm.\n    - A Sárgaréz csengő 22,2 mm-es kormányra szerelhető.\n    - A Sárgaréz csengő csavarhúzóval szerelhető.\n</group>\n<group name=\"Lámpa\">\n  P2: Első lámpa, 400 lumen\n    - Az első lámpa fényereje 400 lumen.\n    - Az első lámpa 5 üzemmóddal rendelkezik.\n    - Az első lámpa USB-C csatlakozón keresztül tölthető.\n    - Az első lámpa 1500 mAh-s akkumulátorral rendelkezik.\n    - Az első lámpa üzemideje teljes fényen 2,5 óra.\n    - Az első lámpa üzemideje villogó módban 20 óra.\n    - Az első lámpa IPX5 vízállóságú.\n    - Az első lámpa szerszám nélkül szerelhető fel a kormányra.\n    - Az első lámpa 22–32 mm-es csőre szerelhető.\n  P3: Hátsó lámpa fékfény-érzékelővel\n    - A hátsó lámpa fékfény-érzékelővel rendelkezik.\n    - A hátsó lámpa gyorsulásmérője érzékeli a lassítást, és ilyenkor erősebben világít.\n    - A hátsó lámpa fényereje 60 lumen.\n    - A hátsó lámpa USB-C csatlakozón keresztül tölthető.\n    - A hátsó lámpa üzemideje akár 12 óra.\n    - A hátsó lámpa nyeregcsőre és csomagtartóra is rögzíthető.\n  P4: Lámpaszett: első 400 + hátsó 60 lumen\n    - A lámpaszett első lámpája 400 lumenes.\n    - A lámpaszett hátsó lámpája 60 lumenes.\n    - A lámpaszett hátsó lámpája fékfény-érzékelős.\n    - A lámpaszetthez egy USB-C kettős töltőkábel tartozik.\n    - A lámpaszett egy első és egy hátsó lámpát tartalmaz.\n</group>\n<group name=\"Zár\">\n  P5: U-lakat, 16 mm edzett acél\n    - A U-lakat 16 mm-es edzett acélból készült.\n    - A U-lakat kengyele 16 mm átmérőjű edzett acél.\n    - A U-lakat kettős zárnyelvvel rendelkezik.\n    - A U-lakat belső mérete 10 × 23 cm.\n    - A U-lakat tömege 1,2 kg.\n    - A U-lakathoz két kulcs jár.\n    - A U-lakathoz vázra szerelhető tartó jár.\n  P6: Láncos zár, 110 cm\n    - A láncos zár hossza 110 cm.\n    - A láncos zár 8 mm-es láncszemekből áll.\n    - A láncos zár láncszemei edzett acélból készültek.\n    - A láncos zár láncszemei textilborításban vannak.\n    - A láncos zár számzáras.\n    - A láncos zár 4 jegyű kóddal nyitható.\n    - A láncos zár tömege 1,6 kg.\n</group>\n</products>\n\n<already_covered>\n- Mi kötelező a kerékpáron?\n- Hogyan válassz kerékpárlámpát?\n- U-lakat vagy láncos zár: melyik a biztonságosabb?\n</already_covered>\n\n<at_most>20</at_most>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "topics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "working_title": {
+                    "type": "string"
+                  },
+                  "target_query": {
+                    "type": "string"
+                  },
+                  "products": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "group": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "working_title",
+                  "target_query",
+                  "products",
+                  "group"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "topics"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfq7cURzBgam5dBNBs57Z",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQS8BQKEAgSGAI4AUIIdGhpbmtpbmcSDGDwcD9P/B/RGwhu1RoMFsnWcf6y6cyms6+lIjCCHWbVIw9Ya5vq47ANjm2kS0OaOEGPqBOXne/1WFiZ7dook/K8fCIxaiRr4Qgs5v8qjRQHIjvYchz1mwaOEnQwI2vKyhBF762urrgR8pqtoXRjUtjdF6/McvyIey8MeRfv16Xsq3qZeJPtSfgBWHEZOOJfS14AUo8Hpn2BuItM6ApsyKK8DIz3W6adhWGJTtmTCAoqg140wUwsBCBnwQx0pLG1oBQlYNFT9gWNeEg55zuL0SRctasdfYIxnsztVAiQjtpkBG+YswDCWk+zoiVG9pmO56/Oe/8JoLeOinPZ+/j9UZ99URS//o9yS2KTgdbR5V0hHm/nm08OKZArDjV8l01pFQpJJTSVQjrYcAqcyIKFRZMI8acxcJ/8bdn1dtEl2vtAByUtlM9DnwN4Tt3KKiSrTi/W5hEyD8NU/itqfkTRQIbm9kOeAXdt/1bxwkvTMU3b6Iy85aiI1a1rKVdnHcM785+hwn1ndOb4dr/jveiAEhZTUOnHthQcOpNZoAvR+wzmTLVCar2YgVVPVH7U9mYIwo81TV4P3jO9TvI940ro4XuGrfrf4bd3zW9b3HvtRUsYZEHqd2M2xIfQ9iRgT4lBChmM9nGKX4hJSH5kHhK/c6KX0tJJEh6UuPkYgJ0TC40DeCfhQSsbPztIWgRjQl02bQ8nX8fzVrg6heL4ikrZBmKpebYROeuIveHh6rLheYCom30lIXZChxYSA4E9oRAYf8/uWYnyXtmR19kjhM9egnicJzP0O7uXMgd2KSJuzYLrqgevZNPLN4dFQRZjdE69K6/egUse2P+9FnGNTZ3Bzg9n5jJwFMEmBDQLmdl0+Vf/TGl4xncgA5h04lSX76yNf8AoTWah+Jytp8G3GsyNSjtKw5zs94sjY/3dC8qYbUKRFl1WQOcZYQpzNeBLSDh8ecH6ARV2LN6KRAAtnelw5Bbnccs+7saqH+Z2T1LV4xrzDyjnMxUP6a6piigYUc8EPH/ESoOo9Su/Q0FYPadfppzbiqYylFzq/Bp+PW7SZawfr/RiF0tQ4EpuIFMR9qZwLgpNoLaPOYYR/e6Gdathh8sW8LGKdoRivnxGB1T1p0LTwkOJJLlWSao486yro5tkZhhOjMlSRNE/Om5tF0+o8WzjarzIr3PtCW4b5q8GdwGgctxHl0JwERACLg+Vm03pwrA6/0STdWZyaGF5sc1dtu+kJi4/ncvVAoQ+p73gIV1N3Mhf1GU3afOTllh1xntbHpoGCQORtzdeIWGS2Vst8ASWn9Nu+j/j3lzRTB9QtVdsFdFMj44hal+F6durqFh/qyj7RmPaeJ8nTg51V5WyIIEg9dyKSNK3NekE7OCoPN7lBsEkwfzL7fQ9mPJjZL2t1qchPZ6qmAYoXtW8+sjBanbEFMgJBwwCE5L80Ws/oG/LkdPMEO2rTulA+btrZcPoh65W1oNNhIuFifDmaC6XZ1sN0jBWz1uYoyHSXcs/AE7R1xPBgaohBiFEKHU39lHVNBVcXZey3suWdb8AoBmShJOqPIVvhzFhal/kpg0b9W0E6bMcjFeG8hr0QOvLpOFaxISYNfGJs8pdPQx0C68h7oSXcIryLwB2QXJqtE2VhLi+NKT4+8QuJeteG9ifjsq6OlwuvhPzX3ZA9pJsw/p8Y7+wU+sGrGdJXQoSXYWYJ/t8CNWm9DDhdZvkuNSB0tTlwYSSVXPwebo58DDPKU7EqlP2s7O1b72K6VD/livNAXecbSYaqtdUOXraj6eg/tOek7QwVhaodQ+iWCc9GXtVqrHHl3wHVZI2r1bjritCYsVW0l+SjYjTUTQAmx35n/YPh7xWDCw0y6ARoNAjO3STcqgM0qBQIdD4yJkHK2xVQJzUW3vAzmCRGDg8CpAg5jxc+m3jIRL5G1vFGvR3vjiheDNwhBiUXi7uK8HVB+p8YhqsO294Xw7dBfyvwXQzcNYpjW2GWFk09gWkYneSiXSSfrtZMRV35A/nMR4lNpJcc81lvV9C1bECEADZMXwB3zTye48cTeP6nL6bpzrOq9ySWsEdG0nZr6DI5PQy1ipntXWz1EDxbwOLqhkAqU5a6gbAzsw5pFB6Z9Uo3tyLb9b7qY7+LirTP6C1PIxXoHRo7el+GKiP1LTaf5DaxuETFjHct4pf9GOaSAsDPp8glGIn8vETZDPrnbgqfqDb1Ph5f6Mi44vCS64DaUVsRgu8mEXOkdbCNdjrMS/49HC6FcwMxge9U88Xae/glCOHK+RXPPKZXp8KP3qafa4eQif0vOu5XxT66Nn2yDwvFtDAw4F1tNPBIA+AlAP76mu1OwzuYPyokqI6RixTN8Ieylaj4vbI0r21IaxUDZpJBdWebM/cXoD96ChQ5gBW4BnpvV52wqKl8AcYKZlUU+HQ1qqVoTGRwBX5lecLaLVf5rWHdkCKRSPbsGogPKF93xfDQyp6otqwr+9xnXVISHZ5cWi+8Pk47X2ReED4ikNK0J/OPFXPGjeYhwW5sYABPcfDvYKL+WN2AmZ5yo/BjOd/c2ewrchesknJnbFtlJcFMKHYp0vwSkj63ZRbFVac3VVbMV78fbpDgXRolIeyP4oXpo0k8RTIWiBaVg593u4t9Sa2WeWZL8LIHpoIH/T9rrb5YObfSVW3az4LwcP2rvJzVBUPhaH1ZCiFYD72XmdTzR8A6G2GlTqxhAh/QL2DAw+uafm3ETaOlZ5huQJrz3v6aaOxBX1d0KSGDhUG9KmwQyLc4VVMsSMNhCkNI9rww1Wyg4wpRggjpUhMWy+/svBXS7ATCVl1xTpNsPe0GVMlIitTTsBu2wtzWRiqV87lD3HQGAHBiSdloDDBPTlDYbeWyB5dPhSLucOvx0HEXXYFLe03HVyTQLy/LZmzJcnVqTDm19mRZGb7aMCK9osyZuGrMqBQJV8bOP+i3Gy1bSPMATB8+pyUs887OD22tvUl21HfuQKU/EBNre3kYTi3qw0AFjJtyFpfR+ijvMgU6BY5/H+6vGwnoIfO2a4BR/Fhe4Aaq+5maGlhSZ9li/G6sTLgg+ap+gzk/cifPmpTlH2XjyJhyYw3ZywwC1/8eWxYpEXA25gN86r0KIeWnqN4hC01cHz2xOfaL6yf/ykxfvK1XumdXXlnlvM/K/DmXS+STccLww3utggf8N22pCJplgbN1+BFUiWnWaTB7BbvtWkUxUhQhjkA07UWh5Ib/JyVzyO2VvevtCyK/IPNvAUFWg+RZ8ewwY2Jjmw4+CX2Sop1EdRODnJlhdmcE80VRviC5irpIW99g/fTXmuUYwrI0H614Lek64tb2nzQQbPegUOgmcgSwI9EPmGe7cjrgs0U054lKuf3wWp+8gY4GsFiW9dRdE/tnTLLSUFDbjJ4ZizNet3UPJ4AUL578jOADQn/GHgegc5wPPoUxhSlZ6E7zDb1AlfMzYasT27L3rs4Lc/W0iiArietdH1R+9wNSo3zZn9ZjmYO9wWmvlHQ1zZ8Yrb3HJZ9rrBrwWuwEJfJ47SFPHIhAxgB"
+      },
+      {
+        "type": "text",
+        "text": "{\"topics\":[{\"working_title\":\"Hogyan működik a fékfény-érzékelős hátsó kerékpárlámpa?\",\"target_query\":\"fékfényes hátsó lámpa kerékpár\",\"products\":[\"P3\",\"P4\"],\"group\":\"Lámpa\"},{\"working_title\":\"Mit jelent az IPX5 vízállóság a kerékpárlámpánál, és bírja-e az esőt?\",\"target_query\":\"kerékpárlámpa vízálló ipx5\",\"products\":[\"P2\"],\"group\":\"Lámpa\"},{\"working_title\":\"Villogó vagy folyamatos fény: melyik üzemmódot mikor használd?\",\"target_query\":\"villogó vagy folyamatos kerékpárlámpa\",\"products\":[\"P2\",\"P3\"],\"group\":\"Lámpa\"},{\"working_title\":\"Meddig bírja egy töltéssel a kerékpárlámpa? Üzemidő és akkumulátor\",\"target_query\":\"kerékpárlámpa akkumulátor üzemidő\",\"products\":[\"P2\",\"P3\",\"P4\"],\"group\":\"Lámpa\"},{\"working_title\":\"USB-C-s kerékpárlámpa töltése: tippek az akkumulátor kíméléséhez\",\"target_query\":\"kerékpárlámpa töltése usb-c\",\"products\":[\"P2\",\"P3\",\"P4\"],\"group\":\"Lámpa\"},{\"working_title\":\"Hátsó lámpa felszerelése: nyeregcsőre vagy csomagtartóra?\",\"target_query\":\"hátsó lámpa felszerelése kerékpárra\",\"products\":[\"P3\"],\"group\":\"Lámpa\"},{\"working_title\":\"Első lámpa felszerelése a kormányra szerszám nélkül\",\"target_query\":\"első lámpa felszerelése kormányra\",\"products\":[\"P2\"],\"group\":\"Lámpa\"},{\"working_title\":\"Lámpaszett vagy külön vett első és hátsó lámpa?\",\"target_query\":\"kerékpár lámpaszett első hátsó\",\"products\":[\"P4\",\"P2\",\"P3\"],\"group\":\"Lámpa\"},{\"working_title\":\"Hogyan használd helyesen az U-lakatot, hogy ne lehessen feltörni?\",\"target_query\":\"u-lakat helyes használata\",\"products\":[\"P5\"],\"group\":\"Zár\"},{\"working_title\":\"Mekkora U-lakat kell? A belső méret szerepe a lezárásnál\",\"target_query\":\"u-lakat méret választás\",\"products\":[\"P5\"],\"group\":\"Zár\"},{\"working_title\":\"Számzáras vagy kulcsos kerékpárlakat: melyik a kényelmesebb?\",\"target_query\":\"számzáras vagy kulcsos lakat\",\"products\":[\"P5\",\"P6\"],\"group\":\"Zár\"},{\"working_title\":\"Mit jelent az edzett acél a kerékpárlakatoknál?\",\"target_query\":\"edzett acél kerékpárlakat\",\"products\":[\"P5\",\"P6\"],\"group\":\"Zár\"},{\"working_title\":\"Hogyan szállítsd a lakatot a kerékpáron? Váztartó és egyéb megoldások\",\"target_query\":\"kerékpárlakat szállítása vázon\",\"products\":[\"P5\",\"P6\"],\"group\":\"Zár\"},{\"working_title\":\"Kerékpárcsengő felszerelése lépésről lépésre\",\"target_query\":\"kerékpárcsengő felszerelése\",\"products\":[\"P1\"],\"group\":\"Csengő\"},{\"working_title\":\"Miért jobb a sárgaréz csengő hangja?\",\"target_query\":\"sárgaréz kerékpárcsengő\",\"products\":[\"P1\"],\"group\":\"Csengő\"},{\"working_title\":\"Hogyan mérd meg a kormány átmérőjét kiegészítők vásárlása előtt?\",\"target_query\":\"kerékpár kormány átmérő mérése\",\"products\":[\"P1\",\"P2\"],\"group\":\"Csengő\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 2529,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 2256,
+      "output_tokens_details": {
+        "thinking_tokens": 970
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

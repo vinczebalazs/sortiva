@@ -17,8 +17,25 @@ export const CONFIG = {
 
   spendCapUsd: { perStoreDaily: 10, globalDaily: 60 },
 
-  // Minimum monthly searches for a topic, per article language.
-  demandFloor: { en: 50, hu: 20 },
+  // Minimum monthly searches for a topic, per article language. The old build's locale floors, kept as the plan says.
+  demandFloor: { en: 100, hu: 20 },
+  topics: {
+    // Waiting topics allowed for a store that is not thin; a thin store gets one per usable product.
+    queueCap: 30,
+    // Fewer waiting topics than this sends topic-finding out again, at most once per `rediscoverAfterDays`.
+    lowQueue: 5,
+    rediscoverAfterDays: 7,
+    // Most candidates a single model call is asked for.
+    maxCandidates: 20,
+    // Share of a query's content words an existing page must cover to count as already answering it.
+    pageOverlapShare: 2 / 3,
+    // A word in at least this share of the store's titles is store-wide and ignored when comparing titles.
+    storeWideWordShare: 0.3,
+    // Top-three pages two queries must share to be the same intent.
+    sharedTop3ForSameIntent: 2,
+    // Distinct facts behind a topic at which its facts stop adding to its rank.
+    factsForFullScore: 12,
+  },
   minDistinctFactsPerArticle: 6,
   judgeFloors: { grounding: 4, informationGain: 4, other: 3 },
   defaultPublishHour: 9,

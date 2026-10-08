@@ -8,6 +8,8 @@ import { banners, thinState, type Banner, type ThinState } from '../core/status.
 import { syncProgress, type SyncProgress } from '../core/learn/sync.ts'
 import { createTestDb, type TestDb } from '../db/test-db.ts'
 import { startFakeAnthropic, type FakeAnthropic } from '../fakes/fake-anthropic/server.ts'
+import { startFakeDataForSeo, type FakeDataForSeo } from '../fakes/fake-dataforseo/server.ts'
+import { DataForSeoDemand } from '../vendors/dataforseo/client.ts'
 import { PINNED_VERSION } from '../fakes/fake-shopify/schema/pinned.ts'
 import { startFakeShopify, type FakeShopify } from '../fakes/fake-shopify/server.ts'
 import type { FixtureStore } from '../fakes/fake-shopify/state.ts'
@@ -18,6 +20,10 @@ import type { Deps, Hooks } from '../jobs/deps.ts'
 import { acceptDelivery } from '../jobs/intake.ts'
 import { taskList } from '../jobs/runtime/task.ts'
 import { nightlySweep } from '../jobs/sweepers.ts'
+import { dailySweep, requestDiscovery } from '../jobs/topics.ts'
+import { finishSetup, skipSearchConsole } from '../core/settings.ts'
+import { confirmProfile, setupState } from '../core/setup.ts'
+import type { DiscoveryOutcome } from '../core/topics/discover.ts'
 import { startWorker } from '../jobs/worker.ts'
 import { fixture } from './fixtures/index.ts'
 
@@ -30,6 +36,7 @@ export type Pipeline = {
   hooks: Hooks
   shopify: FakeShopify
   anthropic: FakeAnthropic
+  dataforseo: FakeDataForSeo
   worker: Runner
   install: (store: string | FixtureStore, opts?: { alreadyLoaded?: boolean }) => Promise<{ id: number; domain: string }>
   storeId: (domain: string) => Promise<number>
@@ -38,6 +45,12 @@ export type Pipeline = {
   syncProgress: (storeId: number) => Promise<SyncProgress>
   banners: (storeId: number) => Promise<Banner[]>
   thinState: (storeId: number) => Promise<ThinState>
+  /** Confirms the drafted profile, skips Search Console, picks export, and starts topic-finding, as a merchant would. */
+  completeSetup: (storeId: number) => Promise<void>
+  /** Sends topic-finding out again now, as the low-queue rule or a profile change would. */
+  rediscover: (storeId: number) => Promise<void>
+  /** The output topic-finding recorded for its latest run on this store. */
+  lastDiscovery: (storeId: number) => Promise<DiscoveryOutcome>
   /** Waits until no job is running and none is due in the next 30 seconds. */
   settle: (timeoutMs?: number) => Promise<void>
   retryFailedNow: () => Promise<void>
@@ -71,16 +84,19 @@ export async function startPipeline(options: { webhookDebounceMs?: number } = {}
   const shopify = await startFakeShopify({ clientId: CLIENT_ID, clientSecret: CLIENT_SECRET, webhookUrl })
   const record = process.env.RECORD === '1'
   const anthropic = await startFakeAnthropic({ record, apiKey: optionalEnv('ANTHROPIC_API_KEY') })
+  // DataForSEO is recorded only with RECORD_DATAFORSEO=1, separately, because its balance is small.
+  const dataforseo = await startFakeDataForSeo({ record: process.env.RECORD_DATAFORSEO === '1', realLogin: optionalEnv('DATAFORSEO_LOGIN'), realPassword: optionalEnv('DATAFORSEO_PASSWORD') })
 
   deps = {
     pool: db.pool,
     shopifyApp: { clientId: CLIENT_ID, clientSecret: CLIENT_SECRET, apiVersion: PINNED_VERSION, baseUrlFor: shopify.baseUrlFor },
     shopifyClient: { baseDelayMs: 20 },
     llm: new AnthropicLlm(db.pool, { apiKey: 'scenario-key', baseURL: anthropic.url }),
+    demand: new DataForSeoDemand(db.pool, { login: dataforseo.login, password: dataforseo.password, baseUrl: dataforseo.url }),
     webhookDebounceMs: options.webhookDebounceMs ?? 1_500,
     hooks,
   }
-  const worker = await startWorker({ connectionString: db.url, taskList: { ...taskList(deps, ALL_JOBS), nightly_sweep: nightlySweep(db.pool) }, concurrency: 4, quiet: true })
+  const worker = await startWorker({ connectionString: db.url, taskList: { ...taskList(deps, ALL_JOBS), nightly_sweep: nightlySweep(db.pool), daily_sweep: dailySweep(db.pool) }, concurrency: 4, quiet: true })
 
   const storeId = async (domain: string) => {
     const { rows } = await db.pool.query<{ id: number }>('select id from stores where shop_domain = $1', [domain])
@@ -110,6 +126,7 @@ export async function startPipeline(options: { webhookDebounceMs?: number } = {}
     hooks,
     shopify,
     anthropic,
+    dataforseo,
     worker,
     install: async (store, opts = {}) => {
       const data = typeof store === 'string' ? fixture(store) : store
@@ -125,6 +142,24 @@ export async function startPipeline(options: { webhookDebounceMs?: number } = {}
     syncProgress: (id) => syncProgress(db.pool, id),
     banners: (id) => banners(db.pool, id),
     thinState: (id) => thinState(db.pool, id),
+    completeSetup: async (id) => {
+      const state = await setupState(db.pool, id)
+      if (!state.profile) throw new Error(`store ${id} has no drafted profile (setup step ${state.step})`)
+      const confirmed = await confirmProfile(db.pool, id, { ...state.profile, neverSay: state.profile.neverSay })
+      if (!confirmed.ok) throw new Error(JSON.stringify(confirmed.errors))
+      await skipSearchConsole(db.pool, id)
+      const done = await finishSetup(db.pool, id, { mode: 'export', blog: null, publishAs: 'live', publishHour: 9, reviewFirst: false })
+      if (!done.ok) throw new Error(JSON.stringify(done.errors))
+      await requestDiscovery(db.pool, id, 'setup', new Date().toISOString())
+    },
+    rediscover: async (id) => {
+      await requestDiscovery(db.pool, id, 'low_queue', new Date().toISOString())
+    },
+    lastDiscovery: async (id) => {
+      const { rows } = await db.pool.query(`select output from job_ledger where task = 'find_topics' and store_id = $1 order by completed_at desc limit 1`, [id])
+      if (!rows[0]) throw new Error(`no finished topic-finding for store ${id}`)
+      return rows[0].output
+    },
     settle,
     retryFailedNow: async () => {
       await db.pool.query(`update graphile_worker._private_jobs set run_at = now() where attempts > 0 and locked_at is null`)
@@ -133,6 +168,7 @@ export async function startPipeline(options: { webhookDebounceMs?: number } = {}
       await worker.stop()
       await shopify.close()
       await anthropic.close()
+      await dataforseo.close()
       await new Promise<void>((r) => receiver.close(() => r()))
       await db.drop()
     },

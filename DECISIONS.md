@@ -97,6 +97,29 @@ The mockup folder (`~/Desktop/Website UI mockups project`) holds the sixteen moc
 
 **Unsure.** (1) Whether "Understanding each product" should block setup for a large catalogue: today the profile waits for every fact sheet. (2) The crash test kills the job by throwing at a checkpoint, not by killing the process; a real process kill is planned with the phase 4 crash tests.
 
+## 2026-10-08 — Founder: phase 2 topic rules
+
+Asked at the start of phase 2; answered in the session.
+
+- **Topic-finding runs again when the queue runs low**: when fewer than 5 topics are waiting, at most once a week, and also after the merchant changes the store profile. Each run costs one model call and about 0.10 USD of DataForSEO.
+- **Queue size**: a thin store (fewer than 5 products with enough facts) gets at most one topic per such product; any other store at most 30 waiting topics, about a month.
+- **A topic the merchant types in** is accepted even if few people search for it (their choice overrides our minimum), and if it is already in the queue, that topic moves to the top and the screen says so. Neither adds an outcome to `mvp-ui.md` §5.3 beyond "moved to the top".
+- **DataForSEO money is left until the end of the phase.** The account holds 0.82 USD; recording real answers for all fixture shops costs about 1 USD per version of the topic prompt on the Google Ads volume endpoint (0.09 USD a request; top-ten results 0.002 USD a phrase). Until that is settled, scenarios run against the fake DataForSEO answering in the shape of DataForSEO's published examples, with numbers each scenario sets.
+
+## 2026-10-08 — Assumed: how topics are found and checked (phase 2)
+
+- **Demand floors are the old build's: 100 monthly searches for English, 20 for Hungarian**, as `mvp-plan.md` §3.3 says to keep them. The handoff's placeholder for English was 50. The old file itself marked these numbers as never signed off, so they are worth a look once real volumes come in.
+- **"Already has a page about this"** means an existing blog post or page whose title or address covers at least two thirds of the query's meaningful words, ignoring words that run through the whole shop (such as "dog" in a dog shop). Without that exception, "how to clean a dog leash" was thrown out because the shop has a post on leash length. Collections are not compared: they are the shop's product listings, which an article links to rather than competes with. Hungarian title matching is weak (word forms change a lot), so for Hungarian the main duplicate check is the next one.
+- **Same intent** means two phrases whose top three Google results share at least two pages. The higher-demand one is kept; a new candidate never displaces a topic already waiting in the queue.
+- **"All ten results are product listings"** is judged per result: one with a price on Google or with a shop address (/products/, /collections/, /termek/ and similar) counts as a listing.
+- **Ranking** multiplies demand (on a log scale) by how many distinct facts back the topic and by how much of the first page is not shop listings. The weights are in `core/config.ts`.
+- **"Skip this one"** on today's topic takes it out of the queue without marking it "not interested", so a later search may propose it again; if it had already taken today's slot, today stays empty.
+- **A pause on the day's run is final for that day.** If the shop is paused at its publish hour, the day is recorded as skipped with the reason and is not made up later the same day.
+- **Search answers are reused for 30 days (volumes) and 7 days (top results)**, then fetched again, never served stale (rule 8).
+- **When DataForSEO cannot answer** (including an empty balance), topic-finding stops and is retried; it never continues without the numbers. No banner exists for this in `mvp-ui.md`; the queue simply does not grow. Worth a decision before launch.
+- **Changing the article language** in Settings takes waiting topics in the old language out of the queue and searches again.
+- **"Create a blog called 'Blog'"** in setup step 4 is recorded as the merchant's choice; the blog is created when auto-publish is built in phase 4.
+
 ## Spend
 
 Running total of what this build has spent on the founders' keys.
@@ -104,5 +127,6 @@ Running total of what this build has spent on the founders' keys.
 | Date | Key | What | USD |
 |---|---|---|---|
 | 2026-10-08 | Anthropic | Phase 1 recordings: fact sheets and profile drafts for the ten fixture stores and the 250-product catalogue (69 calls, Claude Opus 5.5) | 0.92 |
+| 2026-10-08 | Anthropic | Phase 2 recordings: topic proposals and "Add a topic" matches (12 calls) | 0.40 |
 
-**Total: 0.92 USD** (Anthropic 0.92, DataForSEO 0.00). Figures are computed from the token counts in the committed recordings at 4 / 20 USD per million input / output tokens.
+**Total: 1.32 USD** (Anthropic 1.32, DataForSEO 0.00). Figures are computed from the token counts in the committed recordings at 4 / 20 USD per million input / output tokens.

@@ -1,0 +1,98 @@
+{
+  "recordedAt": "2026-10-08T16:50:08.709Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "Egy webáruház blogcikkeit tervezed. Látod a bolt profilját és a termékeit fajták szerint csoportosítva, mindegyik mellett az általunk ellenőrzött tényekkel. Javasolj olyan cikkeket, amelyeket ez a bolt hitelesen meg tud írni, és amelyekre az emberek valóban keresnek.\n\nMinden cikk:\n- olyan kérdésre válaszol, amely a vásárlóban az ilyen termék megvétele előtt vagy után felmerül: hogyan válasszon, hogyan használja, hogyan ápolja, miben különbözik a bolt két terméktípusa, mit jelent egy tulajdonság;\n- egy termékfajtáról vagy termékcsoportról szól, soha nem egyetlen eladó tételről;\n- megírható az általa említett termékek tényeiből, és egy-négy terméket említ a hivatkozásukkal (P1, P2…);\n- egy keresőkifejezést céloz: azokat a szavakat, amelyeket a vásárló a Google-be írna, magyarul, két-hat szóban, kisbetűvel, márkanév, ár és évszám nélkül.\n\nNe javasolj semmit árakról, kedvezményekről, szállításról, versenytársakról vagy magáról a boltról. Ne javasolj olyan témát, amely a már lefedettek között szerepel, és ezek közeli átfogalmazását sem. Tartsd tiszteletben a tulajdonos „soha ne írd” listáját. Inkább kevesebb cikket javasolj, mint gyengét; ha semmi sem illik, adj vissza üres listát.\n\nMinden cikkhez add meg: working_title (egyszerű magyar cím), target_query, products (a hivatkozások), group (a termékfajta, amelyhez tartozik).",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<profile>\nSells: A Mézeskert Méhészet mézeket árul: két fajtamézet, 500 g-os kiszerelésben, a nyírségi májusi pergetésű akácmézet és a júniusban pergetett hársmézet. Emellett van egy 250 g-os krémméz is, amely vegyes virágmézből készül kenhetőre keverve, 2% szárított tihanyi levendulavirággal.\nAudience: Azoknak szól, akik mézet keresnek: fajtamézet vagy kenhető, ízesített krémmézet.\nCountry: HU\nTone: friendly\nNever say: —\n</profile>\n\n<products>\n<group name=\"Krémméz\">\n  P1: Krémméz levendulával, 250 g\n    - A Krémméz levendulával kiszerelése 250 g.\n    - A Krémméz levendulával vegyes virágmézből készül.\n    - A Krémméz levendulával irányított kristályosítással kenhető krémmé keverve készül.\n    - A Krémméz levendulával 2% szárított tihanyi levendulavirágot tartalmaz.\n    - A Krémméz levendulával szobahőmérsékleten, napfénytől védve tárolandó.\n    - A Krémméz levendulával a Mézeskert terméke.\n</group>\n<group name=\"Méz\">\n  P2: Akácméz 500 g\n    - Az Akácméz nettó tömege 500 g.\n    - Az Akácméz fajtaméz.\n    - Az Akácméz a Nyírségből származik.\n    - Az Akácméz 2026. májusi pergetésű.\n    - Az Akácméz hőkezeletlen.\n    - Az Akácméz szűrt.\n    - Az Akácméz színe világos, vízszerű.\n    - Az Akácméz magas fruktóztartalma miatt sokáig folyékony marad.\n    - Az Akácméz 500 g-os üvegben, fém tetővel kapható.\n  P3: Hársméz 500 g\n    - A Hársméz nettó tömege 500 g.\n    - A Hársméz a Mézeskert terméke.\n    - A Hársméz fajtaméz.\n    - A Hársmézet hársvirágzáskor, júniusban pergették.\n    - A Hársméz a Bakonyból származik.\n    - A Hársméz hőkezeletlen.\n    - A Hársméz enyhén mentolos, kesernyés utóízű.\n    - A Hársméz néhány hónap alatt finom szemcsésre kristályosodik.\n    - A kristályosodott Hársméz 40 °C alatti vízfürdőben újra folyékony lesz.\n</group>\n</products>\n\n<already_covered>\n—\n</already_covered>\n\n<at_most>6</at_most>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "topics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "working_title": {
+                    "type": "string"
+                  },
+                  "target_query": {
+                    "type": "string"
+                  },
+                  "products": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "group": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "working_title",
+                  "target_query",
+                  "products",
+                  "group"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "topics"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfq7ZZuKQ29UTVdmvoNck",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "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"
+      },
+      {
+        "type": "text",
+        "text": "{\"topics\":[{\"working_title\":\"Miért kristályosodik a méz, és miért marad az akácméz folyékony?\",\"target_query\":\"miért kristályosodik a méz\",\"products\":[\"P3\",\"P2\"],\"group\":\"Méz\"},{\"working_title\":\"Így lesz újra folyékony a kristályos méz, vízfürdőben 40 °C alatt\",\"target_query\":\"kristályos méz felolvasztása\",\"products\":[\"P3\"],\"group\":\"Méz\"},{\"working_title\":\"Akácméz vagy hársméz? Íz, szín és állag összehasonlítva\",\"target_query\":\"akácméz és hársméz különbség\",\"products\":[\"P2\",\"P3\"],\"group\":\"Méz\"},{\"working_title\":\"Mit jelent az, hogy hőkezeletlen méz?\",\"target_query\":\"hőkezeletlen méz jelentése\",\"products\":[\"P2\",\"P3\"],\"group\":\"Méz\"},{\"working_title\":\"Mi az a krémméz, és hogyan lesz kenhető?\",\"target_query\":\"mi az a krémméz\",\"products\":[\"P1\"],\"group\":\"Krémméz\"},{\"working_title\":\"Hogyan tároljuk a krémmézet, hogy szép kenhető maradjon?\",\"target_query\":\"krémméz tárolása\",\"products\":[\"P1\"],\"group\":\"Krémméz\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1963,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 886,
+      "output_tokens_details": {
+        "thinking_tokens": 451
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

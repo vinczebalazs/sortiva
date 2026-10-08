@@ -10,3 +10,4 @@ fakes/*/recordings/*.secret.json
 .react-router/
 test-results/
 playwright-report/
+scripts/tmp/

@@ -1,0 +1,77 @@
+{
+  "recordedAt": "2026-10-08T16:51:07.943Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 4000,
+    "system": "A shop owner wants an article about the subject they typed. You see the subject and the shop's products. Work out:\n- target_query: the phrase a shopper would type into Google to find such an article, in English, two to six words, lower case;\n- working_title: a plain headline in English;\n- products: the references (P1, P2…) of the products the article would be about or would mention. Only products that truly belong to the subject; an empty list if the shop sells nothing related.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<subject>how to style a throw blanket on a sofa</subject>\n<products>\nP1: Bliss Cushion (Cushion)\nP2: Glow Diffuser (Diffuser)\nP3: Linen Napkins, set of 4 (Table linen)\nP4: Serenity Throw (Throw)\nP5: Harmony Vase (Vase)\n</products>"
+      }
+    ],
+    "output_config": {
+      "effort": "low",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "target_query": {
+              "type": "string"
+            },
+            "working_title": {
+              "type": "string"
+            },
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "target_query",
+            "working_title",
+            "products"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfq7eRXvZ2RrnQbybvw4m",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"target_query\":\"how to style a throw blanket on sofa\",\"working_title\":\"How to Style a Throw Blanket on a Sofa\",\"products\":[\"P4\",\"P1\"]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 560,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 58,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}
