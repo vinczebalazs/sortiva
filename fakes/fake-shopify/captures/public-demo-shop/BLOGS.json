@@ -1,0 +1,41 @@
+{
+  "source": "shopify.dev admin-graphql-direct-proxy (Shopify public demo shop)",
+  "endpoint": "https://shopify.dev/admin-graphql-direct-proxy/2026-07",
+  "apiVersion": "2026-07",
+  "capturedAt": "2026-10-08T15:22:04.978Z",
+  "request": {
+    "document": "BLOGS",
+    "variables": {
+      "first": 3
+    }
+  },
+  "status": 200,
+  "body": {
+    "data": {
+      "blogs": {
+        "nodes": [
+          {
+            "id": "gid://shopify/Blog/27345944598",
+            "handle": "news",
+            "title": "News"
+          }
+        ],
+        "pageInfo": {
+          "hasNextPage": false,
+          "endCursor": "eyJsYXN0X2lkIjoyNzM0NTk0NDU5OCwibGFzdF92YWx1ZSI6IjI3MzQ1OTQ0NTk4In0="
+        }
+      }
+    },
+    "extensions": {
+      "cost": {
+        "requestedQueryCost": 4,
+        "actualQueryCost": 3,
+        "throttleStatus": {
+          "maximumAvailable": 2000,
+          "currentlyAvailable": 1997,
+          "restoreRate": 100
+        }
+      }
+    }
+  }
+}

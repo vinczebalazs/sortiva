@@ -1,0 +1,42 @@
+{
+  "source": "shopify.dev admin-graphql-direct-proxy (Shopify public demo shop)",
+  "endpoint": "https://shopify.dev/admin-graphql-direct-proxy/2026-07",
+  "apiVersion": "2026-07",
+  "capturedAt": "2026-10-08T15:22:04.609Z",
+  "request": {
+    "document": "COLLECTIONS_PAGE",
+    "variables": {
+      "first": 3
+    }
+  },
+  "status": 200,
+  "body": {
+    "data": {
+      "collections": {
+        "nodes": [
+          {
+            "id": "gid://shopify/Collection/70598819862",
+            "handle": "frontpage",
+            "title": "Home page",
+            "descriptionHtml": ""
+          }
+        ],
+        "pageInfo": {
+          "hasNextPage": false,
+          "endCursor": "eyJsYXN0X2lkIjo3MDU5ODgxOTg2MiwibGFzdF92YWx1ZSI6IjcwNTk4ODE5ODYyIn0="
+        }
+      }
+    },
+    "extensions": {
+      "cost": {
+        "requestedQueryCost": 4,
+        "actualQueryCost": 3,
+        "throttleStatus": {
+          "maximumAvailable": 2000,
+          "currentlyAvailable": 1997,
+          "restoreRate": 100
+        }
+      }
+    }
+  }
+}

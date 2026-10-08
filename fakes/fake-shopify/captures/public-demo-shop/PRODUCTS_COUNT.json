@@ -1,0 +1,29 @@
+{
+  "source": "shopify.dev admin-graphql-direct-proxy (Shopify public demo shop)",
+  "endpoint": "https://shopify.dev/admin-graphql-direct-proxy/2026-07",
+  "apiVersion": "2026-07",
+  "capturedAt": "2026-10-08T15:22:04.433Z",
+  "request": {
+    "document": "PRODUCTS_COUNT",
+    "variables": {}
+  },
+  "status": 200,
+  "body": {
+    "data": {
+      "productsCount": {
+        "count": 1001
+      }
+    },
+    "extensions": {
+      "cost": {
+        "requestedQueryCost": 10,
+        "actualQueryCost": 10,
+        "throttleStatus": {
+          "maximumAvailable": 2000,
+          "currentlyAvailable": 1990,
+          "restoreRate": 100
+        }
+      }
+    }
+  }
+}

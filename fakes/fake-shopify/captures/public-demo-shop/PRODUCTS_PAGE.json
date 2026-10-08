@@ -1,0 +1,178 @@
+{
+  "source": "shopify.dev admin-graphql-direct-proxy (Shopify public demo shop)",
+  "endpoint": "https://shopify.dev/admin-graphql-direct-proxy/2026-07",
+  "apiVersion": "2026-07",
+  "capturedAt": "2026-10-08T15:22:03.523Z",
+  "request": {
+    "document": "PRODUCTS_PAGE",
+    "variables": {
+      "first": 3
+    }
+  },
+  "status": 200,
+  "body": {
+    "data": {
+      "products": {
+        "nodes": [
+          {
+            "id": "gid://shopify/Product/1974208299030",
+            "handle": "rough-snowflake-camisole",
+            "title": "Rough Snowflake Camisole",
+            "productType": "",
+            "vendor": "graphql-admin",
+            "status": "ACTIVE",
+            "tags": [
+              "int-scan-v2",
+              "redir-307-test",
+              "redir-hdr-test",
+              "redirect-test-01",
+              "ssrf-delivery-v3",
+              "ssrf-final-test",
+              "ssrf-reqcatch-02",
+              "ssrf-test",
+              "ssrf-trigger-1786091699",
+              "wh-test-1786091760",
+              "wh-test2-1786091761",
+              "whsite-test-03"
+            ],
+            "descriptionHtml": "",
+            "onlineStoreUrl": null,
+            "updatedAt": "2026-09-03T09:22:07Z",
+            "options": [
+              {
+                "name": "Title",
+                "optionValues": [
+                  {
+                    "name": "Default Title"
+                  }
+                ]
+              }
+            ],
+            "priceRangeV2": {
+              "minVariantPrice": {
+                "amount": "77.0",
+                "currencyCode": "CAD"
+              },
+              "maxVariantPrice": {
+                "amount": "77.0",
+                "currencyCode": "CAD"
+              }
+            },
+            "media": {
+              "nodes": []
+            },
+            "collections": {
+              "nodes": [
+                {
+                  "id": "gid://shopify/Collection/70598819862",
+                  "handle": "frontpage",
+                  "title": "Home page"
+                }
+              ]
+            },
+            "metafields": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "gid://shopify/Product/1974208331798",
+            "handle": "wandering-thunder-blouse",
+            "title": "Wandering Thunder Blouse",
+            "productType": "",
+            "vendor": "graphql-admin",
+            "status": "ACTIVE",
+            "tags": [],
+            "descriptionHtml": "",
+            "onlineStoreUrl": null,
+            "updatedAt": "2026-07-22T04:23:29Z",
+            "options": [
+              {
+                "name": "Title",
+                "optionValues": [
+                  {
+                    "name": "Default Title"
+                  }
+                ]
+              }
+            ],
+            "priceRangeV2": {
+              "minVariantPrice": {
+                "amount": "9.0",
+                "currencyCode": "CAD"
+              },
+              "maxVariantPrice": {
+                "amount": "9.0",
+                "currencyCode": "CAD"
+              }
+            },
+            "media": {
+              "nodes": []
+            },
+            "collections": {
+              "nodes": []
+            },
+            "metafields": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "gid://shopify/Product/1974208364566",
+            "handle": "autumn-waterfall-water-bottle",
+            "title": "Autumn Waterfall Water Bottle",
+            "productType": "",
+            "vendor": "graphql-admin",
+            "status": "ACTIVE",
+            "tags": [],
+            "descriptionHtml": "",
+            "onlineStoreUrl": null,
+            "updatedAt": "2026-07-22T04:23:29Z",
+            "options": [
+              {
+                "name": "Title",
+                "optionValues": [
+                  {
+                    "name": "Default Title"
+                  }
+                ]
+              }
+            ],
+            "priceRangeV2": {
+              "minVariantPrice": {
+                "amount": "22.0",
+                "currencyCode": "CAD"
+              },
+              "maxVariantPrice": {
+                "amount": "22.0",
+                "currencyCode": "CAD"
+              }
+            },
+            "media": {
+              "nodes": []
+            },
+            "collections": {
+              "nodes": []
+            },
+            "metafields": {
+              "nodes": []
+            }
+          }
+        ],
+        "pageInfo": {
+          "hasNextPage": true,
+          "endCursor": "eyJsYXN0X2lkIjoxOTc0MjA4MzY0NTY2LCJsYXN0X3ZhbHVlIjoiMTk3NDIwODM2NDU2NiJ9"
+        }
+      }
+    },
+    "extensions": {
+      "cost": {
+        "requestedQueryCost": 64,
+        "actualQueryCost": 46,
+        "throttleStatus": {
+          "maximumAvailable": 2000,
+          "currentlyAvailable": 1954,
+          "restoreRate": 100
+        }
+      }
+    }
+  }
+}

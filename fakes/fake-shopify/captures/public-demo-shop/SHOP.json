@@ -1,0 +1,43 @@
+{
+  "source": "shopify.dev admin-graphql-direct-proxy (Shopify public demo shop)",
+  "endpoint": "https://shopify.dev/admin-graphql-direct-proxy/2026-07",
+  "apiVersion": "2026-07",
+  "capturedAt": "2026-10-08T15:22:02.797Z",
+  "request": {
+    "document": "SHOP",
+    "variables": {}
+  },
+  "status": 200,
+  "body": {
+    "data": {
+      "shop": {
+        "name": "graphql-admin",
+        "myshopifyDomain": "graphql-admin.myshopify.com",
+        "ianaTimezone": "America/Toronto",
+        "currencyCode": "CAD",
+        "primaryDomain": {
+          "host": "graphql-admin.myshopify.com",
+          "url": "https://graphql-admin.myshopify.com",
+          "localization": {
+            "defaultLocale": "en",
+            "country": null
+          }
+        },
+        "shopAddress": {
+          "countryCodeV2": "CA"
+        }
+      }
+    },
+    "extensions": {
+      "cost": {
+        "requestedQueryCost": 3,
+        "actualQueryCost": 3,
+        "throttleStatus": {
+          "maximumAvailable": 2000,
+          "currentlyAvailable": 1997,
+          "restoreRate": 100
+        }
+      }
+    }
+  }
+}

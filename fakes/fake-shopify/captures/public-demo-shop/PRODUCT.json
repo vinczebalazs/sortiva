@@ -1,0 +1,88 @@
+{
+  "source": "shopify.dev admin-graphql-direct-proxy (Shopify public demo shop)",
+  "endpoint": "https://shopify.dev/admin-graphql-direct-proxy/2026-07",
+  "apiVersion": "2026-07",
+  "capturedAt": "2026-10-08T15:22:03.879Z",
+  "request": {
+    "document": "PRODUCT",
+    "variables": {
+      "id": "gid://shopify/Product/1974208299030"
+    }
+  },
+  "status": 200,
+  "body": {
+    "data": {
+      "product": {
+        "id": "gid://shopify/Product/1974208299030",
+        "handle": "rough-snowflake-camisole",
+        "title": "Rough Snowflake Camisole",
+        "productType": "",
+        "vendor": "graphql-admin",
+        "status": "ACTIVE",
+        "tags": [
+          "int-scan-v2",
+          "redir-307-test",
+          "redir-hdr-test",
+          "redirect-test-01",
+          "ssrf-delivery-v3",
+          "ssrf-final-test",
+          "ssrf-reqcatch-02",
+          "ssrf-test",
+          "ssrf-trigger-1786091699",
+          "wh-test-1786091760",
+          "wh-test2-1786091761",
+          "whsite-test-03"
+        ],
+        "descriptionHtml": "",
+        "onlineStoreUrl": null,
+        "updatedAt": "2026-09-03T09:22:07Z",
+        "options": [
+          {
+            "name": "Title",
+            "optionValues": [
+              {
+                "name": "Default Title"
+              }
+            ]
+          }
+        ],
+        "priceRangeV2": {
+          "minVariantPrice": {
+            "amount": "77.0",
+            "currencyCode": "CAD"
+          },
+          "maxVariantPrice": {
+            "amount": "77.0",
+            "currencyCode": "CAD"
+          }
+        },
+        "media": {
+          "nodes": []
+        },
+        "collections": {
+          "nodes": [
+            {
+              "id": "gid://shopify/Collection/70598819862",
+              "handle": "frontpage",
+              "title": "Home page"
+            }
+          ]
+        },
+        "metafields": {
+          "nodes": []
+        }
+      }
+    },
+    "extensions": {
+      "cost": {
+        "requestedQueryCost": 31,
+        "actualQueryCost": 22,
+        "throttleStatus": {
+          "maximumAvailable": 2000,
+          "currentlyAvailable": 1978,
+          "restoreRate": 100
+        }
+      }
+    }
+  }
+}

@@ -12,10 +12,14 @@
     "worker": "tsx jobs/worker.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "check": "tsc --noEmit && vitest run connectors/shopify/queries.test.ts",
+    "shopify:schema": "tsx fakes/fake-shopify/schema/fetch.ts",
+    "shopify:capture-demo": "tsx fakes/fake-shopify/captures/capture-public-demo.ts"
   },
   "dependencies": {
     "graphile-worker": "^0.18.0",
+    "graphql": "16",
     "pg": "^8.23.1"
   },
   "devDependencies": {

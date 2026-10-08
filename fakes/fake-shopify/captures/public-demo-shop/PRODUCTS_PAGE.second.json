@@ -1,0 +1,160 @@
+{
+  "source": "shopify.dev admin-graphql-direct-proxy (Shopify public demo shop)",
+  "endpoint": "https://shopify.dev/admin-graphql-direct-proxy/2026-07",
+  "apiVersion": "2026-07",
+  "capturedAt": "2026-10-08T15:22:03.713Z",
+  "request": {
+    "document": "PRODUCTS_PAGE.second",
+    "variables": {
+      "first": 3,
+      "after": "eyJsYXN0X2lkIjoxOTc0MjA4MzY0NTY2LCJsYXN0X3ZhbHVlIjoiMTk3NDIwODM2NDU2NiJ9"
+    }
+  },
+  "status": 200,
+  "body": {
+    "data": {
+      "products": {
+        "nodes": [
+          {
+            "id": "gid://shopify/Product/1974208397334",
+            "handle": "dawn-cloud-luggage",
+            "title": "Dawn Cloud Luggage",
+            "productType": "",
+            "vendor": "graphql-admin",
+            "status": "ACTIVE",
+            "tags": [],
+            "descriptionHtml": "",
+            "onlineStoreUrl": null,
+            "updatedAt": "2026-07-22T04:23:29Z",
+            "options": [
+              {
+                "name": "Title",
+                "optionValues": [
+                  {
+                    "name": "Default Title"
+                  }
+                ]
+              }
+            ],
+            "priceRangeV2": {
+              "minVariantPrice": {
+                "amount": "58.0",
+                "currencyCode": "CAD"
+              },
+              "maxVariantPrice": {
+                "amount": "58.0",
+                "currencyCode": "CAD"
+              }
+            },
+            "media": {
+              "nodes": []
+            },
+            "collections": {
+              "nodes": []
+            },
+            "metafields": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "gid://shopify/Product/1974208430102",
+            "handle": "twilight-hill-luggage",
+            "title": "Twilight Hill Luggage",
+            "productType": "",
+            "vendor": "graphql-admin",
+            "status": "ACTIVE",
+            "tags": [],
+            "descriptionHtml": "",
+            "onlineStoreUrl": null,
+            "updatedAt": "2026-07-22T04:23:29Z",
+            "options": [
+              {
+                "name": "Title",
+                "optionValues": [
+                  {
+                    "name": "Default Title"
+                  }
+                ]
+              }
+            ],
+            "priceRangeV2": {
+              "minVariantPrice": {
+                "amount": "81.0",
+                "currencyCode": "CAD"
+              },
+              "maxVariantPrice": {
+                "amount": "81.0",
+                "currencyCode": "CAD"
+              }
+            },
+            "media": {
+              "nodes": []
+            },
+            "collections": {
+              "nodes": []
+            },
+            "metafields": {
+              "nodes": []
+            }
+          },
+          {
+            "id": "gid://shopify/Product/1974208462870",
+            "handle": "lively-smoke-blouse",
+            "title": "Lively Smoke Blouse",
+            "productType": "",
+            "vendor": "graphql-admin",
+            "status": "ACTIVE",
+            "tags": [],
+            "descriptionHtml": "",
+            "onlineStoreUrl": null,
+            "updatedAt": "2026-07-22T04:23:30Z",
+            "options": [
+              {
+                "name": "Title",
+                "optionValues": [
+                  {
+                    "name": "Default Title"
+                  }
+                ]
+              }
+            ],
+            "priceRangeV2": {
+              "minVariantPrice": {
+                "amount": "18.0",
+                "currencyCode": "CAD"
+              },
+              "maxVariantPrice": {
+                "amount": "18.0",
+                "currencyCode": "CAD"
+              }
+            },
+            "media": {
+              "nodes": []
+            },
+            "collections": {
+              "nodes": []
+            },
+            "metafields": {
+              "nodes": []
+            }
+          }
+        ],
+        "pageInfo": {
+          "hasNextPage": true,
+          "endCursor": "eyJsYXN0X2lkIjoxOTc0MjA4NDYyODcwLCJsYXN0X3ZhbHVlIjoiMTk3NDIwODQ2Mjg3MCJ9"
+        }
+      }
+    },
+    "extensions": {
+      "cost": {
+        "requestedQueryCost": 64,
+        "actualQueryCost": 54,
+        "throttleStatus": {
+          "maximumAvailable": 2000,
+          "currentlyAvailable": 1946,
+          "restoreRate": 100
+        }
+      }
+    }
+  }
+}
