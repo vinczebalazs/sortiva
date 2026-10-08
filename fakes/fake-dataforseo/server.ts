@@ -8,6 +8,7 @@ const recordingsDir = new URL('./recordings/', import.meta.url)
 const samplesDir = new URL('./published-samples/', import.meta.url)
 const REAL_API = 'https://api.dataforseo.com'
 
+/** A real answer: for volumes the live response, for top results the collected task (task_get). */
 export type Recording = { recordedAt: string; endpoint: Endpoint; task: Record<string, unknown>; response: unknown }
 
 export type VolumeTask = { keywords: string[]; location_code: number; language_code: string }
@@ -22,11 +23,13 @@ export type Script = {
   failWith?: number
 }
 
+type Source = 'script' | 'recording' | 'live' | 'default' | 'error' | 'queued'
+
 export type FakeDataForSeo = {
   url: string
   login: string
   password: string
-  requests: { endpoint: Endpoint; task: Record<string, unknown>; source: 'script' | 'recording' | 'live' | 'default' | 'error' }[]
+  requests: { endpoint: Endpoint; task: Record<string, unknown>; source: Source }[]
   script: (script: Script) => void
   close: () => Promise<void>
 }
@@ -42,12 +45,16 @@ const sample = (name: string) => (JSON.parse(readFileSync(new URL(name, samplesD
  * Answers in the form of DataForSEO's published examples (published-samples/), with values from,
  * in order: the scenario's script, a recording of the real API, the real API itself when recording,
  * or a deterministic default so that a scenario which does not care about the numbers still runs.
+ * A queued top-ten task answers "Task In Queue" once before its result, as the real queue does.
  */
 export async function startFakeDataForSeo(options: { record?: boolean; realLogin?: string; realPassword?: string } = {}): Promise<FakeDataForSeo> {
   const login = 'fake-login'
   const password = 'fake-password'
   const requests: FakeDataForSeo['requests'] = []
   let script: Script = {}
+  const queued = new Map<string, { task: SerpTask; polls: number; realId?: string }>()
+  const realAuth = 'Basic ' + Buffer.from(`${options.realLogin}:${options.realPassword}`).toString('base64')
+  const recording = Boolean(options.record && options.realLogin && options.realPassword)
 
   const server = createServer(async (req, res) => {
     const chunks: Buffer[] = []
@@ -56,46 +63,106 @@ export async function startFakeDataForSeo(options: { record?: boolean; realLogin
       res.writeHead(200, { 'content-type': 'application/json' })
       res.end(JSON.stringify(body))
     }
-    const endpoint = (req.url ?? '').replace(/^\/v3\//, '').replace(/\/$/, '') as Endpoint
+    const path = (req.url ?? '').replace(/^\/v3\//, '').replace(/\/$/, '')
     if (req.headers.authorization !== 'Basic ' + Buffer.from(`${login}:${password}`).toString('base64')) {
-      return send(errorEnvelope(endpoint, 40100, 'You are not authorized to access this resource.'))
+      return send(errorEnvelope(path, 40100, 'You are not authorized to access this resource.'))
     }
-    if (req.method !== 'POST' || !Object.values(ENDPOINTS).includes(endpoint)) {
-      return send(errorEnvelope(endpoint, 40400, 'Not Found.'))
+    if (req.method === 'POST' && path === ENDPOINTS.searchVolume) {
+      return send(await answerVolume((JSON.parse(Buffer.concat(chunks).toString('utf8')) as VolumeTask[])[0]!))
     }
-    const task = (JSON.parse(Buffer.concat(chunks).toString('utf8')) as Record<string, unknown>[])[0]!
-    if (script.failWith) {
-      requests.push({ endpoint, task, source: 'error' })
-      return send(errorEnvelope(endpoint, script.failWith, ERROR_MESSAGES[script.failWith] ?? 'Error.'))
+    if (req.method === 'POST' && path === ENDPOINTS.topResultsPost) {
+      return send(await acceptTasks(JSON.parse(Buffer.concat(chunks).toString('utf8')) as SerpTask[]))
     }
-
-    const scripted = endpoint === ENDPOINTS.searchVolume ? scriptedVolume(task as VolumeTask, script) : scriptedSerp(task as SerpTask, script)
-    if (scripted) {
-      requests.push({ endpoint, task, source: 'script' })
-      return send(scripted)
+    if (req.method === 'GET' && path.startsWith(`${ENDPOINTS.topResultsGet}/`)) {
+      return send(await collect(path.slice(ENDPOINTS.topResultsGet.length + 1)))
     }
-    const file = new URL(recordingName(endpoint, task), recordingsDir)
-    if (existsSync(file)) {
-      requests.push({ endpoint, task, source: 'recording' })
-      return send((JSON.parse(readFileSync(file, 'utf8')) as Recording).response)
-    }
-    if (options.record && options.realLogin && options.realPassword) {
-      const live = await fetch(`${REAL_API}/v3/${endpoint}`, {
-        method: 'POST',
-        headers: { authorization: 'Basic ' + Buffer.from(`${options.realLogin}:${options.realPassword}`).toString('base64'), 'content-type': 'application/json' },
-        body: JSON.stringify([task]),
-      })
-      const response = (await live.json()) as { status_code: number }
-      if (response.status_code === 20000) {
-        const recording: Recording = { recordedAt: new Date().toISOString(), endpoint, task, response }
-        writeFileSync(file, JSON.stringify(recording, null, 1) + '\n')
-      }
-      requests.push({ endpoint, task, source: 'live' })
-      return send(response)
-    }
-    requests.push({ endpoint, task, source: 'default' })
-    send(endpoint === ENDPOINTS.searchVolume ? volumeEnvelope(task as VolumeTask, defaultVolume) : serpEnvelope(task as SerpTask, defaultSerp(task as SerpTask)))
+    send(errorEnvelope(path, 40400, 'Not Found.'))
   })
+
+  async function answerVolume(task: VolumeTask) {
+    const endpoint = ENDPOINTS.searchVolume
+    if (script.failWith) return logged(endpoint, task, 'error', errorEnvelope(endpoint, script.failWith, ERROR_MESSAGES[script.failWith] ?? 'Error.'))
+    const scripted = scriptedVolume(task, script)
+    if (scripted) return logged(endpoint, task, 'script', scripted)
+    const file = new URL(recordingName(endpoint, task), recordingsDir)
+    if (existsSync(file)) return logged(endpoint, task, 'recording', (JSON.parse(readFileSync(file, 'utf8')) as Recording).response)
+    if (recording) {
+      const response = await real(endpoint, [task])
+      if (!response) return logged(endpoint, task, 'error', errorEnvelope(endpoint, 50000, 'real API unreachable while recording'))
+      if (response.status_code === 20000 && response.tasks?.[0]?.status_code === 20000) save(endpoint, task, response)
+      return logged(endpoint, task, 'live', response)
+    }
+    return logged(endpoint, task, 'default', volumeEnvelope(task, defaultVolume))
+  }
+
+  async function acceptTasks(tasks: SerpTask[]) {
+    const endpoint = ENDPOINTS.topResultsPost
+    if (script.failWith) return logged(endpoint, tasks[0]!, 'error', errorEnvelope(endpoint, script.failWith, ERROR_MESSAGES[script.failWith] ?? 'Error.'))
+    const template = sample('serp_task_post.json')
+    const entries = []
+    for (const task of tasks) {
+      const id = `fake-${stableHash([task, queued.size]).slice(0, 24)}`
+      const entry: { task: SerpTask; polls: number; realId?: string } = { task, polls: 0 }
+      const needsReal = recording && !script.serp?.(task.keyword, task) && !existsSync(new URL(recordingName(ENDPOINTS.topResultsGet, task), recordingsDir))
+      if (needsReal) {
+        const posted = await real(endpoint, [task])
+        const realTask = posted?.tasks?.[0]
+        if (!realTask || realTask.status_code !== 20100) return logged(endpoint, task, 'error', posted ?? errorEnvelope(endpoint, 50000, 'real API unreachable while recording'))
+        entry.realId = realTask.id
+      }
+      queued.set(id, entry)
+      requests.push({ endpoint, task, source: needsReal ? 'live' : 'queued' })
+      entries.push({ ...template.tasks[0], id, cost: PRICE_USD[endpoint], data: { ...pick(template.tasks[0].data, ['api', 'function', 'se', 'se_type']), ...task } })
+    }
+    return { ...template, cost: PRICE_USD[endpoint] * tasks.length, tasks_count: tasks.length, tasks_error: 0, tasks: entries }
+  }
+
+  async function collect(id: string) {
+    const endpoint = ENDPOINTS.topResultsGet
+    const entry = queued.get(id)
+    if (!entry) return errorEnvelope(endpoint, 40401, 'Task Not Found.')
+    const { task } = entry
+    if (entry.realId) {
+      const response = await real(`${endpoint}/${entry.realId}`)
+      if (response?.status_code === 20000 && response.tasks?.[0]?.status_code === 20000) save(endpoint, task, response)
+      return logged(endpoint, task, 'live', response ?? inQueue(task))
+    }
+    if (entry.polls++ === 0) return inQueue(task)
+    const pages = script.serp?.(task.keyword, task)
+    if (pages) return logged(endpoint, task, 'script', serpEnvelope(task, pages))
+    const file = new URL(recordingName(endpoint, task), recordingsDir)
+    if (existsSync(file)) return logged(endpoint, task, 'recording', (JSON.parse(readFileSync(file, 'utf8')) as Recording).response)
+    return logged(endpoint, task, 'default', serpEnvelope(task, defaultSerp(task)))
+  }
+
+  function logged(endpoint: Endpoint, task: object, source: Source, body: unknown) {
+    requests.push({ endpoint, task: task as Record<string, unknown>, source })
+    return body
+  }
+
+  async function real(path: string, body?: unknown[]): Promise<Record<string, any> | null> {
+    try {
+      const res = await fetch(`${REAL_API}/v3/${path}`, {
+        method: body ? 'POST' : 'GET',
+        headers: { authorization: realAuth, 'content-type': 'application/json' },
+        body: body ? JSON.stringify(body) : undefined,
+      })
+      return (await res.json()) as Record<string, any>
+    } catch {
+      return null
+    }
+  }
+
+  function save(endpoint: Endpoint, task: object, response: unknown) {
+    const record: Recording = { recordedAt: new Date().toISOString(), endpoint, task: task as Record<string, unknown>, response }
+    writeFileSync(new URL(recordingName(endpoint, task), recordingsDir), JSON.stringify(record, null, 1) + '\n')
+  }
+
+  function inQueue(task: SerpTask) {
+    const template = sample('serp_task_get_advanced.json')
+    return { ...template, cost: 0, tasks: [{ ...template.tasks[0], status_code: 40602, status_message: 'Task In Queue.', cost: 0, result_count: 0, data: { ...template.tasks[0].data, ...task }, result: null }] }
+  }
+
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
   return {
     url: `http://127.0.0.1:${(server.address() as AddressInfo).port}`,
@@ -117,6 +184,8 @@ const ERROR_MESSAGES: Record<number, string> = {
   50301: '3rd party API service unavailable.',
 }
 
+const pick = (o: Record<string, unknown>, keys: string[]) => Object.fromEntries(keys.filter((k) => k in o).map((k) => [k, o[k]]))
+
 function scriptedVolume(task: VolumeTask, script: Script) {
   if (!script.volume) return undefined
   const values = task.keywords.map((k) => script.volume!(k, task))
@@ -125,11 +194,6 @@ function scriptedVolume(task: VolumeTask, script: Script) {
     const v = script.volume!(k, task)
     return v === undefined ? defaultVolume(k) : v
   })
-}
-
-function scriptedSerp(task: SerpTask, script: Script) {
-  const pages = script.serp?.(task.keyword, task)
-  return pages ? serpEnvelope(task, pages) : undefined
 }
 
 /** Monthly searches the fake reports when nobody scripted or recorded a phrase: stable per phrase, some under any floor. */
@@ -142,15 +206,6 @@ function defaultSerp(task: SerpTask): ScriptedPage[] {
   const slug = task.keyword.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/gi, '-')
   const seed = stableHash(task.keyword).slice(0, 6)
   return Array.from({ length: task.depth }, (_, i) => ({ url: `https://site-${seed}-${i + 1}.example/guides/${slug}`, title: `${task.keyword} — guide ${i + 1}` }))
-}
-
-function envelopeFor(endpoint: Endpoint, task: Record<string, unknown>, template: Record<string, any>, result: unknown[]) {
-  const envelope = structuredClone(template)
-  const cost = PRICE_USD[endpoint]
-  envelope.cost = cost
-  envelope.time = '0.0100 sec.'
-  envelope.tasks = [{ ...envelope.tasks[0], id: `fake-${stableHash(task).slice(0, 24)}`, cost, result_count: result.length, data: { api: envelope.tasks[0].data.api, function: envelope.tasks[0].data.function, se: envelope.tasks[0].data.se, se_type: envelope.tasks[0].data.se_type, ...task }, result }]
-  return envelope
 }
 
 function volumeEnvelope(task: VolumeTask, volume: (keyword: string) => number | null) {
@@ -169,11 +224,17 @@ function volumeEnvelope(task: VolumeTask, volume: (keyword: string) => number | 
       monthly_searches: searches === null ? null : row.monthly_searches.map((m: Record<string, number>) => ({ ...m, search_volume: searches })),
     }
   })
-  return envelopeFor(ENDPOINTS.searchVolume, task, template, result)
+  const cost = PRICE_USD[ENDPOINTS.searchVolume]
+  return {
+    ...template,
+    cost,
+    time: '0.0100 sec.',
+    tasks: [{ ...template.tasks[0], id: `fake-${stableHash(task).slice(0, 24)}`, cost, result_count: result.length, data: { ...pick(template.tasks[0].data, ['api', 'function', 'se']), ...task }, result }],
+  }
 }
 
 function serpEnvelope(task: SerpTask, pages: ScriptedPage[]) {
-  const template = sample('serp_organic.json')
+  const template = sample('serp_task_get_advanced.json')
   const base = template.tasks[0].result[0]
   const organic = base.items.find((i: { type: string }) => i.type === 'organic')
   const items = pages.slice(0, task.depth).map((page, i) => {
@@ -208,7 +269,11 @@ function serpEnvelope(task: SerpTask, pages: ScriptedPage[]) {
       items,
     },
   ]
-  return envelopeFor(ENDPOINTS.topResults, task, template, result)
+  return {
+    ...template,
+    cost: 0,
+    tasks: [{ ...template.tasks[0], id: `fake-${stableHash(task).slice(0, 24)}`, cost: 0, result_count: 1, data: { ...pick(template.tasks[0].data, ['api', 'function', 'se', 'se_type']), ...task }, result }],
+  }
 }
 
 // Unverified: the docs list the codes but publish no error body. Request-level failures (auth, path) are

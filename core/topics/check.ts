@@ -31,7 +31,8 @@ export function storeWideWords(titles: string[], language: Language): Set<string
   return new Set([...counts].filter(([, n]) => n >= 2 && n / titles.length >= CONFIG.topics.storeWideWordShare).map(([w]) => w))
 }
 
-const normaliseUrl = (url: string) => url.replace(/^https?:\/\/(www\.)?/i, '').replace(/[/?#]+$/, '').toLowerCase()
+// Google appends tracking parameters (?srsltid=…) that differ between searches for the same page.
+const normaliseUrl = (url: string) => url.replace(/^https?:\/\/(www\.)?/i, '').replace(/[?#].*$/, '').replace(/\/+$/, '').toLowerCase()
 
 export function top3(pages: RankingPage[]): string[] {
   return pages.slice(0, 3).map((p) => normaliseUrl(p.url))

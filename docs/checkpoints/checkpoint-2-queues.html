@@ -1,0 +1,240 @@
+<title>Checkpoint 2 Topic Queues</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one column per shop; the queue reads like the app's Up next list, with the evidence opened out under each topic. Look: the app's own mockup tokens. */
+:root {
+  --ground: #e8e9f0; --card: #ffffff; --ink: #191b23; --ink2: #454a5c; --mut: #6f7488; --faint: #878da0;
+  --line: #edeef3; --soft: #f5f6fa; --pri: #6470f3; --pri-s: #eeeffe; --amb: #9a5d07; --amb-s: #fdf3e4;
+  --sh: 0 1px 2px rgba(21,25,42,.04), 0 8px 24px -6px rgba(21,25,42,.08);
+  --fh: 'Poppins', system-ui, sans-serif; --fb: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --ground: #14151b; --card: #1d1f27; --ink: #ecedf3; --ink2: #c3c6d4; --mut: #9a9fb2; --faint: #7c8196;
+  --line: #2a2d38; --soft: #252833; --pri: #8f97f7; --pri-s: #262a4a; --amb: #f0b45a; --amb-s: #3a2e18;
+  --sh: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -6px rgba(0,0,0,.4); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --ground: #14151b; --card: #1d1f27; --ink: #ecedf3; --ink2: #c3c6d4; --mut: #9a9fb2; --faint: #7c8196;
+  --line: #2a2d38; --soft: #252833; --pri: #8f97f7; --pri-s: #262a4a; --amb: #f0b45a; --amb-s: #3a2e18;
+  --sh: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -6px rgba(0,0,0,.4); color-scheme: dark }
+body { background: var(--ground); color: var(--ink); font: 400 14px/1.6 var(--fb); }
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 20px; padding-block: 36px 80px; display: flex; flex-direction: column; gap: 28px; }
+h1, h2, h3 { font-family: var(--fh); font-weight: 500; letter-spacing: -.015em; text-wrap: balance; margin: 0; }
+h1 { font-size: 32px; line-height: 1.15; }
+h2 { font-size: 22px; }
+h3 { font-size: 16.5px; line-height: 1.3; }
+p { margin: 0; }
+.num { font-variant-numeric: tabular-nums; }
+.label { font: 600 11px/1 var(--fb); letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+.lede { max-width: 68ch; color: var(--ink2); font-size: 15px; margin-top: 10px; }
+.panel { background: var(--card); border-radius: 18px; box-shadow: var(--sh); padding: 20px 22px; display: grid; gap: 10px; }
+.panel ul { margin: 0; padding-left: 18px; color: var(--ink2); display: grid; gap: 4px; }
+.finding { background: var(--amb-s); }
+.finding p, .finding li { color: var(--ink); }
+.store { display: flex; flex-direction: column; gap: 14px; }
+.store-head { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; padding-top: 18px; border-top: 1px solid var(--line); }
+.store-head > div { display: grid; gap: 8px; }
+.count { margin-left: auto; font: 600 12px/1 var(--fb); color: var(--ink2); background: var(--card); border-radius: 999px; padding: 8px 12px; box-shadow: var(--sh); font-variant-numeric: tabular-nums; }
+.profile { background: var(--card); border-radius: 18px; box-shadow: var(--sh); padding: 18px 20px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; }
+.profile > div { display: grid; gap: 7px; align-content: start; min-width: 0; }
+.profile p:not(.label) { color: var(--ink2); font-size: 13.5px; }
+.queue { list-style: none; margin: 0; padding: 0; background: var(--card); border-radius: 18px; box-shadow: var(--sh); padding-inline: 22px; }
+.topic { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 14px; padding-block: 20px; border-bottom: 1px solid var(--line); }
+.topic:last-child { border-bottom: 0; }
+.pos { width: 28px; height: 28px; border-radius: 50%; background: var(--pri-s); color: var(--pri); display: grid; place-items: center; font: 600 12.5px/1 var(--fb); }
+.topic-body { display: grid; gap: 9px; min-width: 0; }
+.query { display: flex; gap: 10px; flex-wrap: wrap; align-items: baseline; font-size: 13px; color: var(--mut); }
+.q { font-weight: 600; color: var(--ink2); }
+.why { background: var(--soft); border-radius: 11px; padding: 10px 12px; font-size: 13px; color: var(--ink2); }
+.meta { display: grid; grid-template-columns: 1.3fr .5fr 1.6fr .7fr; gap: 16px; font-size: 12.5px; color: var(--ink2); }
+.meta > div { display: grid; gap: 6px; align-content: start; min-width: 0; }
+.urls { margin: 0; padding-left: 16px; display: grid; gap: 2px; overflow-wrap: anywhere; color: var(--mut); }
+.urls b { font-weight: 600; color: var(--ink2); }
+.dropped { background: var(--card); border-radius: 18px; box-shadow: var(--sh); padding: 16px 22px; }
+.dropped summary { cursor: pointer; display: flex; gap: 10px; align-items: center; }
+.dropped summary:focus-visible { outline: 2px solid var(--pri); outline-offset: 4px; border-radius: 6px; }
+.scroll { overflow-x: auto; margin-top: 12px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font: 600 11px/1 var(--fb); letter-spacing: .08em; text-transform: uppercase; color: var(--faint); padding: 0 12px 10px 0; }
+td { padding: 9px 12px 9px 0; border-top: 1px solid var(--line); color: var(--ink2); }
+td:first-child { color: var(--ink); font-weight: 500; }
+@media (max-width: 760px) {
+  .profile, .meta { grid-template-columns: 1fr; }
+  .count { margin-left: 0; }
+}
+</style>
+<div class="wrap">
+  <header>
+    <p class="label">Sortiva · checkpoint 2 · fixture shops, real Google demand, 2026-10-08</p>
+    <h1 style="margin-top:10px">Are these topics a merchant would want? Are the why lines true?</h1>
+    <p class="lede">Two made-up shops, one Hungarian and one English, went through setup the way a merchant would. The model then proposed article topics from each shop's checked product facts. Every topic's monthly searches and Google's top ten results are real, fetched from DataForSEO for the shop's country and language on 2026-10-08. Below is each shop's queue in the order it would be written, one a day, with the numbers behind every topic and what was proposed but left out. 8 queued of 35 proposed.</p>
+  </header>
+  <div class="panel finding">
+    <p class="label">The main finding</p>
+    <p>Most proposed topics were left out because Google reports almost nobody searching for the exact phrase the model chose. Many phrases have no figure at all, which Google Ads gives for very rare searches. The topics are sensible; their wording is too specific. A decision for you:</p>
+    <ul>
+      <li><b>Ask the model for two or three phrasings per topic</b> and keep the one people search most. It costs nothing extra, because all phrasings go in the same single demand request. This is my recommendation.</li>
+      <li><b>Lower the minimum</b> from 100 (English) and 20 (Hungarian) searches a month. Articles would then target phrases almost nobody types.</li>
+      <li><b>Keep it as it is.</b> Fewer, safer topics; a rich shop would run dry in about a week.</li>
+    </ul>
+  </div>
+  <div class="panel">
+    <p class="label">What to look for</p>
+    <ul>
+      <li>A topic the shop could not write well from its own products, or one a shopper would not care about.</li>
+      <li>A why line that overstates. It says only how many people search and that the shop has no page on it.</li>
+      <li>A good topic in the "proposed but not queued" list that should have made it.</li>
+      <li>The Hungarian phrases read as things a Hungarian shopper would type.</li>
+    </ul>
+  </div>
+  
+    <section class="store" id="store-1">
+      <div class="store-head">
+        <div>
+          <p class="label">Hungarian · customers in HU · minimum 20 searches a month</p>
+          <h2>Bükki Füvesház</h2>
+        </div>
+        <span class="count">4 queued of 15 proposed</span>
+      </div>
+      <div class="profile">
+        <div><p class="label">What it sells (as confirmed)</p><p>A bolt szálas gyógyteákat árul, főként egynövényes teákat (kakukkfű, csalánlevél, kamillavirág, borsmentalevél), valamint egy esti teakeveréket és magozott csipkebogyó gyümölcsteát. Kínálatában fekete és zöld tea is szerepel: Assam fekete tea és japán Sencha zöld tea. Teaeszközöket is forgalmaz: öntöttvas és hőálló üveg teáskannát, bögrébe való teaszűrőt és fém teatartó dobozt.</p></div>
+        <div><p class="label">Who buys it</p><p>Olyan vásárlóknak szól, akik szálas gyógy-, gyümölcs-, fekete és zöld teát főznek otthon. Azoknak is, akiknek a teafőzéshez és -tároláshoz eszközök is kellenek.</p></div>
+      </div>
+      <ol class="queue">
+      <li class="topic">
+        <span class="pos">1</span>
+        <div class="topic-body">
+          <h3>Csalántea készítése: adagolás és áztatási idő</h3>
+          <p class="query"><span class="q">csalántea készítése</span><span class="num">480 searches a month</span></p>
+          <p class="why">Havonta nagyjából 480 ember keres erre, és a boltodban még nincs róla oldal.</p>
+          <div class="meta">
+            <div><p class="label">Products it mentions</p><p>Csalánlevél tea, szálas</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">11</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>hillvital.hu</b>/csalan-tea-jotekony-hatasai</li><li><b>hillvital.hu</b>/csalan-tea-fogyasztasa</li><li><b>manutea.hu</b>/csalan-tea-hogyan-jutott-el-ez-a-gyom-a-csucsra-x32056</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">0 of 8</p></div>
+          </div>
+        </div>
+      </li>
+      <li class="topic">
+        <span class="pos">2</span>
+        <div class="topic-body">
+          <h3>Kakukkfű tea: miből készül és hogyan főzzük?</h3>
+          <p class="query"><span class="q">kakukkfű tea készítése</span><span class="num">260 searches a month</span></p>
+          <p class="why">Havonta nagyjából 260 ember keres erre, és a boltodban még nincs róla oldal.</p>
+          <div class="meta">
+            <div><p class="label">Products it mentions</p><p>Kakukkfű tea, szálas</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">12</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>cookpad.com</b>/hu/kereses/kakukkf%c5%b1%20tea</li><li><b>harmonia-centrum.hu</b>/blog/tag/kakukkfu-tea-hatasa</li><li><b>kerteszkedj.hu</b>/kakukkfu-tea-jotekony-hatasok-es-felhasznalasi-modok</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">3 of 8</p></div>
+          </div>
+        </div>
+      </li>
+      <li class="topic">
+        <span class="pos">3</span>
+        <div class="topic-body">
+          <h3>Hogyan igyuk az Assam teát tejjel?</h3>
+          <p class="query"><span class="q">fekete tea tejjel</span><span class="num">40 searches a month</span></p>
+          <p class="why">Havonta nagyjából 40 ember keres erre, és a boltodban még nincs róla oldal.</p>
+          <div class="meta">
+            <div><p class="label">Products it mentions</p><p>Assam fekete tea, TGFOP</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">11</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>nosalty.hu</b>/ajanlo/tea-tejjel-angol-szokas-brit-teafogyasztas-nagy-britannia-etikett</li><li><b>tea.hu</b>/minden-amit-tejes-tearol-tudni-szerettel-volna</li><li><b>moccabit.hu</b>/spg/536505,3088151/hogyan-keszitsd-el-tokeletesen-az-english-breakfas</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">2 of 9</p></div>
+          </div>
+        </div>
+      </li>
+      <li class="topic">
+        <span class="pos">4</span>
+        <div class="topic-body">
+          <h3>Kamillatea készítése egész virágból: miért fedő alatt áztassuk?</h3>
+          <p class="query"><span class="q">kamillatea készítése</span><span class="num">30 searches a month</span></p>
+          <p class="why">Havonta nagyjából 30 ember keres erre, és a boltodban még nincs róla oldal.</p>
+          <div class="meta">
+            <div><p class="label">Products it mentions</p><p>Kamillavirág tea</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">10</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>cookpad.com</b>/hu/kereses/kamilla</li><li><b>herbacio.hu</b>/cikkek/orvosi-kamilla-receptre-is</li><li><b>webbeteg.hu</b>/orvos-valaszol/egyeb/128244</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">0 of 9</p></div>
+          </div>
+        </div>
+      </li></ol>
+      <details class="dropped" open>
+        <summary><span class="label">Proposed but not queued</span> <span class="num">11</span></summary>
+        <div class="scroll"><table><thead><tr><th>Search phrase</th><th>Why it was left out</th><th>Figure</th></tr></thead><tbody><tr><td>csipkebogyó tea főzése</td><td>Too few searches</td><td class="num">10 a month</td></tr><tr><td>fekete tea és zöld tea különbség</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>hidegen áztatott mentatea</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>koffeinmentes esti tea</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>öntöttvas teáskanna tisztítása</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>öntöttvas vagy üveg teáskanna</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>sencha zöld tea elkészítése</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>szálas gyógytea elkészítése</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>szálas tea tárolása</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>teaszűrő bögrébe</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>tgfop jelentése fekete tea</td><td>Too few searches</td><td class="num">no figure</td></tr></tbody></table></div>
+      </details>
+    </section>
+    <section class="store" id="store-2">
+      <div class="store-head">
+        <div>
+          <p class="label">English · customers in GB · minimum 100 searches a month</p>
+          <h2>Fernhill Coffee Supply</h2>
+        </div>
+        <span class="count">4 queued of 20 proposed</span>
+      </div>
+      <div class="profile">
+        <div><p class="label">What it sells (as confirmed)</p><p>Fernhill Coffee Supply sells home coffee brewing equipment and coffee beans. The range covers pour-over gear (ceramic and stainless steel drippers, size 02 paper filters, stovetop and electric gooseneck kettles, and a brew scale with timer), immersion brewers such as a French press and a cold brew jar, and manual and electric burr grinders. It also sells single-origin coffee beans from Fernhill Roastery in 250 g and 1 kg bags, whole bean or ground.</p></div>
+        <div><p class="label">Who buys it</p><p>People who brew coffee at home, especially by pour-over or immersion, and who want to grind, weigh and control water temperature themselves. Some products, such as the single-dose flat-burr grinder and the temperature-hold kettle, suit buyers who care about precise brewing.</p></div>
+      </div>
+      <ol class="queue">
+      <li class="topic">
+        <span class="pos">1</span>
+        <div class="topic-body">
+          <h3>How to Make Cold Brew Coffee at Home</h3>
+          <p class="query"><span class="q">how to make cold brew</span><span class="num">880 searches a month</span></p>
+          <p class="why">About 880 people a month search for this and your store has no page about it.</p>
+          <div class="meta">
+            <div><p class="label">Products it mentions</p><p>Hand Grinder, conical steel burrs · Cold Brew Jar 1.5 litre</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">19</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>steampunkcoffee.co.uk</b>/blogs/steampunk-coffee-blog/make-cold-brew-at-home-with-no-fancy-equipment</li><li><b>reddit.com</b>/r/coffee/comments/oi7rm7/how_do_you_guys_make_cold_brew</li><li><b>northstarroast.com</b>/en-gb/blogs/all-blogs/how-to-make-cold-brew-coffee</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">0 of 8</p></div>
+          </div>
+        </div>
+      </li>
+      <li class="topic">
+        <span class="pos">2</span>
+        <div class="topic-body">
+          <h3>How to Use a French Press for a Cleaner Cup</h3>
+          <p class="query"><span class="q">how to use french press</span><span class="num">720 searches a month</span></p>
+          <p class="why">About 720 people a month search for this and your store has no page about it.</p>
+          <div class="meta">
+            <div><p class="label">Products it mentions</p><p>Hand Grinder, conical steel burrs · French Press 1 litre · Brew Scale with Timer</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">26</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>illy.com</b>/en-us/coffee/coffee-preparation/how-to-use-a-french-press</li><li><b>reddit.com</b>/r/coffee/comments/g97uc6/french_press_guide_ultimate_beginners_guide_from</li><li><b>athome.starbucks.com</b>/brewing-guide/how-brew-coffee-press</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">0 of 6</p></div>
+          </div>
+        </div>
+      </li>
+      <li class="topic">
+        <span class="pos">3</span>
+        <div class="topic-body">
+          <h3>Grind Size Guide: From Espresso to French Press</h3>
+          <p class="query"><span class="q">coffee grind size guide</span><span class="num">210 searches a month</span></p>
+          <p class="why">About 210 people a month search for this and your store has no page about it.</p>
+          <div class="meta">
+            <div><p class="label">Products it mentions</p><p>Ceramic Cone Dripper, size 02 · Hand Grinder, conical steel burrs · French Press 1 litre</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">30</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>honestcoffeeguide.com</b>/coffee-grind-size-chart</li><li><b>uecoffeeroasters.com</b>/blogs/articles/coffee-grind-size-guide</li><li><b>masterclass.com</b>/articles/coffee-grind-size-chart</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">0 of 9</p></div>
+          </div>
+        </div>
+      </li>
+      <li class="topic">
+        <span class="pos">4</span>
+        <div class="topic-body">
+          <h3>Manual or Electric Coffee Grinder: How to Choose</h3>
+          <p class="query"><span class="q">manual vs electric coffee grinder</span><span class="num">110 searches a month</span></p>
+          <p class="why">About 110 people a month search for this and your store has no page about it.</p>
+          <div class="meta">
+            <div><p class="label">Products it mentions</p><p>Hand Grinder, conical steel burrs · Electric Flat-Burr Grinder</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">18</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>craftcoffeespot.com</b>/grinder/manual-vs-electric-coffee-grinders</li><li><b>coffeedesk.com</b>/blog/coffee-grinder-manual-or-electric</li><li><b>reddit.com</b>/r/coffee/comments/o0gyp/what_are_the_advantages_of_a_manual_grinder_over</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">0 of 7</p></div>
+          </div>
+        </div>
+      </li></ol>
+      <details class="dropped">
+        <summary><span class="label">Proposed but not queued</span> <span class="num">16</span></summary>
+        <div class="scroll"><table><thead><tr><th>Search phrase</th><th>Why it was left out</th><th>Figure</th></tr></thead><tbody><tr><td>bleached vs unbleached coffee filters</td><td>Too few searches</td><td class="num">20 a month</td></tr><tr><td>ceramic vs stainless steel dripper</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>coffee altitude flavour</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>cold brew steep time</td><td>Too few searches</td><td class="num">10 a month</td></tr><tr><td>cone vs flat bottom dripper</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>conical vs flat burr grinder</td><td>Too few searches</td><td class="num">90 a month</td></tr><tr><td>how to clean french press</td><td>Too few searches</td><td class="num">90 a month</td></tr><tr><td>light vs medium roast coffee</td><td>Too few searches</td><td class="num">10 a month</td></tr><tr><td>natural vs washed coffee</td><td>Too few searches</td><td class="num">50 a month</td></tr><tr><td>pour over coffee ratio scale</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>pour over water temperature</td><td>Too few searches</td><td class="num">10 a month</td></tr><tr><td>rinse paper coffee filter</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>single dose grinder retention</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>stovetop vs electric gooseneck kettle</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>whole bean vs ground coffee</td><td>Too few searches</td><td class="num">50 a month</td></tr><tr><td>why gooseneck kettle pour over</td><td>Too few searches</td><td class="num">no figure</td></tr></tbody></table></div>
+      </details>
+    </section>
+</div>

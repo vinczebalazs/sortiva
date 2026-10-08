@@ -92,7 +92,7 @@ export async function startPipeline(options: { webhookDebounceMs?: number } = {}
     shopifyApp: { clientId: CLIENT_ID, clientSecret: CLIENT_SECRET, apiVersion: PINNED_VERSION, baseUrlFor: shopify.baseUrlFor },
     shopifyClient: { baseDelayMs: 20 },
     llm: new AnthropicLlm(db.pool, { apiKey: 'scenario-key', baseURL: anthropic.url }),
-    demand: new DataForSeoDemand(db.pool, { login: dataforseo.login, password: dataforseo.password, baseUrl: dataforseo.url }),
+    demand: new DataForSeoDemand(db.pool, { login: dataforseo.login, password: dataforseo.password, baseUrl: dataforseo.url, pollMs: process.env.RECORD_DATAFORSEO === '1' ? 5_000 : 20 }),
     webhookDebounceMs: options.webhookDebounceMs ?? 1_500,
     hooks,
   }

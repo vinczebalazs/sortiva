@@ -25,7 +25,8 @@ export type TopResults = { keyword: string; pages: RankingPage[]; source: string
 /** Search demand and what ranks. Implemented in vendors/dataforseo; every call is priced and cached there. */
 export interface Demand {
   searchVolumes(request: { storeId: number; market: Market; keywords: string[] }): Promise<VolumeReading[]>
-  topResults(request: { storeId: number; market: Market; keyword: string }): Promise<TopResults>
+  /** Google's top ten for each phrase, in the order asked. */
+  topResults(request: { storeId: number; market: Market; keywords: string[] }): Promise<TopResults[]>
 }
 
 /** The vendor could not answer. Discovery stops and is retried; it never continues without the numbers. */

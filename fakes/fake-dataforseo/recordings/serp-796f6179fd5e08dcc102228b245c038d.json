@@ -1,0 +1,851 @@
+{
+ "recordedAt": "2026-10-08T18:17:33.524Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "csalántea készítése",
+  "location_code": 2348,
+  "language_code": "hu",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0194 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10081817-2302-0066-0000-833dbafd16b1",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0145 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10081817-2302-0066-0000-833dbafd16b1"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "csalántea készítése",
+     "location_code": 2348,
+     "language_code": "hu",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "csalántea készítése",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2348,
+      "language_code": "hu",
+      "check_url": "https://www.google.com/search?q=csal%C3%A1ntea%20k%C3%A9sz%C3%ADt%C3%A9se&hl=hu&gl=HU&ie=UTF-8&uule=w+CAIQIFISCcPkN997g0FHERAQHgwpxAAA",
+      "datetime": "2026-10-08 18:17:32 +00:00",
+      "spell": null,
+      "refinement_chips": null,
+      "item_types": [
+       "ai_overview",
+       "video",
+       "organic",
+       "people_also_ask",
+       "related_searches"
+      ],
+      "se_results_count": 148,
+      "pages_count": 1,
+      "items_count": 12,
+      "items": [
+       {
+        "type": "ai_overview",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+        "asynchronous_ai_overview": false,
+        "markdown": "A csalántea elkészítése `függ attól, hogy friss vagy szárított csalánlevelet, illetve levelet vagy gyökeret használsz`.[[1]](https://www.gyorgytea.hu/termekek/egyedi-teak/csalan/)[[2]](https://www.agraroldal.hu/igy-keszits-otthon-csalanteat.html)\n\n### Hozzávalók és arányok\n\n- **Szárított levélből:** 1-2 teáskanál (vagy 2 evőkanál) szárított csalánlevél 2-3 dl (1 bögre) forró vízhez.\n- **Friss levélből:** Kisebb mennyiség is elegendő (kb. 1 marék vagy 1 bögre levél 2 bögre vízhez), mivel a friss növény íze és hatóanyaga erősebb.\n- **Gyökérből:** Ha a gyökerét használod, azt nem forrázzák, hanem 5–10 percig főzni kell.[[1]](https://hillvital.hu/csalan-tea-keszitese)[[2]](https://www.herbatica.hu/blog-2/csalantea-a-zold-elixir-amely-belulrol-es-kivulrol-is-csodakat-tesz/)[[3]](https://www.harmonia-centrum.hu/blog/csalantea-hatasa/)[[4]](https://www.agraroldal.hu/igy-keszits-otthon-csalanteat.html)[[5]](https://szeretlektea.hu/csalan-tea-keszitese/)[[6]](https://www.gyorgytea.hu/termekek/egyedi-teak/csalan/)[[7]](https://kalmia.hu/egeszseg/cukorbetegseg/miert-es-hogyan-igyunk-csalanteat)\n\n\n---\n\n### Elkészítési lépések (szárított vagy friss levél esetén)\n\n1. **Forrázás:** Helyezd a csalánlevelet egy csészébe vagy teáskannába, majd öntsd le a forró (kb. 80–90 °C-os, nem lobogó) vízzel.\n2. **Áztatás:** Fedd le a csészét, és hagyd állni **10–15 percig** (gyorsabb verziónál 2–5 percig, de a hosszabb áztatás kioldja a legtöbb hatóanyagot).\n3. **Szűrés:** Szűrd le a teát egy tiszta pohárba.\n4. **Fogyasztás:** Legjobb ízesítés nélkül, melegen kortyolgatni.[[1]](https://www.harmonia-centrum.hu/blog/csalantea-hatasa/)[[2]](https://www.herbatica.hu/blog-2/csalantea-a-zold-elixir-amely-belulrol-es-kivulrol-is-csodakat-tesz/)[[3]](https://hillvital.hu/csalan-tea-keszitese)[[4]](https://www.agraroldal.hu/igy-keszits-otthon-csalanteat.html)[[5]](https://www.gyorgytea.hu/termekek/egyedi-teak/csalan/)\n\nTovábbi részletes recepteket és tippeket találsz a [Sóbors csalántea recept](https://sobors.hu/receptek/csalantea-recept/) oldalán.[[1]](https://sobors.hu/receptek/csalantea-recept/)\n---\n\n### Fontos tudnivalók a kúriáról\n\n- **Adagolás:** Általában napi 1–2 bögre ajánlott.[[1]](https://www.herbatica.hu/blog-2/csalantea-a-zold-elixir-amely-belulrol-es-kivulrol-is-csodakat-tesz/)[[2]](https://hillvital.hu/csalan-tea-keszitese)\n- **Időtartam:** A csalánteás kúrát legfeljebb **4–6 (legfeljebb 8) hétig** szabad csinálni, utána tartanod kell ugyanennyi vagy legalább 4 hét szünetet.[[1]](https://kalmia.hu/egeszseg/cukorbetegseg/miert-es-hogyan-igyunk-csalanteat)[[2]](https://hillvital.hu/csalan-tea-keszitese)[[3]](https://www.gyorgytea.hu/termekek/egyedi-teak/csalan/)\n- **Ellenjavallatok:** Várandósság alatt, erős vérhígítók vagy bizonyos vérnyomás- és veseproblémák esetén nem ajánlott a folyamatos fogyasztása.[[1]](https://benu.hu/blogs/egeszseg-a-z/ezek-a-csalan-tea-hatasai-kulsoleg-belsoleg)[[2]](https://www.herbatica.hu/blog-2/csalantea-a-zold-elixir-amely-belulrol-es-kivulrol-is-csodakat-tesz/)\n\nSzeretnéd tudni, hogy **milyen konkrét panaszra** (például méregtelenítésre, ízületekre vagy allergiára) szeretnéd használni a teát, vagy külsőleg alkalmaznád (például hajöblítésre)?",
+        "items": [
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "A csalántea elkészítése függ attól, hogy friss vagy szárított csalánlevelet, illetve levelet vagy gyökeret használsz.",
+          "markdown": "A csalántea elkészítése `függ attól, hogy friss vagy szárított csalánlevelet, illetve levelet vagy gyökeret használsz`.[[1]](https://www.gyorgytea.hu/termekek/egyedi-teak/csalan/)[[2]](https://www.agraroldal.hu/igy-keszits-otthon-csalanteat.html)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Györgytea",
+            "domain": "www.gyorgytea.hu",
+            "url": "https://www.gyorgytea.hu/termekek/egyedi-teak/csalan/",
+            "title": "Csalánlevél (Urtica dioica) - Györgytea",
+            "text": "Gyógyteát forrázással készítünk a levélből, főzéssel a gyökérből. Tavasszal és ősszel végezzenek 6 hetes vértisztító csalántea kúr..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "www.agraroldal.hu",
+            "domain": "www.agraroldal.hu",
+            "url": "https://www.agraroldal.hu/igy-keszits-otthon-csalanteat.html",
+            "title": "Így készíts otthon csalán teát magadnak friss vagy szárított levélből!",
+            "text": "Teáját pedig elkészíthetjük egyaránt friss és szárított leveléből is. Ha szárítani szeretnénk, szedjünk egy csokorral belőle, és k..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Hozzávalók és arányok",
+          "text": "Szárított levélből: 1-2 teáskanál (vagy 2 evőkanál) szárított csalánlevél 2-3 dl (1 bögre) forró vízhez. Friss levélből: Kisebb mennyiség is elegendő (kb. 1 marék vagy 1 bögre levél 2 bögre vízhez), mivel a friss növény íze és hatóanyaga erősebb. Gyökérből: Ha a gyökerét használod, azt nem forrázzák, hanem 5–10 percig főzni kell.",
+          "markdown": "- **Szárított levélből:** 1-2 teáskanál (vagy 2 evőkanál) szárított csalánlevél 2-3 dl (1 bögre) forró vízhez.\n- **Friss levélből:** Kisebb mennyiség is elegendő (kb. 1 marék vagy 1 bögre levél 2 bögre vízhez), mivel a friss növény íze és hatóanyaga erősebb.\n- **Gyökérből:** Ha a gyökerét használod, azt nem forrázzák, hanem 5–10 percig főzni kell.[[1]](https://hillvital.hu/csalan-tea-keszitese)[[2]](https://www.herbatica.hu/blog-2/csalantea-a-zold-elixir-amely-belulrol-es-kivulrol-is-csodakat-tesz/)[[3]](https://www.harmonia-centrum.hu/blog/csalantea-hatasa/)[[4]](https://www.agraroldal.hu/igy-keszits-otthon-csalanteat.html)[[5]](https://szeretlektea.hu/csalan-tea-keszitese/)[[6]](https://www.gyorgytea.hu/termekek/egyedi-teak/csalan/)[[7]](https://kalmia.hu/egeszseg/cukorbetegseg/miert-es-hogyan-igyunk-csalanteat)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "HillVital",
+            "domain": "hillvital.hu",
+            "url": "https://hillvital.hu/csalan-tea-keszitese",
+            "title": "Így készítsd a csalánteát, hogy a leghatásosabb legyen! | HillVital",
+            "text": "* Forrás: HillVital (2024.05.02.) * Hatások: méregtelenítő, vízhajtó, vérképző, emésztésjavító; reuma, köszvény, vérszegénység, al..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Herbatica.hu",
+            "domain": "www.herbatica.hu",
+            "url": "https://www.herbatica.hu/blog-2/csalantea-a-zold-elixir-amely-belulrol-es-kivulrol-is-csodakat-tesz/",
+            "title": "Csalántea: a zöld elixír, amely belülről és kívülről is csodákat tesz",
+            "text": "* Növény: Urtica dioica (kétlaki csalán) * Tartalom: Fe, Mg, A/C/K/B vit., szilícium, flavonoidok, folsav, klorofill * Adagolás: N..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Harmónia Centrum",
+            "domain": "www.harmonia-centrum.hu",
+            "url": "https://www.harmonia-centrum.hu/blog/csalantea-hatasa/",
+            "title": "Csalántea hatása - Harmónia Centrum",
+            "text": "A csalán leveleiből és szárából forrázással, a gyökeréből pedig főzéssel készítse a teát. A friss levelekből készített csalánlevél..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "www.agraroldal.hu",
+            "domain": "www.agraroldal.hu",
+            "url": "https://www.agraroldal.hu/igy-keszits-otthon-csalanteat.html",
+            "title": "Így készíts otthon csalán teát magadnak friss vagy szárított levélből!",
+            "text": "Teáját pedig elkészíthetjük egyaránt friss és szárított leveléből is. Ha szárítani szeretnénk, szedjünk egy csokorral belőle, és k..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "szeretlektea.hu",
+            "domain": "szeretlektea.hu",
+            "url": "https://szeretlektea.hu/csalan-tea-keszitese/",
+            "title": "Csalán tea készítése - szeretlekTEA",
+            "text": "Publ: 2018.12.28, rev: 2019.08.15 by szeretlekTEA. Friss csalán szedése: - Fiatal növény virágzás előtt - Felső 10-15 cm vágása - ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Györgytea",
+            "domain": "www.gyorgytea.hu",
+            "url": "https://www.gyorgytea.hu/termekek/egyedi-teak/csalan/",
+            "title": "Csalánlevél (Urtica dioica) - Györgytea",
+            "text": "Gyógyteát forrázással készítünk a levélből, főzéssel a gyökérből. Tavasszal és ősszel végezzenek 6 hetes vértisztító csalántea kúr..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Kalmia.hu",
+            "domain": "kalmia.hu",
+            "url": "https://kalmia.hu/egeszseg/cukorbetegseg/miert-es-hogyan-igyunk-csalanteat",
+            "title": "Hogyan igyuk a csalánteát? - Kalmia Online Patika",
+            "text": "Csalántea hatások: vértisztító, vízhajtó, fogyasztó, gyulladás-, vérnyomás-, vércukorszint-csökkentő, immunerősítő, allergia- és f..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Elkészítési lépések (szárított vagy friss levél esetén)",
+          "text": "Forrázás: Helyezd a csalánlevelet egy csészébe vagy teáskannába, majd öntsd le a forró (kb. 80–90 °C-os, nem lobogó) vízzel. Áztatás: Fedd le a csészét, és hagyd állni 10–15 percig (gyorsabb verziónál 2–5 percig, de a hosszabb áztatás kioldja a legtöbb hatóanyagot). Szűrés: Szűrd le a teát egy tiszta pohárba. Fogyasztás: Legjobb ízesítés nélkül, melegen kortyolgatni.",
+          "markdown": "1. **Forrázás:** Helyezd a csalánlevelet egy csészébe vagy teáskannába, majd öntsd le a forró (kb. 80–90 °C-os, nem lobogó) vízzel.\n2. **Áztatás:** Fedd le a csészét, és hagyd állni **10–15 percig** (gyorsabb verziónál 2–5 percig, de a hosszabb áztatás kioldja a legtöbb hatóanyagot).\n3. **Szűrés:** Szűrd le a teát egy tiszta pohárba.\n4. **Fogyasztás:** Legjobb ízesítés nélkül, melegen kortyolgatni.[[1]](https://www.harmonia-centrum.hu/blog/csalantea-hatasa/)[[2]](https://www.herbatica.hu/blog-2/csalantea-a-zold-elixir-amely-belulrol-es-kivulrol-is-csodakat-tesz/)[[3]](https://hillvital.hu/csalan-tea-keszitese)[[4]](https://www.agraroldal.hu/igy-keszits-otthon-csalanteat.html)[[5]](https://www.gyorgytea.hu/termekek/egyedi-teak/csalan/)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Harmónia Centrum",
+            "domain": "www.harmonia-centrum.hu",
+            "url": "https://www.harmonia-centrum.hu/blog/csalantea-hatasa/",
+            "title": "Csalántea hatása - Harmónia Centrum",
+            "text": "A csalán leveleiből és szárából forrázással, a gyökeréből pedig főzéssel készítse a teát. A friss levelekből készített csalánlevél..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Herbatica.hu",
+            "domain": "www.herbatica.hu",
+            "url": "https://www.herbatica.hu/blog-2/csalantea-a-zold-elixir-amely-belulrol-es-kivulrol-is-csodakat-tesz/",
+            "title": "Csalántea: a zöld elixír, amely belülről és kívülről is csodákat tesz",
+            "text": "* Növény: Urtica dioica (kétlaki csalán) * Tartalom: Fe, Mg, A/C/K/B vit., szilícium, flavonoidok, folsav, klorofill * Adagolás: N..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "HillVital",
+            "domain": "hillvital.hu",
+            "url": "https://hillvital.hu/csalan-tea-keszitese",
+            "title": "Így készítsd a csalánteát, hogy a leghatásosabb legyen! | HillVital",
+            "text": "* Forrás: HillVital (2024.05.02.) * Hatások: méregtelenítő, vízhajtó, vérképző, emésztésjavító; reuma, köszvény, vérszegénység, al..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "www.agraroldal.hu",
+            "domain": "www.agraroldal.hu",
+            "url": "https://www.agraroldal.hu/igy-keszits-otthon-csalanteat.html",
+            "title": "Így készíts otthon csalán teát magadnak friss vagy szárított levélből!",
+            "text": "Teáját pedig elkészíthetjük egyaránt friss és szárított leveléből is. Ha szárítani szeretnénk, szedjünk egy csokorral belőle, és k..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Györgytea",
+            "domain": "www.gyorgytea.hu",
+            "url": "https://www.gyorgytea.hu/termekek/egyedi-teak/csalan/",
+            "title": "Csalánlevél (Urtica dioica) - Györgytea",
+            "text": "Gyógyteát forrázással készítünk a levélből, főzéssel a gyökérből. Tavasszal és ősszel végezzenek 6 hetes vértisztító csalántea kúr..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "További részletes recepteket és tippeket találsz a Sóbors csalántea recept oldalán.",
+          "markdown": "További részletes recepteket és tippeket találsz a [Sóbors csalántea recept](https://sobors.hu/receptek/csalantea-recept/) oldalán.[[1]](https://sobors.hu/receptek/csalantea-recept/)",
+          "links": [
+           {
+            "type": "link_element",
+            "title": "Sóbors csalántea recept",
+            "description": null,
+            "url": "https://sobors.hu/receptek/csalantea-recept/",
+            "domain": "sobors.hu"
+           }
+          ],
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Sóbors",
+            "domain": "sobors.hu",
+            "url": "https://sobors.hu/receptek/csalantea-recept/",
+            "title": "Csalántea recept | Sóbors",
+            "text": "Csalántea recept by Kapitány Beáta (2024.05.15., Sóbors): * Hatások: vértisztító, méregtelenítő tavaszi kúrához, vérnyomás- és gyu..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Fontos tudnivalók a kúriáról",
+          "text": "Adagolás: Általában napi 1–2 bögre ajánlott. Időtartam: A csalánteás kúrát legfeljebb 4–6 (legfeljebb 8) hétig szabad csinálni, utána tartanod kell ugyanennyi vagy legalább 4 hét szünetet. Ellenjavallatok: Várandósság alatt, erős vérhígítók vagy bizonyos vérnyomás- és veseproblémák esetén nem ajánlott a folyamatos fogyasztása.",
+          "markdown": "- **Adagolás:** Általában napi 1–2 bögre ajánlott.[[1]](https://www.herbatica.hu/blog-2/csalantea-a-zold-elixir-amely-belulrol-es-kivulrol-is-csodakat-tesz/)[[2]](https://hillvital.hu/csalan-tea-keszitese)\n- **Időtartam:** A csalánteás kúrát legfeljebb **4–6 (legfeljebb 8) hétig** szabad csinálni, utána tartanod kell ugyanennyi vagy legalább 4 hét szünetet.[[1]](https://kalmia.hu/egeszseg/cukorbetegseg/miert-es-hogyan-igyunk-csalanteat)[[2]](https://hillvital.hu/csalan-tea-keszitese)[[3]](https://www.gyorgytea.hu/termekek/egyedi-teak/csalan/)\n- **Ellenjavallatok:** Várandósság alatt, erős vérhígítók vagy bizonyos vérnyomás- és veseproblémák esetén nem ajánlott a folyamatos fogyasztása.[[1]](https://benu.hu/blogs/egeszseg-a-z/ezek-a-csalan-tea-hatasai-kulsoleg-belsoleg)[[2]](https://www.herbatica.hu/blog-2/csalantea-a-zold-elixir-amely-belulrol-es-kivulrol-is-csodakat-tesz/)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Herbatica.hu",
+            "domain": "www.herbatica.hu",
+            "url": "https://www.herbatica.hu/blog-2/csalantea-a-zold-elixir-amely-belulrol-es-kivulrol-is-csodakat-tesz/",
+            "title": "Csalántea: a zöld elixír, amely belülről és kívülről is csodákat tesz",
+            "text": "* Növény: Urtica dioica (kétlaki csalán) * Tartalom: Fe, Mg, A/C/K/B vit., szilícium, flavonoidok, folsav, klorofill * Adagolás: N..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "HillVital",
+            "domain": "hillvital.hu",
+            "url": "https://hillvital.hu/csalan-tea-keszitese",
+            "title": "Így készítsd a csalánteát, hogy a leghatásosabb legyen! | HillVital",
+            "text": "* Forrás: HillVital (2024.05.02.) * Hatások: méregtelenítő, vízhajtó, vérképző, emésztésjavító; reuma, köszvény, vérszegénység, al..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Kalmia.hu",
+            "domain": "kalmia.hu",
+            "url": "https://kalmia.hu/egeszseg/cukorbetegseg/miert-es-hogyan-igyunk-csalanteat",
+            "title": "Hogyan igyuk a csalánteát? - Kalmia Online Patika",
+            "text": "Csalántea hatások: vértisztító, vízhajtó, fogyasztó, gyulladás-, vérnyomás-, vércukorszint-csökkentő, immunerősítő, allergia- és f..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Györgytea",
+            "domain": "www.gyorgytea.hu",
+            "url": "https://www.gyorgytea.hu/termekek/egyedi-teak/csalan/",
+            "title": "Csalánlevél (Urtica dioica) - Györgytea",
+            "text": "Gyógyteát forrázással készítünk a levélből, főzéssel a gyökérből. Tavasszal és ősszel végezzenek 6 hetes vértisztító csalántea kúr..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "benu.hu",
+            "domain": "benu.hu",
+            "url": "https://benu.hu/blogs/egeszseg-a-z/ezek-a-csalan-tea-hatasai-kulsoleg-belsoleg",
+            "title": "Ezek a csalán tea hatásai külsőleg, belsőleg",
+            "text": "* Növény: Urtica dioica (csalán), északi félteke, nitrogén- és tápanyagdús talaj. * Hatóanyagok: C-, B-, K-vitamin, flavonoidok, h..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Szeretnéd tudni, hogy milyen konkrét panaszra (például méregtelenítésre, ízületekre vagy allergiára) szeretnéd használni a teát, vagy külsőleg alkalmaznád (például hajöblítésre)?",
+          "markdown": "Szeretnéd tudni, hogy **milyen konkrét panaszra** (például méregtelenítésre, ízületekre vagy allergiára) szeretnéd használni a teát, vagy külsőleg alkalmaznád (például hajöblítésre)?",
+          "links": null,
+          "images": null,
+          "references": null
+         }
+        ],
+        "references": [
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "HillVital",
+          "domain": "hillvital.hu",
+          "url": "https://hillvital.hu/csalan-tea-keszitese",
+          "title": "Így készítsd a csalánteát, hogy a leghatásosabb legyen! | HillVital",
+          "text": "* Forrás: HillVital (2024.05.02.) * Hatások: méregtelenítő, vízhajtó, vérképző, emésztésjavító; reuma, köszvény, vérszegénység, al..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Sóbors",
+          "domain": "sobors.hu",
+          "url": "https://sobors.hu/receptek/csalantea-recept/",
+          "title": "Csalántea recept | Sóbors",
+          "text": "Csalántea recept by Kapitány Beáta (2024.05.15., Sóbors): * Hatások: vértisztító, méregtelenítő tavaszi kúrához, vérnyomás- és gyu..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Kalmia.hu",
+          "domain": "kalmia.hu",
+          "url": "https://kalmia.hu/egeszseg/cukorbetegseg/miert-es-hogyan-igyunk-csalanteat",
+          "title": "Hogyan igyuk a csalánteát? - Kalmia Online Patika",
+          "text": "Csalántea hatások: vértisztító, vízhajtó, fogyasztó, gyulladás-, vérnyomás-, vércukorszint-csökkentő, immunerősítő, allergia- és f..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "szeretlektea.hu",
+          "domain": "szeretlektea.hu",
+          "url": "https://szeretlektea.hu/csalan-tea-keszitese/",
+          "title": "Csalán tea készítése - szeretlekTEA",
+          "text": "Publ: 2018.12.28, rev: 2019.08.15 by szeretlekTEA. Friss csalán szedése: - Fiatal növény virágzás előtt - Felső 10-15 cm vágása - ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Györgytea",
+          "domain": "www.gyorgytea.hu",
+          "url": "https://www.gyorgytea.hu/termekek/egyedi-teak/csalan/",
+          "title": "Csalánlevél (Urtica dioica) - Györgytea",
+          "text": "Gyógyteát forrázással készítünk a levélből, főzéssel a gyökérből. Tavasszal és ősszel végezzenek 6 hetes vértisztító csalántea kúr..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Harmónia Centrum",
+          "domain": "www.harmonia-centrum.hu",
+          "url": "https://www.harmonia-centrum.hu/blog/csalantea-hatasa/",
+          "title": "Csalántea hatása - Harmónia Centrum",
+          "text": "A csalán leveleiből és szárából forrázással, a gyökeréből pedig főzéssel készítse a teát. A friss levelekből készített csalánlevél..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Herbatica.hu",
+          "domain": "www.herbatica.hu",
+          "url": "https://www.herbatica.hu/blog-2/csalantea-a-zold-elixir-amely-belulrol-es-kivulrol-is-csodakat-tesz/",
+          "title": "Csalántea: a zöld elixír, amely belülről és kívülről is csodákat tesz",
+          "text": "* Növény: Urtica dioica (kétlaki csalán) * Tartalom: Fe, Mg, A/C/K/B vit., szilícium, flavonoidok, folsav, klorofill * Adagolás: N..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "www.agraroldal.hu",
+          "domain": "www.agraroldal.hu",
+          "url": "https://www.agraroldal.hu/igy-keszits-otthon-csalanteat.html",
+          "title": "Így készíts otthon csalán teát magadnak friss vagy szárított levélből!",
+          "text": "Teáját pedig elkészíthetjük egyaránt friss és szárított leveléből is. Ha szárítani szeretnénk, szedjünk egy csokorral belőle, és k..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "benu.hu",
+          "domain": "benu.hu",
+          "url": "https://benu.hu/blogs/egeszseg-a-z/ezek-a-csalan-tea-hatasai-kulsoleg-belsoleg",
+          "title": "Ezek a csalán tea hatásai külsőleg, belsőleg",
+          "text": "* Növény: Urtica dioica (csalán), északi félteke, nitrogén- és tápanyagdús talaj. * Hatóanyagok: C-, B-, K-vitamin, flavonoidok, h..."
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "video",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]",
+        "items": [
+         {
+          "type": "video_element",
+          "source": "YouTube · HillVital - Gyógynövényes termékek szakértőktől",
+          "title": "A csalántea csodás hatásai és gyors elkészítése - HillVital",
+          "timestamp": "2020-10-04 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=jdeND3L1BUk"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · Bio Kertész",
+          "title": "Csalántea",
+          "timestamp": "2022-04-13 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=JmadN5X1NAA"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · Napfényes Gyógyközpont",
+          "title": "A csalán gyógyító hatásai - A csalántea-kúra",
+          "timestamp": "2023-02-08 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=Cl8ZKfOEUJ4"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · Természetes Út",
+          "title": "Gyógytea készítés - Csalán tea - Gyógynövények",
+          "timestamp": "2020-04-09 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=qcuk7BGxPrA"
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]",
+        "domain": "hillvital.hu",
+        "title": "A csalán tea jótékony hatásai",
+        "url": "https://hillvital.hu/csalan-tea-jotekony-hatasai?srsltid=AU7gw4X93UZFXL82zifGZR5rUlgYruW6AvYh-3kjLqJwlq7TW4KsTq2T",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://hillvital.hu › csalan-tea-jotekony-hatasai",
+        "website_name": "HillVital",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2022. okt. 11. — A csalán tea elkészítése is nagyon egyszerű. Csupán 2 evőkanál szárított csalánt forrázz le vízzel, ezután hagyd állni 15 percig. Fogyassz ...",
+        "pre_snippet": "10/11/2022 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Csupán 2 evőkanál szárított csalánt forrázz le vízzel, ezután hagyd állni 15 percig"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2022-10-11 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[6]/div[1]/div[1]",
+        "domain": "hillvital.hu",
+        "title": "Több betegség esetén is ajánlott a csalántea fogyasztása",
+        "url": "https://hillvital.hu/csalan-tea-fogyasztasa?srsltid=AU7gw4VvRc456Q73wGTqmw9tKdrpdq_V7kmjiyX5COTMItJ-rPtpkfIZ",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://hillvital.hu › csalan-tea-fogyasztasa",
+        "website_name": "HillVital",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2024. máj. 2. — A csalán kiszárított leveleit teaként szokták elkészíteni. A csalán az egyik legjobb vértisztító gyógynövény, éppen ezért nagyon sokan ...",
+        "pre_snippet": "05/02/2024 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2024-05-02 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "people_also_ask",
+        "rank_group": 1,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]/div[1]",
+        "items": [
+         {
+          "type": "people_also_ask_element",
+          "title": "Milyen hatással van a csalántea fogyasztása?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Milyen ételeket lehet csalánból készíteni?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Mit tartalmaz a csalán?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Mire jó a csalánlé a kertben?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[10]/div[1]/div[1]",
+        "domain": "www.manutea.hu",
+        "title": "Csalán tea, hogyan jutott el ez a gyom a csúcsra",
+        "url": "https://www.manutea.hu/csalan-tea-hogyan-jutott-el-ez-a-gyom-a-csucsra-x32056",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.manutea.hu › csalan-tea-hogyan-jutott-el-ez-...",
+        "website_name": "ManuTea.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2024. jún. 19. — Elkészítése:Előszöris szerezzen friss csalánt. Ne kössön kompromisszumokat, ne könnyítse meg a dolgát, csakis a tökéletesen tiszta csalánt ...",
+        "pre_snippet": "06/19/2024 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Elkészítése"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2024-06-19 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[11]/div[1]/div[1]/div[1]",
+        "domain": "www.youtube.com",
+        "title": "A csalántea jótékony hatásai - HillVital",
+        "url": "https://www.youtube.com/watch?v=t-AC9OjkM7k",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "11,1 E megtekintés  ·  3 évvel ezelőtt",
+        "website_name": "YouTube · HillVital - Gyógynövényes termékek szakértőktől",
+        "is_image": false,
+        "is_video": true,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": [
+         "is_video"
+        ],
+        "description": "A csipkebogyó gyógyító hatásai - A csipkebogyótea elkészítése. Napfényes Gyógyközpont•13K views · 44:53. Go to channel Dr. Jan Kaczmarek · „ ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "elkészítése"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2023-03-11 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[13]/div[1]/div[1]",
+        "domain": "szimpatika.hu",
+        "title": "Mire jó a csalánlevél tea? A csalántea hatásai",
+        "url": "https://szimpatika.hu/csalanlevel-tea",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://szimpatika.hu › csalanlevel-tea",
+        "website_name": "Szimpatika",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Szárított levél: 2–4 gramm, forró vízben áztatva teához, napi legfeljebb három alkalommal. · Kapszula: 300–600 mg szárított kivonat naponta. · Tinktúra: 2–5 ml, ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Szárított levél: 2–4 gramm, forró vízben áztatva teához, napi legfeljebb három alkalommal"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[15]/div[1]/div[1]",
+        "domain": "hillvital.hu",
+        "title": "A csalán tea elképesztő jótékony hatásokkal rendelkezik",
+        "url": "https://hillvital.hu/csalan-tea-hatasa?srsltid=AU7gw4WBuDh4LD_dHKyo2G2x8WKC2GCY58qIa8cqFV9wwZdQmhjN1hT5",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://hillvital.hu › csalan-tea-hatasa",
+        "website_name": "HillVital",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2024. júl. 8. — Csökkenti a vércukorszintet is. A csalántea fokozza a szervezet ellenálló képességét. Nagyon hatásos allergiás betegségek kezelésére is.",
+        "pre_snippet": "07/08/2024 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "csalántea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2024-07-08 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 7,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[16]/div[1]/div[1]/div[1]",
+        "domain": "www.facebook.com",
+        "title": "Csalántea – az egyik legegyszerűbb és legolcsóbb „tisztító” ...",
+        "url": "https://www.facebook.com/eleterodunaujvaros.hu/videos/-csal%C3%A1ntea-az-egyik-legegyszer%C5%B1bb-%C3%A9s-legolcs%C3%B3bb-tiszt%C3%ADt%C3%B3-megold%C3%A1s-sokan-keresnek/1726231968809810/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "10 reakció  ·  5 hónappal ezelőtt",
+        "website_name": "Facebook · Életerő Alternatív Egészségközpont",
+        "is_image": false,
+        "is_video": true,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": [
+         "is_video"
+        ],
+        "description": "✨Esti rituális italom✨ RECEPT: ✨2 dl kókusztej (bármilyen tej jó). 00:10. ✨Esti rituális italom✨ ... 3 days ago · 369K views. Támogasd ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 8,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[18]/div[1]/div[1]",
+        "domain": "gyogyszernelkul.com",
+        "title": "csalántea",
+        "url": "https://gyogyszernelkul.com/tag/csalantea/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://gyogyszernelkul.com › tag › csalantea",
+        "website_name": "Gyógyszer Nélkül",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Faasztalon két pohár jeges tea fekete szívószállal és mentalevéllel, mellette fél citromok és jégkockák. Gyógyteák, amelyeket ne hagyjunk ki ezen a nyáron – ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "related_searches",
+        "rank_group": 1,
+        "rank_absolute": 12,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[2]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "items": [
+         "Friss csalántea készítése",
+         "Filteres csalántea fogyasztása",
+         "Csalántea vélemények",
+         "A csalántea jótékony hatásai",
+         "Csalántea hatása a szivre",
+         "Csalántea káros hatásai",
+         "Zöld csalán tea készítése",
+         "Csalántea hatása a vérnyomásra"
+        ],
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

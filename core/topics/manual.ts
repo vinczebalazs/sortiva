@@ -78,8 +78,8 @@ export async function addManualTopic(deps: TopicDeps, storeId: number, phrase: s
   if (page) return { kind: 'existing_page', title: page.title, url: page.url }
 
   const [volume] = await deps.demand.searchVolumes({ storeId, market: ctx.market, keywords: [targetQuery] })
-  const top = await deps.demand.topResults({ storeId, market: ctx.market, keyword: targetQuery })
-  const evidence = evidenceFor(ctx.market, { value: volume?.searches ?? null, source: volume?.source ?? '', date: volume?.fetchedAt ?? new Date().toISOString() }, distinctFacts(backed, ctx.usable), top)
+  const [top] = await deps.demand.topResults({ storeId, market: ctx.market, keywords: [targetQuery] })
+  const evidence = evidenceFor(ctx.market, { value: volume?.searches ?? null, source: volume?.source ?? '', date: volume?.fetchedAt ?? new Date().toISOString() }, distinctFacts(backed, ctx.usable), top ?? null)
 
   // Asked for by name, so an earlier "not interested" no longer stands.
   await deps.db.query('delete from not_interested where store_id = $1 and canonical_key = $2', [storeId, key])

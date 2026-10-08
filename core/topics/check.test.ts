@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { fixture } from '../../scenarios/fixtures/index.ts'
 import { canonicalKey } from './canonical.ts'
-import { coveringPage, onlyProductListings, sameIntent, storeWideWords, type StorePage } from './check.ts'
+import { coveringPage, onlyProductListings, sameIntent, storeWideWords, top3, type StorePage } from './check.ts'
 
 function storeOf(name: string) {
   const f = fixture(name) as any
@@ -52,6 +52,10 @@ describe('canonical keys', () => {
 
 describe('results pages', () => {
   const page = (url: string, productListing = false) => ({ rank: 1, url, domain: '', title: '', productListing })
+  it('the same page with different tracking parameters is the same page', () => {
+    const top = (u: string[]) => top3(u.map((url) => page(url)))
+    expect(top(['https://www.a.com/x?srsltid=1', 'https://b.com/y/', 'https://c.com/z'])).toEqual(top(['https://a.com/x?srsltid=2', 'https://b.com/y', 'https://c.com/z#top']))
+  })
   it('two queries sharing two of their top three pages are one intent', () => {
     expect(sameIntent(['a', 'b', 'c'], ['b', 'a', 'x'])).toBe(true)
     expect(sameIntent(['a', 'b', 'c'], ['a', 'x', 'y'])).toBe(false)

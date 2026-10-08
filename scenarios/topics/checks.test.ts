@@ -86,7 +86,7 @@ describe('a spending cap hit mid-discovery pauses the store', () => {
     }
     expect(await queued(store.id)).toEqual([])
     expect(await p.banners(store.id)).toContainEqual({ kind: 'budget_reached' })
-    const { rows: jobs } = await p.db.pool.query(`select count(*)::int as n from graphile_worker.jobs where task_identifier = 'find_topics'`)
+    const { rows: jobs } = await p.db.pool.query(`select count(*)::int as n from graphile_worker.jobs where task_identifier = 'find_topics' and key = $1`, [`find_topics:${store.id}`])
     expect(jobs[0].n).toBe(0)
     const { rows: ledger } = await p.db.pool.query(`select count(*)::int as n from job_ledger where task = 'find_topics' and store_id = $1`, [store.id])
     expect(ledger[0].n).toBe(0)

@@ -120,6 +120,22 @@ Asked at the start of phase 2; answered in the session.
 - **Changing the article language** in Settings takes waiting topics in the old language out of the queue and searches again.
 - **"Create a blog called 'Blog'"** in setup step 4 is recorded as the merchant's choice; the blog is created when auto-publish is built in phase 4.
 
+## 2026-10-08 — Founder: Google's top ten through DataForSEO's queue
+
+DataForSEO's instant ("live") top-ten request answers this account only with "50000 Internal Server Error", on both its variants and on every retry, while the service reports itself healthy; the queued request works. Asked in the session, the founder chose the queue. Topic-finding now submits every phrase in one request and collects the results about 30–60 seconds later; it costs 0.0006 USD a phrase instead of 0.002. A task submitted by a run that died is collected later, never submitted and paid for twice. "Add a topic" waits for this too, so it can take about a minute. The live failure is worth raising with DataForSEO support; switching back is a change to `vendors/dataforseo/client.ts` only.
+
+## 2026-10-08 — Checkpoint 2 (fixture shops, real Google demand; not waited on)
+
+**What was built.** The fake DataForSEO (answers shaped like DataForSEO's published examples, checked against the real answers recorded so far), the DataForSEO client (priced against the daily caps before every call, answers reused 30 days for volumes and 7 for top results), topic-finding (one model call per shop, then the existing-content check, the demand floor, the shop-listings check, the same-intent check, ranking and the queue cap), "Add a topic", "Not interested", "Move to top", "Skip this one", the daily pick at the publish hour keyed on the shop's own calendar day, re-finding topics when the queue runs low, setup steps 3 and 4, and the Home, Products and Settings screens in both languages, with Shopify's navigation once setup is done.
+
+**Scenarios that exist and pass (all against fakes):** finding topics twice adds no duplicate (English and Hungarian rich shops); Hungarian demand is asked for Hungary in Hungarian and English for the shop's own country, and every topic carries its numbers with source and date; all candidates go into one demand request per run; three-product shops get at most three topics, all about products we hold facts for; a shop with one usable product gets at most one; two candidates with the same top three collapse to the higher-demand one; nothing queued competes with an existing post, and asking for that post's subject is answered with the post (dog shop and bike shop); "Not interested" keeps a topic out of the next search; a spending cap hit during topic-finding pauses the shop with the budget banner, queues nothing and does not retry; a merchant's own topic goes to the top, and asking again moves it rather than adding it twice; a topic only fluff products relate to is refused, naming them; the daily pick runs once per shop-local day across midnight in New York; a paused shop's day is recorded as skipped with the reason and shows no dates; "Skip this one" leaves today empty without back-filling; a low queue sends topic-finding out again after a week.
+
+**What to look at.** The queues for the Hungarian and English rich shops, with real monthly searches and Google results: `docs/checkpoints/checkpoint-2-queues.html` (published privately: https://claude.ai/artifact/LvjY53S6G8mvCXi9BQ4Kty). On screen: `pnpm seed:preview rich-hu:done rich-en:done`, then `pnpm preview` and the addresses it prints. Regenerate the page with `npx tsx scripts/checkpoint-2.ts`.
+
+**Agent's reading of it.** The topics are ones these shops can write credibly (brewing cold brew, using a French press, preparing nettle and thyme tea), and the why lines state only what the numbers show. But only 8 of 35 proposed topics cleared the minimum: Google Ads reports no figure, or a tiny one, for most of the exact phrases the model chose. At this rate a rich shop runs dry in about a week. **Open question for the founders**, with the agent's recommendation first: (1) ask the model for two or three phrasings per topic and keep the most searched, at no extra DataForSEO cost; (2) lower the minimums (100 English, 20 Hungarian); (3) leave it.
+
+**Unverified.** Everything touching Shopify (no dev store yet), the embedded navigation inside the real admin, DataForSEO error answers other than the ones seen (their bodies are not published), and the volumes and results for the fixture shops other than the two rich ones, which still come from the fake's stable placeholder numbers.
+
 ## Spend
 
 Running total of what this build has spent on the founders' keys.
@@ -127,6 +143,7 @@ Running total of what this build has spent on the founders' keys.
 | Date | Key | What | USD |
 |---|---|---|---|
 | 2026-10-08 | Anthropic | Phase 1 recordings: fact sheets and profile drafts for the ten fixture stores and the 250-product catalogue (69 calls, Claude Opus 5.5) | 0.92 |
-| 2026-10-08 | Anthropic | Phase 2 recordings: topic proposals and "Add a topic" matches (12 calls) | 0.40 |
+| 2026-10-08 | Anthropic | Phase 2 recordings: topic proposals and "Add a topic" matches (14 calls) | 0.53 |
+| 2026-10-08 | DataForSEO | Checkpoint 2: monthly searches for the two rich shops (2 requests), their top ten through the queue (9 tasks) | 0.19 |
 
-**Total: 1.32 USD** (Anthropic 1.32, DataForSEO 0.00). Figures are computed from the token counts in the committed recordings at 4 / 20 USD per million input / output tokens.
+**Total: 1.64 USD** (Anthropic 1.45, DataForSEO 0.19). DataForSEO balance left: 0.64 USD. Anthropic figures are computed from the token counts in the committed recordings at 4 / 20 USD per million input / output tokens; DataForSEO figures from the account balance before and after.

@@ -2,7 +2,7 @@
 
 Written for you by the building agent. Updated at the end of each phase. Everything below is in the order it unlocks work: each step lists what to do, the command to run afterwards, and what you should see. Nothing here needs you to read code.
 
-**Where things stand (8 October 2026, end of phase 1).** The app installs a store, reads its catalogue, turns each product into a list of checked facts, drafts a store profile, and shows the first two setup screens. All of it is proven against a fake Shopify and recorded model answers; none of it has touched a real Shopify store yet, because none exists. Spend so far: 0.92 USD on the Anthropic key, nothing on DataForSEO.
+**Where things stand (8 October 2026, end of phase 2).** The app installs a store, reads its catalogue, turns each product into checked facts, drafts a store profile, takes the merchant through all four setup steps, finds article topics with real Google demand, keeps a queue with one topic a day, and shows Home, Products and Settings in English and Hungarian. All of it is proven against fakes; nothing has touched a real Shopify store yet, because none exists. Spend so far: 1.45 USD Anthropic, 0.19 USD DataForSEO (0.64 USD left on that account).
 
 ---
 
@@ -33,6 +33,21 @@ pnpm preview
 ```
 
 `seed:preview` wipes and rebuilds the local database, so don't run it after step 2 unless you mean to reinstall. Then open `http://localhost:3000/dev?shop=bukki-fuveshaz.myshopify.com&locale=hu-HU` (Hungarian) or `http://localhost:3000/dev?shop=fernhill-coffee.myshopify.com` (English).
+
+## 1b. Look at checkpoint 2 (15 minutes, no setup needed)
+
+Open the topic queue page: https://claude.ai/artifact/LvjY53S6G8mvCXi9BQ4Kty, or `docs/checkpoints/checkpoint-2-queues.html`. One Hungarian and one English made-up shop, each with the topics we would write, in order, with real monthly searches and Google's real top results. The questions: **would a merchant want these topics, and are the why lines true?** One decision is waiting there: most proposed topics were dropped because almost nobody searches the exact phrase the model picked. My recommendation is to have the model offer two or three phrasings per topic and keep the most searched one.
+
+To see the screens themselves:
+
+```
+pnpm seed:preview rich-hu:done rich-en:done three-en:done
+pnpm preview
+```
+
+then open the addresses it prints. "Add a topic" in this preview calls the real model and DataForSEO (about 0.10 USD each time), so use it sparingly.
+
+**DataForSEO balance.** 0.64 USD is left. Recording real search numbers for the remaining six test shops costs about 0.54 USD, and every change to the topic prompt costs about that again. Please add 10–20 USD before the topic prompt is tuned. Also worth one support message to DataForSEO: their instant "live" top-ten request fails for our account with "50000 Internal Server Error"; we use their queued request instead, which works.
 
 ## 2. Create two Shopify dev stores and install the app on one
 
@@ -84,3 +99,5 @@ All are written up in `DECISIONS.md`, each saying what changes if you overrule i
 2. **Daily spending caps**: 10 USD per store, 60 USD in total.
 3. **The interface follows the Shopify admin user's language** (English or Hungarian), not only the articles.
 4. **Trivial facts**: keep or drop (step 1).
+5. **Topic wording** (checkpoint 2): several phrasings per topic, lower minimums, or leave as is.
+6. **Top-ten through DataForSEO's queue** (chosen 8 October): topic-finding takes about a minute longer; switch back once DataForSEO fixes their live request, if you prefer.

@@ -1,0 +1,844 @@
+{
+ "recordedAt": "2026-10-08T18:10:00.000Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "how to make cold brew",
+  "location_code": 2826,
+  "language_code": "en",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0460 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10081723-2302-0066-0000-b9108a91c417",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0202 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10081723-2302-0066-0000-b9108a91c417"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "how to make cold brew",
+     "location_code": 2826,
+     "language_code": "en",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "how to make cold brew",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2826,
+      "language_code": "en",
+      "check_url": "https://www.google.com/search?q=how%20to%20make%20cold%20brew&hl=en&gl=GB&ie=UTF-8&uule=w+CAIQIFISCamRx0IRO1oCEXoliDJDoPjE",
+      "datetime": "2026-10-08 17:23:46 +00:00",
+      "spell": null,
+      "refinement_chips": null,
+      "item_types": [
+       "ai_overview",
+       "organic",
+       "people_also_ask",
+       "video",
+       "related_searches"
+      ],
+      "se_results_count": 108,
+      "pages_count": 1,
+      "items_count": 12,
+      "items": [
+       {
+        "type": "ai_overview",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+        "asynchronous_ai_overview": false,
+        "markdown": "![The Only Homemade Cold Brew Coffee Recipe You Need - Broma Bakery](https://api.dataforseo.com/cdn/i/10081723-2302-0066-0000-b9108a91c417:4)\nMake smooth, low-acidity [cold brew coffee](https://www.google.com/search?q=cold+brew+coffee&kgmid=/g/122z2fx6&sa=X&ved=2ahUKEwiSz4Hn96qXAxVrq5UCHUH9GzEQ3egRegYIAggMEAY) at home using a simple [Good Food Cold Brew Recipe](https://www.bbcgoodfood.com/recipes/cold-brew-coffee) method.[[1]](https://ozonecoffee.co.uk/pages/brew-guide-ozone-cold-brew)[[2]](https://www.bbcgoodfood.com/recipes/cold-brew-coffee)\n\n### Ingredients and Ratios\n\n- **Coffee:** 50g of coarse-ground coffee (similar to sea salt or French press grind)\n- **Water:** 400ml of cold, filtered water\n- **To serve:** Ice, plus extra cold water or milk[[1]](https://www.bbcgoodfood.com/recipes/cold-brew-coffee)[[2]](https://ozonecoffee.co.uk/pages/brew-guide-ozone-cold-brew)[[3]](https://www.youtube.com/shorts/4W5RQrSSVKg)[[4]](https://support.google.com/knowledgepanel/answer/9787176)\n\n### Step-by-Step Instructions\n\n1. **Combine:** Put the coarse coffee grounds into a glass jar or jug. Pour the cold, filtered water over the grounds.\n2. **Stir and Cover:** Stir gently to make sure all the coffee is wet. Cover the container with a lid or a cloth.\n3. **Steep:** Place it in the refrigerator (or leave it at room temp) and steep for **12 to 18 hours** (16 hours is ideal).\n4. **Strain:** Press through a French press plunger, or pour the liquid through a fine-mesh sieve lined with a paper coffee filter or cheesecloth into a clean jar.\n5. **Store:** Keep the concentrated cold brew in a sealed container in the fridge for up to **7 days** (best used within 3 to 4 days).[[1]](https://www.steampunkcoffee.co.uk/blogs/steampunk-coffee-blog/make-cold-brew-at-home-with-no-fancy-equipment)[[2]](https://ozonecoffee.co.uk/pages/brew-guide-ozone-cold-brew)[[3]](https://www.bbcgoodfood.com/recipes/cold-brew-coffee)\n\n### How to Serve\n\n- This makes a **concentrate** , so dilute it before drinking.\n- Mix **1 part cold brew concentrate** with **2 parts cold water or milk** over plenty of ice. You can also explore serving ideas like a [Horsham Coffee Roaster Cold Brew Guide](https://www.horshamcoffeeroaster.co.uk/pages/coffee-brewing-guide/cold-brew-brewing-guide) for oat milk or tonic variations.[[1]](https://www.horshamcoffeeroaster.co.uk/pages/coffee-brewing-guide/cold-brew-brewing-guide)[[2]](https://ozonecoffee.co.uk/pages/brew-guide-ozone-cold-brew)[[3]](https://support.google.com/knowledgepanel/answer/9787176)[[4]](https://www.bbcgoodfood.com/recipes/cold-brew-coffee)\n\nWatch a quick video tutorial on how to brew cold brew coffee at home:\n\n![](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6NJDgvvJwvkqlTNskyTLNseC7OlYVikGaSzwAZpzACv9B_KFR)\n5:27\n[](https://www.youtube.com/watch?v=Y3KUGFQcJ5M) 5 Easy Ways to Make Cold Brew Coffee at Home 36k views  · 1 month ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · Seattle Coffee Gear\n\nIf you'd like, let me know:\n\n- Do you prefer a **ready-to-drink strength** or a **stronger concentrate**?\n- Are you planning to use a **French press** or a **mason jar**?",
+        "items": [
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Make smooth, low-acidity cold brew coffee at home using a simple Good Food Cold Brew Recipe method.",
+          "markdown": "![The Only Homemade Cold Brew Coffee Recipe You Need - Broma Bakery](https://api.dataforseo.com/cdn/i/10081723-2302-0066-0000-b9108a91c417:2)\nMake smooth, low-acidity [cold brew coffee](https://www.google.com/search?q=cold+brew+coffee&kgmid=/g/122z2fx6&sa=X&ved=2ahUKEwiSz4Hn96qXAxVrq5UCHUH9GzEQ3egRegYIAggMEAY) at home using a simple [Good Food Cold Brew Recipe](https://www.bbcgoodfood.com/recipes/cold-brew-coffee) method.[[1]](https://ozonecoffee.co.uk/pages/brew-guide-ozone-cold-brew)[[2]](https://www.bbcgoodfood.com/recipes/cold-brew-coffee)",
+          "links": [
+           {
+            "type": "link_element",
+            "title": "cold brew coffee",
+            "description": null,
+            "url": "https://www.google.com/search?q=cold+brew+coffee&kgmid=/g/122z2fx6&sa=X&ved=2ahUKEwiSz4Hn96qXAxVrq5UCHUH9GzEQ3egRegYIAggMEAY",
+            "domain": "www.google.com"
+           },
+           {
+            "type": "link_element",
+            "title": "Good Food Cold Brew Recipe",
+            "description": null,
+            "url": "https://www.bbcgoodfood.com/recipes/cold-brew-coffee",
+            "domain": "www.bbcgoodfood.com"
+           }
+          ],
+          "images": [
+           {
+            "type": "images_element",
+            "alt": "The Only Homemade Cold Brew Coffee Recipe You Need - Broma Bakery",
+            "url": null,
+            "image_url": "https://api.dataforseo.com/cdn/i/10081723-2302-0066-0000-b9108a91c417:3"
+           }
+          ],
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Ozone Coffee UK",
+            "domain": "ozonecoffee.co.uk",
+            "url": "https://ozonecoffee.co.uk/pages/brew-guide-ozone-cold-brew",
+            "title": "Cold brew coffee recipe for a French press - Ozone Coffee",
+            "text": "How to make cold brew coffee at home. Cold brew is coffee steeped in cold water for 12 to 18 hours, usually in the fridge overnigh..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Good Food",
+            "domain": "www.bbcgoodfood.com",
+            "url": "https://www.bbcgoodfood.com/recipes/cold-brew-coffee",
+            "title": "How to make cold brew coffee | Good Food",
+            "text": "Ingredients: 50g coarse ground coffee, 400ml cold water, ice, still or sparkling water. Method: Combine water and coffee without s..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Ingredients and Ratios",
+          "text": "Coffee: 50g of coarse-ground coffee (similar to sea salt or French press grind) Water: 400ml of cold, filtered water To serve: Ice, plus extra cold water or milk",
+          "markdown": "- **Coffee:** 50g of coarse-ground coffee (similar to sea salt or French press grind)\n- **Water:** 400ml of cold, filtered water\n- **To serve:** Ice, plus extra cold water or milk[[1]](https://www.bbcgoodfood.com/recipes/cold-brew-coffee)[[2]](https://ozonecoffee.co.uk/pages/brew-guide-ozone-cold-brew)[[3]](https://www.youtube.com/shorts/4W5RQrSSVKg)[[4]](https://support.google.com/knowledgepanel/answer/9787176)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Good Food",
+            "domain": "www.bbcgoodfood.com",
+            "url": "https://www.bbcgoodfood.com/recipes/cold-brew-coffee",
+            "title": "How to make cold brew coffee | Good Food",
+            "text": "Ingredients: 50g coarse ground coffee, 400ml cold water, ice, still or sparkling water. Method: Combine water and coffee without s..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Ozone Coffee UK",
+            "domain": "ozonecoffee.co.uk",
+            "url": "https://ozonecoffee.co.uk/pages/brew-guide-ozone-cold-brew",
+            "title": "Cold brew coffee recipe for a French press - Ozone Coffee",
+            "text": "How to make cold brew coffee at home. Cold brew is coffee steeped in cold water for 12 to 18 hours, usually in the fridge overnigh..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/shorts/4W5RQrSSVKg",
+            "title": "How to make cold brew",
+            "text": "How to make cold brew so every year around this time I have the urge to make cold brew and a lot of you guys have been asking for ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Google",
+            "domain": "support.google.com",
+            "url": "https://support.google.com/knowledgepanel/answer/9787176",
+            "title": "Google Recipes Data",
+            "text": "This response uses data provided by Google's Knowledge Graph"
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Step-by-Step Instructions",
+          "text": "Combine: Put the coarse coffee grounds into a glass jar or jug. Pour the cold, filtered water over the grounds. Stir and Cover: Stir gently to make sure all the coffee is wet. Cover the container with a lid or a cloth. Steep: Place it in the refrigerator (or leave it at room temp) and steep for 12 to 18 hours (16 hours is ideal). Strain: Press through a French press plunger, or pour the liquid through a fine-mesh sieve lined with a paper coffee filter or cheesecloth into a clean jar. Store: Keep the concentrated cold brew in a sealed container in the fridge for up to 7 days (best used within 3 to 4 days).",
+          "markdown": "1. **Combine:** Put the coarse coffee grounds into a glass jar or jug. Pour the cold, filtered water over the grounds.\n2. **Stir and Cover:** Stir gently to make sure all the coffee is wet. Cover the container with a lid or a cloth.\n3. **Steep:** Place it in the refrigerator (or leave it at room temp) and steep for **12 to 18 hours** (16 hours is ideal).\n4. **Strain:** Press through a French press plunger, or pour the liquid through a fine-mesh sieve lined with a paper coffee filter or cheesecloth into a clean jar.\n5. **Store:** Keep the concentrated cold brew in a sealed container in the fridge for up to **7 days** (best used within 3 to 4 days).[[1]](https://www.steampunkcoffee.co.uk/blogs/steampunk-coffee-blog/make-cold-brew-at-home-with-no-fancy-equipment)[[2]](https://ozonecoffee.co.uk/pages/brew-guide-ozone-cold-brew)[[3]](https://www.bbcgoodfood.com/recipes/cold-brew-coffee)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Steampunk Coffee Roasters",
+            "domain": "www.steampunkcoffee.co.uk",
+            "url": "https://www.steampunkcoffee.co.uk/blogs/steampunk-coffee-blog/make-cold-brew-at-home-with-no-fancy-equipment",
+            "title": "Make cold brew at home with NO fancy equipment",
+            "text": "Ingredients: 20 grams of coffee to 250 grams of water Measure out 20 grams of coffee. Grind to a medium-to-coarse setting. I chose..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Ozone Coffee UK",
+            "domain": "ozonecoffee.co.uk",
+            "url": "https://ozonecoffee.co.uk/pages/brew-guide-ozone-cold-brew",
+            "title": "Cold brew coffee recipe for a French press - Ozone Coffee",
+            "text": "How to make cold brew coffee at home. Cold brew is coffee steeped in cold water for 12 to 18 hours, usually in the fridge overnigh..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Good Food",
+            "domain": "www.bbcgoodfood.com",
+            "url": "https://www.bbcgoodfood.com/recipes/cold-brew-coffee",
+            "title": "How to make cold brew coffee | Good Food",
+            "text": "Ingredients: 50g coarse ground coffee, 400ml cold water, ice, still or sparkling water. Method: Combine water and coffee without s..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "How to Serve",
+          "text": "This makes a concentrate, so dilute it before drinking. Mix 1 part cold brew concentrate with 2 parts cold water or milk over plenty of ice. You can also explore serving ideas like a Horsham Coffee Roaster Cold Brew Guide for oat milk or tonic variations.",
+          "markdown": "- This makes a **concentrate** , so dilute it before drinking.\n- Mix **1 part cold brew concentrate** with **2 parts cold water or milk** over plenty of ice. You can also explore serving ideas like a [Horsham Coffee Roaster Cold Brew Guide](https://www.horshamcoffeeroaster.co.uk/pages/coffee-brewing-guide/cold-brew-brewing-guide) for oat milk or tonic variations.[[1]](https://www.horshamcoffeeroaster.co.uk/pages/coffee-brewing-guide/cold-brew-brewing-guide)[[2]](https://ozonecoffee.co.uk/pages/brew-guide-ozone-cold-brew)[[3]](https://support.google.com/knowledgepanel/answer/9787176)[[4]](https://www.bbcgoodfood.com/recipes/cold-brew-coffee)",
+          "links": [
+           {
+            "type": "link_element",
+            "title": "Horsham Coffee Roaster Cold Brew Guide",
+            "description": null,
+            "url": "https://www.horshamcoffeeroaster.co.uk/pages/coffee-brewing-guide/cold-brew-brewing-guide",
+            "domain": "www.horshamcoffeeroaster.co.uk"
+           }
+          ],
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Horsham Coffee Roaster",
+            "domain": "www.horshamcoffeeroaster.co.uk",
+            "url": "https://www.horshamcoffeeroaster.co.uk/pages/coffee-brewing-guide/cold-brew-brewing-guide",
+            "title": "Cold Brew Brewing Guide - Horsham Coffee Roaster",
+            "text": "Cold brew with oat milk — equal parts concentrate and oat milk over ice. The classic. Cold brew tonic — 50ml concentrate, 100ml to..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Ozone Coffee UK",
+            "domain": "ozonecoffee.co.uk",
+            "url": "https://ozonecoffee.co.uk/pages/brew-guide-ozone-cold-brew",
+            "title": "Cold brew coffee recipe for a French press - Ozone Coffee",
+            "text": "How to make cold brew coffee at home. Cold brew is coffee steeped in cold water for 12 to 18 hours, usually in the fridge overnigh..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Google",
+            "domain": "support.google.com",
+            "url": "https://support.google.com/knowledgepanel/answer/9787176",
+            "title": "Google Recipes Data",
+            "text": "This response uses data provided by Google's Knowledge Graph"
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Good Food",
+            "domain": "www.bbcgoodfood.com",
+            "url": "https://www.bbcgoodfood.com/recipes/cold-brew-coffee",
+            "title": "How to make cold brew coffee | Good Food",
+            "text": "Ingredients: 50g coarse ground coffee, 400ml cold water, ice, still or sparkling water. Method: Combine water and coffee without s..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Watch a quick video tutorial on how to brew cold brew coffee at home: 5:27 5 Easy Ways to Make Cold Brew Coffee at Home 36k views · 1 month ago YouTube · Seattle Coffee Gear",
+          "markdown": "Watch a quick video tutorial on how to brew cold brew coffee at home:\n\n![](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6NJDgvvJwvkqlTNskyTLNseC7OlYVikGaSzwAZpzACv9B_KFR)\n5:27\n[](https://www.youtube.com/watch?v=Y3KUGFQcJ5M) 5 Easy Ways to Make Cold Brew Coffee at Home 36k views  · 1 month ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · Seattle Coffee Gear",
+          "links": null,
+          "images": null,
+          "references": null
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "If you'd like, let me know:Do you prefer a ready-to-drink strength or a stronger concentrate ?\nAre you planning to use a French press or a mason jar ?",
+          "markdown": "If you'd like, let me know:\n\n- Do you prefer a **ready-to-drink strength** or a **stronger concentrate**?\n- Are you planning to use a **French press** or a **mason jar**?",
+          "links": null,
+          "images": null,
+          "references": null
+         }
+        ],
+        "references": [
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Steampunk Coffee Roasters",
+          "domain": "www.steampunkcoffee.co.uk",
+          "url": "https://www.steampunkcoffee.co.uk/blogs/steampunk-coffee-blog/make-cold-brew-at-home-with-no-fancy-equipment",
+          "title": "Make cold brew at home with NO fancy equipment",
+          "text": "Ingredients: 20 grams of coffee to 250 grams of water Measure out 20 grams of coffee. Grind to a medium-to-coarse setting. I chose..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Ozone Coffee UK",
+          "domain": "ozonecoffee.co.uk",
+          "url": "https://ozonecoffee.co.uk/pages/brew-guide-ozone-cold-brew",
+          "title": "Cold brew coffee recipe for a French press - Ozone Coffee",
+          "text": "How to make cold brew coffee at home. Cold brew is coffee steeped in cold water for 12 to 18 hours, usually in the fridge overnigh..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Good Food",
+          "domain": "www.bbcgoodfood.com",
+          "url": "https://www.bbcgoodfood.com/recipes/cold-brew-coffee",
+          "title": "How to make cold brew coffee | Good Food",
+          "text": "Ingredients: 50g coarse ground coffee, 400ml cold water, ice, still or sparkling water. Method: Combine water and coffee without s..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Horsham Coffee Roaster",
+          "domain": "www.horshamcoffeeroaster.co.uk",
+          "url": "https://www.horshamcoffeeroaster.co.uk/pages/coffee-brewing-guide/cold-brew-brewing-guide",
+          "title": "Cold Brew Brewing Guide - Horsham Coffee Roaster",
+          "text": "Cold brew with oat milk — equal parts concentrate and oat milk over ice. The classic. Cold brew tonic — 50ml concentrate, 100ml to..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "YouTube",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/shorts/4W5RQrSSVKg",
+          "title": "How to make cold brew",
+          "text": "How to make cold brew so every year around this time I have the urge to make cold brew and a lot of you guys have been asking for ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Google",
+          "domain": "support.google.com",
+          "url": "https://support.google.com/knowledgepanel/answer/9787176",
+          "title": "Google Recipes Data",
+          "text": "This response uses data provided by Google's Knowledge Graph"
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]",
+        "domain": "www.steampunkcoffee.co.uk",
+        "title": "Make cold brew at home with NO fancy equipment",
+        "url": "https://www.steampunkcoffee.co.uk/blogs/steampunk-coffee-blog/make-cold-brew-at-home-with-no-fancy-equipment?srsltid=AU7gw4V0xq5dk5DOyMRlvx_v-r-0a_eonTTAPPOxDdATRqVqLhLATsck",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.steampunkcoffee.co.uk › blogs › make-col...",
+        "website_name": "Steampunk Coffee Roasters",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "16 Apr 2021 — The Recipe · Measure out 20 grams of coffee. · Put 20 grams of ground coffee into your container. · Pour 250 grams of water into your container. Read more",
+        "pre_snippet": "04/16/2021 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Measure out 20 grams of coffee"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://www.steampunkcoffee.co.uk/blogs/steampunk-coffee-blog/make-cold-brew-at-home-with-no-fancy-equipment?srsltid=AU7gw4V0xq5dk5DOyMRlvx_v-r-0a_eonTTAPPOxDdATRqVqLhLATsck#:~:text=The%20Recipe&text=Measure%20out%2020%20grams%20of,coffee.&text=Put%2020%20grams%20of%20ground,coffee%20into%20your%20container.&text=Pour%20250%20grams%20of%20water,into%20your%20container.",
+          "domain": "www.steampunkcoffee.co.uk"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2021-04-16 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "people_also_ask",
+        "rank_group": 1,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]",
+        "items": [
+         {
+          "type": "people_also_ask_element",
+          "title": "How do you make cold brew coffee at home?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "How to make cold brew in the UK?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Can you make cold brew from regular coffee?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "What is the correct ratio for cold brew coffee?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "video",
+        "rank_group": 1,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[6]/div[1]",
+        "items": [
+         {
+          "type": "video_element",
+          "source": "YouTube · Seattle Coffee Gear",
+          "title": "5 Easy Ways to Make Cold Brew Coffee at Home",
+          "timestamp": "2026-09-08 17:23:43 +00:00",
+          "url": "https://www.youtube.com/watch?v=Y3KUGFQcJ5M"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · Morgan Eckroth",
+          "title": "The Cold Brew Recipe You Should Be Making (and it's tasty ...",
+          "timestamp": "2025-06-27 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=c1UbW3cKGe0"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · The Pioneer Woman",
+          "title": "How to Make Cold Brew Concentrate  The Secret to the BEST ...",
+          "timestamp": "2026-05-12 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=V0lsPpM_EXo"
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]",
+        "domain": "www.reddit.com",
+        "title": "how do you guys make cold brew? : r/Coffee",
+        "url": "https://www.reddit.com/r/Coffee/comments/oi7rm7/how_do_you_guys_make_cold_brew/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "400+ comments  ·  5 years ago",
+        "website_name": "Reddit · r/Coffee",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "i wanna learn how to make cold brew coffee but theres a lot of ways to make it, what ways do you guys go about it?",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": [
+         {
+          "type": "link_element",
+          "title": "401 answers",
+          "description": null,
+          "url": "https://www.reddit.com/r/Coffee/comments/oi7rm7/how_do_you_guys_make_cold_brew/h4u3uvf/",
+          "domain": "www.reddit.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[10]/div[1]/div[1]",
+        "domain": "www.northstarroast.com",
+        "title": "How to Make Cold Brew Coffee",
+        "url": "https://www.northstarroast.com/en-gb/blogs/all-blogs/how-to-make-cold-brew-coffee?srsltid=AU7gw4WLZJgRs-IrdsUZ6Wq6R5t83OqK6pRZPuxBm44UZZi6-ntj4zmq",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.northstarroast.com › en-gb › blogs › all-blogs",
+        "website_name": "North Star Coffee Roasters",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Step 1 – Grind Your Beans · Step 2 – Steep Coffee Grounds in Cold Water · Step 3 – Strain the Coffee · Step 4 – Prepare your Coffee. You should now ... Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Step 1 – Grind Your Beans"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://www.northstarroast.com/en-gb/blogs/all-blogs/how-to-make-cold-brew-coffee?srsltid=AU7gw4WLZJgRs-IrdsUZ6Wq6R5t83OqK6pRZPuxBm44UZZi6-ntj4zmq#:~:text=Step%201%20%E2%80%93%20Grind%20Your,Beans&text=Step%202%20%E2%80%93%20Steep%20Coffee,Grounds%20in%20Cold%20Water&text=Step%203%20%E2%80%93%20Strain%20the,Coffee&text=Step%204%20%E2%80%93%20Prepare%20your,your%20coffee%20ready%20to%20drink.",
+          "domain": "www.northstarroast.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[12]/div[1]/div[1]",
+        "domain": "www.bbcgoodfood.com",
+        "title": "How to make cold brew coffee",
+        "url": "https://www.bbcgoodfood.com/recipes/cold-brew-coffee",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.bbcgoodfood.com › Recipes",
+        "website_name": "Good Food",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Put 400ml cold water into a large jug or jar and add the coffee grounds, but do not stir the mixture. Cover and leave to steep for 24 hrs. Read more",
+        "pre_snippet": "5.0(15) · 5 mins",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": {
+         "rating_type": "Max5",
+         "value": 5,
+         "votes_count": 15,
+         "rating_max": 5
+        },
+        "price": null,
+        "highlighted": [
+         "Put 400ml cold water into a large jug or jar"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://www.bbcgoodfood.com/recipes/cold-brew-coffee#:~:text=Put%20400ml%20cold%20water%20into,to%20steep%20for%2024%20hrs.",
+          "domain": "www.bbcgoodfood.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[14]/div[1]/div[1]",
+        "domain": "counterculturecoffee.com",
+        "title": "Guide To Cold Brew",
+        "url": "https://counterculturecoffee.com/blogs/counter-culture-coffee/guide-to-cold-brew?srsltid=AU7gw4UKcwie4nbj_RIjBKH6d4hSHQXCb-C4bniJ6xihLfL4jF7fyZ4R",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://counterculturecoffee.com › counter-culture-coffee",
+        "website_name": "Counter Culture Coffee",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "We prefer a 1:8 ratio—1 gram of coffee for every 8 grams of water and then diluting as your final step. To make a liter in the fridge, you should be looking at ... Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "make"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://counterculturecoffee.com/blogs/counter-culture-coffee/guide-to-cold-brew?srsltid=AU7gw4UKcwie4nbj_RIjBKH6d4hSHQXCb-C4bniJ6xihLfL4jF7fyZ4R#:~:text=We%20prefer%20a%201%3A8%20ratio%E2%80%941,at%20around%20125g%20of%20coffee.",
+          "domain": "counterculturecoffee.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[16]/div[1]/div[1]",
+        "domain": "www.starbucksathome.com",
+        "title": "How to Make Coffee Press Cold Brew",
+        "url": "https://www.starbucksathome.com/gb/brewing-guides/brewing-at-home/cold-brew-press",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.starbucksathome.com › brewing-at-home",
+        "website_name": "Starbucks",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Pour one part concentrate with one part water into a glass with fresh ice, and enjoy your coffee at home! Adjust the flavour of your cup to your ... Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Pour one part concentrate with one part water into a glass with fresh ice"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://www.starbucksathome.com/gb/brewing-guides/brewing-at-home/cold-brew-press#:~:text=Pour%20one%20part%20concentrate%20with,adding%20more%20or%20less%20water.",
+          "domain": "www.starbucksathome.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 7,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[18]/div[1]/div[1]",
+        "domain": "coffeegeek.com",
+        "title": "A Preferred Way to Make Cold Brewed Coffee",
+        "url": "https://coffeegeek.com/blog/techniques/a-preferred-way-to-make-cold-brewed-coffee/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://coffeegeek.com › blog › techniques › a-preferre...",
+        "website_name": "CoffeeGeek",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "27 Mar 2024 — Take your 250ML (1C) of ground coffee and pour it in the jar or container. Your coffee grounds should be medium to coarse. If it's too coarse, ... Read more",
+        "pre_snippet": "03/27/2024 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Take your 250ML (1C) of ground coffee and pour it in the jar or container"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://coffeegeek.com/blog/techniques/a-preferred-way-to-make-cold-brewed-coffee/#:~:text=Take%20your%20250ML%20(1C)%20of,will%20be%20weak%20and%20flavorless.",
+          "domain": "coffeegeek.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2024-03-27 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 8,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[20]/div[1]/div[1]",
+        "domain": "www.cafedirect.co.uk",
+        "title": "How to Make Cold Brew Coffee",
+        "url": "https://www.cafedirect.co.uk/blogs/coffee-education/how-to-make-cold-brew-coffee?srsltid=AU7gw4WM7HBBzOZxndj_YcDsF5dRoRDAhgsBvIV2Il1JVlped4weW2y3",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.cafedirect.co.uk › blogs › coffee-education",
+        "website_name": "Cafédirect",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "How to Make Cold Brew Coffee · Add the ground coffee to your jug or brewing vessel. · Pour over the cold water, making sure all the coffee is fully saturated. Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Add the ground coffee to your jug or brewing vessel"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://www.cafedirect.co.uk/blogs/coffee-education/how-to-make-cold-brew-coffee?srsltid=AU7gw4WM7HBBzOZxndj_YcDsF5dRoRDAhgsBvIV2Il1JVlped4weW2y3#:~:text=How%20to%20Make%20Cold%20Brew,Coffee&text=Add%20the%20ground%20coffee%20to,your%20jug%20or%20brewing%20vessel.&text=Pour%20over%20the%20cold%20water%2C,the%20coffee%20is%20fully%20saturated.",
+          "domain": "www.cafedirect.co.uk"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "related_searches",
+        "rank_group": 1,
+        "rank_absolute": 12,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[2]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "items": [
+         "Cold Brew maker",
+         "How to make cold brew without machine",
+         "How to make cold brew with ground coffee",
+         "How to make cold brew coffee quickly",
+         "Cold brew ratio",
+         "How to make cold brew with instant coffee",
+         "How to make cold brew with coffee",
+         "How to make cold brew tea"
+        ],
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -46,7 +46,7 @@ const deps: Deps = {
   pool,
   shopifyApp: { clientId: 'preview', clientSecret: 'preview', apiVersion: PINNED_VERSION, baseUrlFor: shopify.baseUrlFor },
   llm: new AnthropicLlm(pool, { apiKey: 'preview', baseURL: anthropic.url }),
-  demand: new DataForSeoDemand(pool, { login: dataforseo.login, password: dataforseo.password, baseUrl: dataforseo.url }),
+  demand: new DataForSeoDemand(pool, { login: dataforseo.login, password: dataforseo.password, baseUrl: dataforseo.url, pollMs: process.env.RECORD_DATAFORSEO === '1' ? 5_000 : 20 }),
   webhookDebounceMs: 1000,
   hooks: {},
 }

@@ -1,0 +1,592 @@
+{
+ "recordedAt": "2026-10-08T17:16:25.366Z",
+ "endpoint": "keywords_data/google_ads/search_volume/live",
+ "task": {
+  "keywords": [
+   "csalántea készítése",
+   "csipkebogyó tea főzése",
+   "fekete tea tejjel",
+   "fekete tea és zöld tea különbség",
+   "hidegen áztatott mentatea",
+   "kakukkfű tea készítése",
+   "kamillatea készítése",
+   "koffeinmentes esti tea",
+   "sencha zöld tea elkészítése",
+   "szálas gyógytea elkészítése",
+   "szálas tea tárolása",
+   "teaszűrő bögrébe",
+   "tgfop jelentése fekete tea",
+   "öntöttvas teáskanna tisztítása",
+   "öntöttvas vagy üveg teáskanna"
+  ],
+  "location_code": 2348,
+  "language_code": "hu"
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "2.3869 sec.",
+  "cost": 0.09,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10081716-2302-0367-0000-50d1349c56b3",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "2.2509 sec.",
+    "cost": 0.09,
+    "result_count": 15,
+    "path": [
+     "v3",
+     "keywords_data",
+     "google_ads",
+     "search_volume",
+     "live"
+    ],
+    "data": {
+     "api": "keywords_data",
+     "function": "search_volume",
+     "se": "google_ads",
+     "keywords": [
+      "csalántea készítése",
+      "csipkebogyó tea főzése",
+      "fekete tea tejjel",
+      "fekete tea és zöld tea különbség",
+      "hidegen áztatott mentatea",
+      "kakukkfű tea készítése",
+      "kamillatea készítése",
+      "koffeinmentes esti tea",
+      "sencha zöld tea elkészítése",
+      "szálas gyógytea elkészítése",
+      "szálas tea tárolása",
+      "teaszűrő bögrébe",
+      "tgfop jelentése fekete tea",
+      "öntöttvas teáskanna tisztítása",
+      "öntöttvas vagy üveg teáskanna"
+     ],
+     "location_code": 2348,
+     "language_code": "hu"
+    },
+    "result": [
+     {
+      "keyword": "csalántea készítése",
+      "spell": null,
+      "location_code": 2348,
+      "language_code": "hu",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 7,
+      "search_volume": 480,
+      "low_top_of_page_bid": 0.01,
+      "high_top_of_page_bid": 0.03,
+      "cpc": 0.07,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 320
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 390
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 590
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 1000
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 1000
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 590
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 260
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 320
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 210
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 260
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 320
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 320
+       }
+      ]
+     },
+     {
+      "keyword": "csipkebogyó tea főzése",
+      "spell": null,
+      "location_code": 2348,
+      "language_code": "hu",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 10
+       }
+      ]
+     },
+     {
+      "keyword": "fekete tea tejjel",
+      "spell": null,
+      "location_code": 2348,
+      "language_code": "hu",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 0,
+      "search_volume": 40,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 50
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 40
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 30
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 30
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 40
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 40
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 40
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 30
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 30
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 50
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 30
+       }
+      ]
+     },
+     {
+      "keyword": "fekete tea és zöld tea különbség",
+      "spell": null,
+      "location_code": 2348,
+      "language_code": "hu",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "hidegen áztatott mentatea",
+      "spell": null,
+      "location_code": 2348,
+      "language_code": "hu",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "kakukkfű tea készítése",
+      "spell": null,
+      "location_code": 2348,
+      "language_code": "hu",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 2,
+      "search_volume": 260,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 110
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 210
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 390
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 320
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 390
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 390
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 390
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 320
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 260
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 260
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 140
+       }
+      ]
+     },
+     {
+      "keyword": "kamillatea készítése",
+      "spell": null,
+      "location_code": 2348,
+      "language_code": "hu",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 6,
+      "search_volume": 30,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 20
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 30
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 30
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 20
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 30
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 20
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 30
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 40
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 50
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 70
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 40
+       }
+      ]
+     },
+     {
+      "keyword": "koffeinmentes esti tea",
+      "spell": null,
+      "location_code": 2348,
+      "language_code": "hu",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "sencha zöld tea elkészítése",
+      "spell": null,
+      "location_code": 2348,
+      "language_code": "hu",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "szálas gyógytea elkészítése",
+      "spell": null,
+      "location_code": 2348,
+      "language_code": "hu",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "szálas tea tárolása",
+      "spell": null,
+      "location_code": 2348,
+      "language_code": "hu",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "teaszűrő bögrébe",
+      "spell": null,
+      "location_code": 2348,
+      "language_code": "hu",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "tgfop jelentése fekete tea",
+      "spell": null,
+      "location_code": 2348,
+      "language_code": "hu",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "öntöttvas teáskanna tisztítása",
+      "spell": null,
+      "location_code": 2348,
+      "language_code": "hu",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "öntöttvas vagy üveg teáskanna",
+      "spell": null,
+      "location_code": 2348,
+      "language_code": "hu",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,921 @@
+{
+ "recordedAt": "2026-10-08T18:17:38.559Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "manual vs electric coffee grinder",
+  "location_code": 2826,
+  "language_code": "en",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0215 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10081817-2302-0066-0000-1144ff49c7d4",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0154 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10081817-2302-0066-0000-1144ff49c7d4"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "manual vs electric coffee grinder",
+     "location_code": 2826,
+     "language_code": "en",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "manual vs electric coffee grinder",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2826,
+      "language_code": "en",
+      "check_url": "https://www.google.com/search?q=manual%20vs%20electric%20coffee%20grinder&hl=en&gl=GB&ie=UTF-8&uule=w+CAIQIFISCamRx0IRO1oCEXoliDJDoPjE",
+      "datetime": "2026-10-08 18:17:33 +00:00",
+      "spell": null,
+      "refinement_chips": null,
+      "item_types": [
+       "ai_overview",
+       "organic",
+       "discussions_and_forums",
+       "people_also_ask",
+       "video"
+      ],
+      "se_results_count": 90,
+      "pages_count": 1,
+      "items_count": 11,
+      "items": [
+       {
+        "type": "ai_overview",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+        "asynchronous_ai_overview": false,
+        "markdown": "![6 More Ways Manual Coffee Mill is Better Than Electric Ones ...](https://api.dataforseo.com/cdn/i/10081817-2302-0066-0000-1144ff49c7d4:4)\nChoosing between a manual and an electric coffee grinder comes down to a balance between [price, grind quality, and daily convenience](https://coffeeblog.co.uk/are-hand-grinders-better-than-electric/).\n\n### Manual Coffee Grinders\n\nManual (hand-crank) grinders require physical effort, but they put every penny of your budget straight into the quality of the grinding burrs rather than a motor.[[1]](https://coffeeblog.co.uk/are-hand-grinders-better-than-electric/)[[2]](https://www.coffeeness.de/en/manual-vs-electric-coffee-grinder/)[[3]](https://coffeesetupuk.co.uk/manual-vs-electric-coffee-grinder-pros-and-cons/)\n\n- **Pros:** \n\t- **Better budget value:** You get high-end grind consistency at a lower price (£50–£100) compared to cheap electric alternatives.\n\t- **Portable and quiet:** They make almost no noise and require no electricity, making them perfect for travel, camping, or early mornings.\n\t- **Less heat:** Low manual rotation speeds preserve delicate coffee aromas and oils.[[1]](https://www.ridegrind.com/ultimate-guide-choosing-right-coffee-grinder/)[[2]](https://coffeeblog.co.uk/are-hand-grinders-better-than-electric/)[[3]](https://www.coffeeness.de/en/manual-vs-electric-coffee-grinder/)[[4]](https://coffeesetupuk.co.uk/manual-vs-electric-coffee-grinder-pros-and-cons/)[[5]](https://www.youtube.com/watch?v=n3e_S9H3s8Y&t=45)\n- **Cons:** \n\t- **Time and effort:** Grinding takes 30 to 60 seconds (or longer for fine espresso) and requires arm power.\n\t- **Small capacity:** They hold fewer beans, making them hard to use when brewing for a crowd.[[1]](https://www.brian-coffee-spot.com/2022/01/08/making-coffee-at-home-manual-vs-electric-grinders/)[[2]](https://www.coffeeness.de/en/manual-vs-electric-coffee-grinder/)[[3]](https://www.thewaytocoffee.com/manual-vs-electric-coffee-grinders/)[[4]](https://coffeesetupuk.co.uk/manual-vs-electric-coffee-grinder-pros-and-cons/)\n\nWatch this video to see a detailed comparison of hand and electric grinders for different brew methods:\n\n![](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSO8zGM99hPL48g2KyyrBldIcGpqlBcpg5nT3hOuEV7VAZ5btYE-S60qs0ECsJneRoGounD1eXUO6DYyCbpAqSSnsBczQ)\n![](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbAFaPjSuUaDGfGFKEvQRPJ-vva-nwDhAm6-iYW9utyMqkL_mX1dnRajrBhtPi24LZs-hCteGPkiDBI0Km2DpllmFFzyQ)\n0:47\n[](https://www.youtube.com/shorts/lvM7O6q1ERg) MANUAL VS ELECTRIC HAND GRINDER | COFFEE TOOLS 2 months ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · DIDIT GOFOOD | USAHA KULINER DAN KOPI\n\n### Electric Coffee Grinders\nElectric grinders use a motorized system to crush or cut beans quickly with the push of a button.[[1]](https://www.femobook.com/blogs/coffee-knowledge/manual-vs-electric-coffee-grinders)\n\n- **Pros:** \n\t- **Speed and convenience:** They grind large batches of coffee or back-to-back shots of espresso in seconds.\n\t- **High-volume capacity:** Large hoppers easily handle enough beans for a full pot of coffee or multiple people.\n\t- **Effortless:** Great for users who want fast, repeatable results without manual cranking.[[1]](https://www.coffeeness.de/en/manual-vs-electric-coffee-grinder/)[[2]](https://www.thewaytocoffee.com/manual-vs-electric-coffee-grinders/)[[3]](https://www.femobook.com/blogs/coffee-knowledge/manual-vs-electric-coffee-grinders)[[4]](https://www.brian-coffee-spot.com/2022/01/08/making-coffee-at-home-manual-vs-electric-grinders/)\n- **Cons:** \n\t- **Higher cost:** You must spend more ($200 to $500+) to get the same grind precision and consistency that affordable manual grinders offer.\n\t- **Noise and size:** They take up counter space and can be loud and disruptive in the morning.[[1]](https://www.thewaytocoffee.com/manual-vs-electric-coffee-grinders/)[[2]](https://www.coffeeness.de/en/manual-vs-electric-coffee-grinder/)[[3]](https://coffeesetupuk.co.uk/manual-vs-electric-coffee-grinder-pros-and-cons/)[[4]](https://lovegreatfinds.com/blogs/news/manual-vs-electric-coffee-grinder)\n\nWatch this video to learn more about the differences in consistency and noise between manual and electric options:\n\n![](https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRygDcTcJS0nTjaFfUCOmr2_7yuG0rQh7YQ39MpQS0UKogGg_qR)\n1m\n[](https://www.youtube.com/watch?v=G9qFKhawwCk&t=82) Manual vs Electric Coffee Grinding 1.5k views  · 2 years ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · The Coffee Vibe\n\nIf you'd like help picking the right one, tell me:\n\n- What **brew method** do you use most? (pour-over, espresso, French press)\n- **How many cups** do you make at a time?\n- What is your **budget**?",
+        "items": [
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Choosing between a manual and an electric coffee grinder comes down to a balance between price, grind quality, and daily convenience.",
+          "markdown": "![6 More Ways Manual Coffee Mill is Better Than Electric Ones ...](https://api.dataforseo.com/cdn/i/10081817-2302-0066-0000-1144ff49c7d4:2)\nChoosing between a manual and an electric coffee grinder comes down to a balance between [price, grind quality, and daily convenience](https://coffeeblog.co.uk/are-hand-grinders-better-than-electric/).",
+          "links": [
+           {
+            "type": "link_element",
+            "title": "price, grind quality, and daily convenience",
+            "description": null,
+            "url": "https://coffeeblog.co.uk/are-hand-grinders-better-than-electric/",
+            "domain": "coffeeblog.co.uk"
+           }
+          ],
+          "images": [
+           {
+            "type": "images_element",
+            "alt": "6 More Ways Manual Coffee Mill is Better Than Electric Ones ...",
+            "url": null,
+            "image_url": "https://api.dataforseo.com/cdn/i/10081817-2302-0066-0000-1144ff49c7d4:3"
+           }
+          ],
+          "references": null
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Manual Coffee Grinders",
+          "text": "Manual (hand-crank) grinders require physical effort, but they put every penny of your budget straight into the quality of the grinding burrs rather than a motor.",
+          "markdown": "Manual (hand-crank) grinders require physical effort, but they put every penny of your budget straight into the quality of the grinding burrs rather than a motor.[[1]](https://coffeeblog.co.uk/are-hand-grinders-better-than-electric/)[[2]](https://www.coffeeness.de/en/manual-vs-electric-coffee-grinder/)[[3]](https://coffeesetupuk.co.uk/manual-vs-electric-coffee-grinder-pros-and-cons/)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Coffee Blog",
+            "domain": "coffeeblog.co.uk",
+            "url": "https://coffeeblog.co.uk/are-hand-grinders-better-than-electric/",
+            "title": "Are Hand Grinders Better Than Electric?",
+            "text": "Cup Quality & Value: Manual grinders offer superior value and better burrs at lower budgets (£50-£70) compared to entry-level blad..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Coffeeness",
+            "domain": "www.coffeeness.de",
+            "url": "https://www.coffeeness.de/en/manual-vs-electric-coffee-grinder/",
+            "title": "Manual vs Electric Coffee Grinder: Which Is Best?",
+            "text": "Essentially, you'll spend much less for excellent grind quality than you would on an electric coffee grinder. What's more, a hand ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "coffeesetupuk.co.uk",
+            "domain": "coffeesetupuk.co.uk",
+            "url": "https://coffeesetupuk.co.uk/manual-vs-electric-coffee-grinder-pros-and-cons/",
+            "title": "Manual vs Electric Coffee Grinder: Pros and Cons",
+            "text": "The Quick Answer * Is a manual coffee grinder as good as electric? At the same price point (under £150), manual grinders typically..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Pros:Better budget value: You get high-end grind consistency at a lower price (£50–£100) compared to cheap electric alternatives.\nPortable and quiet: They make almost no noise and require no electricity, making them perfect for travel, camping, or early mornings.\nLess heat: Low manual rotation speeds preserve delicate coffee aromas and oils. Better budget value: You get high-end grind consistency at a lower price (£50–£100) compared to cheap electric alternatives. Portable and quiet: They make almost no noise and require no electricity, making them perfect for travel, camping, or early mornings. Less heat: Low manual rotation speeds preserve delicate coffee aromas and oils. Cons:Time and effort: Grinding takes 30 to 60 seconds (or longer for fine espresso) and requires arm power.\nSmall capacity: They hold fewer beans, making them hard to use when brewing for a crowd. Time and effort: Grinding takes 30 to 60 seconds (or longer for fine espresso) and requires arm power. Small capacity: They hold fewer beans, making them hard to use when brewing for a crowd.",
+          "markdown": "- **Pros:** \n\t- **Better budget value:** You get high-end grind consistency at a lower price (£50–£100) compared to cheap electric alternatives.\n\t- **Portable and quiet:** They make almost no noise and require no electricity, making them perfect for travel, camping, or early mornings.\n\t- **Less heat:** Low manual rotation speeds preserve delicate coffee aromas and oils.[[1]](https://www.ridegrind.com/ultimate-guide-choosing-right-coffee-grinder/)[[2]](https://coffeeblog.co.uk/are-hand-grinders-better-than-electric/)[[3]](https://www.coffeeness.de/en/manual-vs-electric-coffee-grinder/)[[4]](https://coffeesetupuk.co.uk/manual-vs-electric-coffee-grinder-pros-and-cons/)[[5]](https://www.youtube.com/watch?v=n3e_S9H3s8Y&t=45)\n- **Cons:** \n\t- **Time and effort:** Grinding takes 30 to 60 seconds (or longer for fine espresso) and requires arm power.\n\t- **Small capacity:** They hold fewer beans, making them hard to use when brewing for a crowd.[[1]](https://www.brian-coffee-spot.com/2022/01/08/making-coffee-at-home-manual-vs-electric-grinders/)[[2]](https://www.coffeeness.de/en/manual-vs-electric-coffee-grinder/)[[3]](https://www.thewaytocoffee.com/manual-vs-electric-coffee-grinders/)[[4]](https://coffeesetupuk.co.uk/manual-vs-electric-coffee-grinder-pros-and-cons/)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Ride & Grind",
+            "domain": "www.ridegrind.com",
+            "url": "https://www.ridegrind.com/ultimate-guide-choosing-right-coffee-grinder/",
+            "title": "Best Coffee Grinder Guide: Manual vs Electric | Ride & Grind",
+            "text": "Grinder Importance: Uniform particle size ensures even extraction, preventing bitter tastes and preserving volatile compounds by g..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Coffee Blog",
+            "domain": "coffeeblog.co.uk",
+            "url": "https://coffeeblog.co.uk/are-hand-grinders-better-than-electric/",
+            "title": "Are Hand Grinders Better Than Electric?",
+            "text": "Cup Quality & Value: Manual grinders offer superior value and better burrs at lower budgets (£50-£70) compared to entry-level blad..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Coffeeness",
+            "domain": "www.coffeeness.de",
+            "url": "https://www.coffeeness.de/en/manual-vs-electric-coffee-grinder/",
+            "title": "Manual vs Electric Coffee Grinder: Which Is Best?",
+            "text": "Essentially, you'll spend much less for excellent grind quality than you would on an electric coffee grinder. What's more, a hand ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "coffeesetupuk.co.uk",
+            "domain": "coffeesetupuk.co.uk",
+            "url": "https://coffeesetupuk.co.uk/manual-vs-electric-coffee-grinder-pros-and-cons/",
+            "title": "Manual vs Electric Coffee Grinder: Pros and Cons",
+            "text": "The Quick Answer * Is a manual coffee grinder as good as electric? At the same price point (under £150), manual grinders typically..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/watch?v=n3e_S9H3s8Y&t=45",
+            "title": "What's the Best Coffee Grinder?",
+            "text": "What’s the Best Coffee Grinder? or something quick like air press or French press or maybe you're always on the go and need someth..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Brian's Coffee Spot",
+            "domain": "www.brian-coffee-spot.com",
+            "url": "https://www.brian-coffee-spot.com/2022/01/08/making-coffee-at-home-manual-vs-electric-grinders/",
+            "title": "Making Coffee at Home: Manual vs Electric Grinders | Brian's Coffee Spot",
+            "text": "Comparison: Manual Aergrind/Feldgrind versus electric Baratza Encore burr grinders used for cafetiere (36g), V60 pour-over (36g), ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "The Way to Coffee",
+            "domain": "www.thewaytocoffee.com",
+            "url": "https://www.thewaytocoffee.com/manual-vs-electric-coffee-grinders/",
+            "title": "Manual vs Electric Coffee Grinder: Which to Buy?",
+            "text": "Manual coffee grinders can work wonders when it comes to elevating your coffee experience. Although electric grinders are undeniab..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Watch this video to see a detailed comparison of hand and electric grinders for different brew methods: 0:47 MANUAL VS ELECTRIC HAND GRINDER | COFFEE TOOLS 2 months ago YouTube · DIDIT GOFOOD | USAHA KULINER DAN KOPI",
+          "markdown": "Watch this video to see a detailed comparison of hand and electric grinders for different brew methods:\n\n![](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSO8zGM99hPL48g2KyyrBldIcGpqlBcpg5nT3hOuEV7VAZ5btYE-S60qs0ECsJneRoGounD1eXUO6DYyCbpAqSSnsBczQ)\n![](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbAFaPjSuUaDGfGFKEvQRPJ-vva-nwDhAm6-iYW9utyMqkL_mX1dnRajrBhtPi24LZs-hCteGPkiDBI0Km2DpllmFFzyQ)\n0:47\n[](https://www.youtube.com/shorts/lvM7O6q1ERg) MANUAL VS ELECTRIC HAND GRINDER | COFFEE TOOLS 2 months ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · DIDIT GOFOOD | USAHA KULINER DAN KOPI",
+          "links": null,
+          "images": null,
+          "references": null
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Electric Coffee Grinders",
+          "text": "Electric grinders use a motorized system to crush or cut beans quickly with the push of a button.",
+          "markdown": "Electric grinders use a motorized system to crush or cut beans quickly with the push of a button.[[1]](https://www.femobook.com/blogs/coffee-knowledge/manual-vs-electric-coffee-grinders)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Femobook",
+            "domain": "www.femobook.com",
+            "url": "https://www.femobook.com/blogs/coffee-knowledge/manual-vs-electric-coffee-grinders",
+            "title": "Manual vs. Electric Coffee Grinders: Which Should You Choose?",
+            "text": "Electric Coffee Grinders: Which Should You Choose? * Manual grinders are ideal for individuals who typically brew one or two cups ..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Pros:Speed and convenience: They grind large batches of coffee or back-to-back shots of espresso in seconds.\nHigh-volume capacity: Large hoppers easily handle enough beans for a full pot of coffee or multiple people.\nEffortless: Great for users who want fast, repeatable results without manual cranking. Speed and convenience: They grind large batches of coffee or back-to-back shots of espresso in seconds. High-volume capacity: Large hoppers easily handle enough beans for a full pot of coffee or multiple people. Effortless: Great for users who want fast, repeatable results without manual cranking. Cons:Higher cost: You must spend more ($200 to $500+) to get the same grind precision and consistency that affordable manual grinders offer.\nNoise and size: They take up counter space and can be loud and disruptive in the morning. Higher cost: You must spend more ($200 to $500+) to get the same grind precision and consistency that affordable manual grinders offer. Noise and size: They take up counter space and can be loud and disruptive in the morning.",
+          "markdown": "- **Pros:** \n\t- **Speed and convenience:** They grind large batches of coffee or back-to-back shots of espresso in seconds.\n\t- **High-volume capacity:** Large hoppers easily handle enough beans for a full pot of coffee or multiple people.\n\t- **Effortless:** Great for users who want fast, repeatable results without manual cranking.[[1]](https://www.coffeeness.de/en/manual-vs-electric-coffee-grinder/)[[2]](https://www.thewaytocoffee.com/manual-vs-electric-coffee-grinders/)[[3]](https://www.femobook.com/blogs/coffee-knowledge/manual-vs-electric-coffee-grinders)[[4]](https://www.brian-coffee-spot.com/2022/01/08/making-coffee-at-home-manual-vs-electric-grinders/)\n- **Cons:** \n\t- **Higher cost:** You must spend more ($200 to $500+) to get the same grind precision and consistency that affordable manual grinders offer.\n\t- **Noise and size:** They take up counter space and can be loud and disruptive in the morning.[[1]](https://www.thewaytocoffee.com/manual-vs-electric-coffee-grinders/)[[2]](https://www.coffeeness.de/en/manual-vs-electric-coffee-grinder/)[[3]](https://coffeesetupuk.co.uk/manual-vs-electric-coffee-grinder-pros-and-cons/)[[4]](https://lovegreatfinds.com/blogs/news/manual-vs-electric-coffee-grinder)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Coffeeness",
+            "domain": "www.coffeeness.de",
+            "url": "https://www.coffeeness.de/en/manual-vs-electric-coffee-grinder/",
+            "title": "Manual vs Electric Coffee Grinder: Which Is Best?",
+            "text": "Essentially, you'll spend much less for excellent grind quality than you would on an electric coffee grinder. What's more, a hand ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "The Way to Coffee",
+            "domain": "www.thewaytocoffee.com",
+            "url": "https://www.thewaytocoffee.com/manual-vs-electric-coffee-grinders/",
+            "title": "Manual vs Electric Coffee Grinder: Which to Buy?",
+            "text": "Manual coffee grinders can work wonders when it comes to elevating your coffee experience. Although electric grinders are undeniab..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Femobook",
+            "domain": "www.femobook.com",
+            "url": "https://www.femobook.com/blogs/coffee-knowledge/manual-vs-electric-coffee-grinders",
+            "title": "Manual vs. Electric Coffee Grinders: Which Should You Choose?",
+            "text": "Electric Coffee Grinders: Which Should You Choose? * Manual grinders are ideal for individuals who typically brew one or two cups ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Brian's Coffee Spot",
+            "domain": "www.brian-coffee-spot.com",
+            "url": "https://www.brian-coffee-spot.com/2022/01/08/making-coffee-at-home-manual-vs-electric-grinders/",
+            "title": "Making Coffee at Home: Manual vs Electric Grinders | Brian's Coffee Spot",
+            "text": "Comparison: Manual Aergrind/Feldgrind versus electric Baratza Encore burr grinders used for cafetiere (36g), V60 pour-over (36g), ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "coffeesetupuk.co.uk",
+            "domain": "coffeesetupuk.co.uk",
+            "url": "https://coffeesetupuk.co.uk/manual-vs-electric-coffee-grinder-pros-and-cons/",
+            "title": "Manual vs Electric Coffee Grinder: Pros and Cons",
+            "text": "The Quick Answer * Is a manual coffee grinder as good as electric? At the same price point (under £150), manual grinders typically..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "lovegreatfinds.com",
+            "domain": "lovegreatfinds.com",
+            "url": "https://lovegreatfinds.com/blogs/news/manual-vs-electric-coffee-grinder",
+            "title": "Manual vs Electric Coffee Grinder: Which Is Better in 2026?",
+            "text": "Electric grinder: 8 seconds of grinding (but requires counter space, electrical outlet, and creates significant noise) Manual grin..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Watch this video to learn more about the differences in consistency and noise between manual and electric options: 1m Manual vs Electric Coffee Grinding 1.5k views · 2 years ago YouTube · The Coffee Vibe",
+          "markdown": "Watch this video to learn more about the differences in consistency and noise between manual and electric options:\n\n![](https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRygDcTcJS0nTjaFfUCOmr2_7yuG0rQh7YQ39MpQS0UKogGg_qR)\n1m\n[](https://www.youtube.com/watch?v=G9qFKhawwCk&t=82) Manual vs Electric Coffee Grinding 1.5k views  · 2 years ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · The Coffee Vibe",
+          "links": null,
+          "images": null,
+          "references": null
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "If you'd like help picking the right one, tell me:What brew method do you use most? (pour-over, espresso, French press)\nHow many cups do you make at a time?\nWhat is your budget ?",
+          "markdown": "If you'd like help picking the right one, tell me:\n\n- What **brew method** do you use most? (pour-over, espresso, French press)\n- **How many cups** do you make at a time?\n- What is your **budget**?",
+          "links": null,
+          "images": null,
+          "references": null
+         }
+        ],
+        "references": [
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Coffee Blog",
+          "domain": "coffeeblog.co.uk",
+          "url": "https://coffeeblog.co.uk/are-hand-grinders-better-than-electric/",
+          "title": "Are Hand Grinders Better Than Electric?",
+          "text": "Cup Quality & Value: Manual grinders offer superior value and better burrs at lower budgets (£50-£70) compared to entry-level blad..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Brian's Coffee Spot",
+          "domain": "www.brian-coffee-spot.com",
+          "url": "https://www.brian-coffee-spot.com/2022/01/08/making-coffee-at-home-manual-vs-electric-grinders/",
+          "title": "Making Coffee at Home: Manual vs Electric Grinders | Brian's Coffee Spot",
+          "text": "Comparison: Manual Aergrind/Feldgrind versus electric Baratza Encore burr grinders used for cafetiere (36g), V60 pour-over (36g), ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Coffeeness",
+          "domain": "www.coffeeness.de",
+          "url": "https://www.coffeeness.de/en/manual-vs-electric-coffee-grinder/",
+          "title": "Manual vs Electric Coffee Grinder: Which Is Best?",
+          "text": "Essentially, you'll spend much less for excellent grind quality than you would on an electric coffee grinder. What's more, a hand ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Ride & Grind",
+          "domain": "www.ridegrind.com",
+          "url": "https://www.ridegrind.com/ultimate-guide-choosing-right-coffee-grinder/",
+          "title": "Best Coffee Grinder Guide: Manual vs Electric | Ride & Grind",
+          "text": "Grinder Importance: Uniform particle size ensures even extraction, preventing bitter tastes and preserving volatile compounds by g..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "The Way to Coffee",
+          "domain": "www.thewaytocoffee.com",
+          "url": "https://www.thewaytocoffee.com/manual-vs-electric-coffee-grinders/",
+          "title": "Manual vs Electric Coffee Grinder: Which to Buy?",
+          "text": "Manual coffee grinders can work wonders when it comes to elevating your coffee experience. Although electric grinders are undeniab..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Femobook",
+          "domain": "www.femobook.com",
+          "url": "https://www.femobook.com/blogs/coffee-knowledge/manual-vs-electric-coffee-grinders",
+          "title": "Manual vs. Electric Coffee Grinders: Which Should You Choose?",
+          "text": "Electric Coffee Grinders: Which Should You Choose? * Manual grinders are ideal for individuals who typically brew one or two cups ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "coffeesetupuk.co.uk",
+          "domain": "coffeesetupuk.co.uk",
+          "url": "https://coffeesetupuk.co.uk/manual-vs-electric-coffee-grinder-pros-and-cons/",
+          "title": "Manual vs Electric Coffee Grinder: Pros and Cons",
+          "text": "The Quick Answer * Is a manual coffee grinder as good as electric? At the same price point (under £150), manual grinders typically..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "YouTube",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=n3e_S9H3s8Y&t=45",
+          "title": "What's the Best Coffee Grinder?",
+          "text": "What’s the Best Coffee Grinder? or something quick like air press or French press or maybe you're always on the go and need someth..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "lovegreatfinds.com",
+          "domain": "lovegreatfinds.com",
+          "url": "https://lovegreatfinds.com/blogs/news/manual-vs-electric-coffee-grinder",
+          "title": "Manual vs Electric Coffee Grinder: Which Is Better in 2026?",
+          "text": "Electric grinder: 8 seconds of grinding (but requires counter space, electrical outlet, and creates significant noise) Manual grin..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "www.youtube.com",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=_5QWQR6ngHY",
+          "title": "Manual grinder vs electric grinder: Which is best?",
+          "text": "it's similar to the sound of a blender which isn't the greatest sound in the morning. so it gets a 7 out of 10. without a motor an..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "www.youtube.com",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=inI1bKxYQG4",
+          "title": "Buying a coffee grinder? Here's what I'd do",
+          "text": "but also have that budget constrainted. there is a fantastic option for you that can just give you a really good coffee for a very..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "www.youtube.com",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=G9qFKhawwCk",
+          "title": "Manual vs Electric Coffee Grinding",
+          "text": "when we talk about speed electric grinders are the clear winners. with just a press of a button they grind beans in a matter of se..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "www.youtube.com",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=nRlOEgnigUk",
+          "title": "Can Handgrinders Beat Electric? The Ultimate Battle, Filter Edition",
+          "text": "where manual grinders are exquisite. they can battle with the best of them even if they are really big burrs. you're able to maint..."
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[3]/div[1]/div[1]",
+        "domain": "craftcoffeespot.com",
+        "title": "Manual Vs Electric Coffee Grinders: Which Is Best For You?",
+        "url": "https://craftcoffeespot.com/grinder/manual-vs-electric-coffee-grinders/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://craftcoffeespot.com › Coffee Grinders",
+        "website_name": "Craft Coffee Spot",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "19 Sept 2023 — An electric grinder is easier to use and provides more flexibility ed features. Meanwhile, a manual grinder is harder to adjust.",
+        "pre_snippet": "09/19/2023 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "An electric grinder is easier to use"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2023-09-19 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "discussions_and_forums",
+        "rank_group": 1,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[5]/div[1]",
+        "title": "Discussions and forums",
+        "items": [
+         {
+          "type": "discussions_and_forums_element",
+          "title": "Manual grinder or electric grinder?",
+          "url": "https://www.reddit.com/r/Coffee/comments/xbgqvu/manual_grinder_or_electric_grinder/",
+          "domain": "www.reddit.com",
+          "source": "Reddit",
+          "description": null,
+          "timestamp": "2022-10-08 18:17:32 +00:00",
+          "posts_count": 80
+         },
+         {
+          "type": "discussions_and_forums_element",
+          "title": "Manual vs. Electric Grinding? Experts please",
+          "url": "https://www.coffeeforums.com/threads/manual-vs-electric-grinding-experts-please.16369/",
+          "domain": "www.coffeeforums.com",
+          "source": "Coffee Forums",
+          "description": null,
+          "timestamp": "2017-10-08 18:17:32 +00:00",
+          "posts_count": 9
+         },
+         {
+          "type": "discussions_and_forums_element",
+          "title": "How well do hand grinders work when compared to electric ...",
+          "url": "https://www.quora.com/How-well-do-hand-grinders-work-when-compared-to-electric-grinders-when-making-espresso-at-home",
+          "domain": "www.quora.com",
+          "source": "Quora",
+          "description": null,
+          "timestamp": "2023-10-08 18:17:32 +00:00",
+          "posts_count": 30
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[7]/div[1]/div[1]",
+        "domain": "www.coffeedesk.com",
+        "title": "Coffee grinder – manual or electric? - Blog Coffeedesk.pl",
+        "url": "https://www.coffeedesk.com/blog/coffee-grinder-manual-or-electric/?srsltid=AU7gw4V5e8fGqEiR6_lLPaXiLMwcIu7SBVz0koOZwHlqzrlxZnOGbdeu",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.coffeedesk.com › blog › coffee-grinder-ma...",
+        "website_name": "Coffeedesk EU",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "16 Nov 2020 — Hand grinders are definitely cheaper than their electric sibling, in most cases. You can buy some models for just over a 40 euro. When preparing ... Read more",
+        "pre_snippet": "11/16/2020 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Hand grinders are definitely cheaper than their electric sibling"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://www.coffeedesk.com/blog/coffee-grinder-manual-or-electric/?srsltid=AU7gw4V5e8fGqEiR6_lLPaXiLMwcIu7SBVz0koOZwHlqzrlxZnOGbdeu#:~:text=Hand%20grinders%20are%20definitely%20cheaper,When%20preparing",
+          "domain": "www.coffeedesk.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2020-11-16 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "people_also_ask",
+        "rank_group": 1,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[9]/div[1]/div[1]/div[1]",
+        "items": [
+         {
+          "type": "people_also_ask_element",
+          "title": "Which is better, a manual or automatic coffee grinder?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[9]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Why did Costco get rid of their coffee grinders?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[9]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Should I buy a coffee machine with a grinder?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[9]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Which type of meat grinder is better, manual or electric?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[9]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[11]/div[1]/div[1]",
+        "domain": "www.reddit.com",
+        "title": "What are the advantages of a manual grinder over ...",
+        "url": "https://www.reddit.com/r/Coffee/comments/o0gyp/what_are_the_advantages_of_a_manual_grinder_over/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "20+ comments  ·  14 years ago",
+        "website_name": "Reddit · r/Coffee",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "manual grinders have an advantage over electric grinders because manuals avoid rapidly heating up the beans, which preserves a lot of flavor",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "manual grinders have an advantage over electric grinders"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Hand grinder vs electronic grinder : r/espresso - Reddit",
+          "description": null,
+          "url": "https://www.reddit.com/r/espresso/comments/oqo1de/hand_grinder_vs_electronic_grinder/",
+          "domain": "www.reddit.com"
+         },
+         {
+          "type": "link_element",
+          "title": "Manual vs Electric Grinder : r/espresso - Reddit",
+          "description": null,
+          "url": "https://www.reddit.com/r/espresso/comments/1dngsrl/manual_vs_electric_grinder/",
+          "domain": "www.reddit.com"
+         },
+         {
+          "type": "link_element",
+          "title": "More results from www.reddit.com",
+          "description": null,
+          "url": "https://www.google.com/search?q=manual+vs+electric+coffee+grinder+site:www.reddit.com&sca_esv=fe9e84a888596578&hl=en&gl=GB&sxsrf=APpeQnuMkLr8B41x1o6-w9GRozqfZRH8LQ:1791483450410&sa=X&ved=2ahUKEwjx17r1g6uXAxVhKRAIHccMOyEQrQIoAnoECDEQAw",
+          "domain": "www.google.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "video",
+        "rank_group": 1,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[13]/div[1]",
+        "items": [
+         {
+          "type": "video_element",
+          "source": "YouTube · BestReviews",
+          "title": "Manual grinder vs electric grinder: Which is best?",
+          "timestamp": "2024-12-05 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=_5QWQR6ngHY"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · The Coffee Vibe",
+          "title": "Manual vs Electric Coffee Grinding",
+          "timestamp": "2024-01-05 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=G9qFKhawwCk"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · BestReviews",
+          "title": "Hand Grinder vs Electric Grinder: Which is better?",
+          "timestamp": "2024-12-03 00:00:00 +00:00",
+          "url": "https://www.youtube.com/shorts/3ICbW17hZeo"
+         },
+         {
+          "type": "video_element",
+          "source": "Facebook · Cheeky Devil Roasters",
+          "title": "Manual grinder or electric grinder — which one do you prefer ...",
+          "timestamp": "2026-09-08 18:17:32 +00:00",
+          "url": "https://www.facebook.com/cheekydevilroasters/videos/manual-grinder-or-electric-grinder-which-one-do-you-prefer-both-have-their-own-a/1059708853269631/"
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[15]/div[1]/div[1]",
+        "domain": "zeroherocoffee.com",
+        "title": "Manual vs Electric Coffee Grinders: Which One Actually ...",
+        "url": "https://zeroherocoffee.com/cs/blogs/news/manual-vs-electric-coffee-grinders-which-one-actually-makes-better-coffee-at-home?srsltid=AU7gw4X52p_g5NIDDvRA6xpD8H_6Ooc9G2oDYT_6cQ_PARVICOZ2cZqe",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://zeroherocoffee.com › blogs › news › manual-vs-e...",
+        "website_name": "zeroHero Coffee",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "29 Dec 2025 — 1. Speed and efficiency. Press a button, get your grounds. If you brew coffee for multiple people, this matters. · 2. Easier espresso workflow Read more",
+        "pre_snippet": "12/29/2025 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Speed and efficiency"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://zeroherocoffee.com/cs/blogs/news/manual-vs-electric-coffee-grinders-which-one-actually-makes-better-coffee-at-home?srsltid=AU7gw4X52p_g5NIDDvRA6xpD8H_6Ooc9G2oDYT_6cQ_PARVICOZ2cZqe#:~:text=1.%20Speed%20and%20efficiency,for%20multiple%20people%2C%20this%20matters.&text=2.%20Easier%20espresso%20workflow",
+          "domain": "zeroherocoffee.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2025-12-29 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[16]/div[1]/div[1]/div[1]",
+        "domain": "www.youtube.com",
+        "title": "4 reasons why a MANUAL GRINDER is better for your coffee",
+        "url": "https://www.youtube.com/watch?v=whpZ0zD8Y38",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "2.6k+ views  ·  4 years ago",
+        "website_name": "YouTube · Nate Punzalan",
+        "is_image": false,
+        "is_video": true,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": [
+         "is_video"
+        ],
+        "description": "Here I talk about why I even bother manually grinding my own coffee, and why manual grinders are better than electric ones.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "manual grinders are better than electric ones"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2022-03-11 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[18]/div[1]/div[1]",
+        "domain": "kaffeeheimat.de",
+        "title": "hand grinder & electric grinder in comparison",
+        "url": "https://kaffeeheimat.de/en/blogs/making-coffee/coffee-grinder-manual-vs-automatic?srsltid=AU7gw4WoX5eIbqehe6LzXmUy0LrLkKvrKWm97_sdw1xyeY0jKVCwRFeu",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://kaffeeheimat.de › blogs › making-coffee › coffe...",
+        "website_name": "Kaffeeheimat",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "In short, we can say that hand grinders are ideal for filter coffee and small quantities, while electric grinders are ideal for larger consumption.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "hand grinders are ideal for filter coffee and small quantities"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 7,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[20]/div[1]/div[1]",
+        "domain": "timeforespresso.com",
+        "title": "Hand vs Electric Coffee Grinder: Which Wins in 2026?",
+        "url": "https://timeforespresso.com/hand-grinder-vs-electric-grinder/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://timeforespresso.com › hand-grinder-vs-electric-g...",
+        "website_name": "timeforespresso.com",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "19 Apr 2026 — Electric wins for espresso. Flat-burr espresso grinders at this price tier produce more uniform espresso-fine particles than any manual grinder. Read more",
+        "pre_snippet": "04/19/2026 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Electric wins for espresso"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://timeforespresso.com/hand-grinder-vs-electric-grinder/#:~:text=Electric%20wins%20for%20espresso.%20Flat-burr,particles%20than%20any%20manual%20grinder.",
+          "domain": "timeforespresso.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2026-04-19 00:00:00 +00:00",
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,715 @@
+{
+ "recordedAt": "2026-10-08T18:17:33.597Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "kakukkfű tea készítése",
+  "location_code": 2348,
+  "language_code": "hu",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0231 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10081817-2302-0066-0000-f5e12f4f794d",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0198 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10081817-2302-0066-0000-f5e12f4f794d"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "kakukkfű tea készítése",
+     "location_code": 2348,
+     "language_code": "hu",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "kakukkfű tea készítése",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2348,
+      "language_code": "hu",
+      "check_url": "https://www.google.com/search?q=kakukkf%C5%B1%20tea%20k%C3%A9sz%C3%ADt%C3%A9se&hl=hu&gl=HU&ie=UTF-8&uule=w+CAIQIFISCcPkN997g0FHERAQHgwpxAAA",
+      "datetime": "2026-10-08 18:17:29 +00:00",
+      "spell": null,
+      "refinement_chips": null,
+      "item_types": [
+       "ai_overview",
+       "video",
+       "organic",
+       "people_also_ask"
+      ],
+      "se_results_count": 118,
+      "pages_count": 1,
+      "items_count": 11,
+      "items": [
+       {
+        "type": "ai_overview",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+        "asynchronous_ai_overview": false,
+        "markdown": "`A kakukkfű teát forrázással készítjük, ehhez 1-2 teáskanál szárított vagy friss kakukkfüvet leöntünk 2,5 dl forró vízzel, majd lefedve 10–15 percig állni hagyjuk`.[[1]](https://www.harmonia-centrum.hu/blog/kakukkfu-tea-hatasa/)[[2]](https://www.gyogynovenysziget.hu/kakukkfu)[[3]](https://mezgyogyasz.hu/kakukkfuves-tea.html)[[4]](https://egeszsegvonal.gov.hu/gyogyszerek-a-z/k/kakukkfu.html)\n\n### Hozzávalók és adagok\n\n- **Gyógynövény:** 1 teáskanál (vagy 1,5–2 g) szárított, vagy 2 teáskanál friss kakukkfű\n- **Víz:** 2,5 dl (egy bögre vagy csésze)\n- **Ízlés szerint:** kevés méz (csak ha 40 °C alá hűlt a tea)[[1]](https://jogamindennap.hu/recept/kakukkfuves-tea-recept-a-legutaknak/)[[2]](https://mezgyogyasz.hu/kakukkfuves-tea.html)[[3]](https://egeszsegvonal.gov.hu/gyogyszerek-a-z/k/kakukkfu.html)[[4]](https://kerttipp.hu/hazi-patika/kakukkfu-tea-keszitese-gyogyhatasa-mire-jo-a-kakukkfu-tea/)\n\n### Elkészítés lépései\n\n1. **Forralás:** Forraljon fel 2,5 dl vizet.\n2. **Leöntés:** Tegye a kakukkfüvet egy csészébe vagy teáskannába, majd öntse le a forró vízzel.\n3. **Lefedés:** Fedje le az edényt, hogy az értékes illóolajok ne illanoljanak el.\n4. **Áztatás:** Hagyja állni 10–15 percig.\n5. **Szűrés:** Szűrje le a teát.\n6. **Fogyasztás:** Legjobb ízesítés nélkül, de langyosan mézet is adhat hozzá. A hivatalos útmutatókat a [Györgytea](https://www.gyorgytea.hu/termekek/egyedi-teak/mezei-kakukkfu-thymus-serpyllum/) vagy az [Egészségvonal](https://egeszsegvonal.gov.hu/gyogyszerek-a-z/k/kakukkfu.html) oldalán is olvashatja.[[1]](https://www.gyogynovenysziget.hu/kakukkfu)[[2]](https://mezgyogyasz.hu/kakukkfuves-tea.html)[[3]](https://www.harmonia-centrum.hu/blog/kakukkfu-tea-hatasa/)\n\nHa gondolja, írja meg:\n\n- **Milyen panaszra** (köhögés, emésztés, immunerősítés) készíti a teát?\n- **Ki fogja fogyasztani** (felnőtt vagy gyermek)?\n\nÍgy tudok pontos adagolási és kúraszerű javaslatot adni!",
+        "items": [
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "A kakukkfű teát forrázással készítjük, ehhez 1-2 teáskanál szárított vagy friss kakukkfüvet leöntünk 2,5 dl forró vízzel, majd lefedve 10–15 percig állni hagyjuk.",
+          "markdown": "`A kakukkfű teát forrázással készítjük, ehhez 1-2 teáskanál szárított vagy friss kakukkfüvet leöntünk 2,5 dl forró vízzel, majd lefedve 10–15 percig állni hagyjuk`.[[1]](https://www.harmonia-centrum.hu/blog/kakukkfu-tea-hatasa/)[[2]](https://www.gyogynovenysziget.hu/kakukkfu)[[3]](https://mezgyogyasz.hu/kakukkfuves-tea.html)[[4]](https://egeszsegvonal.gov.hu/gyogyszerek-a-z/k/kakukkfu.html)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Harmónia Centrum",
+            "domain": "www.harmonia-centrum.hu",
+            "url": "https://www.harmonia-centrum.hu/blog/kakukkfu-tea-hatasa/",
+            "title": "Kakukkfű tea hatása - Harmónia Centrum",
+            "text": "Kakukkfű tea készítése hogyan történik? A kakukkfű tea forrázással készül. A friss vagy szárított kakukkfű leveleket és virágos ha..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "www.gyogynovenysziget.hu",
+            "domain": "www.gyogynovenysziget.hu",
+            "url": "https://www.gyogynovenysziget.hu/kakukkfu",
+            "title": "Kakukkfű tea gyógyhatásai - Gyógynövénysziget Bio webáruház",
+            "text": "A kakukkfű felhasználása, elkészítése. Kakukkfű tea: 1-2 teáskanálnyi szárított kakukkfüvet 2 dl forrásban lévő vízzel leöntünk, 1..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Hegyi József, méhész",
+            "domain": "mezgyogyasz.hu",
+            "url": "https://mezgyogyasz.hu/kakukkfuves-tea.html",
+            "title": "Immunerősítő, gyulladáscsökkentő kakukkfüves-mézes tea recept",
+            "text": "Elkészítése: Egy teáskanál szárított kakukkfüvet forrázzunk le 2,5-3 dl forró vízzel! Negyedóra elteltével szűrjük le! Hagyjuk hog..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Egészségvonal",
+            "domain": "egeszsegvonal.gov.hu",
+            "url": "https://egeszsegvonal.gov.hu/gyogyszerek-a-z/k/kakukkfu.html",
+            "title": "Kakukkfű",
+            "text": "* Növény: Kakukkfű (Thymus vulgaris), Lamiaceae * Hatóanyagok: Timol, karvakrol, cineol, borneol, flavonoidok, polifenolok * Hatás..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Hozzávalók és adagok",
+          "text": "Gyógynövény: 1 teáskanál (vagy 1,5–2 g) szárított, vagy 2 teáskanál friss kakukkfű Víz: 2,5 dl (egy bögre vagy csésze) Ízlés szerint: kevés méz (csak ha 40 °C alá hűlt a tea)",
+          "markdown": "- **Gyógynövény:** 1 teáskanál (vagy 1,5–2 g) szárított, vagy 2 teáskanál friss kakukkfű\n- **Víz:** 2,5 dl (egy bögre vagy csésze)\n- **Ízlés szerint:** kevés méz (csak ha 40 °C alá hűlt a tea)[[1]](https://jogamindennap.hu/recept/kakukkfuves-tea-recept-a-legutaknak/)[[2]](https://mezgyogyasz.hu/kakukkfuves-tea.html)[[3]](https://egeszsegvonal.gov.hu/gyogyszerek-a-z/k/kakukkfu.html)[[4]](https://kerttipp.hu/hazi-patika/kakukkfu-tea-keszitese-gyogyhatasa-mire-jo-a-kakukkfu-tea/)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "JógaMindennap",
+            "domain": "jogamindennap.hu",
+            "url": "https://jogamindennap.hu/recept/kakukkfuves-tea-recept-a-legutaknak/",
+            "title": "Kakukkfüves tea recept a légutaknak – JógaMindennap",
+            "text": "* Kategória: Teák * Elkészítési idő: 10 perc * Nehézség: gyerekjáték * Cél: szárazköhögés csökkentése, megelőzés * Hozzávalók: 1 t..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Hegyi József, méhész",
+            "domain": "mezgyogyasz.hu",
+            "url": "https://mezgyogyasz.hu/kakukkfuves-tea.html",
+            "title": "Immunerősítő, gyulladáscsökkentő kakukkfüves-mézes tea recept",
+            "text": "Elkészítése: Egy teáskanál szárított kakukkfüvet forrázzunk le 2,5-3 dl forró vízzel! Negyedóra elteltével szűrjük le! Hagyjuk hog..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Egészségvonal",
+            "domain": "egeszsegvonal.gov.hu",
+            "url": "https://egeszsegvonal.gov.hu/gyogyszerek-a-z/k/kakukkfu.html",
+            "title": "Kakukkfű",
+            "text": "* Növény: Kakukkfű (Thymus vulgaris), Lamiaceae * Hatóanyagok: Timol, karvakrol, cineol, borneol, flavonoidok, polifenolok * Hatás..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "kerttipp.hu",
+            "domain": "kerttipp.hu",
+            "url": "https://kerttipp.hu/hazi-patika/kakukkfu-tea-keszitese-gyogyhatasa-mire-jo-a-kakukkfu-tea/",
+            "title": "Kakukkfű tea készítése és gyógyhatása! - Lássuk, mire jó a kakukkfű tea - A Kerti Tudástár",
+            "text": "- Hozzávalók: 1 tk szárított vagy 2 tk friss kakukkfű, 1 csésze nem forralt, forró víz. - Elkészítés: Áztatás lefedve 5-10 percig,"
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Elkészítés lépései",
+          "text": "Forralás: Forraljon fel 2,5 dl vizet. Leöntés: Tegye a kakukkfüvet egy csészébe vagy teáskannába, majd öntse le a forró vízzel. Lefedés: Fedje le az edényt, hogy az értékes illóolajok ne illanoljanak el. Áztatás: Hagyja állni 10–15 percig. Szűrés: Szűrje le a teát. Fogyasztás: Legjobb ízesítés nélkül, de langyosan mézet is adhat hozzá. A hivatalos útmutatókat a Györgytea vagy az Egészségvonal oldalán is olvashatja.",
+          "markdown": "1. **Forralás:** Forraljon fel 2,5 dl vizet.\n2. **Leöntés:** Tegye a kakukkfüvet egy csészébe vagy teáskannába, majd öntse le a forró vízzel.\n3. **Lefedés:** Fedje le az edényt, hogy az értékes illóolajok ne illanoljanak el.\n4. **Áztatás:** Hagyja állni 10–15 percig.\n5. **Szűrés:** Szűrje le a teát.\n6. **Fogyasztás:** Legjobb ízesítés nélkül, de langyosan mézet is adhat hozzá. A hivatalos útmutatókat a [Györgytea](https://www.gyorgytea.hu/termekek/egyedi-teak/mezei-kakukkfu-thymus-serpyllum/) vagy az [Egészségvonal](https://egeszsegvonal.gov.hu/gyogyszerek-a-z/k/kakukkfu.html) oldalán is olvashatja.[[1]](https://www.gyogynovenysziget.hu/kakukkfu)[[2]](https://mezgyogyasz.hu/kakukkfuves-tea.html)[[3]](https://www.harmonia-centrum.hu/blog/kakukkfu-tea-hatasa/)",
+          "links": [
+           {
+            "type": "link_element",
+            "title": "Györgytea",
+            "description": null,
+            "url": "https://www.gyorgytea.hu/termekek/egyedi-teak/mezei-kakukkfu-thymus-serpyllum/",
+            "domain": "www.gyorgytea.hu"
+           },
+           {
+            "type": "link_element",
+            "title": "Egészségvonal",
+            "description": null,
+            "url": "https://egeszsegvonal.gov.hu/gyogyszerek-a-z/k/kakukkfu.html",
+            "domain": "egeszsegvonal.gov.hu"
+           }
+          ],
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "www.gyogynovenysziget.hu",
+            "domain": "www.gyogynovenysziget.hu",
+            "url": "https://www.gyogynovenysziget.hu/kakukkfu",
+            "title": "Kakukkfű tea gyógyhatásai - Gyógynövénysziget Bio webáruház",
+            "text": "A kakukkfű felhasználása, elkészítése. Kakukkfű tea: 1-2 teáskanálnyi szárított kakukkfüvet 2 dl forrásban lévő vízzel leöntünk, 1..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Hegyi József, méhész",
+            "domain": "mezgyogyasz.hu",
+            "url": "https://mezgyogyasz.hu/kakukkfuves-tea.html",
+            "title": "Immunerősítő, gyulladáscsökkentő kakukkfüves-mézes tea recept",
+            "text": "Elkészítése: Egy teáskanál szárított kakukkfüvet forrázzunk le 2,5-3 dl forró vízzel! Negyedóra elteltével szűrjük le! Hagyjuk hog..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Harmónia Centrum",
+            "domain": "www.harmonia-centrum.hu",
+            "url": "https://www.harmonia-centrum.hu/blog/kakukkfu-tea-hatasa/",
+            "title": "Kakukkfű tea hatása - Harmónia Centrum",
+            "text": "Kakukkfű tea készítése hogyan történik? A kakukkfű tea forrázással készül. A friss vagy szárított kakukkfű leveleket és virágos ha..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Ha gondolja, írja meg:Milyen panaszra (köhögés, emésztés, immunerősítés) készíti a teát?\nKi fogja fogyasztani (felnőtt vagy gyermek)?\nÍgy tudok pontos adagolási és kúraszerű javaslatot adni!",
+          "markdown": "Ha gondolja, írja meg:\n\n- **Milyen panaszra** (köhögés, emésztés, immunerősítés) készíti a teát?\n- **Ki fogja fogyasztani** (felnőtt vagy gyermek)?\n\nÍgy tudok pontos adagolási és kúraszerű javaslatot adni!",
+          "links": null,
+          "images": null,
+          "references": null
+         }
+        ],
+        "references": [
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Harmónia Centrum",
+          "domain": "www.harmonia-centrum.hu",
+          "url": "https://www.harmonia-centrum.hu/blog/kakukkfu-tea-hatasa/",
+          "title": "Kakukkfű tea hatása - Harmónia Centrum",
+          "text": "Kakukkfű tea készítése hogyan történik? A kakukkfű tea forrázással készül. A friss vagy szárított kakukkfű leveleket és virágos ha..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "JógaMindennap",
+          "domain": "jogamindennap.hu",
+          "url": "https://jogamindennap.hu/recept/kakukkfuves-tea-recept-a-legutaknak/",
+          "title": "Kakukkfüves tea recept a légutaknak – JógaMindennap",
+          "text": "* Kategória: Teák * Elkészítési idő: 10 perc * Nehézség: gyerekjáték * Cél: szárazköhögés csökkentése, megelőzés * Hozzávalók: 1 t..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "www.gyogynovenysziget.hu",
+          "domain": "www.gyogynovenysziget.hu",
+          "url": "https://www.gyogynovenysziget.hu/kakukkfu",
+          "title": "Kakukkfű tea gyógyhatásai - Gyógynövénysziget Bio webáruház",
+          "text": "A kakukkfű felhasználása, elkészítése. Kakukkfű tea: 1-2 teáskanálnyi szárított kakukkfüvet 2 dl forrásban lévő vízzel leöntünk, 1..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "kerttipp.hu",
+          "domain": "kerttipp.hu",
+          "url": "https://kerttipp.hu/hazi-patika/kakukkfu-tea-keszitese-gyogyhatasa-mire-jo-a-kakukkfu-tea/",
+          "title": "Kakukkfű tea készítése és gyógyhatása! - Lássuk, mire jó a kakukkfű tea - A Kerti Tudástár",
+          "text": "- Hozzávalók: 1 tk szárított vagy 2 tk friss kakukkfű, 1 csésze nem forralt, forró víz. - Elkészítés: Áztatás lefedve 5-10 percig,"
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Egészségvonal",
+          "domain": "egeszsegvonal.gov.hu",
+          "url": "https://egeszsegvonal.gov.hu/gyogyszerek-a-z/k/kakukkfu.html",
+          "title": "Kakukkfű",
+          "text": "* Növény: Kakukkfű (Thymus vulgaris), Lamiaceae * Hatóanyagok: Timol, karvakrol, cineol, borneol, flavonoidok, polifenolok * Hatás..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Hegyi József, méhész",
+          "domain": "mezgyogyasz.hu",
+          "url": "https://mezgyogyasz.hu/kakukkfuves-tea.html",
+          "title": "Immunerősítő, gyulladáscsökkentő kakukkfüves-mézes tea recept",
+          "text": "Elkészítése: Egy teáskanál szárított kakukkfüvet forrázzunk le 2,5-3 dl forró vízzel! Negyedóra elteltével szűrjük le! Hagyjuk hog..."
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "video",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]",
+        "items": [
+         {
+          "type": "video_element",
+          "source": "YouTube · Női Net Portál Magazin filmek",
+          "title": "Kakukkfű tea készítése",
+          "timestamp": "2021-08-25 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=f0B2N5F-6K4"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · Borostyán Inspirációs Műhely",
+          "title": "Kakukkfű tea",
+          "timestamp": "2022-06-03 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=piiRJeq5sA4"
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]",
+        "domain": "cookpad.com",
+        "title": "47 egyszerű és finom kakukkfű tea recept",
+        "url": "https://cookpad.com/hu/kereses/kakukkf%C5%B1%20tea",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://cookpad.com › kereses › kakukkfű tea",
+        "website_name": "Cookpad",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Kakukkfüves, gyömbéres tea. Köhögés csillapító tea. Recept mentése a későbbiekre. kristálycukor • víz • vöröshagyma • kamilla tea • kakukkfű tea • hársfa tea.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "kristálycukor • víz • vöröshagyma • kamilla tea • kakukkfű tea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[6]/div[1]/div[1]",
+        "domain": "www.harmonia-centrum.hu",
+        "title": "kakukkfű tea hatása",
+        "url": "https://www.harmonia-centrum.hu/blog/tag/kakukkfu-tea-hatasa/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.harmonia-centrum.hu › kakukkfu-tea-hatasa",
+        "website_name": "Harmónia Centrum",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2025. máj. 16. — A kakukkfű tea hatása gyógyító és immunrendszert erősítő. Az igazi kakukkfű tea forrázással készül. Immunrendszert erősítő és gyógyító ...",
+        "pre_snippet": "05/16/2025 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "kakukkfű tea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2025-05-16 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "people_also_ask",
+        "rank_group": 1,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]/div[1]",
+        "items": [
+         {
+          "type": "people_also_ask_element",
+          "title": "Mire jó a kakukkfű?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Jó a kakukkfű tea gyerekeknek?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Mi a kakukkfű?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Mire jó a kakukkfű tinktúra?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[10]/div[1]/div[1]",
+        "domain": "kerteszkedj.hu",
+        "title": "Kakukkfű tea: Jótékony hatások és felhasználási módok",
+        "url": "https://kerteszkedj.hu/kakukkfu-tea-jotekony-hatasok-es-felhasznalasi-modok/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://kerteszkedj.hu › kakukkfu-tea-jotekony-hatasok-...",
+        "website_name": "Kertészkedj",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2024. máj. 26. — Hozzávalók: 1-2 teáskanál szárított kakukkfű (vagy 2-3 friss kakukkfű ág); 250 ml forró víz; Méz vagy citrom ízlés szerint (opcionális).",
+        "pre_snippet": "05/26/2024 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "kakukkfű"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2024-05-26 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[12]/div[1]/div[1]",
+        "domain": "gyerekszoba.hu",
+        "title": "Köhögésre kakukkfű",
+        "url": "https://gyerekszoba.hu/gyerek/kohogesre-kakukkfu/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://gyerekszoba.hu › Gyerek",
+        "website_name": "Gyerekszoba.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2018. febr. 15. — Gyógyteaként napi 3 csészével igyunk és a köhögés, a torokfájás a múlté (de hasonlóképpen rendbe hozza a depressziót, a vérszegénységet vagy a ...",
+        "pre_snippet": "02/15/2018 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "napi 3 csész"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2018-02-15 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[14]/div[1]/div[1]",
+        "domain": "bio-barat.hu",
+        "title": "Herbatrend Kerti Kakukkfű tea - szálas - 40g",
+        "url": "https://bio-barat.hu/products/kerti-kakukkfu-tea-szalas-40g",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://bio-barat.hu › kerti-kakukkfu-tea-szalas-40g",
+        "website_name": "Bio-Barát Biobolt",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "A kerti kakukkfű tea intenzív és fűszeres ízű ital, amely gyakran használják légúti panaszok enyhítésére és az emésztés támogatására.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": {
+         "current": 590,
+         "regular": null,
+         "max_value": null,
+         "currency": "HUF",
+         "is_price_range": false,
+         "displayed_price": "590 Ft"
+        },
+        "highlighted": [
+         "kakukkfű tea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[16]/div[1]/div[1]",
+        "domain": "www.egeszsegplazabudapest.hu",
+        "title": "Naturland kerti kakukkfű tea 40g - Budapest",
+        "url": "https://www.egeszsegplazabudapest.hu/emesztes-gyomor-bel/emesztes-serkentok/naturland-kerti-kakukkfu-tea-40g",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.egeszsegplazabudapest.hu › naturland-kerti-...",
+        "website_name": "EgészségPláza",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "A tea elkészítése rendkívül egyszerű: forraljon vizet, majd adjon hozzá egy teáskanálnyi szárított kakukkfüvet, és hagyja állni 5-10 percig. Szűrje le, és ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": {
+         "current": 771,
+         "regular": null,
+         "max_value": null,
+         "currency": "HUF",
+         "is_price_range": false,
+         "displayed_price": "771 Ft"
+        },
+        "highlighted": [
+         "tea elkészítése"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 7,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[18]/div[1]/div[1]",
+        "domain": "www.gyogyteabolt.hu",
+        "title": "Mezei kakukkfű gyógyhatásai és felhasználása",
+        "url": "https://www.gyogyteabolt.hu/bukki-gyogyteak/bukki-gyogyteak-gyogyhatasai-es-felhasznalasa/mezei-kakukkfu-gyogyhatasai-es-felhasznalasa",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.gyogyteabolt.hu › bukki-gyogyteak › mezei...",
+        "website_name": "gyogyteabolt.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Felhasználása belsőleg: Gyógyteát forrázással készítünk belőle. Köhögés, torokfájás, vérszegénység, májbetegség, depresszió esetén napi 3 csésze tea ajánlott ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Gyógyteát forrázással készítünk belőle"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 8,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[20]/div[1]/div[1]",
+        "domain": "www.biotrend.hu",
+        "title": "Gyógyfű Kerti kakukkfű tea 50 g - biotrend.hu drogéria",
+        "url": "https://www.biotrend.hu/Gyogyfu-Kerti-kakukkfu-50-g?srsltid=AU7gw4W6RFYDMFV8OxEvHUkl7Pc75imd7PXqXsvkw07Q9lDyWuAixIgE",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.biotrend.hu › Termékek",
+        "website_name": "biotrend.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Fűszerként étvágyjavító, az emésztést segíti. Baktérium- és gombaellenes hatású. Görcsoldó tulajdonsága miatt kiváló köhögéscsillapító önmagában és egyéb ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": {
+         "current": 590,
+         "regular": null,
+         "max_value": null,
+         "currency": "HUF",
+         "is_price_range": false,
+         "displayed_price": "590 Ft"
+        },
+        "highlighted": null,
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

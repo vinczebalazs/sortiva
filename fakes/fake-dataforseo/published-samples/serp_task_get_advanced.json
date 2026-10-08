@@ -1,5 +1,5 @@
 {
- "source": "https://docs.dataforseo.com/v3/serp/google/organic/live/advanced/",
+ "source": "https://docs.dataforseo.com/v3/serp/google/organic/task_get/advanced/",
  "fetchedAt": "2026-10-08",
  "note": "The example response on the documentation page, unchanged.",
  "response": {
@@ -12,7 +12,7 @@
   "tasks_error": 0,
   "tasks": [
    {
-    "id": "11151456-0696-0066-0000-002a5915da37",
+    "id": "01291734-1535-0066-0000-6988734166f9",
     "status_code": 20000,
     "status_message": "Ok.",
     "time": "0.0952 sec.",
@@ -23,12 +23,13 @@
      "serp",
      "google",
      "organic",
+     "task_get",
      "advanced",
-     "live"
+     "01291734-1535-0066-0000-6988734166f9"
     ],
     "data": {
      "api": "serp",
-     "function": "live",
+     "function": "task_get",
      "se": "google",
      "se_type": "organic",
      "language_name": "English",

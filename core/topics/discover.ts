@@ -151,8 +151,9 @@ export async function discoverTopics(deps: TopicDeps, storeId: number): Promise<
 
   const taken: { top3: string[] }[] = existing.filter((t) => (t.state === 'queued' || t.state === 'scheduled') && t.top3).map((t) => ({ top3: t.top3! }))
   const survivors: { candidate: (typeof withDemand)[number]; top: TopResults; score: number }[] = []
-  for (const c of withDemand) {
-    const top = await deps.demand.topResults({ storeId, market: ctx.market, keyword: c.targetQuery })
+  const tops = await deps.demand.topResults({ storeId, market: ctx.market, keywords: withDemand.map((c) => c.targetQuery) })
+  for (const [i, c] of withDemand.entries()) {
+    const top = tops[i]!
     if (onlyProductListings(top.pages)) {
       dropped.push({ query: c.targetQuery, reason: 'only_product_listings' })
       continue

@@ -1,10 +1,10 @@
-# Handoff — start of phase 2
+# Handoff — start of phase 3
 
-Written 2026-10-08 at the end of the first build session, for the next agent session in this repository. Read `CLAUDE.md`, then the five documents the kick-off names (`docs/mvp-plan.md`, `docs/mvp-ui.md`, `docs/mvp-build-plan.md`, `DECISIONS.md`), then this file. The founder asked for **phases 2 and 3** next, then a fresh handoff.
+Written 2026-10-08 at the end of the first build session and updated at the end of the second (phase 2), for the next agent session in this repository. Read `CLAUDE.md`, then the five documents the kick-off names (`docs/mvp-plan.md`, `docs/mvp-ui.md`, `docs/mvp-build-plan.md`, `DECISIONS.md`), then this file. Phase 2 is done; **phase 3 is next**, then a fresh handoff.
 
 ## Where things stand
 
-Phase 1 is done and committed (`git log` tells the story; last commit `81b413d`). `pnpm test` runs 119 tests green and 28 skipped; the skipped ones switch on by themselves when the first real Shopify recording lands. Checkpoint 1 is written up in `DECISIONS.md` and its review page is `docs/checkpoints/checkpoint-1-fact-sheets.html` (published privately at https://claude.ai/artifact/LsPqnSMS1Nj8qaMtZKtqKJ). The founders' to-do list is `docs/for-the-founders.md`; keep it current at each phase end.
+Phases 1 and 2 are done and committed (`git log` tells the story). `pnpm test` runs 169 tests green and 28 skipped; the skipped ones switch on by themselves when the first real Shopify recording lands. Checkpoint 1 is written up in `DECISIONS.md` and its review page is `docs/checkpoints/checkpoint-1-fact-sheets.html` (published privately at https://claude.ai/artifact/LsPqnSMS1Nj8qaMtZKtqKJ). The founders' to-do list is `docs/for-the-founders.md`; keep it current at each phase end.
 
 No Shopify dev store and no Search Console property exist yet. Everything touching them is built against fakes and labelled unverified.
 
@@ -22,16 +22,19 @@ No Shopify dev store and no Search Console property exist yet. Everything touchi
 - `app/` — the embedded app (React Router). `routes/api.*.ts` are thin; `shell/` holds the host shells (Shopify via App Bridge session token → our 15-minute token; a dev shell at `/dev?shop=<domain>` when `DEV_BYPASS=1`); `screens/Setup.tsx`; `ui/` our components; `ui/tokens.css` the look, taken from the founders' mockup screens (`~/Desktop/Website UI mockups project/Sortiva UI Mockups.dc.html`; ignore the "Modernist" file there, the founder said so). `i18n/messages.ts` has every string in English and Hungarian.
 - `scripts/seed-preview.ts` (`pnpm seed:preview <fixtures…>`, wipes the local DB) and `pnpm preview` show screens without Shopify; `scripts/checkpoint-1.ts` builds the checkpoint page.
 
-## Phase 2 — what to build (mvp-build-plan.md §4)
+## Phase 2 — done (2026-10-08, second session)
 
-Order: the fake DataForSEO first, then find topics, schedule, then screens.
+Checkpoint 2 is in `DECISIONS.md`; its page is `docs/checkpoints/checkpoint-2-queues.html` (https://claude.ai/artifact/LvjY53S6G8mvCXi9BQ4Kty). Where it lives:
 
-1. **Fake DataForSEO** at `fakes/fake-dataforseo/`, same pattern as the fake Anthropic: replay committed recordings, record with `RECORD=1`. Every response must descend from a recording or DataForSEO's published docs. Client in `vendors/dataforseo/` with the request cache and price written to `vendor_calls` before the call, through `core/spend.ts`.
-2. **Find topics** in `core/topics/`: candidate generation by one model call (grouped by product type or collection, never per SKU, only products with enough facts), demand lookup, the existing-content check (store pages by title/slug overlap; our own topics by canonical key, which is unique per store in the schema; two candidates sharing top-3 ranking URLs keep the higher demand; drop a candidate whose top ten are all product listings), ranking, the thin-store cap, the not-interested list, manual "Add a topic" with the same checks. `topics.evidence` is a JSON record of numbers with source and date; the why line is rendered from a template over it, never model text.
-3. **Schedule**: daily job keyed on (store, local calendar day) at the store's publish hour; skip with a visible reason when paused, not entitled, or over budget; expected dates on the queue computed from position.
-4. **Screens**: Home (Today card, Up next with why lines and thumbnails, Not interested, Move to top, Add a topic, thin-store state, banners, Limited badge), Products (table, "Last synced", Sync now with progress), Settings (profile and pause sections), setup steps 3 and 4 as screens (Search Console connect is wired in phase 4). Show the Shopify nav (`<s-app-nav>`) only after setup.
-5. **Scenarios first** (build plan §4 phase 2 list): discovery twice yields no duplicate; near-identical candidates collapse; a candidate matching an existing page is dropped (use `blog-en`/`blog-hu`); a three-product store yields at most three topics; a vetoed topic is not re-proposed; a Hungarian store is priced on Hungarian volumes; a cap hit mid-discovery pauses the store; the day key is the store's local day across midnight.
-6. **Checkpoint 2**: the queues for the Hungarian and English rich stores, on screen and as a published review page; note in DECISIONS.md; continue.
+- `core/demand.ts` — the `Demand` port (monthly searches; Google's top ten for a batch of phrases). `vendors/dataforseo/` implements it: `client.ts`, `prices.ts`, `locations.json` (country → DataForSEO location code). **Top ten goes through DataForSEO's queue** (task_post, then task_get): their live request fails for this account (founder's decision, see DECISIONS). Pending submitted tasks are collected by the next run, never re-submitted.
+- `fakes/fake-dataforseo/` — answers from a scenario script, then `recordings/`, then the real API when `RECORD_DATAFORSEO=1` (kept apart from `RECORD=1` because the balance is small), then stable placeholder numbers. `published-samples/` are DataForSEO's documented examples; the fake's shapes are tested against them and against every recording.
+- `core/topics/` — `canonical.ts` (topic key), `check.ts` (existing-page check ignoring shop-wide words, same intent by shared top-three pages, shop-listings check, rank score), `candidates.ts` (the one model call), `discover.ts` (the whole run; its output, including every dropped candidate and why, is the `find_topics` row in `job_ledger`), `manual.ts` ("Add a topic"), `queue.ts` (Home's Today and Up next, expected dates, Not interested, Move to top, Skip), `evidence.ts` (the why line's template input).
+- `jobs/topics.ts` — `find_topics`, `daily_pick` (one decision per shop-local day, also stored in `schedule_days`, whose primary key is rule 4), the hourly `daily_sweep`, `requestDiscovery`. In phase 3 the write job starts from a topic in state `scheduled` with `scheduled_for` = the local day.
+- `core/settings.ts`, `core/screens.ts` — what Settings, Home and Products read and write. Screens in `app/screens/`; `App.tsx` shows setup until it is done, then the host navigation, banners, and the screen.
+- `scenarios/topics/`, `scenarios/schedule/` — the phase 2 scenarios. `pipeline.completeSetup(id)` takes a fixture through setup; `pipeline.lastDiscovery(id)` returns what topic-finding kept and dropped.
+- `pnpm seed:preview rich-hu:done …` takes fixtures through setup for the preview; `scripts/checkpoint-2.ts` builds the review page.
+
+Open with the founders: topic wording (most proposed phrases have no measurable demand; recommendation: several phrasings per topic), the DataForSEO top-up (0.64 USD left; the other six fixture shops still use placeholder numbers), and the trivial-facts question from checkpoint 1.
 
 ## Phase 3 — what to build
 
@@ -39,10 +42,10 @@ Write (evidence pack from fact sheets only, plan call, draft call, deterministic
 
 ## Things the next session must know
 
-- **DataForSEO balance is only 0.82 USD.** Checked 2026-10-08 with the free `GET /v3/appendix/user_data`. Search volume (`keywords_data/google_ads/search_volume/live`) costs 0.09 USD per request, for up to 1,000 keywords, so batch every store's candidates into one request. The price of the top-ten results call was not yet looked up (it is in the same `user_data` response under `price.serp`). Budget the recordings before making any: roughly one volume request and a few SERP requests per fixture store, both languages. If 0.82 USD cannot cover them, stop and tell the founders the account needs topping up. Spend on this key is approved, but the brief's per-run stop is 20 USD.
+- **DataForSEO balance is 0.64 USD** (was 0.82). Checked 2026-10-08 with the free `GET /v3/appendix/user_data`. Search volume (`keywords_data/google_ads/search_volume/live`) costs 0.09 USD per request, for up to 1,000 keywords, so batch every store's candidates into one request. The price of the top-ten results call was not yet looked up (it is in the same `user_data` response under `price.serp`). Budget the recordings before making any: roughly one volume request and a few SERP requests per fixture store, both languages. If 0.82 USD cannot cover them, stop and tell the founders the account needs topping up. Spend on this key is approved, but the brief's per-run stop is 20 USD. Record real numbers with `RECORD_DATAFORSEO=1`.
 - **Record every spend** in the "Spend" table in `DECISIONS.md` (now 0.92 USD, all Anthropic). The Anthropic total can be recomputed from the token counts in `fakes/fake-anthropic/recordings/`.
 - **The founder is reachable in the session now** and answers questions; decisions that shape the system go to them (their global instructions require it), or into DECISIONS.md as "Assumed" when they are away.
-- **Demand floors**: `CONFIG.demandFloor` holds placeholders (en 50, hu 20). The plan says to keep the locale floors from the old tree's `packages/rules/signals.config.yaml`; reading two numbers there for behaviour is allowed, copying code is not. Record whichever numbers you use.
+- **Demand floors** are the old build's (en 100, hu 20); see DECISIONS.
 - **Shopify's cost model**: the fake charges by the documented rules up front and refunds by objects returned. Keep new queries under 1,000 points by the documented rules; `connectors/shopify/queries.test.ts` checks it.
 - **Seeding a fixture that no scenario uses** needs `RECORD=1 pnpm seed:preview …` the first time (a few cents).
 - **Crash tests** currently throw at a checkpoint; a real process kill belongs with phase 4's crash tests.

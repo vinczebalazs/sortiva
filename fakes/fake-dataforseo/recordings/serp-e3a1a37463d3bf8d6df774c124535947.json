@@ -1,0 +1,813 @@
+{
+ "recordedAt": "2026-10-08T18:17:33.297Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "how to use french press",
+  "location_code": 2826,
+  "language_code": "en",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0150 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10081817-2302-0066-0000-a61e9dc79a11",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0124 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10081817-2302-0066-0000-a61e9dc79a11"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "how to use french press",
+     "location_code": 2826,
+     "language_code": "en",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "how to use french press",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2826,
+      "language_code": "en",
+      "check_url": "https://www.google.com/search?q=how%20to%20use%20french%20press&hl=en&gl=GB&ie=UTF-8&uule=w+CAIQIFISCamRx0IRO1oCEXoliDJDoPjE",
+      "datetime": "2026-10-08 18:17:32 +00:00",
+      "spell": null,
+      "refinement_chips": null,
+      "item_types": [
+       "ai_overview",
+       "video",
+       "people_also_ask",
+       "organic",
+       "images",
+       "short_videos",
+       "related_searches"
+      ],
+      "se_results_count": 107,
+      "pages_count": 1,
+      "items_count": 12,
+      "items": [
+       {
+        "type": "ai_overview",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+        "asynchronous_ai_overview": false,
+        "markdown": "![How To Make French Press Coffee (Step-by-Step Guide) | The Kitchn](https://api.dataforseo.com/cdn/i/10081817-2302-0066-0000-a61e9dc79a11:4)\nTo use a French press, `add 2 tablespoons (10 grams) of coarse coffee grounds per 6 ounces (180 ml) of water, pour in water heated to 195–205°F (90–96°C), steep for 4 minutes, and slowly press the plunger down`.[[1]](https://www.youtube.com/watch?v=2ziSri3o8Y8&t=1)[[2]](https://athome.starbucks.com/brewing-guide/how-brew-coffee-press)[[3]](https://www.youtube.com/shorts/y9CI5Tddb_I)\n\n### Step-by-Step Instructions\n\n- **Preheat the press:** Rinse the empty carafe with hot water to warm it up, then dump the water out.[[1]](https://athome.starbucks.com/brewing-guide/how-brew-coffee-press)\n- **Add coffee:** Measure out coarse-ground coffee (similar in texture to coarse sea salt or breadcrumbs). Use roughly 2 tablespoons (10g) per cup of water.[[1]](https://www.tiktok.com/@cc.campbell/video/6940346284796644614?lang=en-GB)[[2]](https://athome.starbucks.com/brewing-guide/how-brew-coffee-press)\n- **Bloom the grounds:** Pour in just enough hot water (about 195–205°F) to wet the grounds and let it sit for 30 to 60 seconds so trapped gases can escape.[[1]](https://www.youtube.com/watch?v=5x9mTJKcpp4&t=1)[[2]](https://www.youtube.com/watch?v=YIKr2EMkm48&t=33)[[3]](https://athome.starbucks.com/brewing-guide/how-brew-coffee-press)\n- **Fill and stir:** Pour in the rest of the hot water up to about an inch from the rim, give it a gentle stir, and place the lid on top without pressing down.[[1]](https://www.illy.com/en-us/coffee/coffee-preparation/how-to-use-a-french-press)[[2]](https://www.youtube.com/shorts/y9CI5Tddb_I)\n- **Steep:** Let the coffee brew undisturbed for **4 minutes** (or up to 5 minutes for lighter roasts).[[1]](https://www.youtube.com/shorts/y9CI5Tddb_I)[[2]](https://www.youtube.com/watch?v=2ziSri3o8Y8&t=1)\n- **Plunge and pour:** Push the plunger down slowly with steady, even pressure. Pour the coffee out immediately into your mug so it doesn't turn bitter from sitting on the grounds.[[1]](https://www.youtube.com/watch?v=YIKr2EMkm48&t=33)[[2]](https://www.youtube.com/watch?v=2ziSri3o8Y8&t=1)[[3]](https://www.illy.com/en-us/coffee/coffee-preparation/how-to-use-a-french-press)\n\nWatch this video guide to see how to properly brew coffee using a French press:\n\n![](https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTIgnv3NSugL3B8PycNssF4Qnvoj0pBU3GuXNiIfmL6ywHS34hg)\n2m\n[](https://www.youtube.com/watch?v=2ziSri3o8Y8&t=1) How To Use A French Press 2.3m views  · 6 years ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · Home Insider\n\nWould you like help calculating the exact **coffee-to-water ratio** for a specific French press size, or tips on choosing the right **coffee grind**?",
+        "items": [
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "To use a French press, add 2 tablespoons (10 grams) of coarse coffee grounds per 6 ounces (180 ml) of water, pour in water heated to 195–205°F (90–96°C), steep for 4 minutes, and slowly press the plunger down.",
+          "markdown": "![How To Make French Press Coffee (Step-by-Step Guide) | The Kitchn](https://api.dataforseo.com/cdn/i/10081817-2302-0066-0000-a61e9dc79a11:2)\nTo use a French press, `add 2 tablespoons (10 grams) of coarse coffee grounds per 6 ounces (180 ml) of water, pour in water heated to 195–205°F (90–96°C), steep for 4 minutes, and slowly press the plunger down`.[[1]](https://www.youtube.com/watch?v=2ziSri3o8Y8&t=1)[[2]](https://athome.starbucks.com/brewing-guide/how-brew-coffee-press)[[3]](https://www.youtube.com/shorts/y9CI5Tddb_I)",
+          "links": null,
+          "images": [
+           {
+            "type": "images_element",
+            "alt": "How To Make French Press Coffee (Step-by-Step Guide) | The Kitchn",
+            "url": null,
+            "image_url": "https://api.dataforseo.com/cdn/i/10081817-2302-0066-0000-a61e9dc79a11:3"
+           }
+          ],
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/watch?v=2ziSri3o8Y8&t=1",
+            "title": "How To Use A French Press",
+            "text": "How To Use A French Press if you want rich fullbodied coffee at home you should use a French. press here's how to use. one. first ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Starbucks",
+            "domain": "athome.starbucks.com",
+            "url": "https://athome.starbucks.com/brewing-guide/how-brew-coffee-press",
+            "title": "How to Brew with a Coffee Press",
+            "text": "Follow the Steps Below or Watch the Video Above STEP 1 Prepare your coffee press Preheat the coffee press by rinsing with hot wate..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/shorts/y9CI5Tddb_I",
+            "title": "How to Make a Perfect Cup of Coffee Using a French Press",
+            "text": "How to Make a Perfect Cup of Coffee Using a French Press so this is basically you're going to add your coffee. and your water. and..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Step-by-Step Instructions",
+          "text": "Preheat the press: Rinse the empty carafe with hot water to warm it up, then dump the water out. Add coffee: Measure out coarse-ground coffee (similar in texture to coarse sea salt or breadcrumbs). Use roughly 2 tablespoons (10g) per cup of water. Bloom the grounds: Pour in just enough hot water (about 195–205°F) to wet the grounds and let it sit for 30 to 60 seconds so trapped gases can escape. Fill and stir: Pour in the rest of the hot water up to about an inch from the rim, give it a gentle stir, and place the lid on top without pressing down. Steep: Let the coffee brew undisturbed for 4 minutes (or up to 5 minutes for lighter roasts). Plunge and pour: Push the plunger down slowly with steady, even pressure. Pour the coffee out immediately into your mug so it doesn't turn bitter from sitting on the grounds.",
+          "markdown": "- **Preheat the press:** Rinse the empty carafe with hot water to warm it up, then dump the water out.[[1]](https://athome.starbucks.com/brewing-guide/how-brew-coffee-press)\n- **Add coffee:** Measure out coarse-ground coffee (similar in texture to coarse sea salt or breadcrumbs). Use roughly 2 tablespoons (10g) per cup of water.[[1]](https://www.tiktok.com/@cc.campbell/video/6940346284796644614?lang=en-GB)[[2]](https://athome.starbucks.com/brewing-guide/how-brew-coffee-press)\n- **Bloom the grounds:** Pour in just enough hot water (about 195–205°F) to wet the grounds and let it sit for 30 to 60 seconds so trapped gases can escape.[[1]](https://www.youtube.com/watch?v=5x9mTJKcpp4&t=1)[[2]](https://www.youtube.com/watch?v=YIKr2EMkm48&t=33)[[3]](https://athome.starbucks.com/brewing-guide/how-brew-coffee-press)\n- **Fill and stir:** Pour in the rest of the hot water up to about an inch from the rim, give it a gentle stir, and place the lid on top without pressing down.[[1]](https://www.illy.com/en-us/coffee/coffee-preparation/how-to-use-a-french-press)[[2]](https://www.youtube.com/shorts/y9CI5Tddb_I)\n- **Steep:** Let the coffee brew undisturbed for **4 minutes** (or up to 5 minutes for lighter roasts).[[1]](https://www.youtube.com/shorts/y9CI5Tddb_I)[[2]](https://www.youtube.com/watch?v=2ziSri3o8Y8&t=1)\n- **Plunge and pour:** Push the plunger down slowly with steady, even pressure. Pour the coffee out immediately into your mug so it doesn't turn bitter from sitting on the grounds.[[1]](https://www.youtube.com/watch?v=YIKr2EMkm48&t=33)[[2]](https://www.youtube.com/watch?v=2ziSri3o8Y8&t=1)[[3]](https://www.illy.com/en-us/coffee/coffee-preparation/how-to-use-a-french-press)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Starbucks",
+            "domain": "athome.starbucks.com",
+            "url": "https://athome.starbucks.com/brewing-guide/how-brew-coffee-press",
+            "title": "How to Brew with a Coffee Press",
+            "text": "Follow the Steps Below or Watch the Video Above STEP 1 Prepare your coffee press Preheat the coffee press by rinsing with hot wate..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "TikTok",
+            "domain": "www.tiktok.com",
+            "url": "https://www.tiktok.com/@cc.campbell/video/6940346284796644614?lang=en-GB",
+            "title": "How to Use a French Press: The Ultimate Step-by-Step Tutorial",
+            "text": "How to Use a French Press: Step-by-Step Guide you want to learn how to make an amazing French press let's go first up we're going ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/watch?v=5x9mTJKcpp4&t=1",
+            "title": "Using A French Press | DIY & How To | Kroger",
+            "text": "Using A French Press | DIY & How To | Kroger kitchen 101 here's a basic recipe for using your French. press add freshly roasted co..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/watch?v=YIKr2EMkm48&t=33",
+            "title": "How to Use a French Press | Perfect Coffee",
+            "text": "How to Use a French Press | Perfect Coffee you'll need a timer. and then you also need the French press. so the first thing you're..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Illy Coffee",
+            "domain": "www.illy.com",
+            "url": "https://www.illy.com/en-us/coffee/coffee-preparation/how-to-use-a-french-press",
+            "title": "Using French press for perfect coffee",
+            "text": "What is a French Press? * FRENCH PRESS INSTRUCTIONS 1 * Start by placing the French Press on a dry, flat surface. Hold the handle ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/shorts/y9CI5Tddb_I",
+            "title": "How to Make a Perfect Cup of Coffee Using a French Press",
+            "text": "How to Make a Perfect Cup of Coffee Using a French Press so this is basically you're going to add your coffee. and your water. and..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/watch?v=2ziSri3o8Y8&t=1",
+            "title": "How To Use A French Press",
+            "text": "How To Use A French Press if you want rich fullbodied coffee at home you should use a French. press here's how to use. one. first ..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Watch this video guide to see how to properly brew coffee using a French press: 2m How To Use A French Press 2.3m views · 6 years ago YouTube · Home Insider",
+          "markdown": "Watch this video guide to see how to properly brew coffee using a French press:\n\n![](https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTIgnv3NSugL3B8PycNssF4Qnvoj0pBU3GuXNiIfmL6ywHS34hg)\n2m\n[](https://www.youtube.com/watch?v=2ziSri3o8Y8&t=1) How To Use A French Press 2.3m views  · 6 years ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · Home Insider",
+          "links": null,
+          "images": null,
+          "references": null
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Would you like help calculating the exact coffee-to-water ratio for a specific French press size, or tips on choosing the right coffee grind ?",
+          "markdown": "Would you like help calculating the exact **coffee-to-water ratio** for a specific French press size, or tips on choosing the right **coffee grind**?",
+          "links": null,
+          "images": null,
+          "references": null
+         }
+        ],
+        "references": [
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "YouTube",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=2ziSri3o8Y8&t=1",
+          "title": "How To Use A French Press",
+          "text": "How To Use A French Press if you want rich fullbodied coffee at home you should use a French. press here's how to use. one. first ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "YouTube",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=5x9mTJKcpp4&t=1",
+          "title": "Using A French Press | DIY & How To | Kroger",
+          "text": "Using A French Press | DIY & How To | Kroger kitchen 101 here's a basic recipe for using your French. press add freshly roasted co..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Illy Coffee",
+          "domain": "www.illy.com",
+          "url": "https://www.illy.com/en-us/coffee/coffee-preparation/how-to-use-a-french-press",
+          "title": "Using French press for perfect coffee",
+          "text": "What is a French Press? * FRENCH PRESS INSTRUCTIONS 1 * Start by placing the French Press on a dry, flat surface. Hold the handle ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "YouTube",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=YIKr2EMkm48&t=33",
+          "title": "How to Use a French Press | Perfect Coffee",
+          "text": "How to Use a French Press | Perfect Coffee you'll need a timer. and then you also need the French press. so the first thing you're..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "YouTube",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/shorts/y9CI5Tddb_I",
+          "title": "How to Make a Perfect Cup of Coffee Using a French Press",
+          "text": "How to Make a Perfect Cup of Coffee Using a French Press so this is basically you're going to add your coffee. and your water. and..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Starbucks",
+          "domain": "athome.starbucks.com",
+          "url": "https://athome.starbucks.com/brewing-guide/how-brew-coffee-press",
+          "title": "How to Brew with a Coffee Press",
+          "text": "Follow the Steps Below or Watch the Video Above STEP 1 Prepare your coffee press Preheat the coffee press by rinsing with hot wate..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "TikTok",
+          "domain": "www.tiktok.com",
+          "url": "https://www.tiktok.com/@cc.campbell/video/6940346284796644614?lang=en-GB",
+          "title": "How to Use a French Press: The Ultimate Step-by-Step Tutorial",
+          "text": "How to Use a French Press: Step-by-Step Guide you want to learn how to make an amazing French press let's go first up we're going ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "www.youtube.com",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/shorts/nfUqE8A1eNk",
+          "title": "How to Use a French Press",
+          "text": "how to use a French. press preheat the press by heating water to 200° F and fill it to the top. next weigh out 55 g of coffee bean..."
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "video",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]",
+        "items": [
+         {
+          "type": "video_element",
+          "source": "YouTube · Home Insider",
+          "title": "How To Use A French Press",
+          "timestamp": "2020-08-25 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=2ziSri3o8Y8"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · Kroger",
+          "title": "Using A French Press | DIY & How To | Kroger",
+          "timestamp": "2022-10-18 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=5x9mTJKcpp4"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · America's Test Kitchen",
+          "title": "How to Make a Perfect Cup of Coffee Using a French Press",
+          "timestamp": "2025-08-10 00:00:00 +00:00",
+          "url": "https://www.youtube.com/shorts/y9CI5Tddb_I"
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "people_also_ask",
+        "rank_group": 1,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]",
+        "items": [
+         {
+          "type": "people_also_ask_element",
+          "title": "How to use French press step by step?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "How many scoops of coffee do you use in a French press?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "How long do you let a French press sit before pressing it?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Do you just put coffee grounds in a French press?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[6]/div[1]/div[1]",
+        "domain": "www.illy.com",
+        "title": "Using French press for perfect coffee",
+        "url": "https://www.illy.com/en-us/coffee/coffee-preparation/how-to-use-a-french-press",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.illy.com › en-us › how-to-use-a-french-press",
+        "website_name": "Illy Coffee",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Start by placing the French Press on a dry, flat surface. Hold the handle firmly, then pull out the plunger. 2 Next, add a heaping tablespoon",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Start by placing the French Press on a dry, flat surface"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "images",
+        "rank_group": 1,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]",
+        "title": "Images",
+        "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=en&gl=GB&sxsrf=APpeQntsQXVwYeoeAOd_mJzHJTJ2P11fmg:1791483449284&q=how+to+use+french+press&udm=2&source=univ&fir=YiLZKkdQ51waBM%252CtS5X1aPd0piSvM%252C_%253BzTDJFsLAgVVGsM%252CXryspwg_EnHpVM%252C_%253BV2oeUTznJ11TgM%252C9zBpHppuVVZQFM%252C_%253Bgc1FBolhFa5ZBM%252C0KJ52Tj1fffteM%252C_%253BOFo9OyO9XJh7RM%252CsiASoP9L_q2gZM%252C_%253B3lTo7IN0BkeyiM%252C7gjy0AoecrNldM%252C_%253B8BOLkk-Xnk6rWM%252C0zXUKsQon4ldvM%252C_%253BuzC_v5n1ghcebM%252CFHQJbILPUJDORM%252C_%253BKrLY_hX-gnFkwM%252C9lKsO8S29thpBM%252C_&usg=AI4_-kRdqSFoYCOBjTy20W3j5F16O02ESw&sa=X&ved=2ahUKEwjU9fX0g6uXAxUkk-EIHcBJHgwQ7Al6BAhMEAU",
+        "items": [
+         {
+          "type": "images_element",
+          "alt": "How to Use Your French Press for Coffee and Lattes",
+          "url": "https://www.tiktok.com/@morgandrinkscoffee/video/7612328689409297695",
+          "image_url": "https://api.dataforseo.com/cdn/i/10081817-2302-0066-0000-a61e9dc79a11:5"
+         },
+         {
+          "type": "images_element",
+          "alt": "2026 Updated. How to Make Perfect French Press Coffee: A ...",
+          "url": "https://essencecoffee.ie/how-to-make-perfect-french-press-coffee-a-step-by-step-guide/",
+          "image_url": "https://api.dataforseo.com/cdn/i/10081817-2302-0066-0000-a61e9dc79a11:6"
+         },
+         {
+          "type": "images_element",
+          "alt": "How To Use a French Press (Full Tutorial) - Little Sunny Kitchen",
+          "url": "https://littlesunnykitchen.com/how-to-use-a-french-press/",
+          "image_url": "https://api.dataforseo.com/cdn/i/10081817-2302-0066-0000-a61e9dc79a11:7"
+         },
+         {
+          "type": "images_element",
+          "alt": "How to Use a French Press to Brew Coffee",
+          "url": "https://www.oxo.com/blog/coffee-and-beverages/how-to-brew-french-press-coffee?srsltid=AU7gw4WR7Zz1acGNWykDOmml44vVGX0KVjOM2n2SyKk2_Ak95clpVvUH",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSsI1hZqwkHnxS81WLM-BmOcxK3TKxEGp2EDhLcOPnCxfUwc7nRlUN_gihxgw&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "French Press Coffee Brewing Guide - How to Use a French ...",
+          "url": "https://www.dancinggoats.com/blogs/blog/how-to-use-a-french-press?srsltid=AU7gw4WQOgquIkoWu2u-hg8lPc_uRKyqDTxTxxRCczEtdU-KZ2cHCpcD",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi3dlSm2CysBTM6m8G07GJtj-xfjnCyejrQEfPQGjLbHw_4qQcyjLc79I&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "How to Use a French Press - KaTom Restaurant Supply",
+          "url": "https://www.katom.com/learning-center/use-french-press.html?srsltid=AU7gw4XPsjMK5Rw6vrIc6wNaZY7LrdbIFmn3A3do4w9IfCPndpT8Wja9",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbODLSUQf5cydqBMouV00dCE3HKk8p4ryKYWtIOCs_gdC6RlHM4eECJ7k&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "How to Use a French Press: Ratio, Time & Steps | Wayfair",
+          "url": "https://www.wayfair.com/sca/ideas-and-advice/guides/how-to-use-a-french-press-T7242",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtPOHKKRqKS_bC7sIASFHiCK8_XARDfuLg8-NCfcKAQ4ufdcR7f37vxcU&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "How to use a French Press",
+          "url": "https://thewoodenskillet.com/how-to-use-a-french-press-simple-easy/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTU3UzKqyoItsoxnQAvQgAHMGRrIH-D4HMUw22zfz-zpXU8-5nCoqVy9B4&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "How to Make French Press Coffee - Champagne Tastes®",
+          "url": "https://champagne-tastes.com/vanilla-french-press-coffee/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTd00Nvx00J9RyQmth7ufaox3Jkz2UdLtdWSOTg15ERou4RMh72KSrjLrs&s"
+         }
+        ],
+        "related_image_searches": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[10]/div[1]/div[1]",
+        "domain": "www.reddit.com",
+        "title": "French Press Guide - Ultimate Beginners Guide from a ...",
+        "url": "https://www.reddit.com/r/Coffee/comments/g97uc6/french_press_guide_ultimate_beginners_guide_from/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "30+ comments  ·  6 years ago",
+        "website_name": "Reddit · r/Coffee",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Hottest possible water. 1:15 ratio pour all the water at once ・ stir thoroughly to get all the grounds wet come back around 4 minutes and tap ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[12]/div[1]/div[1]",
+        "domain": "athome.starbucks.com",
+        "title": "How to Brew with a Coffee Press",
+        "url": "https://athome.starbucks.com/brewing-guide/how-brew-coffee-press",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://athome.starbucks.com › brewing-guide › how-bre...",
+        "website_name": "Starbucks",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Use 2 Tbsp (10 g) of grounds for every cup (6 fl oz, 180 ml) of water. Add the ground coffee to the empty coffee press. For this brewing method, use a coarse ... Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Use 2 Tbsp (10 g) of grounds for every cup (6 fl oz, 180 ml) of water"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://athome.starbucks.com/brewing-guide/how-brew-coffee-press#:~:text=Use%202%20Tbsp%20(10%20g),a%20rich%20flavor%20without%20bitterness.",
+          "domain": "athome.starbucks.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "short_videos",
+        "rank_group": 1,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[14]/div[1]",
+        "title": "Short videos",
+        "items": [
+         {
+          "type": "short_videos_element",
+          "title": "How to Make a Perfect Cup of Coffee Using a French Press",
+          "url": "https://www.youtube.com/shorts/y9CI5Tddb_I",
+          "domain": "google.com",
+          "source": "America's Test Kitchen"
+         },
+         {
+          "type": "short_videos_element",
+          "title": "How To Use a French Press #Shorts",
+          "url": "https://www.youtube.com/shorts/Ha0CsM52Tsg?vl=en",
+          "domain": "google.com",
+          "source": "Faema Canada"
+         },
+         {
+          "type": "short_videos_element",
+          "title": "French press 101 with Kirk  Fresh grounds, hot water, a little ...",
+          "url": "https://www.facebook.com/Turningpointrestaurants/posts/french-press-101-with-kirk-fresh-grounds-hot-water-a-little-patience-and-the-per/1527657309397746/",
+          "domain": "google.com",
+          "source": "Turning Point Restaurants"
+         },
+         {
+          "type": "short_videos_element",
+          "title": "How to use a French Press to Brew Coffee",
+          "url": "https://www.youtube.com/shorts/4qQW3oAGJkg",
+          "domain": "google.com",
+          "source": "Williams Sonoma"
+         },
+         {
+          "type": "short_videos_element",
+          "title": "How to Use a French Press",
+          "url": "https://www.youtube.com/shorts/nfUqE8A1eNk",
+          "domain": "google.com",
+          "source": "WebstaurantStore"
+         },
+         {
+          "type": "short_videos_element",
+          "title": "How to make a French Press/Plunger Coffee",
+          "url": "https://www.youtube.com/shorts/w9agX2twhWo",
+          "domain": "google.com",
+          "source": "Artisti Coffee Roasters."
+         },
+         {
+          "type": "short_videos_element",
+          "title": "How to make a great cup of coffee in a French press",
+          "url": "https://www.youtube.com/shorts/Zy1qi3wMNJk",
+          "domain": "google.com",
+          "source": "El Colombiano"
+         },
+         {
+          "type": "short_videos_element",
+          "title": "French Press Tutorial",
+          "url": "https://www.youtube.com/watch?v=DHgf4m6lBPo",
+          "domain": "google.com",
+          "source": "Soma Coffee Company"
+         },
+         {
+          "type": "short_videos_element",
+          "title": "How to make it. No mistakes !!! #coffee #frenchpress",
+          "url": "https://www.youtube.com/shorts/MYWKl34B6nw",
+          "domain": "google.com",
+          "source": "O importante é ser feliz"
+         },
+         {
+          "type": "short_videos_element",
+          "title": "Brewing The French Press Cafe Mastering ...",
+          "url": "https://unifront.mx/?q=20614705021970",
+          "domain": "google.com",
+          "source": null
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[16]/div[1]/div[1]",
+        "domain": "www.tradingpostcoffee.co.uk",
+        "title": "How to use a French Press",
+        "url": "https://www.tradingpostcoffee.co.uk/blogs/the-roasters-journal/how-to-use-a-french-press?srsltid=AU7gw4X20XOwqZ4yAVc6qfkX4A37WRRK8vGBff8PnU1EfXMD8Dgm6Xud",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.tradingpostcoffee.co.uk › the-roasters-journal",
+        "website_name": "Trading Post Coffee Roasters",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "11 Jan 2023 — Start by heating water to around 93°C. A general rule of thumb is to use 1 to 2 tablespoons of coffee grounds for every 120ml of water. Once ...",
+        "pre_snippet": "01/11/2023 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Start by heating water to around 93°C"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2023-01-11 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[18]/div[1]/div[1]",
+        "domain": "www.aboutcoffee.org",
+        "title": "French press coffee - NCA - About Coffee",
+        "url": "https://www.aboutcoffee.org/brewing/french-press-coffee/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.aboutcoffee.org › Brewing",
+        "website_name": "About Coffee - National Coffee Association",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Add your ground coffee to the carafe and then the hot water. Wait about one minute, until you see coffee grounds forming a “crust” at the top of the carafe.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Add your ground coffee to the carafe and then the hot water"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[20]/div[1]/div[1]",
+        "domain": "www.coffeefriend.co.uk",
+        "title": "Brewing Guide: How to Prepare Coffee in a French Press?",
+        "url": "https://www.coffeefriend.co.uk/blog/french-press-coffee-preparation-guide/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.coffeefriend.co.uk › Blog",
+        "website_name": "coffeefriend.co.uk",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Simply add coffee, pour water over it, wait for a few minutes, push down the plunger and enjoy! Affordable price. A French press is one of the cheapest brewing ... Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Simply add coffee, pour water over it, wait for a few minutes, push down the plunger"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://www.coffeefriend.co.uk/blog/french-press-coffee-preparation-guide/#:~:text=Simply%20add%20coffee%2C%20pour%20water,cheapest%20brewing%20tools%20out%20there.",
+          "domain": "www.coffeefriend.co.uk"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "related_searches",
+        "rank_group": 1,
+        "rank_absolute": 12,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[2]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "items": [
+         "Best French press",
+         "How to use French press stovetop",
+         "How to use French press for tea",
+         "How to use a french press - youtube",
+         "How to use a French press with pre ground coffee",
+         "French press coffee ratio",
+         "How to make French press coffee for one",
+         "French press coffee maker for beginners"
+        ],
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
