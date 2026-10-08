@@ -31,7 +31,7 @@ export function ShopifyShell({ locale, children }: { locale: string | null; chil
       locale={locale}
       signIn={async () => exchange('/api/session', { sessionToken: await window.shopify!.idToken() })}
       adminLink={(page, platformId) => `shopify://admin/${page}${platformId ? `/${numericId(platformId)}` : ''}`}
-      href={(screen) => SHOPIFY_PATHS[screen]}
+      href={(screen, id) => (id === undefined ? SHOPIFY_PATHS[screen] : `/app/articles/${id}`)}
       Nav={() => <ShopifyNav locale={locale} />}
     >
       {children}
@@ -46,7 +46,7 @@ export function DevShell({ shopDomain, locale, children }: { shopDomain: string;
       locale={locale}
       signIn={() => exchange('/api/dev/session', { shopDomain })}
       adminLink={(page, platformId) => `https://${shopDomain}/admin/${page}${platformId ? `/${numericId(platformId)}` : ''}`}
-      href={(screen) => devHref(shopDomain, locale, screen)}
+      href={(screen, id) => devHref(shopDomain, locale, screen, id)}
       Nav={() => <DevNav shopDomain={shopDomain} locale={locale} />}
     >
       {children}
@@ -56,7 +56,7 @@ export function DevShell({ shopDomain, locale, children }: { shopDomain: string;
 
 const numericId = (platformId: string) => platformId.split('/').pop()
 
-const SHOPIFY_PATHS: Record<Screen, string> = { home: '/app', products: '/app/products', settings: '/app/settings' }
+const SHOPIFY_PATHS: Record<Screen, string> = { home: '/app', articles: '/app/articles', products: '/app/products', settings: '/app/settings' }
 
 /** The entries in Shopify's own left-hand navigation; the admin draws them, not us. */
 function ShopifyNav({ locale }: { locale: string | null }) {
@@ -64,14 +64,15 @@ function ShopifyNav({ locale }: { locale: string | null }) {
   return (
     <s-app-nav>
       <a href={SHOPIFY_PATHS.home} rel="home">{t.nav.home}</a>
+      <a href={SHOPIFY_PATHS.articles}>{t.nav.articles}</a>
       <a href={SHOPIFY_PATHS.products}>{t.nav.products}</a>
       <a href={SHOPIFY_PATHS.settings}>{t.nav.settings}</a>
     </s-app-nav>
   )
 }
 
-function devHref(shopDomain: string, locale: string | null, screen: Screen): string {
-  const params = new URLSearchParams({ shop: shopDomain, ...(locale ? { locale } : {}), ...(screen === 'home' ? {} : { screen }) })
+function devHref(shopDomain: string, locale: string | null, screen: Screen, articleId?: number): string {
+  const params = new URLSearchParams({ shop: shopDomain, ...(locale ? { locale } : {}), ...(screen === 'home' ? {} : { screen }), ...(articleId === undefined ? {} : { article: String(articleId) }) })
   return `/dev?${params}`
 }
 
@@ -81,7 +82,7 @@ function DevNav({ shopDomain, locale }: { shopDomain: string; locale: string | n
   const current = new URLSearchParams(useLocation().search).get('screen') ?? 'home'
   return (
     <nav className="ui-devnav">
-      {(['home', 'products', 'settings'] as const).map((screen) => (
+      {(['home', 'articles', 'products', 'settings'] as const).map((screen) => (
         <Link key={screen} to={devHref(shopDomain, locale, screen)} data-current={current === screen || undefined}>{t.nav[screen]}</Link>
       ))}
     </nav>

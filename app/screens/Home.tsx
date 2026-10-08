@@ -87,6 +87,7 @@ function TodayCard({ state, onChange }: { state: HomeState; onChange: () => void
       </Card>
     )
   }
+  if (today.decided) return <TodayArticles state={state} />
   return (
     <Card title={t.home.today}>
       <Stack gap={12}>
@@ -98,6 +99,50 @@ function TodayCard({ state, onChange }: { state: HomeState; onChange: () => void
         <div>
           <Button ghost onClick={async () => { await act(post, 'skip', today.topic.id); onChange() }}>{t.home.skip}</Button>
         </div>
+      </Stack>
+    </Card>
+  )
+}
+
+/** The day's decided topic: what became of it, with the one action that fits each state. */
+function TodayArticles({ state }: { state: HomeState }) {
+  const { t, href, download } = useHost()
+  const today = state.today as Extract<HomeState['today'], { kind: 'scheduled' }>
+  const h = t.home.article
+  const articles = today.articles
+  // The topic being worked on now: the day's own, or the one tried after it was held.
+  const current = articles.find((a) => a.topicId === today.topic.id)
+  const writing = !current || current.status === 'writing'
+  return (
+    <Card title={t.home.today}>
+      <Stack gap={14}>
+        {articles.length > 1 && <p className="ui-muted ui-small" style={{ margin: 0 }}>{t.home.secondTry}</p>}
+        {articles
+          .filter((a) => a.status !== 'writing')
+          .map((a) => {
+            const line = a.status === 'ready' ? (state.deliveryMode === 'export' ? h.readyExport(a.title) : h.readyPublish(a.title)) : (h[a.status as 'awaiting_review' | 'held' | 'exported'] ?? h.other)(a.title)
+            return (
+              <div key={a.id} className="ui-stack" style={{ gap: 6 }}>
+                <p style={{ margin: 0, fontWeight: 600 }}>{line}</p>
+                {a.status === 'held' && a.heldReason && <p className="ui-muted" style={{ margin: 0 }}>{t.heldReasons[a.heldReason]}</p>}
+                {a.status === 'ready' && state.deliveryMode === 'auto_publish' && <p className="ui-muted" style={{ margin: 0 }}>{h.readyPublishBody}</p>}
+                <div className="ui-row" style={{ gap: 10 }}>
+                  {a.status === 'ready' && state.deliveryMode === 'export' && <Button primary onClick={() => download(`/api/articles/${a.id}/download`)}>{h.download}</Button>}
+                  <Link to={href('articles', a.id)} className="ui-small">{a.status === 'awaiting_review' ? h.review : a.status === 'held' ? h.seeDetails : h.open}</Link>
+                </div>
+              </div>
+            )
+          })}
+        {writing && (
+          state.writeUnavailable ? (
+            <p className="ui-muted" style={{ margin: 0 }}>{t.home.writeUnavailable}</p>
+          ) : (
+            <div>
+              <p style={{ margin: 0, fontWeight: 600 }}>{h.writing(today.topic.workingTitle)}</p>
+              <p className="ui-muted" style={{ margin: '4px 0 0' }}>{h.writingBody}</p>
+            </div>
+          )
+        )}
       </Stack>
     </Card>
   )

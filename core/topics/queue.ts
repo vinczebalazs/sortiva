@@ -17,7 +17,7 @@ export type QueuedTopic = {
 }
 
 /** An article written today, in the order it was tried: at most the day's topic and one more after a hold. */
-export type TodayArticle = { id: number; title: string; status: string; heldReason: string | null }
+export type TodayArticle = { id: number; topicId: number; title: string; status: string; heldReason: string | null }
 
 export type Today =
   | { kind: 'nothing'; reason: 'queue_empty' | 'publish_hour_passed' | 'skipped_by_merchant' | PauseReason }
@@ -92,7 +92,7 @@ export async function homeQueue(db: Db, storeId: number, now = new Date()): Prom
   if (decided?.outcome === 'scheduled' && decided.topic_id) {
     const { rows } = await db.query<TopicRow>(`select ${TOPIC_COLUMNS} from topics t where t.id = $1`, [decided.retry_topic_id ?? decided.topic_id])
     const { rows: articles } = await db.query<TodayArticle>(
-      `select a.id::int, coalesce(a.title, t.working_title) as title, a.state as status, t.held_reason as "heldReason"
+      `select a.id::int, a.topic_id::int as "topicId", coalesce(a.title, t.working_title) as title, a.state as status, t.held_reason as "heldReason"
        from articles a join topics t on t.id = a.topic_id
        where a.topic_id = any($1::bigint[]) and a.state <> 'discarded' order by array_position($1::bigint[], a.topic_id)`,
       [[decided.topic_id, decided.retry_topic_id].filter((id) => id !== null)],

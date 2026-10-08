@@ -25,10 +25,13 @@ import { DataForSeoDemand } from '../vendors/dataforseo/client.ts'
  * Usage: pnpm seed:preview [fixture[:done] ...]   (default: rich-hu rich-en empty-en)
  * A fixture written as name:done is also taken through setup (profile confirmed as drafted, Search
  * Console skipped, export chosen) and its topics found, so Home has a queue to show.
+ * name:written goes further: review first is switched on and today's article is written, so the
+ * Articles and Article screens have something to show (from recordings; RECORD=1 for new ones).
  */
 const args = process.argv.slice(2).length ? process.argv.slice(2) : ['rich-hu', 'rich-en', 'empty-en']
-const names = args.map((a) => a.replace(/:done$/, ''))
-const finish = new Set(args.filter((a) => a.endsWith(':done')).map((a) => a.replace(/:done$/, '')))
+const names = args.map((a) => a.replace(/:(done|written)$/, ''))
+const finish = new Set(args.filter((a) => /:(done|written)$/.test(a)).map((a) => a.replace(/:(done|written)$/, '')))
+const write = new Set(args.filter((a) => a.endsWith(':written')).map((a) => a.replace(/:written$/, '')))
 const url = new URL(env('DATABASE_URL'))
 const admin = new pg.Client({ connectionString: Object.assign(new URL(url), { pathname: '/postgres' }).toString() })
 await admin.connect()
@@ -73,8 +76,14 @@ for (const name of finish) {
   if (!profile) continue
   await confirmProfile(pool, id, profile)
   await skipSearchConsole(pool, id)
-  await finishSetup(pool, id, { mode: 'export', blog: null, publishAs: 'live', publishHour: 9, reviewFirst: false })
+  await finishSetup(pool, id, { mode: 'export', blog: null, publishAs: 'live', publishHour: 9, reviewFirst: write.has(name) })
   await requestDiscovery(pool, id, 'setup', new Date().toISOString())
+}
+await settle()
+for (const name of write) {
+  const id = ids.get(name)!
+  const { rows } = await pool.query<{ d: string }>(`select to_char((now() at time zone timezone)::date, 'YYYY-MM-DD') as d from stores where id = $1`, [id])
+  await worker.addJob('daily_pick', { storeId: id, localDate: rows[0]!.d })
 }
 await settle()
 await worker.stop()

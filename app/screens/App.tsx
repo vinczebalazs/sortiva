@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react'
 import type { Banner } from '../../core/status.ts'
 import { useHost, type Screen } from '../shell/api.tsx'
 import { Banners } from './Banners.tsx'
+import { Article } from './Article.tsx'
+import { Articles } from './Articles.tsx'
 import { Home } from './Home.tsx'
 import { Products } from './Products.tsx'
 import { Settings } from './Settings.tsx'
 import { Setup } from './Setup.tsx'
 
 /** Setup until it is finished; after that the host's navigation, the banners, and the requested screen. */
-export function App({ screen }: { screen: Screen }) {
+export function App({ screen, articleId }: { screen: Screen; articleId?: number }) {
   const { Nav, get } = useHost()
   const [ready, setReady] = useState(false)
   const [banners, setBanners] = useState<Banner[]>([])
@@ -29,6 +31,7 @@ export function App({ screen }: { screen: Screen }) {
       )}
       <div key={version}>
         {screen === 'home' && <Home />}
+        {screen === 'articles' && (articleId === undefined ? <Articles /> : <Article id={articleId} />)}
         {screen === 'products' && <Products />}
         {screen === 'settings' && <Settings onPauseChanged={() => setVersion((v) => v + 1)} />}
       </div>

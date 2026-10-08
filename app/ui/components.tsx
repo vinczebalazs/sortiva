@@ -53,7 +53,7 @@ export function Button(props: { children: ReactNode; primary?: boolean; ghost?: 
   )
 }
 
-export function Tag({ tone, children }: { tone?: 'primary' | 'success'; children: ReactNode }) {
+export function Tag({ tone, children }: { tone?: 'primary' | 'success' | 'critical'; children: ReactNode }) {
   return <span className="ui-tag" data-tone={tone}>{children}</span>
 }
 

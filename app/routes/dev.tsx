@@ -7,11 +7,12 @@ import { DevShell } from '../shell/shopify.tsx'
 export default function DevHost() {
   const [params] = useSearchParams()
   const shop = params.get('shop')
-  const screen = (['products', 'settings'].includes(params.get('screen') ?? '') ? params.get('screen') : 'home') as Screen
+  const screen = (['articles', 'products', 'settings'].includes(params.get('screen') ?? '') ? params.get('screen') : 'home') as Screen
+  const article = params.get('article') ? Number(params.get('article')) : undefined
   if (!shop) return <main className="ui-page"><p>Add ?shop=&lt;store domain&gt; to the address.</p></main>
   return (
     <DevShell shopDomain={shop} locale={params.get('locale')}>
-      <App key={screen} screen={screen} />
+      <App key={`${screen}:${article ?? ''}`} screen={screen} articleId={article} />
     </DevShell>
   )
 }
