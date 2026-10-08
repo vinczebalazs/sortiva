@@ -1,0 +1,419 @@
+[
+  {
+    "id": "en-01",
+    "language": "en",
+    "note": "Rich spec list for a coffee kettle: capacity, steel grade, spout size, hob compatibility and origin must all survive, the closing slogan must not.",
+    "product": {
+      "title": "Gooseneck Pour-Over Kettle 1.0 L",
+      "product_type": "Kettle",
+      "vendor": "Northfield Brew Co.",
+      "options": [{ "name": "Colour", "values": ["Matte Black", "Brushed Steel"] }],
+      "tags": ["coffee", "pour-over", "stovetop"],
+      "metafields": [{ "namespace": "custom", "key": "material", "value": "18/8 stainless steel" }],
+      "description_html": "<p>A stovetop kettle built for slow, controlled pours.</p><ul><li>Capacity: 1.0 L (fill line at 0.8 L)</li><li>Body: 18/8 stainless steel, 1.2 mm wall</li><li>Spout: 8 mm gooseneck opening</li><li>Built-in thermometer reads 40–100 °C</li><li>Works on gas, electric and induction hobs</li></ul><p>Hand wash only. Dry the thermometer housing after each use. Made in Taiwan.</p><p>Your mornings will never be the same.</p>"
+    },
+    "must": ["1.0 L", "18/8", "8 mm", "induction", "Taiwan"],
+    "mustNot": ["never be the same"]
+  },
+  {
+    "id": "en-02",
+    "language": "en",
+    "note": "Rich cookware description with dimensions, weight, oven limit, care routine and country of manufacture.",
+    "product": {
+      "title": "Pre-Seasoned Cast Iron Skillet 26 cm",
+      "product_type": "Frying Pan",
+      "vendor": "Ironbark Cookware",
+      "options": [],
+      "tags": ["cast iron", "skillet", "induction"],
+      "metafields": [],
+      "description_html": "<p>Pre-seasoned with flaxseed oil and ready to cook on day one.</p><ul><li>Diameter: 26 cm cooking surface, 30 cm including pour lips</li><li>Weight: 2.4 kg</li><li>Depth: 5 cm</li><li>Safe in the oven up to 260 °C</li><li>Suitable for induction, gas, ceramic and open fire</li></ul><p>Care: rinse with hot water, dry on the hob, then wipe with a thin layer of oil. Not dishwasher safe. Cast in Poland.</p><p>The pan that will outlive us all.</p>"
+    },
+    "must": ["26 cm", "2.4 kg", "260 °C", "flaxseed", "Poland"],
+    "mustNot": ["outlive"]
+  },
+  {
+    "id": "en-03",
+    "language": "en",
+    "note": "Specs live in an HTML table; weight, floor area, height, fabric denier and hydrostatic head must be extracted with units intact.",
+    "product": {
+      "title": "Ridgeline 2 Backpacking Tent",
+      "product_type": "Tent",
+      "vendor": "Cairn Outdoor",
+      "options": [{ "name": "Colour", "values": ["Olive", "Sand"] }],
+      "tags": ["camping", "backpacking", "2-person"],
+      "metafields": [],
+      "description_html": "<p>A freestanding two-person tent for multi-day trips.</p><table><tr><th>Sleeps</th><td>2 people</td></tr><tr><th>Packed weight</th><td>1.85 kg</td></tr><tr><th>Floor area</th><td>2.9 m²</td></tr><tr><th>Peak height</th><td>105 cm</td></tr><tr><th>Fly</th><td>20D ripstop nylon, 3,000 mm hydrostatic head</td></tr><tr><th>Poles</th><td>DAC aluminium</td></tr></table><p>Two doors and two vestibules. Seam-taped fly. The inner and fly pitch together as one unit.</p><p>Adventure awaits.</p>"
+    },
+    "must": ["1.85 kg", "2.9 m", "105 cm", "3,000 mm", "20D"],
+    "mustNot": ["adventure awaits"]
+  },
+  {
+    "id": "en-04",
+    "language": "en",
+    "note": "Cycling light with output, runtimes, water rating, handlebar compatibility and weight; slogan excluded.",
+    "product": {
+      "title": "Beacon 800 Front Bike Light",
+      "product_type": "Bike Light",
+      "vendor": "Spokeline",
+      "options": [],
+      "tags": ["cycling", "lights", "usb-c"],
+      "metafields": [],
+      "description_html": "<p>A USB-C rechargeable front light with a cut-off beam that keeps glare out of oncoming traffic.</p><ul><li>Maximum output: 800 lumens</li><li>Runtime: 1.5 h on high, 12 h on flash</li><li>Charging time: 3 h via USB-C</li><li>IPX6 water resistance</li><li>Fits round handlebars from 22.2 mm to 35 mm; the included shim covers 31.8 mm bars</li><li>Weight: 118 g with mount</li></ul><p>Ride further, ride safer, ride brighter.</p>"
+    },
+    "must": ["800 lumens", "IPX6", "31.8 mm", "118 g", "USB-C"],
+    "mustNot": ["ride safer"]
+  },
+  {
+    "id": "en-05",
+    "language": "en",
+    "note": "Pet harness with per-size girth ranges, fabric, hardware and care; the emotional closing line must be dropped.",
+    "product": {
+      "title": "Trailhound No-Pull Harness",
+      "product_type": "Dog Harness",
+      "vendor": "Good Boy Gear",
+      "options": [
+        { "name": "Size", "values": ["XS", "S", "M", "L"] },
+        { "name": "Colour", "values": ["Moss", "Rust"] }
+      ],
+      "tags": ["dog", "harness", "no-pull"],
+      "metafields": [],
+      "description_html": "<p>A padded harness with a front clip that steers pulling dogs sideways instead of letting them lean forward.</p><p>Chest girth by size: XS 38–48 cm, S 48–60 cm, M 60–76 cm, L 76–94 cm. The outer shell is 600D recycled polyester with a breathable mesh lining. Two attachment points: an aluminium D-ring on the back and a stainless steel ring on the chest. Reflective piping on both straps. Hand wash in cold water and air dry.</p><p>Every dog deserves a walk this good.</p>"
+    },
+    "must": ["600D", "aluminium", "60–76 cm", "reflective"],
+    "mustNot": ["deserves"]
+  },
+  {
+    "id": "en-06",
+    "language": "en",
+    "note": "Skincare serum with ingredient percentages, dosage, storage, shelf life after opening and volume.",
+    "product": {
+      "title": "Daily Barrier Serum",
+      "product_type": "Serum",
+      "vendor": "Hollow Fern Skincare",
+      "options": [],
+      "tags": ["skincare", "fragrance-free", "vegan"],
+      "metafields": [{ "namespace": "custom", "key": "volume", "value": "30 ml" }],
+      "description_html": "<p>A lightweight, fragrance-free serum for daily use.</p><ul><li>5% niacinamide</li><li>2% panthenol</li><li>Ceramide NP and squalane</li></ul><p>Apply 2–3 drops to clean skin morning and evening, before moisturiser. Patch test before first use. Store below 25 °C and use within 6 months of opening. 30 ml glass bottle with dropper. Vegan and not tested on animals.</p><p>Glow like never before.</p>"
+    },
+    "must": ["5% niacinamide", "2% panthenol", "30 ml", "6 months", "squalane"],
+    "mustNot": ["glow like"]
+  },
+  {
+    "id": "en-07",
+    "language": "en",
+    "note": "Tricky numbers: a three-part fibre blend, a decimal micron count and a pack count must be kept exactly, and no invented 100% claim.",
+    "product": {
+      "title": "Everyday Hiking Socks (3-Pack)",
+      "product_type": "Socks",
+      "vendor": "Fellwalk",
+      "options": [{ "name": "Size", "values": ["35–38", "39–42", "43–46"] }],
+      "tags": ["merino", "hiking", "socks"],
+      "metafields": [],
+      "description_html": "<p>Mid-weight crew socks with full cushioning under the foot.</p><p>Composition: 63% merino wool, 34% nylon, 3% elastane. The yarn is 17.5 micron merino. Heel and toe are reinforced, and the cuff measures 12 cm above the ankle bone. Pack of 3 pairs. Machine wash at 30 °C inside out; do not tumble dry.</p>"
+    },
+    "must": ["63% merino", "34% nylon", "3% elastane", "17.5 micron", "30 °C"],
+    "mustNot": ["100%"]
+  },
+  {
+    "id": "en-08",
+    "language": "en",
+    "note": "Tricky numbers: a three-way dimension with multiplication signs, a unicode fraction and a minutes range must be kept exactly.",
+    "product": {
+      "title": "Cedar Raised Garden Bed",
+      "product_type": "Raised Bed",
+      "vendor": "Plot & Pine",
+      "options": [],
+      "tags": ["garden", "raised bed", "cedar"],
+      "metafields": [],
+      "description_html": "<p>A raised bed in untreated Western red cedar, assembled with stainless steel screws.</p><ul><li>Outer dimensions: 120 × 60 × 30 cm</li><li>Soil volume: approx. 0.19 m³ (190 litres)</li><li>Board thickness: 1⅛ in (28 mm)</li><li>Assembly time: 20–30 minutes with one screwdriver</li></ul><p>Line the base with the included weed membrane. Cedar weathers to silver-grey; oil it once a year to keep the original colour.</p><p>Grow your best harvest yet!</p>"
+    },
+    "must": ["120 × 60 × 30 cm", "190 litres", "1⅛ in", "28 mm", "red cedar"],
+    "mustNot": ["best harvest"]
+  },
+  {
+    "id": "en-09",
+    "language": "en",
+    "note": "Wooden toy set with piece count, wood species, safety standard, age and origin; play-value promise excluded.",
+    "product": {
+      "title": "Rainbow Stacking Blocks, 48 pieces",
+      "product_type": "Toy",
+      "vendor": "Little Acorn Workshop",
+      "options": [],
+      "tags": ["wooden toys", "ages 18m+"],
+      "metafields": [],
+      "description_html": "<p>A set of 48 beech wood blocks in four shapes and six colours, stored in a cotton drawstring bag.</p><ul><li>Smallest block: 3 × 3 × 3 cm</li><li>Painted with water-based paints compliant with EN 71-3</li><li>Edges sanded to a 2 mm radius</li><li>Suitable from 18 months</li></ul><p>Wipe clean with a damp cloth; do not soak. Made in Lithuania.</p><p>Hours of imaginative play guaranteed.</p>"
+    },
+    "must": ["48", "beech", "EN 71-3", "18 months", "Lithuania"],
+    "mustNot": ["guaranteed", "imaginative"]
+  },
+  {
+    "id": "en-10",
+    "language": "en",
+    "note": "Home textile with fabric weight, a size table, wash temperature, shrinkage and certification.",
+    "product": {
+      "title": "Stonewashed Linen Duvet Cover",
+      "product_type": "Duvet Cover",
+      "vendor": "Hearth & Loom",
+      "options": [
+        { "name": "Size", "values": ["Single", "Double", "King"] },
+        { "name": "Colour", "values": ["Oat", "Sage", "Charcoal"] }
+      ],
+      "tags": ["bedding", "linen"],
+      "metafields": [],
+      "description_html": "<p>Woven from 100% European flax linen at 165 g/m², then stonewashed for softness.</p><table><tr><th>Size</th><th>Dimensions</th></tr><tr><td>Single</td><td>135 × 200 cm</td></tr><tr><td>Double</td><td>200 × 200 cm</td></tr><tr><td>King</td><td>230 × 220 cm</td></tr></table><p>Coconut-shell button closure along the bottom edge. Machine wash at 40 °C, tumble dry low. Expect up to 3% shrinkage on the first wash. OEKO-TEX Standard 100 certified.</p><p>Sleep like you're on holiday every night.</p>"
+    },
+    "must": ["165 g/m", "230 × 220 cm", "40 °C", "OEKO-TEX", "coconut"],
+    "mustNot": ["holiday"]
+  },
+  {
+    "id": "en-11",
+    "language": "en",
+    "note": "Food product with origin, processing temperature, net weight and an infant warning; the 'liquid gold' slogan must go.",
+    "product": {
+      "title": "Raw Heather Honey 340 g",
+      "product_type": "Honey",
+      "vendor": "Moorland Apiaries",
+      "options": [],
+      "tags": ["honey", "raw", "british"],
+      "metafields": [{ "namespace": "custom", "key": "origin", "value": "North York Moors, England" }],
+      "description_html": "<p>Heather honey gathered from hives on the North York Moors in August and September. It is cold-extracted, never heated above 35 °C, and coarse-filtered so the pollen stays in.</p><p>Heather honey is thixotropic: it sets like a jelly in the jar and loosens when stirred. Net weight 340 g in a glass jar with a metal lid. Not suitable for infants under 12 months. Store at room temperature away from sunlight.</p><p>Liquid gold from the moors.</p>"
+    },
+    "must": ["340 g", "35 °C", "12 months", "North York Moors", "thixotropic"],
+    "mustNot": ["liquid gold"]
+  },
+  {
+    "id": "en-12",
+    "language": "en",
+    "note": "Sport mat with size, thickness, weight, a latex warning and a PVC-free statement; popularity claim excluded.",
+    "product": {
+      "title": "Grip Pro Yoga Mat 4 mm",
+      "product_type": "Yoga Mat",
+      "vendor": "Asana Supply",
+      "options": [{ "name": "Colour", "values": ["Clay", "Ocean"] }],
+      "tags": ["yoga", "natural rubber"],
+      "metafields": [],
+      "description_html": "<p>A natural tree rubber mat with a polyurethane top layer for grip in hot classes.</p><ul><li>Size: 183 × 68 cm</li><li>Thickness: 4 mm</li><li>Weight: 2.5 kg</li><li>Laser-etched alignment lines</li><li>Free of PVC</li></ul><p>Contains natural latex; not suitable for people with latex allergies. Wipe after each session with a damp cloth and mild soap. Store rolled, top side out, away from direct sunlight.</p><p>Yogis everywhere swear by it.</p>"
+    },
+    "must": ["183 × 68 cm", "4 mm", "2.5 kg", "latex", "PVC"],
+    "mustNot": ["swear by"]
+  },
+  {
+    "id": "en-13",
+    "language": "en",
+    "note": "Tea with estate of origin, brewing ratio, water temperature, a steep-time range and pack weight.",
+    "product": {
+      "title": "Darjeeling Second Flush, Loose Leaf 100 g",
+      "product_type": "Tea",
+      "vendor": "Leaf & Lantern",
+      "options": [],
+      "tags": ["tea", "black tea", "darjeeling"],
+      "metafields": [],
+      "description_html": "<p>A second flush Darjeeling from the Glenburn estate, picked in June 2026.</p><p><strong>Brewing:</strong> 2.5 g per 250 ml, water at 90 °C, steep 3–4 minutes. The leaves can be infused a second time.</p><p>Packed in a resealable kraft pouch with a foil lining; 100 g makes roughly 40 cups. Keep sealed in a cool, dry place.</p><p>An unforgettable cup that will transport you to the Himalayas.</p>"
+    },
+    "must": ["Glenburn", "2.5 g", "90 °C", "3–4 minutes", "100 g"],
+    "mustNot": ["unforgettable", "transport you"]
+  },
+  {
+    "id": "en-14",
+    "language": "en",
+    "note": "Footwear with named materials and components, weight per boot and crampon compatibility.",
+    "product": {
+      "title": "Scree Mid GTX Hiking Boot",
+      "product_type": "Boots",
+      "vendor": "Alder Peak",
+      "options": [{ "name": "Size", "values": ["UK 6", "UK 7", "UK 8", "UK 9", "UK 10", "UK 11"] }],
+      "tags": ["hiking", "boots", "waterproof"],
+      "metafields": [],
+      "description_html": "<p>A mid-cut boot for day hikes on rough ground.</p><ul><li>Upper: 1.8 mm full-grain nubuck leather</li><li>Membrane: GORE-TEX waterproof lining</li><li>Outsole: Vibram Megagrip rubber with 5 mm lugs</li><li>Drop: 12 mm</li><li>Weight: 560 g per boot (UK 8)</li></ul><p>Compatible with C1 flexible crampons. Clean with a soft brush and re-proof the leather with wax after every few outings. The boot can be resoled.</p><p>Conquer any summit.</p>"
+    },
+    "must": ["nubuck", "GORE-TEX", "Vibram", "560 g", "C1"],
+    "mustNot": ["conquer"]
+  },
+  {
+    "id": "en-15",
+    "language": "en",
+    "note": "Mixed: capacity, insulation times and steel grade share sentences with best-seller and adventure claims, which must be stripped.",
+    "product": {
+      "title": "Summit Insulated Bottle 750 ml",
+      "product_type": "Water Bottle",
+      "vendor": "Cairn Outdoor",
+      "options": [{ "name": "Colour", "values": ["Pine", "Slate", "Sunset"] }],
+      "tags": ["bottle", "insulated"],
+      "metafields": [],
+      "description_html": "<p>Our best-selling 750 ml bottle, loved by hikers and commuters alike, keeps drinks cold for 24 hours and hot for 12 hours thanks to double-wall vacuum insulation. The stunning powder-coated body is made from 18/8 stainless steel. The leakproof lid is ready for every adventure and is dishwasher safe, but the body should be washed by hand.</p>"
+    },
+    "must": ["750 ml", "24 hours", "12 hours", "18/8"],
+    "mustNot": ["best-selling", "loved", "stunning", "every adventure"]
+  },
+  {
+    "id": "en-16",
+    "language": "en",
+    "note": "Mixed: pet furniture dimensions and load limit are embedded in enthusiastic sentences about what cats feel.",
+    "product": {
+      "title": "Sisal Tower Cat Scratcher",
+      "product_type": "Cat Furniture",
+      "vendor": "Whisker & Co",
+      "options": [],
+      "tags": ["cat", "scratcher"],
+      "metafields": [],
+      "description_html": "<p>Cats go absolutely wild for this 85 cm sisal tower, the scratcher every feline dreams of. Its heavy 45 × 45 cm base won't wobble even under the most enthusiastic Maine Coon, and the natural sisal rope is wound around a 12 cm diameter post. The plush top perch is the comfiest spot in the house and supports cats up to 8 kg. Assembly takes three screws and the included tool.</p>"
+    },
+    "must": ["85 cm", "45 × 45 cm", "12 cm", "8 kg", "sisal"],
+    "mustNot": ["absolutely wild", "dreams", "comfiest"]
+  },
+  {
+    "id": "en-17",
+    "language": "en",
+    "note": "Mixed: spice count, place of blending, dose, tin size and allergens sit next to chef praise and freshness promises.",
+    "product": {
+      "title": "Smoky Ras el Hanout 60 g",
+      "product_type": "Spice Blend",
+      "vendor": "Saffron Lane Spice",
+      "options": [],
+      "tags": ["spices", "moroccan"],
+      "metafields": [],
+      "description_html": "<p>Chefs rave about this irresistible blend of 14 spices, hand-mixed in small batches in Bristol for unbeatable freshness. It contains cumin, coriander, smoked paprika, cinnamon, ginger, rose petals and more. Add one teaspoon per 500 g of meat for a tagine your guests will never forget. Packed in a 60 g tin. Contains mustard; packed in a facility that also handles sesame.</p>"
+    },
+    "must": ["14 spices", "Bristol", "60 g", "mustard", "500 g"],
+    "mustNot": ["rave", "irresistible", "unbeatable", "never forget"]
+  },
+  {
+    "id": "en-18",
+    "language": "en",
+    "note": "Mixed: glove padding, palm material and wash temperature share sentences with superlatives and ease-of-use promises.",
+    "product": {
+      "title": "Aero Summer Cycling Gloves",
+      "product_type": "Cycling Gloves",
+      "vendor": "Spokeline",
+      "options": [{ "name": "Size", "values": ["S", "M", "L", "XL"] }],
+      "tags": ["cycling", "gloves", "summer"],
+      "metafields": [],
+      "description_html": "<p>The ultimate summer glove for riders who demand the best: a 3 mm gel pad in the palm takes the sting out of rough tarmac, while the airy mesh back keeps hands cool on the hottest climbs. Pull tabs between the fingers make removal effortless, and the terry thumb wipe is surprisingly handy. The palm is synthetic suede. Machine wash at 30 °C with the hook-and-loop strap fastened.</p>"
+    },
+    "must": ["3 mm", "gel", "suede", "30 °C"],
+    "mustNot": ["ultimate", "the best", "effortless", "surprisingly"]
+  },
+  {
+    "id": "en-19",
+    "language": "en",
+    "note": "Pure fluff: a throw blanket described only by feelings and gifting, so no fact may carry the marketing phrases.",
+    "product": {
+      "title": "Cloud Nine Throw",
+      "product_type": "Throw Blanket",
+      "vendor": "Hearth & Loom",
+      "options": [],
+      "tags": ["cosy", "gift"],
+      "metafields": [],
+      "description_html": "<p>Wrap yourself in pure comfort. The Cloud Nine Throw is the cosiest companion for lazy Sundays, movie nights and everything in between. Its dreamy softness turns any sofa into a sanctuary, and it looks effortlessly chic draped over a bed or armchair. Once you curl up with it, you'll never want to get up again. The perfect gift for anyone who deserves a little luxury, which is everyone.</p>"
+    },
+    "must": [],
+    "mustNot": ["cosiest", "dreamy", "perfect gift", "luxury"]
+  },
+  {
+    "id": "en-20",
+    "language": "en",
+    "note": "Pure fluff: a mug described as a morning mood with no material, size or care information.",
+    "product": {
+      "title": "Morning Ritual Mug",
+      "product_type": "Mug",
+      "vendor": "Northfield Brew Co.",
+      "options": [],
+      "tags": ["coffee", "mug"],
+      "metafields": [],
+      "description_html": "<p>Some mornings call for more than coffee. They call for a ritual. Our Morning Ritual Mug was made for slow sips, quiet thoughts and that first golden light through the kitchen window. It feels just right in your hands and makes every brew taste a little more special. Start your day the way it was meant to be started. You deserve it.</p>"
+    },
+    "must": [],
+    "mustNot": ["feels just right", "more special", "you deserve"]
+  },
+  {
+    "id": "en-21",
+    "language": "en",
+    "note": "Pure fluff: a skincare gift set that names no products, ingredients or sizes, only popularity and promised results.",
+    "product": {
+      "title": "The Radiance Edit Gift Set",
+      "product_type": "Gift Set",
+      "vendor": "Hollow Fern Skincare",
+      "options": [],
+      "tags": ["gift", "skincare"],
+      "metafields": [],
+      "description_html": "<p>Unwrap your glow. This beautifully curated edit brings together our most-loved essentials for skin that glows from within. Each step is a moment of self-care, a little pause in a busy day. Gift it to someone special, or keep it for yourself; we won't tell. Thousands of happy customers can't be wrong. Your skin will thank you.</p>"
+    },
+    "must": [],
+    "mustNot": ["most-loved", "glows", "thousands", "thank you"]
+  },
+  {
+    "id": "en-22",
+    "language": "en",
+    "note": "Facts only in metafields and options: fabric blend, inseam and sizes must come from structured fields while the description is fluff.",
+    "product": {
+      "title": "Tempo Running Shorts",
+      "product_type": "Shorts",
+      "vendor": "Stride Lab",
+      "options": [
+        { "name": "Size", "values": ["XS", "S", "M", "L", "XL"] },
+        { "name": "Colour", "values": ["Black", "Navy"] }
+      ],
+      "tags": ["running", "reflective"],
+      "metafields": [
+        { "namespace": "custom", "key": "fabric", "value": "88% recycled polyester, 12% elastane" },
+        { "namespace": "custom", "key": "inseam", "value": "13 cm" },
+        { "namespace": "custom", "key": "care", "value": "Machine wash cold, do not iron" }
+      ],
+      "description_html": "<p>Run free. The Tempo shorts were made for chasing personal bests, early starts and long Sunday miles. Light as air and ready for anything, they move with you every step of the way. Once you try them, you won't run in anything else.</p>"
+    },
+    "must": ["88% recycled polyester", "12% elastane", "13 cm", "XL"],
+    "mustNot": ["light as air", "ready for anything", "personal bests"]
+  },
+  {
+    "id": "en-23",
+    "language": "en",
+    "note": "Facts only in metafields and options: material, reservoir capacities and origin come from structured fields; the description is lifestyle copy.",
+    "product": {
+      "title": "Terra Self-Watering Planter",
+      "product_type": "Planter",
+      "vendor": "Plot & Pine",
+      "options": [{ "name": "Size", "values": ["Ø 18 cm", "Ø 24 cm"] }],
+      "tags": ["indoor", "self-watering"],
+      "metafields": [
+        { "namespace": "custom", "key": "material", "value": "Recycled polypropylene" },
+        { "namespace": "custom", "key": "reservoir_capacity", "value": "0.6 L (Ø 18 cm), 1.1 L (Ø 24 cm)" },
+        { "namespace": "custom", "key": "made_in", "value": "Netherlands" }
+      ],
+      "description_html": "<p>Happy plants, happy home. Terra takes the guesswork out of plant care so you can enjoy a thriving indoor jungle without the worry. Its timeless shape suits any interior, from minimalist to boho. Even the brownest thumbs will look like experts.</p>"
+    },
+    "must": ["polypropylene", "0.6 L", "1.1 L", "Netherlands"],
+    "mustNot": ["thriving", "timeless", "guesswork"]
+  },
+  {
+    "id": "en-24",
+    "language": "en",
+    "note": "Price in the description: blade specs, steel, hardness, handle and origin are facts; the sale and original prices must never appear.",
+    "product": {
+      "title": "Santoku Knife 18 cm",
+      "product_type": "Kitchen Knife",
+      "vendor": "Ironbark Cutlery",
+      "options": [],
+      "tags": ["knives", "japanese"],
+      "metafields": [],
+      "description_html": "<p><strong>Now only £39.99 (was £54.99)!</strong></p><p>A santoku with an 18 cm blade forged from AUS-10 stainless steel, hardened to 60 HRC. The handle is stabilised walnut with a full tang and three brass rivets. Blade thickness at the spine: 2 mm. Total weight: 185 g. Hand wash and dry immediately; never put it in the dishwasher. Sharpen on a whetstone of 1000 grit or finer. Made in Seki, Japan.</p>"
+    },
+    "must": ["18 cm", "AUS-10", "60 HRC", "walnut", "Seki"],
+    "mustNot": ["39.99", "54.99", "£"]
+  },
+  {
+    "id": "en-25",
+    "language": "en",
+    "note": "Discount and price in the description: puzzle size, board thickness and age are facts; the percentage off, price and code must not appear.",
+    "product": {
+      "title": "World Map Floor Puzzle, 100 pieces",
+      "product_type": "Puzzle",
+      "vendor": "Little Acorn Workshop",
+      "options": [],
+      "tags": ["puzzle", "kids", "geography"],
+      "metafields": [],
+      "description_html": "<p>Save 20% this week – just $18.50 with code MAP20!</p><p>A 100-piece floor puzzle of the world map with illustrated animals and landmarks. Finished size 70 × 50 cm. Pieces are cut from 2.5 mm recycled board with a matt finish. Recommended for ages 5 and up. A fact poster comes in the box.</p><p>The best way to make geography fun!</p>"
+    },
+    "must": ["100", "70 × 50 cm", "2.5 mm", "recycled", "ages 5"],
+    "mustNot": ["18.50", "20%", "MAP20", "best way"]
+  }
+]

@@ -168,6 +168,39 @@ Set by the agent while the founders were offline; each is one number in `core/co
 - **Reviewer floors:** as the plan says: grounding and information gain at least 4 of 5, structure and fit at least 3.
 - **Evals:** written fresh by the agent and graded by it until the founders grade them: distillation 50 cases, judge 20, writer 20, each half English and half Hungarian. The founders' twenty real product descriptions per language, when they arrive, are added to the distillation set.
 
+## 2026-10-09 — Assumed: how the writing gate works (phase 3)
+
+Taken by the agent overnight while the founders were offline; each can be overruled without touching the rest.
+
+- **What the writer sees (rule 1).** An "evidence pack": the topic, the store profile, the fact sheets of the topic's products plus up to six usable products of the same kinds (so comparisons and gift guides have room), and up to twelve of the store's own collections, pages and posts it may link. No product description, price or other raw catalogue text.
+- **How claims are marked.** The writer puts the facts a sentence rests on in brackets before its full stop ("[F3]"), marks general-knowledge sentences "[G]", links by reference ("[our dripper](P1)"), and places product cards as "{{P1}}". These are removed or turned into the store's own addresses before anyone sees the article.
+- **What the free checks can and cannot prove.** Mechanically: every sentence naming one of our products cites a fact that exists; every number (written in digits) in a sentence appears in the facts it cites, or the sentence is marked general knowledge and names no product; headings carry no unbacked number. Whether the sentence *means* what its fact says cannot be checked by matching words: a first version that demanded a shared word rejected faithful paraphrases and held good articles. That judgement belongs to the reviewing model's grounding score, where one unsupported product claim caps the score at 2 and holds the article. The plan listed meaning-match among the free checks; this is the departure. Spelled-out numbers ("two reasons") are not counted, because they were nearly always the article's own structure.
+- **More free checks than the plan named.** No raw HTML in the writer's Markdown (the Markdown library passes HTML straight through to the store, so a script or frame could otherwise reach it), the owner's never-say list, and title and meta-description length.
+- **Order of a held article's reason.** Language, outside links, HTML, price, invented experience, never-say, uncited claims, uncited numbers, fact floor, length, title. The first failure is the one sentence the merchant sees.
+- **The reviewing model runs only on drafts that passed the free checks**, to save a call; a draft failing a free check goes straight to the one repair.
+- **Writing starts at the publish hour**, right after the daily pick; an article usually appears a few minutes later. A topic whose writing never finished (the model service down all day) goes back to the top of the queue the next day, and Home says so in a plain line meanwhile, as for topic-finding.
+- **Export.** "Download" gives a zip of the Markdown, the HTML and a metadata file; the first download marks the article exported. "Where did you publish it?" accepts only an address on the store's own domain, without its query string.
+- **Model effort.** Plan and review at "medium", draft and repair at "high", all on Claude Opus 5.5.
+
+## 2026-10-09 — Noted: found while building phase 3
+
+- **Anthropic credit ran out** during the night, after 4.49 USD of phase 3 recordings. Everything that needs a new model answer stopped there (see checkpoint 3 below). The live API now answers "Your credit balance is too low".
+- **A phase 1 bug dropped store pages at random.** After reading a store's collections, pages and posts, pages last seen before the read began were deleted; the start time came from the app's clock and "last seen" from the database's. With the database a few milliseconds behind, the first page saved was deleted. Fixed: both come from the database. It made the writer's requests differ between runs, and very likely caused phase 2's unexplained Hungarian overlap failure.
+- **The reviewing model misread an answer field.** Asked to give each general-knowledge sentence's position in a field called "number", it gave the numbers themselves. Sentences are now referred to as G1, G2…
+- **The Anthropic library refuses** a request allowing more than about 21,000 output tokens unless streamed; the draft allows 20,000.
+
+## 2026-10-09 — Checkpoint 3 (two of ten articles; blocked on Anthropic credit)
+
+**What was built.** The write stage: evidence pack, plan call, draft call, the free checks, the blind reviewing model with its floors, one repair for any failure, hold with a reason, a second topic the same day after a hold; Markdown to HTML through `marked` with product cards that take the image closest to the card's 4:3 slot; the export zip; the Articles and Article screens and Home's Today in both languages; review-first approve and discard; the evals runner (`pnpm eval distillation|judge|writer`) with fresh cases, half English and half Hungarian, and a review page.
+
+**Scenarios that exist and pass (against fakes, from recordings):** a seeded draft is held, after exactly one repair, for an uncited product claim, an uncited number, a first-person experience sentence, an outside link, a price, and wrong-language output; a malformed model answer is retried once with the shape shown, then held; the reviewing model failing twice holds with the second set of notes; a draft failing a free check is repaired and passes; a held article gives the day one more topic, and a second hold ends the day; a topic whose products hold fewer than six facts is held without a model call; an approved article becomes ready, and a discarded one puts its topic on the not-interested list; the export zip holds the three files and the first download marks it exported; the published address must be on the store's domain; when the model service is down Home says so and the next day writes the topic; the rendered HTML of three article shapes (list-heavy, table, long-form) matches its snapshot and keeps its headings, list items, table rows and cards, with no marker or outside address left. Plus unit tests of every free check. 197 tests pass, 28 skipped (waiting for real Shopify recordings).
+
+**What to look at.** `docs/checkpoints/checkpoint-3-articles.html`. It has **2 of the 10 articles** (English "how to make cold brew coffee", Hungarian "zöld tea elkészítése"), both passed the gate after one repair, both graded publishable by the agent with notes. The other eight need Anthropic credit: `npx tsx scripts/checkpoint-3.ts --record`. The evals report the same: 2 of 20 writer cases recorded, none of the distillation or judge cases.
+
+**Agent's reading of it.** On the four real runs, every first draft had a problem, and the repair fixed it each time: two missed marks or citations, and two product claims the reviewer caught as stretched beyond their facts ("sits firmly on the mug" from a fact giving only the mug size). The reviewer accepted every general-knowledge number it was shown, including ones it noted as slightly loose; the founders' grading should say whether that is too permissive. The English article runs to about 1,600 words and could be trimmed; the Hungarian one links its main product six times.
+
+**Unverified.** Downloads from inside the Shopify admin frame; every reviewing-model floor until the founders grade the articles; Hungarian quality until a Hungarian reader grades it.
+
 ## Spend
 
 Running total of what this build has spent on the founders' keys.
@@ -181,5 +214,6 @@ Running total of what this build has spent on the founders' keys.
 | 2026-10-08 | DataForSEO | Checkpoint 2 again with phrasings: monthly searches for the two rich shops, their top ten | 0.19 |
 | 2026-10-08 | Anthropic | Topic prompt version 3 (wide menu of article kinds) across all scenarios (14 calls) | 0.58 |
 | 2026-10-08 | DataForSEO | Checkpoint 2 with version 3: monthly searches for the two rich shops, their top ten | 0.19 |
+| 2026-10-09 | Anthropic | Phase 3 recordings: articles planned, drafted, repaired and reviewed for the rich shops, and the seeded-flaw scenarios (51 calls), until the credit ran out | 4.49 |
 
-**Total: 3.23 USD** (Anthropic 2.66, DataForSEO 0.57). DataForSEO balance left: 0.26 USD. Anthropic figures are computed from the token counts in the committed recordings at 4 / 20 USD per million input / output tokens; DataForSEO figures from the account balance before and after.
+**Total: 7.72 USD** (Anthropic 7.15, DataForSEO 0.57). The Anthropic account is out of credit as of 2026-10-09. DataForSEO balance left: 0.26 USD. Anthropic figures are computed from the token counts in the committed recordings at 4 / 20 USD per million input / output tokens; DataForSEO figures from the account balance before and after.

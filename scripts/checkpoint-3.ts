@@ -14,5 +14,5 @@ const grades: Record<string, Grade> = existsSync(gradesFile) ? JSON.parse(readFi
 const missing = rows.filter((r) => r.outcome === 'not recorded').map((r) => `${r.id} (“${r.query}”)`)
 const intro = `<p class="lede">The first articles Sortiva writes, from the English and Hungarian rich fixture shops' top five topics each, with what the gate found. Grades are the agent's own reading, labelled as such, until the founders grade them; the build plan's bar is seven of ten publishable before phase 4.</p>
 ${missing.length ? `<p class="lede"><strong>Not written yet (${missing.length} of ${cases.length}):</strong> ${missing.join(', ')}. The Anthropic account ran out of credit during the build; these are written by re-running this page with <code>--record</code> once it is topped up.</p>` : ''}`
-writeFileSync('docs/checkpoints/checkpoint-3-articles.html', reviewPage('Checkpoint 3: the first articles', articles, grades, intro))
+writeFileSync('docs/checkpoints/checkpoint-3-articles.html', reviewPage('Checkpoint 3 Articles', articles, grades, intro))
 console.log(rows)

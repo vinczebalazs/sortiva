@@ -2,7 +2,9 @@
 
 Written for you by the building agent. Updated at the end of each phase. Everything below is in the order it unlocks work: each step lists what to do, the command to run afterwards, and what you should see. Nothing here needs you to read code.
 
-**Where things stand (8 October 2026, end of phase 2).** The app installs a store, reads its catalogue, turns each product into checked facts, drafts a store profile, takes the merchant through all four setup steps, finds article topics with real Google demand, keeps a queue with one topic a day, and shows Home, Products and Settings in English and Hungarian. All of it is proven against fakes; nothing has touched a real Shopify store yet, because none exists. Spend so far: 2.66 USD Anthropic, 0.57 USD DataForSEO (0.26 USD left on that account).
+**9 October 2026, end of phase 3: start with `docs/first-real-store.md`** (also published privately at https://claude.ai/artifact/JVgWgskVwBfjfZuZAAgC8B). It lists everything left before the pilot store, in order. **The Anthropic account is out of credit; please top it up first (about 50 USD).** Phase 3 added writing, the checks, the Articles screens, download and the evals; its checkpoint page (`docs/checkpoints/checkpoint-3-articles.html`) has 2 of its 10 articles until then.
+
+**Where things stood at the end of phase 2 (8 October 2026).** The app installs a store, reads its catalogue, turns each product into checked facts, drafts a store profile, takes the merchant through all four setup steps, finds article topics with real Google demand, keeps a queue with one topic a day, and shows Home, Products and Settings in English and Hungarian. All of it is proven against fakes; nothing has touched a real Shopify store yet, because none exists. Spend so far: 2.66 USD Anthropic, 0.57 USD DataForSEO (0.26 USD left on that account).
 
 ---
 
@@ -88,7 +90,7 @@ pnpm shopify app webhook trigger --topic products/update --address https://<tunn
 
 - **Connect PostHog** so vendor failures and low DataForSEO credit reach you (your decision of 8 October). Until then nobody on our side is told; the merchant sees a plain line on Home.
 
-- **Grade articles.** Checkpoint 3 produces a review page of ten articles, five per language; you and your co-founder grade them. The Hungarian half needs a Hungarian reader.
+- **Grade articles.** Checkpoint 3's review page (`docs/checkpoints/checkpoint-3-articles.html`) shows each article with what the checks and the reviewer found; you and your co-founder say which you would publish. The bar is seven of ten before phase 4. The Hungarian half needs a Hungarian reader. 2 of 10 are there until Anthropic is topped up.
 - **Search Console.** A Google Cloud project with the Search Console API, an OAuth consent screen, and one real property with search traffic, so the fake Google can be checked against a real recording.
 - **Look at three articles in the clean dev store's theme**, on desktop and phone (checkpoint 4).
 - **Railway project and domain** before anything is deployed. The agent does not deploy.

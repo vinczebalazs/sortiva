@@ -1,0 +1,895 @@
+[
+  {
+    "id": "hu-01",
+    "language": "hu",
+    "note": "Gazdag kávéfőző-leírás: űrtartalom, anyag, magasság, tűzhely-kompatibilitás és ápolás; a záró szlogen nem lehet tény.",
+    "product": {
+      "title": "Kotyogós kávéfőző, 3 csészés",
+      "product_type": "Kávéfőző",
+      "vendor": "Presszó Műhely",
+      "options": [
+        {
+          "name": "Szín",
+          "values": [
+            "Ezüst",
+            "Fekete"
+          ]
+        }
+      ],
+      "tags": [
+        "kávé",
+        "kotyogós",
+        "gáztűzhely"
+      ],
+      "metafields": [
+        {
+          "namespace": "custom",
+          "key": "anyag",
+          "value": "alumínium"
+        }
+      ],
+      "description_html": "<p>Klasszikus olasz formájú kotyogós kávéfőző, egyszerre 3 csésze (kb. 150 ml) eszpresszóhoz.</p><ul><li>Anyaga: öntött alumínium, bakelit fogantyúval</li><li>Magassága: 17 cm</li><li>Gáz-, elektromos és kerámialapos tűzhelyen használható, indukciós főzőlapon nem</li><li>Biztonsági szelep a tartályon</li></ul><p>Mosogatógépben ne mosd, csak meleg vízzel öblítsd el, mosogatószer nélkül. A tömítőgyűrűt évente érdemes cserélni.</p><p>Indítsd a reggelt igazi olasz életérzéssel!</p>"
+    },
+    "must": [
+      "150 ml",
+      "alumínium",
+      "17 cm",
+      "bakelit",
+      "indukció"
+    ],
+    "mustNot": [
+      "életérzés"
+    ]
+  },
+  {
+    "id": "hu-02",
+    "language": "hu",
+    "note": "Gazdag edényleírás tizedesvesszős űrtartalommal és tömeggel, sütőhőfokkal, ápolással és gyártási hellyel.",
+    "product": {
+      "title": "Öntöttvas lábas fedővel, 24 cm",
+      "product_type": "Lábas",
+      "vendor": "Vasvirág Konyha",
+      "options": [
+        {
+          "name": "Szín",
+          "values": [
+            "Meggypiros",
+            "Éjkék"
+          ]
+        }
+      ],
+      "tags": [
+        "öntöttvas",
+        "zománcozott",
+        "indukciós"
+      ],
+      "metafields": [],
+      "description_html": "<p>Zománcozott öntöttvas lábas, amely egyenletesen tartja a hőt lassú főzéshez, ragukhoz és kenyérsütéshez.</p><ul><li>Átmérő: 24 cm</li><li>Űrtartalom: 4,2 l</li><li>Tömeg fedővel: 5,1 kg</li><li>Sütőben 250 °C-ig használható</li><li>Minden tűzhelytípushoz, indukcióhoz is</li></ul><p>Kézi mosogatás ajánlott. Fémeszközt ne használj a zománcon, és a forró edényt ne tedd hideg vízbe. Gyártási hely: Csehország.</p><p>Egy edény, amit még az unokáid is használni fognak.</p>"
+    },
+    "must": [
+      "24 cm",
+      "4,2 l",
+      "5,1 kg",
+      "250 °C",
+      "Csehorsz"
+    ],
+    "mustNot": [
+      "unokáid"
+    ]
+  },
+  {
+    "id": "hu-03",
+    "language": "hu",
+    "note": "A műszaki adatok HTML-táblázatban vannak: töltet, töltőerő, tömeg és hossz mértékegységgel együtt kell, hogy megmaradjon.",
+    "product": {
+      "title": "Gerinc 700 pehely hálózsák",
+      "product_type": "Hálózsák",
+      "vendor": "Kőhát Outdoor",
+      "options": [
+        {
+          "name": "Méret",
+          "values": [
+            "Normál",
+            "Hosszú"
+          ]
+        }
+      ],
+      "tags": [
+        "túra",
+        "hálózsák",
+        "pehely"
+      ],
+      "metafields": [],
+      "description_html": "<p>Múmiaformájú pehely hálózsák háromévszakos túrákhoz.</p><table><tr><td>Komforthőmérséklet</td><td>–2 °C</td></tr><tr><td>Határhőmérséklet</td><td>–8 °C</td></tr><tr><td>Töltet</td><td>500 g kacsapehely, 700 cuin töltőerő</td></tr><tr><td>Teljes tömeg</td><td>1,1 kg</td></tr><tr><td>Hossz</td><td>210 cm (Hosszú: 225 cm)</td></tr><tr><td>Csomagméret</td><td>Ø 18 × 32 cm</td></tr></table><p>Kompressziós zsákkal és tárolózsákkal szállítjuk. Otthon mindig kiterítve vagy a tárolózsákban tárold. Pehelyhez való mosószerrel, 30 °C-on mosható.</p><p>Aludj úgy a hegyen, mint otthon!</p>"
+    },
+    "must": [
+      "500 g",
+      "700 cuin",
+      "1,1 kg",
+      "210 cm",
+      "kacsapehely"
+    ],
+    "mustNot": [
+      "mint otthon"
+    ]
+  },
+  {
+    "id": "hu-04",
+    "language": "hu",
+    "note": "Kerékpáros sisak védelmi rendszerrel, anyagokkal, szellőzőszámmal, tömeggel és szabvánnyal; a hangulatkeltő zárómondat kimarad.",
+    "product": {
+      "title": "Aero Trail kerékpáros sisak",
+      "product_type": "Kerékpáros sisak",
+      "vendor": "Láncszem Bike",
+      "options": [
+        {
+          "name": "Méret",
+          "values": [
+            "S (51–55 cm)",
+            "M (55–59 cm)",
+            "L (59–63 cm)"
+          ]
+        }
+      ],
+      "tags": [
+        "kerékpár",
+        "sisak",
+        "gravel"
+      ],
+      "metafields": [],
+      "description_html": "<p>Országúti és gravel kerékpározáshoz tervezett sisak MIPS forgásvédelmi rendszerrel.</p><ul><li>Héj: polikarbonát, a belső rész EPS hab</li><li>18 szellőzőnyílás</li><li>Tömege M méretben: 265 g</li><li>Szabvány: EN 1078</li><li>Hátul cserélhető, USB-C-ről tölthető LED-es villogó</li></ul><p>A párnázás kivehető és kézzel mosható. Esés után a sisakot cserélni kell, akkor is, ha nem látszik rajta sérülés.</p><p>Gurulj magabiztosan, bárhová is visz az út.</p>"
+    },
+    "must": [
+      "MIPS",
+      "polikarbonát",
+      "18 szellőző",
+      "265 g",
+      "EN 1078"
+    ],
+    "mustNot": [
+      "magabiztos"
+    ]
+  },
+  {
+    "id": "hu-05",
+    "language": "hu",
+    "note": "Kisállatfekhely habvastagsággal, huzatanyaggal, mosási hőfokkal, méretenkénti terhelhetőséggel és gyártási hellyel.",
+    "product": {
+      "title": "Ortopéd kutyafekhely levehető huzattal",
+      "product_type": "Kutyafekhely",
+      "vendor": "Mancsház",
+      "options": [
+        {
+          "name": "Méret",
+          "values": [
+            "M – 80 × 60 cm",
+            "L – 100 × 75 cm"
+          ]
+        },
+        {
+          "name": "Szín",
+          "values": [
+            "Grafit",
+            "Bézs"
+          ]
+        }
+      ],
+      "tags": [
+        "kutya",
+        "fekhely",
+        "ortopéd"
+      ],
+      "metafields": [],
+      "description_html": "<p>Idősebb és ízületi problémákkal küzdő kutyáknak készült fekhely 8 cm vastag memóriahab betéttel.</p><ul><li>Huzat: 100% poliészter velúr, cipzárral levehető</li><li>Alja: csúszásgátló, vízlepergető anyag</li><li>A huzat 40 °C-on gépben mosható, a habot ne mosd</li></ul><p>Az M méret 25 kg-ig, az L méret 45 kg-ig ajánlott. Magyarországon, Szegeden varrjuk.</p><p>Mert a kedvenced a legjobbat érdemli.</p>"
+    },
+    "must": [
+      "8 cm",
+      "memóriahab",
+      "40 °C",
+      "45 kg",
+      "Szeged"
+    ],
+    "mustNot": [
+      "legjobb",
+      "érdemli"
+    ]
+  },
+  {
+    "id": "hu-06",
+    "language": "hu",
+    "note": "Arckrém fényvédő faktorral, hatóanyag-százalékkal, kiszereléssel és felbontás utáni felhasználhatósággal.",
+    "product": {
+      "title": "Hidratáló nappali arckrém SPF 30",
+      "product_type": "Arckrém",
+      "vendor": "Zsálya Natúrkozmetikum",
+      "options": [],
+      "tags": [
+        "arcápolás",
+        "fényvédelem",
+        "illatmentes"
+      ],
+      "metafields": [
+        {
+          "namespace": "custom",
+          "key": "kiszereles",
+          "value": "50 ml"
+        }
+      ],
+      "description_html": "<p>Könnyű állagú nappali krém normál és vegyes bőrre, széles spektrumú UVA- és UVB-védelemmel.</p><ul><li>Fényvédő faktor: SPF 30</li><li>Hatóanyagok: 3% niacinamid, hialuronsav, sheavaj</li><li>Illatanyagmentes</li><li>Kiszerelés: 50 ml, pumpás flakon</li></ul><p>Reggel, a megtisztított arcbőrre vidd fel, a szemkörnyéket kerüld. Felbontás után 12 hónapig használható. Bőrgyógyászatilag tesztelt.</p><p>Ragyogó bőr minden nap!</p>"
+    },
+    "must": [
+      "SPF 30",
+      "3% niacinamid",
+      "50 ml",
+      "12 hónap",
+      "sheavaj"
+    ],
+    "mustNot": [
+      "ragyogó"
+    ]
+  },
+  {
+    "id": "hu-07",
+    "language": "hu",
+    "note": "Termelői méz eredettel, évjárattal, töltési hőfokkal, nettó tömeggel és csecsemőkre vonatkozó figyelmeztetéssel; a nosztalgikus szlogen kimarad.",
+    "product": {
+      "title": "Mátrai akácméz, 500 g",
+      "product_type": "Méz",
+      "vendor": "Hegyalja Méhészet",
+      "options": [],
+      "tags": [
+        "méz",
+        "termelői",
+        "akác"
+      ],
+      "metafields": [
+        {
+          "namespace": "custom",
+          "key": "szarmazas",
+          "value": "Magyarország, Mátra"
+        }
+      ],
+      "description_html": "<p>Termelői akácméz a Mátra déli lejtőiről, a 2026-os májusi pergetésből. Saját méhészetünkben pergetjük, hőkezelés nélkül, 40 °C alatt töltjük üvegbe.</p><p>Az akácméz magas gyümölcscukor-tartalma miatt sokáig folyékony marad, lassan kristályosodik. Ha mégis kikristályosodna, langyos vízfürdőben visszaolvasztható.</p><p>Nettó tömeg: 500 g, üvegben, csavaros fedéllel. 1 éves kor alatti gyermeknek nem adható. Száraz, hűvös helyen, fénytől védve tárold.</p><p>Az igazi hazai íz, ahogy a nagymama is szerette.</p>"
+    },
+    "must": [
+      "Mátra",
+      "500 g",
+      "40 °C",
+      "2026",
+      "1 éves"
+    ],
+    "mustNot": [
+      "nagymama",
+      "igazi hazai"
+    ]
+  },
+  {
+    "id": "hu-08",
+    "language": "hu",
+    "note": "Fajáték darabszámmal, fafajjal, tizedesvesszős méretekkel, biztonsági szabvánnyal és a készítés helyével.",
+    "product": {
+      "title": "Építőkocka készlet, 60 db",
+      "product_type": "Fajáték",
+      "vendor": "Fakopáncs Játékműhely",
+      "options": [],
+      "tags": [
+        "fajáték",
+        "3 éves kortól"
+      ],
+      "metafields": [],
+      "description_html": "<p>60 darabos építőkocka készlet natúr és színes elemekkel, vászonzsákban.</p><ul><li>Anyaga: tömör bükkfa</li><li>A legkisebb elem 2,5 × 2,5 × 2,5 cm</li><li>Vízbázisú, az EN 71-3 szabványnak megfelelő festékkel festve</li><li>3 éves kortól ajánlott</li></ul><p>Nedves ruhával tisztítható, vízbe áztatni nem szabad. Kézzel csiszoljuk és festjük a kecskeméti műhelyünkben.</p><p>Fejleszti a kreativitást, és órákig leköti a gyerekeket!</p>"
+    },
+    "must": [
+      "60",
+      "bükk",
+      "2,5 × 2,5 × 2,5 cm",
+      "EN 71-3",
+      "kecskemét"
+    ],
+    "mustNot": [
+      "kreativitás",
+      "órákig"
+    ]
+  },
+  {
+    "id": "hu-09",
+    "language": "hu",
+    "note": "Lakástextil anyagösszetétellel, szálsűrűséggel, párnahuzat-mérettel, mosási hőfokkal, zsugorodással és származással.",
+    "product": {
+      "title": "Pamut szatén ágyneműhuzat-garnitúra",
+      "product_type": "Ágyneműhuzat",
+      "vendor": "Lenvirág Lakástextil",
+      "options": [
+        {
+          "name": "Méret",
+          "values": [
+            "140 × 200 cm",
+            "200 × 220 cm"
+          ]
+        },
+        {
+          "name": "Szín",
+          "values": [
+            "Fehér",
+            "Galambszürke"
+          ]
+        }
+      ],
+      "tags": [
+        "ágynemű",
+        "pamut"
+      ],
+      "metafields": [],
+      "description_html": "<p>A garnitúra egy paplanhuzatból és két párnahuzatból áll.</p><ul><li>Anyaga: 100% pamut szatén, 300-as szálsűrűség</li><li>Párnahuzat: 70 × 90 cm</li><li>Patentos záródás a paplanhuzaton, füles záródás a párnahuzatokon</li><li>Oeko-Tex Standard 100 tanúsítvány</li></ul><p>60 °C-on mosható, alacsony hőfokon szárítógépbe tehető. Első mosáskor 2–3% méretváltozás előfordulhat. Portugáliában szőtt anyagból varrjuk.</p><p>Varázsold hálószobádat ötcsillagos szállodává!</p>"
+    },
+    "must": [
+      "100% pamut",
+      "300",
+      "70 × 90 cm",
+      "60 °C",
+      "Portugáli"
+    ],
+    "mustNot": [
+      "varázsold",
+      "ötcsillagos"
+    ]
+  },
+  {
+    "id": "hu-10",
+    "language": "hu",
+    "note": "Sporteszköz méretekkel, anyagokkal, tizedesvesszős tömeggel és terhelhetőséggel; a teljesíthetetlen ígéret kimarad.",
+    "product": {
+      "title": "SMR masszázshenger, 33 cm",
+      "product_type": "Masszázshenger",
+      "vendor": "Ászana Sport",
+      "options": [
+        {
+          "name": "Keménység",
+          "values": [
+            "Közepes",
+            "Kemény"
+          ]
+        }
+      ],
+      "tags": [
+        "edzés",
+        "regeneráció"
+      ],
+      "metafields": [],
+      "description_html": "<p>Bordázott felületű SMR henger izomlazításhoz, edzés előtt és után.</p><ul><li>Hossz: 33 cm, átmérő: 14 cm</li><li>Mag: üreges ABS műanyag cső</li><li>Borítás: 1,5 cm vastag EVA hab</li><li>Terhelhetőség: 150 kg</li><li>Tömeg: 0,7 kg</li></ul><p>Langyos, szappanos vízzel tisztítható. Friss sérülésre, gyulladt ízületre ne használd. A kemény változat haladóknak ajánlott.</p><p>Felejtsd el az izomlázat örökre!</p>"
+    },
+    "must": [
+      "33 cm",
+      "14 cm",
+      "EVA",
+      "150 kg",
+      "0,7 kg"
+    ],
+    "mustNot": [
+      "izomláz",
+      "örökre"
+    ]
+  },
+  {
+    "id": "hu-11",
+    "language": "hu",
+    "note": "Fűszer eredetvédett származással, évjárattal, színértékkel, nettó tömeggel és használati figyelmeztetéssel.",
+    "product": {
+      "title": "Kalocsai csemege fűszerpaprika-őrlemény, 100 g",
+      "product_type": "Fűszer",
+      "vendor": "Paprikaház",
+      "options": [],
+      "tags": [
+        "fűszer",
+        "paprika",
+        "hungarikum"
+      ],
+      "metafields": [
+        {
+          "namespace": "custom",
+          "key": "eredetvedelem",
+          "value": "Kalocsai fűszerpaprika-őrlemény OEM"
+        }
+      ],
+      "description_html": "<p>Eredetvédett kalocsai fűszerpaprika a 2025-ös termésből, csemege (nem csípős) változatban.</p><ul><li>Színérték: legalább 120 ASTA</li><li>Nettó tömeg: 100 g</li><li>Összetevő: 100% őrölt fűszerpaprika, adalékanyag nélkül</li></ul><p>Visszazárható, fénytől védő tasakban. Fénytől és nedvességtől védve, szobahőmérsékleten tárold. Forró olajba csak a tűzről levéve szórd, mert könnyen megég és megkeseredik.</p><p>Nincs igazi pörkölt nélküle!</p>"
+    },
+    "must": [
+      "Kalocsa",
+      "120 ASTA",
+      "100 g",
+      "2025",
+      "csemege"
+    ],
+    "mustNot": [
+      "igazi pörkölt"
+    ]
+  },
+  {
+    "id": "hu-12",
+    "language": "hu",
+    "note": "Lábbeli nevesített anyagokkal és alkatrészekkel, darabonkénti tömeggel, méretválasztási tanáccsal és újratalpalhatósággal.",
+    "product": {
+      "title": "Kőris Mid GTX túrabakancs",
+      "product_type": "Bakancs",
+      "vendor": "Kőhát Outdoor",
+      "options": [
+        {
+          "name": "Méret",
+          "values": [
+            "39",
+            "40",
+            "41",
+            "42",
+            "43",
+            "44",
+            "45"
+          ]
+        }
+      ],
+      "tags": [
+        "túra",
+        "bakancs",
+        "vízálló"
+      ],
+      "metafields": [],
+      "description_html": "<p>Középmagas szárú bakancs egy- és többnapos túrákra, köves terepre.</p><ul><li>Felsőrész: 2 mm vastag nubukbőr</li><li>Membrán: GORE-TEX vízálló bélés</li><li>Talp: Vibram gumitalp, 5 mm-es bordázattal</li><li>Tömeg: 610 g/db (42-es méret)</li></ul><p>Vastag túrazoknihoz fél számmal nagyobbat érdemes választani. Használat után kefével tisztítsd, a bőrt rendszeresen kezeld viasszal. A bakancs újratalpalható.</p><p>Hódítsd meg a csúcsokat!</p>"
+    },
+    "must": [
+      "nubuk",
+      "GORE-TEX",
+      "Vibram",
+      "610 g",
+      "újratalpal"
+    ],
+    "mustNot": [
+      "hódítsd"
+    ]
+  },
+  {
+    "id": "hu-13",
+    "language": "hu",
+    "note": "Trükkös számok: háromrészes szálösszetétel százalékokkal és tizedesvesszős mikronérték, pontosan megtartva; kitalált 100% nem jelenhet meg.",
+    "product": {
+      "title": "Merinó túrazokni, 2 pár",
+      "product_type": "Zokni",
+      "vendor": "Gyapjúkuckó",
+      "options": [
+        {
+          "name": "Méret",
+          "values": [
+            "35–38",
+            "39–42",
+            "43–46"
+          ]
+        }
+      ],
+      "tags": [
+        "merinó",
+        "túra",
+        "zokni"
+      ],
+      "metafields": [],
+      "description_html": "<p>Közepes vastagságú túrazokni, teljes talpon párnázott.</p><p>Összetétel: 71% merinógyapjú, 26% poliamid, 3% elasztán. A merinószál vastagsága 18,5 mikron. A sarok és az orr megerősített, a szár 14 cm magas. Egy csomagban 2 pár található. 30 °C-on, kifordítva mosható, szárítógépbe ne tedd.</p>"
+    },
+    "must": [
+      "71% merinó",
+      "26% poliamid",
+      "3% elasztán",
+      "18,5 mikron",
+      "2 pár"
+    ],
+    "mustNot": [
+      "100%"
+    ]
+  },
+  {
+    "id": "hu-14",
+    "language": "hu",
+    "note": "Trükkös számok: tizedesvesszős űrtartalom, csészetartomány, kétirányú méret, grammtartomány és törtszámos perctartomány pontosan megtartva.",
+    "product": {
+      "title": "Dugattyús kávéfőző (French press), 0,35 l",
+      "product_type": "Kávéfőző",
+      "vendor": "Presszó Műhely",
+      "options": [],
+      "tags": [
+        "kávé",
+        "french press"
+      ],
+      "metafields": [],
+      "description_html": "<p>Hőálló boroszilikát üveg kancsó rozsdamentes acél kerettel és háromrétegű acélszűrővel.</p><ul><li>Űrtartalom: 0,35 l, ez 1–3 csészényi kávé</li><li>Méret: Ø 9 × 18,5 cm</li><li>Ajánlott adag: 7–8 g durvára őrölt kávé 120 ml vízhez</li><li>Áztatási idő: 3½–4 perc</li></ul><p>Az üvegkancsó mosogatógépben mosható, a keretet kézzel mosd. Pótüveg külön is rendelhető.</p><p>A kávézás új szintje.</p>"
+    },
+    "must": [
+      "0,35 l",
+      "1–3 csész",
+      "9 × 18,5 cm",
+      "7–8 g",
+      "3½–4 perc"
+    ],
+    "mustNot": [
+      "új szint"
+    ]
+  },
+  {
+    "id": "hu-15",
+    "language": "hu",
+    "note": "Vegyes: az űrtartalom, a hőtartási idők és az acélminőség ugyanabban a mondatban áll a népszerűségi és kalandos ígéretekkel.",
+    "product": {
+      "title": "Hőtartó kulacs, 0,5 l",
+      "product_type": "Kulacs",
+      "vendor": "Kőhát Outdoor",
+      "options": [
+        {
+          "name": "Szín",
+          "values": [
+            "Fenyőzöld",
+            "Homok",
+            "Fekete"
+          ]
+        }
+      ],
+      "tags": [
+        "kulacs",
+        "termosz"
+      ],
+      "metafields": [],
+      "description_html": "<p>Vásárlóink kedvenc 0,5 literes kulacsa, amelyet túrázók ezrei imádnak: duplafalú vákuumszigetelésének köszönhetően az italt 24 órán át hidegen, 12 órán át melegen tartja. A lenyűgöző, porszórt felületű test 18/8-as rozsdamentes acélból készül. A cseppmentes kupak bármilyen kalandra kész, és mosogatógépben mosható, a palackot viszont kézzel mosd.</p>"
+    },
+    "must": [
+      "0,5 l",
+      "24 ór",
+      "12 ór",
+      "18/8",
+      "rozsdamentes"
+    ],
+    "mustNot": [
+      "kedvenc",
+      "imád",
+      "lenyűgöző",
+      "kaland"
+    ]
+  },
+  {
+    "id": "hu-16",
+    "language": "hu",
+    "note": "Vegyes: az alom térfogata, anyaga, kitartása és rétegvastagsága dicsérő és homályos összehasonlító állítások között áll.",
+    "product": {
+      "title": "Csomósodó bentonit macskaalom, 10 l",
+      "product_type": "Macskaalom",
+      "vendor": "Cicapalota",
+      "options": [],
+      "tags": [
+        "macska",
+        "alom"
+      ],
+      "metafields": [],
+      "description_html": "<p>A cicák egyszerűen imádják ezt a prémium almot, amely garantáltan szagmentes otthont varázsol. A 10 literes zsákban finomszemcsés bentonit található, amely kemény csomókká áll össze, így könnyen kilapátolható. Egy macska mellett nagyjából 4 hétig elegendő, ha az alomtálcában 5–7 cm vastagon terítjük el. Sokkal kíméletesebb, mint a hagyományos almok. WC-be ne öntsd.</p>"
+    },
+    "must": [
+      "10 l",
+      "bentonit",
+      "4 hét",
+      "5–7 cm"
+    ],
+    "mustNot": [
+      "imád",
+      "prémium",
+      "szagmentes",
+      "kíméletesebb"
+    ]
+  },
+  {
+    "id": "hu-17",
+    "language": "hu",
+    "note": "Vegyes: a fűmag összetétele, kiszórási aránya, vetési hőmérséklete és csírázási ideje garanciákkal és dicsérettel keveredik.",
+    "product": {
+      "title": "Árnyéktűrő fűmagkeverék, 1 kg",
+      "product_type": "Fűmag",
+      "vendor": "Zöldkert Magház",
+      "options": [],
+      "tags": [
+        "kert",
+        "gyep",
+        "árnyék"
+      ],
+      "metafields": [],
+      "description_html": "<p>A kertészek kedvenc keveréke, amellyel garantáltan irigylésre méltó, smaragdzöld gyep lesz a fák alatt is. Összetétele: 40% vörös csenkesz, 30% réti perje, 20% erdei perje, 10% angolperje. 1 kg mag 30–40 m² bevetéséhez elegendő. Vetés ideje: március–május vagy augusztus vége–október, legalább 10 °C-os talajhőmérséklet mellett. A csírázás 10–21 napot vesz igénybe, addig tartsd a talajt folyamatosan nedvesen.</p>"
+    },
+    "must": [
+      "40% vörös csenkesz",
+      "30–40 m",
+      "10 °C",
+      "10–21 nap",
+      "1 kg"
+    ],
+    "mustNot": [
+      "kedvenc",
+      "irigylésre",
+      "smaragdzöld",
+      "garantált"
+    ]
+  },
+  {
+    "id": "hu-18",
+    "language": "hu",
+    "note": "Vegyes: a mez anyagösszetétele, cipzárja és mosási utasítása a profikra hivatkozó és kényelmet ígérő mondatokba van ágyazva.",
+    "product": {
+      "title": "Climb rövid ujjú kerékpáros mez",
+      "product_type": "Kerékpáros mez",
+      "vendor": "Láncszem Bike",
+      "options": [
+        {
+          "name": "Méret",
+          "values": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+          ]
+        }
+      ],
+      "tags": [
+        "kerékpár",
+        "mez",
+        "nyári"
+      ],
+      "metafields": [],
+      "description_html": "<p>A profik választása, ha a legmelegebb hegyi napokon is hűvösen akarsz tekerni: a mez anyaga 85% újrahasznosított poliészter és 15% elasztán, a hátán három zseb és egy cipzáras értékzseb van. Az elöl végigfutó, két irányban nyitható YKK cipzár jó szellőzést ad, a fényvisszaverő csíkok hátul vannak. Hihetetlenül kényelmes, tényleg elfelejted, hogy rajtad van. 30 °C-on, kifordítva, öblítő nélkül mosható.</p>"
+    },
+    "must": [
+      "85% újrahasznosított poliészter",
+      "15% elasztán",
+      "YKK",
+      "30 °C"
+    ],
+    "mustNot": [
+      "profik",
+      "hihetetlen",
+      "elfelejted"
+    ]
+  },
+  {
+    "id": "hu-19",
+    "language": "hu",
+    "note": "Tiszta marketingszöveg: díszpárna csak hangulattal és ajándékötlettel leírva, ellenőrizhető állítás nélkül.",
+    "product": {
+      "title": "Felhő díszpárna",
+      "product_type": "Díszpárna",
+      "vendor": "Lenvirág Lakástextil",
+      "options": [],
+      "tags": [
+        "otthon",
+        "ajándék"
+      ],
+      "metafields": [],
+      "description_html": "<p>Varázsolj meghitt hangulatot a nappaliba! A Felhő díszpárna az a kis plusz, amitől minden kanapé igazi kuckóvá válik. Bújj hozzá egy hosszú nap után, és érezd, ahogy elszáll a fáradtság. Időtlen eleganciája bármilyen enteriőrbe illik, a skandináv stílustól a bohém lakásokig. Tökéletes ajándék mindenkinek, aki szereti a szépet – vagyis mindenkinek.</p>"
+    },
+    "must": [],
+    "mustNot": [
+      "meghitt",
+      "kuckó",
+      "időtlen",
+      "tökéletes"
+    ]
+  },
+  {
+    "id": "hu-20",
+    "language": "hu",
+    "note": "Tiszta marketingszöveg: bögre reggeli hangulatként leírva, anyag, űrtartalom és ápolás nélkül.",
+    "product": {
+      "title": "Csendes reggel bögre",
+      "product_type": "Bögre",
+      "vendor": "Agyagpille Kerámia",
+      "options": [],
+      "tags": [
+        "bögre",
+        "tea"
+      ],
+      "metafields": [],
+      "description_html": "<p>Vannak reggelek, amikor egy tea több, mint egy ital. A Csendes reggel bögre azoknak készült, akik tudják, milyen értékes az a néhány perc, amíg a nap első sugarai átszűrődnek az ablakon. Úgy simul a kézbe, mintha mindig is a tiéd lett volna, és minden kortyot egy kicsit különlegesebbé tesz. Kezdd így a napot. Megérdemled.</p>"
+    },
+    "must": [],
+    "mustNot": [
+      "simul a kézbe",
+      "különlegesebb",
+      "megérdemled"
+    ]
+  },
+  {
+    "id": "hu-21",
+    "language": "hu",
+    "note": "Tiszta marketingszöveg: testápoló összetevők és kiszerelés nélkül, csak érzésekkel és vásárlói lelkesedéssel.",
+    "product": {
+      "title": "Bársony testápoló",
+      "product_type": "Testápoló",
+      "vendor": "Zsálya Natúrkozmetikum",
+      "options": [],
+      "tags": [
+        "testápolás"
+      ],
+      "metafields": [],
+      "description_html": "<p>Kényeztesd magad minden nap! A Bársony testápoló olyan, mint egy ölelés a bőrödnek: selymes, puha és ellenállhatatlan. Vásárlóink szerint egyszerűen nem lehet abbahagyni. Engedd, hogy a mindennapi rutinod egy kis luxussá váljon, és élvezd a bőröd hálás ragyogását. Mert megérdemled.</p>"
+    },
+    "must": [],
+    "mustNot": [
+      "ölelés",
+      "ellenállhatatlan",
+      "luxus",
+      "ragyog"
+    ]
+  },
+  {
+    "id": "hu-22",
+    "language": "hu",
+    "note": "A tények csak a metamezőkben vannak: anyagösszetétel, belső szárhossz és mosási hőfok, miközben a leírás csak hangulat.",
+    "product": {
+      "title": "Tempó futó rövidnadrág",
+      "product_type": "Rövidnadrág",
+      "vendor": "Lépték Sport",
+      "options": [
+        {
+          "name": "Méret",
+          "values": [
+            "XS",
+            "S",
+            "M",
+            "L",
+            "XL"
+          ]
+        },
+        {
+          "name": "Szín",
+          "values": [
+            "Fekete",
+            "Sötétkék"
+          ]
+        }
+      ],
+      "tags": [
+        "futás",
+        "fényvisszaverő"
+      ],
+      "metafields": [
+        {
+          "namespace": "custom",
+          "key": "anyagosszetetel",
+          "value": "90% újrahasznosított poliamid, 10% elasztán"
+        },
+        {
+          "namespace": "custom",
+          "key": "belso_szarhossz",
+          "value": "12 cm"
+        },
+        {
+          "namespace": "custom",
+          "key": "apolas",
+          "value": "30 °C-on mosható, vasalni tilos"
+        }
+      ],
+      "description_html": "<p>Futás, szabadság, lendület. A Tempó nadrágban minden kilométer könnyebbnek tűnik, legyen szó egy laza reggeli kocogásról vagy életed első maratonjáról. Pehelykönnyű érzés, amit ha egyszer kipróbálsz, soha többé nem akarsz mást.</p><p>Hajnali edzésre, esti városi körre vagy a hétvégi hosszú futásra – a Tempó mindenhová veled tart, és minden lépésnél ott van, ahol kell.</p>"
+    },
+    "must": [
+      "90% újrahasznosított poliamid",
+      "10% elasztán",
+      "12 cm",
+      "30 °C"
+    ],
+    "mustNot": [
+      "szabadság",
+      "pehelykönnyű",
+      "könnyebbnek"
+    ]
+  },
+  {
+    "id": "hu-23",
+    "language": "hu",
+    "note": "A tények csak a metamezőkben és opciókban vannak: anyag, szabvány és gyártási hely, a leírás csak dicséret.",
+    "product": {
+      "title": "Kerti munkakesztyű",
+      "product_type": "Kesztyű",
+      "vendor": "Zöldkert Magház",
+      "options": [
+        {
+          "name": "Méret",
+          "values": [
+            "7 (S)",
+            "8 (M)",
+            "9 (L)",
+            "10 (XL)"
+          ]
+        }
+      ],
+      "tags": [
+        "kert",
+        "metszés"
+      ],
+      "metafields": [
+        {
+          "namespace": "custom",
+          "key": "anyag",
+          "value": "Kecskebőr tenyérrész, pamut kézhát"
+        },
+        {
+          "namespace": "custom",
+          "key": "szabvany",
+          "value": "EN 388"
+        },
+        {
+          "namespace": "custom",
+          "key": "gyartasi_hely",
+          "value": "Pakisztán"
+        }
+      ],
+      "description_html": "<p>Kertészkedj kedvedre! Ez a kesztyű lesz a legjobb barátod a kertben, legyen szó ültetésről, gyomlálásról vagy a rózsák metszéséről. Olyan kényelmes, mint egy második bőr, ráadásul stílusos is.</p><p>Tavasszal, nyáron és ősszel egyaránt hű társad lesz, hogy a kerti munka végre igazi örömforrás legyen. Ajándéknak is remek választás minden kertbarátnak.</p>"
+    },
+    "must": [
+      "kecskebőr",
+      "pamut",
+      "EN 388",
+      "Pakisztán"
+    ],
+    "mustNot": [
+      "legjobb barát",
+      "második bőr",
+      "stílusos"
+    ]
+  },
+  {
+    "id": "hu-24",
+    "language": "hu",
+    "note": "Ár a leírásban: a sütőforma méretei, anyaga és hőállósága tény, az akciós és az eredeti ár soha nem jelenhet meg.",
+    "product": {
+      "title": "Szilikon muffinsütő forma, 12 adagos",
+      "product_type": "Sütőforma",
+      "vendor": "Vasvirág Konyha",
+      "options": [],
+      "tags": [
+        "sütés",
+        "szilikon"
+      ],
+      "metafields": [],
+      "description_html": "<p><strong>Most csak 2 790 Ft 3 490 Ft helyett!</strong></p><p>12 adagos muffinsütő forma élelmiszeripari, BPA-mentes szilikonból.</p><ul><li>Külső méret: 34 × 25 × 3 cm</li><li>Egy mélyedés átmérője: 7 cm</li><li>Hőállóság: –40 °C-tól 230 °C-ig</li></ul><p>Sütőben, mikrohullámú sütőben és fagyasztóban is használható, mosogatógépben mosható. Első használat előtt mosd el, és vékonyan kend ki olajjal.</p>"
+    },
+    "must": [
+      "12 adagos",
+      "34 × 25 × 3 cm",
+      "7 cm",
+      "230 °C",
+      "BPA"
+    ],
+    "mustNot": [
+      "2 790",
+      "3 490"
+    ]
+  },
+  {
+    "id": "hu-25",
+    "language": "hu",
+    "note": "Kedvezmény és ár a leírásban: a játékosszám, korhatár, játékidő és tartalom tény, a kedvezmény mértéke, az ár és a garancia nem.",
+    "product": {
+      "title": "Folyók és hidak – családi társasjáték",
+      "product_type": "Társasjáték",
+      "vendor": "Kockavár Kiadó",
+      "options": [],
+      "tags": [
+        "társasjáték",
+        "család"
+      ],
+      "metafields": [],
+      "description_html": "<p>-25% kedvezmény a hónap végéig, a kosárban már a csökkentett ár (5 240 Ft) jelenik meg!</p><p>Stratégiai családi társasjáték 2–5 játékos részére, 8 éves kortól. Egy játék időtartama 30–45 perc. A dobozban: 1 kétoldalas játéktábla, 60 hídlapka, 5 × 12 fa játékfigura, 1 pontozótömb és magyar nyelvű szabálykönyv. Magyarországon tervezték és gyártották.</p><p>A közös családi esték új kedvence, garantáltan!</p>"
+    },
+    "must": [
+      "2–5 játékos",
+      "8 éves",
+      "30–45 perc",
+      "60 hídlapka",
+      "5 × 12"
+    ],
+    "mustNot": [
+      "25%",
+      "5 240",
+      "garantált",
+      "kedvence"
+    ]
+  }
+]
