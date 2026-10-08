@@ -86,6 +86,8 @@ pnpm shopify app webhook trigger --topic products/update --address https://<tunn
 
 ## 4. Later phases (the agent will fill these in)
 
+- **Connect PostHog** so vendor failures and low DataForSEO credit reach you (your decision of 8 October). Until then nobody on our side is told; the merchant sees a plain line on Home.
+
 - **Grade articles.** Checkpoint 3 produces a review page of ten articles, five per language; you and your co-founder grade them. The Hungarian half needs a Hungarian reader.
 - **Search Console.** A Google Cloud project with the Search Console API, an OAuth consent screen, and one real property with search traffic, so the fake Google can be checked against a real recording.
 - **Look at three articles in the clean dev store's theme**, on desktop and phone (checkpoint 4).

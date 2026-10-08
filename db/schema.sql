@@ -38,7 +38,11 @@ create table store_flags (
   budget_paused_on date,
   permissions_lost text[] not null default '{}',
   blog_missing boolean not null default false,
-  gsc_disconnected boolean not null default false
+  gsc_disconnected boolean not null default false,
+  -- Topic-finding could not finish (a vendor failed or refused). Cleared by the next run that does.
+  -- The reason is for us; the merchant sees a plain line on Home without vendor details.
+  topics_failed_at timestamptz,
+  topics_failure text
 );
 
 create table gsc_connections (

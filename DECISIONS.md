@@ -116,7 +116,7 @@ Asked at the start of phase 2; answered in the session.
 - **"Skip this one"** on today's topic takes it out of the queue without marking it "not interested", so a later search may propose it again; if it had already taken today's slot, today stays empty.
 - **A pause on the day's run is final for that day.** If the shop is paused at its publish hour, the day is recorded as skipped with the reason and is not made up later the same day.
 - **Search answers are reused for 30 days (volumes) and 7 days (top results)**, then fetched again, never served stale (rule 8).
-- **When DataForSEO cannot answer** (including an empty balance), topic-finding stops and is retried; it never continues without the numbers. No banner exists for this in `mvp-ui.md`; the queue simply does not grow. Worth a decision before launch.
+- **When DataForSEO cannot answer** (including an empty balance), topic-finding stops and is retried; it never continues without the numbers. What the merchant sees was decided later the same day ("how failures surface").
 - **Changing the article language** in Settings takes waiting topics in the old language out of the queue and searches again.
 - **"Create a blog called 'Blog'"** in setup step 4 is recorded as the merchant's choice; the blog is created when auto-publish is built in phase 4.
 
@@ -141,6 +141,10 @@ DataForSEO's instant ("live") top-ten request answers this account only with "50
 Answering checkpoint 2's open question, the founder chose phrasings. The topic prompt (version 2) asks for two or three ways a shopper would search for each article; all of them go into the single demand request, and each topic keeps its most-searched phrasing. On the same two rich shops the queue grew from 8 to 18 of about 35 proposed topics.
 
 The founder also asked for title matching to be a rough word check with the model making the final call. The word check now only flags existing blog posts and pages that share a meaningful word with any phrasing of a topic (ignoring shop-wide words); one model call per topic search then decides, for the flagged topics, whether one of those posts already answers it, and may name only a post it was shown. "Add a topic" does the same before asking about product facts. If that call fails, topic-finding stops and retries; it does not fall back to the word check alone (rule 8). In a test of ten cases, five per language, the model matched the expected answer every time, including Hungarian word forms the word check could not link.
+
+## 2026-10-08 — Founder: how failures surface
+
+Asked how errors reach people. **The merchant:** when topic-finding cannot finish because a service we rely on fails (DataForSEO out of credit, the model refusing, a network fault), Home says so in one plain line, naming no vendor: "We couldn't look for new topics today because a service we rely on didn't respond. We'll try again tomorrow. Topics already in your queue are still written." It replaces the endless "Finding topics…" and the untrue "Nothing worth writing this week". It is a line, not a banner, because writing continues. The queue retries five times within about a minute, then the next daily run sends topic-finding out again. "Add a topic" answers any unexpected failure with "Something went wrong… try again later" instead of hanging. **The founders:** will connect PostHog to learn about vendor failures and low DataForSEO credit. Not built yet; **remember it** (it is on the founders' list and in the handoff). Until then the reason is kept for us in `store_flags.topics_failure`, with `topics_failed_at`, and in the job's last error. PostHog stays out of the control path: it observes, it never decides.
 
 ## Spend
 

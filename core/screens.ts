@@ -10,20 +10,23 @@ export type HomeState = {
   thin: ThinState
   /** True while the first topic search after setup has not finished yet, unless a pause is holding it. */
   findingTopics: boolean
+  /** The last topic search failed on our side; Home says so plainly instead of implying there is nothing to write. */
+  topicsUnavailable: boolean
   publishHour: number
   today: Today
   upNext: QueuedTopic[]
 }
 
 export async function homeState(db: Db, storeId: number, now = new Date()): Promise<HomeState> {
-  const { rows } = await db.query<{ limited: boolean; finding: boolean; publish_hour: number }>(
+  const { rows } = await db.query<{ limited: boolean; finding: boolean; failed: boolean; publish_hour: number }>(
     `select not exists (select 1 from gsc_connections g where g.store_id = s.id and g.connected_at is not null and g.disconnected_at is null) as limited,
-            s.topics_discovered_at is null as finding, s.publish_hour
-     from stores s where s.id = $1`,
+            s.topics_discovered_at is null as finding, f.topics_failed_at is not null as failed, s.publish_hour
+     from stores s join store_flags f on f.store_id = s.id where s.id = $1`,
     [storeId],
   )
   const queue = await homeQueue(db, storeId, now)
-  return { limited: rows[0]!.limited, thin: await thinState(db, storeId), findingTopics: rows[0]!.finding && (await pauseReason(db, storeId)) === null, publishHour: rows[0]!.publish_hour, ...queue }
+  return { limited: rows[0]!.limited, thin: await thinState(db, storeId), findingTopics: rows[0]!.finding && !rows[0]!.failed && (await pauseReason(db, storeId)) === null,
+    topicsUnavailable: rows[0]!.failed, publishHour: rows[0]!.publish_hour, ...queue }
 }
 
 export type ProductRow = {

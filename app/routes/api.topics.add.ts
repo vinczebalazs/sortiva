@@ -17,6 +17,8 @@ export async function action({ request }: ActionFunctionArgs) {
       return Response.json({ kind: 'budget' }, { status: 409 })
     }
     if (error instanceof DemandUnavailableError) return Response.json({ kind: 'unavailable' }, { status: 503 })
-    throw error
+    // A refusal, a malformed answer twice, or anything unexpected: the merchant gets a plain message, we get the log.
+    console.error('add topic failed', { storeId, error })
+    return Response.json({ kind: 'error' }, { status: 500 })
   }
 }

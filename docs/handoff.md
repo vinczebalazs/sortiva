@@ -42,6 +42,10 @@ Write (evidence pack from fact sheets only, plan call, draft call, deterministic
 
 ## Things the next session must know
 
+- **One unexplained failure to watch:** `scenarios/topics/overlap.test.ts` (Hungarian half) failed once in a full run after about 30 seconds and passed on every rerun; its message was not captured. If it recurs, capture the error before rerunning.
+
+- **PostHog for failures is promised but not built.** The founders will connect PostHog to learn about vendor failures and low DataForSEO credit (DECISIONS, "how failures surface"). Keep every vendor failure recorded where it can be sent on later (today: `store_flags.topics_failure`, the job's last error, `vendor_calls` rows with status failed). PostHog observes; it never decides anything.
+
 - **DataForSEO balance is 0.45 USD** (was 0.82). Checked 2026-10-08 with the free `GET /v3/appendix/user_data`. Search volume (`keywords_data/google_ads/search_volume/live`) costs 0.09 USD per request, for up to 1,000 keywords, so batch every store's candidates into one request. The price of the top-ten results call was not yet looked up (it is in the same `user_data` response under `price.serp`). Budget the recordings before making any: roughly one volume request and a few SERP requests per fixture store, both languages. If 0.82 USD cannot cover them, stop and tell the founders the account needs topping up. Spend on this key is approved, but the brief's per-run stop is 20 USD. Record real numbers with `RECORD_DATAFORSEO=1`.
 - **Record every spend** in the "Spend" table in `DECISIONS.md` (now 0.92 USD, all Anthropic). The Anthropic total can be recomputed from the token counts in `fakes/fake-anthropic/recordings/`.
 - **The founder is reachable in the session now** and answers questions; decisions that shape the system go to them (their global instructions require it), or into DECISIONS.md as "Assumed" when they are away.

@@ -1,6 +1,6 @@
 import type { Task } from 'graphile-worker'
 import { pauseOn } from '../core/learn/sync.ts'
-import { pauseReason } from '../core/status.ts'
+import { pauseReason, StorePausedError } from '../core/status.ts'
 import { discoverTopics, shouldRediscover } from '../core/topics/discover.ts'
 import type { Db, DbClient } from '../db/pool.ts'
 import type { Deps } from './deps.ts'
@@ -13,7 +13,19 @@ export const findTopics = defineJob<FindPayload, Deps>({
   name: 'find_topics',
   storeId: (p) => p.storeId,
   idempotencyKey: (p) => idempotencyKey('find_topics', p.storeId, p.reason, { requestedAt: p.requestedAt }),
-  run: async ({ deps, payload }) => pauseOn(deps.pool, payload.storeId, () => discoverTopics({ db: deps.pool, llm: deps.llm, demand: deps.demand }, payload.storeId)),
+  run: async ({ deps, payload: { storeId } }) => {
+    try {
+      const outcome = await pauseOn(deps.pool, storeId, () => discoverTopics({ db: deps.pool, llm: deps.llm, demand: deps.demand }, storeId))
+      await deps.pool.query(`update store_flags set topics_failed_at = null, topics_failure = null where store_id = $1`, [storeId])
+      return outcome
+    } catch (error) {
+      // Retried by the queue; once retries run out, the next daily pick sends it out again.
+      if (!(error instanceof StorePausedError)) {
+        await deps.pool.query(`update store_flags set topics_failed_at = now(), topics_failure = $2 where store_id = $1`, [storeId, String((error as Error).message).slice(0, 500)])
+      }
+      throw error
+    }
+  },
 })
 
 export async function requestDiscovery(db: DbClient, storeId: number, reason: FindPayload['reason'], requestedAt: string): Promise<void> {

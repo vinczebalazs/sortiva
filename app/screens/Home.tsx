@@ -83,7 +83,7 @@ function TodayCard({ state, onChange }: { state: HomeState; onChange: () => void
     return (
       <Card title={t.home.today}>
         <p style={{ margin: 0, fontWeight: 600 }}>{t.home.nothing}</p>
-        <p className="ui-muted" style={{ margin: '4px 0 0' }}>{t.home.nothingWhy[today.reason]}</p>
+        <p className="ui-muted" style={{ margin: '4px 0 0' }}>{today.reason === 'queue_empty' && state.topicsUnavailable ? t.home.topicsUnavailable : t.home.nothingWhy[today.reason]}</p>
       </Card>
     )
   }
@@ -128,7 +128,8 @@ function UpNext({ state, onChange }: { state: HomeState; onChange: () => void })
   const empty = !state.upNext.length && state.today.kind === 'nothing' && !state.findingTopics
   return (
     <Card title={t.home.upNext}>
-      {empty && (
+      {state.topicsUnavailable && <p className="ui-muted ui-small" style={{ margin: '0 0 18px' }}>{t.home.topicsUnavailable}</p>}
+      {empty && !state.topicsUnavailable && (
         <div style={{ marginBottom: 18 }}>
           <p style={{ margin: 0, fontWeight: 600 }}>{t.home.emptyQueue}</p>
           <p className="ui-muted" style={{ margin: '4px 0 0' }}>{t.home.emptyQueueBody}</p>
@@ -161,7 +162,7 @@ function UpNext({ state, onChange }: { state: HomeState; onChange: () => void })
   )
 }
 
-type AddResult = ManualOutcome | { kind: 'budget' } | { kind: 'unavailable' } | { kind: 'not_ready' }
+type AddResult = ManualOutcome | { kind: 'budget' } | { kind: 'unavailable' } | { kind: 'not_ready' } | { kind: 'error' }
 
 function AddTopic({ onAdded }: { onAdded: () => void }) {
   const { t, post } = useHost()
@@ -173,10 +174,15 @@ function AddTopic({ onAdded }: { onAdded: () => void }) {
     if (!phrase.trim()) return
     setBusy(true)
     setResult(null)
-    const res = await post<AddResult>('/api/topics/add', { phrase })
+    let body: AddResult
+    try {
+      body = (await post<AddResult>('/api/topics/add', { phrase })).body
+    } catch {
+      body = { kind: 'error' }
+    }
     setBusy(false)
-    setResult(res.body)
-    if (res.body.kind === 'added' || res.body.kind === 'moved') {
+    setResult(body)
+    if (body.kind === 'added' || body.kind === 'moved') {
       setPhrase('')
       onAdded()
     }
@@ -219,7 +225,9 @@ function AddOutcome({ result }: { result: AddResult }) {
       )
     case 'budget':
       return <p className="ui-small" style={{ margin: 0 }}>{a.budget}</p>
-    default:
+    case 'unavailable':
       return <p className="ui-small" style={{ margin: 0 }}>{a.unavailable}</p>
+    default:
+      return <p className="ui-small" style={{ margin: 0 }}>{a.error}</p>
   }
 }

@@ -103,6 +103,7 @@ const en = {
     moveToTop: 'Move to top',
     more: (n: number) => `+${n}`,
     emptyQueue: 'Nothing worth writing this week.',
+    topicsUnavailable: 'We couldn’t look for new topics today because a service we rely on didn’t respond. We’ll try again tomorrow. Topics already in your queue are still written.',
     emptyQueueBody: 'Fuller product descriptions give us more to write about, or add a topic yourself below.',
     thin: (n: number, m: number) => `We can write about ${n} of your ${m} products. The others need fuller descriptions.`,
     smallStore: (n: number) => `Your store has ${n} products, so we keep at most ${n} topics waiting, one per product. More products give us more to write about.`,
@@ -119,6 +120,7 @@ const en = {
       nothingRelated: 'None of your products relate to it.',
       budget: 'Today’s budget is reached. Try again tomorrow.',
       unavailable: 'We could not check search demand just now. Try again later.',
+      error: 'Something went wrong while checking this topic. Try again later.',
     },
   },
   banners: {
@@ -265,6 +267,7 @@ const hu: typeof en = {
     moveToTop: 'Előre a sor elejére',
     more: (n) => `+${n}`,
     emptyQueue: 'Ezen a héten nincs miről érdemes írni.',
+    topicsUnavailable: 'Ma nem tudtunk új témákat keresni, mert egy általunk használt szolgáltatás nem válaszolt. Holnap újra megpróbáljuk. A sorban lévő témákat továbbra is megírjuk.',
     emptyQueueBody: 'Részletesebb termékleírásokból többről tudunk írni, vagy adj hozzá lent egy témát te magad.',
     thin: (n, m) => `${m} termékedből ${n} termékről tudunk írni. A többihez részletesebb leírás kell.`,
     smallStore: (n) => `A boltodban ${n} termék van, így legfeljebb ${n} témát tartunk sorban, termékenként egyet. Több termékről többet tudunk írni.`,
@@ -281,6 +284,7 @@ const hu: typeof en = {
       nothingRelated: 'Egyik terméked sem kapcsolódik hozzá.',
       budget: 'Elértük a mai keretet. Próbáld újra holnap.',
       unavailable: 'Most nem tudtuk ellenőrizni a keresési adatokat. Próbáld újra később.',
+      error: 'Hiba történt a téma ellenőrzése közben. Próbáld újra később.',
     },
   },
   banners: {
