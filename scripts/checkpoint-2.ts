@@ -180,7 +180,7 @@ td:first-child { color: var(--ink); font-weight: 500; }
   </header>
   <div class="panel finding">
     <p class="label">What changed since the first version of this page</p>
-    <p>The first run queued only 8 of 35 proposed topics: Google reports almost nobody searching the exact phrase the model chose. On your decision, the model now offers two or three phrasings per topic, all are measured in the same single request, and each topic keeps its most-searched phrasing. The same two shops now queue ${queuedTotal} of ${proposedTotal}. Under each topic, "also measured" shows the phrasings that lost.</p>
+    <p>The first run queued only 8 of 35 proposed topics: Google reports almost nobody searching the exact phrase the model chose. On your decisions, the model now offers two or three phrasings per topic and each topic keeps its most-searched one; and it picks from a wide menu of article kinds (problems and fixes, gift ideas, seasonal uses, recipes, beginners' guides, comparisons and more) instead of buying and usage questions only. The same two shops now queue ${queuedTotal} of ${proposedTotal}. Under each topic, "also measured" shows the phrasings that lost.</p>
     <p>Also on your decision: whether an existing blog post already answers a topic is now decided by the model, after a loose word check picks which posts to compare. In a test of ten cases, five per language, it agreed with the expected answer every time. These two shops have no blog posts, so it does not show here.</p>
   </div>
   <div class="panel">

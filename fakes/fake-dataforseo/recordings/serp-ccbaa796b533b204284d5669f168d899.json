@@ -1,0 +1,754 @@
+{
+ "recordedAt": "2026-10-08T20:16:14.570Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "tea ajándék",
+  "location_code": 2348,
+  "language_code": "hu",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0235 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10082016-2302-0066-0000-14c0eaf1795b",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0191 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10082016-2302-0066-0000-14c0eaf1795b"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "tea ajándék",
+     "location_code": 2348,
+     "language_code": "hu",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "tea ajándék",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2348,
+      "language_code": "hu",
+      "check_url": "https://www.google.com/search?q=tea%20aj%C3%A1nd%C3%A9k&hl=hu&gl=HU&ie=UTF-8&uule=w+CAIQIFISCcPkN997g0FHERAQHgwpxAAA",
+      "datetime": "2026-10-08 20:16:08 +00:00",
+      "spell": null,
+      "refinement_chips": {
+       "type": "refinement_chips",
+       "xpath": "/html[1]/body[1]/div[3]/div[1]/div[5]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+       "items": [
+        {
+         "type": "refinement_chips_element",
+         "title": "Buy",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQntxu7cEwYQcKjyj0buOx_6KqcARxA:1791490566886&q=buy+tea+aj%C3%A1nd%C3%A9k&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rt11Oc1rCwVOV971F8PT8zdL8UslIMuyoLc8KVvKB7C-EB0pGjxRPBgG8syxB7TT2bQWY6WQayghLutREZnhsANMrjL4S76htTXWUNOuQKErYbohY4R7so9S7mhRhizMNXVbjEOA-Iszp-_anwkalFAjVzUA&sa=X&ved=2ahUKEwj36u22nquXAxUsA7kGHbeLIGkQxKsJKAB6BAgYEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Reviews",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQntxu7cEwYQcKjyj0buOx_6KqcARxA:1791490566886&q=reviews+tea+aj%C3%A1nd%C3%A9k&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rM4C1ogCMDpmOJgEzBCm9o1QWpg5gDTGpz-w5b2peWgCosOJhUvXb5kCgkkgTrUypp8HY2UxR_m_F8B-KqpNH8fhKw_zh7f_XOxhEwmzv_HX2Kzq8on6pLofKQGFcIoHkTYX_cVi3R_8efjV5JY84pbJ_j03tF0elboNkn3d9f4p46jQy&sa=X&ved=2ahUKEwj36u22nquXAxUsA7kGHbeLIGkQxKsJKAF6BAgcEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Price",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQntxu7cEwYQcKjyj0buOx_6KqcARxA:1791490566886&q=price+tea+aj%C3%A1nd%C3%A9k&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rmQD1vnvaXh5kfOBKMW7ukNHBuXmi3chnJBrdWz8S7UhxKES2xlx3sQ35r9C68kmyJEIygGb4TjHqTdW6Xfk0paWFJ1FOcGHYi4nDrYiEJSHAjohjryqyDRFZ3pBnv5eAj2BmfF5laANeV6sw8uzyUxgGP3XXgrsUi3ulg-DU_drXMGXj&sa=X&ved=2ahUKEwj36u22nquXAxUsA7kGHbeLIGkQxKsJKAJ6BAgdEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "For Sale",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQntxu7cEwYQcKjyj0buOx_6KqcARxA:1791490566886&q=tea+aj%C3%A1nd%C3%A9k+for+sale&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rM4C1ogCMDpmOJgEzBCm9o1QWpg5gDTGpz-w5b2peWgB_qD9sL7FXZzs9jR0ZVJz5nvV0zn_4jlY-4GegpMhqd6hHv-x9CAjMmuCznHD5dMZJJkWJuth3X_sT3xS-UYOWmYKl_24wuL5PLXKdzFT7qexYLnyOLC3l5sugJ4rPP64i8DQ7&sa=X&ved=2ahUKEwj36u22nquXAxUsA7kGHbeLIGkQxKsJKAN6BAgeEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Online",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQntxu7cEwYQcKjyj0buOx_6KqcARxA:1791490566886&q=online+tea+aj%C3%A1nd%C3%A9k&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rk9HWz-Wo36oyDDqa65SACyfmRPNrFi5ikcHS2_kklN2ADC-9LZL281lLecobgdmf77MTwcz5-eQ4CERO0gKYNwfZVL5nN5BRp-jaRcU5XnaIMTn6rkT-jMIw_O_h2KitJZGkkHEG3mYDI92hel1J17uAReqBvC3DgikoyMFSocZG2Izr&sa=X&ved=2ahUKEwj36u22nquXAxUsA7kGHbeLIGkQxKsJKAR6BAgaEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Girl",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQntxu7cEwYQcKjyj0buOx_6KqcARxA:1791490566886&q=girl+tea+aj%C3%A1nd%C3%A9k&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rKcok5DfJ0McLo4pNazFuA54OWSvDtUOXhMrbfu24AJIbz1s-UM8r-meDg9n4fwH2OCybnjIZX0C9dC7i29W18mbvRds0OaFWmIOAc6cBUxv2zGWjTZCy9pyiQQ9Q4H83XDjuuv2ke8qluQ30HnDzjhX0IXVLVDS4BPWR3hJOiBJ9W1tO&sa=X&ved=2ahUKEwj36u22nquXAxUsA7kGHbeLIGkQxKsJKAV6BAhgEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Man",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQntxu7cEwYQcKjyj0buOx_6KqcARxA:1791490566886&q=man+tea+aj%C3%A1nd%C3%A9k&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rt11Oc1rCwVOV971F8PT8zdL8UslIMuyoLc8KVvKB7C8W373yfHdc1c3G-WaMwP49e1G96G8TLtcQAd4AToZcPIpEs4PNcrRwxojgCxEH5BFiQI_eYlnF_mSUwz349zFcPjrUlefOj_BTgMcgLHZxeRqxqrY&sa=X&ved=2ahUKEwj36u22nquXAxUsA7kGHbeLIGkQxKsJKAZ6BAhhEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        }
+       ]
+      },
+      "item_types": [
+       "images",
+       "organic",
+       "popular_products",
+       "related_searches"
+      ],
+      "se_results_count": 120,
+      "pages_count": 1,
+      "items_count": 11,
+      "items": [
+       {
+        "type": "images",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[1]/div[1]",
+        "title": "Képek",
+        "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQntxu7cEwYQcKjyj0buOx_6KqcARxA:1791490566886&q=tea+aj%C3%A1nd%C3%A9k&udm=2&source=univ&fir=JYfxUg7eRvGd-M%252Cn_OaBIA4225foM%252C_%253BTpHkwdJNotLbzM%252CGPAUxQBbXtpTtM%252C_%253BQOILNKg5GKv6RM%252CRs9_yzFLuS6wYM%252C_%253Bv7L0VcnU3Ndf5M%252CmTibvKWIx6ZhqM%252C_%253BQogEYfNJt38D3M%252C1c2TgzHPiMz-TM%252C_%253Bxf2B5-pJBRuqSM%252CaAUKwDV6zk2Y8M%252C_%253Bv6xwBWfuSnHjNM%252CK1_lMB4rVNaFkM%252C_%253BiGJT_FraAjuCfM%252CtEW0CHcwlRnjZM%252C_%253BT0ulN7RPNbtqiM%252CzBrMtlaOzfia2M%252C_%253Bh7CFYHWyYVQXNM%252Cn_OaBIA4225foM%252C_%253BN1vMEfK9Uwhb_M%252Ccechckx8V5JKeM%252C_%253ByXjGQFR4jxHVUM%252CvuoIOBSa1sZ1jM%252C_&usg=AI4_-kS0172UaWKhLRtIe-H369YFN9_UVg&sa=X&ved=2ahUKEwj36u22nquXAxUsA7kGHbeLIGkQ7Al6BAgwEAU",
+        "items": [
+         {
+          "type": "images_element",
+          "alt": "tea ajándékcsomag | Gourmet Village gasztroajándék Webáruház",
+          "url": "https://gourmetvillage.hu/termekcimkek/tea-ajandek/",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-14c0eaf1795b:0"
+         },
+         {
+          "type": "images_element",
+          "alt": "Teakedvelő ajándékcsomag",
+          "url": "https://lekvaroshaz.hu/termek/teakedvelo-teacsomag/",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-14c0eaf1795b:1"
+         },
+         {
+          "type": "images_element",
+          "alt": "KÖNYV TEA - 60g",
+          "url": "https://ahonapajandeka.hu/konyv-tea.html?srsltid=AU7gw4VGWzpA1gtvBy9B64VsD8Q1hzD4v53Xu5sfTmgU4c-WpJw8i98B",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-14c0eaf1795b:2"
+         },
+         {
+          "type": "images_element",
+          "alt": "Tea alkalmi csomagolásban",
+          "url": "https://www.teahaz-ajandek.hu/tea-alkalmi-csomagolasban-41258",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-14c0eaf1795b:3"
+         },
+         {
+          "type": "images_element",
+          "alt": "*Ajándékcsomag minden alkalomra - Luther teaház",
+          "url": "https://lutherteahaz.hu/termek/ajandekcsomag-minden-alkalomra-4/?srsltid=AU7gw4WijJc-0a4En4SaCoXYX8LhIQnJirkfWZFhbZ4TcdwgGCedgNzf",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-14c0eaf1795b:4"
+         },
+         {
+          "type": "images_element",
+          "alt": "Virágzó tea arany dobozkában 2 db-os",
+          "url": "https://www.teahaz-ajandek.hu/viragzo-tea-arany-dobozkaban",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-14c0eaf1795b:5"
+         },
+         {
+          "type": "images_element",
+          "alt": "Teaválogatások: ETS 36 English Tea Shop Ajándék Teaválogatás ...",
+          "url": "https://happygreen.hu/hu/termekek/teak/teavalogatasok/ets-36-english-tea-shop-ajandek-teavalogatas-femdobozban-pink-info",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTTqmEtlJxzM-UbFJSt6AMyFUuYs0w25qtuhPNSUh9fTFMRNkC9OfXQxS8&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "*Teaválogatás szálas tea rajongóknak - Luther teaház",
+          "url": "https://lutherteahaz.hu/termek/teavalogatas-szalas-tea-rajongoknak/?srsltid=AU7gw4Va1gY7BSpMI9C6i1ezeNdPlyEV9M60750NycwOvK46PRvDpb3c",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfduQR7K8xW7msKSUs_bUlnUmQx8UYA8r6UcNF5fboTGJePSSQfjGjf0s&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Tea vagy csoki tasakok papírból - kreatív ajándék ötlet | Mindy",
+          "url": "https://mindy.hu/hu/kreativ-otlet/3002/tea-vagy-csoki-tasakok-papirbol-kreativ-ajandek-otlet",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5B7iRcIwSXHOEsaM2QTWmAO_sW21VU47lXm8vCK6i9wk9x_7bg0nOl6k&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "tea ajándékcsomag | Gourmet Village gasztroajándék Webáruház",
+          "url": "https://gourmetvillage.hu/termekcimkek/tea-ajandek/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTD-f68i4aMDzCypv89L8-gVsGeFLbEXaVrnE7M-7CK0Y3xoBqjPc4dwkc&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Ízesített virágzó tea sziromdobozkában",
+          "url": "https://www.teahaz-ajandek.hu/izesitett-viragzo-tea-sziromdobozkaban-3-db",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUyCuTrr7nmqp9MknkxoaKLAxo-i3xwfh_qOhdZ-vkaB_1MyGzVnkT_5g&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "GREENFIELD ajándékcsomag 96db 24féle filteres tea",
+          "url": "https://netcsemege.hu/hu/greenfield-ajandekcsomag-24-fele-filteres-tea",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2ITlBj_KNFLBgsBi53w8wMJ_6I_RdBuBerdQ_muaumgDxfiu1BQi3m3A&s"
+         }
+        ],
+        "related_image_searches": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[3]/div[1]/div[1]",
+        "domain": "www.meglepetesem.hu",
+        "title": "Állíts össze saját ajándékcsomagot, teával, édességgel",
+        "url": "https://www.meglepetesem.hu/egyedi-ajandekcsomag-osszeallitas/tea-ajandekcsomagok?srsltid=AU7gw4UIFdbJedgq2nj8zm7b-ErhU7pxRCPlAtZsQWK_g-GC1ux32WcJ",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.meglepetesem.hu › tea-ajandekcsomagok",
+        "website_name": "meglepetesem.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Tea ajándékcsomagok · Karácsonyi tea · Bio angol tea · Illatos kert gyümölcstea · Fűszeres erdei gyümölcstea · Karácsonyi képeslap tea · Budapest karácsonyi képeslap ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": {
+         "current": 1500,
+         "regular": null,
+         "max_value": null,
+         "currency": "HUF",
+         "is_price_range": false,
+         "displayed_price": "Szállítási díj: 1 500 Ft"
+        },
+        "highlighted": [
+         "Tea ajándékcsomagok"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[5]/div[1]/div[1]",
+        "domain": "gardonyiteahaz.hu",
+        "title": "Teaház-ajándék",
+        "url": "https://gardonyiteahaz.hu/teahaz-ajandek",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://gardonyiteahaz.hu › teahaz-ajandek",
+        "website_name": "Gárdonyi Teaház",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Legyen az filteres tea, amit gyorsan, kényelmesen el tudunk készíteni, és munka vagy tanulás közben kortyolgathatunk kedvenc bögrénkből, vagy szálas tea, ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Legyen az filteres tea, amit gyorsan, kényelmesen el tudunk készíteni"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[7]/div[1]/div[1]",
+        "domain": "www.teahaz-ajandek.hu",
+        "title": "szálas tea",
+        "url": "https://www.teahaz-ajandek.hu/szalas-tea-c-17",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.teahaz-ajandek.hu › szalas-tea-c-17",
+        "website_name": "Teaház Ajándék",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "A tea jóval több, mint egy finom ital. Egy csésze tea reggel segít lendületet adni a naphoz, napközben támogatja a koncentrációt, este pedig segít lelassulni.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "tea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[9]/div[1]/div[1]",
+        "domain": "www.meglepetesem.hu",
+        "title": "Egyedi ajándékboxok - Karácsonyi tea",
+        "url": "https://www.meglepetesem.hu/karacsonyi-tea-akasztoval?srsltid=AU7gw4U9ZDnjeiBU-b-6z5p5hYJ55HItt_6v23L5gfNP58a1JulqKatM",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.meglepetesem.hu › ... › Teák, Kávék",
+        "website_name": "meglepetesem.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Egyedi ajándékbox készítés. Válogasson termékeinkből és egyedi boxot készítünk belőle. -Karácsonyi tea.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": {
+         "current": 460,
+         "regular": null,
+         "max_value": null,
+         "currency": "HUF",
+         "is_price_range": false,
+         "displayed_price": "460 Ft"
+        },
+        "highlighted": [
+         "tea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[11]/div[1]/div[1]",
+        "domain": "gardonyiteahaz.hu",
+        "title": "Gárdonyi Teaház",
+        "url": "https://gardonyiteahaz.hu/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://gardonyiteahaz.hu",
+        "website_name": "Gárdonyi Teaház",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "A Gárdonyi Teaház több mint 20 éves tapasztalattal rendelkezik a teagyártás területén. A hazai piacon termékeink teljes skálája elérhető, melyekkel az ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[13]/div[1]/div[1]",
+        "domain": "gourmetvillage.hu",
+        "title": "Virágzó tea | Gourmet Village gasztroajándék Webáruház",
+        "url": "https://gourmetvillage.hu/termekkategoriak/forro-italok-frissitok/tea/viragzo-tea/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://gourmetvillage.hu › ... › Tea",
+        "website_name": "GourmetVillage Gasztroajándék Webáruház",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Lepd meg szeretteidet prémium teaválogatásokkal! Fedezd fel a szálas teák, prémium filteres keverékek, bio herba teák, a bámulatos virágzó teák és a ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "popular_products",
+        "rank_group": 1,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[14]/div[1]",
+        "title": "Összehasonlító webhelyek",
+        "items": [
+         {
+          "type": "popular_products_element",
+          "title": "Ajándék tea szett 4 x 20g Pedagógusnapra Doboz Pedagógus kosár",
+          "url": null,
+          "domain": null,
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-14c0eaf1795b:6",
+          "price": {
+           "current": 3350,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "3350 Ft"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": "11901770531962088487",
+           "data_docid": "1601733684097062919",
+           "gid": "681437876428871602"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Ajándék szett Karácsonyi box Tea Méz Csokoládé",
+          "url": null,
+          "domain": null,
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-14c0eaf1795b:7",
+          "price": {
+           "current": 6450,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "6450 Ft"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": "10375949185390926124",
+           "data_docid": "14520393041762541638",
+           "gid": "2204817222088031726"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Teegeschenk \"Holiday Wellness",
+          "url": null,
+          "domain": null,
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-14c0eaf1795b:8",
+          "price": {
+           "current": 5220,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "5220 Ft"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": "2732790238326421874",
+           "data_docid": "16497637743269145642",
+           "gid": "7737114200754001345"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Ajándék tea Szett Gyönyörű Nagy Tölcsérekkel 40 g tölcsér tea",
+          "url": null,
+          "domain": null,
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-14c0eaf1795b:9",
+          "price": {
+           "current": 920,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "920 Ft"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": "7533934030960549697",
+           "data_docid": "11859849307504355025",
+           "gid": "3327640180909600687"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Tea szett Ajándék Doboz Pedagógusnak Évzáró Gravírozás",
+          "url": null,
+          "domain": null,
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcSpMnwMjZrobc8RD1CmcNDF3jy-x1BysXrLvK_PsklNk1xoeN0BKaN-36D4rNdtxX7qiN2PcCmoXRPxS-kuPFu3QvYqwiajpeTxHoE0fxWC",
+          "price": {
+           "current": 5810,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "5810 Ft"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": "15185389455443841927",
+           "data_docid": "16436885055244447359",
+           "gid": "9915538345584678545"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Húsvéti Ajándék Tea Méz Lekvár Szirup",
+          "url": null,
+          "domain": null,
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcRoWbPX5_-20_2RYYGtpTutm_y0DOH1Patw2WfifYxKRD5-3yJU103cMeWBabihS7c_3yuM2YozmN_PgKCUh9EtCYjQEMR5ohCVa-W9FmylJwe7AScdZUzf",
+          "price": {
+           "current": 4130,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "4130 Ft"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": "17440898222819829870",
+           "data_docid": "17336901084073289614",
+           "gid": "1392712395681782718"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Ajándékdoboz Kávé Tea Méz Lekvár Mangó Tanár",
+          "url": null,
+          "domain": null,
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRHZzkPY-ALm4WzVa7YV5Qvb_HpVa2BC7P4L9taeF-RfoZTc_LirKfVrxWkhNMBlWHgHUiZgMMJdaZKsEORhwqK7Lw8Kr2Z_ZI7cLHc4S4Y9sMZJdnrYZ11VA",
+          "price": {
+           "current": 12615,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "12 615 Ft"
+          },
+          "rating": {
+           "rating_type": "CustomMax",
+           "value": 12,
+           "votes_count": 12615,
+           "rating_max": 615
+          },
+          "product_identifiers": {
+           "product_id": "4157844846571643481",
+           "data_docid": "11819644853478726796",
+           "gid": "7944465161530192402"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Pedagógusnapi ajándék szett pedagógusnak",
+          "url": null,
+          "domain": null,
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcTtqoMen0FFXT4lRCcb0TPc8Tws_DeOeUupAAlGu2L0O4hW3HsDnxEPKykyEo9ItFPlRNmjCIE9Izf65dOTnIvMaWautiIhx0xbajwgK0CXLLSCfHooog3j6w",
+          "price": {
+           "current": 4175,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "4175 Ft"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": "18040315430464753299",
+           "data_docid": "4894736808552624165",
+           "gid": "9900735494307100221"
+          }
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 7,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[15]/div[1]/div[1]",
+        "domain": "www.italpark.hu",
+        "title": "„Tea Time Treats - Green„ ajándékcsomag rendelés",
+        "url": "https://www.italpark.hu/tea-time-treats-green-ajandekcsomag-ajandek-rendeles",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.italpark.hu › Ajándékcsomag",
+        "website_name": "Ital Park - Online Italüzlet",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "„Tea Time Treats - Green„ ajándékcsomag · Ital típus: Alkoholmentes · Finomság: Bio tea, Lekvár, Csokoládé · Hűségpont: További információ a hűségpontokról i 49.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "„Tea Time Treats - Green„ ajándékcsomag"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 8,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[17]/div[1]/div[1]",
+        "domain": "www.teahaz-ajandek.hu",
+        "title": "teakülönlegességek",
+        "url": "https://www.teahaz-ajandek.hu/teakulonlegessegek-c-6",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.teahaz-ajandek.hu › teakulonlegessegek-c-6",
+        "website_name": "Teaház Ajándék",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "A tea jóval több, mint egy finom ital. Egy csésze tea reggel segít lendületet adni a naphoz, napközben támogatja a koncentrációt, este pedig segít lelassulni.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "tea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "related_searches",
+        "rank_group": 1,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[3]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "items": [
+         "Teaház tea",
+         "Gárdonyi teaház tea hol kapható",
+         "Teaház ajándék",
+         "Tea ajándékcsomag",
+         "Gárdonyi teaház szálas tea",
+         "Teaház citromos tea"
+        ],
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

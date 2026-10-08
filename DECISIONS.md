@@ -132,7 +132,7 @@ DataForSEO's instant ("live") top-ten request answers this account only with "50
 
 **What to look at.** The queues for the Hungarian and English rich shops, with real monthly searches and Google results: `docs/checkpoints/checkpoint-2-queues.html` (published privately: https://claude.ai/artifact/LvjY53S6G8mvCXi9BQ4Kty). On screen: `pnpm seed:preview rich-hu:done rich-en:done`, then `pnpm preview` and the addresses it prints. Regenerate the page with `npx tsx scripts/checkpoint-2.ts`.
 
-**Agent's reading of it.** The topics are ones these shops can write credibly (brewing cold brew, using a French press, preparing nettle and thyme tea), and the why lines state only what the numbers show. But only 8 of 35 proposed topics cleared the minimum: Google Ads reports no figure, or a tiny one, for most of the exact phrases the model chose. At this rate a rich shop runs dry in about a week. **Answered by the founder** the same day: several phrasings per topic (see the entry below). The page was regenerated: 18 of 34 queued.
+**Agent's reading of it.** The topics are ones these shops can write credibly (brewing cold brew, using a French press, preparing nettle and thyme tea), and the why lines state only what the numbers show. But only 8 of 35 proposed topics cleared the minimum: Google Ads reports no figure, or a tiny one, for most of the exact phrases the model chose. At this rate a rich shop runs dry in about a week. **Answered by the founder** the same day: several phrasings per topic (see the entry below). The page was regenerated: 18 of 34 queued, then 21 of 40 with the wider menu below.
 
 **Unverified.** Everything touching Shopify (no dev store yet), the embedded navigation inside the real admin, DataForSEO error answers other than the ones seen (their bodies are not published), and the volumes and results for the fixture shops other than the two rich ones, which still come from the fake's stable placeholder numbers.
 
@@ -146,6 +146,10 @@ The founder also asked for title matching to be a rough word check with the mode
 
 Asked how errors reach people. **The merchant:** when topic-finding cannot finish because a service we rely on fails (DataForSEO out of credit, the model refusing, a network fault), Home says so in one plain line, naming no vendor: "We couldn't look for new topics today because a service we rely on didn't respond. We'll try again tomorrow. Topics already in your queue are still written." It replaces the endless "Finding topics…" and the untrue "Nothing worth writing this week". It is a line, not a banner, because writing continues. The queue retries five times within about a minute, then the next daily run sends topic-finding out again. "Add a topic" answers any unexpected failure with "Something went wrong… try again later" instead of hanging. **The founders:** will connect PostHog to learn about vendor failures and low DataForSEO credit. Not built yet; **remember it** (it is on the founders' list and in the handoff). Until then the reason is kept for us in `store_flags.topics_failure`, with `topics_failed_at`, and in the job's last error. PostHog stays out of the control path: it observes, it never decides.
 
+## 2026-10-08 — Founder: a wide menu of article kinds
+
+The topic prompt had asked only for buying and usage questions (how to choose, use, care for; comparisons; what a feature means), which the agent wrote from the plan without widening it. The founder asked for room instead: version 3 offers a wide menu (problems and fixes, mistakes to avoid, beginners' guides, myths, recipes and ways to use it, pairing, sizing, gift ideas, seasonal and occasion uses, storage and shelf life, "and any other kind shoppers search for"), asks the model to spread its proposals across kinds, and to use the room it is given rather than propose fewer. The guardrails stay: writable from the products' own facts, about a kind of product, no prices, competitors or the shop itself. On the two rich shops the queue went from 18 to 21 topics, with gift guides, beginners' guides, ratios and cleaning among them; the most searched English topic is now "gifts for coffee lovers" (3,600 a month). A wider menu does not widen what an article may claim: the writer (phase 3) may still state only product facts.
+
 ## Spend
 
 Running total of what this build has spent on the founders' keys.
@@ -157,5 +161,7 @@ Running total of what this build has spent on the founders' keys.
 | 2026-10-08 | DataForSEO | Checkpoint 2: monthly searches for the two rich shops (2 requests), their top ten through the queue (9 tasks) | 0.19 |
 | 2026-10-08 | Anthropic | Topic prompt version 2 (phrasings) and the model's existing-post check, across all scenarios (20 calls) | 0.63 |
 | 2026-10-08 | DataForSEO | Checkpoint 2 again with phrasings: monthly searches for the two rich shops, their top ten | 0.19 |
+| 2026-10-08 | Anthropic | Topic prompt version 3 (wide menu of article kinds) across all scenarios (14 calls) | 0.58 |
+| 2026-10-08 | DataForSEO | Checkpoint 2 with version 3: monthly searches for the two rich shops, their top ten | 0.19 |
 
-**Total: 2.46 USD** (Anthropic 2.08, DataForSEO 0.38). DataForSEO balance left: 0.45 USD. Anthropic figures are computed from the token counts in the committed recordings at 4 / 20 USD per million input / output tokens; DataForSEO figures from the account balance before and after.
+**Total: 3.23 USD** (Anthropic 2.66, DataForSEO 0.57). DataForSEO balance left: 0.26 USD. Anthropic figures are computed from the token counts in the committed recordings at 4 / 20 USD per million input / output tokens; DataForSEO figures from the account balance before and after.

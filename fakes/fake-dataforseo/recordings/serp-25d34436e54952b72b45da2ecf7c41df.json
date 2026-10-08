@@ -1,0 +1,850 @@
+{
+ "recordedAt": "2026-10-08T20:16:08.545Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "gifts for coffee lovers",
+  "location_code": 2826,
+  "language_code": "en",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0444 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10082016-2302-0066-0000-5853c1bd9bf0",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0241 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10082016-2302-0066-0000-5853c1bd9bf0"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "gifts for coffee lovers",
+     "location_code": 2826,
+     "language_code": "en",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "gifts for coffee lovers",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2826,
+      "language_code": "en",
+      "check_url": "https://www.google.com/search?q=gifts%20for%20coffee%20lovers&hl=en&gl=GB&ie=UTF-8&uule=w+CAIQIFISCamRx0IRO1oCEXoliDJDoPjE",
+      "datetime": "2026-10-08 20:16:04 +00:00",
+      "spell": null,
+      "refinement_chips": null,
+      "item_types": [
+       "ai_overview",
+       "organic",
+       "people_also_ask",
+       "people_also_search",
+       "related_searches"
+      ],
+      "se_results_count": 201,
+      "pages_count": 1,
+      "items_count": 13,
+      "items": [
+       {
+        "type": "ai_overview",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+        "asynchronous_ai_overview": false,
+        "markdown": "Finding a great gift for a coffee lover depends on their brewing style and experience level. You can explore curated selections directly through the [Coffee Gifts Catalog at John Lewis](https://www.johnlewis.com/browse/gifts/coffee-lovers-gifts/_/N-7gux).[[1]](https://www.johnlewis.com/browse/gifts/coffee-lovers-gifts/_/N-7gux)\n\n### Coffee Samplers & Beans\n\n- **[Whittard Coffees of the World Gift Set Go to product viewer dialogue for this item.](https://www.google.com/search?ibp=oshop&prds=pvt:hg,pvo:48,mid:576462810924574735,imageDocid:7215815304574764168,gpcid:18196000965324565726,headlineOfferDocid:11337432035282223255,catalogid:8862728951902147453,productDocid:13486801858293505462,rds:CSS_PC_18196000965324565726%7CPC_18196000965324565726%7CPROD_CSS_PC_18196000965324565726%7CPROD_PC_18196000965324565726&q=product&sa=X&ved=2ahUKEwiH5oW1nquXAxUThv0HHTtJIncQxa4PegoIAggACAAIDBAL):** A bestselling 9-box single-origin ground coffee collection priced around £30.00 to £38.74.[[1]](https://www.google.com/search?q=product&prds=pvt:hg,productid:1158073438119308367,catalogid:12145335393675686761,gpcid:17275375432366895551,mid:576462308662923857&ibp=oshop)[[2]](https://www.google.com/search?q=product&prds=pvt:hg,productid:13486801858293505462,catalogid:8862728951902147453,gpcid:18196000965324565726,mid:576462810924574735&ibp=oshop)\n- **Specialty Coffee Beans:** Bags from roasters like [Origin Coffee](https://www.origincoffee.co.uk/blogs/journal/coffee-lover-gift-guide) or [H.R.Higgins](https://www.hrhiggins.co.uk/collections/coffee-gifts) offering single-origin or signature blends (Resolute, Stronghold).[[1]](https://www.origincoffee.co.uk/blogs/journal/coffee-lover-gift-guide)[[2]](https://www.hrhiggins.co.uk/collections/coffee-gifts)\n\n### Brewers & Gear\n\n- **[Bialetti Moka Express Set Go to product viewer dialogue for this item.](https://www.google.com/search?ibp=oshop&prds=pvt:hg,pvo:48,imageDocid:15646013349670264225,gpcid:17906280226791130911,headlineOfferDocid:1988465479907464734,catalogid:2193335294613380470,productDocid:5649630574713625871,rds:CSS_PC_17906280226791130911%7CPC_17906280226791130911%7CPROD_CSS_PC_17906280226791130911%7CPROD_PC_17906280226791130911&q=product&sa=X&ved=2ahUKEwiH5oW1nquXAxUThv0HHTtJIncQxa4PegoIAggACAAIDBAc):** The classic 3-cup stove-top espresso maker bundled with Perfetto coffee, available around £35.99.[[1]](https://www.google.com/search?q=product&prds=pvt:hg,productid:5649630574713625871,catalogid:2193335294613380470,gpcid:17906280226791130911&ibp=oshop)\n- **AeroPress / AeroPress Go:** Portable, versatile immersion brewers favored by daily drinkers and travelers, priced around £39.99 to £49.99.[[1]](https://www.hrhiggins.co.uk/collections/coffee-gifts)\n- **Pour-Over & Kettles:** Hario V60 sets or precision swan-neck kettles for filter coffee enthusiasts.[[1]](https://www.hrhiggins.co.uk/collections/coffee-gifts)\n\n### Books & Accessories\n\n- **Books:** *The World Atlas of Coffee* or *How to Make the Best Coffee at Home* by James Hoffmann.[[1]](https://www.facebook.com/jameshoffmanncoffee/videos/gift-ideas-for-intermediate-coffee-lovers/667494592223768/)\n- **Scales & Tools:** Precision digital coffee scales, WDT tools, or custom tampers for espresso and pour-over fans.[[1]](https://www.youtube.com/watch?v=tehnjU57xAs&t=11)[[2]](https://www.facebook.com/jameshoffmanncoffee/posts/heres-some-idea-of-what-to-gift-a-coffee-lover-depending-on-their-level-of-exper/1098464598585451/)\n\nTo help narrow down the best choice, tell me:\n\n- **What equipment** do they currently use (Nespresso, filter, espresso machine, instant)?\n- What is your **budget**?",
+        "items": [
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Finding a great gift for a coffee lover depends on their brewing style and experience level. You can explore curated selections directly through the Coffee Gifts Catalog at John Lewis.",
+          "markdown": "Finding a great gift for a coffee lover depends on their brewing style and experience level. You can explore curated selections directly through the [Coffee Gifts Catalog at John Lewis](https://www.johnlewis.com/browse/gifts/coffee-lovers-gifts/_/N-7gux).[[1]](https://www.johnlewis.com/browse/gifts/coffee-lovers-gifts/_/N-7gux)",
+          "links": [
+           {
+            "type": "link_element",
+            "title": "Coffee Gifts Catalog at John Lewis",
+            "description": null,
+            "url": "https://www.johnlewis.com/browse/gifts/coffee-lovers-gifts/_/N-7gux",
+            "domain": "www.johnlewis.com"
+           }
+          ],
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "John Lewis",
+            "domain": "www.johnlewis.com",
+            "url": "https://www.johnlewis.com/browse/gifts/coffee-lovers-gifts/_/N-7gux",
+            "title": "Coffee Gifts | Gifts For Coffee Lovers | John Lewis",
+            "text": "John Lewis Coffee Gifts: Bean to cup machines (De'Longhi, Philips) £379.99–£749.00; Hob espresso makers and pots (Bialetti, Alessi..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Coffee Samplers & Beans",
+          "text": "Whittard Coffees of the World Gift Set : A bestselling 9-box single-origin ground coffee collection priced around £30.00 to £38.74. Specialty Coffee Beans: Bags from roasters like Origin Coffee or H.R.Higgins offering single-origin or signature blends (Resolute, Stronghold).",
+          "markdown": "- **[Whittard Coffees of the World Gift Set Go to product viewer dialogue for this item.](https://www.google.com/search?ibp=oshop&prds=pvt:hg,pvo:48,mid:576462810924574735,imageDocid:7215815304574764168,gpcid:18196000965324565726,headlineOfferDocid:11337432035282223255,catalogid:8862728951902147453,productDocid:13486801858293505462,rds:CSS_PC_18196000965324565726%7CPC_18196000965324565726%7CPROD_CSS_PC_18196000965324565726%7CPROD_PC_18196000965324565726&q=product&sa=X&ved=2ahUKEwiH5oW1nquXAxUThv0HHTtJIncQxa4PegoIAggACAAIDBAL):** A bestselling 9-box single-origin ground coffee collection priced around £30.00 to £38.74.[[1]](https://www.google.com/search?q=product&prds=pvt:hg,productid:1158073438119308367,catalogid:12145335393675686761,gpcid:17275375432366895551,mid:576462308662923857&ibp=oshop)[[2]](https://www.google.com/search?q=product&prds=pvt:hg,productid:13486801858293505462,catalogid:8862728951902147453,gpcid:18196000965324565726,mid:576462810924574735&ibp=oshop)\n- **Specialty Coffee Beans:** Bags from roasters like [Origin Coffee](https://www.origincoffee.co.uk/blogs/journal/coffee-lover-gift-guide) or [H.R.Higgins](https://www.hrhiggins.co.uk/collections/coffee-gifts) offering single-origin or signature blends (Resolute, Stronghold).[[1]](https://www.origincoffee.co.uk/blogs/journal/coffee-lover-gift-guide)[[2]](https://www.hrhiggins.co.uk/collections/coffee-gifts)",
+          "links": [
+           {
+            "type": "link_element",
+            "title": "Whittard Coffees of the World Gift SetGo to product viewer dialogue for this item.",
+            "description": null,
+            "url": "https://www.google.com/search?ibp=oshop&prds=pvt:hg,pvo:48,mid:576462810924574735,imageDocid:7215815304574764168,gpcid:18196000965324565726,headlineOfferDocid:11337432035282223255,catalogid:8862728951902147453,productDocid:13486801858293505462,rds:CSS_PC_18196000965324565726%7CPC_18196000965324565726%7CPROD_CSS_PC_18196000965324565726%7CPROD_PC_18196000965324565726&q=product&sa=X&ved=2ahUKEwiH5oW1nquXAxUThv0HHTtJIncQxa4PegoIAggACAAIDBAL",
+            "domain": "www.google.com"
+           },
+           {
+            "type": "link_element",
+            "title": "Origin Coffee",
+            "description": null,
+            "url": "https://www.origincoffee.co.uk/blogs/journal/coffee-lover-gift-guide",
+            "domain": "www.origincoffee.co.uk"
+           },
+           {
+            "type": "link_element",
+            "title": "H.R.Higgins",
+            "description": null,
+            "url": "https://www.hrhiggins.co.uk/collections/coffee-gifts",
+            "domain": "www.hrhiggins.co.uk"
+           }
+          ],
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Google",
+            "domain": "www.google.com",
+            "url": "https://www.google.com/search?q=product&prds=pvt:hg,productid:1158073438119308367,catalogid:12145335393675686761,gpcid:17275375432366895551,mid:576462308662923857&ibp=oshop",
+            "title": "Whittard of Chelsea Coffees of The World Gift Set",
+            "text": "Do you prefer having several coffees to choose from? This bestselling gift stars nine of Whittard of Chelsea's favourite ground co..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Google",
+            "domain": "www.google.com",
+            "url": "https://www.google.com/search?q=product&prds=pvt:hg,productid:13486801858293505462,catalogid:8862728951902147453,gpcid:18196000965324565726,mid:576462810924574735&ibp=oshop",
+            "title": "Whittard Coffees of the World Gift Set",
+            "text": "From light, fruity, delicate coffees sourced at the very birthplace of coffee itself to powerful, dark flavours of chocolate, cara..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Origin Coffee",
+            "domain": "www.origincoffee.co.uk",
+            "url": "https://www.origincoffee.co.uk/blogs/journal/coffee-lover-gift-guide",
+            "title": "30 Gifts for Coffee Lovers | Origin Coffee",
+            "text": "Gift Guide: 30 gifts for coffee lovers by Origin Coffee covering beans, filter, espresso, cups, portable gear, home barista tools,"
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "H.R.Higgins (Coffee-man) Ltd.",
+            "domain": "www.hrhiggins.co.uk",
+            "url": "https://www.hrhiggins.co.uk/collections/coffee-gifts",
+            "title": "Coffee Gifts – H.R.Higgins (Coffee-man) Ltd.",
+            "text": "H.R.Higgins Coffee Gifts Catalog: Luxury Packaging (£6), Build Your Own Box; Brewers: Chemex Classic (£49.50/£48), Aerobie AeroPre..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Brewers & Gear",
+          "text": "Bialetti Moka Express Set : The classic 3-cup stove-top espresso maker bundled with Perfetto coffee, available around £35.99. AeroPress / AeroPress Go : Portable, versatile immersion brewers favored by daily drinkers and travelers, priced around £39.99 to £49.99. Pour-Over & Kettles: Hario V60 sets or precision swan-neck kettles for filter coffee enthusiasts.",
+          "markdown": "- **[Bialetti Moka Express Set Go to product viewer dialogue for this item.](https://www.google.com/search?ibp=oshop&prds=pvt:hg,pvo:48,imageDocid:15646013349670264225,gpcid:17906280226791130911,headlineOfferDocid:1988465479907464734,catalogid:2193335294613380470,productDocid:5649630574713625871,rds:CSS_PC_17906280226791130911%7CPC_17906280226791130911%7CPROD_CSS_PC_17906280226791130911%7CPROD_PC_17906280226791130911&q=product&sa=X&ved=2ahUKEwiH5oW1nquXAxUThv0HHTtJIncQxa4PegoIAggACAAIDBAc):** The classic 3-cup stove-top espresso maker bundled with Perfetto coffee, available around £35.99.[[1]](https://www.google.com/search?q=product&prds=pvt:hg,productid:5649630574713625871,catalogid:2193335294613380470,gpcid:17906280226791130911&ibp=oshop)\n- **AeroPress / AeroPress Go:** Portable, versatile immersion brewers favored by daily drinkers and travelers, priced around £39.99 to £49.99.[[1]](https://www.hrhiggins.co.uk/collections/coffee-gifts)\n- **Pour-Over & Kettles:** Hario V60 sets or precision swan-neck kettles for filter coffee enthusiasts.[[1]](https://www.hrhiggins.co.uk/collections/coffee-gifts)",
+          "links": [
+           {
+            "type": "link_element",
+            "title": "Bialetti Moka Express SetGo to product viewer dialogue for this item.",
+            "description": null,
+            "url": "https://www.google.com/search?ibp=oshop&prds=pvt:hg,pvo:48,imageDocid:15646013349670264225,gpcid:17906280226791130911,headlineOfferDocid:1988465479907464734,catalogid:2193335294613380470,productDocid:5649630574713625871,rds:CSS_PC_17906280226791130911%7CPC_17906280226791130911%7CPROD_CSS_PC_17906280226791130911%7CPROD_PC_17906280226791130911&q=product&sa=X&ved=2ahUKEwiH5oW1nquXAxUThv0HHTtJIncQxa4PegoIAggACAAIDBAc",
+            "domain": "www.google.com"
+           }
+          ],
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Google",
+            "domain": "www.google.com",
+            "url": "https://www.google.com/search?q=product&prds=pvt:hg,productid:5649630574713625871,catalogid:2193335294613380470,gpcid:17906280226791130911&ibp=oshop",
+            "title": "Bialetti Moka Express Set",
+            "text": "The Bial Set MOKA 3 Cups + 250g Perfetto Cl. is a high-quality espresso maker designed for coffee lovers. Made from durable alumin..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "H.R.Higgins (Coffee-man) Ltd.",
+            "domain": "www.hrhiggins.co.uk",
+            "url": "https://www.hrhiggins.co.uk/collections/coffee-gifts",
+            "title": "Coffee Gifts – H.R.Higgins (Coffee-man) Ltd.",
+            "text": "H.R.Higgins Coffee Gifts Catalog: Luxury Packaging (£6), Build Your Own Box; Brewers: Chemex Classic (£49.50/£48), Aerobie AeroPre..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Books & Accessories",
+          "text": "Books: The World Atlas of Coffee or How to Make the Best Coffee at Home by James Hoffmann. Scales & Tools: Precision digital coffee scales, WDT tools, or custom tampers for espresso and pour-over fans.",
+          "markdown": "- **Books:** *The World Atlas of Coffee* or *How to Make the Best Coffee at Home* by James Hoffmann.[[1]](https://www.facebook.com/jameshoffmanncoffee/videos/gift-ideas-for-intermediate-coffee-lovers/667494592223768/)\n- **Scales & Tools:** Precision digital coffee scales, WDT tools, or custom tampers for espresso and pour-over fans.[[1]](https://www.youtube.com/watch?v=tehnjU57xAs&t=11)[[2]](https://www.facebook.com/jameshoffmanncoffee/posts/heres-some-idea-of-what-to-gift-a-coffee-lover-depending-on-their-level-of-exper/1098464598585451/)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Facebook",
+            "domain": "www.facebook.com",
+            "url": "https://www.facebook.com/jameshoffmanncoffee/videos/gift-ideas-for-intermediate-coffee-lovers/667494592223768/",
+            "title": "What do gift a coffee lover with a good amount of knowledge on coffee?",
+            "text": "What do gift a coffee lover with a good amount of knowledge on coffee? | James Hoffmann | Facebook today we're going to talk about..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/watch?v=tehnjU57xAs&t=11",
+            "title": "Stop. Don't Buy Coffee Gifts Until You Watch This!",
+            "text": "Stop. Don't Buy Coffee Gifts Until You Watch This! what are the things that you should avoid getting them. or. maybe you are the c..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Facebook",
+            "domain": "www.facebook.com",
+            "url": "https://www.facebook.com/jameshoffmanncoffee/posts/heres-some-idea-of-what-to-gift-a-coffee-lover-depending-on-their-level-of-exper/1098464598585451/",
+            "title": "Here's some idea of what to gift a coffee lover, depending on their level ...",
+            "text": "Here's some idea of what to gift a coffee lover, depending on their level of expertise. From beginner to advanced… | James Hoffman..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "To help narrow down the best choice, tell me:What equipment do they currently use (Nespresso, filter, espresso machine, instant)?\nWhat is your budget ?",
+          "markdown": "To help narrow down the best choice, tell me:\n\n- **What equipment** do they currently use (Nespresso, filter, espresso machine, instant)?\n- What is your **budget**?",
+          "links": null,
+          "images": null,
+          "references": null
+         }
+        ],
+        "references": [
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "John Lewis",
+          "domain": "www.johnlewis.com",
+          "url": "https://www.johnlewis.com/browse/gifts/coffee-lovers-gifts/_/N-7gux",
+          "title": "Coffee Gifts | Gifts For Coffee Lovers | John Lewis",
+          "text": "John Lewis Coffee Gifts: Bean to cup machines (De'Longhi, Philips) £379.99–£749.00; Hob espresso makers and pots (Bialetti, Alessi..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Origin Coffee",
+          "domain": "www.origincoffee.co.uk",
+          "url": "https://www.origincoffee.co.uk/blogs/journal/coffee-lover-gift-guide",
+          "title": "30 Gifts for Coffee Lovers | Origin Coffee",
+          "text": "Gift Guide: 30 gifts for coffee lovers by Origin Coffee covering beans, filter, espresso, cups, portable gear, home barista tools,"
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "H.R.Higgins (Coffee-man) Ltd.",
+          "domain": "www.hrhiggins.co.uk",
+          "url": "https://www.hrhiggins.co.uk/collections/coffee-gifts",
+          "title": "Coffee Gifts – H.R.Higgins (Coffee-man) Ltd.",
+          "text": "H.R.Higgins Coffee Gifts Catalog: Luxury Packaging (£6), Build Your Own Box; Brewers: Chemex Classic (£49.50/£48), Aerobie AeroPre..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "YouTube",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=tehnjU57xAs&t=11",
+          "title": "Stop. Don't Buy Coffee Gifts Until You Watch This!",
+          "text": "Stop. Don't Buy Coffee Gifts Until You Watch This! what are the things that you should avoid getting them. or. maybe you are the c..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Facebook",
+          "domain": "www.facebook.com",
+          "url": "https://www.facebook.com/jameshoffmanncoffee/videos/gift-ideas-for-intermediate-coffee-lovers/667494592223768/",
+          "title": "What do gift a coffee lover with a good amount of knowledge on coffee?",
+          "text": "What do gift a coffee lover with a good amount of knowledge on coffee? | James Hoffmann | Facebook today we're going to talk about..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Facebook",
+          "domain": "www.facebook.com",
+          "url": "https://www.facebook.com/jameshoffmanncoffee/posts/heres-some-idea-of-what-to-gift-a-coffee-lover-depending-on-their-level-of-exper/1098464598585451/",
+          "title": "Here's some idea of what to gift a coffee lover, depending on their level ...",
+          "text": "Here's some idea of what to gift a coffee lover, depending on their level of expertise. From beginner to advanced… | James Hoffman..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Google",
+          "domain": "www.google.com",
+          "url": "https://www.google.com/search?q=product&prds=pvt:hg,productid:1158073438119308367,catalogid:12145335393675686761,gpcid:17275375432366895551,mid:576462308662923857&ibp=oshop",
+          "title": "Whittard of Chelsea Coffees of The World Gift Set",
+          "text": "Do you prefer having several coffees to choose from? This bestselling gift stars nine of Whittard of Chelsea's favourite ground co..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Google",
+          "domain": "www.google.com",
+          "url": "https://www.google.com/search?q=product&prds=pvt:hg,productid:13486801858293505462,catalogid:8862728951902147453,gpcid:18196000965324565726,mid:576462810924574735&ibp=oshop",
+          "title": "Whittard Coffees of the World Gift Set",
+          "text": "From light, fruity, delicate coffees sourced at the very birthplace of coffee itself to powerful, dark flavours of chocolate, cara..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Google",
+          "domain": "www.google.com",
+          "url": "https://www.google.com/search?q=product&prds=pvt:hg,productid:5649630574713625871,catalogid:2193335294613380470,gpcid:17906280226791130911&ibp=oshop",
+          "title": "Bialetti Moka Express Set",
+          "text": "The Bial Set MOKA 3 Cups + 250g Perfetto Cl. is a high-quality espresso maker designed for coffee lovers. Made from durable alumin..."
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]",
+        "domain": "www.johnlewis.com",
+        "title": "Gifts For Coffee Lovers",
+        "url": "https://www.johnlewis.com/browse/gifts/coffee-lovers-gifts/_/N-7gux",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.johnlewis.com › Gifts",
+        "website_name": "John Lewis",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Browse our collection of Coffee Gifts at John Lewis & Partners & receive free standard delivery when you spend £50 and over.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Coffee Gifts at John Lewis & Partners"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]",
+        "domain": "www.hrhiggins.co.uk",
+        "title": "Coffee Gifts",
+        "url": "https://www.hrhiggins.co.uk/collections/coffee-gifts?srsltid=AU7gw4UvlF-uv8QRu7JJa7p_SEctgl85H6KxfIXdNh-WoqAxzkHv4A_A",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.hrhiggins.co.uk › collections › coffee-gifts",
+        "website_name": "H.R.Higgins (Coffee-man) Ltd.",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Find that special something for the coffee lover in your life with our Coffee Gifts. Coffee (2) Gift Box (5) Gift Card (2) Taster Kit (4) A beautiful, highly ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": {
+         "current": 65,
+         "regular": null,
+         "max_value": null,
+         "currency": "GBP",
+         "is_price_range": false,
+         "displayed_price": "Free delivery over £65"
+        },
+        "highlighted": [
+         "Coffee (2) Gift Box (5) Gift Card (2) Taster Kit"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[6]/div[1]/div[1]/div[1]",
+        "domain": "coffeeblog.co.uk",
+        "title": "Coffee Gifts 2025: Best Gifts for Coffee Lovers (UK Guide)",
+        "url": "https://coffeeblog.co.uk/coffee-gifts-coffee-lovers/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://coffeeblog.co.uk › coffee-gifts-coffee-lovers",
+        "website_name": "Coffee Blog",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "1 Jan 2026 — From Secret Santa to splurge, find coffee gifts under £20/£50/£100+. Beans, brewers, kits and more—tested, photographed, and reviewed by ...",
+        "pre_snippet": "01/01/2026 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "coffee gifts under £20/£50/£100"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2026-01-01 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "people_also_ask",
+        "rank_group": 1,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]/div[1]",
+        "items": [
+         {
+          "type": "people_also_ask_element",
+          "title": "What is the best gift for coffee lovers?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "What are the hottest gifts right now?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "What is the 15-15-15 coffee rule?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "What is a good coffee to gift someone?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "people_also_search",
+        "rank_group": 1,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[9]/div[1]",
+        "title": "Find related products and services",
+        "items": [
+         "Quirky coffee gifts UK for him",
+         "Luxury coffee gift set for him",
+         "Luxury coffee gifts",
+         "Luxury Coffee Gift Set",
+         "John Lewis Coffee gifts",
+         "Coffee gifts UK"
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[10]/div[1]/div[1]/div[1]",
+        "domain": "holly.co",
+        "title": "Gifts For Coffee Lovers",
+        "url": "https://holly.co/shop/gifts/by-interest/coffee-snobs?srsltid=AU7gw4VdAnvbWdh2WJjbHS2Uzvv-km89lLwT6tEgjaUdOs-XfFzf9kS1",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://holly.co › shop › gifts › by-interest › coffee-snobs",
+        "website_name": "Holly & Co",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Gifts For Coffee Lovers · Coffee Pot Card · Personalised Ceramic Pint Mug · Personalised Vintage Coffee Spoon · Coffee Lover Glass Framed 3D Collage. Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": {
+         "current": 5,
+         "regular": null,
+         "max_value": null,
+         "currency": "GBP",
+         "is_price_range": false,
+         "displayed_price": "Free delivery over £5"
+        },
+        "highlighted": [
+         "Coffee Pot Card"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://holly.co/shop/gifts/by-interest/coffee-snobs?srsltid=AU7gw4VdAnvbWdh2WJjbHS2Uzvv-km89lLwT6tEgjaUdOs-XfFzf9kS1#:~:text=Gifts%20For%20Coffee%20Lovers&text=Coffee%20Pot%20Card&text=Personalised%20Ceramic%20Pint%20Mug&text=Personalised%20Vintage%20Coffee%20Spoon&text=Coffee%20Lover%20Glass%20Framed%203D,Collage",
+          "domain": "holly.co"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[12]/div[1]/div[1]/div[1]",
+        "domain": "findingtimeforcooking.com",
+        "title": "15+ of the Best Gifts for Coffee Lovers",
+        "url": "https://findingtimeforcooking.com/kitchen-gear/best-gifts-for-coffee-lovers/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://findingtimeforcooking.com › kitchen-gear › best...",
+        "website_name": "finding time for cooking",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "A Gift Guide for Coffee Lovers · Nespresso machine · Artizan coffee roasters organic espresso pods · A kettle that's both beautiful & useful · Pourover filter. Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Nespresso machine"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://findingtimeforcooking.com/kitchen-gear/best-gifts-for-coffee-lovers/#:~:text=A%20Gift%20Guide%20for%20Coffee,Lovers&text=Nespresso%20machine&text=Artizan%20coffee%20roasters%20organic%20espresso,pods&text=A%20kettle%20that's%20both%20beautiful,%26%20useful&text=Pourover%20filter",
+          "domain": "findingtimeforcooking.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[14]/div[1]/div[1]/div[1]",
+        "domain": "www.lavazza.co.uk",
+        "title": "Coffee gifts: 6 ideas for coffee lovers",
+        "url": "https://www.lavazza.co.uk/en/beyond-coffee/coffee-gifts-ideas-coffee-lovers",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.lavazza.co.uk › beyond-coffee › coffee-gif...",
+        "website_name": "Lavazza UK",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Chocolate & coffee sets, baskets and tasting boxes are definitely one of the best options when it comes to coffee gifts, as they pair refined tasting coffee",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Chocolate & coffee sets, baskets and tasting boxes"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 7,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[16]/div[1]/div[1]/div[1]",
+        "domain": "www.whittard.com",
+        "title": "Coffee Gifts | Gifts for Coffee Lovers",
+        "url": "https://www.whittard.com/collections/coffee-gifts",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.whittard.com › All Gifts",
+        "website_name": "Whittard of Chelsea",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Explore Whittard's coffee gifts for coffee lovers, including beans, ground coffee, pods, brewing kit and gift sets for every coffee ritual.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Explore Whittard's coffee gifts for coffee lovers"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 8,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[18]/div[1]/div[1]/div[1]",
+        "domain": "volcanocoffeeworks.com",
+        "title": "Coffee Gifts",
+        "url": "https://volcanocoffeeworks.com/collections/gifts?srsltid=AU7gw4Wt30FYM1lU0Iy-wK3VaXoK98b_Rw_uEpk0XT0UORALpSNVwlXO",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://volcanocoffeeworks.com › collections › gifts",
+        "website_name": "Volcano Coffee Works",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Looking for the perfect gifts for coffee lovers? We offer a wonderful selection of coffee gift sets, accessories and gift cards. Whatever the occasion ... Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": {
+         "current": 45,
+         "regular": null,
+         "max_value": null,
+         "currency": "GBP",
+         "is_price_range": false,
+         "displayed_price": "Free delivery over £45"
+        },
+        "highlighted": [
+         "coffee gift sets, accessories and gift cards"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://volcanocoffeeworks.com/collections/gifts?srsltid=AU7gw4Wt30FYM1lU0Iy-wK3VaXoK98b_Rw_uEpk0XT0UORALpSNVwlXO#:~:text=Looking%20for%20the%20perfect%20gifts,perfect%20coffee%20gift%20for%20you.",
+          "domain": "volcanocoffeeworks.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 9,
+        "rank_absolute": 12,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[20]/div[1]/div[1]/div[1]",
+        "domain": "www.bbcgoodfood.com",
+        "title": "26 best gifts for coffee lovers in 2026",
+        "url": "https://www.bbcgoodfood.com/review/gifts-for-coffee-lovers",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.bbcgoodfood.com › Review",
+        "website_name": "Good Food",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "14 Jan 2026 — 26 best gifts for coffee lovers in 2026 · Grind coffee cups and saucers, from £38 · 'More Coffee' wall art print, from £10.99 · Origin Coffee ... Read more",
+        "pre_snippet": "01/14/2026 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Grind coffee cups and saucers, from £38"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://www.bbcgoodfood.com/review/gifts-for-coffee-lovers#:~:text=26%20best%20gifts%20for%20coffee,lovers%20in%202026&text=Grind%20coffee%20cups%20and%20saucers%2C,from%20%C2%A338&text='More%20Coffee'%20wall%20art%20print%2C,from%20%C2%A310.99&text=Origin%20Coffee%20coffee%20tasting%20experience%2C,%C2%A315",
+          "domain": "www.bbcgoodfood.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2026-01-14 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "related_searches",
+        "rank_group": 1,
+        "rank_absolute": 13,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[2]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "items": [
+         "Unusual gifts for coffee lovers",
+         "Luxury gifts for coffee lovers",
+         "Unusual coffee gifts for him",
+         "Quirky coffee gifts UK",
+         "Birthday gifts for coffee lovers",
+         "Gifts for coffee lovers UK"
+        ],
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

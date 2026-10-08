@@ -1,0 +1,841 @@
+{
+ "recordedAt": "2026-10-08T20:16:09.050Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "flat burr vs conical burr",
+  "location_code": 2826,
+  "language_code": "en",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0170 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10082016-2302-0066-0000-30458508b47c",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0118 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10082016-2302-0066-0000-30458508b47c"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "flat burr vs conical burr",
+     "location_code": 2826,
+     "language_code": "en",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "flat burr vs conical burr",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2826,
+      "language_code": "en",
+      "check_url": "https://www.google.com/search?q=flat%20burr%20vs%20conical%20burr&hl=en&gl=GB&ie=UTF-8&uule=w+CAIQIFISCamRx0IRO1oCEXoliDJDoPjE",
+      "datetime": "2026-10-08 20:16:06 +00:00",
+      "spell": null,
+      "refinement_chips": null,
+      "item_types": [
+       "ai_overview",
+       "video",
+       "people_also_ask",
+       "discussions_and_forums",
+       "organic",
+       "related_searches"
+      ],
+      "se_results_count": 80,
+      "pages_count": 1,
+      "items_count": 12,
+      "items": [
+       {
+        "type": "ai_overview",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+        "asynchronous_ai_overview": false,
+        "markdown": "![Conical vs Flat Burr Grinder Explained – Seven Sisters Coffee Co](https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-30458508b47c:4)\nFlat burrs and conical burrs `use different mechanical designs and grind distributions that change your coffee's flavor, body, and the grinder's price`.[[1]](https://www.reddit.com/r/espresso/comments/yfeviu/what_are_your_thoughts_on_conical_vs_flat_burrs/)[[2]](https://perfectdailygrind.com/2020/05/conical-vs-flat-burr-coffee-grinders-difference/)\n\n### Design and Mechanics\n\n- **Conical burrs:** Use a cone-shaped inner burr inside a ring burr, letting gravity pull the beans straight down.\n- **Flat burrs:** Use two parallel, doughnut-shaped rings that use centrifugal force to push coffee sideways.[[1]](https://perfectdailygrind.com/2020/05/conical-vs-flat-burr-coffee-grinders-difference/)[[2]](https://driftaway.coffee/conical-vs-burr-grinder/)[[3]](https://www.nichecoffee.co.uk/blogs/exploring-coffee/conical-vs-flat-burr-grinders-which-are-the-best)[[4]](https://www.instagram.com/reel/DVg_GqNDfl6/?hl=en)\n\n### Grind Consistency and Flavor\n\n- **Conical burrs:** Produce a bimodal distribution with a mix of main-size particles and extra-small \"fines\". This creates a thicker texture, a bolder and more blended body, and a forgiving dial-in process.[[1]](https://www.nichecoffee.co.uk/blogs/exploring-coffee/conical-vs-flat-burr-grinders-which-are-the-best)[[2]](https://www.reddit.com/r/espresso/comments/yfeviu/what_are_your_thoughts_on_conical_vs_flat_burrs/)\n- **Flat burrs:** Produce a unimodal distribution where most particles are the exact same size. This yields higher flavor clarity, better acidity, and cleaner flavor separation, though it is less forgiving when dialing in espresso.[[1]](https://www.reddit.com/r/espresso/comments/yfeviu/what_are_your_thoughts_on_conical_vs_flat_burrs/)[[2]](https://www.nichecoffee.co.uk/blogs/exploring-coffee/conical-vs-flat-burr-grinders-which-are-the-best)[[3]](https://www.youtube.com/shorts/wncVZPg51F8)\n\nWatch this video to see a detailed comparison of how flat and conical burrs affect your coffee:\n\n![](https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRQrZ_wAhHTteF16ZkEqWbxMmAZKYT3XqLP5QjoQkPdR2sM_3N1)\n4m\n[](https://www.youtube.com/watch?v=-KnI3XdqQe0&t=30) Flat vs Conical Burrs - What Are The Differences?24k views  · 2 years ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · Lamarsa Coffee Machine Company\n\n### Practical Differences\n\n- **Heat and noise:** Conical burrs run slower, cooler, and quieter. Flat burrs spin faster, generating more friction, heat, and noise.[[1]](https://perfectdailygrind.com/2020/05/conical-vs-flat-burr-coffee-grinders-difference/)\n- **Retention:** Conical burrs retain fewer old grounds because they rely on gravity. Flat burrs hold onto more coffee particles inside the chamber.[[1]](https://www.youtube.com/watch?v=n806rql4sp4&t=5)[[2]](https://perfectdailygrind.com/2020/05/conical-vs-flat-burr-coffee-grinders-difference/)[[3]](https://honestcoffeeguide.com/conical-burrs-vs-flat-burrs/)\n- **Cost:** Conical grinders are cheaper to build and common in home and hand grinders. Flat grinders need stronger, high-torque motors, making them more expensive.[[1]](https://www.coffeeness.de/en/conical-vs-flat-burr-grinders/)[[2]](https://www.youtube.com/shorts/wncVZPg51F8)[[3]](https://www.youtube.com/watch?v=n806rql4sp4&t=5)\n\nIf you'd like, let me know:\n\n- What **method** you brew with (espresso, drip, pour-over)\n- Your **budget** \n\nI can recommend the best burr type for your setup.",
+        "items": [
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Flat burrs and conical burrs use different mechanical designs and grind distributions that change your coffee's flavor, body, and the grinder's price.",
+          "markdown": "![Conical vs Flat Burr Grinder Explained – Seven Sisters Coffee Co](https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-30458508b47c:2)\nFlat burrs and conical burrs `use different mechanical designs and grind distributions that change your coffee's flavor, body, and the grinder's price`.[[1]](https://www.reddit.com/r/espresso/comments/yfeviu/what_are_your_thoughts_on_conical_vs_flat_burrs/)[[2]](https://perfectdailygrind.com/2020/05/conical-vs-flat-burr-coffee-grinders-difference/)",
+          "links": null,
+          "images": [
+           {
+            "type": "images_element",
+            "alt": "Conical vs Flat Burr Grinder Explained – Seven Sisters Coffee Co",
+            "url": null,
+            "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-30458508b47c:3"
+           }
+          ],
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Reddit",
+            "domain": "www.reddit.com",
+            "url": "https://www.reddit.com/r/espresso/comments/yfeviu/what_are_your_thoughts_on_conical_vs_flat_burrs/",
+            "title": "What are your thoughts on conical vs flat burrs? : r/espresso - Reddit",
+            "text": "Grind Distribution Impact: The fundamental difference in espresso characteristics between conical and flat burrs stems from their ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Perfect Daily Grind",
+            "domain": "perfectdailygrind.com",
+            "url": "https://perfectdailygrind.com/2020/05/conical-vs-flat-burr-coffee-grinders-difference/",
+            "title": "Coffee grinders: What's the difference between conical & flat burr grinders? - Perfect Daily Grind",
+            "text": "Burr Mechanics: Flat burrs use two horizontally aligned rings; conical burrs use a vertical setup with an inner cone inside a holl..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Design and Mechanics",
+          "text": "Conical burrs: Use a cone-shaped inner burr inside a ring burr, letting gravity pull the beans straight down. Flat burrs: Use two parallel, doughnut-shaped rings that use centrifugal force to push coffee sideways.",
+          "markdown": "- **Conical burrs:** Use a cone-shaped inner burr inside a ring burr, letting gravity pull the beans straight down.\n- **Flat burrs:** Use two parallel, doughnut-shaped rings that use centrifugal force to push coffee sideways.[[1]](https://perfectdailygrind.com/2020/05/conical-vs-flat-burr-coffee-grinders-difference/)[[2]](https://driftaway.coffee/conical-vs-burr-grinder/)[[3]](https://www.nichecoffee.co.uk/blogs/exploring-coffee/conical-vs-flat-burr-grinders-which-are-the-best)[[4]](https://www.instagram.com/reel/DVg_GqNDfl6/?hl=en)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Perfect Daily Grind",
+            "domain": "perfectdailygrind.com",
+            "url": "https://perfectdailygrind.com/2020/05/conical-vs-flat-burr-coffee-grinders-difference/",
+            "title": "Coffee grinders: What's the difference between conical & flat burr grinders? - Perfect Daily Grind",
+            "text": "Burr Mechanics: Flat burrs use two horizontally aligned rings; conical burrs use a vertical setup with an inner cone inside a holl..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Driftaway Coffee",
+            "domain": "driftaway.coffee",
+            "url": "https://driftaway.coffee/conical-vs-burr-grinder/",
+            "title": "3 Theories from The Conical vs. Flat Burr Grinder Debate",
+            "text": "Conical and flat burrs both grind coffee the same way. One serrated ring moves against another ring with jagged edges. As coffee b..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Niche Coffee",
+            "domain": "www.nichecoffee.co.uk",
+            "url": "https://www.nichecoffee.co.uk/blogs/exploring-coffee/conical-vs-flat-burr-grinders-which-are-the-best",
+            "title": "Conical vs flat burr grinders - which are the best? – Niche Coffee",
+            "text": "Burr Grinders: Crush beans for precise size control and low heat retention, rejecting blade choppers for extraction consistency. C..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Instagram",
+            "domain": "www.instagram.com",
+            "url": "https://www.instagram.com/reel/DVg_GqNDfl6/?hl=en",
+            "title": "Do you know and understand the difference between flat burrs and ...",
+            "text": "Do you know and understand the difference between flat burrs and conical burrs in coffee grinders? In our latest video Luke explai..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Grind Consistency and Flavor",
+          "text": "Conical burrs: Produce a bimodal distribution with a mix of main-size particles and extra-small \"fines\". This creates a thicker texture, a bolder and more blended body, and a forgiving dial-in process. Flat burrs: Produce a unimodal distribution where most particles are the exact same size. This yields higher flavor clarity, better acidity, and cleaner flavor separation, though it is less forgiving when dialing in espresso.",
+          "markdown": "- **Conical burrs:** Produce a bimodal distribution with a mix of main-size particles and extra-small \"fines\". This creates a thicker texture, a bolder and more blended body, and a forgiving dial-in process.[[1]](https://www.nichecoffee.co.uk/blogs/exploring-coffee/conical-vs-flat-burr-grinders-which-are-the-best)[[2]](https://www.reddit.com/r/espresso/comments/yfeviu/what_are_your_thoughts_on_conical_vs_flat_burrs/)\n- **Flat burrs:** Produce a unimodal distribution where most particles are the exact same size. This yields higher flavor clarity, better acidity, and cleaner flavor separation, though it is less forgiving when dialing in espresso.[[1]](https://www.reddit.com/r/espresso/comments/yfeviu/what_are_your_thoughts_on_conical_vs_flat_burrs/)[[2]](https://www.nichecoffee.co.uk/blogs/exploring-coffee/conical-vs-flat-burr-grinders-which-are-the-best)[[3]](https://www.youtube.com/shorts/wncVZPg51F8)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Niche Coffee",
+            "domain": "www.nichecoffee.co.uk",
+            "url": "https://www.nichecoffee.co.uk/blogs/exploring-coffee/conical-vs-flat-burr-grinders-which-are-the-best",
+            "title": "Conical vs flat burr grinders - which are the best? – Niche Coffee",
+            "text": "Burr Grinders: Crush beans for precise size control and low heat retention, rejecting blade choppers for extraction consistency. C..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Reddit",
+            "domain": "www.reddit.com",
+            "url": "https://www.reddit.com/r/espresso/comments/yfeviu/what_are_your_thoughts_on_conical_vs_flat_burrs/",
+            "title": "What are your thoughts on conical vs flat burrs? : r/espresso - Reddit",
+            "text": "Grind Distribution Impact: The fundamental difference in espresso characteristics between conical and flat burrs stems from their ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/shorts/wncVZPg51F8",
+            "title": "How the type of grinder burr you have impacts the flavour of your coffee ☕️",
+            "text": "How the type of grinder burr you have impacts the flavour of your coffee ☕️ so essentially with a conicle buret. we tend to find f..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Watch this video to see a detailed comparison of how flat and conical burrs affect your coffee: 4m Flat vs Conical Burrs - What Are The Differences? 24k views · 2 years ago YouTube · Lamarsa Coffee Machine Company",
+          "markdown": "Watch this video to see a detailed comparison of how flat and conical burrs affect your coffee:\n\n![](https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRQrZ_wAhHTteF16ZkEqWbxMmAZKYT3XqLP5QjoQkPdR2sM_3N1)\n4m\n[](https://www.youtube.com/watch?v=-KnI3XdqQe0&t=30) Flat vs Conical Burrs - What Are The Differences?24k views  · 2 years ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · Lamarsa Coffee Machine Company",
+          "links": null,
+          "images": null,
+          "references": null
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Practical Differences",
+          "text": "Heat and noise: Conical burrs run slower, cooler, and quieter. Flat burrs spin faster, generating more friction, heat, and noise. Retention: Conical burrs retain fewer old grounds because they rely on gravity. Flat burrs hold onto more coffee particles inside the chamber. Cost: Conical grinders are cheaper to build and common in home and hand grinders. Flat grinders need stronger, high-torque motors, making them more expensive.",
+          "markdown": "- **Heat and noise:** Conical burrs run slower, cooler, and quieter. Flat burrs spin faster, generating more friction, heat, and noise.[[1]](https://perfectdailygrind.com/2020/05/conical-vs-flat-burr-coffee-grinders-difference/)\n- **Retention:** Conical burrs retain fewer old grounds because they rely on gravity. Flat burrs hold onto more coffee particles inside the chamber.[[1]](https://www.youtube.com/watch?v=n806rql4sp4&t=5)[[2]](https://perfectdailygrind.com/2020/05/conical-vs-flat-burr-coffee-grinders-difference/)[[3]](https://honestcoffeeguide.com/conical-burrs-vs-flat-burrs/)\n- **Cost:** Conical grinders are cheaper to build and common in home and hand grinders. Flat grinders need stronger, high-torque motors, making them more expensive.[[1]](https://www.coffeeness.de/en/conical-vs-flat-burr-grinders/)[[2]](https://www.youtube.com/shorts/wncVZPg51F8)[[3]](https://www.youtube.com/watch?v=n806rql4sp4&t=5)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Perfect Daily Grind",
+            "domain": "perfectdailygrind.com",
+            "url": "https://perfectdailygrind.com/2020/05/conical-vs-flat-burr-coffee-grinders-difference/",
+            "title": "Coffee grinders: What's the difference between conical & flat burr grinders? - Perfect Daily Grind",
+            "text": "Burr Mechanics: Flat burrs use two horizontally aligned rings; conical burrs use a vertical setup with an inner cone inside a holl..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/watch?v=n806rql4sp4&t=5",
+            "title": "ESPRESSO ANATOMY - Flat Vs Conical Burrs",
+            "text": "ESPRESSO ANATOMY - Flat Vs Conical Burrs what's up everyone it's Prometheus. and today we're talking about grinders. and more spec..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Honest Coffee Guide",
+            "domain": "honestcoffeeguide.com",
+            "url": "https://honestcoffeeguide.com/conical-burrs-vs-flat-burrs/",
+            "title": "Conical Burrs vs. Flat Burrs - Honest Coffee Guide",
+            "text": "The more coffee is ground by the burrs the more friction it creates. This increases the temperature of the burrs, and even the cof..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Coffeeness",
+            "domain": "www.coffeeness.de",
+            "url": "https://www.coffeeness.de/en/conical-vs-flat-burr-grinders/",
+            "title": "Conical vs Flat Burr Grinders",
+            "text": "Definitions: Burrs are sharp cutting surfaces where one remains stationary while the other spins; grind distance determines size. ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/shorts/wncVZPg51F8",
+            "title": "How the type of grinder burr you have impacts the flavour of your coffee ☕️",
+            "text": "How the type of grinder burr you have impacts the flavour of your coffee ☕️ so essentially with a conicle buret. we tend to find f..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "If you'd like, let me know:What method you brew with (espresso, drip, pour-over)\nYour budget\nI can recommend the best burr type for your setup.",
+          "markdown": "If you'd like, let me know:\n\n- What **method** you brew with (espresso, drip, pour-over)\n- Your **budget** \n\nI can recommend the best burr type for your setup.",
+          "links": null,
+          "images": null,
+          "references": null
+         }
+        ],
+        "references": [
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Reddit",
+          "domain": "www.reddit.com",
+          "url": "https://www.reddit.com/r/espresso/comments/yfeviu/what_are_your_thoughts_on_conical_vs_flat_burrs/",
+          "title": "What are your thoughts on conical vs flat burrs? : r/espresso - Reddit",
+          "text": "Grind Distribution Impact: The fundamental difference in espresso characteristics between conical and flat burrs stems from their ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Perfect Daily Grind",
+          "domain": "perfectdailygrind.com",
+          "url": "https://perfectdailygrind.com/2020/05/conical-vs-flat-burr-coffee-grinders-difference/",
+          "title": "Coffee grinders: What's the difference between conical & flat burr grinders? - Perfect Daily Grind",
+          "text": "Burr Mechanics: Flat burrs use two horizontally aligned rings; conical burrs use a vertical setup with an inner cone inside a holl..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Niche Coffee",
+          "domain": "www.nichecoffee.co.uk",
+          "url": "https://www.nichecoffee.co.uk/blogs/exploring-coffee/conical-vs-flat-burr-grinders-which-are-the-best",
+          "title": "Conical vs flat burr grinders - which are the best? – Niche Coffee",
+          "text": "Burr Grinders: Crush beans for precise size control and low heat retention, rejecting blade choppers for extraction consistency. C..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Coffeeness",
+          "domain": "www.coffeeness.de",
+          "url": "https://www.coffeeness.de/en/conical-vs-flat-burr-grinders/",
+          "title": "Conical vs Flat Burr Grinders",
+          "text": "Definitions: Burrs are sharp cutting surfaces where one remains stationary while the other spins; grind distance determines size. ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "YouTube",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=n806rql4sp4&t=5",
+          "title": "ESPRESSO ANATOMY - Flat Vs Conical Burrs",
+          "text": "ESPRESSO ANATOMY - Flat Vs Conical Burrs what's up everyone it's Prometheus. and today we're talking about grinders. and more spec..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Driftaway Coffee",
+          "domain": "driftaway.coffee",
+          "url": "https://driftaway.coffee/conical-vs-burr-grinder/",
+          "title": "3 Theories from The Conical vs. Flat Burr Grinder Debate",
+          "text": "Conical and flat burrs both grind coffee the same way. One serrated ring moves against another ring with jagged edges. As coffee b..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Honest Coffee Guide",
+          "domain": "honestcoffeeguide.com",
+          "url": "https://honestcoffeeguide.com/conical-burrs-vs-flat-burrs/",
+          "title": "Conical Burrs vs. Flat Burrs - Honest Coffee Guide",
+          "text": "The more coffee is ground by the burrs the more friction it creates. This increases the temperature of the burrs, and even the cof..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "YouTube",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/shorts/wncVZPg51F8",
+          "title": "How the type of grinder burr you have impacts the flavour of your coffee ☕️",
+          "text": "How the type of grinder burr you have impacts the flavour of your coffee ☕️ so essentially with a conicle buret. we tend to find f..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Instagram",
+          "domain": "www.instagram.com",
+          "url": "https://www.instagram.com/reel/DVg_GqNDfl6/?hl=en",
+          "title": "Do you know and understand the difference between flat burrs and ...",
+          "text": "Do you know and understand the difference between flat burrs and conical burrs in coffee grinders? In our latest video Luke explai..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "www.youtube.com",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=n806rql4sp4",
+          "title": "ESPRESSO ANATOMY - Flat Vs Conical Burrs",
+          "text": "but speaking of the differences. let's talk about them and kind of review. the big differences between flat and conicle burrs. so ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "www.youtube.com",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=nMQb4lxI06I",
+          "title": "Conical or Flat Burrs? An Experiment With Frozen Coffee",
+          "text": "one. you might be asking why would there be any difference setting aside your disturbing lack of faith that's a great question the..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "www.youtube.com",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=-KnI3XdqQe0",
+          "title": "Flat vs Conical Burrs - What Are The Differences?",
+          "text": "it can grind both espresso. and filter looking at the price point conical bur Grinders tend to be cheaper than the flat. ones beca..."
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "video",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]",
+        "items": [
+         {
+          "type": "video_element",
+          "source": "YouTube · Lamarsa Coffee Machine Company",
+          "title": "Flat vs Conical Burrs - What Are The Differences?",
+          "timestamp": "2024-02-16 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=-KnI3XdqQe0"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · Steve Howkins",
+          "title": "Espresso Coffee Grinder | Conical vs Flat Burrs",
+          "timestamp": "2024-06-01 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=3ERhk0vSXp8"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · Lance Hedrick",
+          "title": "Demythologizing the Conical vs Flat Debate",
+          "timestamp": "2023-05-02 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=me-Q1M3NZNU"
+         },
+         {
+          "type": "video_element",
+          "source": "Facebook · Artisti Coffee Roasters",
+          "title": "Flat Burrs vs Conical Burrs Explained: Coffee Grinder ...",
+          "timestamp": "2026-03-05 00:00:00 +00:00",
+          "url": "https://www.facebook.com/artisticoffee/videos/do-you-know-and-understand-the-difference-between-flat-burrs-and-conical-burrs-i/2156413648465601/"
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "people_also_ask",
+        "rank_group": 1,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]",
+        "items": [
+         {
+          "type": "people_also_ask_element",
+          "title": "What makes a burr grinder better?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Which grind is best for espresso?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Who makes the best burr grinder?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Which burrs are best for espresso?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "discussions_and_forums",
+        "rank_group": 1,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[6]/div[1]",
+        "title": "Discussions and forums",
+        "items": [
+         {
+          "type": "discussions_and_forums_element",
+          "title": "What are your thoughts on conical vs flat burrs?",
+          "url": "https://www.reddit.com/r/espresso/comments/yfeviu/what_are_your_thoughts_on_conical_vs_flat_burrs/",
+          "domain": "www.reddit.com",
+          "source": "Reddit",
+          "description": null,
+          "timestamp": "2023-10-08 20:16:05 +00:00",
+          "posts_count": 70
+         },
+         {
+          "type": "discussions_and_forums_element",
+          "title": "Small flat vs. large flat vs. conical burrs: Taste differences?",
+          "url": "https://www.home-barista.com/grinders/small-flat-vs-large-flat-vs-conical-burrs-taste-differences-t26814.html",
+          "domain": "www.home-barista.com",
+          "source": "Home-Barista.com",
+          "description": null,
+          "timestamp": "2013-10-08 20:16:05 +00:00",
+          "posts_count": 13
+         },
+         {
+          "type": "discussions_and_forums_element",
+          "title": "Conical Vs Flat grinders",
+          "url": "https://www.coffeeforums.co.uk/threads/conical-vs-flat-grinders.56163/",
+          "domain": "www.coffeeforums.co.uk",
+          "source": "Coffee Forums",
+          "description": null,
+          "timestamp": "2021-10-08 20:16:05 +00:00",
+          "posts_count": 5
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]",
+        "domain": "coffeepremiumlab.com",
+        "title": "Conical vs Flat Burr Grinders: The Technical Truth",
+        "url": "https://coffeepremiumlab.com/conical-vs-flat-burr-grinders/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://coffeepremiumlab.com › Brewing Accessories",
+        "website_name": "coffeepremiumlab.com",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Flat burrs have more surface area and. Conical grinders often have a more vertical path, leading to lower retention. Conical burrs are generally more “ ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Flat burrs have more surface area"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[10]/div[1]/div[1]",
+        "domain": "www.espressocoffeeshop.com",
+        "title": "Flat or conical burrs? That is the question",
+        "url": "https://www.espressocoffeeshop.com/en/blog/post/9-flat-or-conical-burrs-that-is-the-question",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.espressocoffeeshop.com › Home › Blog",
+        "website_name": "Espresso Coffee Shop",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Flat ones are both the same shape and size while conical burrs have the lower moving part in the shape of a truncated cone that rotates inside the hollow upper ... Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Flat ones are both the same shape and size"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://www.espressocoffeeshop.com/en/blog/post/9-flat-or-conical-burrs-that-is-the-question#:~:text=Flat%20ones%20are%20both%20the,burr%20due%20to%20the%20driveshaft.",
+          "domain": "www.espressocoffeeshop.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[11]/div[1]/div[1]/div[1]",
+        "domain": "www.youtube.com",
+        "title": "Conical vs Flat Burr Grinders for Coffee Shops – 12/18/2024",
+        "url": "https://www.youtube.com/watch?v=YotTLUaWZ_k",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "4.7k+ views  ·  1 year ago",
+        "website_name": "YouTube · Valor Coffee",
+        "is_image": false,
+        "is_video": true,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": [
+         "is_video"
+        ],
+        "description": null,
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2024-12-30 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[12]/div[1]/div[1]/div[1]",
+        "domain": "www.reddit.com",
+        "title": "Flat vs Conical : r/espresso",
+        "url": "https://www.reddit.com/r/espresso/comments/1hd72lf/flat_vs_conical/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "10+ comments  ·  1 year ago",
+        "website_name": "Reddit · r/espresso",
+        "is_image": false,
+        "is_video": true,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": [
+         "is_video"
+        ],
+        "description": "I thought a 64mm flat burr will make my dark roast espressos taste better, but I much prefer how my espressos taste with conical burrs. Anyone ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "flat burr",
+         "conical burrs"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2025-10-08 20:16:05 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[14]/div[1]/div[1]",
+        "domain": "ecscoffee.com",
+        "title": "Exploring the Differences Between Flat and Conical Burrs",
+        "url": "https://ecscoffee.com/blogs/ecs/flat-vs-burr?srsltid=AU7gw4V9_6Q1SZc-x0KMQdq9JRITVGMrRQ-1MkLj6bdCw_P1FYWx6u3N",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://ecscoffee.com › blogs › ecs › flat-vs-burr",
+        "website_name": "ECS Coffee",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "19 Jan 2024 — Both flat and conical burr grinders share the same. The difference lies in the design, influencing the grind size, extraction process, and ...",
+        "pre_snippet": "01/19/2024 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Both flat and conical burr grinders share the same"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2024-01-19 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[16]/div[1]/div[1]",
+        "domain": "www.qikacoffee.com",
+        "title": "The Science Behind Burr Types: Flat vs Conical in Flavor ...",
+        "url": "https://www.qikacoffee.com/news/the-science-behind-burr-types-flat-vs-conical-in-flavor-clarity/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.qikacoffee.com › Industry News",
+        "website_name": "ningbo city qika electric appliance co,. ltd.",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "10 Nov 2025 — Flat burrs are two parallel disks that shear beans between them, producing highly uniform particles. Conical burrs consist of a cone inside a ...",
+        "pre_snippet": "11/10/2025 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Flat burrs are two parallel disks that shear beans between them"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2025-11-10 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 7,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[18]/div[1]/div[1]",
+        "domain": "www.compactcoffee.co.uk",
+        "title": "Flat vs conical burr grinder: which for home espresso?",
+        "url": "https://www.compactcoffee.co.uk/compare/flat-burr-vs-conical-burr-grinder",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.compactcoffee.co.uk › Comparisons",
+        "website_name": "compactcoffee.co.uk",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Conical burrs are efficient, compact and common in hand and entry-level grinders; flat burrs can produce slightly more uniform grinds",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Conical burrs",
+         "flat burrs"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "related_searches",
+        "rank_group": 1,
+        "rank_absolute": 12,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[2]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "items": [
+         "Flat burr vs conical burr reddit",
+         "Flat burr vs conical burr size",
+         "Flat burr vs conical burr price",
+         "Flat burr grinder",
+         "Flat burrs",
+         "Conical Burr grinder",
+         "Niche Zero",
+         "Niche Zero grinder"
+        ],
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

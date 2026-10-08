@@ -1,0 +1,575 @@
+{
+ "recordedAt": "2026-10-08T20:16:08.751Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "szálas tea elkészítése",
+  "location_code": 2348,
+  "language_code": "hu",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0196 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10082016-2302-0066-0000-e778122faa29",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0154 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10082016-2302-0066-0000-e778122faa29"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "szálas tea elkészítése",
+     "location_code": 2348,
+     "language_code": "hu",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "szálas tea elkészítése",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2348,
+      "language_code": "hu",
+      "check_url": "https://www.google.com/search?q=sz%C3%A1las%20tea%20elk%C3%A9sz%C3%ADt%C3%A9se&hl=hu&gl=HU&ie=UTF-8&uule=w+CAIQIFISCcPkN997g0FHERAQHgwpxAAA",
+      "datetime": "2026-10-08 20:16:05 +00:00",
+      "spell": null,
+      "refinement_chips": null,
+      "item_types": [
+       "ai_overview",
+       "video",
+       "organic",
+       "images"
+      ],
+      "se_results_count": 150,
+      "pages_count": 1,
+      "items_count": 10,
+      "items": [
+       {
+        "type": "ai_overview",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+        "asynchronous_ai_overview": false,
+        "markdown": "A tökéletes [szálas tea](https://sobors.hu/technologia/szalas-tea-keszitese/) elkészítéséhez friss, szűrt vizet és a teafajtának megfelelő vízhőmérsékletet kell használni.[[1]](https://lutherteahaz.hu/szalas-fekete-tea-hatasai-elkeszitese/)[[2]](https://sobors.hu/technologia/szalas-tea-keszitese/)\n\n### Az elkészítés lépései\n\n- **Víz:** Használj friss, lágy vagy szűrt vizet, és kerüld az újraforralt vizet.\n- **Adagolás:** Számolj 1 púpozott teáskanál (kb. 2–2,5 gramm) teafüvet 2,5 dl vízhez.\n- **Ezközök:** Melegítsd elő a csészét vagy a kannát egy kis forró vízzel, majd tedd a tealeveleket egy szűrőbe.\n- **Felöntés és áztatás:** Öntsd le a teát a megfelelő hőmérsékletű vízzel, majd az idő letelte után távolítsd el a leveleket, hogy ne keseredjen meg.[[1]](https://sobors.hu/technologia/szalas-tea-keszitese/)[[2]](https://www.dilmahtea.hu/tea-information-training-knowledge/how-to-make-a-cup-of-tea.html)[[3]](https://mezesgergo.hu/tea-keszitese/)[[4]](https://www.gourmetkave.hu/hu/blog/tea-keszitese/fekete-tea-elkeszitese)\n\n### Hőmérsékletek és áztatási idők teafajták szerint\n\n- **Zöld és fehér tea:** 70–80 °C, 1–3 perc áztatás.\n- **Oolong tea:** 80–90 °C, 2–3 perc áztatás.\n- **Fekete tea:** 95–100 °C, 3–5 perc áztatás.\n- **Gyümölcs- és gyógytea:** 100 °C, 5–10 perc áztatás.[[1]](https://www.teahaz-ajandek.hu/teakeszitesi-javaslatok)[[2]](https://sobors.hu/technologia/szalas-tea-keszitese/)[[3]](https://lutherteahaz.hu/szalas-fekete-tea-hatasai-elkeszitese/)[[4]](https://www.dilmahtea.hu/tea-information-training-knowledge/how-to-make-a-cup-of-tea.html)\n\nÍgy készíthetsz el otthon tökéletesen egy csésze szálas teát a megfelelő hőmérséklet és vízminőség betartásával:\n\n[![](https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQeoZVXoSiwfmqwoOUlo4OD0jovO5s5kPi2zOIVXnowVMi69HvCeD3imrXrz9ixK0VeRvdbEJ0dGN7TqoASjegp1hmLSA)\n![Cím: A szálas teát más és más módon érdemes elkészíteni a minél jobb ..., feltöltő: Gárdonyi Teaház, forrás: Facebook](https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRYtZebgcfdIqa1Kr-cPVCXbVZ7Q9kY8q8v4uJYL57-FBsJ1qu_Q5Ap-jC7CBlR)\n0:16](https://www.facebook.com/gardonyitea/videos/sz%C3%A1las-tea/559263296224412/?locale=hi_IN) \n[](https://www.facebook.com/gardonyitea/videos/sz%C3%A1las-tea/559263296224412/?locale=hi_IN) A szálas teát más és más módon érdemes elkészíteni a minél jobb ...3 évvel ezelőtt![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.facebook.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nFacebook · Gárdonyi Teaház\n\nHa szeretnéd, írd meg, **milyen típusú teát** (zöld, fekete, gyümölcs) készítesz, és segítek pontosítani a pontos hőfokot vagy az ajánlott ízesítést.",
+        "items": [
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "A tökéletes szálas tea elkészítéséhez friss, szűrt vizet és a teafajtának megfelelő vízhőmérsékletet kell használni.",
+          "markdown": "A tökéletes [szálas tea](https://sobors.hu/technologia/szalas-tea-keszitese/) elkészítéséhez friss, szűrt vizet és a teafajtának megfelelő vízhőmérsékletet kell használni.[[1]](https://lutherteahaz.hu/szalas-fekete-tea-hatasai-elkeszitese/)[[2]](https://sobors.hu/technologia/szalas-tea-keszitese/)",
+          "links": [
+           {
+            "type": "link_element",
+            "title": "szálas tea",
+            "description": null,
+            "url": "https://sobors.hu/technologia/szalas-tea-keszitese/",
+            "domain": "sobors.hu"
+           }
+          ],
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Luther teaház",
+            "domain": "lutherteahaz.hu",
+            "url": "https://lutherteahaz.hu/szalas-fekete-tea-hatasai-elkeszitese/",
+            "title": "Szálas fekete tea, hatásai, elkészítése - Luther teaház",
+            "text": "Hogyan készítsünk tökéletes szálas fekete teát? A fekete tea elkészítése nem bonyolult, de érdemes néhány szabályt betartani a tök..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Sóbors",
+            "domain": "sobors.hu",
+            "url": "https://sobors.hu/technologia/szalas-tea-keszitese/",
+            "title": "Így főzd a szálas teát, hogy igazán finom legyen - Felejtsd el a teatojás használatát - Technológia | Sóbors",
+            "text": "Szerző: Sági Zsófia (2021.02.19). Szálas tea készítési szabályok: * Víz: friss, lágy, szűrt. * Mennyiség: 1 púpos teáskanál/2,5 dl..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Az elkészítés lépései",
+          "text": "Víz: Használj friss, lágy vagy szűrt vizet, és kerüld az újraforralt vizet. Adagolás: Számolj 1 púpozott teáskanál (kb. 2–2,5 gramm) teafüvet 2,5 dl vízhez. Ezközök: Melegítsd elő a csészét vagy a kannát egy kis forró vízzel, majd tedd a tealeveleket egy szűrőbe. Felöntés és áztatás: Öntsd le a teát a megfelelő hőmérsékletű vízzel, majd az idő letelte után távolítsd el a leveleket, hogy ne keseredjen meg.",
+          "markdown": "- **Víz:** Használj friss, lágy vagy szűrt vizet, és kerüld az újraforralt vizet.\n- **Adagolás:** Számolj 1 púpozott teáskanál (kb. 2–2,5 gramm) teafüvet 2,5 dl vízhez.\n- **Ezközök:** Melegítsd elő a csészét vagy a kannát egy kis forró vízzel, majd tedd a tealeveleket egy szűrőbe.\n- **Felöntés és áztatás:** Öntsd le a teát a megfelelő hőmérsékletű vízzel, majd az idő letelte után távolítsd el a leveleket, hogy ne keseredjen meg.[[1]](https://sobors.hu/technologia/szalas-tea-keszitese/)[[2]](https://www.dilmahtea.hu/tea-information-training-knowledge/how-to-make-a-cup-of-tea.html)[[3]](https://mezesgergo.hu/tea-keszitese/)[[4]](https://www.gourmetkave.hu/hu/blog/tea-keszitese/fekete-tea-elkeszitese)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Dilmah Tea",
+            "domain": "www.dilmahtea.hu",
+            "url": "https://www.dilmahtea.hu/tea-information-training-knowledge/how-to-make-a-cup-of-tea.html",
+            "title": "Hogyan készítsünk egy csésze teát | Teaismeret és tanulás - Dilmah Tea Magyarországon",
+            "text": "* Tárolás: száraz, hűvös (<30°C), légmentesen; >hónap esetén hűtőben. * Víz: alacsony ásványianyag-tartalmú, szénsavmentes, nem új..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Mézes Gergő Méhészete",
+            "domain": "mezesgergo.hu",
+            "url": "https://mezesgergo.hu/tea-keszitese/",
+            "title": "Tea készítése lépésről lépésre - Mézes Gergő Méhészete",
+            "text": "Szálas tea készítése otthon. A szálas tea elkészítése valamivel időigényesebb, de a minőségi különbség érezhető. Elsőként a megfel..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "GourmetKave.hu",
+            "domain": "www.gourmetkave.hu",
+            "url": "https://www.gourmetkave.hu/hu/blog/tea-keszitese/fekete-tea-elkeszitese",
+            "title": "Fekete tea elkészítése: Hogyan érjük el a telt ízt - Gourmet Kávé",
+            "text": "Ha 250 ml-es bögrében készítjük a teát, tegyünk 1 teáskanálnyi tealevelet egy szűrőbe. Amint forró vizet öntesz rájuk, az idő elke..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Hőmérsékletek és áztatási idők teafajták szerint",
+          "text": "Zöld és fehér tea: 70–80 °C, 1–3 perc áztatás. Oolong tea: 80–90 °C, 2–3 perc áztatás. Fekete tea: 95–100 °C, 3–5 perc áztatás. Gyümölcs- és gyógytea: 100 °C, 5–10 perc áztatás.",
+          "markdown": "- **Zöld és fehér tea:** 70–80 °C, 1–3 perc áztatás.\n- **Oolong tea:** 80–90 °C, 2–3 perc áztatás.\n- **Fekete tea:** 95–100 °C, 3–5 perc áztatás.\n- **Gyümölcs- és gyógytea:** 100 °C, 5–10 perc áztatás.[[1]](https://www.teahaz-ajandek.hu/teakeszitesi-javaslatok)[[2]](https://sobors.hu/technologia/szalas-tea-keszitese/)[[3]](https://lutherteahaz.hu/szalas-fekete-tea-hatasai-elkeszitese/)[[4]](https://www.dilmahtea.hu/tea-information-training-knowledge/how-to-make-a-cup-of-tea.html)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Teaház Ajándék",
+            "domain": "www.teahaz-ajandek.hu",
+            "url": "https://www.teahaz-ajandek.hu/teakeszitesi-javaslatok",
+            "title": "Teakészítési tippek",
+            "text": "Tárolás: fény-/légmentes fémdoboz, kerámia vagy porcelánedény. Elkészítés: teát a csészébe, rá a vizet. Kerülendő a fémedény forra..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Így készíthetsz el otthon tökéletesen egy csésze szálas teát a megfelelő hőmérséklet és vízminőség betartásával: 0:16 A szálas teát más és más módon érdemes elkészíteni a minél jobb ... 3 évvel ezelőtt Facebook · Gárdonyi Teaház",
+          "markdown": "Így készíthetsz el otthon tökéletesen egy csésze szálas teát a megfelelő hőmérséklet és vízminőség betartásával:\n\n[![](https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQeoZVXoSiwfmqwoOUlo4OD0jovO5s5kPi2zOIVXnowVMi69HvCeD3imrXrz9ixK0VeRvdbEJ0dGN7TqoASjegp1hmLSA)\n![Cím: A szálas teát más és más módon érdemes elkészíteni a minél jobb ..., feltöltő: Gárdonyi Teaház, forrás: Facebook](https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRYtZebgcfdIqa1Kr-cPVCXbVZ7Q9kY8q8v4uJYL57-FBsJ1qu_Q5Ap-jC7CBlR)\n0:16](https://www.facebook.com/gardonyitea/videos/sz%C3%A1las-tea/559263296224412/?locale=hi_IN) \n[](https://www.facebook.com/gardonyitea/videos/sz%C3%A1las-tea/559263296224412/?locale=hi_IN) A szálas teát más és más módon érdemes elkészíteni a minél jobb ...3 évvel ezelőtt![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.facebook.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nFacebook · Gárdonyi Teaház",
+          "links": null,
+          "images": null,
+          "references": null
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Ha szeretnéd, írd meg, milyen típusú teát (zöld, fekete, gyümölcs) készítesz, és segítek pontosítani a pontos hőfokot vagy az ajánlott ízesítést.",
+          "markdown": "Ha szeretnéd, írd meg, **milyen típusú teát** (zöld, fekete, gyümölcs) készítesz, és segítek pontosítani a pontos hőfokot vagy az ajánlott ízesítést.",
+          "links": null,
+          "images": null,
+          "references": null
+         }
+        ],
+        "references": null,
+        "rectangle": null
+       },
+       {
+        "type": "video",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]",
+        "items": [
+         {
+          "type": "video_element",
+          "source": "Facebook · Gárdonyi Teaház",
+          "title": "A szálas teát más és más módon érdemes elkészíteni a minél ...",
+          "timestamp": "2023-07-18 00:00:00 +00:00",
+          "url": "https://www.facebook.com/gardonyitea/videos/sz%C3%A1las-tea/559263296224412/?locale=hi_IN"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · Teavolution Tea Shop",
+          "title": "Fekete tea készítése (Vörös tea) - kínai mód szerint",
+          "timestamp": "2020-11-18 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=G5BRg2fWWPU&xstg=CAMSBhUDzO3xHw%3D%3D"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · ManuTea hu - Prémium minőségű, szálas tea",
+          "title": "Fekete tea készítése | ManuTea.hu",
+          "timestamp": "2018-12-15 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=bVCuIBvFAfY&xstg=CAMSBhUDzO3xHw%3D%3D"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · ManuTea hu - Prémium minőségű, szálas tea",
+          "title": "Tea készítése rozsdamentes acél szűrőben | ManuTea.hu",
+          "timestamp": "2019-09-12 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=1F-wxo2zS2M&xstg=CAMSBhUDzO3xHw%3D%3D"
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]",
+        "domain": "flyingbirdteahouse.hu",
+        "title": "Az okok, amiért szálas teát igyunk filteres helyett…",
+        "url": "https://flyingbirdteahouse.hu/az-okok-amiert-szalas-teat-igyatok-filteres-helyett/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://flyingbirdteahouse.hu › az-okok-amiert-szalas-te...",
+        "website_name": "Flying Bird Tea House",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "A Longjing-et a megkívánt 70-80 C° fokon röviden áztattuk, majd szűrtük. A filterre 100 C° vizet öntöttünk 3-5 percre, ahogy a dobozon volt. A két kiöntőben ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[6]/div[1]/div[1]",
+        "domain": "www.nosalty.hu",
+        "title": "Főzz sokkal finomabb (jeges vagy forró) teát 4 lépésben",
+        "url": "https://www.nosalty.hu/ajanlo/tea-fozes-tokeletes-modszer-technika-jeges-forro-ital-teafu",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.nosalty.hu › ajanlo › tea-fozes-tokeletes-m...",
+        "website_name": "Nosalty",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2022. máj. 21. — Ez a „cold brew” (hidegen főzött) módszer sokkal karakteresebb aromát eredményez. A tea utóélete. Végül pedig következzen még egy meglepő tény: ...",
+        "pre_snippet": "05/21/2022 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "tea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2022-05-21 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "images",
+        "rank_group": 1,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]",
+        "title": "Képek",
+        "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnstcXuj2z6MNMUDS1gWURDkvgQwJQ:1791490564135&q=sz%C3%A1las+tea+elk%C3%A9sz%C3%ADt%C3%A9se&udm=2&source=univ&fir=86JovTAxEdK7_M%252CKnX11DDaX2qxEM%252C_%253B5fWnCEaEbrdrzM%252CKnX11DDaX2qxEM%252C_%253B25SF9WuwqXSdpM%252CkUaDYs_Cor9-WM%252C_%253BjqqkEaxVeKD_TM%252CKnX11DDaX2qxEM%252C_%253Bp7cuBQ7To_olmM%252CKnX11DDaX2qxEM%252C_%253BoXtk1vzmdE9MBM%252CkUaDYs_Cor9-WM%252C_%253BBhl0CjBmXDsfTM%252CKnX11DDaX2qxEM%252C_%253BchvOWVzRW6e6NM%252CkUaDYs_Cor9-WM%252C_%253BlNEbWr-DSsd7zM%252CKnX11DDaX2qxEM%252C_&usg=AI4_-kSrWkljnEpWJNpqevwexnB_hhAE1w&sa=X&ved=2ahUKEwirzcW1nquXAxW1nCYFHYOOOpYQ7Al6BAg5EAU",
+        "items": [
+         {
+          "type": "images_element",
+          "alt": "Szálas vs. filteres tea - Lucky Matcha",
+          "url": "https://luckymatcha.hu/szalas-vs-filteres-tea/",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-e778122faa29:0"
+         },
+         {
+          "type": "images_element",
+          "alt": "Szálas vs. filteres tea - Lucky Matcha",
+          "url": "https://luckymatcha.hu/szalas-vs-filteres-tea/",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-e778122faa29:1"
+         },
+         {
+          "type": "images_element",
+          "alt": "Szálas tea készítése | Sóbors",
+          "url": "https://sobors.hu/technologia/szalas-tea-keszitese/",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-e778122faa29:2"
+         },
+         {
+          "type": "images_element",
+          "alt": "Szálas vs. filteres tea - Lucky Matcha",
+          "url": "https://luckymatcha.hu/szalas-vs-filteres-tea/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdcVwTRWWFmnVXIwlWSvAG3axU4S7EryvudQ8fZm25D3xY8ERkYLkDUv0&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Szálas vs. filteres tea - Lucky Matcha",
+          "url": "https://luckymatcha.hu/szalas-vs-filteres-tea/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTy9QebQmo67w5q5nZ3u-gdyXn80Dvz7T6IllW7lhvxRWiJrkVTqthSnU&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Szálas tea készítése | Sóbors",
+          "url": "https://sobors.hu/technologia/szalas-tea-keszitese/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUpy_cqacOmMtSV5qS-d5F-rnLHOSyEFYgAwWFggrzgCacAYoEs2eDgco&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Szálas vs. filteres tea - Lucky Matcha",
+          "url": "https://luckymatcha.hu/szalas-vs-filteres-tea/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTIivbYhCdi9RZ_zDm3uBjt9pJZgJH3jraoMFy_cxaIVltxqyY1CIR9_zo&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Szálas tea készítése | Sóbors",
+          "url": "https://sobors.hu/technologia/szalas-tea-keszitese/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToRF5x8xcqAj7kgqAQ0Jx-m611W7ve1exBnCQaDsXEgyjMZNQL0K93xOY&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Szálas vs. filteres tea - Lucky Matcha",
+          "url": "https://luckymatcha.hu/szalas-vs-filteres-tea/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS39NaFGOWnByGXaq3m_hOu9AQnsR-Y14UeD5q27qZEGLf8HviMTRy1YSg&s"
+         }
+        ],
+        "related_image_searches": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[10]/div[1]/div[1]",
+        "domain": "senior.mibolmennyitegyek.hu",
+        "title": "Ismerd meg a tökéletes tea titkait!",
+        "url": "https://senior.mibolmennyitegyek.hu/cikkek/92",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://senior.mibolmennyitegyek.hu › cikkek",
+        "website_name": "Miből mennyit egyek?",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "A következő módszerrel kaphatjuk a legjobb minőségű szálas teát. Friss, hideg vizet forraljunk fel egy vízforraló kannában vagy más módon! A teáskannát ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Friss, hideg vizet forraljunk fel egy vízforraló kannában"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[12]/div[1]/div[1]",
+        "domain": "moccabit.hu",
+        "title": "Szálas teák: mit érdemes tudni róluk?",
+        "url": "https://moccabit.hu/szalas-teak-mit-erdemes-tudni-roluk",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://moccabit.hu › szalas-teak-mit-erdemes-tudni-roluk",
+        "website_name": "Moccabit Kft.",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2020. szept. 14. — Az egyik legfontosabb tényező a víz hőfoka. A fekete szálas teát 100 °C-os vízzel kell leforrázni, a zöld teának azonban csak 75-80 °C-os vízre ...",
+        "pre_snippet": "09/14/2020 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "A fekete szálas teát 100 °C-os vízzel kell leforrázni"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2020-09-14 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[14]/div[1]/div[1]",
+        "domain": "www.japantea.hu",
+        "title": "A japán teák elkészítése",
+        "url": "http://www.japantea.hu/a-japan-teak-elkeszitese",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "http://www.japantea.hu › a-japan-teak-elkeszitese",
+        "website_name": "japantea.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Általános szabályként mindenféle japán zöld teából számoljunk 7-8 gramm teát (ez egy lapos evőkanálnyi tea és két fő teázását szolgálja ki. (Ugyanakkor ez a ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "tea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[16]/div[1]/div[1]",
+        "domain": "zest.hu",
+        "title": "Kínai tea készítése",
+        "url": "https://zest.hu/kinai-tea-keszitese/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://zest.hu › kinai-tea-keszitese",
+        "website_name": "Zest.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2026. febr. 19. — Az elkészítés első lépése a víz felforralása, majd a megfelelő hőmérsékletre hűtése. · A tealeveleket az edénybe helyezzük. · A kínai tea ...",
+        "pre_snippet": "02/19/2026 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "elkészítés",
+         "tea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2026-02-19 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 7,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[18]/div[1]/div[1]",
+        "domain": "anapfenyillata.hu",
+        "title": "Hogyan készítsünk jó teát?",
+        "url": "https://anapfenyillata.hu/2021/01/25/hogyan-keszitsunk-jo-teat/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://anapfenyillata.hu › hogyan-keszitsunk-jo-teat",
+        "website_name": "A napfény illata",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2021. jan. 25. — Általában egy teáskanál tea javasolt 2,5-3 dl vízhez. De ez tea fajtától is függ, illetve attól is, hogy kinek mekkora teáskanala van otthon. Az ...",
+        "pre_snippet": "01/25/2021 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "tea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2021-01-25 00:00:00 +00:00",
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

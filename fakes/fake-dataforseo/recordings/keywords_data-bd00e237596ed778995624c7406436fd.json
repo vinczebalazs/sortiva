@@ -1,0 +1,3935 @@
+{
+ "recordedAt": "2026-10-08T20:16:02.140Z",
+ "endpoint": "keywords_data/google_ads/search_volume/live",
+ "task": {
+  "keywords": [
+   "best pour over dripper type",
+   "best water temperature for pour over",
+   "bleached vs unbleached coffee filters",
+   "cleaning burr grinder",
+   "coffee gift ideas",
+   "coffee grind size chart",
+   "coffee to water ratio",
+   "coffee water temperature",
+   "cold brew at home",
+   "cold brew coffee ratio",
+   "cone vs flat bottom dripper",
+   "conical vs flat burr grinder",
+   "difference between pour over and french press",
+   "do i need a coffee scale",
+   "do you need a gooseneck kettle",
+   "electric gooseneck kettle worth it",
+   "electric vs stovetop gooseneck kettle",
+   "flat bottom vs cone pour over",
+   "flat burr vs conical burr",
+   "french press coffee ratio",
+   "french press or pour over",
+   "gifts for coffee lovers",
+   "gifts for home baristas",
+   "gooseneck kettle for pour over",
+   "grind size for french press",
+   "grind size for pour over",
+   "grinder retention explained",
+   "hand grinder vs electric grinder",
+   "how to clean coffee grinder",
+   "how to clean hand grinder",
+   "how to make cold brew coffee",
+   "how to make french press coffee",
+   "how to make pour over coffee",
+   "how to use a french press",
+   "is a hand coffee grinder worth it",
+   "is light roast stronger",
+   "is whole bean coffee better",
+   "light roast vs medium roast",
+   "light vs medium roast coffee",
+   "low retention coffee grinder",
+   "manual vs electric coffee grinder",
+   "natural vs washed coffee",
+   "pour over coffee for beginners",
+   "pour over coffee ratio",
+   "pour over method step by step",
+   "pour over tastes sour",
+   "pour over vs french press",
+   "should i buy ground coffee",
+   "should you rinse coffee filters",
+   "sour coffee fix",
+   "stovetop gooseneck kettle",
+   "washed vs natural process coffee",
+   "what are flat burrs",
+   "what is a single dose grinder",
+   "what is natural process coffee",
+   "what temperature water for coffee",
+   "white or brown coffee filters",
+   "whole bean vs ground coffee",
+   "why is my coffee bitter",
+   "why use a gooseneck kettle"
+  ],
+  "location_code": 2826,
+  "language_code": "en"
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "2.4991 sec.",
+  "cost": 0.09,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10082015-2302-0367-0000-26544a0e01ee",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "2.4302 sec.",
+    "cost": 0.09,
+    "result_count": 60,
+    "path": [
+     "v3",
+     "keywords_data",
+     "google_ads",
+     "search_volume",
+     "live"
+    ],
+    "data": {
+     "api": "keywords_data",
+     "function": "search_volume",
+     "se": "google_ads",
+     "keywords": [
+      "best pour over dripper type",
+      "best water temperature for pour over",
+      "bleached vs unbleached coffee filters",
+      "cleaning burr grinder",
+      "coffee gift ideas",
+      "coffee grind size chart",
+      "coffee to water ratio",
+      "coffee water temperature",
+      "cold brew at home",
+      "cold brew coffee ratio",
+      "cone vs flat bottom dripper",
+      "conical vs flat burr grinder",
+      "difference between pour over and french press",
+      "do i need a coffee scale",
+      "do you need a gooseneck kettle",
+      "electric gooseneck kettle worth it",
+      "electric vs stovetop gooseneck kettle",
+      "flat bottom vs cone pour over",
+      "flat burr vs conical burr",
+      "french press coffee ratio",
+      "french press or pour over",
+      "gifts for coffee lovers",
+      "gifts for home baristas",
+      "gooseneck kettle for pour over",
+      "grind size for french press",
+      "grind size for pour over",
+      "grinder retention explained",
+      "hand grinder vs electric grinder",
+      "how to clean coffee grinder",
+      "how to clean hand grinder",
+      "how to make cold brew coffee",
+      "how to make french press coffee",
+      "how to make pour over coffee",
+      "how to use a french press",
+      "is a hand coffee grinder worth it",
+      "is light roast stronger",
+      "is whole bean coffee better",
+      "light roast vs medium roast",
+      "light vs medium roast coffee",
+      "low retention coffee grinder",
+      "manual vs electric coffee grinder",
+      "natural vs washed coffee",
+      "pour over coffee for beginners",
+      "pour over coffee ratio",
+      "pour over method step by step",
+      "pour over tastes sour",
+      "pour over vs french press",
+      "should i buy ground coffee",
+      "should you rinse coffee filters",
+      "sour coffee fix",
+      "stovetop gooseneck kettle",
+      "washed vs natural process coffee",
+      "what are flat burrs",
+      "what is a single dose grinder",
+      "what is natural process coffee",
+      "what temperature water for coffee",
+      "white or brown coffee filters",
+      "whole bean vs ground coffee",
+      "why is my coffee bitter",
+      "why use a gooseneck kettle"
+     ],
+     "location_code": 2826,
+     "language_code": "en"
+    },
+    "result": [
+     {
+      "keyword": "best pour over dripper type",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "best water temperature for pour over",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "bleached vs unbleached coffee filters",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 24,
+      "search_volume": 20,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 20
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 20
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 20
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 30
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 20
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 30
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 30
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 20
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 20
+       }
+      ]
+     },
+     {
+      "keyword": "cleaning burr grinder",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "HIGH",
+      "competition_index": 86,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": 0.44,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 10
+       }
+      ]
+     },
+     {
+      "keyword": "coffee gift ideas",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "HIGH",
+      "competition_index": 100,
+      "search_volume": 320,
+      "low_top_of_page_bid": 0.55,
+      "high_top_of_page_bid": 2.19,
+      "cpc": 1.33,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 210
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 260
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 210
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 170
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 1000
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 720
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 320
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 210
+       }
+      ]
+     },
+     {
+      "keyword": "coffee grind size chart",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "MEDIUM",
+      "competition_index": 63,
+      "search_volume": 210,
+      "low_top_of_page_bid": 0.16,
+      "high_top_of_page_bid": 0.47,
+      "cpc": 0.12,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 210
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 260
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 260
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 320
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 260
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 260
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 260
+       }
+      ]
+     },
+     {
+      "keyword": "coffee to water ratio",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 0,
+      "search_volume": 170,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 110
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 110
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 90
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 210
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 210
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 210
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 210
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 260
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 210
+       }
+      ]
+     },
+     {
+      "keyword": "coffee water temperature",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 2,
+      "search_volume": 210,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": 0.23,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 210
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 260
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 210
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 260
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 320
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 210
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 260
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 210
+       }
+      ]
+     },
+     {
+      "keyword": "cold brew at home",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "HIGH",
+      "competition_index": 100,
+      "search_volume": 170,
+      "low_top_of_page_bid": 0.15,
+      "high_top_of_page_bid": 1.78,
+      "cpc": 1.02,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 260
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 320
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 390
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 320
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 210
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 70
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 70
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 70
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 70
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 110
+       }
+      ]
+     },
+     {
+      "keyword": "cold brew coffee ratio",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 6,
+      "search_volume": 590,
+      "low_top_of_page_bid": 0.2,
+      "high_top_of_page_bid": 1.15,
+      "cpc": 0.36,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 590
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 880
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 1300
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 1300
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 590
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 390
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 210
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 210
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 210
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 210
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 260
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 390
+       }
+      ]
+     },
+     {
+      "keyword": "cone vs flat bottom dripper",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "conical vs flat burr grinder",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "HIGH",
+      "competition_index": 100,
+      "search_volume": 90,
+      "low_top_of_page_bid": 0.15,
+      "high_top_of_page_bid": 1.06,
+      "cpc": 0.62,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 110
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 110
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 90
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 90
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 90
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 90
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 90
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 70
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 50
+       }
+      ]
+     },
+     {
+      "keyword": "difference between pour over and french press",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 21,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": 0.68,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 0
+       }
+      ]
+     },
+     {
+      "keyword": "do i need a coffee scale",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "HIGH",
+      "competition_index": 86,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 0
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 0
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 0
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 0
+       }
+      ]
+     },
+     {
+      "keyword": "do you need a gooseneck kettle",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "electric gooseneck kettle worth it",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "electric vs stovetop gooseneck kettle",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "flat bottom vs cone pour over",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": 0,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 0
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 0
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 0
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 0
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 0
+       }
+      ]
+     },
+     {
+      "keyword": "flat burr vs conical burr",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "HIGH",
+      "competition_index": 74,
+      "search_volume": 140,
+      "low_top_of_page_bid": 0.13,
+      "high_top_of_page_bid": 1.54,
+      "cpc": 0.39,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 110
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 90
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 90
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 110
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 210
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 210
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 170
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 140
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 170
+       }
+      ]
+     },
+     {
+      "keyword": "french press coffee ratio",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 6,
+      "search_volume": 880,
+      "low_top_of_page_bid": 0.02,
+      "high_top_of_page_bid": 0.26,
+      "cpc": 0.13,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 880
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 720
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 880
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 880
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 880
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 880
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 880
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 1000
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 1300
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 880
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 1000
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 1000
+       }
+      ]
+     },
+     {
+      "keyword": "french press or pour over",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "HIGH",
+      "competition_index": 98,
+      "search_volume": 20,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": 0.58,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 20
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 20
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 20
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 20
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 20
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 20
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 20
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 10
+       }
+      ]
+     },
+     {
+      "keyword": "gifts for coffee lovers",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "HIGH",
+      "competition_index": 100,
+      "search_volume": 3600,
+      "low_top_of_page_bid": 0.34,
+      "high_top_of_page_bid": 1.69,
+      "cpc": 1.48,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 1900
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 1900
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 2400
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 1600
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 1600
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 2400
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 1900
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 2400
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 14800
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 9900
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 2900
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 2900
+       }
+      ]
+     },
+     {
+      "keyword": "gifts for home baristas",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 0
+       }
+      ]
+     },
+     {
+      "keyword": "gooseneck kettle for pour over",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "HIGH",
+      "competition_index": 100,
+      "search_volume": 30,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": 0.49,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 20
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 20
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 30
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 20
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 40
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 30
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 70
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 50
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 20
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 20
+       }
+      ]
+     },
+     {
+      "keyword": "grind size for french press",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 7,
+      "search_volume": 170,
+      "low_top_of_page_bid": 0.12,
+      "high_top_of_page_bid": 1.54,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 210
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 210
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 170
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 170
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 170
+       }
+      ]
+     },
+     {
+      "keyword": "grind size for pour over",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 6,
+      "search_volume": 20,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": 0.06,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 20
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 20
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 20
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 30
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 40
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 20
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 30
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 20
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 20
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 20
+       }
+      ]
+     },
+     {
+      "keyword": "grinder retention explained",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "hand grinder vs electric grinder",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 0,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 0
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 0
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 0
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 10
+       }
+      ]
+     },
+     {
+      "keyword": "how to clean coffee grinder",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 12,
+      "search_volume": 170,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 210
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 170
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 140
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 140
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 140
+       }
+      ]
+     },
+     {
+      "keyword": "how to clean hand grinder",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 10
+       }
+      ]
+     },
+     {
+      "keyword": "how to make cold brew coffee",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "MEDIUM",
+      "competition_index": 58,
+      "search_volume": 1900,
+      "low_top_of_page_bid": 0.03,
+      "high_top_of_page_bid": 0.87,
+      "cpc": 1.15,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 3600
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 3600
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 4400
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 3600
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 1900
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 1300
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 1000
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 1000
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 720
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 880
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 1000
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 1600
+       }
+      ]
+     },
+     {
+      "keyword": "how to make french press coffee",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 12,
+      "search_volume": 1300,
+      "low_top_of_page_bid": 0.01,
+      "high_top_of_page_bid": 0.13,
+      "cpc": 0.21,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 1600
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 1600
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 1300
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 1300
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 1300
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 1300
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 1000
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 1300
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 1300
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 1300
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 1600
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 1900
+       }
+      ]
+     },
+     {
+      "keyword": "how to make pour over coffee",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "HIGH",
+      "competition_index": 80,
+      "search_volume": 140,
+      "low_top_of_page_bid": 0.03,
+      "high_top_of_page_bid": 0.53,
+      "cpc": 0.82,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 110
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 110
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 110
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 110
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 110
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 140
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 140
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 110
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 110
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 140
+       }
+      ]
+     },
+     {
+      "keyword": "how to use a french press",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 6,
+      "search_volume": 2400,
+      "low_top_of_page_bid": 0.01,
+      "high_top_of_page_bid": 0.19,
+      "cpc": 0.33,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 2900
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 2400
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 2400
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 2400
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 2400
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 1900
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 1900
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 2900
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 2900
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 1900
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 2900
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 2900
+       }
+      ]
+     },
+     {
+      "keyword": "is a hand coffee grinder worth it",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "is light roast stronger",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "HIGH",
+      "competition_index": 71,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 0
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 0
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 0
+       }
+      ]
+     },
+     {
+      "keyword": "is whole bean coffee better",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 0
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 0
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 0
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 0
+       }
+      ]
+     },
+     {
+      "keyword": "light roast vs medium roast",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 11,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 10
+       }
+      ]
+     },
+     {
+      "keyword": "light vs medium roast coffee",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 12,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 10
+       }
+      ]
+     },
+     {
+      "keyword": "low retention coffee grinder",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "HIGH",
+      "competition_index": 100,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": 0.73,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 10
+       }
+      ]
+     },
+     {
+      "keyword": "manual vs electric coffee grinder",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "HIGH",
+      "competition_index": 96,
+      "search_volume": 110,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": 0.47,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 110
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 50
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 90
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 90
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 90
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 90
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 140
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 170
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 140
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 140
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 90
+       }
+      ]
+     },
+     {
+      "keyword": "natural vs washed coffee",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "MEDIUM",
+      "competition_index": 34,
+      "search_volume": 50,
+      "low_top_of_page_bid": 0.05,
+      "high_top_of_page_bid": 1.04,
+      "cpc": 0.99,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 40
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 40
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 50
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 40
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 50
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 70
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 50
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 50
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 70
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 70
+       }
+      ]
+     },
+     {
+      "keyword": "pour over coffee for beginners",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "HIGH",
+      "competition_index": 89,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 0
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 10
+       }
+      ]
+     },
+     {
+      "keyword": "pour over coffee ratio",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 10,
+      "search_volume": 170,
+      "low_top_of_page_bid": 0.02,
+      "high_top_of_page_bid": 0.51,
+      "cpc": 1.69,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 260
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 170
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 210
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 170
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 170
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 140
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 170
+       }
+      ]
+     },
+     {
+      "keyword": "pour over method step by step",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "pour over tastes sour",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 0,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 0
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 0
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 0
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 0
+       }
+      ]
+     },
+     {
+      "keyword": "pour over vs french press",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "MEDIUM",
+      "competition_index": 62,
+      "search_volume": 110,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": 0.22,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 90
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 110
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 110
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 110
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 110
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 140
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 140
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 140
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 140
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 90
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 110
+       }
+      ]
+     },
+     {
+      "keyword": "should i buy ground coffee",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "should you rinse coffee filters",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "sour coffee fix",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 0,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 10
+       }
+      ]
+     },
+     {
+      "keyword": "stovetop gooseneck kettle",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "HIGH",
+      "competition_index": 100,
+      "search_volume": 90,
+      "low_top_of_page_bid": 0.17,
+      "high_top_of_page_bid": 0.56,
+      "cpc": 0.26,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 90
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 110
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 170
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 140
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 140
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 90
+       }
+      ]
+     },
+     {
+      "keyword": "washed vs natural process coffee",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 10
+       }
+      ]
+     },
+     {
+      "keyword": "what are flat burrs",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": null,
+      "competition_index": null,
+      "search_volume": null,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": null
+     },
+     {
+      "keyword": "what is a single dose grinder",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "MEDIUM",
+      "competition_index": 48,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 20
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 20
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 10
+       }
+      ]
+     },
+     {
+      "keyword": "what is natural process coffee",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 25,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 10
+       }
+      ]
+     },
+     {
+      "keyword": "what temperature water for coffee",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 0,
+      "search_volume": 50,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 40
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 40
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 40
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 50
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 50
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 50
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 90
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 50
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 50
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 50
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 50
+       }
+      ]
+     },
+     {
+      "keyword": "white or brown coffee filters",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 0,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 0
+       }
+      ]
+     },
+     {
+      "keyword": "whole bean vs ground coffee",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "MEDIUM",
+      "competition_index": 35,
+      "search_volume": 50,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 50
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 30
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 40
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 40
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 50
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 50
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 50
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 50
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 70
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 70
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 50
+       }
+      ]
+     },
+     {
+      "keyword": "why is my coffee bitter",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "LOW",
+      "competition_index": 6,
+      "search_volume": 70,
+      "low_top_of_page_bid": 0.01,
+      "high_top_of_page_bid": 0.21,
+      "cpc": 0.1,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 50
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 50
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 70
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 90
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 110
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 90
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 70
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 90
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 70
+       }
+      ]
+     },
+     {
+      "keyword": "why use a gooseneck kettle",
+      "spell": null,
+      "location_code": 2826,
+      "language_code": "en",
+      "search_partners": false,
+      "competition": "HIGH",
+      "competition_index": 100,
+      "search_volume": 10,
+      "low_top_of_page_bid": null,
+      "high_top_of_page_bid": null,
+      "cpc": null,
+      "monthly_searches": [
+       {
+        "year": 2026,
+        "month": 8,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 7,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 6,
+        "search_volume": 0
+       },
+       {
+        "year": 2026,
+        "month": 5,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 4,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 3,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 2,
+        "search_volume": 10
+       },
+       {
+        "year": 2026,
+        "month": 1,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 12,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 11,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 10,
+        "search_volume": 10
+       },
+       {
+        "year": 2025,
+        "month": 9,
+        "search_volume": 10
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

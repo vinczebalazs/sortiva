@@ -2,7 +2,7 @@
 
 Written for you by the building agent. Updated at the end of each phase. Everything below is in the order it unlocks work: each step lists what to do, the command to run afterwards, and what you should see. Nothing here needs you to read code.
 
-**Where things stand (8 October 2026, end of phase 2).** The app installs a store, reads its catalogue, turns each product into checked facts, drafts a store profile, takes the merchant through all four setup steps, finds article topics with real Google demand, keeps a queue with one topic a day, and shows Home, Products and Settings in English and Hungarian. All of it is proven against fakes; nothing has touched a real Shopify store yet, because none exists. Spend so far: 2.08 USD Anthropic, 0.38 USD DataForSEO (0.45 USD left on that account).
+**Where things stand (8 October 2026, end of phase 2).** The app installs a store, reads its catalogue, turns each product into checked facts, drafts a store profile, takes the merchant through all four setup steps, finds article topics with real Google demand, keeps a queue with one topic a day, and shows Home, Products and Settings in English and Hungarian. All of it is proven against fakes; nothing has touched a real Shopify store yet, because none exists. Spend so far: 2.66 USD Anthropic, 0.57 USD DataForSEO (0.26 USD left on that account).
 
 ---
 
@@ -36,7 +36,7 @@ pnpm preview
 
 ## 1b. Look at checkpoint 2 (15 minutes, no setup needed)
 
-Open the topic queue page: https://claude.ai/artifact/LvjY53S6G8mvCXi9BQ4Kty, or `docs/checkpoints/checkpoint-2-queues.html`. One Hungarian and one English made-up shop, each with the topics we would write, in order, with real monthly searches and Google's real top results. The questions: **would a merchant want these topics, and are the why lines true?** Since your decision the model offers several phrasings per topic and keeps the most searched; the queues grew from 8 to 18 topics.
+Open the topic queue page: https://claude.ai/artifact/LvjY53S6G8mvCXi9BQ4Kty, or `docs/checkpoints/checkpoint-2-queues.html`. One Hungarian and one English made-up shop, each with the topics we would write, in order, with real monthly searches and Google's real top results. The questions: **would a merchant want these topics, and are the why lines true?** Since your decisions the model offers several phrasings per topic, keeps the most searched, and picks from a wide menu of article kinds; the queues grew from 8 to 21 topics.
 
 To see the screens themselves:
 
@@ -47,7 +47,7 @@ pnpm preview
 
 then open the addresses it prints. "Add a topic" in this preview calls the real model and DataForSEO (about 0.10 USD each time), so use it sparingly.
 
-**DataForSEO balance.** 0.45 USD is left. Recording real search numbers for the remaining six test shops costs about 0.54 USD, and every change to the topic prompt costs about that again. Please add 10–20 USD before the topic prompt is tuned. Also worth one support message to DataForSEO: their instant "live" top-ten request fails for our account with "50000 Internal Server Error"; we use their queued request instead, which works.
+**DataForSEO balance.** 0.26 USD is left, enough for one more re-measure of the two test shops. Recording real search numbers for the remaining six test shops costs about 0.54 USD, and every change to the topic prompt costs about that again. Please add 10–20 USD before the topic prompt is tuned. Also worth one support message to DataForSEO: their instant "live" top-ten request fails for our account with "50000 Internal Server Error"; we use their queued request instead, which works.
 
 ## 2. Create two Shopify dev stores and install the app on one
 

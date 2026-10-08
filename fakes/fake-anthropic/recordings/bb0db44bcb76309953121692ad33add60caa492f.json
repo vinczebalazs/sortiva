@@ -1,0 +1,85 @@
+{
+  "recordedAt": "2026-10-08T20:15:06.309Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 4000,
+    "system": "Egy webáruház új blogcikkeket tervez. Minden tervezett cikknél látod, milyen keresésekre szól, és a bolt néhány meglévő bejegyzését vagy oldalát a címével és a kezdő szövegével. Döntsd el, hogy valamelyik meglévő bejegyzés vagy oldal már megválaszolja-e azt, amit az ilyen keresést indító ember tudni szeretne.\n\nLefedett az a cikk, amelyre a meglévő bejegyzés olvasójának már nincs szüksége: ugyanaz a kérdés, ugyanaz a cél. Az, hogy ugyanarról a termékről vagy témáról szólnak, még nem elég. A „kerékpárlámpa akkumulátor üzemideje” nem lefedett egy lámpaválasztásról szóló bejegyzéssel; a „kerékpárlámpa választás” lefedett a „Hogyan válassz kerékpárlámpát?” bejegyzéssel.\n\nMinden tervezett cikkre add meg a hivatkozását (T1, T2…) és a covered_by mezőt: annak a meglévő bejegyzésnek vagy oldalnak a hivatkozását (A1, A2…), amely lefedi, vagy null-t, ha egyik sem.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<existing>\nA1: Hogyan válassz kerékpárlámpát?\n   Városba 200 lumen elég, földútra legalább 800 lumen kell.\nA2: Mi kötelező a kerékpáron?\n   Lakott területen kívül és éjszaka első fehér és hátsó piros lámpa kötelező.\nA3: U-lakat vagy láncos zár: melyik a biztonságosabb?\n   Az edzett acél U-lakat nehezebben vágható, a lánc rugalmasabban rögzíthető.\n</existing>\n\n<planned>\nT1: Hány lumen kell egy kerékpárlámpához?\n   searches: hány lumen kell biciklilámpa | kerékpárlámpa lumen | lumen jelentése lámpa\n   compare with: A1\nT2: Hogyan működik a fékfényes hátsó lámpa?\n   searches: bicikli fékfény | kerékpár hátsó lámpa fékfény | fékfényes hátsó lámpa\n   compare with: A2\nT3: Kerékpárlámpa töltése és az akkumulátor kímélése\n   searches: biciklilámpa töltése | kerékpárlámpa akkumulátor | usb-c biciklilámpa töltés\n   compare with: A1\nT4: Meddig bírja egy töltéssel a biciklilámpa?\n   searches: biciklilámpa üzemidő | meddig bírja a biciklilámpa | kerékpárlámpa akku élettartam\n   compare with: A1\nT9: Lámpaszett vagy külön első és hátsó lámpa?\n   searches: biciklilámpa szett | első és hátsó biciklilámpa | kerékpár lámpaszett\n   compare with: A2\nT10: Hogyan zárd le helyesen a biciklidet?\n   searches: bicikli lezárása | hogyan zárjam le a biciklit | bicikli lakat használata\n   compare with: A3\nT12: Mekkora U-lakat kell? Méretek és illeszkedés\n   searches: u-lakat méret | mekkora u lakat kell | u lakat belső méret\n   compare with: A3\nT13: Hogyan vidd magaddal a lakatot biciklizés közben?\n   searches: u lakat tartó | lakat szállítása biciklin | bicikli lakat tartó vázra\n   compare with: A3\nT14: Számzáras vagy kulcsos lakat: melyik a kényelmesebb?\n   searches: számzáras bicikli lakat | kulcsos vagy számzáras lakat | számzár beállítása lakat\n   compare with: A3\nT15: Mit jelent az edzett acél a kerékpárlakatoknál?\n   searches: edzett acél lakat | edzett acél jelentése | bicikli lakat anyaga\n   compare with: A3\nT16: Lakat ápolása: kenés, tisztítás, befagyott zár\n   searches: bicikli lakat kenése | befagyott lakat | lakat karbantartása\n   compare with: A3\nT17: Kerékpárcsengő felszerelése lépésről lépésre\n   searches: biciklicsengő felszerelése | kerékpár csengő szerelés | csengő kormányra\n   compare with: A2\n</planned>"
+      }
+    ],
+    "output_config": {
+      "effort": "low",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "verdicts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "topic": {
+                    "type": "string"
+                  },
+                  "covered_by": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "topic",
+                  "covered_by"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "verdicts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfqPCU66iDGenbzJN2FTr",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"verdicts\":[{\"topic\":\"T1\",\"covered_by\":\"A1\"},{\"topic\":\"T2\",\"covered_by\":null},{\"topic\":\"T3\",\"covered_by\":null},{\"topic\":\"T4\",\"covered_by\":null},{\"topic\":\"T9\",\"covered_by\":null},{\"topic\":\"T10\",\"covered_by\":null},{\"topic\":\"T12\",\"covered_by\":null},{\"topic\":\"T13\",\"covered_by\":null},{\"topic\":\"T14\",\"covered_by\":null},{\"topic\":\"T15\",\"covered_by\":null},{\"topic\":\"T16\",\"covered_by\":null},{\"topic\":\"T17\",\"covered_by\":null}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1898,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 207,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

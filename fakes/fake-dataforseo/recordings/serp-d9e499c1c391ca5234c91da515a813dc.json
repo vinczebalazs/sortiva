@@ -1,0 +1,916 @@
+{
+ "recordedAt": "2026-10-08T20:16:08.951Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "how to clean coffee grinder",
+  "location_code": 2826,
+  "language_code": "en",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0167 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10082016-2302-0066-0000-a866f7330e7f",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0121 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10082016-2302-0066-0000-a866f7330e7f"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "how to clean coffee grinder",
+     "location_code": 2826,
+     "language_code": "en",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "how to clean coffee grinder",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2826,
+      "language_code": "en",
+      "check_url": "https://www.google.com/search?q=how%20to%20clean%20coffee%20grinder&hl=en&gl=GB&ie=UTF-8&uule=w+CAIQIFISCamRx0IRO1oCEXoliDJDoPjE",
+      "datetime": "2026-10-08 20:16:06 +00:00",
+      "spell": null,
+      "refinement_chips": null,
+      "item_types": [
+       "ai_overview",
+       "video",
+       "people_also_ask",
+       "organic",
+       "short_videos",
+       "discussions_and_forums",
+       "related_searches"
+      ],
+      "se_results_count": 100,
+      "pages_count": 1,
+      "items_count": 12,
+      "items": [
+       {
+        "type": "ai_overview",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+        "asynchronous_ai_overview": false,
+        "markdown": "Clean a coffee grinder by `emptying the remaining beans, unplugging the unit, and using a stiff brush, vacuum, or specialized grinding tablets to clear out old coffee oils and grounds`.[[1]](https://www.reddit.com/r/Coffee/comments/hk7gun/discovered_the_best_way_to_clean_my_coffee/)[[2]](https://www.seriouseats.com/how-to-clean-coffee-grinder-6742984)[[3]](https://www.mulmar.com/information-guide/coffee-equipment-guide/how-to-clean-your-coffee-grinder/)[[4]](https://www.youtube.com/watch?v=r0BJgLU38zw&t=36)[[5]](https://outin.com/blogs/news/how-to-clean-coffee-grinder)[[6]](https://www.coffeecircle.com/en/e/coffee-grinder-cleaning)\n\n### Burr Grinders (Deep Clean)\n\n1. **Unplug and disassemble:** Turn off and unplug your grinder. Remove the bean hopper (usually by twisting counter-clockwise) and take out the top burr if your model allows it.[[1]](https://www.seriouseats.com/how-to-clean-coffee-grinder-6742984)[[2]](https://www.mulmar.com/information-guide/coffee-equipment-guide/how-to-clean-your-coffee-grinder/)[[3]](https://outin.com/blogs/news/how-to-clean-coffee-grinder)\n2. **Brush away debris:** Use a stiff-bristled brush or a small paintbrush to clean coffee grounds and dust from the burrs and internal chamber.[[1]](https://alexandermills.ca/blog/how-to-clean-your-coffee-grinder)[[2]](https://www.wired.com/story/how-to-clean-a-coffee-grinder/)\n3. **Vacuum loose particles:** Use a small vacuum attachment to suck out remaining fine particles and stubborn dust.[[1]](https://www.youtube.com/watch?v=Nb2q_K1a65g&t=13)[[2]](https://www.youtube.com/watch?v=r0BJgLU38zw&t=36)\n4. **Wipe down surfaces:** Wipe the exterior, hopper, and grounds bin with a warm, soapy cloth or damp paper towel, then let everything dry completely before reassembling. Avoid getting water directly on metal burrs unless your manual specifically states they are washable.[[1]](https://www.mulmar.com/information-guide/coffee-equipment-guide/how-to-clean-your-coffee-grinder/)[[2]](https://www.seriouseats.com/how-to-clean-coffee-grinder-6742984)[[3]](https://outin.com/blogs/news/how-to-clean-coffee-grinder)\n\nWatch a visual demonstration on how to safely disassemble, brush, and vacuum a burr coffee grinder:\n\n![](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQj-QYozAN9Dzr7B4LhCwypqzvQ8N856gjkjm7_XTKcgWuaie-o)\n5m\n[](https://www.youtube.com/watch?v=jmKTA-5xt8o&vl=en&t=85) Is Your Grinder Ruining Your Coffee? Essential Cleaning & Maintenance ...16k views  · 1 year ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · Artisti Coffee Roasters.\n\n### Quick Clean with Cleaning Tablets\n\n1. **Run the tablets:** Pour a recommended capful of food-safe grinder cleaning tablets (such as Grindz) into the empty hopper.\n2. **Grind through:** Turn on the grinder and run all the tablets through to absorb sticky oils and old residue.\n3. **Purge the system:** Grind a small handful of cheap coffee beans afterward to clear out any residual tablet dust or taste, then discard the grounds.[[1]](https://www.youtube.com/watch?v=2laQmBYPqs8)[[2]](https://outin.com/blogs/news/how-to-clean-coffee-grinder)[[3]](https://www.coffeecircle.com/en/e/coffee-grinder-cleaning)[[4]](https://www.reddit.com/r/Coffee/comments/hk7gun/discovered_the_best_way_to_clean_my_coffee/)\n\nSee how to use specialized cleaning tablets to clear out old residue quickly:\n\n![](https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQhDtCu6jwCqrGumMR9C9f629BcsQ1F9U1qKqNV8MULvUFrSSVF)\n2:02\n[](https://www.youtube.com/watch?v=2laQmBYPqs8) How to Clean Your Coffee Grinder with Grindz Tablets: Quick & Easy!31k views  · 3 years ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · French Press Coffee\n\n### Blade Grinders / Spice Grinders\n\n1. **Wipe the chamber:** Unplug the grinder and wipe down the inside with a dry or slightly damp cloth.\n2. **Use safe alternatives:** Avoid using raw rice for cleaning, as hard grains can damage disc or cone burrs. For basic maintenance on blade models, you can use specialized cleaning granules or wipe down the blades carefully.[[1]](https://www.coffeecircle.com/en/e/coffee-grinder-cleaning)[[2]](https://outin.com/blogs/news/how-to-clean-coffee-grinder)\n\nLearn an alternative method for maintaining and cleaning compact grinders:\n\n![](https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRed1DO-7bB7zGcoofLhV6ITPqKmmdY--TesTmtwmwsTZmMxkLP)\n2m\n[](https://www.youtube.com/watch?v=Nb2q_K1a65g&t=13) How to Clean Your Coffee Grinder 46k views  · 13 years ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · Transcend Coffee\n\nIf you share the **brand and model** of your coffee grinder, I can provide specific instructions for its removal parts and calibration.",
+        "items": [
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Clean a coffee grinder by emptying the remaining beans, unplugging the unit, and using a stiff brush, vacuum, or specialized grinding tablets to clear out old coffee oils and grounds.",
+          "markdown": "Clean a coffee grinder by `emptying the remaining beans, unplugging the unit, and using a stiff brush, vacuum, or specialized grinding tablets to clear out old coffee oils and grounds`.[[1]](https://www.reddit.com/r/Coffee/comments/hk7gun/discovered_the_best_way_to_clean_my_coffee/)[[2]](https://www.seriouseats.com/how-to-clean-coffee-grinder-6742984)[[3]](https://www.mulmar.com/information-guide/coffee-equipment-guide/how-to-clean-your-coffee-grinder/)[[4]](https://www.youtube.com/watch?v=r0BJgLU38zw&t=36)[[5]](https://outin.com/blogs/news/how-to-clean-coffee-grinder)[[6]](https://www.coffeecircle.com/en/e/coffee-grinder-cleaning)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Reddit",
+            "domain": "www.reddit.com",
+            "url": "https://www.reddit.com/r/Coffee/comments/hk7gun/discovered_the_best_way_to_clean_my_coffee/",
+            "title": "Discovered the best way to clean my coffee grinder and now I don't dread ...",
+            "text": "Grinder Cleaning Tablets: Cleaning tablets like Grindz are a popular and effective method for deep cleaning coffee grinders, parti..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Serious Eats",
+            "domain": "www.seriouseats.com",
+            "url": "https://www.seriouseats.com/how-to-clean-coffee-grinder-6742984",
+            "title": "How to Clean a Coffee Grinder - Serious Eats",
+            "text": "Before you start, I recommend getting a quarter- or half-sheet pan and putting it on your counter or table. Then, place the grinde..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Mulmar",
+            "domain": "www.mulmar.com",
+            "url": "https://www.mulmar.com/information-guide/coffee-equipment-guide/how-to-clean-your-coffee-grinder/",
+            "title": "How To Clean Your Coffee Grinder (Made Easy)",
+            "text": "Trust us, your taste buds will thank you. * How to clean your burr grinder Burr grinders require a bit more care, but the process ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/watch?v=r0BJgLU38zw&t=36",
+            "title": "Coffee Tech: Grinder Cleaning & Calibration",
+            "text": "Coffee Tech: Grinder Cleaning & Calibration notice the coffee caked on the grinding plates buildup like this prevents fine adjustm..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "OutIn Portable Espresso Machine",
+            "domain": "outin.com",
+            "url": "https://outin.com/blogs/news/how-to-clean-coffee-grinder",
+            "title": "How to Clean a Coffee Grinder: A Step-by-Step Guide",
+            "text": "Toolkit: Stiff-bristled brush, air blower, soft cloth, cleaning tablets, screwdriver, vacuum. Burr Deep Clean (Monthly/3-5 lbs): U..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Coffee Circle",
+            "domain": "www.coffeecircle.com",
+            "url": "https://www.coffeecircle.com/en/e/coffee-grinder-cleaning",
+            "title": "Cleaning and maintaining a coffee grinder – this is how it's done",
+            "text": "Our tips for cleaning your coffee grinder The oilier the coffee you use, the stronger the sedimentation effect. Say: If you use ve..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Burr Grinders (Deep Clean)",
+          "text": "Unplug and disassemble: Turn off and unplug your grinder. Remove the bean hopper (usually by twisting counter-clockwise) and take out the top burr if your model allows it. Brush away debris: Use a stiff-bristled brush or a small paintbrush to clean coffee grounds and dust from the burrs and internal chamber. Vacuum loose particles: Use a small vacuum attachment to suck out remaining fine particles and stubborn dust. Wipe down surfaces: Wipe the exterior, hopper, and grounds bin with a warm, soapy cloth or damp paper towel, then let everything dry completely before reassembling. Avoid getting water directly on metal burrs unless your manual specifically states they are washable.",
+          "markdown": "1. **Unplug and disassemble:** Turn off and unplug your grinder. Remove the bean hopper (usually by twisting counter-clockwise) and take out the top burr if your model allows it.[[1]](https://www.seriouseats.com/how-to-clean-coffee-grinder-6742984)[[2]](https://www.mulmar.com/information-guide/coffee-equipment-guide/how-to-clean-your-coffee-grinder/)[[3]](https://outin.com/blogs/news/how-to-clean-coffee-grinder)\n2. **Brush away debris:** Use a stiff-bristled brush or a small paintbrush to clean coffee grounds and dust from the burrs and internal chamber.[[1]](https://alexandermills.ca/blog/how-to-clean-your-coffee-grinder)[[2]](https://www.wired.com/story/how-to-clean-a-coffee-grinder/)\n3. **Vacuum loose particles:** Use a small vacuum attachment to suck out remaining fine particles and stubborn dust.[[1]](https://www.youtube.com/watch?v=Nb2q_K1a65g&t=13)[[2]](https://www.youtube.com/watch?v=r0BJgLU38zw&t=36)\n4. **Wipe down surfaces:** Wipe the exterior, hopper, and grounds bin with a warm, soapy cloth or damp paper towel, then let everything dry completely before reassembling. Avoid getting water directly on metal burrs unless your manual specifically states they are washable.[[1]](https://www.mulmar.com/information-guide/coffee-equipment-guide/how-to-clean-your-coffee-grinder/)[[2]](https://www.seriouseats.com/how-to-clean-coffee-grinder-6742984)[[3]](https://outin.com/blogs/news/how-to-clean-coffee-grinder)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Serious Eats",
+            "domain": "www.seriouseats.com",
+            "url": "https://www.seriouseats.com/how-to-clean-coffee-grinder-6742984",
+            "title": "How to Clean a Coffee Grinder - Serious Eats",
+            "text": "Before you start, I recommend getting a quarter- or half-sheet pan and putting it on your counter or table. Then, place the grinde..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Mulmar",
+            "domain": "www.mulmar.com",
+            "url": "https://www.mulmar.com/information-guide/coffee-equipment-guide/how-to-clean-your-coffee-grinder/",
+            "title": "How To Clean Your Coffee Grinder (Made Easy)",
+            "text": "Trust us, your taste buds will thank you. * How to clean your burr grinder Burr grinders require a bit more care, but the process ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "OutIn Portable Espresso Machine",
+            "domain": "outin.com",
+            "url": "https://outin.com/blogs/news/how-to-clean-coffee-grinder",
+            "title": "How to Clean a Coffee Grinder: A Step-by-Step Guide",
+            "text": "Toolkit: Stiff-bristled brush, air blower, soft cloth, cleaning tablets, screwdriver, vacuum. Burr Deep Clean (Monthly/3-5 lbs): U..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "alexandermills.ca",
+            "domain": "alexandermills.ca",
+            "url": "https://alexandermills.ca/blog/how-to-clean-your-coffee-grinder",
+            "title": "How To Clean Your Burr Grinder (and why you should!) — Specialty Coffee Blog",
+            "text": "Maintenance: Clean burr grinders weekly to prevent stale coffee retention from tainting flavor and affecting machinery care. Disas..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "WIRED",
+            "domain": "www.wired.com",
+            "url": "https://www.wired.com/story/how-to-clean-a-coffee-grinder/",
+            "title": "How to Clean Your Coffee Grinder (and How Often You Should Do It)",
+            "text": "How to Clean Your Coffee Grinder (and How Often You Should Do It). Cleaning your coffee grinder is a bit of a chore, but doing so ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/watch?v=Nb2q_K1a65g&t=13",
+            "title": "How to Clean Your Coffee Grinder",
+            "text": "videos grinder is one of the best things that you can invest in in terms of brewing great coffee at home but it does get dirty. an..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/watch?v=r0BJgLU38zw&t=36",
+            "title": "Coffee Tech: Grinder Cleaning & Calibration",
+            "text": "Coffee Tech: Grinder Cleaning & Calibration notice the coffee caked on the grinding plates buildup like this prevents fine adjustm..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Watch a visual demonstration on how to safely disassemble, brush, and vacuum a burr coffee grinder: 5m Is Your Grinder Ruining Your Coffee? Essential Cleaning & Maintenance ... 16k views · 1 year ago YouTube · Artisti Coffee Roasters.",
+          "markdown": "Watch a visual demonstration on how to safely disassemble, brush, and vacuum a burr coffee grinder:\n\n![](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQj-QYozAN9Dzr7B4LhCwypqzvQ8N856gjkjm7_XTKcgWuaie-o)\n5m\n[](https://www.youtube.com/watch?v=jmKTA-5xt8o&vl=en&t=85) Is Your Grinder Ruining Your Coffee? Essential Cleaning & Maintenance ...16k views  · 1 year ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · Artisti Coffee Roasters.",
+          "links": null,
+          "images": null,
+          "references": null
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Quick Clean with Cleaning Tablets",
+          "text": "Run the tablets: Pour a recommended capful of food-safe grinder cleaning tablets (such as Grindz) into the empty hopper. Grind through: Turn on the grinder and run all the tablets through to absorb sticky oils and old residue. Purge the system: Grind a small handful of cheap coffee beans afterward to clear out any residual tablet dust or taste, then discard the grounds.",
+          "markdown": "1. **Run the tablets:** Pour a recommended capful of food-safe grinder cleaning tablets (such as Grindz) into the empty hopper.\n2. **Grind through:** Turn on the grinder and run all the tablets through to absorb sticky oils and old residue.\n3. **Purge the system:** Grind a small handful of cheap coffee beans afterward to clear out any residual tablet dust or taste, then discard the grounds.[[1]](https://www.youtube.com/watch?v=2laQmBYPqs8)[[2]](https://outin.com/blogs/news/how-to-clean-coffee-grinder)[[3]](https://www.coffeecircle.com/en/e/coffee-grinder-cleaning)[[4]](https://www.reddit.com/r/Coffee/comments/hk7gun/discovered_the_best_way_to_clean_my_coffee/)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/watch?v=2laQmBYPqs8",
+            "title": "How to Clean Your Coffee Grinder with Grindz Tablets: Quick & Easy!",
+            "text": "How to Clean Your Coffee Grinder with Grindz Tablets: Quick & Easy! coffee grinders need love too today we're going to show you ho..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "OutIn Portable Espresso Machine",
+            "domain": "outin.com",
+            "url": "https://outin.com/blogs/news/how-to-clean-coffee-grinder",
+            "title": "How to Clean a Coffee Grinder: A Step-by-Step Guide",
+            "text": "Toolkit: Stiff-bristled brush, air blower, soft cloth, cleaning tablets, screwdriver, vacuum. Burr Deep Clean (Monthly/3-5 lbs): U..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Coffee Circle",
+            "domain": "www.coffeecircle.com",
+            "url": "https://www.coffeecircle.com/en/e/coffee-grinder-cleaning",
+            "title": "Cleaning and maintaining a coffee grinder – this is how it's done",
+            "text": "Our tips for cleaning your coffee grinder The oilier the coffee you use, the stronger the sedimentation effect. Say: If you use ve..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Reddit",
+            "domain": "www.reddit.com",
+            "url": "https://www.reddit.com/r/Coffee/comments/hk7gun/discovered_the_best_way_to_clean_my_coffee/",
+            "title": "Discovered the best way to clean my coffee grinder and now I don't dread ...",
+            "text": "Grinder Cleaning Tablets: Cleaning tablets like Grindz are a popular and effective method for deep cleaning coffee grinders, parti..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "See how to use specialized cleaning tablets to clear out old residue quickly: 2:02 How to Clean Your Coffee Grinder with Grindz Tablets: Quick & Easy! 31k views · 3 years ago YouTube · French Press Coffee",
+          "markdown": "See how to use specialized cleaning tablets to clear out old residue quickly:\n\n![](https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQhDtCu6jwCqrGumMR9C9f629BcsQ1F9U1qKqNV8MULvUFrSSVF)\n2:02\n[](https://www.youtube.com/watch?v=2laQmBYPqs8) How to Clean Your Coffee Grinder with Grindz Tablets: Quick & Easy!31k views  · 3 years ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · French Press Coffee",
+          "links": null,
+          "images": null,
+          "references": null
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Blade Grinders / Spice Grinders",
+          "text": "Wipe the chamber: Unplug the grinder and wipe down the inside with a dry or slightly damp cloth. Use safe alternatives: Avoid using raw rice for cleaning, as hard grains can damage disc or cone burrs. For basic maintenance on blade models, you can use specialized cleaning granules or wipe down the blades carefully.",
+          "markdown": "1. **Wipe the chamber:** Unplug the grinder and wipe down the inside with a dry or slightly damp cloth.\n2. **Use safe alternatives:** Avoid using raw rice for cleaning, as hard grains can damage disc or cone burrs. For basic maintenance on blade models, you can use specialized cleaning granules or wipe down the blades carefully.[[1]](https://www.coffeecircle.com/en/e/coffee-grinder-cleaning)[[2]](https://outin.com/blogs/news/how-to-clean-coffee-grinder)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Coffee Circle",
+            "domain": "www.coffeecircle.com",
+            "url": "https://www.coffeecircle.com/en/e/coffee-grinder-cleaning",
+            "title": "Cleaning and maintaining a coffee grinder – this is how it's done",
+            "text": "Our tips for cleaning your coffee grinder The oilier the coffee you use, the stronger the sedimentation effect. Say: If you use ve..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "OutIn Portable Espresso Machine",
+            "domain": "outin.com",
+            "url": "https://outin.com/blogs/news/how-to-clean-coffee-grinder",
+            "title": "How to Clean a Coffee Grinder: A Step-by-Step Guide",
+            "text": "Toolkit: Stiff-bristled brush, air blower, soft cloth, cleaning tablets, screwdriver, vacuum. Burr Deep Clean (Monthly/3-5 lbs): U..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Learn an alternative method for maintaining and cleaning compact grinders: 2m How to Clean Your Coffee Grinder 46k views · 13 years ago YouTube · Transcend Coffee",
+          "markdown": "Learn an alternative method for maintaining and cleaning compact grinders:\n\n![](https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRed1DO-7bB7zGcoofLhV6ITPqKmmdY--TesTmtwmwsTZmMxkLP)\n2m\n[](https://www.youtube.com/watch?v=Nb2q_K1a65g&t=13) How to Clean Your Coffee Grinder 46k views  · 13 years ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · Transcend Coffee",
+          "links": null,
+          "images": null,
+          "references": null
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "If you share the brand and model of your coffee grinder, I can provide specific instructions for its removal parts and calibration.",
+          "markdown": "If you share the **brand and model** of your coffee grinder, I can provide specific instructions for its removal parts and calibration.",
+          "links": null,
+          "images": null,
+          "references": null
+         }
+        ],
+        "references": [
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Reddit",
+          "domain": "www.reddit.com",
+          "url": "https://www.reddit.com/r/Coffee/comments/hk7gun/discovered_the_best_way_to_clean_my_coffee/",
+          "title": "Discovered the best way to clean my coffee grinder and now I don't dread ...",
+          "text": "Grinder Cleaning Tablets: Cleaning tablets like Grindz are a popular and effective method for deep cleaning coffee grinders, parti..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Serious Eats",
+          "domain": "www.seriouseats.com",
+          "url": "https://www.seriouseats.com/how-to-clean-coffee-grinder-6742984",
+          "title": "How to Clean a Coffee Grinder - Serious Eats",
+          "text": "Before you start, I recommend getting a quarter- or half-sheet pan and putting it on your counter or table. Then, place the grinde..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "YouTube",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=2laQmBYPqs8",
+          "title": "How to Clean Your Coffee Grinder with Grindz Tablets: Quick & Easy!",
+          "text": "How to Clean Your Coffee Grinder with Grindz Tablets: Quick & Easy! coffee grinders need love too today we're going to show you ho..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "alexandermills.ca",
+          "domain": "alexandermills.ca",
+          "url": "https://alexandermills.ca/blog/how-to-clean-your-coffee-grinder",
+          "title": "How To Clean Your Burr Grinder (and why you should!) — Specialty Coffee Blog",
+          "text": "Maintenance: Clean burr grinders weekly to prevent stale coffee retention from tainting flavor and affecting machinery care. Disas..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Coffee Circle",
+          "domain": "www.coffeecircle.com",
+          "url": "https://www.coffeecircle.com/en/e/coffee-grinder-cleaning",
+          "title": "Cleaning and maintaining a coffee grinder – this is how it's done",
+          "text": "Our tips for cleaning your coffee grinder The oilier the coffee you use, the stronger the sedimentation effect. Say: If you use ve..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "OutIn Portable Espresso Machine",
+          "domain": "outin.com",
+          "url": "https://outin.com/blogs/news/how-to-clean-coffee-grinder",
+          "title": "How to Clean a Coffee Grinder: A Step-by-Step Guide",
+          "text": "Toolkit: Stiff-bristled brush, air blower, soft cloth, cleaning tablets, screwdriver, vacuum. Burr Deep Clean (Monthly/3-5 lbs): U..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "YouTube",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=Nb2q_K1a65g&t=13",
+          "title": "How to Clean Your Coffee Grinder",
+          "text": "videos grinder is one of the best things that you can invest in in terms of brewing great coffee at home but it does get dirty. an..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Mulmar",
+          "domain": "www.mulmar.com",
+          "url": "https://www.mulmar.com/information-guide/coffee-equipment-guide/how-to-clean-your-coffee-grinder/",
+          "title": "How To Clean Your Coffee Grinder (Made Easy)",
+          "text": "Trust us, your taste buds will thank you. * How to clean your burr grinder Burr grinders require a bit more care, but the process ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "WIRED",
+          "domain": "www.wired.com",
+          "url": "https://www.wired.com/story/how-to-clean-a-coffee-grinder/",
+          "title": "How to Clean Your Coffee Grinder (and How Often You Should Do It)",
+          "text": "How to Clean Your Coffee Grinder (and How Often You Should Do It). Cleaning your coffee grinder is a bit of a chore, but doing so ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "YouTube",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=r0BJgLU38zw&t=36",
+          "title": "Coffee Tech: Grinder Cleaning & Calibration",
+          "text": "Coffee Tech: Grinder Cleaning & Calibration notice the coffee caked on the grinding plates buildup like this prevents fine adjustm..."
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "video",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[3]/div[1]",
+        "items": [
+         {
+          "type": "video_element",
+          "source": "Instagram · Sara Moulton",
+          "title": "How to clean your coffee grinder! #AccordingToSaraMoulton",
+          "timestamp": "2024-07-24 00:00:00 +00:00",
+          "url": "https://www.instagram.com/reel/C9zf_0Tx0Vw/?hl=en-gb"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · Artisti Coffee Roasters.",
+          "title": "Is Your Grinder Ruining Your Coffee? Essential Cleaning & ...",
+          "timestamp": "2025-03-06 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=jmKTA-5xt8o"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · French Press Coffee",
+          "title": "How to Clean Your Coffee Grinder with Grindz Tablets",
+          "timestamp": "2023-08-25 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=2laQmBYPqs8"
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "people_also_ask",
+        "rank_group": 1,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[5]/div[1]/div[1]/div[1]",
+        "items": [
+         {
+          "type": "people_also_ask_element",
+          "title": "What is the best way to clean a coffee grinder?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[5]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "How can I deep clean my coffee grinder?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[5]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Can I run water through my coffee grinder to clean it?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[5]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "What can I put through my coffee grinder to clean it?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[5]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[7]/div[1]/div[1]",
+        "domain": "www.reddit.com",
+        "title": "Discovered the best way to clean my coffee grinder and ...",
+        "url": "https://www.reddit.com/r/Coffee/comments/hk7gun/discovered_the_best_way_to_clean_my_coffee/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "60+ comments  ·  6 years ago",
+        "website_name": "Reddit · r/Coffee",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Take off the top burr, brush it off, do the same with the bottom burr. Just run some coffee through it. I usually purge the grinder with coffee ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Take off the top burr, brush it off, do the same with the bottom burr"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[9]/div[1]/div[1]",
+        "domain": "www.thekitchn.com",
+        "title": "How to Clean a Coffee or Spice Grinder",
+        "url": "https://www.thekitchn.com/how-to-clean-a-coffee-grinder-cleaning-lessons-from-the-kitchn-16605",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.thekitchn.com › Kitchen & Home › Cleaning",
+        "website_name": "The Kitchn",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "1 Jul 2023 — Use rice to clean a coffee grinder; grind the rice for about a minute until it is pulverized, then wipe the inside clean with a paper towel.",
+        "pre_snippet": "07/01/2023 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Use rice to clean a coffee grinder"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2023-07-01 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "short_videos",
+        "rank_group": 1,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[11]/div[1]",
+        "title": "Short videos",
+        "items": [
+         {
+          "type": "short_videos_element",
+          "title": "How to clean your coffee grinder! #AccordingToSaraMoulton",
+          "url": "https://www.instagram.com/reel/C9zf_0Tx0Vw/?hl=en-gb",
+          "domain": "google.com",
+          "source": "Sara Moulton"
+         },
+         {
+          "type": "short_videos_element",
+          "title": "How To Clean Your Coffee Grinder",
+          "url": "https://www.youtube.com/shorts/ThNYviJI4HY",
+          "domain": "google.com",
+          "source": "Two2Brew Coffee Canada"
+         },
+         {
+          "type": "short_videos_element",
+          "title": "This video shows a simple way to clean your coffee grinder ...",
+          "url": "https://www.facebook.com/milton.home.coffee.roastery/videos/this-video-shows-a-simple-way-to-clean-your-coffee-grinder-without-any-hassle-we/1305781428287079/",
+          "domain": "google.com",
+          "source": "Milton Home Coffee Roastery"
+         },
+         {
+          "type": "short_videos_element",
+          "title": "2 Easy Ways to Clean Your Burr Grinder at Home #coffee ...",
+          "url": "https://www.youtube.com/shorts/yybg1IaVeiA?vl=en",
+          "domain": "google.com",
+          "source": "Barista in Pajamas"
+         },
+         {
+          "type": "short_videos_element",
+          "title": "Tips and advice for cleaning and maintaining a coffee grinder",
+          "url": "https://www.youtube.com/shorts/E_f-45iuu4g",
+          "domain": "google.com",
+          "source": "Artisti Coffee Roasters."
+         },
+         {
+          "type": "short_videos_element",
+          "title": "How to clean your coffee grinder: Tech Tips",
+          "url": "https://www.youtube.com/shorts/AuwmX1316Hg",
+          "domain": "google.com",
+          "source": "Rumble Coffee Roasters"
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[13]/div[1]/div[1]",
+        "domain": "www.coffeecircle.com",
+        "title": "Cleaning and maintaining a coffee grinder – this is how it's ...",
+        "url": "https://www.coffeecircle.com/en/e/coffee-grinder-cleaning",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.coffeecircle.com › coffee-grinder-cleaning",
+        "website_name": "Coffee Circle",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "The most effective method is cleaning with special „cleaning beans“. Simply put the cleaning beans into the grinder like coffee beans and grind them through. ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": {
+         "rating_type": "Max5",
+         "value": 4.9,
+         "votes_count": 13702,
+         "rating_max": 5
+        },
+        "price": null,
+        "highlighted": [
+         "grinder",
+         "coffee"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "discussions_and_forums",
+        "rank_group": 1,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[15]/div[1]",
+        "title": "Discussions and forums",
+        "items": [
+         {
+          "type": "discussions_and_forums_element",
+          "title": "How do you guys clean your grinders?",
+          "url": "https://www.reddit.com/r/JamesHoffmann/comments/u43sdn/how_do_you_guys_clean_your_grinders/",
+          "domain": "www.reddit.com",
+          "source": "Reddit",
+          "description": null,
+          "timestamp": "2022-10-08 20:16:05 +00:00",
+          "posts_count": 40
+         },
+         {
+          "type": "discussions_and_forums_element",
+          "title": "How do you clean and maintain your coffee grinder?",
+          "url": "https://www.quora.com/How-do-you-clean-and-maintain-your-coffee-grinder",
+          "domain": "www.quora.com",
+          "source": "Quora",
+          "description": null,
+          "timestamp": "2024-10-08 20:16:05 +00:00",
+          "posts_count": 30
+         },
+         {
+          "type": "discussions_and_forums_element",
+          "title": "What is the best way to clean my coffee grinder?",
+          "url": "https://www.quora.com/What-is-the-best-way-to-clean-my-coffee-grinder",
+          "domain": "www.quora.com",
+          "source": "Quora",
+          "description": null,
+          "timestamp": "2020-10-08 20:16:05 +00:00",
+          "posts_count": 30
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[17]/div[1]/div[1]",
+        "domain": "alexandermills.ca",
+        "title": "How To Clean Your Burr Grinder (and why you should!)",
+        "url": "https://alexandermills.ca/blog/how-to-clean-your-coffee-grinder",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://alexandermills.ca › blog › how-to-clean-your-co...",
+        "website_name": "alexandermills.ca",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "14 Jul 2026 — First things first is to carefully disassemble your grinder. Take apart things like the hopper, the beans bin, and your burrs if they're easily ... Read more",
+        "pre_snippet": "07/14/2026 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "carefully disassemble your grinder"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://alexandermills.ca/blog/how-to-clean-your-coffee-grinder#:~:text=First%20things%20first%20is%20to,burrs%20if%20they're%20easily%20accessible.",
+          "domain": "alexandermills.ca"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2026-07-14 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[19]/div[1]/div[1]",
+        "domain": "www.seriouseats.com",
+        "title": "How to Clean a Coffee Grinder",
+        "url": "https://www.seriouseats.com/how-to-clean-coffee-grinder-6742984",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.seriouseats.com › ... › Guides",
+        "website_name": "Serious Eats",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "8 May 2025 — The plastic hopper, lid, grounds bin, and black gasket can be washed with warm, soapy water, though they must be dried thoroughly before ... Read more",
+        "pre_snippet": "05/08/2025 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "warm, soapy water"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://www.seriouseats.com/how-to-clean-coffee-grinder-6742984#:~:text=The%20plastic%20hopper%2C%20lid%2C%20grounds,damage%20a%20grinder's%20metal%20parts.",
+          "domain": "www.seriouseats.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2025-05-08 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[21]/div[1]/div[1]",
+        "domain": "outin.com",
+        "title": "How to Clean a Coffee Grinder: The Definitive Guide",
+        "url": "https://outin.com/blogs/news/how-to-clean-coffee-grinder",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://outin.com › Blogs",
+        "website_name": "OutIn Portable Espresso Machine",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "30 Oct 2025 — Always start by unplugging the grinder. Then take a damp cloth and wipe out the grinding chamber, cleaning up as much of the oily residue and ...",
+        "pre_snippet": "10/30/2025 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Always start by unplugging the grinder"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Why Bother Cleaning Your...",
+          "description": null,
+          "url": "https://outin.com/blogs/news/how-to-clean-coffee-grinder#H-why-bother-cleaning-your-grinder-the-importance-of-maintenance",
+          "domain": "outin.com"
+         },
+         {
+          "type": "link_element",
+          "title": "The Deep Clean: A Step-by...",
+          "description": null,
+          "url": "https://outin.com/blogs/news/how-to-clean-coffee-grinder#H-the-deep-clean-a-step-by-step-guide-for-burr-grinders",
+          "domain": "outin.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2025-10-30 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "related_searches",
+        "rank_group": 1,
+        "rank_absolute": 12,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[2]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "items": [
+         "Burr grinder",
+         "How to clean coffee grinder with vinegar",
+         "How to clean manual coffee grinder",
+         "How to clean coffee grinder with rice",
+         "How to clean coffee grinder reddit",
+         "How to clean coffee grinder sage",
+         "How to clean Coffee Grinder OXO",
+         "Clean coffee grinder with oats"
+        ],
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

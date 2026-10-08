@@ -1,0 +1,935 @@
+{
+ "recordedAt": "2026-10-08T20:16:09.163Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "pour over vs french press",
+  "location_code": 2826,
+  "language_code": "en",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0242 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10082016-2302-0066-0000-751bec8a5103",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0199 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10082016-2302-0066-0000-751bec8a5103"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "pour over vs french press",
+     "location_code": 2826,
+     "language_code": "en",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "pour over vs french press",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2826,
+      "language_code": "en",
+      "check_url": "https://www.google.com/search?q=pour%20over%20vs%20french%20press&hl=en&gl=GB&ie=UTF-8&uule=w+CAIQIFISCamRx0IRO1oCEXoliDJDoPjE",
+      "datetime": "2026-10-08 20:16:06 +00:00",
+      "spell": null,
+      "refinement_chips": null,
+      "item_types": [
+       "ai_overview",
+       "images",
+       "people_also_ask",
+       "video",
+       "organic",
+       "discussions_and_forums",
+       "related_searches"
+      ],
+      "se_results_count": 75,
+      "pages_count": 1,
+      "items_count": 12,
+      "items": [
+       {
+        "type": "ai_overview",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+        "asynchronous_ai_overview": false,
+        "markdown": "![French press vs pour-over: what&#39;s the difference? | Homes and ...](https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-751bec8a5103:4)\nPour-over and French press `differ primarily in how water interacts with the coffee and the type of filter used` , resulting in contrasting taste, body, and ease of use.[[1]](https://procoffeegear.com/blogs/articles/taste-differences-pour-over-french-press-espresso)\n\n### Taste and Flavor Profile\n\n- **Pour-Over:** Produces a clean, crisp, and bright cup. Paper filters trap most of the natural oils and micro-sediment, which highlights delicate acidity, floral aromas, and distinct origin notes. It works best with light and medium roasts.[[1]](https://larryscoffee.com/pages/how-to-brew-the-best-coffee-pour-over-vs-french-press)[[2]](https://www.danielnorris.com/blog/french-press-vs-pour-over)[[3]](https://www.stonecreekcoffee.com/blogs/news/french-press-vs-pour-over-which-brewing-method-is-right-for-you)[[4]](https://procoffeegear.com/blogs/articles/taste-differences-pour-over-french-press-espresso)[[5]](https://fellowproducts.com/blogs/learn/french-press-vs-pour-over)\n- **French Press:** Delivers a bold, rich, and heavy-bodied cup. The metal mesh filter allows natural oils and fine sediment to pass through into the mug, giving a creamy mouthfeel and deep, earthy flavor. It pairs well with dark roasts and chocolatey profiles.[[1]](https://www.reddit.com/r/Coffee/comments/t01k8e/pour_over_vs_french_press/)[[2]](https://www.danielnorris.com/blog/french-press-vs-pour-over)[[3]](https://fellowproducts.com/blogs/learn/french-press-vs-pour-over)[[4]](https://www.youtube.com/watch?v=kWzAymVLt_U&t=17)[[5]](https://procoffeegear.com/blogs/articles/taste-differences-pour-over-french-press-espresso)[[6]](https://larryscoffee.com/pages/how-to-brew-the-best-coffee-pour-over-vs-french-press)\n\n### Brewing Mechanics and Grind Size\n\n- **Pour-Over:** Relies on percolation (gravity) as hot water flows down through a bed of coffee in a paper, cloth, or ceramic cone. It requires a medium-fine to medium grind and active technique with a gooseneck kettle.[[1]](https://www.homesandgardens.com/buying-guide/french-press-vs-pour-over)[[2]](https://www.youtube.com/watch?v=TNjrWCKC5hA&t=34)[[3]](https://procoffeegear.com/blogs/articles/taste-differences-pour-over-french-press-espresso)[[4]](https://fellowproducts.com/blogs/learn/french-press-vs-pour-over)[[5]](https://www.contactcoffee.com/blogs/news/pour-over-coffee-vs-french-press-the-perfect-brew)\n- **French Press:** Uses full immersion, meaning the coffee grounds steep directly in hot water for about 4 minutes before you press the metal mesh plunger down. It requires a coarser grind to prevent excessive sediment from slipping past the screen.[[1]](https://fellowproducts.com/blogs/learn/french-press-vs-pour-over)[[2]](https://www.youtube.com/watch?v=kWzAymVLt_U&t=17)[[3]](https://procoffeegear.com/blogs/articles/taste-differences-pour-over-french-press-espresso)[[4]](https://www.homesandgardens.com/buying-guide/french-press-vs-pour-over)[[5]](https://www.gigawattcoffeeroasters.com/blogs/gigawatt-grounds/pour-over-coffee-vs-french-press-a-brewing-battle-explored)\n\n### Ease of Use and Cleanup\n\n- **Pour-Over:** Takes more practice and precision regarding water temperature, pouring speed, and timing. Cleanup is fast because you just lift and toss the disposable paper filter.[[1]](https://www.danielnorris.com/blog/french-press-vs-pour-over)[[2]](https://www.contactcoffee.com/blogs/news/pour-over-coffee-vs-french-press-the-perfect-brew)\n- **French Press:** Acts as a simpler, more forgiving \"set it and forget it\" method for mornings. Cleanup takes a bit more work because you have to scoop or rinse out wet grounds from the bottom of the carafe and wash the metal mesh.[[1]](https://www.contactcoffee.com/blogs/news/pour-over-coffee-vs-french-press-the-perfect-brew)[[2]](https://www.youtube.com/watch?v=kWzAymVLt_U&t=17)[[3]](https://www.danielnorris.com/blog/french-press-vs-pour-over)[[4]](https://larryscoffee.com/pages/how-to-brew-the-best-coffee-pour-over-vs-french-press)\n\nWatch this video to see a detailed visual comparison of the taste, texture, and brewing steps for both methods:![](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRl6t0D1T-JdMMlv1bUOy7UZvhoJ-I21AZ9J1xiBuEaT_6tv6Sn)\n1m[](https://www.youtube.com/watch?v=DQPcMl1knyM&t=3) Pour Over vs French Press: Taste, Texture, and Brewing Compared 41k views  · 1 year ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=128&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · methodicalcoffee![](https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRnv3YnNvnzQY9llinUrFBleNu4ZDNGaqYcWMa02Uy8XIHjO2MB)\n4m[](https://www.youtube.com/watch?v=kWzAymVLt_U&t=17) Pour Over vs French Press – Which Coffee Method is ACTUALLY Better?4 months ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=128&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · The Coffee Delight![](https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTerjmS350YWG8XSrd0dEf5BjYfklPc8MYTrz15j0qqNAf4hxLM)\n2m[](https://www.youtube.com/watch?v=gM2dkFwIRD8&t=34) French Press vs. Pour Over: The Biggest Differences Between These ...34k views  · 6 years ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=128&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · Roasty Coffee If you'd like, let me know:\n\n- Your **preferred roast level** (light, medium, or dark)\n- Whether you prefer a **clean or heavy** body\n- How much **time and effort** you want to spend on your morning routine\n\nI can help you choose the best brewing setup for your kitchen.",
+        "items": [
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Pour-over and French press differ primarily in how water interacts with the coffee and the type of filter used, resulting in contrasting taste, body, and ease of use.",
+          "markdown": "![French press vs pour-over: what&#39;s the difference? | Homes and ...](https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-751bec8a5103:2)\nPour-over and French press `differ primarily in how water interacts with the coffee and the type of filter used` , resulting in contrasting taste, body, and ease of use.[[1]](https://procoffeegear.com/blogs/articles/taste-differences-pour-over-french-press-espresso)",
+          "links": null,
+          "images": [
+           {
+            "type": "images_element",
+            "alt": "French press vs pour-over: what's the difference? | Homes and ...",
+            "url": null,
+            "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-751bec8a5103:3"
+           }
+          ],
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Pro Coffee Gear",
+            "domain": "procoffeegear.com",
+            "url": "https://procoffeegear.com/blogs/articles/taste-differences-pour-over-french-press-espresso",
+            "title": "Taste Differences: Pour Over vs French Press vs Espresso",
+            "text": "Key Takeaways Understanding the Three Brewing Methods Before we compare the taste of pour over vs French press vs espresso, it hel..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Taste and Flavor Profile",
+          "text": "Pour-Over: Produces a clean, crisp, and bright cup. Paper filters trap most of the natural oils and micro-sediment, which highlights delicate acidity, floral aromas, and distinct origin notes. It works best with light and medium roasts. French Press: Delivers a bold, rich, and heavy-bodied cup. The metal mesh filter allows natural oils and fine sediment to pass through into the mug, giving a creamy mouthfeel and deep, earthy flavor. It pairs well with dark roasts and chocolatey profiles.",
+          "markdown": "- **Pour-Over:** Produces a clean, crisp, and bright cup. Paper filters trap most of the natural oils and micro-sediment, which highlights delicate acidity, floral aromas, and distinct origin notes. It works best with light and medium roasts.[[1]](https://larryscoffee.com/pages/how-to-brew-the-best-coffee-pour-over-vs-french-press)[[2]](https://www.danielnorris.com/blog/french-press-vs-pour-over)[[3]](https://www.stonecreekcoffee.com/blogs/news/french-press-vs-pour-over-which-brewing-method-is-right-for-you)[[4]](https://procoffeegear.com/blogs/articles/taste-differences-pour-over-french-press-espresso)[[5]](https://fellowproducts.com/blogs/learn/french-press-vs-pour-over)\n- **French Press:** Delivers a bold, rich, and heavy-bodied cup. The metal mesh filter allows natural oils and fine sediment to pass through into the mug, giving a creamy mouthfeel and deep, earthy flavor. It pairs well with dark roasts and chocolatey profiles.[[1]](https://www.reddit.com/r/Coffee/comments/t01k8e/pour_over_vs_french_press/)[[2]](https://www.danielnorris.com/blog/french-press-vs-pour-over)[[3]](https://fellowproducts.com/blogs/learn/french-press-vs-pour-over)[[4]](https://www.youtube.com/watch?v=kWzAymVLt_U&t=17)[[5]](https://procoffeegear.com/blogs/articles/taste-differences-pour-over-french-press-espresso)[[6]](https://larryscoffee.com/pages/how-to-brew-the-best-coffee-pour-over-vs-french-press)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Larry's Coffee",
+            "domain": "larryscoffee.com",
+            "url": "https://larryscoffee.com/pages/how-to-brew-the-best-coffee-pour-over-vs-french-press",
+            "title": "Larry's Coffee | How to Brew the Best Coffee (Pour Over Vs. French Press)",
+            "text": "French Press: Components (glass carafe, metal rod plunger, reusable mesh strainer); Method (200°F water, coarse grind, 7-8g coffee..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "www.danielnorris.com",
+            "domain": "www.danielnorris.com",
+            "url": "https://www.danielnorris.com/blog/french-press-vs-pour-over",
+            "title": "French Press vs Pour Over: Why I Keep Coming Back to the V60",
+            "text": "Comparison: Pour-over (Hario V60) versus French press. Advantages of V60: Higher reliability with reproducible recipes via control..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Stone Creek Coffee",
+            "domain": "www.stonecreekcoffee.com",
+            "url": "https://www.stonecreekcoffee.com/blogs/news/french-press-vs-pour-over-which-brewing-method-is-right-for-you",
+            "title": "French Press vs Pour Over | Coffee Tips & Guides",
+            "text": "FAQ * Is French press stronger than pour over? French press often tastes stronger because it produces a fuller body and retains mo..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Pro Coffee Gear",
+            "domain": "procoffeegear.com",
+            "url": "https://procoffeegear.com/blogs/articles/taste-differences-pour-over-french-press-espresso",
+            "title": "Taste Differences: Pour Over vs French Press vs Espresso",
+            "text": "Key Takeaways Understanding the Three Brewing Methods Before we compare the taste of pour over vs French press vs espresso, it hel..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "fellowproducts.com",
+            "domain": "fellowproducts.com",
+            "url": "https://fellowproducts.com/blogs/learn/french-press-vs-pour-over",
+            "title": "French Press vs. Pour Over",
+            "text": "French Press: Immersion brewing (4-minute steep); yields bold, rich, earthy flavor; uses built-in metal mesh filter (no paper filt..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Reddit",
+            "domain": "www.reddit.com",
+            "url": "https://www.reddit.com/r/Coffee/comments/t01k8e/pour_over_vs_french_press/",
+            "title": "Pour Over vs French Press : r/Coffee - Reddit",
+            "text": "French Press Profile: French press coffee offers a full body and notes like chocolate and brown sugar, which are preferred by thos..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/watch?v=kWzAymVLt_U&t=17",
+            "title": "Pour Over vs French Press – Which Coffee Method is ACTUALLY Better?",
+            "text": "Pour Over vs French Press – Which Coffee Method is ACTUALLY Better? actually superior let's find out which brew truly owns your mo..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Brewing Mechanics and Grind Size",
+          "text": "Pour-Over: Relies on percolation (gravity) as hot water flows down through a bed of coffee in a paper, cloth, or ceramic cone. It requires a medium-fine to medium grind and active technique with a gooseneck kettle. French Press: Uses full immersion, meaning the coffee grounds steep directly in hot water for about 4 minutes before you press the metal mesh plunger down. It requires a coarser grind to prevent excessive sediment from slipping past the screen.",
+          "markdown": "- **Pour-Over:** Relies on percolation (gravity) as hot water flows down through a bed of coffee in a paper, cloth, or ceramic cone. It requires a medium-fine to medium grind and active technique with a gooseneck kettle.[[1]](https://www.homesandgardens.com/buying-guide/french-press-vs-pour-over)[[2]](https://www.youtube.com/watch?v=TNjrWCKC5hA&t=34)[[3]](https://procoffeegear.com/blogs/articles/taste-differences-pour-over-french-press-espresso)[[4]](https://fellowproducts.com/blogs/learn/french-press-vs-pour-over)[[5]](https://www.contactcoffee.com/blogs/news/pour-over-coffee-vs-french-press-the-perfect-brew)\n- **French Press:** Uses full immersion, meaning the coffee grounds steep directly in hot water for about 4 minutes before you press the metal mesh plunger down. It requires a coarser grind to prevent excessive sediment from slipping past the screen.[[1]](https://fellowproducts.com/blogs/learn/french-press-vs-pour-over)[[2]](https://www.youtube.com/watch?v=kWzAymVLt_U&t=17)[[3]](https://procoffeegear.com/blogs/articles/taste-differences-pour-over-french-press-espresso)[[4]](https://www.homesandgardens.com/buying-guide/french-press-vs-pour-over)[[5]](https://www.gigawattcoffeeroasters.com/blogs/gigawatt-grounds/pour-over-coffee-vs-french-press-a-brewing-battle-explored)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Homes and Gardens",
+            "domain": "www.homesandgardens.com",
+            "url": "https://www.homesandgardens.com/buying-guide/french-press-vs-pour-over",
+            "title": "French press vs pour-over: what's the difference? - Homes and Gardens",
+            "text": "The French press gives a stronger, richer flavor. The pour-over will taste lighter and more like standard filter coffee. Do I need..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/watch?v=TNjrWCKC5hA&t=34",
+            "title": "Pour Over vs French Press: The Real Difference",
+            "text": "Pour Over vs French Press: The Real Difference now the question changes completely from which one you prefer to which one actually..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Pro Coffee Gear",
+            "domain": "procoffeegear.com",
+            "url": "https://procoffeegear.com/blogs/articles/taste-differences-pour-over-french-press-espresso",
+            "title": "Taste Differences: Pour Over vs French Press vs Espresso",
+            "text": "Key Takeaways Understanding the Three Brewing Methods Before we compare the taste of pour over vs French press vs espresso, it hel..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "fellowproducts.com",
+            "domain": "fellowproducts.com",
+            "url": "https://fellowproducts.com/blogs/learn/french-press-vs-pour-over",
+            "title": "French Press vs. Pour Over",
+            "text": "French Press: Immersion brewing (4-minute steep); yields bold, rich, earthy flavor; uses built-in metal mesh filter (no paper filt..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Contact Coffee Company Ltd.",
+            "domain": "www.contactcoffee.com",
+            "url": "https://www.contactcoffee.com/blogs/news/pour-over-coffee-vs-french-press-the-perfect-brew",
+            "title": "Pour Over Coffee vs French Press: The Perfect Brew",
+            "text": "When comparing pour over coffee vs French press, it's essential to consider your taste preferences. Pour over coffee is known for ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/watch?v=kWzAymVLt_U&t=17",
+            "title": "Pour Over vs French Press – Which Coffee Method is ACTUALLY Better?",
+            "text": "Pour Over vs French Press – Which Coffee Method is ACTUALLY Better? actually superior let's find out which brew truly owns your mo..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Gigawatt Coffee Roasters",
+            "domain": "www.gigawattcoffeeroasters.com",
+            "url": "https://www.gigawattcoffeeroasters.com/blogs/gigawatt-grounds/pour-over-coffee-vs-french-press-a-brewing-battle-explored",
+            "title": "Pour Over vs French Press: Which Brewing Method Is Right for You?",
+            "text": "Frequently Asked Questions * Can I use the same grind size for both pour over and French press? No. Pour over needs a medium to fi..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Ease of Use and Cleanup",
+          "text": "Pour-Over: Takes more practice and precision regarding water temperature, pouring speed, and timing. Cleanup is fast because you just lift and toss the disposable paper filter. French Press: Acts as a simpler, more forgiving \"set it and forget it\" method for mornings. Cleanup takes a bit more work because you have to scoop or rinse out wet grounds from the bottom of the carafe and wash the metal mesh.",
+          "markdown": "- **Pour-Over:** Takes more practice and precision regarding water temperature, pouring speed, and timing. Cleanup is fast because you just lift and toss the disposable paper filter.[[1]](https://www.danielnorris.com/blog/french-press-vs-pour-over)[[2]](https://www.contactcoffee.com/blogs/news/pour-over-coffee-vs-french-press-the-perfect-brew)\n- **French Press:** Acts as a simpler, more forgiving \"set it and forget it\" method for mornings. Cleanup takes a bit more work because you have to scoop or rinse out wet grounds from the bottom of the carafe and wash the metal mesh.[[1]](https://www.contactcoffee.com/blogs/news/pour-over-coffee-vs-french-press-the-perfect-brew)[[2]](https://www.youtube.com/watch?v=kWzAymVLt_U&t=17)[[3]](https://www.danielnorris.com/blog/french-press-vs-pour-over)[[4]](https://larryscoffee.com/pages/how-to-brew-the-best-coffee-pour-over-vs-french-press)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "www.danielnorris.com",
+            "domain": "www.danielnorris.com",
+            "url": "https://www.danielnorris.com/blog/french-press-vs-pour-over",
+            "title": "French Press vs Pour Over: Why I Keep Coming Back to the V60",
+            "text": "Comparison: Pour-over (Hario V60) versus French press. Advantages of V60: Higher reliability with reproducible recipes via control..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Contact Coffee Company Ltd.",
+            "domain": "www.contactcoffee.com",
+            "url": "https://www.contactcoffee.com/blogs/news/pour-over-coffee-vs-french-press-the-perfect-brew",
+            "title": "Pour Over Coffee vs French Press: The Perfect Brew",
+            "text": "When comparing pour over coffee vs French press, it's essential to consider your taste preferences. Pour over coffee is known for ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/watch?v=kWzAymVLt_U&t=17",
+            "title": "Pour Over vs French Press – Which Coffee Method is ACTUALLY Better?",
+            "text": "Pour Over vs French Press – Which Coffee Method is ACTUALLY Better? actually superior let's find out which brew truly owns your mo..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Larry's Coffee",
+            "domain": "larryscoffee.com",
+            "url": "https://larryscoffee.com/pages/how-to-brew-the-best-coffee-pour-over-vs-french-press",
+            "title": "Larry's Coffee | How to Brew the Best Coffee (Pour Over Vs. French Press)",
+            "text": "French Press: Components (glass carafe, metal rod plunger, reusable mesh strainer); Method (200°F water, coarse grind, 7-8g coffee..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Watch this video to see a detailed visual comparison of the taste, texture, and brewing steps for both methods: 1m Pour Over vs French Press: Taste, Texture, and Brewing Compared 41k views · 1 year ago YouTube · methodicalcoffee 4m Pour Over vs French Press – Which Coffee Method is ACTUALLY Better? 4 months ago YouTube · The Coffee Delight 2m French Press vs. Pour Over: The Biggest Differences Between These ... 34k views · 6 years ago YouTube · Roasty Coffee",
+          "markdown": "Watch this video to see a detailed visual comparison of the taste, texture, and brewing steps for both methods:![](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRl6t0D1T-JdMMlv1bUOy7UZvhoJ-I21AZ9J1xiBuEaT_6tv6Sn)\n1m[](https://www.youtube.com/watch?v=DQPcMl1knyM&t=3) Pour Over vs French Press: Taste, Texture, and Brewing Compared 41k views  · 1 year ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=128&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · methodicalcoffee![](https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRnv3YnNvnzQY9llinUrFBleNu4ZDNGaqYcWMa02Uy8XIHjO2MB)\n4m[](https://www.youtube.com/watch?v=kWzAymVLt_U&t=17) Pour Over vs French Press – Which Coffee Method is ACTUALLY Better?4 months ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=128&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · The Coffee Delight![](https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTerjmS350YWG8XSrd0dEf5BjYfklPc8MYTrz15j0qqNAf4hxLM)\n2m[](https://www.youtube.com/watch?v=gM2dkFwIRD8&t=34) French Press vs. Pour Over: The Biggest Differences Between These ...34k views  · 6 years ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=128&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · Roasty Coffee",
+          "links": null,
+          "images": null,
+          "references": null
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "If you'd like, let me know:Your preferred roast level (light, medium, or dark)\nWhether you prefer a clean or heavy body\nHow much time and effort you want to spend on your morning routine\nI can help you choose the best brewing setup for your kitchen.",
+          "markdown": "If you'd like, let me know:\n\n- Your **preferred roast level** (light, medium, or dark)\n- Whether you prefer a **clean or heavy** body\n- How much **time and effort** you want to spend on your morning routine\n\nI can help you choose the best brewing setup for your kitchen.",
+          "links": null,
+          "images": null,
+          "references": null
+         }
+        ],
+        "references": [
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Reddit",
+          "domain": "www.reddit.com",
+          "url": "https://www.reddit.com/r/Coffee/comments/t01k8e/pour_over_vs_french_press/",
+          "title": "Pour Over vs French Press : r/Coffee - Reddit",
+          "text": "French Press Profile: French press coffee offers a full body and notes like chocolate and brown sugar, which are preferred by thos..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Larry's Coffee",
+          "domain": "larryscoffee.com",
+          "url": "https://larryscoffee.com/pages/how-to-brew-the-best-coffee-pour-over-vs-french-press",
+          "title": "Larry's Coffee | How to Brew the Best Coffee (Pour Over Vs. French Press)",
+          "text": "French Press: Components (glass carafe, metal rod plunger, reusable mesh strainer); Method (200°F water, coarse grind, 7-8g coffee..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Homes and Gardens",
+          "domain": "www.homesandgardens.com",
+          "url": "https://www.homesandgardens.com/buying-guide/french-press-vs-pour-over",
+          "title": "French press vs pour-over: what's the difference? - Homes and Gardens",
+          "text": "The French press gives a stronger, richer flavor. The pour-over will taste lighter and more like standard filter coffee. Do I need..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "www.danielnorris.com",
+          "domain": "www.danielnorris.com",
+          "url": "https://www.danielnorris.com/blog/french-press-vs-pour-over",
+          "title": "French Press vs Pour Over: Why I Keep Coming Back to the V60",
+          "text": "Comparison: Pour-over (Hario V60) versus French press. Advantages of V60: Higher reliability with reproducible recipes via control..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Contact Coffee Company Ltd.",
+          "domain": "www.contactcoffee.com",
+          "url": "https://www.contactcoffee.com/blogs/news/pour-over-coffee-vs-french-press-the-perfect-brew",
+          "title": "Pour Over Coffee vs French Press: The Perfect Brew",
+          "text": "When comparing pour over coffee vs French press, it's essential to consider your taste preferences. Pour over coffee is known for ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "fellowproducts.com",
+          "domain": "fellowproducts.com",
+          "url": "https://fellowproducts.com/blogs/learn/french-press-vs-pour-over",
+          "title": "French Press vs. Pour Over",
+          "text": "French Press: Immersion brewing (4-minute steep); yields bold, rich, earthy flavor; uses built-in metal mesh filter (no paper filt..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "YouTube",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=kWzAymVLt_U&t=17",
+          "title": "Pour Over vs French Press – Which Coffee Method is ACTUALLY Better?",
+          "text": "Pour Over vs French Press – Which Coffee Method is ACTUALLY Better? actually superior let's find out which brew truly owns your mo..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Stone Creek Coffee",
+          "domain": "www.stonecreekcoffee.com",
+          "url": "https://www.stonecreekcoffee.com/blogs/news/french-press-vs-pour-over-which-brewing-method-is-right-for-you",
+          "title": "French Press vs Pour Over | Coffee Tips & Guides",
+          "text": "FAQ * Is French press stronger than pour over? French press often tastes stronger because it produces a fuller body and retains mo..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "YouTube",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=TNjrWCKC5hA&t=34",
+          "title": "Pour Over vs French Press: The Real Difference",
+          "text": "Pour Over vs French Press: The Real Difference now the question changes completely from which one you prefer to which one actually..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Pro Coffee Gear",
+          "domain": "procoffeegear.com",
+          "url": "https://procoffeegear.com/blogs/articles/taste-differences-pour-over-french-press-espresso",
+          "title": "Taste Differences: Pour Over vs French Press vs Espresso",
+          "text": "Key Takeaways Understanding the Three Brewing Methods Before we compare the taste of pour over vs French press vs espresso, it hel..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Gigawatt Coffee Roasters",
+          "domain": "www.gigawattcoffeeroasters.com",
+          "url": "https://www.gigawattcoffeeroasters.com/blogs/gigawatt-grounds/pour-over-coffee-vs-french-press-a-brewing-battle-explored",
+          "title": "Pour Over vs French Press: Which Brewing Method Is Right for You?",
+          "text": "Frequently Asked Questions * Can I use the same grind size for both pour over and French press? No. Pour over needs a medium to fi..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "www.youtube.com",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=kWzAymVLt_U",
+          "title": "Pour Over vs French Press – Which Coffee Method is ACTUALLY Better?",
+          "text": "it's delicate if the french press is a heavy metal concert the pour. over is a symphony. but here's the kicker. most people choose..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "www.youtube.com",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=TNjrWCKC5hA",
+          "title": "Pour Over vs French Press: The Real Difference",
+          "text": "but because it gives you more to work. with. this is where the two methods separate in the most tangible. way what you actually ta..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "www.youtube.com",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/shorts/V34aiso4iww",
+          "title": "French Press vs Pour Over vs AreoPress",
+          "text": "so what is the best way to brew coffee at home consider the French. press simply take off the lid add ground coffee. and hot water..."
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "images",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[3]/div[1]",
+        "title": "Images",
+        "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=en&gl=GB&sxsrf=APpeQntVbNSwWoYU87IbY273DXPTplVh_g:1791490565188&q=pour+over+vs+french+press&udm=2&source=univ&fir=ZPm5dM_-O_soiM%252C9Wt5_Sntq4AP-M%252C_%253BtahurKao_VaB-M%252CIeLxyvg5RjdvJM%252C_%253BUvEetIdRgoJIlM%252CUe1GH7-FVZj87M%252C_%253B1TcAC1UNIIWhtM%252CbnSAvFHRYxrdAM%252C_%253BHCk8_peM9kxAFM%252C0jnB5VNuQpwDLM%252C_%253BfCPP5zBiVBnWvM%252CXK2HWkCos5kpxM%252C_%253Bn3Ju7OeF1ArDEM%252CPkIwaUsKB_lD2M%252C_%253BjHLDmAGCmyjUQM%252CPxx9mzAHHQVuhM%252C_%253BpSopL5GGXLdANM%252CRT8ylTWvYeMi5M%252C_&usg=AI4_-kSnoiBUQo6Ry9mwP9eBNOF3GnmvAw&sa=X&ved=2ahUKEwiGl4a2nquXAxV7S_EDHZNfDOAQ7Al6BAgnEAU",
+        "items": [
+         {
+          "type": "images_element",
+          "alt": "French Press vs. Pour Over – What's the Difference? ☕ The ULTIMATE  Comparison!",
+          "url": "https://www.youtube.com/watch?v=6ieyOSrry54",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-751bec8a5103:5"
+         },
+         {
+          "type": "images_element",
+          "alt": "French press vs pour-over: what's the difference? | Homes ...",
+          "url": "https://www.homesandgardens.com/buying-guide/french-press-vs-pour-over",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-751bec8a5103:6"
+         },
+         {
+          "type": "images_element",
+          "alt": "Coffee Brewing Methods: French Press vs Pour Over vs AeroPress and more!",
+          "url": "https://www.youtube.com/watch?v=vQVTNscQY0c",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-751bec8a5103:7"
+         },
+         {
+          "type": "images_element",
+          "alt": "Chemex vs French Press: Should You Pour or Plunge?",
+          "url": "https://www.homegrounds.co/chemex-vs-frenchpress/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQACaP9pGKCzVa70dK-E9Mdkt6R3D88XCo2HmNYSuPqreh22ExAbSHhYcU&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "From bold to delicate, French Press, Chemex, or Pour-Over ...",
+          "url": "https://www.instagram.com/p/DQoJtcliHbf/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5jvMgNaxDZjLT6VJA63hl27Yzj0bIa2Hh3eW_tn2q8QzZVxTSHg17Cfc&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Coffee Brewing Methods: French Press vs Pour Over vs ...",
+          "url": "https://europeancoffeetrip.com/coffee-brewing-methods/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTIdmsNpbNTGhFpTJxq5I6lISMA_Edyj4WwNtHuXd3gENoiJibYsu1KCBs&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "French Press vs Pour Over: The Main Differences — Corner ...",
+          "url": "https://cornercoffeestore.com/french-press-vs-pour-over/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6DSOFU0MZLx-sqH5NqolmQPcufeTKbcwQFk7NoT7g6ZjarZInML8rZeg&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Espresso vs. Pour Over vs. French Press - what’s the difference?, Trade  Coffee delivers freshly roasted coffee from roasters across the country,  right to your door. Take their coffee quiz at the link ...",
+          "url": "https://www.instagram.com/reel/DWB_qBJIWob/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzFESV2bKT09hMPzbZvikN7ckLELsUd5J5wzJdpNQbZYJ_Ml0mUb6fRlk&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "French Press or Pour-over? Which is Better? | FindCoffee",
+          "url": "https://www.findcoffee.app/en/news/french-press-or-pour-over-which-is-better",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNu8ZjpCLrueAhBp1X0G_FlhW45kVrxnta9PojOjGXujoy55GEcFXQSbM&s"
+         }
+        ],
+        "related_image_searches": null,
+        "rectangle": null
+       },
+       {
+        "type": "people_also_ask",
+        "rank_group": 1,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[5]/div[1]/div[1]/div[1]",
+        "items": [
+         {
+          "type": "people_also_ask_element",
+          "title": "Can I put regular coffee in a French press?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[5]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Is percolated coffee healthier than drip coffee?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[5]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "What is the 15-15-15 coffee rule?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[5]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Does Aeropress make better coffee?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[5]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "video",
+        "rank_group": 1,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[7]/div[1]",
+        "items": [
+         {
+          "type": "video_element",
+          "source": "YouTube · methodicalcoffee",
+          "title": "Pour Over vs French Press: Taste, Texture, and Brewing ...",
+          "timestamp": "2024-12-09 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=DQPcMl1knyM"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · Auctoritas Coffee",
+          "title": "Pour Over vs French Press: The Real Difference",
+          "timestamp": "2026-05-09 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=TNjrWCKC5hA"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · The Coffee Delight",
+          "title": "Pour Over vs French Press – Which Coffee Method is ...",
+          "timestamp": "2026-05-18 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=kWzAymVLt_U"
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[9]/div[1]/div[1]",
+        "domain": "www.reddit.com",
+        "title": "Pros/cons Pour over and french press? : r/Coffee",
+        "url": "https://www.reddit.com/r/Coffee/comments/dugp4m/proscons_pour_over_and_french_press/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "3 comments  ·  6 years ago",
+        "website_name": "Reddit · r/Coffee",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Pour over: more difficult to consistently do it well, less forgiving of lower quality grinders, cleaner taste profile, less overall time ( ... Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "more difficult to consistently do it well"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://www.reddit.com/r/Coffee/comments/dugp4m/proscons_pour_over_and_french_press/#:~:text=Pour%20over%3A%20more%20difficult%20to,more%20active%20time)%2C%20easier%20clean-up.",
+          "domain": "www.reddit.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "discussions_and_forums",
+        "rank_group": 1,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[11]/div[1]",
+        "title": "Discussions and forums",
+        "items": [
+         {
+          "type": "discussions_and_forums_element",
+          "title": "Pour Over vs French Press",
+          "url": "https://www.reddit.com/r/Coffee/comments/t01k8e/pour_over_vs_french_press/",
+          "domain": "www.reddit.com",
+          "source": "Reddit",
+          "description": null,
+          "timestamp": "2022-10-08 20:16:06 +00:00",
+          "posts_count": 40
+         },
+         {
+          "type": "discussions_and_forums_element",
+          "title": "French Press vs. Pour Over?",
+          "url": "https://www.reddit.com/r/pourover/comments/1hw7wp6/french_press_vs_pour_over/",
+          "domain": "www.reddit.com",
+          "source": "Reddit",
+          "description": null,
+          "timestamp": "2025-10-08 20:16:06 +00:00",
+          "posts_count": 8
+         },
+         {
+          "type": "discussions_and_forums_element",
+          "title": "Can you taste a difference between pour over and French press coffee ...",
+          "url": "https://www.quora.com/Can-you-taste-a-difference-between-pour-over-and-French-press-coffee-Are-there-specific-factors-that-make-the-difference",
+          "domain": "www.quora.com",
+          "source": "Quora",
+          "description": null,
+          "timestamp": "2019-10-08 20:16:06 +00:00",
+          "posts_count": 30
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[13]/div[1]/div[1]",
+        "domain": "www.commonroomroasters.com",
+        "title": "French Press vs Pour Over: Best Brewing Method",
+        "url": "https://www.commonroomroasters.com/blogs/specialty-coffee/french-press-vs-pour-over?srsltid=AU7gw4W5257vZeadPTNBZoUqnpro2Y4LFWqKXl573MMRHONKWnCvJWqL",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.commonroomroasters.com › specialty-coffee",
+        "website_name": "Common Room Roasters",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "26 Apr 2024 — The French press excels at highlighting body and sweetness, The French press delivers a fuller-bodied cup with richness and weight.",
+        "pre_snippet": "04/26/2024 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "The French press excels at highlighting body and sweetness"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2024-04-26 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[15]/div[1]/div[1]",
+        "domain": "onegreatcoffee.com",
+        "title": "French Press VS Pour Over",
+        "url": "https://onegreatcoffee.com/blogs/latest-news/in-progress-french-press-vs-pour-over?srsltid=AU7gw4WlnhCGu4eBFmqRlMLX92L89gpTsuYeviDHxqAeJaOyRrTq3RZ5",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://onegreatcoffee.com › One Great Coffee's Blog",
+        "website_name": "One Great Coffee",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "22 Jul 2022 — French Press coffee is stronger and contains more coffee oils. Pour Over coffee is smoother and the clean-up afterward is easier.",
+        "pre_snippet": "07/22/2022 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "French Press coffee is stronger and contains more coffee oils"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2022-07-22 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[17]/div[1]/div[1]",
+        "domain": "modncoffee.com",
+        "title": "French Press vs Pour Over vs Cafetière: Which Brew Method ...",
+        "url": "https://modncoffee.com/blogs/news/french-press-vs-pour-over-vs-cafetiere-which-brew-method-is-best-for-you?srsltid=AU7gw4W63G_5ExOaqHnty74YYRw4v4Saf7Q1TW_QvB9ip4yigcmFQZ7A",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://modncoffee.com › blogs › news › french-press-vs...",
+        "website_name": "modncoffee.com",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "16 Jul 2026 — If you want clean and complex and enjoy the ritual — try pour over. If you want strong and intense — the moka pot is your match. If you want ...",
+        "pre_snippet": "07/16/2026 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "try pour over"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2026-07-16 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[19]/div[1]/div[1]",
+        "domain": "www.facebook.com",
+        "title": "Pour-over Vs French Press Brewing",
+        "url": "https://www.facebook.com/fb-answers/pour-over-vs-french-press-brewing/?locale=ro_RO",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.facebook.com › fb-answers › pour-over-vs...",
+        "website_name": "Facebook",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "French Press gives you a bold, full-bodied cup with rich oils, while pour-over delivers a clean, smooth, and brighter brew. If you want heavy, robust flavor ... Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "French Press gives you a bold, full-bodied cup with rich oils"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://www.facebook.com/fb-answers/pour-over-vs-french-press-brewing/?locale=ro_RO#:~:text=French%20Press%20gives%20you%20a,is%20the%20way%20to%20go.",
+          "domain": "www.facebook.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[21]/div[1]/div[1]",
+        "domain": "santocafe.co",
+        "title": "Pourover coffee or French press — which suits your taste",
+        "url": "https://santocafe.co/en/blogs/machines-gear/pourover-coffee-or-french-press-which-suits-your-taste?srsltid=AU7gw4Vyb3HuL8vTFWtDbPoY9A_yraGBLL9L_x5X_l4zhOQ6BCCLKSlr",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://santocafe.co › blogs › machines-gear › pourover...",
+        "website_name": "santocafe.co",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "24 Apr 2026 — The difference lies in the filtration. Pourover filters strictly and delivers a clear, light cup with pronounced flavour details. French press ... Read more",
+        "pre_snippet": "04/24/2026 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Pourover",
+         "French press"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://santocafe.co/en/blogs/machines-gear/pourover-coffee-or-french-press-which-suits-your-taste?srsltid=AU7gw4Vyb3HuL8vTFWtDbPoY9A_yraGBLL9L_x5X_l4zhOQ6BCCLKSlr#:~:text=The%20difference%20lies%20in%20the,in%20the%20coffee%20flavour%20profile.",
+          "domain": "santocafe.co"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2026-04-24 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "related_searches",
+        "rank_group": 1,
+        "rank_absolute": 12,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[2]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "items": [
+         "Pour over vs french press reddit",
+         "Pour over vs french press taste"
+        ],
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

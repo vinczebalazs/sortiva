@@ -1,0 +1,775 @@
+{
+ "recordedAt": "2026-10-08T20:16:09.115Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "koffeinmentes teák",
+  "location_code": 2348,
+  "language_code": "hu",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0184 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10082016-2302-0066-0000-247461761e37",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0122 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10082016-2302-0066-0000-247461761e37"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "koffeinmentes teák",
+     "location_code": 2348,
+     "language_code": "hu",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "koffeinmentes teák",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2348,
+      "language_code": "hu",
+      "check_url": "https://www.google.com/search?q=koffeinmentes%20te%C3%A1k&hl=hu&gl=HU&ie=UTF-8&uule=w+CAIQIFISCcPkN997g0FHERAQHgwpxAAA",
+      "datetime": "2026-10-08 20:16:05 +00:00",
+      "spell": null,
+      "refinement_chips": {
+       "type": "refinement_chips",
+       "xpath": "/html[1]/body[1]/div[3]/div[1]/div[5]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+       "items": [
+        {
+         "type": "refinement_chips_element",
+         "title": "Dm",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnuejD_hFFzVdCvx5eKigPNGuyRKAA:1791490564295&q=Koffeinmentes+tea+dm&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4r02B_PnwWbdvB-FNLWQ_2gqdSo0bYK3vZhkT4LtOG41OIH7yHWDGmzHQBsFZIuiN4OFwl-T6k1CuF1SKOvLi7kgnYjapuA8OReRfvZOH4V3fdxNT5hm1g3BVGMdoSObLahMJcXjT90S-IS6UxPNpD5cDsuVyng4xlOpxTMJHnvmxRshmF4E3l_gxtUAxTYSGqLiRkhBTUMr8t6sLkWaKFWlUgKGk&sa=X&ved=2ahUKEwiNp8-1nquXAxXH8LsIHYPAGNEQxKsJKAB6BAgeEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Gyerekeknek",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnuejD_hFFzVdCvx5eKigPNGuyRKAA:1791490564295&q=Koffeinmentes+tea+gyerekeknek&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rTRrYoFO9oHz3jBX8Q8E0Q48DC4NkiYrHx4PuPqq-iD7KRHndBtR2ODmYGWC58NGdjfcr4Fwhz0IBO5fGnKFLwcYBBt8Bb1Y6hn4eDGjxW8nQO4jjcEmJjhs_osNHW_7h7DFbKKGowCebHKbIb2hjOZYG5-NtuIkiNOURzJqsUZp6y8QqoPg9tWTWhm-hhD_EfGYFwOZ-GgbJy_1KiX_E4Y_Rmk4&sa=X&ved=2ahUKEwiNp8-1nquXAxXH8LsIHYPAGNEQxKsJKAF6BAgjEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Lidl",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnuejD_hFFzVdCvx5eKigPNGuyRKAA:1791490564295&q=Koffeinmentes+tea+lidl&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rkCPphDPQsoX5fZakqor2dOFyye_7gOTtSGpuglYl34pOBlwZi3N_rmeVRqRom6mS1bZG6zNk8R2pQ4AzMRMhxVwIkLzRS723bAvLGIdJAyPEd7zOsXFpC_4S-qoGu4-QB5K0XluOO6sh5m0iagJdyZPFSoO5Wrp2dp-v_b3lBkbZqMYSKWFiuXgaiYBuaOy3S9uEqVUFSDOCyaLQWCQC5qZFnPY&sa=X&ved=2ahUKEwiNp8-1nquXAxXH8LsIHYPAGNEQxKsJKAJ6BAghEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Lipton",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnuejD_hFFzVdCvx5eKigPNGuyRKAA:1791490564295&q=Lipton+koffeinmentes+tea&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rKbGJTLCpXe2--bGkZhPxQ3FRniF8RMii6v62uaA6FfzxrDN6yji__XIxh5agqV7DJWNbqqwgxZsVu9gQcI0vczx6E8gD8rO4ThzoTERaixdg3d4PgweJjIlYJwxu3T9pjiFl3WGigVDKpkc5h04aYU0EjK3-riTHW8BBlrkgP6bKeOUcr3MkM8KSzPs3Lsm2hNIGdWCyjqhf2DFp80lP6sCekHs&sa=X&ved=2ahUKEwiNp8-1nquXAxXH8LsIHYPAGNEQxKsJKAN6BAggEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Rossmann",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnuejD_hFFzVdCvx5eKigPNGuyRKAA:1791490564295&q=Koffeinmentes+tea+rossmann&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rSDJmsWsot4N_NxA88GXTUV43WsizvxNCEtssB7NWxYgssLRur0xHi61haodouKgkgzZWqgbv1LwU_doLbo6Qee2LPN4XVwwGulOS3aqXTghlZK0gvxeEVoqvgzfSU4b_4-Ai5QKHfJCPVFGz15YmusY6go04ekroMn1BP4Ui8bwgEEp1U0_2NBeU8uFJCX9uykko-S8DMxOvrxIzDcxenY5i2Bs&sa=X&ved=2ahUKEwiNp8-1nquXAxXH8LsIHYPAGNEQxKsJKAR6BAgfEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Teekanne",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnuejD_hFFzVdCvx5eKigPNGuyRKAA:1791490564295&q=Teekanne+koffeinmentes+tea&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4r_dtACvUgfDyR0RXl-7SkCPqUORqHtZWsa0GtVHUit4SPedAQCKFfflaflNvSq0a75xnXuMZ8gZP2fNJyZouhI-dPDhRFAXCiPl9PZ2miLeWFNaKfR-VEca1BLWrVwLt923Qdh16CTedy_Zq_aNGx6X1cfItB4Js_79hNUTxLugjPGhv9aMVLSQT5Ekd7keSvU_6EquOtebV0lGxqChPnOuX7-34&sa=X&ved=2ahUKEwiNp8-1nquXAxXH8LsIHYPAGNEQxKsJKAV6BAhpEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Tesco",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnuejD_hFFzVdCvx5eKigPNGuyRKAA:1791490564295&q=Koffeinmentes+tea+tesco&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rMpgNHSsbPt8NsVbsJJs5kE37S12Qh_UqAFUsjPiePPhYR9nHc11P5LXSamJXAGNlymo7wnPqJXmsQl4k4O_JdRU9qeo3Kum9JA8TRFIiufiOURo2sKr_5fch2FargTzr1Ub2SfrGr9vQJWlRBlNzFIFAAF1f5__SGS8GU1Ihgk0ygZw3IeCvej7akdMz7BlDj34hHJovLzoCXm83bTJoZ46FSKw&sa=X&ved=2ahUKEwiNp8-1nquXAxXH8LsIHYPAGNEQxKsJKAZ6BAhoEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        }
+       ]
+      },
+      "item_types": [
+       "ai_overview",
+       "organic",
+       "images",
+       "people_also_ask",
+       "related_searches"
+      ],
+      "se_results_count": 168,
+      "pages_count": 1,
+      "items_count": 12,
+      "items": [
+       {
+        "type": "ai_overview",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+        "asynchronous_ai_overview": false,
+        "markdown": "A koffeinmentes teák `olyan italok, amelyek nem tartalmaznak serkentő koffeint, így akár este is biztonságosan fogyaszthatók`.[[1]](https://teaacademy.hu/melyik-tea-nem-tartalmaz-koffeint/)[[2]](https://divany.hu/offline/voros-tea/)\n\n### Természetesen koffeinmentes teák (Forrázatok)\n\nEzek a növények alapból nem tartalmazzák a *Camellia sinensis* teanövény koffeinjét:[[1]](https://yummatea.hu/product-tag/koffein-mentes/)[[2]](https://teaacademy.hu/melyik-tea-nem-tartalmaz-koffeint/)\n\n- **Rooibos:** [Dél-afrikai vörös tea](https://divany.hu/offline/voros-tea/) , amely édeskés, lágy ízű és gazdag antioxidánsokban.\n- **Honeybush:** A rooibos rokon növénye, aranyszínű, enyhén mézes ízű főzettel.\n- **Gyógynövényteák:** Kamilla, borsmenta, citromfű és hibiszkusz.\n- **Gyümölcsteák:** Szárított gyümölcsökből, csipkebogyóból és hibiszkuszból készült keverékek.[[1]](https://divany.hu/offline/voros-tea/)[[2]](https://teaacademy.hu/melyik-tea-nem-tartalmaz-koffeint/)[[3]](https://yummatea.hu/product-tag/koffein-mentes/)\n\n### Koffeinmentesített (Decaf) teák\n\nEzek valódi teák (*Camellia sinensis* ), amelyekből egy speciális eljárással eltávolították a koffein 97-99%-át:[[1]](https://tea.hu/tea-hirek/koffeinmentes-tea)[[2]](https://teaacademy.hu/melyik-tea-nem-tartalmaz-koffeint/)\n\n- **Koffeinmentes fekete teák:** Olyan népszerű angol márkák is elérhetők ebben a formában, mint a Twinings vagy a Yorkshire Tea.\n- **Koffeinmentes zöld teák:** Kíméletes eljárással készült változatok a zöld teák kedvelőinek.[[1]](https://www.britishstore.hu/brit-teak-angol-teak/koffeinmentes-fekete-teak-167)\n\nHa szeretné, segítek a választásban, ha elárulja:\n\n- Milyen **íztípus** a kedvence (gyümölcsös, gyógynövényes, vagy a fekete/zöld tea ízét keresi)?\n- **Mikor** szokta fogyasztani (este alvás előtt, vagy egész nap)?",
+        "items": [
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "A koffeinmentes teák olyan italok, amelyek nem tartalmaznak serkentő koffeint, így akár este is biztonságosan fogyaszthatók.",
+          "markdown": "A koffeinmentes teák `olyan italok, amelyek nem tartalmaznak serkentő koffeint, így akár este is biztonságosan fogyaszthatók`.[[1]](https://teaacademy.hu/melyik-tea-nem-tartalmaz-koffeint/)[[2]](https://divany.hu/offline/voros-tea/)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Tea Akadémia",
+            "domain": "teaacademy.hu",
+            "url": "https://teaacademy.hu/melyik-tea-nem-tartalmaz-koffeint/",
+            "title": "Melyik tea nem tartalmaz koffeint? – a koffeinmentes teák világa - Tea Akadémia - Online Tea Bolt",
+            "text": "Author: Olekszik Dorottya (2024-09-04) Koffeinmentes/természetes koffeinmentes teák (Camellia sinensis mentes forrázatok): - Rooib..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Dívány",
+            "domain": "divany.hu",
+            "url": "https://divany.hu/offline/voros-tea/",
+            "title": "A koffeinmentes tea, amit este is ihatsz, és még egészséges is | Dívány",
+            "text": "A vörös teában nincs koffein és csersav. Valójában egy gyógynövényről van szó, leveleinek forrázata nem tartalmaz koffeint, így ak..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Természetesen koffeinmentes teák (Forrázatok)",
+          "text": "Ezek a növények alapból nem tartalmazzák a Camellia sinensis teanövény koffeinjét:",
+          "markdown": "Ezek a növények alapból nem tartalmazzák a *Camellia sinensis* teanövény koffeinjét:[[1]](https://yummatea.hu/product-tag/koffein-mentes/)[[2]](https://teaacademy.hu/melyik-tea-nem-tartalmaz-koffeint/)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "yummatea.hu",
+            "domain": "yummatea.hu",
+            "url": "https://yummatea.hu/product-tag/koffein-mentes/",
+            "title": "Koffein mentes | Yumma I Tea Together",
+            "text": "2.790 Ft – 12.590 Ft Ártartomány: 2.790 Ft - 12.590 Ft; Egy növénykeverék az almás menta, a nana menta, a borsmenta és az eukalipt..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Rooibos: Dél-afrikai vörös tea, amely édeskés, lágy ízű és gazdag antioxidánsokban. Honeybush: A rooibos rokon növénye, aranyszínű, enyhén mézes ízű főzettel. Gyógynövényteák: Kamilla, borsmenta, citromfű és hibiszkusz. Gyümölcsteák: Szárított gyümölcsökből, csipkebogyóból és hibiszkuszból készült keverékek.",
+          "markdown": "- **Rooibos:** [Dél-afrikai vörös tea](https://divany.hu/offline/voros-tea/) , amely édeskés, lágy ízű és gazdag antioxidánsokban.\n- **Honeybush:** A rooibos rokon növénye, aranyszínű, enyhén mézes ízű főzettel.\n- **Gyógynövényteák:** Kamilla, borsmenta, citromfű és hibiszkusz.\n- **Gyümölcsteák:** Szárított gyümölcsökből, csipkebogyóból és hibiszkuszból készült keverékek.[[1]](https://divany.hu/offline/voros-tea/)[[2]](https://teaacademy.hu/melyik-tea-nem-tartalmaz-koffeint/)[[3]](https://yummatea.hu/product-tag/koffein-mentes/)",
+          "links": [
+           {
+            "type": "link_element",
+            "title": "Dél-afrikai vörös tea",
+            "description": null,
+            "url": "https://divany.hu/offline/voros-tea/",
+            "domain": "divany.hu"
+           }
+          ],
+          "images": null,
+          "references": null
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Koffeinmentesített (Decaf) teák",
+          "text": "Ezek valódi teák (Camellia sinensis), amelyekből egy speciális eljárással eltávolították a koffein 97-99%-át:",
+          "markdown": "Ezek valódi teák (*Camellia sinensis* ), amelyekből egy speciális eljárással eltávolították a koffein 97-99%-át:[[1]](https://tea.hu/tea-hirek/koffeinmentes-tea)[[2]](https://teaacademy.hu/melyik-tea-nem-tartalmaz-koffeint/)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "tea.hu",
+            "domain": "tea.hu",
+            "url": "https://tea.hu/tea-hirek/koffeinmentes-tea",
+            "title": "Koffeinmentes tea? | tea.hu",
+            "text": "Kezdjük egyszerűen: A koffeinmentes (decaf röviden) tea olyan tealevelekből áll, amelyekből a koffein nagy részét eltávolítják. A ..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Koffeinmentes fekete teák: Olyan népszerű angol márkák is elérhetők ebben a formában, mint a Twinings vagy a Yorkshire Tea. Koffeinmentes zöld teák: Kíméletes eljárással készült változatok a zöld teák kedvelőinek.",
+          "markdown": "- **Koffeinmentes fekete teák:** Olyan népszerű angol márkák is elérhetők ebben a formában, mint a Twinings vagy a Yorkshire Tea.\n- **Koffeinmentes zöld teák:** Kíméletes eljárással készült változatok a zöld teák kedvelőinek.[[1]](https://www.britishstore.hu/brit-teak-angol-teak/koffeinmentes-fekete-teak-167)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "The British Store",
+            "domain": "www.britishstore.hu",
+            "url": "https://www.britishstore.hu/brit-teak-angol-teak/koffeinmentes-fekete-teak-167",
+            "title": "Koffeinmentes Fekete Teák - Budapest - The British Store",
+            "text": "Koffeinmentes Fekete Teák. Rendezés: Alapértelmezett, Név, A - Z · Név, Z - A · Gyártó, A - Z · Gyártó, Z - A · Ár szerint növekvő..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Ha szeretné, segítek a választásban, ha elárulja:Milyen íztípus a kedvence (gyümölcsös, gyógynövényes, vagy a fekete/zöld tea ízét keresi)?\nMikor szokta fogyasztani (este alvás előtt, vagy egész nap)?",
+          "markdown": "Ha szeretné, segítek a választásban, ha elárulja:\n\n- Milyen **íztípus** a kedvence (gyümölcsös, gyógynövényes, vagy a fekete/zöld tea ízét keresi)?\n- **Mikor** szokta fogyasztani (este alvás előtt, vagy egész nap)?",
+          "links": null,
+          "images": null,
+          "references": null
+         }
+        ],
+        "references": [
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Tea Akadémia",
+          "domain": "teaacademy.hu",
+          "url": "https://teaacademy.hu/melyik-tea-nem-tartalmaz-koffeint/",
+          "title": "Melyik tea nem tartalmaz koffeint? – a koffeinmentes teák világa - Tea Akadémia - Online Tea Bolt",
+          "text": "Author: Olekszik Dorottya (2024-09-04) Koffeinmentes/természetes koffeinmentes teák (Camellia sinensis mentes forrázatok): - Rooib..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "The British Store",
+          "domain": "www.britishstore.hu",
+          "url": "https://www.britishstore.hu/brit-teak-angol-teak/koffeinmentes-fekete-teak-167",
+          "title": "Koffeinmentes Fekete Teák - Budapest - The British Store",
+          "text": "Koffeinmentes Fekete Teák. Rendezés: Alapértelmezett, Név, A - Z · Név, Z - A · Gyártó, A - Z · Gyártó, Z - A · Ár szerint növekvő..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Dívány",
+          "domain": "divany.hu",
+          "url": "https://divany.hu/offline/voros-tea/",
+          "title": "A koffeinmentes tea, amit este is ihatsz, és még egészséges is | Dívány",
+          "text": "A vörös teában nincs koffein és csersav. Valójában egy gyógynövényről van szó, leveleinek forrázata nem tartalmaz koffeint, így ak..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "yummatea.hu",
+          "domain": "yummatea.hu",
+          "url": "https://yummatea.hu/product-tag/koffein-mentes/",
+          "title": "Koffein mentes | Yumma I Tea Together",
+          "text": "2.790 Ft – 12.590 Ft Ártartomány: 2.790 Ft - 12.590 Ft; Egy növénykeverék az almás menta, a nana menta, a borsmenta és az eukalipt..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "tea.hu",
+          "domain": "tea.hu",
+          "url": "https://tea.hu/tea-hirek/koffeinmentes-tea",
+          "title": "Koffeinmentes tea? | tea.hu",
+          "text": "Kezdjük egyszerűen: A koffeinmentes (decaf röviden) tea olyan tealevelekből áll, amelyekből a koffein nagy részét eltávolítják. A ..."
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[3]/div[1]/div[1]",
+        "domain": "teanet.hu",
+        "title": "Koffeinmentes tea | Bármikor fogyasztható",
+        "url": "https://teanet.hu/Koffeinmentes-tea?srsltid=AU7gw4VIpXlsGfGtjqdeMIbYzDBPUqPGBBvnIdIsS4_DRIpZetecz5S9",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://teanet.hu › Teafajták",
+        "website_name": "Teanet.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Tea jellemzői: Biotermék. Ajurvédikus gyógynövény- és fűszerkeverék. Nem tartalmaz koffeint. Mikor fogyasszuk: Egész nap.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": {
+         "rating_type": "Max5",
+         "value": 4.9,
+         "votes_count": 289,
+         "rating_max": 5
+        },
+        "price": null,
+        "highlighted": [
+         "Biotermék"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[5]/div[1]/div[1]",
+        "domain": "teaacademy.hu",
+        "title": "Melyik tea nem tartalmaz koffeint? – a koffeinmentes teák ...",
+        "url": "https://teaacademy.hu/melyik-tea-nem-tartalmaz-koffeint/?srsltid=AU7gw4V2MfVJh81s6QOwpzOc2QhNoAudDsz50le6DaXAvkq_1y5RQy-r",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://teaacademy.hu › melyik-tea-nem-tartalmaz-koffe...",
+        "website_name": "Tea Akadémia",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2024. szept. 4. — Milyen tea nem tartalmaz koffeint? Ismerd meg a koffeinmentes teák világát: rooibos, gyógynövény teák és más természetes koffeinmentes teák.",
+        "pre_snippet": "09/04/2024 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "rooibos, gyógynövény teák és más természetes koffeinmentes teák"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2024-09-04 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[7]/div[1]/div[1]",
+        "domain": "www.britishstore.hu",
+        "title": "Koffeinmentes Fekete Teák - Budapest",
+        "url": "https://www.britishstore.hu/brit-teak-angol-teak/koffeinmentes-fekete-teak-167",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.britishstore.hu › Teák",
+        "website_name": "The British Store",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Koffeinmentes Fekete Teák ; Twinings Decaffeinated Earl Grey Tea - 40 db filter · 3.690 Ft ; Yorkshire Decaf Tea 40 db filter · 1.990 Ft.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Koffeinmentes Fekete Teák"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[9]/div[1]/div[1]",
+        "domain": "www.gyakorikerdesek.hu",
+        "title": "Melyik teákban NINCS koffein? (2621171. kérdés)",
+        "url": "https://www.gyakorikerdesek.hu/gyerekvallalas-neveles__babak__2621171-melyik-teakban-nincs-koffein",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.gyakorikerdesek.hu › gyerekvallalas-nevel...",
+        "website_name": "Gyakori kérdések",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2012. jan. 31. — a pickwick gyerekteát ismerem és teekanne teában is a reklámból tudom, hogy ihatják a picik is :)\nTudtok még mondani olyat amiben nincs?\nmegköszönném :)",
+        "pre_snippet": "01/31/2012 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": [
+         {
+          "type": "link_element",
+          "title": "10 válasz",
+          "description": null,
+          "url": "https://www.gyakorikerdesek.hu/gyerekvallalas-neveles__babak__2621171-melyik-teakban-nincs-koffein#valasz-16983699",
+          "domain": "www.gyakorikerdesek.hu"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2012-01-31 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "images",
+        "rank_group": 1,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[11]/div[1]",
+        "title": "Képek",
+        "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnuejD_hFFzVdCvx5eKigPNGuyRKAA:1791490564295&q=koffeinmentes+te%C3%A1k&udm=2&source=univ&fir=X76ykdzU3ebtHM%252C3n6hgCEWbFszsM%252C_%253BaLRhlDBfM9YLqM%252CzDbDrDJPEvguLM%252C_%253Boy76FpCcg51LOM%252CMudUE-g7ID2v8M%252C_%253BZB1i1nEOt_fBMM%252CqUtvNxD4gLNXNM%252C_%253BytjxKuBLQXKbyM%252C3n6hgCEWbFszsM%252C_%253BxFSLKkPdZERp5M%252CeBt4KUO7oLniMM%252C_%253B0cA8n8DaE-8_aM%252CrqAJpsSYJ7pFJM%252C_%253BuvTyBKyl50UCEM%252CrqAJpsSYJ7pFJM%252C_%253BtYEZ4agyEQcUVM%252C3n6hgCEWbFszsM%252C_&usg=AI4_-kS_h-f9fT2KPhmwaKIrWDHy4AkynQ&sa=X&ved=2ahUKEwiNp8-1nquXAxXH8LsIHYPAGNEQ7Al6BAhjEAU",
+        "items": [
+         {
+          "type": "images_element",
+          "alt": "Gyümölcs tea koffein tartalma - szeretlekTEA",
+          "url": "https://szeretlektea.hu/gyumolcs-tea-koffein-tartalma/",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-247461761e37:0"
+         },
+         {
+          "type": "images_element",
+          "alt": "Melyik tea nem tartalmaz koffeint? – a koffeinmentes teák ...",
+          "url": "https://teaacademy.hu/melyik-tea-nem-tartalmaz-koffeint/?srsltid=AU7gw4Wpe3po8hfbg0nn4VDk7ywlirDJGZAyoF8EHe2mryGxso_kYNc7",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-247461761e37:1"
+         },
+         {
+          "type": "images_element",
+          "alt": "Breakfast Fekete tea Koffeinmentes - bio - 20db",
+          "url": "https://bio-barat.hu/products/breakfast-fekete-tea-koffeinmentes-bio-20db",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082016-2302-0066-0000-247461761e37:2"
+         },
+         {
+          "type": "images_element",
+          "alt": "Koffeinmentes Earl Grey Sencha - ízesített zöld tea - Luther teaház",
+          "url": "https://lutherteahaz.hu/termek/koffeinmentes-earl-grey-sencha-izesitett-zold-tea/?srsltid=AU7gw4Ux7PJPtTPc2F4ERLf6Q1QNGYX-7Q6mzrcERfX-sOe1vbJM0bML",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRqhw7n8JgoJzCIw1lAR0ODNZb_xGugQ2gzIZdNavmBYCCEihwMj-B0zC0&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Gyümölcs tea koffein tartalma - szeretlekTEA",
+          "url": "https://szeretlektea.hu/gyumolcs-tea-koffein-tartalma/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKIMuA-uxAlZ3ZeFKyy4pH1RzEmSUXnYooV4LRv4zMY_X40TOSG7vFgVc&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "PG Tips Decaf koffeinmentes Fekete tea, 70 filter, 203g",
+          "url": "https://csupacsoki.hu/PG-Tips-Decaf-koffeinmentes-Fekete-tea-70-filter-203g",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnVK6-nqXGguryRVIoYljPQM5si_BV8llx6iVTYcW21TnRvlpHkX17Qgc&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Teák - Vitális Webáruház",
+          "url": "https://www.vitaliswebaruhaz.hu/egeszseges-elelmiszerek/teak-386",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQVMsqnP_16-c-WYQuXhcR4F2an2liLNQph3bhwyf4WLlgYX-Y8LQmBWZU&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Teák - Vitális Webáruház",
+          "url": "https://www.vitaliswebaruhaz.hu/egeszseges-elelmiszerek/teak-386",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-vPdvoKfQU3AufGaxpm95Ty2ARitMQr8vf1s0ckME0QPX8sCRdm39_ow&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Gyümölcs tea koffein tartalma - szeretlekTEA",
+          "url": "https://szeretlektea.hu/gyumolcs-tea-koffein-tartalma/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdWsj2FYWHH7HXXS_1d9JMS_S8GwiYh2NWPK9C6lRgJtY08ur42agBTZU&s"
+         }
+        ],
+        "related_image_searches": null,
+        "rectangle": null
+       },
+       {
+        "type": "people_also_ask",
+        "rank_group": 1,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[13]/div[1]/div[1]/div[1]",
+        "items": [
+         {
+          "type": "people_also_ask_element",
+          "title": "Milyen koffeinmentes teákat lehet kapni?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[13]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Hol lehet koffeinmentes teát vásárolni a dm-ben?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[13]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Mennyi koffein van a Teekanne teában?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[13]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "A rooibos teában van koffein?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[13]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[15]/div[1]/div[1]",
+        "domain": "yummatea.hu",
+        "title": "Koffein mentes | Yumma I Tea Together",
+        "url": "https://yummatea.hu/product-tag/koffein-mentes/?srsltid=AU7gw4Un3-rEpbBswRx7SnjuMyLBBNWtur5NzLMHgVHx8-M2od5qM4oY",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://yummatea.hu › product-tag › koffein-mentes",
+        "website_name": "yummatea.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "A koffeinmentes teák nem koffeinelvonással készülnek, hanem eleve koffeinmentes növényekből: rooibosból, honeybushból, valamint gyümölcs- és ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "koffeinmentes teák"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[17]/div[1]/div[1]",
+        "domain": "tea.hu",
+        "title": "Koffeinmentes tea?",
+        "url": "https://tea.hu/tea-hirek/koffeinmentes-tea",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://tea.hu › tea-hirek › koffeinmentes-tea",
+        "website_name": "tea.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2018. júl. 16. — Kezdjük egyszerűen: A koffeinmentes (decaf röviden) tea olyan tealevelekből áll, amelyekből a koffein nagy részét eltávolítják. A jogszabályok ...",
+        "pre_snippet": "07/16/2018 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "olyan tealevelekből áll, amelyekből a koffein nagy részét eltávolítják"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2018-07-16 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 7,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[19]/div[1]/div[1]",
+        "domain": "kameliakert.hu",
+        "title": "Koffein nélkül Kategória",
+        "url": "https://kameliakert.hu/termekkategoria/teak/koffeinmentes/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://kameliakert.hu › teak › koffeinmentes",
+        "website_name": "Kamélia Kert",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Koffein nélkül ; Csiga Ernő – álmot hozó gyerektea. 3.190 ; Csoki-tea (kakaóbab héj). 2.460 ; Fűszeres csoki-tea. 3.190 ; Fűszerkert. 3.290 ; Gyermektea csomag.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Csiga Ernő – álmot hozó gyerektea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 8,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[21]/div[1]/div[1]",
+        "domain": "divany.hu",
+        "title": "A koffeinmentes tea, amit este is ihatsz, és még ...",
+        "url": "https://divany.hu/offline/voros-tea/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://divany.hu › offline › voros-tea",
+        "website_name": "Dívány",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2023. jan. 28. — A vörös teában nincs koffein és csersav. Valójában egy gyógynövényről van szó, leveleinek forrázata nem tartalmaz koffeint, így akár lefekvés ...",
+        "pre_snippet": "01/28/2023 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "A vörös teában nincs koffein és csersav"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2023-01-28 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "related_searches",
+        "rank_group": 1,
+        "rank_absolute": 12,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[2]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "items": [
+         "Koffeinmentes fekete tea",
+         "Lipton koffeinmentes tea",
+         "Koffeinmentes tea gyerekeknek",
+         "Koffeinmentes tea rossmann",
+         "Teekanne koffeinmentes tea",
+         "Koffeinmentes tea tesco",
+         "Rooibos tea",
+         "Koffeinmentes tea lidl"
+        ],
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

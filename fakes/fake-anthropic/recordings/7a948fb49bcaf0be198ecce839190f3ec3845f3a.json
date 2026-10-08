@@ -1,0 +1,101 @@
+{
+  "recordedAt": "2026-10-08T20:14:31.053Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "You plan blog articles for an online shop. You see the shop's profile and its products, grouped by kind, each with the checked facts we hold about it. Propose articles that this shop can write credibly and that people actually search for.\n\nArticles can be of many kinds. Pick whichever suit this shop and these products, and spread your proposals across several kinds rather than repeating one:\n- how to choose; how to use; care, cleaning and storage; how long it lasts;\n- problems and how to fix them; mistakes to avoid; getting started for beginners;\n- comparisons between kinds the shop sells; what a feature or term means; common myths explained;\n- recipes and ways to use it; pairing products together; sizing and fit;\n- gift ideas; seasonal and occasion uses;\n- any other kind of article shoppers of these products search for.\n\nEach article:\n- answers something a shopper wants to know before or after buying this kind of product;\n- is about a kind of product or a group of products, never about one single item for sale;\n- can be written from the facts of the products it mentions, and mentions one to four of them by their reference (P1, P2…);\n- targets one search: give two or three different phrasings a shopper might type into Google for this same article, the most common wording first. Each in English, two to six words, lower case, no brand names, no prices, no years. Prefer the short, everyday words people actually type over precise or technical ones; we keep whichever phrasing most people search.\n\nDo not propose anything about prices, discounts, delivery, competitors or the shop itself. Do not propose topics listed as already covered, nor close rewordings of them. Respect the owner's \"never say\" list. Use the room you are given: propose up to the number asked for, leaving out only articles that would be weak. Return an empty list if nothing fits.\n\nFor each article give: working_title (a plain headline in English), target_queries (the phrasings), products (the references), group (the product kind it belongs to).",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<profile>\nSells: Northpaw Dog Supply sells walking gear for dogs, including a front-clip no-pull harness, a 6 ft biothane leash, a 30 ft training long line and a rechargeable LED collar light. It also sells beds and blankets, namely a memory foam dog bed with a removable cover and a machine-washable fleece dog blanket.\nAudience: Dog owners who walk and train their dogs, including those dealing with leash pulling or walking in low light, and who want a comfortable bed or blanket for their dog at home.\nCountry: US\nTone: friendly\nNever say: —\n</profile>\n\n<products>\n<group name=\"Bed\">\n  P1: Memory Foam Dog Bed\n    - The Memory Foam Dog Bed is made by Northpaw.\n    - The Memory Foam Dog Bed is available in sizes M and L.\n    - The Memory Foam Dog Bed has 4 in of memory foam on a 1 in support base.\n    - The Memory Foam Dog Bed has a removable cover.\n    - The Memory Foam Dog Bed's cover is machine washable at 40 °C.\n    - The Memory Foam Dog Bed has a water-resistant liner.\n    - The Memory Foam Dog Bed has a non-slip bottom.\n    - The Memory Foam Dog Bed in size M measures 30 × 20 in.\n    - The Memory Foam Dog Bed in size L measures 40 × 28 in.\n</group>\n<group name=\"Blanket\">\n  P2: Fleece Dog Blanket\n    - The Fleece Dog Blanket is made of double-layer polar fleece.\n    - The Fleece Dog Blanket measures 40 × 30 in.\n    - The Fleece Dog Blanket is machine washable.\n    - The Fleece Dog Blanket can be tumble dried on low.\n    - The Fleece Dog Blanket fits in the car boot or on the sofa.\n    - The Fleece Dog Blanket is made by Northpaw.\n</group>\n<group name=\"Harness\">\n  P3: Front-Clip No-Pull Harness\n    - The Front-Clip No-Pull Harness is a harness.\n    - The Front-Clip No-Pull Harness is made by Northpaw.\n    - The Front-Clip No-Pull Harness is available in sizes XS, S, M, L, and XL.\n    - The Front-Clip No-Pull Harness has a leash ring on the chest that turns the dog sideways when it pulls.\n    - The Front-Clip No-Pull Harness has four adjustment points.\n    - The Front-Clip No-Pull Harness has a padded neoprene chest plate.\n    - The Front-Clip No-Pull Harness has reflective stitching.\n    - The Front-Clip No-Pull Harness fits a chest girth of 13–42 in across sizes XS to XL.\n</group>\n<group name=\"Leash\">\n  P4: Biothane Leash, 6 ft\n    - The Biothane Leash is 6 ft long.\n    - The Biothane Leash is made of coated webbing that does not absorb water or smell.\n    - The Biothane Leash is 5/8 in wide.\n    - The Biothane Leash has a brass snap hook.\n    - The Biothane Leash can be wiped clean.\n    - The Biothane Leash has a breaking strength of 600 lb.\n    - The Biothane Leash is made by Northpaw.\n  P5: Training Long Line, 30 ft\n    - The Training Long Line is 30 ft long.\n    - The Training Long Line is a leash.\n    - The Training Long Line is made by Northpaw.\n    - The Training Long Line is made of lightweight biothane.\n    - The Training Long Line is intended for recall practice.\n    - The Training Long Line has no handle loop.\n    - The Training Long Line floats in water.\n    - The Training Long Line has a stainless steel swivel clip.\n</group>\n<group name=\"Light\">\n  P6: Rechargeable LED Collar Light\n    - The Rechargeable LED Collar Light clips onto any collar or harness.\n    - The Rechargeable LED Collar Light has three modes: steady, slow flash, and fast flash.\n    - The Rechargeable LED Collar Light is visible from about 1,000 ft.\n    - The Rechargeable LED Collar Light charges via USB-C.\n    - The Rechargeable LED Collar Light runs for 6 hours on steady mode.\n    - The Rechargeable LED Collar Light is rated IPX7 waterproof.\n    - The Rechargeable LED Collar Light is made by Northpaw.\n    - The Rechargeable LED Collar Light is rechargeable.\n</group>\n</products>\n\n<already_covered>\n- Harness size guide\n- How to choose a dog harness\n- Dog leash length guide: 4 ft, 6 ft or long line?\n- Orthopedic dog beds explained\n</already_covered>\n\n<at_most>20</at_most>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "topics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "working_title": {
+                    "type": "string"
+                  },
+                  "target_queries": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "products": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "group": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "working_title",
+                  "target_queries",
+                  "products",
+                  "group"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "topics"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfqP8MtvCNFGAivFBEiXw",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "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"
+      },
+      {
+        "type": "text",
+        "text": "{\"topics\":[{\"working_title\":\"Do No-Pull Harnesses Really Work? How Front-Clip Harnesses Stop Pulling\",\"target_queries\":[\"do no pull harnesses work\",\"how does a front clip harness work\",\"no pull harness for dogs\"],\"products\":[\"P3\"],\"group\":\"Harness\"},{\"working_title\":\"Front-Clip vs Back-Clip Harness: Which One Does Your Dog Need?\",\"target_queries\":[\"front clip vs back clip harness\",\"front or back clip harness\",\"front clip harness pros and cons\"],\"products\":[\"P3\"],\"group\":\"Harness\"},{\"working_title\":\"How to Put On and Adjust a Front-Clip Harness the Right Way\",\"target_queries\":[\"how to put on a dog harness\",\"how to adjust a dog harness\",\"how tight should a dog harness be\"],\"products\":[\"P3\"],\"group\":\"Harness\"},{\"working_title\":\"Harness or Collar for Walks: Which Is Better for Your Dog?\",\"target_queries\":[\"harness vs collar for dogs\",\"is a harness better than a collar\",\"collar or harness for walking\"],\"products\":[\"P3\",\"P6\"],\"group\":\"Harness\"},{\"working_title\":\"How to Stop Your Dog Pulling on the Leash: A Friendly Step-by-Step Guide\",\"target_queries\":[\"how to stop dog pulling on leash\",\"dog pulls on leash\",\"leash training a dog that pulls\"],\"products\":[\"P3\",\"P4\"],\"group\":\"Harness\"},{\"working_title\":\"What Is Biothane? Biothane vs Nylon Dog Leashes\",\"target_queries\":[\"biothane vs nylon leash\",\"what is biothane\",\"biothane dog leash\"],\"products\":[\"P4\",\"P5\"],\"group\":\"Leash\"},{\"working_title\":\"How to Use a Long Line for Recall Training\",\"target_queries\":[\"how to use a long line\",\"long line recall training\",\"long leash for recall\"],\"products\":[\"P5\",\"P3\"],\"group\":\"Leash\"},{\"working_title\":\"How to Clean a Smelly Dog Leash (and How to Avoid the Smell)\",\"target_queries\":[\"how to clean a dog leash\",\"dog leash smells\",\"washing a dog leash\"],\"products\":[\"P4\",\"P5\"],\"group\":\"Leash\"},{\"working_title\":\"Dog Walking Essentials for Beginners: What Gear You Actually Need\",\"target_queries\":[\"dog walking essentials\",\"what do i need to walk my dog\",\"new puppy walking gear\"],\"products\":[\"P3\",\"P4\",\"P6\"],\"group\":\"Leash\"},{\"working_title\":\"Walking Your Dog at Night: Safety Tips for Dark Evenings\",\"target_queries\":[\"walking dog at night\",\"night dog walking safety\",\"how to make dog visible at night\"],\"products\":[\"P6\",\"P3\"],\"group\":\"Light\"},{\"working_title\":\"How to Choose a Dog Collar Light: Brightness, Modes and Battery Life\",\"target_queries\":[\"dog collar light\",\"best light for dog walking\",\"led light for dog collar\"],\"products\":[\"P6\"],\"group\":\"Light\"},{\"working_title\":\"Winter Dog Walking Tips: Staying Safe, Visible and Warm\",\"target_queries\":[\"winter dog walking tips\",\"walking dog in winter\",\"dog walks in cold weather\"],\"products\":[\"P6\",\"P3\",\"P2\"],\"group\":\"Light\"},{\"working_title\":\"Taking Your Dog to the Lake or Beach: Gear That Handles Water\",\"target_queries\":[\"taking dog to the beach\",\"dog gear for swimming\",\"waterproof dog leash\"],\"products\":[\"P5\",\"P4\",\"P6\"],\"group\":\"Leash\"},{\"working_title\":\"How to Wash a Dog Bed and Blanket Without Ruining Them\",\"target_queries\":[\"how to wash a dog bed\",\"washing dog blanket\",\"clean dog bed cover\"],\"products\":[\"P1\",\"P2\"],\"group\":\"Bed\"},{\"working_title\":\"What Size Dog Bed Do I Need? How to Measure Your Dog\",\"target_queries\":[\"what size dog bed do i need\",\"dog bed size chart\",\"how to measure dog for bed\"],\"products\":[\"P1\"],\"group\":\"Bed\"},{\"working_title\":\"How to Get Your Dog to Sleep in Their Own Bed\",\"target_queries\":[\"how to get dog to sleep in bed\",\"dog won't sleep in his bed\",\"train dog to use bed\"],\"products\":[\"P1\",\"P2\"],\"group\":\"Bed\"},{\"working_title\":\"Dog Beds for Accidents and Drool: Why a Water-Resistant Liner Matters\",\"target_queries\":[\"waterproof dog bed\",\"dog bed for incontinence\",\"dog bed for puppies that pee\"],\"products\":[\"P1\"],\"group\":\"Bed\"},{\"working_title\":\"Do Dogs Need Blankets? Signs Your Dog Gets Cold\",\"target_queries\":[\"do dogs need blankets\",\"does my dog get cold at night\",\"blanket for dog\"],\"products\":[\"P2\",\"P1\"],\"group\":\"Blanket\"},{\"working_title\":\"How to Keep Dog Hair Off Your Sofa and Car Seats\",\"target_queries\":[\"protect couch from dog\",\"dog hair in car\",\"dog blanket for couch\"],\"products\":[\"P2\"],\"group\":\"Blanket\"},{\"working_title\":\"Gift Ideas for Dog Lovers Who Walk Every Day\",\"target_queries\":[\"gifts for dog owners\",\"gift ideas for dog lovers\",\"dog gifts\"],\"products\":[\"P6\",\"P2\",\"P1\",\"P4\"],\"group\":\"Light\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 2683,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 2718,
+      "output_tokens_details": {
+        "thinking_tokens": 930
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}
