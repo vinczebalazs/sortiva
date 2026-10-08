@@ -150,6 +150,24 @@ Asked how errors reach people. **The merchant:** when topic-finding cannot finis
 
 The topic prompt had asked only for buying and usage questions (how to choose, use, care for; comparisons; what a feature means), which the agent wrote from the plan without widening it. The founder asked for room instead: version 3 offers a wide menu (problems and fixes, mistakes to avoid, beginners' guides, myths, recipes and ways to use it, pairing, sizing, gift ideas, seasonal and occasion uses, storage and shelf life, "and any other kind shoppers search for"), asks the model to spread its proposals across kinds, and to use the room it is given rather than propose fewer. The guardrails stay: writable from the products' own facts, about a kind of product, no prices, competitors or the shop itself. On the two rich shops the queue went from 18 to 21 topics, with gift guides, beginners' guides, ratios and cleaning among them; the most searched English topic is now "gifts for coffee lovers" (3,600 a month). A wider menu does not widen what an article may claim: the writer (phase 3) may still state only product facts.
 
+## 2026-10-08 — Founder: four rules for writing (phase 3)
+
+Asked before phase 3 started, the founder answering before going offline for the night.
+
+- **Common-knowledge numbers are allowed.** Rule 2 says every number in an article cites a product fact. Some queued topics need numbers no product states (a coffee-to-water ratio, a brewing temperature). The founder chose to allow them, under a narrower rule: a number that no cited fact contains must be marked by the writer as general knowledge, the sentence it sits in may not name or describe one of our products, and the reviewing model must accept each such number as well established; one it does not accept fails the article. Numbers about our products still need a fact, mechanically. This loosens rule 2 for general advice only, and that loosening rests on a model's judgement, not a mechanical check.
+- **One repair for any failure.** The plan repaired only after the reviewing model failed a draft; a mechanical failure (an uncited claim, an outside link, a price) held it at once. Now any failed check sends the writer the failing sentences once. Still one repair in total; a second failure holds the article.
+- **A held article gives the day one more try.** If the day's article is held, the next topic in the queue is written the same day; if that one is held too, the day ends. At most two articles are attempted per day and at most one can go out, so rule 4 (one article per day) still holds for what reaches the store; the day's model cost can double.
+- **Shop voice, no experience.** The article may speak as the shop ("in our range", "we stock three grinders"). Claims of experience are refused by a pattern check and by the reviewer: tested, tried, our favourite, in our experience, customer stories.
+
+## 2026-10-08 — Assumed: writing numbers not chosen by the founders
+
+Set by the agent while the founders were offline; each is one number in `core/config.ts` and can change without touching anything else.
+
+- **Article length:** English 700 to 2,000 words, Hungarian 550 to 1,700 (Hungarian packs more into a word). Outside the range the article fails the length check.
+- **Fact floor:** at least 6 different product facts cited, the plan's own proposal. A topic whose products hold fewer than 6 facts in total is held before any model call is paid for.
+- **Reviewer floors:** as the plan says: grounding and information gain at least 4 of 5, structure and fit at least 3.
+- **Evals:** written fresh by the agent and graded by it until the founders grade them: distillation 50 cases, judge 20, writer 20, each half English and half Hungarian. The founders' twenty real product descriptions per language, when they arrive, are added to the distillation set.
+
 ## Spend
 
 Running total of what this build has spent on the founders' keys.

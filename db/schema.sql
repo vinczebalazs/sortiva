@@ -42,7 +42,10 @@ create table store_flags (
   -- Topic-finding could not finish (a vendor failed or refused). Cleared by the next run that does.
   -- The reason is for us; the merchant sees a plain line on Home without vendor details.
   topics_failed_at timestamptz,
-  topics_failure text
+  topics_failure text,
+  -- The day's article could not be finished (a vendor failed). Cleared when an article is next written.
+  write_failed_at timestamptz,
+  write_failure text
 );
 
 create table gsc_connections (
@@ -160,6 +163,8 @@ create table schedule_days (
   local_date date not null,
   outcome text not null check (outcome in ('scheduled', 'skipped', 'empty')),
   topic_id bigint references topics(id),
+  -- The one extra topic tried when the day's first article was held (founder, 2026-10-08). At most one.
+  retry_topic_id bigint references topics(id),
   reason text check (reason in ('paused_by_merchant', 'paused_by_operator', 'not_entitled', 'budget', 'permission', 'skipped_by_merchant')),
   decided_at timestamptz not null default now(),
   primary key (store_id, local_date)

@@ -6,6 +6,7 @@ import type { Db, DbClient } from '../db/pool.ts'
 import type { Deps } from './deps.ts'
 import { idempotencyKey } from './runtime/keys.ts'
 import { defineJob, enqueue } from './runtime/task.ts'
+import { requestWrite } from './write.ts'
 
 type FindPayload = { storeId: number; reason: 'setup' | 'low_queue' | 'profile_changed'; requestedAt: string }
 
@@ -45,11 +46,21 @@ export const dailyPick = defineJob<PickPayload, Deps>({
   storeId: (p) => p.storeId,
   idempotencyKey: (p) => idempotencyKey('daily_pick', p.storeId, p.localDate),
   run: async ({ deps, payload: { storeId, localDate } }) => {
+    await returnUnfinished(deps.pool, storeId, localDate)
     const decision = await decideDay(deps.pool, storeId, localDate)
+    if (decision.outcome === 'scheduled') await requestWrite(deps.pool, { storeId, topicId: decision.topicId!, localDate })
     if (await shouldRediscover(deps.pool, storeId)) await requestDiscovery(deps.pool, storeId, 'low_queue', localDate)
     return decision
   },
 })
+
+/**
+ * A topic scheduled on an earlier day whose writing never finished (a vendor kept failing, or the
+ * store paused mid-write) goes back to the queue, keeping its rank, so today's pick can take it again.
+ */
+export async function returnUnfinished(db: Db, storeId: number, localDate: string): Promise<void> {
+  await db.query(`update topics set state = 'queued', scheduled_for = null where store_id = $1 and state = 'scheduled' and scheduled_for < $2`, [storeId, localDate])
+}
 
 export async function decideDay(pool: Db, storeId: number, localDate: string): Promise<DayDecision> {
   const client = await pool.connect()

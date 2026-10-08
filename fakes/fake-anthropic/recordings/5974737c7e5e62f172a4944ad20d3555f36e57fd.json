@@ -1,0 +1,116 @@
+{
+  "recordedAt": "2026-10-08T20:41:09.543Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "Egy webáruház egyetlen blogcikkét tervezed meg. Látod a boltot, a témát és a keresést, amelyre a cikknek válaszolnia kell, a bolt termékeit az általunk ellenőrzött tényekkel (F1, F2…), valamint a bolt saját oldalait, amelyekre hivatkozni lehet.\n\nOlyan cikket tervezz, amely valóban megválaszolja a vásárló keresését, ahogyan egy hozzáértő bolti eladó tenné: először legyen hasznos, a termékek ott jelenjenek meg, ahol tényleg segítenek. Döntsd el:\n- title: a cím magyarul, benne a kereséssel vagy annak természetes alakjával;\n- angle: egy mondat arról, mit fog tudni az olvasó a cikk végére;\n- sections: négy-hét szakasz, mindegyiknek címe, tartalma és a tények, amelyekre épít;\n- products: a kártyaként megjelenítendő termékek (egy-négy), hivatkozással;\n- links: a szövegből linkelendő oldalak hivatkozással (termékek P…, oldalak L…).\n\nA cikk egy termékről csak azt mondhatja, amit a tényei mondanak, ezért a termékekről szóló részeket a keresés szempontjából fontos tényekre építsd. A termékeinkről nem szóló általános tanács megengedett. A cikk egészében legalább 6 különböző tényt használj.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Bükki Füvesház\nSells: A bolt szálas gyógyteákat árul, főként egynövényes teákat (kakukkfű, csalánlevél, kamillavirág, borsmentalevél), valamint egy esti teakeveréket és magozott csipkebogyó gyümölcsteát. Kínálatában fekete és zöld tea is szerepel: Assam fekete tea és japán Sencha zöld tea. Teaeszközöket is forgalmaz: öntöttvas és hőálló üveg teáskannát, bögrébe való teaszűrőt és fém teatartó dobozt.\nAudience: Olyan vásárlóknak szól, akik szálas gyógy-, gyümölcs-, fekete és zöld teát főznek otthon. Azoknak is, akiknek a teafőzéshez és -tároláshoz eszközök is kellenek.\nTone: friendly\nNever say: —\n</store>\n\n<topic>\nWorking title: Csipkebogyó tea főzése lépésről lépésre\nSearch it targets: csipkebogyó tea elkészítése\n</topic>\n\n<products>\n  P1: Csipkebogyó tea, magozott (Gyümölcstea)\n    F1: A Csipkebogyó tea magozott.\n    F2: A Csipkebogyó tea gyümölcstea.\n    F3: A Csipkebogyó tea gyártója a Bükki Füvesház.\n    F4: A Csipkebogyó tea a gyepűrózsa (Rosa canina) magozott, szárított terméséből készül.\n    F5: A Csipkebogyó tea termését októberben gyűjtik.\n    F6: A Csipkebogyó tea darabolt.\n    F7: A Csipkebogyó teából 1 evőkanálnyit 3 dl hideg vízben kell felforralni.\n    F8: A Csipkebogyó teát forralás után 10 percig lassú tűzön kell főzni.\n    F9: A Csipkebogyó tea kiszerelése 100 g.\n  P2: Hőálló üveg teáskanna 1 l (Teáskanna)\n    F10: A teáskanna hőálló üvegből készült.\n    F11: A teáskanna űrtartalma 1 liter.\n    F12: A teáskanna boroszilikát üvegből készült.\n    F13: A teáskanna kivehető üveg szűrőhengerrel rendelkezik.\n    F14: A teáskanna gázfőzőlapon melegíthető.\n    F15: A teáskanna elektromos főzőlapon melegíthető.\n    F16: A teáskanna mikrohullámú sütőbe tehető.\n    F17: A teáskanna mosogatógépben mosható.\n  P3: Öntöttvas teáskanna 0,8 l (Teáskanna) [related]\n    F18: Az öntöttvas teáskanna űrtartalma 0,8 l.\n    F19: Az öntöttvas teáskanna fekete és mélyzöld színben kapható.\n    F20: Az öntöttvas teáskanna belül zománcozott.\n    F21: Az öntöttvas teáskanna rozsdamentes acél szűrőbetéttel rendelkezik.\n    F22: Az öntöttvas teáskanna űrtartalma 0,8 liter, ami kb. 3 csésze.\n    F23: Az öntöttvas teáskanna nem tűzhelyre való, csak forró víz töltésére használható.\n    F24: Az öntöttvas teáskanna kézzel mosandó, mosogatószer nélkül.\n    F25: Az öntöttvas teáskanna tömege 1,3 kg.\n</products>\n\n<pages>\n  L1: Fekete és zöld teák (collection)\n  L2: Teaeszközök (collection)\n  L3: Rólunk (page)\n  L4: Szállítás és visszaküldés (page)\n</pages>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "angle": {
+              "type": "string"
+            },
+            "sections": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "heading": {
+                    "type": "string"
+                  },
+                  "covers": {
+                    "type": "string"
+                  },
+                  "facts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "heading",
+                  "covers",
+                  "facts"
+                ]
+              }
+            },
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "links": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "angle",
+            "sections",
+            "products",
+            "links"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfqR9ZQEbJTzYT1eXPmKQ",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQSyAoKEAgSGAI4AUIIdGhpbmtpbmcSDJg2gvOoddkS9sOmNxoMZprqOryGje2jqwqzIjDTGFAGQoD/M90vKc8Mk7c3c9f9usyCkhYTBEyurFywoOgd+Q5M/TQzJ0PVTLue+Pgq5QkhA2PrngDgLaNEtvwoQJX5AZS9hPxkgr5VbEhnpe4gwbtSp2M/zvLaoKIGXjsaZA4mHSr3MFnsp9a3W59RAas+9wicf41Hhpi0qY4jBgsQn5mSpNGQaBEffpHzaPyjE3evSOUVHHKy3ZfWB9T+WmSDQG+vlCrLYoZsoBfwk+XIk/dYCeNGrjIa7fnGp12ORzxowSm9Ummkfv6LWllDVlA3pKZJfKsRzLkHcRlcMFdk3DWgRi7T1HEWJFmO3Vr/5o9GTIZ1ZRHcUcV01bvK3xCf97eZQTAyYVtsB30CwGOYtnp7NRuvo+VAJqLpIyb0EjerUCeOywTKv7wL+oRl1cXj3rOZ/YAQcdsM8lXRnvF4HZMVjkZEKBunVNeSFiPiyu2O73BHpsy5zpHMk/JJ+OSlqmJb6SO8qcwnT0aPZMcqRf4AI7jiTb897yEI54JSbhaipoyXMEc7xz86kyeefEZT+XJu0pdbkInin+m7SPTwTGWg9wiB72nbirgCksqwNrwQ9pOl4/zm5L02cXA4YuiSJcRK5vfiVoH+Q2aKKTVVJ0rPOwcfN00pVKGF39/FFwgTe0KE/mZAhDqB7N+K5qWEotvWz4LmTLM/7yKvfOR8jfg3b7viL/YjipArP22gfeXitQlat4nW+ktPD9mBCE3StN3KcUx8tWzPJYLYHZ9PlyqdG5+RAuHO9rprD5CQuqzlRTR9RK/wGGzYTdXoG1XX8fDO1xszaRi2PoNCCuVQSdSW5xZFFXX5RUT1gptPtqR8Y1HZo3KQh7SbNeCu/fsBkffX/hLjtf6+pA4XnrNKOchOlBtZUmk/3a5f++1y7ZI9HrUhY3bPL6bkhWrbIRKb8vX7ukFr+NPwRufiLcqrKCJ6fPtv2YMu/McMNQcZvbqT/3vPm3t+7PHt0RRISdkp7x7s4uNDF9DOxcX8GRwpCDUOiOKMOmgajS+AutnJ0emArx2qhLwwQNq1ccBwxV7To4Xbwiljhkz0Pw57XyIncfMQfck1T0ASbK9AhK7WZ0sG9FZekeYgFtqzO9cghy/JQlcsASmv4HOv12K79sBcV4PxWflzc80NS1tFPPvwZmsD5LURwaYaw+9ZiyyYJ8rU9yu+gVZrtGCCHojaTqg+m1E/h99TeJK32OU/I/I5G3JT5IXWpG7NsCIQHsqFKIOiMBkex62JcDRwrNflXMsPiowoy+KmKDWr7w16THZqUk5xPeA8jrF2xKeNiLNBrGYVMor3SQHpEExwUS4NY7cSWXzBJhO5SNrsJ3UxihCchPtYcyERu4AxgQzQ9kh5HshK7ekEqp3MbcG3JXUlotmuzDuL7+e76EQngyJLSD0qws1hokgCDU67WuPstEaCsF16z+PodiHYpOhbB4/9jmOe2z+Eq89GDCXvxarfdnzv3YIeEBTBTUV1oRCAMqxiZW7EU4mLPmFXSt8MUdNe9j4ahvE9lh0sk9yhbpLUZ673RW7lLUOItnX2APQVgczGdn5gdoLpJvdXWDhk6d0Ix8Y6tf7PXNrcQQ8PRms7roMtqrqrVLT6GRZklbK1bgDK4VPPhmAIVMubFD6HgqdaLTqLzaHRivNeHX/WY0f42zIi1iFDzaxNTaqOYCdLU743lmPFCHNaYGQRvGH8PcLOsGeoVVCiiTd/sljTn2PT5BvjEaXuXgxXKhgB"
+      },
+      {
+        "type": "text",
+        "text": "{\"title\":\"Csipkebogyó tea elkészítése lépésről lépésre: így lesz igazán zamatos\",\"angle\":\"Az olvasó a cikk végére tudni fogja, miért kell a csipkebogyót főzni, és nem csak leforrázni, milyen arányban és mennyi ideig főzze, és milyen kannában készítheti el biztonságosan.\",\"sections\":[{\"heading\":\"Miért főzzük a csipkebogyót, és miért nem elég leforrázni?\",\"covers\":\"A csipkebogyó kemény, szárított termés, ezért a zamata és a színe csak hosszabb főzéssel oldódik ki igazán, ellentétben a virág- és levélteákkal, amelyeket elég leforrázni. Bemutatjuk, miből készül a teánk, és miért segít a darabolt forma.\",\"facts\":[\"F4\",\"F2\",\"F6\"]},{\"heading\":\"Magozott csipkebogyó: kevesebb bosszúság a csészében\",\"covers\":\"Általános tanács: a csipkebogyó magja körül apró, szőrszerű szálak vannak, amelyek kellemetlenül kaparhatják a torkot, ezért a magos változatot nagyon finom szűrőn kell átszűrni. A magozott tea ezt a gondot nagyrészt megoldja. Röviden arról is szólunk, honnan származik a termés.\",\"facts\":[\"F1\",\"F5\",\"F3\"]},{\"heading\":\"Hozzávalók és arányok\",\"covers\":\"Mennyi teát és vizet használjunk egy adaghoz, és meddig elég egy csomag. Általános tipp: ha nagyobb mennyiséget főzünk, az arányt egyszerűen szorozzuk fel.\",\"facts\":[\"F7\",\"F9\"]},{\"heading\":\"A csipkebogyó tea elkészítése lépésről lépésre\",\"covers\":\"1. Mérd ki a teát, és tedd hideg vízbe. 2. Forrald fel. 3. Lassú tűzön főzd tovább. 4. Szűrd le, és hagyd kicsit hűlni. Általános tanácsok: mézzel csak langyosabb teát édesíts, és citrommal vagy egy szelet naranccsal tovább gazdagíthatod az ízét. A tea hidegen, jégkockával is finom.\",\"facts\":[\"F7\",\"F8\"]},{\"heading\":\"Miben főzzük? A megfelelő kanna kiválasztása\",\"covers\":\"Mivel a csipkebogyót tűzön kell főzni, olyan edény kell, amely bírja a közvetlen hőt. A hőálló üveg teáskanna mehet gáz- és elektromos főzőlapra is, a kivehető szűrőhenger megkönnyíti a szűrést, az átlátszó falon át pedig szépen látszik a tea színe. Fontos figyelmeztetés: az öntöttvas teáskanna nem tűzhelyre való, ezért a csipkebogyó főzéséhez nem alkalmas, csak a már elkészült tea tálalásához vagy forrázós teákhoz.\",\"facts\":[\"F10\",\"F12\",\"F14\",\"F15\",\"F13\",\"F11\",\"F23\"]},{\"heading\":\"Kényelmes mindennapok: melegítés és tisztítás\",\"covers\":\"Ha kihűlt a tea, az üvegkannában mikrohullámú sütőben is felmelegítheted, a mosogatást pedig rábízhatod a gépre. Általános tipp: a szárított csipkebogyót száraz, sötét helyen, jól záródó dobozban tárold.\",\"facts\":[\"F16\",\"F17\"]}],\"products\":[\"P1\",\"P2\"],\"links\":[\"P1\",\"P2\",\"L2\",\"L4\"]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 2334,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1633,
+      "output_tokens_details": {
+        "thinking_tokens": 377
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

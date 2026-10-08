@@ -1,0 +1,116 @@
+{
+  "recordedAt": "2026-10-08T20:35:43.974Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You plan one blog article for an online shop. You see the shop, the topic and the search it should answer, the shop's products with the checked facts we hold about each (F1, F2…), and the shop's own pages that may be linked.\n\nPlan an article that genuinely answers the search for a shopper, the way a knowledgeable shop assistant would: useful first, products where they truly help. Decide:\n- title: the headline, in English, containing the search or a natural form of it;\n- angle: one sentence on what the reader will come away knowing;\n- sections: four to seven, each with a heading, what it covers, and the facts it will draw on;\n- products: the products worth showing as a card (one to four), by reference;\n- links: pages worth linking from the text, by reference (products P…, pages L…).\n\nThe article may only say about a product what its facts say, so build the product parts around facts that matter for this search. General advice that is not about our products is allowed. At least 6 different facts should be used across the article.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Fernhill Coffee Supply\nSells: Fernhill Coffee Supply sells home coffee brewing equipment and coffee beans. The range covers pour-over gear (ceramic and stainless steel drippers, size 02 paper filters, stovetop and electric gooseneck kettles, and a brew scale with timer), immersion brewers such as a French press and a cold brew jar, and manual and electric burr grinders. It also sells single-origin coffee beans from Fernhill Roastery in 250 g and 1 kg bags, whole bean or ground.\nAudience: People who brew coffee at home, especially by pour-over or immersion, and who want to grind, weigh and control water temperature themselves. Some products, such as the single-dose flat-burr grinder and the temperature-hold kettle, suit buyers who care about precise brewing.\nTone: expert\nNever say: —\n</store>\n\n<topic>\nWorking title: How to Make Cold Brew Coffee at Home\nSearch it targets: how to make cold brew coffee\n</topic>\n\n<products>\n  P1: Cold Brew Jar 1.5 litre (Immersion brewer)\n    F1: The Cold Brew Jar has a capacity of 1.5 litre.\n    F2: The Cold Brew Jar is an immersion brewer.\n    F3: The Cold Brew Jar is made by Fernhill.\n    F4: The Cold Brew Jar is a glass jar.\n    F5: The Cold Brew Jar has a fine stainless steel filter basket.\n    F6: The Cold Brew Jar filter basket holds up to 150 g of coarse ground coffee.\n    F7: The Cold Brew Jar makes 1.5 litres of concentrate.\n    F8: The Cold Brew Jar has an airtight lid.\n    F9: The Cold Brew Jar fits in a fridge door.\n    F10: The recommended steep time for the Cold Brew Jar is 12 to 18 hours in the fridge.\n  P2: Colombia Huila, washed (Coffee beans)\n    F11: The Colombia Huila coffee is washed-process.\n    F12: The Colombia Huila product is coffee beans.\n    F13: The Colombia Huila coffee is from Fernhill Roastery.\n    F14: The Colombia Huila coffee comes in 250 g and 1 kg sizes.\n    F15: The Colombia Huila coffee is single origin.\n    F16: The Colombia Huila coffee comes from the Pitalito municipality in Huila.\n    F17: The Colombia Huila coffee is grown at 1,600–1,800 m.\n    F18: The Colombia Huila coffee is made from Caturra and Castillo varieties.\n    F19: The Colombia Huila coffee is fully washed and fermented 36 hours.\n    F20: The Colombia Huila coffee is a medium roast.\n    F21: The Colombia Huila coffee is suited to both filter and espresso.\n    F22: The Colombia Huila coffee has tasting notes of red apple, caramel, and milk chocolate.\n  P3: Hand Grinder, conical steel burrs (Grinder)\n    F23: The Fernhill Hand Grinder has conical steel burrs.\n    F24: The Fernhill Hand Grinder is a manual grinder.\n    F25: The Fernhill Hand Grinder has 38 mm hardened stainless steel conical burrs.\n    F26: The Fernhill Hand Grinder has external click adjustment with 30 settings.\n    F27: The Fernhill Hand Grinder's settings range from espresso to French press.\n    F28: The Fernhill Hand Grinder holds 25 g of beans.\n    F29: The Fernhill Hand Grinder has an aluminium body.\n    F30: The Fernhill Hand Grinder weighs 520 g.\n    F31: The Fernhill Hand Grinder grinds a 15 g dose for pour-over in about 40 seconds.\n  P4: Ethiopia Guji, natural process (Coffee beans) [related]\n    F32: Ethiopia Guji, natural process is coffee beans.\n    F33: Ethiopia Guji, natural process is sold by Fernhill Roastery.\n    F34: Ethiopia Guji, natural process is available in 250 g and 1 kg sizes.\n    F35: Ethiopia Guji, natural process is available as whole bean, filter grind, or espresso grind.\n    F36: Ethiopia Guji, natural process is a single origin coffee.\n    F37: Ethiopia Guji, natural process is grown at 1,900–2,100 m in the Guji zone.\n    F38: Ethiopia Guji, natural process is grown by smallholders delivering to the Hambela washing station.\n    F39: Ethiopia Guji, natural process is made from heirloom varieties.\n    F40: Ethiopia Guji, natural process is natural processed and dried on raised beds for 21 days.\n    F41: Ethiopia Guji, natural process is a light roast.\n    F42: Ethiopia Guji, natural process has tasting notes of blueberry, dark chocolate and jasmine.\n  P5: Electric Flat-Burr Grinder (Grinder) [related]\n    F43: The Electric Flat-Burr Grinder has 64 mm flat steel burrs.\n    F44: The Electric Flat-Burr Grinder has stepless adjustment.\n    F45: The Electric Flat-Burr Grinder has a single-dose design.\n    F46: The Electric Flat-Burr Grinder has retention under 0.1 g.\n    F47: The Electric Flat-Burr Grinder has a 250 W motor running at 1,400 rpm.\n    F48: The Electric Flat-Burr Grinder has bellows on top to puff out remaining grounds.\n    F49: The Electric Flat-Burr Grinder has a height of 38 cm.\n    F50: The Electric Flat-Burr Grinder is made by Fernhill.\n    F51: The Electric Flat-Burr Grinder is an electric grinder.\n  P6: French Press 1 litre (Immersion brewer) [related]\n    F52: The French Press has a capacity of 1 litre.\n    F53: The French Press is an immersion brewer.\n    F54: The French Press is made by Fernhill.\n    F55: The French Press has a borosilicate glass beaker.\n    F56: The French Press beaker sits in a stainless steel frame.\n    F57: The French Press makes about 4 mugs.\n    F58: The French Press has a four-layer mesh filter.\n    F59: All parts of the French Press come apart for cleaning.\n    F60: The French Press beaker is replaceable.\n</products>\n\n<pages>\n  L1: Grinders (collection)\n  L2: Coffee beans (collection)\n  L3: Immersion brewers (collection)\n  L4: About Fernhill (page)\n  L5: Shipping and returns (page)\n</pages>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "angle": {
+              "type": "string"
+            },
+            "sections": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "heading": {
+                    "type": "string"
+                  },
+                  "covers": {
+                    "type": "string"
+                  },
+                  "facts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "heading",
+                  "covers",
+                  "facts"
+                ]
+              }
+            },
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "links": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "angle",
+            "sections",
+            "products",
+            "links"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfqQkn4qrXCrnaAShSgFs",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQSzwoKEAgSGAI4AUIIdGhpbmtpbmcSDLVShkBkuaWzmRrG6RoMxcWUgvfrd3GwkctxIjAux0hchF9g195jzNAsOZBk9EmZU1OQS+2gkCTiIfVyAc9APooEIzaB+zChmbNRLhgq7Akp9Bfw+bXa3vDc9kPClv9wR2I0LtUMJoSjowvsfiQ2zh+8X5u3oVgFDA+FaLxOACM5IV0K/xbUzERxOau03quM9uihDnjEBl/G0ti7sxFrAm6J5aMxu+zMcc5djjCZTmyJOpAxWlmdJlKgtUjDk62esPuTcocag03dsZt0MR2iSosdH9FF+hhGc8ZSXkgcWTA4RgoftfsN57Lf+R2KNtEvwsHvIXpZOuLW0J+5zM9JP44jMo323tjVxOjJ2INZ+Rlt04y54FIK7q4ipRG9UpR72UAPmZg7PWZ4g3iuHwMdsXGKSO9v/uI2lv8rKj/unqqETeJHt7o7Zse73shbWynPDNB0poARl6VCslFG9t5EUzp2APVFgMDSi8itGtTYCmM01HhoDYIX2wFsBZYwIUbb/x2NnuNowNrLr2MtQ8HHAVaMR58iCpXW07lZ25UFt6rocTEDrCns8/sNeU1yQHfbM7/E/fauqei+DKQxE0X4PhiH8z8zau6SiS10ZhFrV2wODY9HM775yZe2MfBF4++HscCMcxzdUdYnu5lOHdOgziiv5kHDEOvQc9BWrJpRIes2asOiUKSjVrQRt7s3ohLg4BMTaCuicwCrbAs/pZ/Spf+7UqNmJfANFJy7s4e1Byz0ew1dgsCR//CIvXMyIiYPxDJTc/V87qHYa+jCHtDBGBT1eTyJ5UcE7C2CmdLhn0FyEnuekuWQdsG87bIOk2LzmFvq/ulV2Mtkgg0pYPEwIQzd4HiP7/Ms6sob+QxZVSD3mSF0z4xUM6H8L7ppvyGdWZI5RI9eRtwPF+blWUxxoOF2yB/J+qLdrZZ6PAF/dfxUuAOcON1ktetpAkC0JIKlR64XGSxbLWt+d4bw9NhNfAFZeH/C6Je/devHnPLIwme8FHIkNhLuyydk5E7lxOj5LcV+zz6uEXLEKqPJqHtAdSSP7UaJTh5HuqS68Si/PuxmbI4/cGa6lstnf5J7ekozbqObnTGru+A770d7jYNWLl5OSNoBQ/CADlK5mTuJMCdy7kZG7I49BqcpUp5mnoYD+SktkMPcfobWApsGREyA1xyGEwbRKqmqAAEOAEvHwZ4fyG1A+gqZS1464/RagRaKQl9mgxAfz+PRhKz5JXF+c7ZdJfe40+eV2rtGNrN926X/z4q7H4NHUbekm/HfhASItvVvQ2jSiAKVf1QfMLIdTAyNWpG0UotSJaox21gNazp5cMuUEMMToqcfKbm4YPZOjfiaz2GsWtp8tUt+pcFovUFiVP+j0nIsepJ55TdkIDQBPqVmlHbY2J17Sls3bhW+NmY3O3NNM8c+9+TG/eFeu1ArMTCTSJYTk1fdEHbBxFUciqnhA0AHBLM8/+QK2z9EADd+1f1TrfpG8VFYsx7CeaI6y9H9nc0gdKZFd5qiDcpJLECh2c2y3jpPHpbOtZP2knOnHKt02dm9sj2Jzx/yMQELpRwY7LsUQnUfEV6MmYOUk/ngBg8wrI1JBzs1VIMfyEz4+My4nUaqE99ielnhG6VcXShEGcvPwV1K4zEjXAokEmYx5rZipxyyL8qOOo/o0fbqioAP3pMr542XDCF61Y1mCxIoCD147qJQfgoJvCFZT4eqTDuXUF01tkGgzNccXusklr2fTLDBaOreoF8TBWYuPQOzB1w0GcL/hcDZ6dMwiMNSqngiTyRLkh8YAQ=="
+      },
+      {
+        "type": "text",
+        "text": "{\"title\":\"How to Make Cold Brew Coffee at Home: Ratio, Grind and Steep Time\",\"angle\":\"The reader will learn what cold brew is, the coffee-to-water ratio, grind size and steep time that work, a step-by-step method in a dedicated jar or a French press, and how to choose beans and serve the concentrate.\",\"sections\":[{\"heading\":\"What cold brew is, and why time replaces heat\",\"covers\":\"Cold brew is an immersion method: coarse coffee steeps in cold water for many hours instead of minutes in hot water. This gives a smooth, low-bitterness concentrate. It also explains how cold brew differs from iced coffee.\",\"facts\":[\"F2\",\"F10\"]},{\"heading\":\"What you need\",\"covers\":\"Equipment checklist: a vessel with a filter, a burr grinder that can grind coarse, a scale, cold filtered water and fresh beans. Introduces the Cold Brew Jar as the dedicated option.\",\"facts\":[\"F1\",\"F3\",\"F4\",\"F5\",\"F8\"]},{\"heading\":\"Ratio and grind size\",\"covers\":\"A starting concentrate ratio of about 1:10 coffee to water (150 g to 1.5 litres), and why a coarse, French-press-level grind matters. Fines make the brew muddy and over-extracted. The Hand Grinder covers this coarse range, but its hopper holds 25 g, so 150 g means grinding in about six loads. For larger batches, browse the grinder collection.\",\"facts\":[\"F6\",\"F7\",\"F26\",\"F27\",\"F28\",\"F25\"]},{\"heading\":\"Step by step: making cold brew in the jar\",\"covers\":\"1. Weigh and grind the coffee. 2. Fill the filter basket. 3. Pour cold water slowly to wet all the grounds. 4. Seal the jar and refrigerate. 5. Steep for 12 to 18 hours. 6. Lift out the basket and let it drain. Shorter steeps give a brighter brew; longer steeps give a heavier one.\",\"facts\":[\"F5\",\"F8\",\"F9\",\"F10\"]},{\"heading\":\"No dedicated jar? Using a French press\",\"covers\":\"The same method in a French press: steep coarse coffee in the fridge, then press and decant so the coffee stops extracting. The 1 litre capacity means scaling the recipe down to about 100 g of coffee per litre.\",\"facts\":[\"F52\",\"F53\",\"F58\"]},{\"heading\":\"Choosing beans for cold brew\",\"covers\":\"Cold extraction mutes acidity and brings out sweetness and chocolate. Medium roasts with caramel and chocolate notes are a reliable choice. Colombia Huila is a strong match, and the 1 kg bag suits regular batches. Fruit-forward light roasts can also be used for a brighter cup.\",\"facts\":[\"F20\",\"F22\",\"F11\",\"F14\",\"F15\"]},{\"heading\":\"Diluting, serving and storing\",\"covers\":\"Dilute the concentrate roughly 1:1 with water or milk over ice and adjust to taste. Keep it sealed and cold, and use it within about a week. Covers serving ideas and how to troubleshoot a sour or bitter batch.\",\"facts\":[\"F7\",\"F8\",\"F9\"]}],\"products\":[\"P1\",\"P2\",\"P3\"],\"links\":[\"P1\",\"P2\",\"P3\",\"L1\",\"L2\",\"L3\"]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 3134,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1477,
+      "output_tokens_details": {
+        "thinking_tokens": 385
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

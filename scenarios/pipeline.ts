@@ -1,6 +1,6 @@
 import { createServer } from 'node:http'
 import type { AddressInfo } from 'node:net'
-import type { Runner } from 'graphile-worker'
+import type { Runner, TaskList } from 'graphile-worker'
 import { installShopifyStore } from '../connectors/shopify/install.ts'
 import { verifyShopifyWebhook } from '../connectors/shopify/webhooks.ts'
 import { optionalEnv } from '../config/env.ts'
@@ -51,6 +51,8 @@ export type Pipeline = {
   rediscover: (storeId: number) => Promise<void>
   /** The output topic-finding recorded for its latest run on this store. */
   lastDiscovery: (storeId: number) => Promise<DiscoveryOutcome>
+  /** Runs today's daily pick for the store, as the hourly sweep does at its publish hour, which also starts writing. */
+  writeToday: (storeId: number, localDate?: string) => Promise<string>
   /** Waits until no job is running and none is due in the next 30 seconds. */
   settle: (timeoutMs?: number) => Promise<void>
   retryFailedNow: () => Promise<void>
@@ -62,7 +64,7 @@ export type Pipeline = {
  * a webhook receiver standing in for the app's route, and a real worker running every job.
  * RECORD=1 lets the fake Anthropic call the real API for requests it has no recording of.
  */
-export async function startPipeline(options: { webhookDebounceMs?: number } = {}): Promise<Pipeline> {
+export async function startPipeline(options: { webhookDebounceMs?: number; writing?: boolean } = {}): Promise<Pipeline> {
   const db = await createTestDb()
   const hooks: Hooks = {}
 
@@ -96,7 +98,14 @@ export async function startPipeline(options: { webhookDebounceMs?: number } = {}
     webhookDebounceMs: options.webhookDebounceMs ?? 1_500,
     hooks,
   }
-  const worker = await startWorker({ connectionString: db.url, taskList: { ...taskList(deps, ALL_JOBS), nightly_sweep: nightlySweep(db.pool), daily_sweep: dailySweep(db.pool) }, concurrency: 4, quiet: true })
+  const tasks: TaskList = { ...taskList(deps, ALL_JOBS), nightly_sweep: nightlySweep(db.pool), daily_sweep: dailySweep(db.pool) }
+  // Scenarios about the schedule alone switch writing off: the topic counts as written, and no model is paid.
+  if (options.writing === false) {
+    tasks.write_article = async (payload) => {
+      await db.pool.query(`update topics set state = 'written' where id = $1 and state = 'scheduled'`, [(payload as { topicId: number }).topicId])
+    }
+  }
+  const worker = await startWorker({ connectionString: db.url, taskList: tasks, concurrency: 4, quiet: true })
 
   const storeId = async (domain: string) => {
     const { rows } = await db.pool.query<{ id: number }>('select id from stores where shop_domain = $1', [domain])
@@ -159,6 +168,12 @@ export async function startPipeline(options: { webhookDebounceMs?: number } = {}
       const { rows } = await db.pool.query(`select output from job_ledger where task = 'find_topics' and store_id = $1 order by completed_at desc limit 1`, [id])
       if (!rows[0]) throw new Error(`no finished topic-finding for store ${id}`)
       return rows[0].output
+    },
+    writeToday: async (id, localDate) => {
+      const { rows } = await db.pool.query<{ d: string }>(`select to_char((now() at time zone timezone)::date, 'YYYY-MM-DD') as d from stores where id = $1`, [id])
+      const date = localDate ?? rows[0]!.d
+      await worker.addJob('daily_pick', { storeId: id, localDate: date }, { jobKey: `daily_pick:${id}:${date}` })
+      return date
     },
     settle,
     retryFailedNow: async () => {

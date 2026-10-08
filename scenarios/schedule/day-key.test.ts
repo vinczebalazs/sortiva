@@ -6,7 +6,7 @@ import { startPipeline, type Pipeline } from '../pipeline.ts'
 
 let p: Pipeline
 beforeAll(async () => {
-  p = await startPipeline()
+  p = await startPipeline({ writing: false })
 })
 afterAll(() => p?.stop())
 
@@ -50,7 +50,7 @@ describe('the day key is the store-local calendar day', () => {
     await sweep('2026-10-09T03:30:00Z')
     const two = await days(ny.id)
     expect(two.map((d) => d.date)).toEqual(['2026-10-07', '2026-10-08'])
-    const { rows } = await p.db.pool.query(`select count(*)::int as n from topics where store_id = $1 and state = 'scheduled'`, [ny.id])
+    const { rows } = await p.db.pool.query(`select count(*)::int as n from topics where store_id = $1 and state in ('scheduled', 'written')`, [ny.id])
     expect(rows[0].n).toBe(two.filter((d) => d.outcome === 'scheduled').length)
   })
 
@@ -85,6 +85,8 @@ describe('a paused store is skipped with a visible reason', () => {
     await sweep('2026-10-09T07:00:00Z')
     const [, day] = await days(store)
     expect(day).toMatchObject({ date: '2026-10-09', outcome: 'scheduled' })
+    // "Skip this one" is offered until the article exists; this harness writes instantly, so undo that.
+    await p.db.pool.query(`update topics set state = 'scheduled' where id = $1`, [day!.topic])
     expect(await skipTopic(p.db.pool, store, day!.topic)).toBe(true)
     const after = await homeQueue(p.db.pool, store, new Date('2026-10-09T08:00:00Z'))
     expect(after.today).toEqual({ kind: 'nothing', reason: 'skipped_by_merchant' })

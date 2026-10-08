@@ -16,9 +16,12 @@ export type QueuedTopic = {
   expectedDate: string | null
 }
 
+/** An article written today, in the order it was tried: at most the day's topic and one more after a hold. */
+export type TodayArticle = { id: number; title: string; status: string; heldReason: string | null }
+
 export type Today =
   | { kind: 'nothing'; reason: 'queue_empty' | 'publish_hour_passed' | 'skipped_by_merchant' | PauseReason }
-  | { kind: 'scheduled'; topic: QueuedTopic; decided: boolean }
+  | { kind: 'scheduled'; topic: QueuedTopic; decided: boolean; articles: TodayArticle[] }
 
 type TopicRow = {
   id: number
@@ -76,8 +79,8 @@ export async function homeQueue(db: Db, storeId: number, now = new Date()): Prom
   const c = await clock(db, storeId, now)
   const pause = await pauseReason(db, storeId)
   const { rows: queued } = await db.query<TopicRow>(`select ${TOPIC_COLUMNS} from topics t where t.store_id = $1 and t.state = 'queued' order by ${QUEUE_ORDER}`, [storeId])
-  const { rows: days } = await db.query<{ outcome: string; reason: string | null; topic_id: number | null }>(
-    `select outcome, reason, topic_id::int from schedule_days where store_id = $1 and local_date = $2`,
+  const { rows: days } = await db.query<{ outcome: string; reason: string | null; topic_id: number | null; retry_topic_id: number | null }>(
+    `select outcome, reason, topic_id::int, retry_topic_id::int from schedule_days where store_id = $1 and local_date = $2`,
     [storeId, c.local_date],
   )
   const decided = days[0]
@@ -87,8 +90,14 @@ export async function homeQueue(db: Db, storeId: number, now = new Date()): Prom
   let today: Today
   let rest = queued
   if (decided?.outcome === 'scheduled' && decided.topic_id) {
-    const { rows } = await db.query<TopicRow>(`select ${TOPIC_COLUMNS} from topics t where t.id = $1`, [decided.topic_id])
-    today = { kind: 'scheduled', topic: toTopic(rows[0]!, c.local_date), decided: true }
+    const { rows } = await db.query<TopicRow>(`select ${TOPIC_COLUMNS} from topics t where t.id = $1`, [decided.retry_topic_id ?? decided.topic_id])
+    const { rows: articles } = await db.query<TodayArticle>(
+      `select a.id::int, coalesce(a.title, t.working_title) as title, a.state as status, t.held_reason as "heldReason"
+       from articles a join topics t on t.id = a.topic_id
+       where a.topic_id = any($1::bigint[]) and a.state <> 'discarded' order by array_position($1::bigint[], a.topic_id)`,
+      [[decided.topic_id, decided.retry_topic_id].filter((id) => id !== null)],
+    )
+    today = { kind: 'scheduled', topic: toTopic(rows[0]!, c.local_date), decided: true, articles }
   } else if (decided) {
     today = { kind: 'nothing', reason: (decided.reason ?? 'queue_empty') as Extract<Today, { kind: 'nothing' }>['reason'] }
   } else if (pause) {
@@ -96,7 +105,7 @@ export async function homeQueue(db: Db, storeId: number, now = new Date()): Prom
   } else if (c.local_hour >= c.publish_hour) {
     today = { kind: 'nothing', reason: 'publish_hour_passed' }
   } else if (queued[0]) {
-    today = { kind: 'scheduled', topic: toTopic(queued[0], c.local_date), decided: false }
+    today = { kind: 'scheduled', topic: toTopic(queued[0], c.local_date), decided: false, articles: [] }
     rest = queued.slice(1)
   } else {
     today = { kind: 'nothing', reason: 'queue_empty' }

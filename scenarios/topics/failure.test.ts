@@ -4,7 +4,7 @@ import { startPipeline, type Pipeline } from '../pipeline.ts'
 
 let p: Pipeline
 beforeAll(async () => {
-  p = await startPipeline()
+  p = await startPipeline({ writing: false })
 })
 afterAll(() => p?.stop())
 

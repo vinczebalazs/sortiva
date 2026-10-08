@@ -1,0 +1,147 @@
+{
+  "recordedAt": "2026-10-08T20:41:17.088Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You review a blog article an online shop is about to publish. You did not write it. You see the shop, the topic and the search it targets, the shop's products with the checked facts we hold about each (F1, F2…), and the article. Sentences about products end with the facts they rest on in brackets; [G] marks a sentence the writer says is general knowledge.\n\nScore each from 1 to 5:\n- grounding: everything said about the shop's products is exactly what the cited facts say, with nothing added, stretched or implied. One product claim the facts do not support caps this at 2. No invented experience (\"we tested\", customer stories), statistics or studies.\n- information_gain: a shopper who searched this would learn something useful and specific, beyond generic filler they could find anywhere. Padding, repetition and vague praise lower it.\n- structure: it answers the search early, its sections follow in a sensible order, headings say what is below them, lists and tables are used where they help.\n- fit: it suits this shop, its audience and tone, stays on the topic, and does not read as an advert.\n5 is excellent, 4 good enough to publish as it is, 3 acceptable with flaws, 2 or 1 not publishable.\n\nList problems: each with the exact sentence quoted and what is wrong, most serious first. Leave the list empty if there are none.\n\nFor each numbered general-knowledge sentence you are given, say whether every number in it is well established and uncontroversial general knowledge that needs no source (accepted true), or not (false), with a short reason.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Fernhill Coffee Supply\nSells: Fernhill Coffee Supply sells home coffee brewing equipment and coffee beans. The range covers pour-over gear (ceramic and stainless steel drippers, size 02 paper filters, stovetop and electric gooseneck kettles, and a brew scale with timer), immersion brewers such as a French press and a cold brew jar, and manual and electric burr grinders. It also sells single-origin coffee beans from Fernhill Roastery in 250 g and 1 kg bags, whole bean or ground.\nAudience: People who brew coffee at home, especially by pour-over or immersion, and who want to grind, weigh and control water temperature themselves. Some products, such as the single-dose flat-burr grinder and the temperature-hold kettle, suit buyers who care about precise brewing.\nTone: expert\nNever say: —\n</store>\n\n<topic>\nWorking title: How to Use a French Press for a Clean, Full-Bodied Cup\nSearch it targets: how to use a french press\n</topic>\n\n<products>\n  P1: French Press 1 litre (Immersion brewer)\n    F1: The French Press has a capacity of 1 litre.\n    F2: The French Press is an immersion brewer.\n    F3: The French Press is made by Fernhill.\n    F4: The French Press has a borosilicate glass beaker.\n    F5: The French Press beaker sits in a stainless steel frame.\n    F6: The French Press makes about 4 mugs.\n    F7: The French Press has a four-layer mesh filter.\n    F8: All parts of the French Press come apart for cleaning.\n    F9: The French Press beaker is replaceable.\n  P2: Hand Grinder, conical steel burrs (Grinder)\n    F10: The Fernhill Hand Grinder has conical steel burrs.\n    F11: The Fernhill Hand Grinder is a manual grinder.\n    F12: The Fernhill Hand Grinder has 38 mm hardened stainless steel conical burrs.\n    F13: The Fernhill Hand Grinder has external click adjustment with 30 settings.\n    F14: The Fernhill Hand Grinder's settings range from espresso to French press.\n    F15: The Fernhill Hand Grinder holds 25 g of beans.\n    F16: The Fernhill Hand Grinder has an aluminium body.\n    F17: The Fernhill Hand Grinder weighs 520 g.\n    F18: The Fernhill Hand Grinder grinds a 15 g dose for pour-over in about 40 seconds.\n  P3: Colombia Huila, washed (Coffee beans)\n    F19: The Colombia Huila coffee is washed-process.\n    F20: The Colombia Huila product is coffee beans.\n    F21: The Colombia Huila coffee is from Fernhill Roastery.\n    F22: The Colombia Huila coffee comes in 250 g and 1 kg sizes.\n    F23: The Colombia Huila coffee is single origin.\n    F24: The Colombia Huila coffee comes from the Pitalito municipality in Huila.\n    F25: The Colombia Huila coffee is grown at 1,600–1,800 m.\n    F26: The Colombia Huila coffee is made from Caturra and Castillo varieties.\n    F27: The Colombia Huila coffee is fully washed and fermented 36 hours.\n    F28: The Colombia Huila coffee is a medium roast.\n    F29: The Colombia Huila coffee is suited to both filter and espresso.\n    F30: The Colombia Huila coffee has tasting notes of red apple, caramel, and milk chocolate.\n  P4: Ethiopia Guji, natural process (Coffee beans) [related]\n    F31: Ethiopia Guji, natural process is coffee beans.\n    F32: Ethiopia Guji, natural process is sold by Fernhill Roastery.\n    F33: Ethiopia Guji, natural process is available in 250 g and 1 kg sizes.\n    F34: Ethiopia Guji, natural process is available as whole bean, filter grind, or espresso grind.\n    F35: Ethiopia Guji, natural process is a single origin coffee.\n    F36: Ethiopia Guji, natural process is grown at 1,900–2,100 m in the Guji zone.\n    F37: Ethiopia Guji, natural process is grown by smallholders delivering to the Hambela washing station.\n    F38: Ethiopia Guji, natural process is made from heirloom varieties.\n    F39: Ethiopia Guji, natural process is natural processed and dried on raised beds for 21 days.\n    F40: Ethiopia Guji, natural process is a light roast.\n    F41: Ethiopia Guji, natural process has tasting notes of blueberry, dark chocolate and jasmine.\n  P5: Cold Brew Jar 1.5 litre (Immersion brewer) [related]\n    F42: The Cold Brew Jar has a capacity of 1.5 litre.\n    F43: The Cold Brew Jar is an immersion brewer.\n    F44: The Cold Brew Jar is made by Fernhill.\n    F45: The Cold Brew Jar is a glass jar.\n    F46: The Cold Brew Jar has a fine stainless steel filter basket.\n    F47: The Cold Brew Jar filter basket holds up to 150 g of coarse ground coffee.\n    F48: The Cold Brew Jar makes 1.5 litres of concentrate.\n    F49: The Cold Brew Jar has an airtight lid.\n    F50: The Cold Brew Jar fits in a fridge door.\n    F51: The recommended steep time for the Cold Brew Jar is 12 to 18 hours in the fridge.\n  P6: Electric Flat-Burr Grinder (Grinder) [related]\n    F52: The Electric Flat-Burr Grinder has 64 mm flat steel burrs.\n    F53: The Electric Flat-Burr Grinder has stepless adjustment.\n    F54: The Electric Flat-Burr Grinder has a single-dose design.\n    F55: The Electric Flat-Burr Grinder has retention under 0.1 g.\n    F56: The Electric Flat-Burr Grinder has a 250 W motor running at 1,400 rpm.\n    F57: The Electric Flat-Burr Grinder has bellows on top to puff out remaining grounds.\n    F58: The Electric Flat-Burr Grinder has a height of 38 cm.\n    F59: The Electric Flat-Burr Grinder is made by Fernhill.\n    F60: The Electric Flat-Burr Grinder is an electric grinder.\n</products>\n\n<pages>\n  L1: Grinders (collection)\n  L2: Coffee beans (collection)\n  L3: Immersion brewers (collection)\n  L4: About Fernhill (page)\n  L5: Shipping and returns (page)\n</pages>\n\n<article>\nTitle: How to Use a French Press: A Step-by-Step Guide to a Clean, Full-Bodied Cup\n\nTo use a French press, combine coarsely ground coffee with water just off the boil at a ratio of roughly 1:15 to 1:16, steep for a few minutes, skim the crust, press slowly and pour all of the coffee out straight away [G]. Each of those steps controls either extraction or clarity. Get them right and you keep the heavy, rounded body the press is known for without the muddy, bitter finish that gives it a bad name. The full method and the reasons behind each step follow below.\n\n## Why the French Press Makes Such a Full-Bodied Cup\n\nThe French press is an immersion brewer. Instead of water flowing through a bed of coffee, as in pour-over, all of the grounds sit in all of the water for the whole brew. Extraction happens evenly and fairly forgivingly, because every particle has the same contact time.\n\nWhen the steep is done, a metal mesh pushes the grounds to the bottom and holds them there. Unlike a paper filter, a metal mesh lets coffee oils and some very fine particles pass into the cup. Those oils and fines are what give press coffee its weight and texture. They are also why technique matters: too many fines and the cup turns gritty and over-extracted.\n\nOur [French Press](P1) is an immersion brewer built around a borosilicate glass beaker held in a stainless steel frame [F2, F4, F5]. It uses a four-layer mesh filter to separate the grounds from the brewed coffee [F7].\n\n{{P1}}\n\n## What You Need: Ratio, Water and Batch Size\n\nA French press rewards measuring. Brewing by weight rather than by scoops removes the biggest source of inconsistency, because scoops vary with grind size and bean density.\n\n- **Ratio:** start at about 1 g of coffee to 15–16 g of water [G].\n- **Water temperature:** aim for about 93–96 °C, which is water left to rest for around 30 seconds after boiling [G].\n- **Scale and timer:** weigh the coffee and the water, and time the steep, so you can repeat a cup you like.\n\nWater weighs about 1 g per millilitre, so you can pour straight onto a scale and read the volume in grams [G].\n\nOur French Press has a capacity of 1 litre and makes about 4 mugs [F1, F6]. You do not have to fill it every time, because the ratio simply scales with the amount you brew. As a reference point, a single mug takes about 16 g of coffee to 250 g of water [G]. For a larger batch, multiply both the coffee and the water by the same factor so the strength stays the same.\n\nRemember that the grounds take up space, so a full batch will sit a little below the rim once everything is in the beaker. If the result tastes too strong or too weak, change the ratio before you change anything else.\n\n## Get the Grind Right: Coarse and Even\n\nGrind size is the single biggest lever in French press brewing. Because the coffee sits in water for minutes rather than seconds, it needs a coarse grind, roughly the texture of coarse sea salt or breadcrumbs.\n\nUniformity matters as much as size. A grind that is too fine, or full of dust, over-extracts and pushes sludge through the mesh, giving a bitter, silty cup. A grind that is too coarse under-extracts and tastes thin and sour. A burr grinder produces far more consistent particles than a blade grinder, which chops unevenly and creates both boulders and powder in the same dose.\n\nGrind just before you brew. Ground coffee loses aroma quickly, and the press, with its long contact time and full-bodied style, shows off fresh aromatics well.\n\nOur [Hand Grinder](P2) is a manual grinder with 38 mm hardened stainless steel conical burrs [F11, F12]. It has external click adjustment with 30 settings, ranging from espresso to French press [F13, F14].\n\nThe Hand Grinder holds 25 g of beans, so for a full press you will need to grind in batches [F15]. Simply weigh out the total dose, grind it in portions and tip each one into the beaker. For larger daily batches, browse our [grinders](L1) for electric options.\n\n{{P2}}\n\n## Step by Step: Bloom, Steep, Break the Crust, Plunge\n\nWith your coffee weighed and ground, the brew itself is simple:\n\n1. **Preheat.** Rinse the beaker with hot water and discard it, so the glass does not pull heat from the brew.\n2. **Add the grounds.** Tip the ground coffee into the empty beaker and set it on your scale.\n3. **Pour all the water.** Pour steadily and briskly so all the grounds are saturated and the full weight of water goes in at the start of the brew.\n4. **Stir gently.** Give the slurry a light stir so no dry clumps float on top. Fresh coffee will bloom and rise as it releases gas.\n5. **Steep.** Rest the lid on top without pressing and let it steep for a few minutes, timing it so you can repeat or adjust it next time.\n6. **Break the crust.** Stir the floating layer of grounds gently so most of it sinks, then use two spoons to skim off the foam and any remaining floaters.\n7. **Let it settle (optional).** Waiting a little longer lets more fines sink to the bottom, giving a cleaner cup.\n8. **Press slowly.** Lower the plunger gently and stop just above the bed of grounds.\n\nThe final step deserves care. Pressing hard or fast forces fines through the mesh and churns up the bed, which adds grit and bitterness. On our French Press, a slow, steady press lets the four-layer mesh filter do its job without being overwhelmed [F7]. Stopping above the grounds rather than crushing them keeps the sediment where it belongs.\n\n## Pour Immediately for a Cleaner Cup\n\nPressing does not stop extraction. The grounds at the bottom are still in contact with coffee, and the longer it sits, the more bitter and astringent it becomes. Decant everything as soon as you have pressed, either into cups or into a carafe or thermal jug.\n\nLeave the last bit behind. The final portion in the beaker holds the highest concentration of fines and sludge, so stop pouring when you reach it rather than tipping the press upside down.\n\nOnce you have a baseline, adjust one variable at a time:\n\n- **Bitter, harsh or drying:** grind coarser or shorten the steep.\n- **Sour, thin or hollow:** grind finer or lengthen the steep.\n- **Too strong or too weak, but balanced:** change the ratio of coffee to water.\n- **Gritty or muddy:** use a more even grind, skim the crust thoroughly, let it settle longer and press more slowly.\n\n## Choosing Beans for French Press\n\nThe press emphasises body, sweetness and texture, so coffees with chocolate, caramel and nutty notes tend to taste rich and rounded. Brighter, fruitier coffees also work well and gain a heavier mouthfeel than they would through a paper filter.\n\nFor a classic, comforting press cup, our [Colombia Huila](P3) is a washed, medium-roast coffee with tasting notes of red apple, caramel and milk chocolate [F19, F28, F30]. It comes in 250 g and 1 kg sizes [F22].\n\n{{P3}}\n\nIf you want a more vivid cup, our [Ethiopia Guji](P4) is a natural-process, light-roast coffee with tasting notes of blueberry, dark chocolate and jasmine [F39, F40, F41]. It is available as whole bean, which is the best choice if you grind fresh for each brew [F34].\n\n{{P4}}\n\nWhatever you choose, buying whole bean and grinding just before brewing will do more for the cup than almost any other change. You can explore the full range in our [coffee beans](L2) collection.\n\n## Cleaning and Care\n\nA French press stays clean-tasting only if you clean it properly. Coffee oils cling to the mesh and plunger, and over time they turn rancid and give fresh brews a stale, bitter edge.\n\n- **Discard the grounds** into a compost bin or rubbish bin, not down the sink, where they can build up and block drains.\n- **Rinse right away** with warm water before the residue dries on.\n- **Take it apart regularly.** All parts of our French Press come apart for cleaning, so you can clean each part properly rather than just rinsing the beaker [F8].\n- **Wash with mild detergent** and a soft brush, then rinse thoroughly so no soapy taste remains.\n\nBorosilicate glass handles heat well, but it can still break if dropped or knocked. The beaker on our French Press is replaceable, so a broken beaker does not mean replacing the whole brewer [F4, F9].\n\nOnce you are comfortable with the press, the same immersion principles carry over to other brewers in our [immersion brewers](L3) collection. Weigh your coffee, grind it coarse and even, steep with intent, press gently and pour straight away, and the French press will reward you with a cup that is both clean and full-bodied.\n</article>\n\n<general_knowledge>\n1. To use a French press, combine coarsely ground coffee with water just off the boil at a ratio of roughly 1:15 to 1:16, steep for a few minutes, skim the crust, press slowly and pour all of the coffee out straight away. (numbers: 1, 15, 16)\n2. **Ratio:** start at about 1 g of coffee to 15–16 g of water. (numbers: 1, 15, 16)\n3. **Water temperature:** aim for about 93–96 °C, which is water left to rest for around 30 seconds after boiling. (numbers: 93, 96, 30)\n4. Water weighs about 1 g per millilitre, so you can pour straight onto a scale and read the volume in grams. (numbers: 1)\n5. As a reference point, a single mug takes about 16 g of coffee to 250 g of water. (numbers: 16, 250)\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "number": {
+                    "type": "integer",
+                    "description": "{minimum: -9007199254740991, maximum: 9007199254740991}"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "number",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfqRBH9Uzdwb4yhQ8ecmr",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQSqhQKEAgSGAI4AUIIdGhpbmtpbmcSDFxasFwQ3puCu/rnZBoMRYi282d8JL5pmoRbIjCNrr9AOnSdfQBFK/QpzOtgrLCuSRbRH7axa2vr0yvNtLQL5bnTSR5kIjkENe8LfgkqxxO51y2/kzQTkVMiTuWBCdTdlLC/8qMJjebX//eTy+qYB0aFHmFZbo85Oe93s+NthzwBm7A+Zf2ICKh8ePLZDpQp3Zdq5oj6OKpLQwt1pJ++sfgQHrjCi+S9z7bj+aKtrkX0zXL/H5aKYsJHSzC++WPjXajCqH9VMPIEQQpNNirrPwaA9CRVbdAFw72ptg6xNWOYhbxDqmmqzmS8fcoH4yucQ2D/7DQHG/jOd7OFLYJaR/WiRjp78IhbNOzjEdMCcUWPNa66jDF3v3oHYeApYPfwjEE91d2uNzxXqwA34GAm0rgbJ9dcaDxb/cNazFKZqMXW7+NOpRmvmOM7NTGuy3VW2QDhlYeszIATyYayyqkepLdPfFP8B4mqIs4wJ5e8myrIE1Xzq0LGXTC8yn2auBJ4prY+6iMXZ7NqUJTKfvQSzDh4hlNCh09RU2M/etSK1wbaqTWN3MdZW25ueZXM1tvyjI7cV5MWU3qy6nNn8lx1rQLysa66WK3gd4tDwm7Q5E5ZLe63PMqkC95aYbHbw5CXcelzGoW1dwyg4n3cCW3EQiSxgZ6qYiSy2Bc7Tq50d5PtieDDNfc0EJqdGjUWqliudr5Y0/uGcNsAdlQXg2ejIOktAzwLvQm1BLccDBYzdQTCEmR7tusC2seEfQGzPg8bKdOT9QaHD76bWFNRRv91QV/9KI41Eo2FQ6opAp8N5Bkc8ad+J9dAZ9nal1T4Kfpzv4QI4LQOjUA3xY+UaJNZq3jnhlby+x6Ym0Kjkv2J/uzQFI8o6ed7q8wgAWXXyJ6lG3hFI0OMhUs1CjcuUU0Ktl9N1/NkzIxfjp7TOF1QuENTmLWd9BI+xLZ5uqUQTeBP0pPIW6egeM98rMhtEYvZX7vBLauhgm3df+igD0xf2/9PeZ8uTiuuQL1OTlGZGInM1yqPTluSSsHcW5mpG20aixJ1pnLFsXVXOiAPWAQbgyFL6BwgFRiT7/EHJ1WlpH9SOebjtiCeJQqHbgIX8IgOd64ctVwuEJuUd8lbDnf9ATdyrcU7U3uHUdTkwoWKtlO/9uNTddfI3gVCq8PZ0x4VX5kzwQq5lPGhsOKC8r4m5XK6yQqDEGBZe6lD0xP8G3GlyVgeP1bKQHy6P152RJmlaXtKtXiHuLvqFVCo7dO0RaaVRQbcWOVKwns0XHh08f621K7GNBgy2OqaSVYELZQVHr1AKVXq/vnrH5h+fKp/zKySyhLZCQHIe//8DgA7NbVJZHjXrAqnRCcXWAwqCKkDXujHhStW4XgwIwrs0SQPErGQSZYcXUJ9ZtzbhDff5gCJ8d7k17aFGOkvlarshTLv/soS3wFKl8mpHidvNRLqFppptpzEzpNub/Z4OKvPegpSuN7nYfBVWdk/QtP13f2Yic1cN/Lw7Ofo2TZqMYTp2jiAp7ZEvzSXONs1mcybs608avct+vIHkakGyYVx5eDrHgRmNt3WEt41sC6Aq25OxN1yKkFbWfjCaa69cpY4mDu0g7teBPvcW9qOK5EoutSJTkWndzrTND3sLO5hWrLMIo+reu8w4e3BoRP/6FPlPkCnuxDGOs7R1Kyt7i5ODuttxyrbd+WuYdLoOiZpVxqPDEgDBhIodQROI0q/AUnW9axLqFYHcW/fcE8ZSE/33VBpR7EgqIDdzZddgrFNtfcIkPdjl91kVwY53SwK82OvOr4WLG8Y+LrHHzDmTFcRyj5s7tyz496DyocK5qj7+f4SxjhLoXsRy5f1LbGsX7AXovovr1+h3HVuBvd+V4f5pOpvGvw7uWQb8tzQ+enncXDHUYwRiTugQHTHdy52QpgyPvFVjcb460yEh3P3SMs2zo+Y0QWWJk5sWyzeC6Dce65VD13UyguQANzyabav7P0IgaytY+8vLpCTDTYdBhpXB6mF/akwDniiIGf3TGMie1mn19DitO0cfDqlZdjUsHTh6xjLqCMWdLIByBGdIaxBN91fQwZk308x9MJprxzhCPXrh2FXI+C+lPpKSxIKaQdQfPiXE9IdpvY0si33oAqfu6NwZeDR3GOjst8Bjj7tPshyH4gCL4252VtBwxpxotmKIFUzXAhI4LhFKSzZ+AZJWnVXzeehdpZFL6+/4ulQm0BEzhsSk45IDjS/ynN/yXK5ZiMyKWDmhYnFeETCxfr3/U1yphTs8aQ491yELE9v4g+kpmgfI+U7OdfHWcLPWCzov6YLpYm+lfZ3QLo7Fpa5ro+lVuCG1mhzjf5hGrFDQUAzyBFibWbLZvnse9HXdqz/5ADOTfmYdS4evNVhG1YrVNkSOCNPcqO/qXwzSuBRyJ38ZErkL9ly4WZlHowgFhDlujuyGcMTOd8KKSh6KXbHCTYgPJJA83foHbya69jH92FJQUQKye3ayeYZeFycdYe5zrgW4WtStkoDo+cd+Ip/ewLku4U3PIPZiYs3rjqZbkgkdUftsiXbbCk4I5d7ePhq1NjTFREBgu0JAqfBG9/Fl988e06GemZlMWvACqpfBw2+yL8r8rdTvUifjz0T1ddaOFIKFa2qTWXZ2kKdUcVmLJ8/tU2Nh/kje73l3peET72CznpmGYvZL0z8BKLMvXts2oJFQt0VzUFmxJuWGk7M2TOdfSNA7MW8hb43FFInccd/rpCtP4nhx5CpoO/1i1uAulz6hL3b5hCDKOlqj2+zT8yR2a5++3oxJ/as6BBTgdl9Vpw5Y89JLL0KeV3K6sdii/k1Vf+oi5NbORfspiIFlRp2emlRqCqzAEIi6axe/HbceE4IVh1OXRt2WomhjnOTUZ5nWFTqLTdk70d4NPKLik+Fb9NKiUfqCFLxcYKjiYOSZDhnT35zdWfzqh3IFblzAIs7iSowdb+oDscVB/l8CLguntDeQxHaBsvGSMA0eTQ8LTpCCbv6+2b30ZT3elqrIr0MumhcwtnnaiclL4iX4tlBj38lJOuENeWAH1vK3X13g0IR1mZSO0UQI2lIwZgietnkQGEd2prL1E3P/nxz8f8RQsNZpRuZX3FzAhhxe/fB6Whk7ZCClG4uL0Q0p6AFExdwxuwe8WwmhRd3kMxU/LFlj2zQD0SyN945jXPaBh63bPgn8R+GJKOCnac/u9gBCYCxCJmS9sBlstNoeHlGQzMlyieQ0I9XUY1Nqgc4qxXK/mzRTLTdMUUVlotj0NRrV1n9wu50/1HpcHeFJwBt5a6WdEFmu2Obz/ut/MX7SPhL2A3vlkZmScee1IiMpx2HZIWcN4T0Lt+MgzbcCoJExuCp4/rGcSz8fNd5jfgk43qZfI5z+D0fywyBZW0zQcIwb0O0/FKXrDjixT1WW6X7IYbFT1QeMEnCsUIccw6Dh0zFwBxhj6uF0K5/GAE="
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":4,\"note\":\"Product claims match the cited facts. One sentence stretches F7 slightly by suggesting how well the four-layer mesh performs. The batch-grinding remark is a fair inference from F15.\"},\"information_gain\":{\"score\":4,\"note\":\"Specific and useful on ratio, grind uniformity, crust skimming, decanting and the troubleshooting table. It never gives a concrete steep time or settle time, which is a key piece of 'how to use a french press'.\"},\"structure\":{\"score\":5,\"note\":\"It answers the search in the first paragraph and follows a logical order from principle to equipment, grind, method, pouring, beans and cleaning. Headings are clear, and the lists help. The 'Bloom' in one heading is only a minor point in step 4.\"},\"fit\":{\"score\":5,\"note\":\"The expert tone suits the audience. Products are woven in naturally without reading as an advert, and the article stays on topic.\"},\"problems\":[{\"quote\":\"Rest the lid on top without pressing and let it steep for a few minutes, timing it so you can repeat or adjust it next time.\",\"problem\":\"No concrete steep time is given (commonly about 4 minutes). This is the central parameter for someone searching how to use a French press, and the article stays vague on it throughout.\"},{\"quote\":\"Waiting a little longer lets more fines sink to the bottom, giving a cleaner cup.\",\"problem\":\"It is vague and gives no indication of how long to wait.\"},{\"quote\":\"On our French Press, a slow, steady press lets the four-layer mesh filter do its job without being overwhelmed [F7].\",\"problem\":\"F7 only states that the filter is four-layer mesh. The implied performance claim about the filter not being overwhelmed goes slightly beyond the fact.\"}],\"general_numbers\":[{\"number\":1,\"accepted\":true,\"reason\":\"A 1:15–1:16 brew ratio is a widely cited standard for French press.\"},{\"number\":2,\"accepted\":true,\"reason\":\"A 1 g to 15–16 g ratio is a standard, uncontroversial starting point.\"},{\"number\":3,\"accepted\":true,\"reason\":\"93–96 °C is the common brewing range. Resting about 30 seconds off the boil is a widespread rule of thumb.\"},{\"number\":4,\"accepted\":true,\"reason\":\"Water weighs about 1 g per millilitre, which is basic physical fact.\"},{\"number\":5,\"accepted\":true,\"reason\":\"16 g to 250 g is consistent with a 1:15–1:16 ratio and is a common single-mug reference.\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 6935,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1716,
+      "output_tokens_details": {
+        "thinking_tokens": 865
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

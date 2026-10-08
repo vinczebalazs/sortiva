@@ -36,6 +36,15 @@ export const CONFIG = {
   },
   minDistinctFactsPerArticle: 6,
   judgeFloors: { grounding: 4, informationGain: 4, other: 3 },
+  write: {
+    // Hungarian packs more into a word, so its range is lower (DECISIONS, "writing numbers").
+    words: { en: { min: 700, max: 2000 }, hu: { min: 550, max: 1700 } },
+    metaDescriptionChars: { min: 70, max: 170 },
+    // Existing posts and collections offered to the writer as links, besides the products.
+    maxLinkPages: 12,
+    // Products whose facts the writer sees: the topic's own, plus ones from the same groups up to this many.
+    maxProducts: 6,
+  },
   defaultPublishHour: 9,
   productCardAspectRatio: 4 / 3,
   measureAfterDays: 28,

@@ -1,0 +1,147 @@
+{
+  "recordedAt": "2026-10-08T20:55:29.270Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You review a blog article an online shop is about to publish. You did not write it. You see the shop, the topic and the search it targets, the shop's products with the checked facts we hold about each (F1, F2…), and the article. Sentences about products end with the facts they rest on in brackets; [G] marks a sentence the writer says is general knowledge.\n\nScore each from 1 to 5:\n- grounding: everything said about the shop's products is exactly what the cited facts say, with nothing added, stretched or implied. One product claim the facts do not support caps this at 2. No invented experience (\"we tested\", customer stories), statistics or studies.\n- information_gain: a shopper who searched this would learn something useful and specific, beyond generic filler they could find anywhere. Padding, repetition and vague praise lower it.\n- structure: it answers the search early, its sections follow in a sensible order, headings say what is below them, lists and tables are used where they help.\n- fit: it suits this shop, its audience and tone, stays on the topic, and does not read as an advert.\n5 is excellent, 4 good enough to publish as it is, 3 acceptable with flaws, 2 or 1 not publishable.\n\nList problems: each with the exact sentence quoted and what is wrong, most serious first. Leave the list empty if there are none.\n\nFor each numbered general-knowledge sentence you are given, say whether every number in it is well established and uncontroversial general knowledge that needs no source (accepted true), or not (false), with a short reason.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Fernhill Coffee Supply\nSells: Fernhill Coffee Supply sells home coffee brewing equipment and coffee beans. The range covers pour-over gear (ceramic and stainless steel drippers, size 02 paper filters, stovetop and electric gooseneck kettles, and a brew scale with timer), immersion brewers such as a French press and a cold brew jar, and manual and electric burr grinders. It also sells single-origin coffee beans from Fernhill Roastery in 250 g and 1 kg bags, whole bean or ground.\nAudience: People who brew coffee at home, especially by pour-over or immersion, and who want to grind, weigh and control water temperature themselves. Some products, such as the single-dose flat-burr grinder and the temperature-hold kettle, suit buyers who care about precise brewing.\nTone: expert\nNever say: —\n</store>\n\n<topic>\nWorking title: How to Make Cold Brew Coffee at Home\nSearch it targets: how to make cold brew coffee\n</topic>\n\n<products>\n  P1: Cold Brew Jar 1.5 litre (Immersion brewer)\n    F1: The Cold Brew Jar has a capacity of 1.5 litre.\n    F2: The Cold Brew Jar is an immersion brewer.\n    F3: The Cold Brew Jar is made by Fernhill.\n    F4: The Cold Brew Jar is a glass jar.\n    F5: The Cold Brew Jar has a fine stainless steel filter basket.\n    F6: The Cold Brew Jar filter basket holds up to 150 g of coarse ground coffee.\n    F7: The Cold Brew Jar makes 1.5 litres of concentrate.\n    F8: The Cold Brew Jar has an airtight lid.\n    F9: The Cold Brew Jar fits in a fridge door.\n    F10: The recommended steep time for the Cold Brew Jar is 12 to 18 hours in the fridge.\n  P2: Colombia Huila, washed (Coffee beans)\n    F11: The Colombia Huila coffee is washed-process.\n    F12: The Colombia Huila product is coffee beans.\n    F13: The Colombia Huila coffee is from Fernhill Roastery.\n    F14: The Colombia Huila coffee comes in 250 g and 1 kg sizes.\n    F15: The Colombia Huila coffee is single origin.\n    F16: The Colombia Huila coffee comes from the Pitalito municipality in Huila.\n    F17: The Colombia Huila coffee is grown at 1,600–1,800 m.\n    F18: The Colombia Huila coffee is made from Caturra and Castillo varieties.\n    F19: The Colombia Huila coffee is fully washed and fermented 36 hours.\n    F20: The Colombia Huila coffee is a medium roast.\n    F21: The Colombia Huila coffee is suited to both filter and espresso.\n    F22: The Colombia Huila coffee has tasting notes of red apple, caramel, and milk chocolate.\n  P3: Hand Grinder, conical steel burrs (Grinder)\n    F23: The Fernhill Hand Grinder has conical steel burrs.\n    F24: The Fernhill Hand Grinder is a manual grinder.\n    F25: The Fernhill Hand Grinder has 38 mm hardened stainless steel conical burrs.\n    F26: The Fernhill Hand Grinder has external click adjustment with 30 settings.\n    F27: The Fernhill Hand Grinder's settings range from espresso to French press.\n    F28: The Fernhill Hand Grinder holds 25 g of beans.\n    F29: The Fernhill Hand Grinder has an aluminium body.\n    F30: The Fernhill Hand Grinder weighs 520 g.\n    F31: The Fernhill Hand Grinder grinds a 15 g dose for pour-over in about 40 seconds.\n  P4: Ethiopia Guji, natural process (Coffee beans) [related]\n    F32: Ethiopia Guji, natural process is coffee beans.\n    F33: Ethiopia Guji, natural process is sold by Fernhill Roastery.\n    F34: Ethiopia Guji, natural process is available in 250 g and 1 kg sizes.\n    F35: Ethiopia Guji, natural process is available as whole bean, filter grind, or espresso grind.\n    F36: Ethiopia Guji, natural process is a single origin coffee.\n    F37: Ethiopia Guji, natural process is grown at 1,900–2,100 m in the Guji zone.\n    F38: Ethiopia Guji, natural process is grown by smallholders delivering to the Hambela washing station.\n    F39: Ethiopia Guji, natural process is made from heirloom varieties.\n    F40: Ethiopia Guji, natural process is natural processed and dried on raised beds for 21 days.\n    F41: Ethiopia Guji, natural process is a light roast.\n    F42: Ethiopia Guji, natural process has tasting notes of blueberry, dark chocolate and jasmine.\n  P5: Electric Flat-Burr Grinder (Grinder) [related]\n    F43: The Electric Flat-Burr Grinder has 64 mm flat steel burrs.\n    F44: The Electric Flat-Burr Grinder has stepless adjustment.\n    F45: The Electric Flat-Burr Grinder has a single-dose design.\n    F46: The Electric Flat-Burr Grinder has retention under 0.1 g.\n    F47: The Electric Flat-Burr Grinder has a 250 W motor running at 1,400 rpm.\n    F48: The Electric Flat-Burr Grinder has bellows on top to puff out remaining grounds.\n    F49: The Electric Flat-Burr Grinder has a height of 38 cm.\n    F50: The Electric Flat-Burr Grinder is made by Fernhill.\n    F51: The Electric Flat-Burr Grinder is an electric grinder.\n  P6: French Press 1 litre (Immersion brewer) [related]\n    F52: The French Press has a capacity of 1 litre.\n    F53: The French Press is an immersion brewer.\n    F54: The French Press is made by Fernhill.\n    F55: The French Press has a borosilicate glass beaker.\n    F56: The French Press beaker sits in a stainless steel frame.\n    F57: The French Press makes about 4 mugs.\n    F58: The French Press has a four-layer mesh filter.\n    F59: All parts of the French Press come apart for cleaning.\n    F60: The French Press beaker is replaceable.\n</products>\n\n<pages>\n  L1: Grinders (collection)\n  L2: Coffee beans (collection)\n  L3: Immersion brewers (collection)\n  L4: About Fernhill (page)\n  L5: Shipping and returns (page)\n</pages>\n\n<article>\nTitle: How to Make Cold Brew Coffee at Home: Ratio, Grind and Steep Time\n\nTo make cold brew coffee, steep coarsely ground coffee in cold water in the fridge for many hours, strain out the grounds, then dilute the concentrate to taste. A reliable starting point for concentrate is about 1 part coffee to 10 parts water by weight [G]. Grind coarse, weigh both coffee and water, and give it time. This guide covers the ratio, grind size and steep time, a step-by-step method in a dedicated jar or a French press, and how to choose beans and serve the result.\n\n## What cold brew is, and why time replaces heat\n\nCold brew is an immersion method: the grounds sit fully submerged in water for the whole brew, rather than having water pass through them as in pour-over. The difference is temperature. Hot brewing water usually sits around 90 to 96 °C and extracts flavour in a few minutes [G]. Cold water extracts far more slowly, so time has to do the work that heat normally does.\n\nThat slow, cold extraction pulls out less of the sharp acids and bitter compounds that hot water dissolves readily. The result is a smooth, rounded, low-bitterness concentrate. Our [Cold Brew Jar](P1) is an immersion brewer with a recommended steep time of 12 to 18 hours in the fridge [F2, F10].\n\nCold brew is not the same as iced coffee. Iced coffee is brewed hot and then cooled or poured over ice, so it keeps the brightness and aromatics of a hot brew. Cold brew never sees heat, which is why it tastes heavier, sweeter and softer.\n\n## What you need\n\nThe kit is simple, but each piece matters:\n\n- **A vessel with a filter.** Anything that lets you steep and then separate the grounds cleanly will work.\n- **A burr grinder that grinds coarse.** Burrs give a more even particle size than blades, which keeps the brew clean.\n- **A scale.** Ratio is everything in cold brew, and weighing is far more consistent than scooping.\n- **Cold, filtered water.** Water makes up most of the drink, so off-tastes in the tap water carry straight through.\n- **Fresh beans.** Coffee ground just before brewing gives a fuller, sweeter concentrate.\n\nIf you want a dedicated brewer, our Cold Brew Jar is a 1.5 litre glass jar made by Fernhill, with a fine stainless steel filter basket and an airtight lid [F1, F3, F4, F5, F8]. The coarse ground coffee goes into that fine stainless steel basket for the steep [F5, F6].\n\n{{P1}}\n\nYou can browse the rest of our [immersion brewers](L3) if you would rather use a vessel that also handles hot brewing.\n\n## Ratio and grind size\n\n### The ratio\n\nFor a concentrate, aim for roughly 1:10 coffee to water by weight [G]. In the Cold Brew Jar, that means filling the basket with up to 150 g of coarse ground coffee to make 1.5 litres of concentrate [F6, F7]. If you prefer a ready-to-drink brew rather than a concentrate, use less coffee for the same amount of water and skip most of the dilution later.\n\n### The grind\n\nGrind coarse, at roughly the size you would use for a French press. A coarse grind lets water move freely between the particles and extract evenly over the long steep. Fine particles, often called fines, cause two problems: they over-extract and add bitterness, and they slip through filters and make the concentrate muddy. An even, coarse grind is one of the biggest factors in a clean cold brew.\n\nOur [Hand Grinder](P3) has external click adjustment with 30 settings, running from espresso to French press [F26, F27]. It grinds with 38 mm hardened stainless steel conical burrs [F25]. It holds 25 g of beans at a time, so a full 150 g basket means grinding in several loads [F28, F6].\n\n{{P3}}\n\nIf you brew large batches often, an electric grinder saves effort; see our full range of [grinders](L1).\n\n## Step by step: making cold brew in the jar\n\n1. **Weigh and grind the coffee.** Weigh your beans, then grind them coarse, just before brewing.\n2. **Fill the filter basket.** Put the grounds into the Cold Brew Jar's fine stainless steel basket [F5].\n3. **Pour cold water slowly.** Add cold, filtered water gradually so every ground is wetted. Dry pockets extract poorly, so give the slurry a gentle stir if any grounds stay dry.\n4. **Seal and refrigerate.** Close the airtight lid and put the jar in the fridge; it fits in a fridge door [F8, F9].\n5. **Steep for 12 to 18 hours**, which is the recommended steep time for the Cold Brew Jar in the fridge [F10].\n6. **Separate the concentrate from the grounds.** Let the wet grounds drain under gravity rather than squeezing or pressing them, which pushes fines and bitterness into the concentrate.\n\nWithin the recommended window, steep time is your main tuning tool. A shorter steep gives a brighter, lighter brew; a longer steep gives a heavier, more chocolate-led one. Change one thing at a time between batches so you know what made the difference.\n\n## No dedicated jar? Using a French press\n\nA French press works well for cold brew because it is already an immersion brewer with a built-in filter. The method is the same: add coarse coffee, pour in cold water, stir to wet everything, put the lid on without pressing, and steep in the fridge. When it is ready, press the plunger down slowly and decant the coffee into a separate bottle straight away, so the liquid stops sitting on the grounds and over-extracting.\n\nOur [French Press](P6) holds 1 litre and filters with a four-layer mesh [F52, F58]. Like the Cold Brew Jar, it is an immersion brewer [F53, F2]. Keep the same ratio and scale it down: at 1:10, a litre of water takes about 100 g of coffee [G]. Whatever the filter, a coarse, even grind keeps sediment in the cup to a minimum.\n\n## Choosing beans for cold brew\n\nCold extraction tends to mute acidity and push sweetness, body and chocolate notes forward. That makes medium roasts with caramel and chocolate character a dependable choice; they taste rich and rounded without turning flat.\n\n[Colombia Huila](P2) is a strong match: it is a washed, single-origin medium roast with tasting notes of red apple, caramel and milk chocolate [F11, F15, F20, F22]. It comes in 250 g and 1 kg bags [F14]. A larger bag makes sense if you brew full batches regularly.\n\n{{P2}}\n\nFruit-forward light roasts also work if you want a brighter, more aromatic glass. Our [Ethiopia Guji](P4), for example, is a natural-process light roast with notes of blueberry, dark chocolate and jasmine [F40, F41, F42]. You can compare origins across our [coffee beans](L2) collection.\n\n## Diluting, serving and storing\n\n### Diluting and serving\n\nA full Cold Brew Jar batch is concentrate, not a ready-to-drink coffee [F7]. Start by diluting it about 1:1 with cold water or milk over ice, then adjust to taste [G]. Some simple ways to serve it:\n\n- **Black over ice** with cold water, for the cleanest taste of the bean.\n- **With milk or a plant milk**, which suits chocolate-led coffees particularly well.\n- **Topped up with sparkling water** for a lighter, brighter drink.\n- **Diluted with hot water** if you want a quick, low-bitterness hot coffee.\n\n### Storing\n\nKeep the concentrate sealed and cold, and use it within about a week, since flavour fades and turns stale over time. Decanting it into a clean glass bottle with a tight cap keeps the liquid off the grounds and frees your brewer for the next batch.\n\n### Troubleshooting a batch\n\n| Problem | Likely cause | What to change |\n|---|---|---|\n| Sour, thin or watery | Under-extraction | Grind a little finer, steep longer, or use more coffee |\n| Bitter or harsh | Over-extraction or too many fines | Grind coarser, shorten the steep, and do not squeeze the grounds |\n| Muddy or gritty | Fines passing the filter | Grind coarser and more evenly, and decant carefully |\n| Weak once diluted | Too much dilution | Dilute less, or brew a stronger concentrate |\n\nMake one change per batch and note your ratio, grind setting and steep time. After two or three batches you will have a recipe that suits your beans and your taste, and cold brew becomes one of the most forgiving ways to brew at home.\n</article>\n\n<general_knowledge>\n1. A reliable starting point for concentrate is about 1 part coffee to 10 parts water by weight. (numbers: 1, 10)\n2. Hot brewing water usually sits around 90 to 96 °C and extracts flavour in a few minutes. (numbers: 90, 96)\n3. For a concentrate, aim for roughly 1:10 coffee to water by weight. (numbers: 1, 10)\n4. Keep the same ratio and scale it down: at 1:10, a litre of water takes about 100 g of coffee. (numbers: 1, 10, 100)\n5. Start by diluting it about 1:1 with cold water or milk over ice, then adjust to taste. (numbers: 1)\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "number": {
+                    "type": "integer",
+                    "description": "{minimum: -9007199254740991, maximum: 9007199254740991}"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "number",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfqSFqhYJ1ULtg9Qc7ve6",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "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"
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":5,\"note\":\"Every product sentence matches its cited facts: the jar's capacity, basket, lid, fridge fit and steep time; the grinder's burrs, settings and 25 g capacity; and the bean details. There is no invented testing and there are no statistics.\"},\"information_gain\":{\"score\":4,\"note\":\"Gives concrete ratio, grind, steep and dilution guidance and a useful troubleshooting table. It also points out that the 25 g hopper means grinding several loads for a full basket. Some jar facts are repeated.\"},\"structure\":{\"score\":5,\"note\":\"Answers the search in the first paragraph. Sections run logically from principle to kit, ratio, method, alternative brewer, beans and serving. Headings are clear, and the numbered steps and table are used well.\"},\"fit\":{\"score\":4,\"note\":\"Expert tone that suits home brewers and stays on topic. Product mentions are frequent but tied to the method, so it does not read as an advert.\"},\"problems\":[{\"quote\":\"The coarse ground coffee goes into that fine stainless steel basket for the steep [F5, F6].\",\"problem\":\"Repeats the basket fact just given and adds nothing new. The same fact is cited again in step 2, so this is padding.\"},{\"quote\":\"A larger bag makes sense if you brew full batches regularly.\",\"problem\":\"A mild sales nudge with little information. It could say that a full jar uses 150 g, so a 250 g bag covers less than two batches.\"},{\"quote\":\"Cold brew never sees heat, which is why it tastes heavier, sweeter and softer.\",\"problem\":\"Generic sensory claim that partly repeats the earlier paragraph on smooth, low-bitterness concentrate.\"}],\"general_numbers\":[{\"number\":1,\"accepted\":true,\"reason\":\"Part of a ratio. 1:10 is a commonly cited starting point for cold brew concentrate, though published recipes vary.\"},{\"number\":10,\"accepted\":true,\"reason\":\"1:10 by weight sits within the widely recommended range for cold brew concentrate.\"},{\"number\":90,\"accepted\":true,\"reason\":\"Standard hot brewing temperature range.\"},{\"number\":96,\"accepted\":true,\"reason\":\"Standard upper bound for hot brewing water temperature.\"},{\"number\":100,\"accepted\":true,\"reason\":\"Simple arithmetic: 1:10 applied to 1 litre gives 100 g.\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 6813,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1651,
+      "output_tokens_details": {
+        "thinking_tokens": 848
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}
