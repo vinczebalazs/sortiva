@@ -7,3 +7,6 @@ coverage/
 *.log
 .DS_Store
 fakes/*/recordings/*.secret.json
+.react-router/
+test-results/
+playwright-report/

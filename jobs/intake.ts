@@ -3,7 +3,7 @@ import { enqueueCatalogChanges } from './catalog.ts'
 import type { Deps } from './deps.ts'
 
 /** Records a verified delivery once, by Shopify's delivery id, and schedules the re-read. */
-export async function acceptDelivery(deps: Deps, delivery: ShopifyDelivery): Promise<{ duplicate: boolean }> {
+export async function acceptDelivery(deps: Pick<Deps, 'pool' | 'webhookDebounceMs'>, delivery: ShopifyDelivery): Promise<{ duplicate: boolean }> {
   const { rows } = await deps.pool.query<{ id: number }>('select id from stores where shop_domain = $1', [delivery.shopDomain])
   const storeId = rows[0]?.id ?? null
   const inserted = await deps.pool.query(
