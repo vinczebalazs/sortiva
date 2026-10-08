@@ -1,0 +1,713 @@
+{
+ "recordedAt": "2026-10-08T20:00:10.047Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "how to make pour over coffee",
+  "location_code": 2826,
+  "language_code": "en",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0345 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10082000-2302-0066-0000-8a03336e2351",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0104 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10082000-2302-0066-0000-8a03336e2351"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "how to make pour over coffee",
+     "location_code": 2826,
+     "language_code": "en",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "how to make pour over coffee",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2826,
+      "language_code": "en",
+      "check_url": "https://www.google.com/search?q=how%20to%20make%20pour%20over%20coffee&hl=en&gl=GB&ie=UTF-8&uule=w+CAIQIFISCamRx0IRO1oCEXoliDJDoPjE",
+      "datetime": "2026-10-08 20:00:08 +00:00",
+      "spell": null,
+      "refinement_chips": null,
+      "item_types": [
+       "ai_overview",
+       "video",
+       "people_also_ask",
+       "organic",
+       "related_searches"
+      ],
+      "se_results_count": 102,
+      "pages_count": 1,
+      "items_count": 12,
+      "items": [
+       {
+        "type": "ai_overview",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+        "asynchronous_ai_overview": false,
+        "markdown": "To make pour-over coffee, `use a 1:16 ratio of 20 grams of medium-fine coffee grounds to 320 grams of hot water heated to 205°F`.[[1]](https://pullandpourcoffee.com/how-to-make-pour-over-coffee/)[[2]](https://www.youtube.com/shorts/3TiNZXFIxNc)\n\n### Equipment Needed\n\n- **Pour-over cone** (like a Hario V60) and paper filters\n- **Gooseneck kettle** for controlled pouring\n- **Digital kitchen scale** \n- **Burr grinder** [[1]](https://www.youtube.com/shorts/3TiNZXFIxNc)[[2]](https://pullandpourcoffee.com/how-to-make-pour-over-coffee/)\n\n### Step-by-Step Instructions\n\n- **Rinse the filter:** Place your paper filter in the cone over your mug and wet it completely with hot water to remove any paper taste, then discard that rinse water.[[1]](https://www.youtube.com/shorts/3TiNZXFIxNc)\n- **Add the coffee:** Add 20 grams of freshly ground coffee (medium-fine, like sea salt) and shake gently to level the bed. Tare your scale to zero.[[1]](https://pullandpourcoffee.com/how-to-make-pour-over-coffee/)[[2]](https://www.youtube.com/shorts/3TiNZXFIxNc)\n- **The bloom:** Pour 60 grams of hot water evenly over the grounds to saturate them. Wait 30 to 45 seconds to let trapped gases escape, which improves flavor.[[1]](https://pullandpourcoffee.com/how-to-make-pour-over-coffee/)[[2]](https://www.youtube.com/shorts/3TiNZXFIxNc)\n- **First main pour:** Pour hot water in slow concentric circles until your scale reaches 190 grams. Wait a moment for the water level to drop slightly.[[1]](https://www.instagram.com/reel/DFprrQqgy7x/?hl=en)[[2]](https://www.youtube.com/shorts/3TiNZXFIxNc)\n- **Final pour:** Pour the remaining water until the scale hits 320 grams. Let all the water drip through completely, aiming for a total brew time of about 2.5 to 3.5 minutes.[[1]](https://pullandpourcoffee.com/how-to-make-pour-over-coffee/)[[2]](https://www.youtube.com/shorts/3TiNZXFIxNc)\n\nA beginner's guide to making pour-over coffee at home:\n\n![](https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSLOwicUMalotG1e63xI7U3-rq9WClITjdhy1or9n4CeeIDNbsm)\n5m\n[](https://www.youtube.com/watch?v=FQWhY5mPGRg&t=13) A beginner's guide to POUR-OVER COFFEE 105k views  · 2 years ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · Majordomo\n\nIf you'd like, let me know:\n\n- What **type of brewer** you are using (V60, Chemex, Melitta)\n- If your coffee tastes **too bitter or too sour** \n\nI can help you adjust your grind size and technique.",
+        "items": [
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "To make pour-over coffee, use a 1:16 ratio of 20 grams of medium-fine coffee grounds to 320 grams of hot water heated to 205°F.",
+          "markdown": "To make pour-over coffee, `use a 1:16 ratio of 20 grams of medium-fine coffee grounds to 320 grams of hot water heated to 205°F`.[[1]](https://pullandpourcoffee.com/how-to-make-pour-over-coffee/)[[2]](https://www.youtube.com/shorts/3TiNZXFIxNc)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Pull & Pour Coffee",
+            "domain": "pullandpourcoffee.com",
+            "url": "https://pullandpourcoffee.com/how-to-make-pour-over-coffee/",
+            "title": "How to Make Pour Over Coffee – A Simple Tutorial and Brew Framework",
+            "text": "Dosage & Ratio: 12g-30g coffee (20g baseline), 1:16 ratio (320g water for 20g dose). Bloom: 3x coffee weight (60g water), wait 30-"
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/shorts/3TiNZXFIxNc",
+            "title": "How To Make a Pourover Coffee",
+            "text": "How To Make a Pourover Coffee this is a pourover. and in my opinion. it's the best way to experience specialty coffee to make one ..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Equipment Needed",
+          "text": "Pour-over cone (like a Hario V60) and paper filters Gooseneck kettle for controlled pouring Digital kitchen scale Burr grinder",
+          "markdown": "- **Pour-over cone** (like a Hario V60) and paper filters\n- **Gooseneck kettle** for controlled pouring\n- **Digital kitchen scale** \n- **Burr grinder** [[1]](https://www.youtube.com/shorts/3TiNZXFIxNc)[[2]](https://pullandpourcoffee.com/how-to-make-pour-over-coffee/)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/shorts/3TiNZXFIxNc",
+            "title": "How To Make a Pourover Coffee",
+            "text": "How To Make a Pourover Coffee this is a pourover. and in my opinion. it's the best way to experience specialty coffee to make one ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Pull & Pour Coffee",
+            "domain": "pullandpourcoffee.com",
+            "url": "https://pullandpourcoffee.com/how-to-make-pour-over-coffee/",
+            "title": "How to Make Pour Over Coffee – A Simple Tutorial and Brew Framework",
+            "text": "Dosage & Ratio: 12g-30g coffee (20g baseline), 1:16 ratio (320g water for 20g dose). Bloom: 3x coffee weight (60g water), wait 30-"
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Step-by-Step Instructions",
+          "text": "Rinse the filter: Place your paper filter in the cone over your mug and wet it completely with hot water to remove any paper taste, then discard that rinse water. Add the coffee: Add 20 grams of freshly ground coffee (medium-fine, like sea salt) and shake gently to level the bed. Tare your scale to zero. The bloom: Pour 60 grams of hot water evenly over the grounds to saturate them. Wait 30 to 45 seconds to let trapped gases escape, which improves flavor. First main pour: Pour hot water in slow concentric circles until your scale reaches 190 grams. Wait a moment for the water level to drop slightly. Final pour: Pour the remaining water until the scale hits 320 grams. Let all the water drip through completely, aiming for a total brew time of about 2.5 to 3.5 minutes.",
+          "markdown": "- **Rinse the filter:** Place your paper filter in the cone over your mug and wet it completely with hot water to remove any paper taste, then discard that rinse water.[[1]](https://www.youtube.com/shorts/3TiNZXFIxNc)\n- **Add the coffee:** Add 20 grams of freshly ground coffee (medium-fine, like sea salt) and shake gently to level the bed. Tare your scale to zero.[[1]](https://pullandpourcoffee.com/how-to-make-pour-over-coffee/)[[2]](https://www.youtube.com/shorts/3TiNZXFIxNc)\n- **The bloom:** Pour 60 grams of hot water evenly over the grounds to saturate them. Wait 30 to 45 seconds to let trapped gases escape, which improves flavor.[[1]](https://pullandpourcoffee.com/how-to-make-pour-over-coffee/)[[2]](https://www.youtube.com/shorts/3TiNZXFIxNc)\n- **First main pour:** Pour hot water in slow concentric circles until your scale reaches 190 grams. Wait a moment for the water level to drop slightly.[[1]](https://www.instagram.com/reel/DFprrQqgy7x/?hl=en)[[2]](https://www.youtube.com/shorts/3TiNZXFIxNc)\n- **Final pour:** Pour the remaining water until the scale hits 320 grams. Let all the water drip through completely, aiming for a total brew time of about 2.5 to 3.5 minutes.[[1]](https://pullandpourcoffee.com/how-to-make-pour-over-coffee/)[[2]](https://www.youtube.com/shorts/3TiNZXFIxNc)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/shorts/3TiNZXFIxNc",
+            "title": "How To Make a Pourover Coffee",
+            "text": "How To Make a Pourover Coffee this is a pourover. and in my opinion. it's the best way to experience specialty coffee to make one ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Pull & Pour Coffee",
+            "domain": "pullandpourcoffee.com",
+            "url": "https://pullandpourcoffee.com/how-to-make-pour-over-coffee/",
+            "title": "How to Make Pour Over Coffee – A Simple Tutorial and Brew Framework",
+            "text": "Dosage & Ratio: 12g-30g coffee (20g baseline), 1:16 ratio (320g water for 20g dose). Bloom: 3x coffee weight (60g water), wait 30-"
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Instagram",
+            "domain": "www.instagram.com",
+            "url": "https://www.instagram.com/reel/DFprrQqgy7x/?hl=en",
+            "title": "How To Make a Pourover",
+            "text": "if you're new to pour over coffee the terminology. can be pretty confusing it shouldn't have to be though in this video we'll walk..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "A beginner's guide to making pour-over coffee at home: 5m A beginner's guide to POUR-OVER COFFEE 105k views · 2 years ago YouTube · Majordomo",
+          "markdown": "A beginner's guide to making pour-over coffee at home:\n\n![](https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSLOwicUMalotG1e63xI7U3-rq9WClITjdhy1or9n4CeeIDNbsm)\n5m\n[](https://www.youtube.com/watch?v=FQWhY5mPGRg&t=13) A beginner's guide to POUR-OVER COFFEE 105k views  · 2 years ago![](https://encrypted-tbn2.gstatic.com/faviconV2?url=https://www.youtube.com&amp;client=AIM&amp;size=16&amp;type=FAVICON&amp;fallback_opts=TYPE,SIZE,URL)\nYouTube · Majordomo",
+          "links": null,
+          "images": null,
+          "references": null
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "If you'd like, let me know:What type of brewer you are using (V60, Chemex, Melitta)\nIf your coffee tastes too bitter or too sour\nI can help you adjust your grind size and technique.",
+          "markdown": "If you'd like, let me know:\n\n- What **type of brewer** you are using (V60, Chemex, Melitta)\n- If your coffee tastes **too bitter or too sour** \n\nI can help you adjust your grind size and technique.",
+          "links": null,
+          "images": null,
+          "references": null
+         }
+        ],
+        "references": [
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Pull & Pour Coffee",
+          "domain": "pullandpourcoffee.com",
+          "url": "https://pullandpourcoffee.com/how-to-make-pour-over-coffee/",
+          "title": "How to Make Pour Over Coffee – A Simple Tutorial and Brew Framework",
+          "text": "Dosage & Ratio: 12g-30g coffee (20g baseline), 1:16 ratio (320g water for 20g dose). Bloom: 3x coffee weight (60g water), wait 30-"
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "YouTube",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/shorts/3TiNZXFIxNc",
+          "title": "How To Make a Pourover Coffee",
+          "text": "How To Make a Pourover Coffee this is a pourover. and in my opinion. it's the best way to experience specialty coffee to make one ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Instagram",
+          "domain": "www.instagram.com",
+          "url": "https://www.instagram.com/reel/DFprrQqgy7x/?hl=en",
+          "title": "How To Make a Pourover",
+          "text": "if you're new to pour over coffee the terminology. can be pretty confusing it shouldn't have to be though in this video we'll walk..."
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "video",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]",
+        "items": [
+         {
+          "type": "video_element",
+          "source": "YouTube · Majordomo",
+          "title": "A beginner's guide to POUR-OVER COFFEE",
+          "timestamp": "2023-12-09 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=FQWhY5mPGRg"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · Tanner Colson",
+          "title": "How To Make a Pourover Coffee",
+          "timestamp": "2025-02-04 00:00:00 +00:00",
+          "url": "https://www.youtube.com/shorts/3TiNZXFIxNc"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · Whole Latte Love",
+          "title": "Your Pour-Over Coffee Road Map",
+          "timestamp": "2025-03-14 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=63e5Abgb76U"
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "people_also_ask",
+        "rank_group": 1,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]",
+        "items": [
+         {
+          "type": "people_also_ask_element",
+          "title": "How do you do a pour-over coffee at home?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "How can I make my own pour-over coffee?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Can I use regular coffee for pour over?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Is pourover better than drip?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[6]/div[1]/div[1]",
+        "domain": "pullandpourcoffee.com",
+        "title": "How to Make Pour Over Coffee – A Simple Tutorial and ...",
+        "url": "https://pullandpourcoffee.com/how-to-make-pour-over-coffee/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://pullandpourcoffee.com › how-to-make-pour-ov...",
+        "website_name": "Pull & Pour Coffee",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Add filter to brewer and pre-wet filter with brew water. Grind coffee to medium fine and add to brewer. Start with a center pour and slowly work outward. Total ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Add filter to brewer and pre-wet filter with brew water"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]",
+        "domain": "www.reddit.com",
+        "title": "A totally non-exhaustive, but hopefully helpful, guide to ...",
+        "url": "https://www.reddit.com/r/Coffee/comments/jzj1iq/a_totally_nonexhaustive_but_hopefully_helpful/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "130+ comments  ·  5 years ago",
+        "website_name": "Reddit · r/Coffee",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Very simply: The early stage of coffee brewing extracts the most soluble acid in your coffee. The middle stage tends to pull out complex sugars. Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "coffee"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://www.reddit.com/r/Coffee/comments/jzj1iq/a_totally_nonexhaustive_but_hopefully_helpful/#:~:text=Very%20simply%3A%20The%20early%20stage,to%20pull%20out%20complex%20sugars.",
+          "domain": "www.reddit.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[10]/div[1]/div[1]",
+        "domain": "minimalistbaker.com",
+        "title": "How to Make Pour-Over Coffee",
+        "url": "https://minimalistbaker.com/how-to-make-pour-over-coffee/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://minimalistbaker.com › how-to-make-pour-over-...",
+        "website_name": "Minimalist Baker",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Measure out roughly 1g of coffee per 16ml of water. For a 500ml / 2 cup pot of coffee, you'll use 32g of coffee and 500ml water. Read more",
+        "pre_snippet": "5.0(13) · 10 mins",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": {
+         "rating_type": "Max5",
+         "value": 5,
+         "votes_count": 13,
+         "rating_max": 5
+        },
+        "price": null,
+        "highlighted": [
+         "Measure out roughly 1g of coffee per 16ml of water"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://minimalistbaker.com/how-to-make-pour-over-coffee/#:~:text=Measure%20out%20roughly%201g%20of,of%20coffee%20and%20500ml%20water.",
+          "domain": "minimalistbaker.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[12]/div[1]/div[1]",
+        "domain": "athome.starbucks.com",
+        "title": "How to Make Pour-Over Coffee",
+        "url": "https://athome.starbucks.com/brewing-guide/how-make-pour-over-coffee",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://athome.starbucks.com › brewing-guide › how-ma...",
+        "website_name": "Starbucks",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Use 2 Tbsp (10 g) of coffee grounds for every cup (6 fl oz, 180 ml) of water. Even out the grounds and set the scale to zero. Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "coffee"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://athome.starbucks.com/brewing-guide/how-make-pour-over-coffee#:~:text=Use%202%20Tbsp%20(10%20g),set%20the%20scale%20to%20zero.",
+          "domain": "athome.starbucks.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[14]/div[1]/div[1]",
+        "domain": "www.aboutcoffee.org",
+        "title": "Pour-over coffee - NCA - About Coffee",
+        "url": "https://www.aboutcoffee.org/brewing/pour-over-coffee/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.aboutcoffee.org › Brewing",
+        "website_name": "About Coffee - National Coffee Association",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Pour a small amount of water—double the amount of coffee, so if you have 15 grams of coffee, pour 30 grams of water—on the coffee to let it “bloom.” You'll see ... Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Pour a small amount of water—double the amount of coffee"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://www.aboutcoffee.org/brewing/pour-over-coffee/#:~:text=Pour%20a%20small%20amount%20of,quickly%20as%20carbon%20dioxide%20escapes.",
+          "domain": "www.aboutcoffee.org"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[16]/div[1]/div[1]",
+        "domain": "www.starbucksathome.com",
+        "title": "How To Make Pour Over Coffee | Starbucks® at Home",
+        "url": "https://www.starbucksathome.com/gb/brewing-guides/brewing-at-home/pour-over",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.starbucksathome.com › brewing-at-home",
+        "website_name": "Starbucks",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Add fine ground coffee. Use 2 tbsp (10 g) of coffee grounds for every cup (180 ml, 6 fl oz) of water. Even out the grounds and set the scale to zero. Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "coffee"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://www.starbucksathome.com/gb/brewing-guides/brewing-at-home/pour-over#:~:text=Add%20fine%20ground%20coffee.%20Use,set%20the%20scale%20to%20zero.",
+          "domain": "www.starbucksathome.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 7,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[17]/div[1]/div[1]/div[1]",
+        "domain": "www.youtube.com",
+        "title": "How to Make Pour-Over Coffee",
+        "url": "https://www.youtube.com/watch?v=GnfZcDk_Myo",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "176.2k+ views  ·  10 years ago",
+        "website_name": "YouTube · Starbucks Coffee",
+        "is_image": false,
+        "is_video": true,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": [
+         "is_video"
+        ],
+        "description": null,
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2016-08-15 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 8,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[19]/div[1]/div[1]",
+        "domain": "altonbrown.com",
+        "title": "Perfect Pour Over Coffee Recipe | Alton Brown",
+        "url": "https://altonbrown.com/recipes/perfect-pour-over-coffee/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://altonbrown.com › recipes › perfect-pour-over-c...",
+        "website_name": "altonbrown.com",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Slowly pour 60 grams of the water evenly over the grounds and allow grounds to bloom for 45 seconds. (Return the kettle to its base to reheat during this time.). Read more",
+        "pre_snippet": "4.4(65) · 5 mins",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": {
+         "rating_type": "Max5",
+         "value": 4.4,
+         "votes_count": 65,
+         "rating_max": 5
+        },
+        "price": null,
+        "highlighted": [
+         "Slowly pour 60 grams of the water evenly over the grounds"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://altonbrown.com/recipes/perfect-pour-over-coffee/#:~:text=Slowly%20pour%2060%20grams%20of,to%20reheat%20during%20this%20time.)",
+          "domain": "altonbrown.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "related_searches",
+        "rank_group": 1,
+        "rank_absolute": 12,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[2]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "items": [
+         "Pour over coffee Maker",
+         "How to make pour over coffee without a scale",
+         "How to make pour over coffee with just a filter",
+         "Pour over coffee for beginners",
+         "How to make pour over coffee without filter",
+         "How to make pour over coffee with metal filter",
+         "How to make pour over coffee tablespoon",
+         "How to make pour over coffee with ground coffee"
+        ],
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

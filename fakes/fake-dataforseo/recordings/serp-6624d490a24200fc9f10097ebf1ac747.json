@@ -1,0 +1,903 @@
+{
+ "recordedAt": "2026-10-08T20:00:15.161Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "szálas tea szűrő",
+  "location_code": 2348,
+  "language_code": "hu",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0303 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10082000-2302-0066-0000-e042511940ca",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0144 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10082000-2302-0066-0000-e042511940ca"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "szálas tea szűrő",
+     "location_code": 2348,
+     "language_code": "hu",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "szálas tea szűrő",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2348,
+      "language_code": "hu",
+      "check_url": "https://www.google.com/search?q=sz%C3%A1las%20tea%20sz%C5%B1r%C5%91&hl=hu&gl=HU&ie=UTF-8&uule=w+CAIQIFISCcPkN997g0FHERAQHgwpxAAA",
+      "datetime": "2026-10-08 20:00:12 +00:00",
+      "spell": null,
+      "refinement_chips": {
+       "type": "refinement_chips",
+       "xpath": "/html[1]/body[1]/div[3]/div[1]/div[5]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+       "items": [
+        {
+         "type": "refinement_chips_element",
+         "title": "Buy",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnviLpZ5Vf5x-JkF0RuNShybrUeyeg:1791489608216&q=buy+sz%C3%A1las+tea+sz%C5%B1r%C5%91&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rHfOjuRCfV2iX3EB0hrETeL11kcKJFNWtsrhxzGiwJ0hbffR1heJBMhRzQa3vLE-ic14NyD9O06hcO83fp7QB5nuzqaWu6jvPH5g9nX-6NLKakeqJS-uLLlwvCyZOYZktUcmAKDDuMzq1WDHcG_ebEtX0gTlLZInsnuNcJr7Pj48l0b5U&sa=X&ved=2ahUKEwiHqN3tmquXAxXak1YBHcqwMnYQxKsJKAB6BAgcEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Online",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnviLpZ5Vf5x-JkF0RuNShybrUeyeg:1791489608216&q=online+sz%C3%A1las+tea+sz%C5%B1r%C5%91&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rFa2o0JhNkSECFiglsbMkHyGu5X1SnEKBbydtrwepY1bylbodj6_KQFFACBXhPvWq_apUubUMmtcgzOt2gm1ETGZKmUMQIIWg6ORvrCCocY1a-4RTQtcxkyxR2N2cJB1DtFSegB7MFqTR1cIrwfJnqKVFOY170BcW4xbL2U6BNDN4LzFu&sa=X&ved=2ahUKEwiHqN3tmquXAxXak1YBHcqwMnYQxKsJKAF6BAgYEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Reviews",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnviLpZ5Vf5x-JkF0RuNShybrUeyeg:1791489608216&q=reviews+sz%C3%A1las+tea+sz%C5%B1r%C5%91&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rhfEV-4K40i-ZaIQJgdggpz7GiM4LD9zESg9l2o-6MlVH103MR8EVpw4aJ3OsGgMO4J247-jTiCXfHE4gOty1vtDflvHxYuUOYzrSKGLD12FEjM6BbBLj-CKCG3md3MLlXSdQuoM5jvKKh-GjeJhG80KI2UdjcAX-LjZo9mkqBnHWKfxp&sa=X&ved=2ahUKEwiHqN3tmquXAxXak1YBHcqwMnYQxKsJKAJ6BAgZEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Price",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnviLpZ5Vf5x-JkF0RuNShybrUeyeg:1791489608216&q=price+sz%C3%A1las+tea+sz%C5%B1r%C5%91&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rbdAMqvNNc_Qrf1pUsnWcB-frcbcNoXxGmbA_xh7eXk02yDUc0C00SxfHaESMJ6Q3VjEL9mktqAnEiImK-08x1pD5M9DZrOvm3lmOOdRrmyhGBpKkccInvCX97YlGvCTXTuXmLZhx6gwZFJ1hofO5NhL6biCGhl0o70z2Efx9Pk1qUPkx&sa=X&ved=2ahUKEwiHqN3tmquXAxXak1YBHcqwMnYQxKsJKAN6BAgaEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Girl",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnviLpZ5Vf5x-JkF0RuNShybrUeyeg:1791489608216&q=girl+sz%C3%A1las+tea+sz%C5%B1r%C5%91&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4r03JvPzvGy4Kh_E-W0bL94DbUFgaVxfYV80wAPh2eAzmvffXiMaKcajM60cp7b4KJCzyeU8qHT2W2dXtuuJO7dvNme4fWNOMW0MFnu56OL_wY0PwfIZIRvxzRNllANcORR6apNW4IPyhNHBDwV3eLsWmT-YKrS-SfBQGuaUQ659qCgkmS&sa=X&ved=2ahUKEwiHqN3tmquXAxXak1YBHcqwMnYQxKsJKAR6BAgbEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "For Sale",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnviLpZ5Vf5x-JkF0RuNShybrUeyeg:1791489608216&q=sz%C3%A1las+tea+sz%C5%B1r%C5%91+for+sale&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rhfEV-4K40i-ZaIQJgdggpz7GiM4LD9zESg9l2o-6MlU4t6smQnLP0gm06ayZXM5oMpyx_1fIY64yzSrv-1ZZ1Bxetta7O8wSwikPTefM9Hp-X57kpAc2VlYFYwRf11yk9Y3wgTs_GrtfKbTRQwE-P9wOGskFOE-jZaZV-mhgF_eCkocK&sa=X&ved=2ahUKEwiHqN3tmquXAxXak1YBHcqwMnYQxKsJKAV6BAhxEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Woman",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnviLpZ5Vf5x-JkF0RuNShybrUeyeg:1791489608216&q=woman+sz%C3%A1las+tea+sz%C5%B1r%C5%91&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rbdAMqvNNc_Qrf1pUsnWcB-frcbcNoXxGmbA_xh7eXk2Fq186C87OfnE2u1a0ZfQcVjJAANXgBXxvcaKieR_HE1s7O9mU6zkyrNXBuY38JJDh7v96DNzjMtFQnTcGbrUWBRqrgGSkfeEwaALS2r-R0Qzh2wBx50J1kqDO4-jK1tK_YFOn&sa=X&ved=2ahUKEwiHqN3tmquXAxXak1YBHcqwMnYQxKsJKAZ6BAhwEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Man",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnviLpZ5Vf5x-JkF0RuNShybrUeyeg:1791489608216&q=man+sz%C3%A1las+tea+sz%C5%B1r%C5%91&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rHfOjuRCfV2iX3EB0hrETeL11kcKJFNWtsrhxzGiwJ0gZEbIRHZItGHglmL4FgdiyM956ff0QD79ZzE_1p59f-ZbGUVjm_avSJo05MpLnlvcoelENx54VXhZ_2JRH_RQXePSu3M_vQrbf_MQXvcsvvJr8ulnRpI_UCYAAY9p6IpQTcGbI&sa=X&ved=2ahUKEwiHqN3tmquXAxXak1YBHcqwMnYQxKsJKAd6BAhvEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        }
+       ]
+      },
+      "item_types": [
+       "popular_products",
+       "organic",
+       "images",
+       "related_searches"
+      ],
+      "se_results_count": 124,
+      "pages_count": 1,
+      "items_count": 11,
+      "items": [
+       {
+        "type": "popular_products",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[1]/div[1]",
+        "title": "Összehasonlító webhelyek",
+        "items": [
+         {
+          "type": "popular_products_element",
+          "title": "Mama Drog Orbáncfű 50 g",
+          "url": "https://tea-gyogytea.arukereso.hu/mama-gyogynovenyei/orbancfu-50-g-p262799971/?utm_source=google&utm_medium=organic&utm_campaign=dma&sa=X&ved=2ahUKEwiHqN3tmquXAxXak1YBHcqwMnYQrogGegQINxAE#hb1",
+          "domain": "tea-gyogytea.arukereso.hu",
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-e042511940ca:0",
+          "price": {
+           "current": 320,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "320 Ft"
+          },
+          "rating": null,
+          "product_identifiers": null
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Mama Drog pásztortáskafű 50 g",
+          "url": "https://tea-gyogytea.arukereso.hu/mama-gyogynovenyei/pasztortaskafu-50-g-p262365681/?utm_source=google&utm_medium=organic&utm_campaign=dma&sa=X&ved=2ahUKEwiHqN3tmquXAxXak1YBHcqwMnYQrogGegQINBAE#hb1",
+          "domain": "tea-gyogytea.arukereso.hu",
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-e042511940ca:1",
+          "price": {
+           "current": 279,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "279 Ft"
+          },
+          "rating": null,
+          "product_identifiers": null
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Mecsek tea Aranyvesszőfű 50g",
+          "url": "https://tea-gyogytea.arukereso.hu/mecsek-tea/aranyvesszofu-50-g-p760747014/?utm_source=google&utm_medium=organic&utm_campaign=dma&sa=X&ved=2ahUKEwiHqN3tmquXAxXak1YBHcqwMnYQrogGegQINhAE#hb1",
+          "domain": "tea-gyogytea.arukereso.hu",
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-e042511940ca:2",
+          "price": {
+           "current": 495,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "495 Ft"
+          },
+          "rating": null,
+          "product_identifiers": null
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Eilles Zöld Tea",
+          "url": "https://tea-gyogytea.arukereso.hu/eilles/asia-superior-zold-tea-25-filter-p448203384/?utm_source=google&utm_medium=organic&utm_campaign=dma&sa=X&ved=2ahUKEwiHqN3tmquXAxXak1YBHcqwMnYQrogGegQINRAE#hb1",
+          "domain": "tea-gyogytea.arukereso.hu",
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-e042511940ca:3",
+          "price": {
+           "current": 1737,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "1737 Ft"
+          },
+          "rating": null,
+          "product_identifiers": null
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Mama Drog Cickafarkfű 50 g",
+          "url": "https://tea-gyogytea.arukereso.hu/mama-gyogynovenyei/cickafarkfu-50-g-p261241641/?utm_source=google&utm_medium=organic&utm_campaign=dma&sa=X&ved=2ahUKEwiHqN3tmquXAxXak1YBHcqwMnYQrogGegQIdBAE#hb1",
+          "domain": "tea-gyogytea.arukereso.hu",
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRPewNU0dC05XzsEYXWi7aW-eD3Qpb4WQctHB5eqOnvFFzq9_gFoH3xrMTGSlgBJNU2Y2AY0BAJLzxgRxheImjndwNguJYtb68TXgC2BpeRiIF_J_iF0zWl",
+          "price": {
+           "current": 250,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "250 Ft"
+          },
+          "rating": null,
+          "product_identifiers": null
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Herbária Aranyvesszőfű 40 g",
+          "url": "https://tea-gyogytea.arukereso.hu/herbaria/aranyvesszofu-40-g-p163344860/?utm_source=google&utm_medium=organic&utm_campaign=dma&sa=X&ved=2ahUKEwiHqN3tmquXAxXak1YBHcqwMnYQrogGegQIcxAE#hb1",
+          "domain": "tea-gyogytea.arukereso.hu",
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRbIhD9aOzFrwYtmOFXURwVHwMqHuKHkFBvoKmAuAbQ5xUDrh3AJqhHF8yEVG_mYYDvgIKmBdFRjqgwYbSsoHcU2Qc2Izc_-WRyoRXm86wpoa27jClOwtzz",
+          "price": {
+           "current": 453,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "453 Ft"
+          },
+          "rating": null,
+          "product_identifiers": null
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Eilles Zöld Tea 25x1",
+          "url": "https://tea-gyogytea.arukereso.hu/eilles/asian-sun-zold-tea-25-filter-p448203615/?utm_source=google&utm_medium=organic&utm_campaign=dma&sa=X&ved=2ahUKEwiHqN3tmquXAxXak1YBHcqwMnYQrogGegQIchAE#hb1",
+          "domain": "tea-gyogytea.arukereso.hu",
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRwsnrGQgKtqTa637BW-PljQTUHtPoegsgN5YLSttxVG1vo8pvzdHQttpoAJvvjc272b8LfIw0Z94pvnTy2LmTeLhbLxL9W9rwCTaoJE3FNndAvvf3YcIyc",
+          "price": {
+           "current": 1737,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "1737 Ft"
+          },
+          "rating": null,
+          "product_identifiers": null
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Gárdonyi Teaház erdei gyümölcs tea",
+          "url": "https://tea-gyogytea.arukereso.hu/gardonyi-teahaz/erdei-gyumolcs-tea-20-filter-p251865433/?utm_source=google&utm_medium=organic&utm_campaign=dma&sa=X&ved=2ahUKEwiHqN3tmquXAxXak1YBHcqwMnYQrogGegQIbhAE#hb1",
+          "domain": "tea-gyogytea.arukereso.hu",
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcScZa2itWDHxght_783B3IQk3_UssUGw3gFspW-wcRdHG0JmmutBx5zgCc_S-o740uKR1WgCeiTlX_pLaQNPWXB-TTpDVFv_HEAEyk1Yf493J42-a_yfT8A",
+          "price": {
+           "current": 800,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "800 Ft"
+          },
+          "rating": null,
+          "product_identifiers": null
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Emésztést segítő tea –⁠ szálas tea a normál emésztés támogatásáért",
+          "url": null,
+          "domain": null,
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcTfFfDxj-cuZJSMV8SVsr8m36R9vI_kVp6CFyTzqfJnFqd-rhblUD3-oIiZhM1KOmuX5kGIZKHHcNd16RPji4VUUFVi77HEtGG75m04YoDndS0oqkG0xaFNYQ",
+          "price": {
+           "current": 1223,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "1223 Ft"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": "14189239208410177038",
+           "data_docid": "10027633416181637056",
+           "gid": "5884601907926707678"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Teaszűrő 20 cm 0,5 mm szövet",
+          "url": null,
+          "domain": null,
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRSlsQ8a_yNebTvKIRB5_BTtDSDaojzUhY25a6mL_EuJIvjfTv0fS2cGyMKXkzsFAfnL83mtyLrDloWlhGNaWSKslIk-mxRSLnEoSivtOXuPvUoorsFwIjSHw",
+          "price": {
+           "current": 2969,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "2969 Ft"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": "510530746393082432",
+           "data_docid": "9807173847666876104",
+           "gid": "9632414761211316422"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "VN Női termékenység 60g szálas gyógynövény teakeverék",
+          "url": null,
+          "domain": null,
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcRO7MfR7LtoQh8r5nvKE8FzLaFEPATaWykesV6v0FfVy1RvSayMc2_xNHZ8VbaobxK-dsvj7Z-AAd-8sT1AXbM_2ww20maiP-hkFtb-R1YJehuSi6hbKqxrkg",
+          "price": {
+           "current": 4699,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "4699 Ft"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": "3309814912589739408",
+           "data_docid": "12486710948589835793",
+           "gid": "2696067015214035103"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Teaszűrő csipesz Szív",
+          "url": null,
+          "domain": null,
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcTv0jnkseIvYjLUDWi_pvjvKlx7MAaXHoAGhYYEEQT-h_y0gTxAiijA9_Mrx9Jg2vgU-4vv7fEpYdHzSwdJRHnHdURzGMXx3RE9sagnmQRPSejgPFsV3Wo",
+          "price": {
+           "current": 2871,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "2871 Ft"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": "11085768886087960828",
+           "data_docid": "16328060661142692101",
+           "gid": "1745865564420910776"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Chabag szálas tea",
+          "url": null,
+          "domain": null,
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRs-7wlKYCU-vxC7tfHyUYCzFYazgArfMbl-YotIUCUmBp2-1zogj6yQZ3oALXMtMq7F5w1uCkpGTunGGutpa3dsgOjZbI_bBPSmy3Y7GLdInctgwGJXs-w",
+          "price": {
+           "current": 2468,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "2468 Ft"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": "17034392131052221343",
+           "data_docid": "2419505705891701358",
+           "gid": "8372807793742130516"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Stassen zöld tea szálas fémdobozos 100 g",
+          "url": null,
+          "domain": null,
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRMAPrFvWsTZ6fBoOpvAC1ISvnyHX5UPIis8CPmnXPdImNVvrXbnugCN7IYvbZcuoUKWis8n2m9yhcS0jmz33JEn5WFhafiwsfFlIKGelKqYdZNbEjJlC3p",
+          "price": {
+           "current": 1181,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "1181 Ft"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": "12026277599449572954",
+           "data_docid": "10744552757811764831",
+           "gid": "12296853663630651540"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Mama Drog Orbáncfű 50 g",
+          "url": null,
+          "domain": null,
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRLEZ73x-gWdTdg2JKDH3SPaJpDKBtuUxKNnatHIdNc5xSc3pt08eItNX5NSjPz7lZQg5ukH9pZdAoYkDzLqCksQwH3DKFy2gLWdhytcSYKS6COGM2PyEREFg",
+          "price": {
+           "current": 376,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "376 Ft"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": "15226263873987874850",
+           "data_docid": "4344574872682416614",
+           "gid": "2177841418212723747"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Teaszűrő Nyers Kristállyal",
+          "url": null,
+          "domain": null,
+          "description": null,
+          "more_sellers": false,
+          "seller": null,
+          "image_url": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcTyxlKK8IkNFkft_p5qwmpQI27zb0qLviW7qzVoseP6hMElpyQMqZypY4itq05d1NmGtZvSd185Nbv_tweMoPVtv509PqucLC2gdPx12zppnZlCEnUt0JK0WQ",
+          "price": {
+           "current": 2890,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "2890 Ft"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": "15242376659145953973",
+           "data_docid": "6345654741830630116",
+           "gid": "5291284449155103195"
+          }
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[3]/div[1]/div[1]",
+        "domain": "www.tescoma.hu",
+        "title": "Teaszűrők - tescoma.hu",
+        "url": "https://www.tescoma.hu/teaszurok",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.tescoma.hu › Italok › Tea- és kávékészítés",
+        "website_name": "tescoma.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Szűrők a szálas teához. A teáskanna vagy teaszűrő sokféle formát ölthet. Te a hagyományos, tojás alakú teaszűrőt vagy inkább a fogantyús szűrőt részesíted ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Szűrők a szálas teához"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[5]/div[1]/div[1]",
+        "domain": "tea.hu",
+        "title": "Teaszűrő, duplanyelű bögréhez",
+        "url": "https://tea.hu/webaruhaz/kiegeszitok/teaszuro-duplanyelu-bogrehez",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://tea.hu › teaszuro-duplanyelu-bogrehez",
+        "website_name": "tea.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Rozsdamentes acélból készült, dupla fogantyús teaszűrő (Ø 7,5 × 6 cm), amely kényelmesen rögzíthető bögréhez — praktikus és időtálló teakellék. Hasonló tea ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Rozsdamentes acélból készült, dupla fogantyús teaszűrő"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "images",
+        "rank_group": 1,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[7]/div[1]",
+        "title": "Képek",
+        "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnviLpZ5Vf5x-JkF0RuNShybrUeyeg:1791489608216&q=sz%C3%A1las+tea+sz%C5%B1r%C5%91&udm=2&source=univ&fir=KEmogAyXBe6IsM%252CIeqEn1vhmwVkkM%252C_%253BSr-c8Gl1NC-KFM%252C5RGUyriZzOwErM%252C_%253BCbVYTaffSmO9RM%252CnEVj_JLmrEvAFM%252C_%253B_3qKdiVIEoxDyM%252CxjdaZ2zxo0JS4M%252C_%253Bp3TVmx259nqYLM%252CkdvFF-oapfAaJM%252C_%253Br50CSDq_dTXjXM%252CABPY36H6WgIiNM%252C_%253ByR9RWKizTKd9UM%252CIeqEn1vhmwVkkM%252C_%253ByllI9-RQQvAlDM%252ClkukGK8hCZeV5M%252C_%253B_hQPVHBgR1bHdM%252CLd_dhOjxT-1WRM%252C_&usg=AI4_-kT_GxHVjz7XcUD8Qd-p4VejOAXXdA&sa=X&ved=2ahUKEwiHqN3tmquXAxXak1YBHcqwMnYQ7Al6BAgqEAU",
+        "items": [
+         {
+          "type": "images_element",
+          "alt": "Szálas tea szűrő és kitöltő kanna",
+          "url": "https://hasznosshop.hu/Szalas-tea-szuro-es-kitolto-kanna",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-e042511940ca:4"
+         },
+         {
+          "type": "images_element",
+          "alt": "Nagy teaszűrő körkép a szálas tea kedvelőinek",
+          "url": "https://www.teahaz-ajandek.hu/nagy-teaszuro-korkep-a-szalas-tea-kedveloinek",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-e042511940ca:5"
+         },
+         {
+          "type": "images_element",
+          "alt": "Újrahasználható prémium teaszűrő",
+          "url": "https://lutherteahaz.hu/termek/ujrahasznalhato-premium-teaszuro/?srsltid=AU7gw4XlYFWAjCLrzLRph2A0UAju6yW6be6orROpMCLb9H-7fERA3E4f",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-e042511940ca:6"
+         },
+         {
+          "type": "images_element",
+          "alt": "Teaszűrő - Ukko",
+          "url": "https://www.ukko.hu/webaruhaz/kiegeszitok/teaszuro/?srsltid=AU7gw4XoFt6uq6ewfXSPNwuif5dZioty1ELCTA_xbpi08MPKzj1ZEZTI",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQjzhJJXOyKW89q2gyIil6I0kTWS-4NZNsma6E0fxclcm6_ky0i4RQyb7Q&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "(TK) Bambusz teaszűrő",
+          "url": "https://www.teahaz-ajandek.hu/bambusz-tea-szuro",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsn_yPxTx8-goYWaXL2NPwcR_hhJFr8CZjrlnaKNNHP9ZVD4BwDwkbZF8&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Műanyag Teaszűrő rozsdamentes acél hálóval, 1 db",
+          "url": "https://www.piccantino.hu/demmers-teehaus/muanyag-teaszuro-rozsdamentes-acel-haloval",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRn4HH_hhFuWyiiepidvJmKs2BLUHYPdls8iTNWloBVxjcwYRCsc-T--Hc&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Szálas tea szűrő és kitöltő kanna",
+          "url": "https://hasznosshop.hu/Szalas-tea-szuro-es-kitolto-kanna",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtMYEdMLF9CYx9insP3wKZkFpajBojBCW5ChZofjfeWuI3_-3rXjpzYjk&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Filterek és szűrök | ManuTea.hu",
+          "url": "https://www.manutea.hu/filterek-es-szuroek-x2v10078",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTK17trUAhxeUIDVXawDtxlaURRX0OE-4ejSUtqvQjGd2Ow2hwmwlZslUM&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Fém teaszűrő szálas teákhoz",
+          "url": "https://bergamotz.com/termek/fem-teaszuro-szalas-teakhoz/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTyY-ZIcSxBIP-kwlPJPUFmwRbl_HTPtCxe6codfsCjyRetg7MQQmINhDE&s"
+         }
+        ],
+        "related_image_searches": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[9]/div[1]/div[1]",
+        "domain": "www.gyorgytea.hu",
+        "title": "A filteres teákról",
+        "url": "https://www.gyorgytea.hu/gyik-kerdesek/a-filteres-teakrol/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.gyorgytea.hu › a-filteres-teakrol",
+        "website_name": "Györgytea",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2023. szept. 21. — A kényelmi faktoron kívül nincs más különbség. A filtert az áztatási idő elteltével eldobjuk, míg a szálas teát szűrni kell, utána el kell mosni ...",
+        "pre_snippet": "09/21/2023 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "A filtert az áztatási idő elteltével eldobjuk, míg a szálas teát szűrni kell"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2023-09-21 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[11]/div[1]/div[1]",
+        "domain": "gardonyiteahaz.hu",
+        "title": "szálas vagy filteres? melyik a legjobb választás?",
+        "url": "https://gardonyiteahaz.hu/receptek/szalas-vagy-filteres-melyik-a-legjobb-valasztas-",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://gardonyiteahaz.hu › receptek › szalas-vagy-filtere...",
+        "website_name": "Gárdonyi Teaház",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "A minden tea esetében a filterekbe kerülő tealeveleket, szárítmányokat különféle osztályozás után filter minőségűre vágják, ezt követően kerülnek bele a kis ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "tea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[13]/div[1]/div[1]",
+        "domain": "flyingbirdteahouse.hu",
+        "title": "Az okok, amiért szálas teát igyunk filteres helyett…",
+        "url": "https://flyingbirdteahouse.hu/az-okok-amiert-szalas-teat-igyatok-filteres-helyett/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://flyingbirdteahouse.hu › az-okok-amiert-szalas-te...",
+        "website_name": "Flying Bird Tea House",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "A kézi szüretelésű zsenge rügyeket a filterben ne keressétek. Ilyen szempontból a kínai írásjegy és a csomagoláson szereplő friss hajtás is megtévesztő lehet.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[15]/div[1]/div[1]",
+        "domain": "favi.hu",
+        "title": "Tea szűrők",
+        "url": "https://favi.hu/termekek/kategoria/tea-szurok",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://favi.hu › konyha › étkezés",
+        "website_name": "FAVI.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "TEA TENDER teatartó üveg kivehető szűrővel 450ml. 5 990 Ft ; TEA PARTY teaszűrő csipesz, arany. 1 990 Ft ; MENUETT teaszűrő csipesz rozsdamentes a. 1 490 Ft.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": {
+         "current": 895,
+         "regular": null,
+         "max_value": 5990,
+         "currency": "HUF",
+         "is_price_range": true,
+         "displayed_price": "895 Ft–5 990 Ft"
+        },
+        "highlighted": [
+         "TEA",
+         "teaszűrő"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 7,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[17]/div[1]/div[1]",
+        "domain": "sobors.hu",
+        "title": "Szálas tea készítése",
+        "url": "https://sobors.hu/technologia/szalas-tea-keszitese/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://sobors.hu › Technológia",
+        "website_name": "Sóbors",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Bár a filteres tea örvend nagyobb népszerűségnek, a szálas tea - jól elkészítve - még intenzívebb ízű italt eredményez.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "tea",
+         "szálas tea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 8,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[19]/div[1]/div[1]",
+        "domain": "teaacademy.hu",
+        "title": "Japán teaszűrő bambusz véggel",
+        "url": "https://teaacademy.hu/termek/japan-teaszuro/?srsltid=AU7gw4XU4BOixJqSR01Xh2xE2_KFNgpHb_bCsHC0J85xo-FNaEBfZdAq",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://teaacademy.hu › termek › japan-teaszuro",
+        "website_name": "Tea Akadémia",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Japán fém teaszűrő. A japán fém teaszűrő bambusz véggel egy elegáns és praktikus eszköz, amely a japán tea készítés hagyományait ötvözi a modern dizájnnal.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": {
+         "current": 2490,
+         "regular": null,
+         "max_value": null,
+         "currency": "HUF",
+         "is_price_range": false,
+         "displayed_price": "2490 Ft"
+        },
+        "highlighted": [
+         "teaszűrő",
+         "tea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "related_searches",
+        "rank_group": 1,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[3]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "items": [
+         "Teaszűrő gyógyteához",
+         "Teaszűrő dm",
+         "Üveg teaszűrő",
+         "Teaszűrő ikea",
+         "Pepco teatojás",
+         "Teatojás dm"
+        ],
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

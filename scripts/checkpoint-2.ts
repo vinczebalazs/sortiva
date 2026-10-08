@@ -49,7 +49,9 @@ for (const store of stores) {
   queuedTotal += topics.length
   proposedTotal += run?.ran ? run.proposed : 0
 
+  const phrasingsOf = new Map((run?.ran ? run.queued : []).map((q) => [q.query, q.phrasings ?? []]))
   const rows = topics.map((topic, i) => {
+    const others = (phrasingsOf.get(topic.target_query) ?? []).filter((x) => x.query !== topic.target_query)
     const why = whyLine(topic.evidence, topic.source)
     const sentence = why.kind === 'demand_no_page' ? t.home.why.demand_no_page(formatNumber(why.searches, store.language)) : t.home.why.low_demand_manual
     const top = topic.evidence.topResults
@@ -59,6 +61,7 @@ for (const store of stores) {
         <div class="topic-body">
           <h3>${esc(topic.working_title)}</h3>
           <p class="query"><span class="q">${esc(topic.target_query)}</span><span class="num">${formatNumber(topic.demand, 'en')} searches a month</span></p>
+          ${others.length ? `<p class="alt">Also measured: ${others.map((o) => `${esc(o.query)} <span class="num">(${o.searches === null ? 'no figure' : formatNumber(o.searches, 'en')})</span>`).join(' · ')}</p>` : ''}
           <p class="why">${esc(sentence)}</p>
           <div class="meta">
             <div><p class="label">Products it mentions</p><p>${(topic.products ?? []).map(esc).join(' · ')}</p></div>
@@ -150,6 +153,7 @@ p { margin: 0; }
 .topic-body { display: grid; gap: 9px; min-width: 0; }
 .query { display: flex; gap: 10px; flex-wrap: wrap; align-items: baseline; font-size: 13px; color: var(--mut); }
 .q { font-weight: 600; color: var(--ink2); }
+.alt { font-size: 12.5px; color: var(--mut); }
 .why { background: var(--soft); border-radius: 11px; padding: 10px 12px; font-size: 13px; color: var(--ink2); }
 .meta { display: grid; grid-template-columns: 1.3fr .5fr 1.6fr .7fr; gap: 16px; font-size: 12.5px; color: var(--ink2); }
 .meta > div { display: grid; gap: 6px; align-content: start; min-width: 0; }
@@ -175,13 +179,9 @@ td:first-child { color: var(--ink); font-weight: 500; }
     <p class="lede">Two made-up shops, one Hungarian and one English, went through setup the way a merchant would. The model then proposed article topics from each shop's checked product facts. Every topic's monthly searches and Google's top ten results are real, fetched from DataForSEO for the shop's country and language on ${new Date().toISOString().slice(0, 10)}. Below is each shop's queue in the order it would be written, one a day, with the numbers behind every topic and what was proposed but left out. ${queuedTotal} queued of ${proposedTotal} proposed.</p>
   </header>
   <div class="panel finding">
-    <p class="label">The main finding</p>
-    <p>Most proposed topics were left out because Google reports almost nobody searching for the exact phrase the model chose. Many phrases have no figure at all, which Google Ads gives for very rare searches. The topics are sensible; their wording is too specific. A decision for you:</p>
-    <ul>
-      <li><b>Ask the model for two or three phrasings per topic</b> and keep the one people search most. It costs nothing extra, because all phrasings go in the same single demand request. This is my recommendation.</li>
-      <li><b>Lower the minimum</b> from 100 (English) and 20 (Hungarian) searches a month. Articles would then target phrases almost nobody types.</li>
-      <li><b>Keep it as it is.</b> Fewer, safer topics; a rich shop would run dry in about a week.</li>
-    </ul>
+    <p class="label">What changed since the first version of this page</p>
+    <p>The first run queued only 8 of 35 proposed topics: Google reports almost nobody searching the exact phrase the model chose. On your decision, the model now offers two or three phrasings per topic, all are measured in the same single request, and each topic keeps its most-searched phrasing. The same two shops now queue ${queuedTotal} of ${proposedTotal}. Under each topic, "also measured" shows the phrasings that lost.</p>
+    <p>Also on your decision: whether an existing blog post already answers a topic is now decided by the model, after a loose word check picks which posts to compare. In a test of ten cases, five per language, it agreed with the expected answer every time. These two shops have no blog posts, so it does not show here.</p>
   </div>
   <div class="panel">
     <p class="label">What to look for</p>

@@ -1,0 +1,1262 @@
+{
+ "recordedAt": "2026-10-08T20:00:26.037Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "single dose coffee grinder",
+  "location_code": 2826,
+  "language_code": "en",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0272 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10082000-2302-0066-0000-7a8f2104c471",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0238 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10082000-2302-0066-0000-7a8f2104c471"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "single dose coffee grinder",
+     "location_code": 2826,
+     "language_code": "en",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "single dose coffee grinder",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2826,
+      "language_code": "en",
+      "check_url": "https://www.google.com/search?q=single%20dose%20coffee%20grinder&hl=en&gl=GB&ie=UTF-8&uule=w+CAIQIFISCamRx0IRO1oCEXoliDJDoPjE",
+      "datetime": "2026-10-08 20:00:21 +00:00",
+      "spell": null,
+      "refinement_chips": null,
+      "item_types": [
+       "ai_overview",
+       "organic",
+       "popular_products",
+       "discussions_and_forums",
+       "related_searches"
+      ],
+      "se_results_count": 97,
+      "pages_count": 1,
+      "items_count": 13,
+      "items": [
+       {
+        "type": "ai_overview",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+        "asynchronous_ai_overview": false,
+        "markdown": "![The Best Single Dose Coffee Grinder, That&#39;s Worth The Investment](https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-7a8f2104c471:4)\nA **single-dose coffee grinder** is `an electric or manual grinder built to process a single serving of coffee beans (usually 18 to 22 grams) at a time` , rather than storing a large batch in an overhead hopper.[[1]](https://coffeeblog.co.uk/best-coffee-grinders/)[[2]](https://www.coffeefriend.co.uk/c/coffee-grinders/single-dose-coffee-grinders/)[[3]](https://www.thehomebaristas.co.uk/blog/why-a-single-dose-coffee-grinder-is-a-game-changer-for-fresh-brews)\n\n### How It Works & Key Benefits\n\n- **Maximum Freshness:** Beans stay sealed in an airtight container rather than sitting out in light and air inside a hopper.[[1]](https://bellabarista.co.uk/blogs/coffee-machines/should-i-single-dose)[[2]](https://www.thehomebaristas.co.uk/blog/why-a-single-dose-coffee-grinder-is-a-game-changer-for-fresh-brews)\n- **Low Retention:** Engineered with minimal internal dead space so old grounds do not mix into your next cup.[[1]](https://www.thehomebaristas.co.uk/blog/why-a-single-dose-coffee-grinder-is-a-game-changer-for-fresh-brews)\n- **Easy Bean Swapping:** You can switch between different origins, roasts, or decaf throughout the day without wasting a full hopper of coffee.[[1]](https://coffeeblog.co.uk/best-coffee-grinders/)[[2]](https://bellabarista.co.uk/blogs/coffee-machines/should-i-single-dose)\n- **Workflow Extras:** Most models include a single-dose bellows to blow out trapped particles and a dosing cup for weighing beans or using the Ross Droplet Technique (RDT) with a water spray to reduce static.[[1]](https://www.youtube.com/watch?v=uIfbzJapnIo)[[2]](https://www.youtube.com/watch?v=-5ImE5oH-qA&t=39)\n\n### Popular Single-Dose Models & Pricing\nAdd to list Compact flat-burr electric grinder around £239 – £299.[[1]](https://www.google.com/search?q=product&prds=pvt:hg,productid:9799358602881892752,catalogid:10520859045004587787,gpcid:7846646907222134942,mid:576462771569661086&ibp=oshop)Add to list Popular 64mm flat-burr grinder with a built-in plasma generator to cut down static, priced around £399.[[1]](https://www.google.com/search?q=product&prds=pvt:hg,productid:16958152219728878616,catalogid:13638074111156953235,gpcid:17017795196805265682,mid:576462566999178707&ibp=oshop)Add to list High-capacity commercial-grade single-dose grinder with 83mm DLC burrs.[[1]](https://www.google.com/search?q=product&prds=pvt:hg,productid:13135098806838896471&ibp=oshop)Show more For more details on why baristas prefer this style, read the [Single Dose Coffee Grinders Guide](https://www.coffeefriend.co.uk/c/coffee-grinders/single-dose-coffee-grinders/) or compare user insights on [Reddit Coffee Communities](https://www.reddit.com/r/espresso/comments/1cf0eys/is_there_a_consensus_best_single_dose_grinder/).[[1]](https://www.coffeefriend.co.uk/c/coffee-grinders/single-dose-coffee-grinders/)[[2]](https://www.reddit.com/r/espresso/comments/1cf0eys/is_there_a_consensus_best_single_dose_grinder/)To help you pick the right single-dose grinder, let me know:\n\n- What **brew method** do you use most (espresso, pour-over, or both)?\n- What is your **target budget**?",
+        "items": [
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "A single-dose coffee grinder is an electric or manual grinder built to process a single serving of coffee beans (usually 18 to 22 grams) at a time, rather than storing a large batch in an overhead hopper.",
+          "markdown": "![The Best Single Dose Coffee Grinder, That&#39;s Worth The Investment](https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-7a8f2104c471:2)\nA **single-dose coffee grinder** is `an electric or manual grinder built to process a single serving of coffee beans (usually 18 to 22 grams) at a time` , rather than storing a large batch in an overhead hopper.[[1]](https://coffeeblog.co.uk/best-coffee-grinders/)[[2]](https://www.coffeefriend.co.uk/c/coffee-grinders/single-dose-coffee-grinders/)[[3]](https://www.thehomebaristas.co.uk/blog/why-a-single-dose-coffee-grinder-is-a-game-changer-for-fresh-brews)",
+          "links": null,
+          "images": [
+           {
+            "type": "images_element",
+            "alt": "The Best Single Dose Coffee Grinder, That's Worth The Investment",
+            "url": null,
+            "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-7a8f2104c471:3"
+           }
+          ],
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Coffee Blog",
+            "domain": "coffeeblog.co.uk",
+            "url": "https://coffeeblog.co.uk/best-coffee-grinders/",
+            "title": "Best Coffee Grinder 2026: Burr, Single-Dose, Hopper, Manual",
+            "text": "Single Dose Grinders: You weigh and grind one dose at a time, no hopper full of beans sitting around getting stale. Great for swit..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "www.coffeefriend.co.uk",
+            "domain": "www.coffeefriend.co.uk",
+            "url": "https://www.coffeefriend.co.uk/c/coffee-grinders/single-dose-coffee-grinders/",
+            "title": "Single Dose Coffee Grinders",
+            "text": "Single dose coffee grinders are super precise and fresh. They grind just one dose of beans at a time, perfect for a single cup. Th..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "The Home Baristas",
+            "domain": "www.thehomebaristas.co.uk",
+            "url": "https://www.thehomebaristas.co.uk/blog/why-a-single-dose-coffee-grinder-is-a-game-changer-for-fresh-brews",
+            "title": "Why a Single Dose Coffee Grinder Is a Game",
+            "text": "Why a Single Dose Coffee Grinder Is a Game-Changer for Fresh Brews * What Is a Single Dose Coffee Grinder? A single dose coffee gr..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "How It Works & Key Benefits",
+          "text": "Maximum Freshness: Beans stay sealed in an airtight container rather than sitting out in light and air inside a hopper. Low Retention: Engineered with minimal internal dead space so old grounds do not mix into your next cup. Easy Bean Swapping: You can switch between different origins, roasts, or decaf throughout the day without wasting a full hopper of coffee. Workflow Extras: Most models include a single-dose bellows to blow out trapped particles and a dosing cup for weighing beans or using the Ross Droplet Technique (RDT) with a water spray to reduce static.",
+          "markdown": "- **Maximum Freshness:** Beans stay sealed in an airtight container rather than sitting out in light and air inside a hopper.[[1]](https://bellabarista.co.uk/blogs/coffee-machines/should-i-single-dose)[[2]](https://www.thehomebaristas.co.uk/blog/why-a-single-dose-coffee-grinder-is-a-game-changer-for-fresh-brews)\n- **Low Retention:** Engineered with minimal internal dead space so old grounds do not mix into your next cup.[[1]](https://www.thehomebaristas.co.uk/blog/why-a-single-dose-coffee-grinder-is-a-game-changer-for-fresh-brews)\n- **Easy Bean Swapping:** You can switch between different origins, roasts, or decaf throughout the day without wasting a full hopper of coffee.[[1]](https://coffeeblog.co.uk/best-coffee-grinders/)[[2]](https://bellabarista.co.uk/blogs/coffee-machines/should-i-single-dose)\n- **Workflow Extras:** Most models include a single-dose bellows to blow out trapped particles and a dosing cup for weighing beans or using the Ross Droplet Technique (RDT) with a water spray to reduce static.[[1]](https://www.youtube.com/watch?v=uIfbzJapnIo)[[2]](https://www.youtube.com/watch?v=-5ImE5oH-qA&t=39)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Bella Barista",
+            "domain": "bellabarista.co.uk",
+            "url": "https://bellabarista.co.uk/blogs/coffee-machines/should-i-single-dose",
+            "title": "Should I Single Dose?",
+            "text": "Should I Single Dose? March 21, 2023 Elise Porter Single dosing is a style of grinding that's becoming increasingly popular in rec..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "The Home Baristas",
+            "domain": "www.thehomebaristas.co.uk",
+            "url": "https://www.thehomebaristas.co.uk/blog/why-a-single-dose-coffee-grinder-is-a-game-changer-for-fresh-brews",
+            "title": "Why a Single Dose Coffee Grinder Is a Game",
+            "text": "Why a Single Dose Coffee Grinder Is a Game-Changer for Fresh Brews * What Is a Single Dose Coffee Grinder? A single dose coffee gr..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Coffee Blog",
+            "domain": "coffeeblog.co.uk",
+            "url": "https://coffeeblog.co.uk/best-coffee-grinders/",
+            "title": "Best Coffee Grinder 2026: Burr, Single-Dose, Hopper, Manual",
+            "text": "Single Dose Grinders: You weigh and grind one dose at a time, no hopper full of beans sitting around getting stale. Great for swit..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/watch?v=uIfbzJapnIo",
+            "title": "Eureka's New Burrs and the Single Dose Pro Review",
+            "text": "Eureka’s New Burrs and the Single Dose Pro Review made reliably in Italy with a solid metal build except for the niche wooden acce..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/watch?v=-5ImE5oH-qA&t=39",
+            "title": "Single Dose Coffee Grinding - Is It Right For You?",
+            "text": "Single Dose Coffee Grinding - Is It Right For You? options including a couple of new ones I got over here coming soon that feature..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Popular Single-Dose Models & Pricing",
+          "text": "MiiCoffee DF54 £239.00 & more prices Prime Coffee Suppliers & more 4.6 (905) Add to list Compact flat-burr electric grinder around £239 – £299. Turin DF64 Gen 2 £399.00 & more prices Amazon.co.uk - Amazon.co.uk-Seller & more 4.8 (239) Add to list Popular 64mm flat-burr grinder with a built-in plasma generator to cut down static, priced around £399. Ceado E37 Zero Naked £18.95 Clumsy Goat 5.0 (4) Add to list High-capacity commercial-grade single-dose grinder with 83mm DLC burrs. Show more",
+          "markdown": "Add to list Compact flat-burr electric grinder around £239 – £299.[[1]](https://www.google.com/search?q=product&prds=pvt:hg,productid:9799358602881892752,catalogid:10520859045004587787,gpcid:7846646907222134942,mid:576462771569661086&ibp=oshop)Add to list Popular 64mm flat-burr grinder with a built-in plasma generator to cut down static, priced around £399.[[1]](https://www.google.com/search?q=product&prds=pvt:hg,productid:16958152219728878616,catalogid:13638074111156953235,gpcid:17017795196805265682,mid:576462566999178707&ibp=oshop)Add to list High-capacity commercial-grade single-dose grinder with 83mm DLC burrs.[[1]](https://www.google.com/search?q=product&prds=pvt:hg,productid:13135098806838896471&ibp=oshop)Show more",
+          "links": [
+           {
+            "type": "link_element",
+            "title": "MiiCoffee DF54£239.00& more pricesPrime Coffee Suppliers& more4.6(905)Go to product viewer dialogue for this item.",
+            "description": null,
+            "url": "https://www.google.com/search?ibp=oshop&prds=pvt:hg,pvo:48,mid:576462771569661086,imageDocid:11634211168778610096,gpcid:7846646907222134942,headlineOfferDocid:13529250746102009417,catalogid:10520859045004587787,productDocid:9799358602881892752,rds:CSS_PC_7846646907222134942%7CPC_7846646907222134942%7CPROD_CSS_PC_7846646907222134942%7CPROD_PC_7846646907222134942&q=product&sa=X&ved=2ahUKEwiEh73ymquXAxUEqJUCHSK-H8IQgLcPegoIAggACAAIJRAG",
+            "domain": "www.google.com"
+           },
+           {
+            "type": "link_element",
+            "title": "Turin DF64 Gen 2£399.00& more pricesAmazon.co.uk - Amazon.co.uk-Seller& more4.8(239)Go to product viewer dialogue for this item.",
+            "description": null,
+            "url": "https://www.google.com/search?ibp=oshop&prds=pvt:hg,pvo:48,mid:576462566999178707,imageDocid:2106970458079045536,gpcid:17017795196805265682,headlineOfferDocid:4827556253452445649,catalogid:13638074111156953235,productDocid:16958152219728878616,rds:CSS_PC_17017795196805265682%7CPC_17017795196805265682%7CPROD_CSS_PC_17017795196805265682%7CPROD_PC_17017795196805265682&q=product&sa=X&ved=2ahUKEwiEh73ymquXAxUEqJUCHSK-H8IQgLcPegoIAggACAAIJRAV",
+            "domain": "www.google.com"
+           },
+           {
+            "type": "link_element",
+            "title": "Ceado E37 Zero Naked£18.95Clumsy Goat5.0(4)Go to product viewer dialogue for this item.",
+            "description": null,
+            "url": "https://www.google.com/search?ibp=oshop&prds=pvt:hg,pvo:48,imageDocid:13837545555484143385,headlineOfferDocid:13135098806838896471,productDocid:13135098806838896471,rds:CSS_PC_16447921353902522407%7CPC_16447921353902522407%7CPROD_CSS_PC_16447921353902522407%7CPROD_PC_16447921353902522407&q=product&sa=X&ved=2ahUKEwiEh73ymquXAxUEqJUCHSK-H8IQgLcPegoIAggACAAIJRAk",
+            "domain": "www.google.com"
+           }
+          ],
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Google",
+            "domain": "www.google.com",
+            "url": "https://www.google.com/search?q=product&prds=pvt:hg,productid:9799358602881892752,catalogid:10520859045004587787,gpcid:7846646907222134942,mid:576462771569661086&ibp=oshop",
+            "title": "MiiCoffee DF54 Single Dose Coffee Grinder",
+            "text": "Introducing the DF54 Single Dose Grinder, a compact powerhouse of precision & performance. Crafted to deliver the same exceptional..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Google",
+            "domain": "www.google.com",
+            "url": "https://www.google.com/search?q=product&prds=pvt:hg,productid:16958152219728878616,catalogid:13638074111156953235,gpcid:17017795196805265682,mid:576462566999178707&ibp=oshop",
+            "title": "Turin DF64 Gen 2 Single Dose Coffee Grinder 64mm Flat Burrs, Black Or White, Stainless Steel Or DLC Burrs",
+            "text": "Experience the perfect grind for every brewing method, from espresso to cold brew, with the DF64 GEN2 coffee grinder. Innovative p..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Google",
+            "domain": "www.google.com",
+            "url": "https://www.google.com/search?q=product&prds=pvt:hg,productid:13135098806838896471&ibp=oshop",
+            "title": "Ceado E37 Zero Naked Single-Dose Coffee Grinder - 83mm DLC Burrs",
+            "text": "Price match promise - Seen it cheaper elsewhere? Call us on 01706 452 922 or email us at hello@clumsygoat.co.uk and we'll match an..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "For more details on why baristas prefer this style, read the Single Dose Coffee Grinders Guide or compare user insights on Reddit Coffee Communities.",
+          "markdown": "For more details on why baristas prefer this style, read the [Single Dose Coffee Grinders Guide](https://www.coffeefriend.co.uk/c/coffee-grinders/single-dose-coffee-grinders/) or compare user insights on [Reddit Coffee Communities](https://www.reddit.com/r/espresso/comments/1cf0eys/is_there_a_consensus_best_single_dose_grinder/).[[1]](https://www.coffeefriend.co.uk/c/coffee-grinders/single-dose-coffee-grinders/)[[2]](https://www.reddit.com/r/espresso/comments/1cf0eys/is_there_a_consensus_best_single_dose_grinder/)",
+          "links": [
+           {
+            "type": "link_element",
+            "title": "Single Dose Coffee Grinders Guide",
+            "description": null,
+            "url": "https://www.coffeefriend.co.uk/c/coffee-grinders/single-dose-coffee-grinders/",
+            "domain": "www.coffeefriend.co.uk"
+           },
+           {
+            "type": "link_element",
+            "title": "Reddit Coffee Communities",
+            "description": null,
+            "url": "https://www.reddit.com/r/espresso/comments/1cf0eys/is_there_a_consensus_best_single_dose_grinder/",
+            "domain": "www.reddit.com"
+           }
+          ],
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "www.coffeefriend.co.uk",
+            "domain": "www.coffeefriend.co.uk",
+            "url": "https://www.coffeefriend.co.uk/c/coffee-grinders/single-dose-coffee-grinders/",
+            "title": "Single Dose Coffee Grinders",
+            "text": "Single dose coffee grinders are super precise and fresh. They grind just one dose of beans at a time, perfect for a single cup. Th..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Reddit",
+            "domain": "www.reddit.com",
+            "url": "https://www.reddit.com/r/espresso/comments/1cf0eys/is_there_a_consensus_best_single_dose_grinder/",
+            "title": "Is there a consensus best single dose grinder? : r/espresso - Reddit",
+            "text": "At least do enough research to decide between your preferences for conical vs. flat burrs. Niches (both zero and duo) along with t..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "To help you pick the right single-dose grinder, let me know:What brew method do you use most (espresso, pour-over, or both)?\nWhat is your target budget ?",
+          "markdown": "To help you pick the right single-dose grinder, let me know:\n\n- What **brew method** do you use most (espresso, pour-over, or both)?\n- What is your **target budget**?",
+          "links": null,
+          "images": null,
+          "references": null
+         }
+        ],
+        "references": [
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Reddit",
+          "domain": "www.reddit.com",
+          "url": "https://www.reddit.com/r/espresso/comments/1cf0eys/is_there_a_consensus_best_single_dose_grinder/",
+          "title": "Is there a consensus best single dose grinder? : r/espresso - Reddit",
+          "text": "At least do enough research to decide between your preferences for conical vs. flat burrs. Niches (both zero and duo) along with t..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Coffee Blog",
+          "domain": "coffeeblog.co.uk",
+          "url": "https://coffeeblog.co.uk/best-coffee-grinders/",
+          "title": "Best Coffee Grinder 2026: Burr, Single-Dose, Hopper, Manual",
+          "text": "Single Dose Grinders: You weigh and grind one dose at a time, no hopper full of beans sitting around getting stale. Great for swit..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "www.coffeefriend.co.uk",
+          "domain": "www.coffeefriend.co.uk",
+          "url": "https://www.coffeefriend.co.uk/c/coffee-grinders/single-dose-coffee-grinders/",
+          "title": "Single Dose Coffee Grinders",
+          "text": "Single dose coffee grinders are super precise and fresh. They grind just one dose of beans at a time, perfect for a single cup. Th..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "YouTube",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=uIfbzJapnIo",
+          "title": "Eureka's New Burrs and the Single Dose Pro Review",
+          "text": "Eureka’s New Burrs and the Single Dose Pro Review made reliably in Italy with a solid metal build except for the niche wooden acce..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Bella Barista",
+          "domain": "bellabarista.co.uk",
+          "url": "https://bellabarista.co.uk/blogs/coffee-machines/should-i-single-dose",
+          "title": "Should I Single Dose?",
+          "text": "Should I Single Dose? March 21, 2023 Elise Porter Single dosing is a style of grinding that's becoming increasingly popular in rec..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "YouTube",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/watch?v=-5ImE5oH-qA&t=39",
+          "title": "Single Dose Coffee Grinding - Is It Right For You?",
+          "text": "Single Dose Coffee Grinding - Is It Right For You? options including a couple of new ones I got over here coming soon that feature..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "The Home Baristas",
+          "domain": "www.thehomebaristas.co.uk",
+          "url": "https://www.thehomebaristas.co.uk/blog/why-a-single-dose-coffee-grinder-is-a-game-changer-for-fresh-brews",
+          "title": "Why a Single Dose Coffee Grinder Is a Game",
+          "text": "Why a Single Dose Coffee Grinder Is a Game-Changer for Fresh Brews * What Is a Single Dose Coffee Grinder? A single dose coffee gr..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Google",
+          "domain": "www.google.com",
+          "url": "https://www.google.com/search?q=product&prds=pvt:hg,productid:9799358602881892752,catalogid:10520859045004587787,gpcid:7846646907222134942,mid:576462771569661086&ibp=oshop",
+          "title": "MiiCoffee DF54 Single Dose Coffee Grinder",
+          "text": "Introducing the DF54 Single Dose Grinder, a compact powerhouse of precision & performance. Crafted to deliver the same exceptional..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Google",
+          "domain": "www.google.com",
+          "url": "https://www.google.com/search?q=product&prds=pvt:hg,productid:16958152219728878616,catalogid:13638074111156953235,gpcid:17017795196805265682,mid:576462566999178707&ibp=oshop",
+          "title": "Turin DF64 Gen 2 Single Dose Coffee Grinder 64mm Flat Burrs, Black Or White, Stainless Steel Or DLC Burrs",
+          "text": "Experience the perfect grind for every brewing method, from espresso to cold brew, with the DF64 GEN2 coffee grinder. Innovative p..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Google",
+          "domain": "www.google.com",
+          "url": "https://www.google.com/search?q=product&prds=pvt:hg,productid:13135098806838896471&ibp=oshop",
+          "title": "Ceado E37 Zero Naked Single-Dose Coffee Grinder - 83mm DLC Burrs",
+          "text": "Price match promise - Seen it cheaper elsewhere? Call us on 01706 452 922 or email us at hello@clumsygoat.co.uk and we'll match an..."
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]",
+        "domain": "comoricoffee.com",
+        "title": "The 3 Best Single Dose Grinders : Niche Zero, DF64, Eureka ...",
+        "url": "https://comoricoffee.com/en/singledose-grinder-best3-en/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://comoricoffee.com › ホーム › Espresso at Home",
+        "website_name": "comoricoffee.com",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "6 Sept 2022 — The 3 Best Single Dose Grinders : Niche Zero, DF64, Eureka Mignon Single Dose · How do I want to use my grinder? · Must Requirements · Best Options. Read more",
+        "pre_snippet": "09/06/2022 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Niche Zero, DF64, Eureka Mignon Single Dose"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://comoricoffee.com/en/singledose-grinder-best3-en/#:~:text=The%203%20Best%20Single%20Dose,DF64%2C%20Eureka%20Mignon%20Single%20Dose&text=How%20do%20I%20want%20to,use%20my%20grinder%3F&text=Must%20Requirements&text=Best%20Options",
+          "domain": "comoricoffee.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2022-09-06 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]",
+        "domain": "kaffeemacher.de",
+        "title": "What are single dosing grinders?",
+        "url": "https://kaffeemacher.de/en/blogs/kaffeewissen/single-dosing?srsltid=AU7gw4UBppPJM1cIBjpkykfXaOrMNFmReXzXtj0htUlltz9awXFWXIoz",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://kaffeemacher.de › Coffee knowledge",
+        "website_name": "Kaffeemacher.de",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "16 Jun 2023 — A single dosing grinder has no bean hopper. Instead, it only has a feed chute into which the desired amount of coffee is placed for each ... Read more",
+        "pre_snippet": "06/16/2023 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "has no bean hopper"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://kaffeemacher.de/en/blogs/kaffeewissen/single-dosing?srsltid=AU7gw4UBppPJM1cIBjpkykfXaOrMNFmReXzXtj0htUlltz9awXFWXIoz#:~:text=A%20single%20dosing%20grinder%20has,coffee%20is%20placed%20for%20each",
+          "domain": "kaffeemacher.de"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2023-06-16 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[6]/div[1]/div[1]",
+        "domain": "www.vancouvercoffeesnob.com",
+        "title": "The Top Three Single Dose Espresso Grinders for Home",
+        "url": "https://www.vancouvercoffeesnob.com/gear/the-top-three-single-dose-espresso-grinders-for-home/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.vancouvercoffeesnob.com › gear › the-top...",
+        "website_name": "Vancouver Coffee Snob",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "24 May 2022 — The Baratza Sette 30 is a great single dose espresso grinder for home use. It has a low price point and is perfect for those just starting out ...",
+        "pre_snippet": "05/24/2022 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Baratza Sette 30 is"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2022-05-24 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "popular_products",
+        "rank_group": 1,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]",
+        "title": null,
+        "items": [
+         {
+          "type": "popular_products_element",
+          "title": "Single Dose Coffee Grinder,Geimori GU38 Coffee Grinder with 38mm 6-Core Stainless Steel Conical Burr",
+          "url": null,
+          "domain": null,
+          "description": "Amazon.co.uk - Amazon.co.uk-Seller & more\nFree delivery",
+          "more_sellers": true,
+          "seller": "Amazon.co.uk - Amazon.co.uk-Seller",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-7a8f2104c471:5",
+          "price": {
+           "current": 149.99,
+           "regular": null,
+           "max_value": null,
+           "currency": "GBP",
+           "is_price_range": false,
+           "displayed_price": "£149.99"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": "10622349356643622858",
+           "data_docid": "15575467564845843880",
+           "gid": "15937635391489405394"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "DF54 Black Single Dose Coffee Grinder (DF64Coffee Official Store)",
+          "url": null,
+          "domain": null,
+          "description": "Amazon.co.uk - Amazon.co.uk-Seller\nFree delivery",
+          "more_sellers": false,
+          "seller": "Amazon.co.uk - Amazon.co.uk-Seller",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-7a8f2104c471:6",
+          "price": {
+           "current": 239,
+           "regular": null,
+           "max_value": null,
+           "currency": "GBP",
+           "is_price_range": false,
+           "displayed_price": "£239.00"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": null,
+           "data_docid": "5498451345398756840",
+           "gid": null
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Eureka Mignon Zero 55s 15BL Espresso Coffee Grinder – Burr",
+          "url": null,
+          "domain": null,
+          "description": "frekko.nl",
+          "more_sellers": false,
+          "seller": "frekko.nl",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-7a8f2104c471:7",
+          "price": {
+           "current": 204,
+           "regular": 219,
+           "max_value": null,
+           "currency": "GBP",
+           "is_price_range": false,
+           "displayed_price": "£204.00 £219"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 4.8,
+           "votes_count": 64,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": "17817410308551911071",
+           "data_docid": "2730309583169255942",
+           "gid": "545590527918092723"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Turin DF64 Gen 2 Single Dose Coffee Grinder 64mm Flat Burrs, Black Or White, Stainless Steel Or DLC Burrs",
+          "url": null,
+          "domain": null,
+          "description": "Amazon.co.uk - Amazon.co.uk-Seller & more\nFree delivery",
+          "more_sellers": true,
+          "seller": "Amazon.co.uk - Amazon.co.uk-Seller",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-7a8f2104c471:8",
+          "price": {
+           "current": 399,
+           "regular": null,
+           "max_value": null,
+           "currency": "GBP",
+           "is_price_range": false,
+           "displayed_price": "£399.00"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 4.8,
+           "votes_count": 239,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": "13638074111156953235",
+           "data_docid": "16958152219728878616",
+           "gid": "17017795196805265682"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Eureka Mignon Single Dose Coffee Grinder Kit | The Espresso Shop",
+          "url": null,
+          "domain": null,
+          "description": "The Espresso Shop",
+          "more_sellers": false,
+          "seller": "The Espresso Shop",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-7a8f2104c471:9",
+          "price": {
+           "current": 107.7,
+           "regular": null,
+           "max_value": null,
+           "currency": "GBP",
+           "is_price_range": false,
+           "displayed_price": "£107.70"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": null,
+           "data_docid": "16089116774946484197",
+           "gid": null
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "MiiCoffee DF64 II Single Dosing Coffee Grinder",
+          "url": null,
+          "domain": null,
+          "description": "DrComparison & more",
+          "more_sellers": true,
+          "seller": "DrComparison",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-7a8f2104c471:10",
+          "price": {
+           "current": 315,
+           "regular": null,
+           "max_value": null,
+           "currency": "GBP",
+           "is_price_range": false,
+           "displayed_price": "£315.00"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 4.7,
+           "votes_count": 420,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": "10391359829905486687",
+           "data_docid": "14252243465558651531",
+           "gid": "1844557907810784436"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Mahlkonig X64 SD Single Dose Home Coffee Grinder Black",
+          "url": null,
+          "domain": null,
+          "description": "Coffee World",
+          "more_sellers": false,
+          "seller": "Coffee World",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-7a8f2104c471:11",
+          "price": {
+           "current": 489,
+           "regular": null,
+           "max_value": null,
+           "currency": "GBP",
+           "is_price_range": false,
+           "displayed_price": "£489.00"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": null,
+           "data_docid": "11310316209341229434",
+           "gid": null
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Mazzer Philos I189D & I200D Coffee Espresso Grinder",
+          "url": null,
+          "domain": null,
+          "description": "Luigi Mazzer Spa & more\nFree delivery",
+          "more_sellers": true,
+          "seller": "Luigi Mazzer Spa",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-7a8f2104c471:12",
+          "price": {
+           "current": 927.93,
+           "regular": null,
+           "max_value": null,
+           "currency": "GBP",
+           "is_price_range": false,
+           "displayed_price": "£927.93"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 4.9,
+           "votes_count": 142,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": "1946624074536172251",
+           "data_docid": "1680967595453989517",
+           "gid": "3518049697506618238"
+          }
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[10]/div[1]/div[1]",
+        "domain": "bellabarista.co.uk",
+        "title": "Solo Grinders",
+        "url": "https://bellabarista.co.uk/collections/solo-grinders?srsltid=AU7gw4WVKIvMGRJJA3awvD_TCLp488-B46ticItf_HRKv1ihra3FAaY9",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://bellabarista.co.uk › Collections",
+        "website_name": "Bella Barista",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "The Solo DF83 Single Dose Grinder Regular price £449. Sale price £449 .00 Sale Quick view The Solo DF83V Single Dose Grinder - Espresso Burrs",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "The Solo DF83 Single Dose Grinder"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "discussions_and_forums",
+        "rank_group": 1,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[12]/div[1]",
+        "title": "Discussions and forums",
+        "items": [
+         {
+          "type": "discussions_and_forums_element",
+          "title": "Is there a consensus best single dose grinder?",
+          "url": "https://www.reddit.com/r/espresso/comments/1cf0eys/is_there_a_consensus_best_single_dose_grinder/",
+          "domain": "www.reddit.com",
+          "source": "Reddit",
+          "description": null,
+          "timestamp": "2024-10-08 20:00:20 +00:00",
+          "posts_count": 60
+         },
+         {
+          "type": "discussions_and_forums_element",
+          "title": "Is single dose grinding really so necessary?",
+          "url": "https://www.reddit.com/r/espresso/comments/177hv8c/is_single_dose_grinding_really_so_necessary/",
+          "domain": "www.reddit.com",
+          "source": "Reddit",
+          "description": null,
+          "timestamp": "2024-10-08 20:00:20 +00:00",
+          "posts_count": 190
+         },
+         {
+          "type": "discussions_and_forums_element",
+          "title": "What's the best single dose grinder for pourover and espresso?",
+          "url": "https://www.facebook.com/groups/speciality.uk.coffee/posts/3170933699872759/",
+          "domain": "www.facebook.com",
+          "source": "Facebook",
+          "description": null,
+          "timestamp": "2025-12-08 20:00:20 +00:00",
+          "posts_count": null
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "popular_products",
+        "rank_group": 2,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[14]/div[1]",
+        "title": null,
+        "items": [
+         {
+          "type": "popular_products_element",
+          "title": "The Solo DF54 Single Dose Grinder - White",
+          "url": null,
+          "domain": null,
+          "description": "Bella Barista - For Coffee Lovers",
+          "more_sellers": false,
+          "seller": "Bella Barista - For Coffee Lovers",
+          "image_url": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTIdyV9Der--2_cCWcmyn532S2hYZIhyG68TTc3YGyTXXMVmx7itPrZnHIb8GDhottOgeXcB2EBN05vOxj4OmeDLklU_SscoSw7ssXhrPe1He33ry27h9-sPg",
+          "price": {
+           "current": 239,
+           "regular": null,
+           "max_value": null,
+           "currency": "GBP",
+           "is_price_range": false,
+           "displayed_price": "£239.00"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": null,
+           "data_docid": "8494965492483193951",
+           "gid": null
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "DouzDaz Single Dose Electric Burr Coffee Grinder, Black | 7-blade Stainless Steel Conical Burr, 0.01 mm Micro-adjustments for Various Brewing Methods,",
+          "url": null,
+          "domain": null,
+          "description": "Amazon.co.uk - Amazon.co.uk-Seller\nFree delivery",
+          "more_sellers": false,
+          "seller": "Amazon.co.uk - Amazon.co.uk-Seller",
+          "image_url": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcSIS3PL5OmknP6BSetqPqwmYLq1DGzYcwQpsbadpYb3fOtwF2ufduRa1jzgvQNIUXIA6VFGzegvf1uMYeE5u1k5FKd7yFkdU_gJypNexw7fMhRmE-CrhBa1",
+          "price": {
+           "current": 189.95,
+           "regular": null,
+           "max_value": null,
+           "currency": "GBP",
+           "is_price_range": false,
+           "displayed_price": "£189.95"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": null,
+           "data_docid": "7797498982971623403",
+           "gid": null
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Ceado E37 Zero Naked Single-Dose Coffee Grinder - 83mm DLC Burrs",
+          "url": null,
+          "domain": null,
+          "description": "Clumsy Goat\nFree delivery on £100+",
+          "more_sellers": false,
+          "seller": "Clumsy Goat",
+          "image_url": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcT0_IPcobPBpR6yCyE6uIXlXY1FBfRubi5sQkxfFjVimao-OmbW9613XEmbBAJx1YtG_ztsKXOSmXy9qM0QdY_UvS91c-QDLynG1RkTE5eNAoMtvM3xAhC0",
+          "price": {
+           "current": 18.95,
+           "regular": null,
+           "max_value": null,
+           "currency": "GBP",
+           "is_price_range": false,
+           "displayed_price": "£18.95"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 5,
+           "votes_count": 4,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": null,
+           "data_docid": "13135098806838896471",
+           "gid": null
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "NadoNado Single Dose Coffee Grinder | Coffee Hit",
+          "url": null,
+          "domain": null,
+          "description": "Coffee Hit\nFree delivery",
+          "more_sellers": false,
+          "seller": "Coffee Hit",
+          "image_url": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcTOnAyk9gpUIzE7xjTq6_kZwzhHpSJugLVd-lzI_SmrqtNK2Lk11HgMY9KzBFSNg9rtgmbyQ8c0mlZWHKb7ICUgMWOb2f-9ooMD7W5tnC7bANt1CU5lJmL2",
+          "price": {
+           "current": 139.95,
+           "regular": null,
+           "max_value": null,
+           "currency": "GBP",
+           "is_price_range": false,
+           "displayed_price": "£139.95"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": null,
+           "data_docid": "3362028224548053680",
+           "gid": null
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Fracino Tranquilo Single Shot Coffee Grinder GJ477",
+          "url": null,
+          "domain": null,
+          "description": "Coffee King UK & more\nFree delivery",
+          "more_sellers": true,
+          "seller": "Coffee King UK",
+          "image_url": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTtIFLGzumi2noETlbIMYj__2tuNnw1F7zKcsdaMjXdDepbMeL0g_1tjyW_kw_LoOdcwgoMW3alHp0gKNSAoIOjS6dt9pkwuw3fSkglLsXyZL3i4qL_rNrc",
+          "price": {
+           "current": 338,
+           "regular": null,
+           "max_value": null,
+           "currency": "GBP",
+           "is_price_range": false,
+           "displayed_price": "£338.00"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 4,
+           "votes_count": 6,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": "3800870782786044447",
+           "data_docid": "11947104852054537436",
+           "gid": "4822407807929064467"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "MiiCoffee DF83V Variable Speed Single Dose Coffee Grinder",
+          "url": null,
+          "domain": null,
+          "description": "Sigma Coffee UK & more\nFree delivery by Tue",
+          "more_sellers": true,
+          "seller": "Sigma Coffee UK",
+          "image_url": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcT3L6wG_ynrTIoZ84sr1sReoqYHfF3nzZV6ZoFwKEsdsWn6YmxntJp41uTnf1P5boHNZhwKpaWjbfYFoaksFeWjj9crXYdwOkB9__5jFki8UiYGcRYu8uVP",
+          "price": {
+           "current": 669,
+           "regular": null,
+           "max_value": null,
+           "currency": "GBP",
+           "is_price_range": false,
+           "displayed_price": "£669.00"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 4.8,
+           "votes_count": 43,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": "8352782863672424250",
+           "data_docid": "2430587787357750698",
+           "gid": "11317512226099492459"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Eureka Oro Mignon Single Dose Grinder",
+          "url": null,
+          "domain": null,
+          "description": "espressocoffeeshop.co.uk & more\nFree delivery",
+          "more_sellers": true,
+          "seller": "espressocoffeeshop.co.uk",
+          "image_url": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcTzyfoOQ74jTkolxdWHoyQ0ltj_T84pkwuX6Y6NHToUUQfP867Tvjm0crRFdhZKKi_Srihv5NHnDn6jaM6B9w-R0XD8pE_Ko0pJKruZLgm48CCEfTGVVb2VzQ",
+          "price": {
+           "current": 450,
+           "regular": null,
+           "max_value": null,
+           "currency": "GBP",
+           "is_price_range": false,
+           "displayed_price": "£450.00"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 4.3,
+           "votes_count": 58,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": "10074884486978272278",
+           "data_docid": "17467888937587297251",
+           "gid": "7058546475905411544"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Mahlkönig X64 SD Single Dose Coffee Grinder",
+          "url": null,
+          "domain": null,
+          "description": "Bella Barista - For Coffee Lovers & more",
+          "more_sellers": true,
+          "seller": "Bella Barista - For Coffee Lovers",
+          "image_url": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcTQQH1XX7_iaaWxe3cmEdeDazlNaQbzDzIUL3lal-dIx3WxE9RaokId7wAyss2VHH5cpwp6RIg5Fk4NUwmIOJ_moOaegfuBSzyaub3MfK9Eprd0saSs9rk",
+          "price": {
+           "current": 499,
+           "regular": null,
+           "max_value": null,
+           "currency": "GBP",
+           "is_price_range": false,
+           "displayed_price": "£499.00"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 4.7,
+           "votes_count": 161,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": "17990706512396733515",
+           "data_docid": "18301928793696797710",
+           "gid": "301240995634077311"
+          }
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[16]/div[1]/div[1]",
+        "domain": "perfectdailygrind.com",
+        "title": "Single-dose grinding has become more common, but it's ...",
+        "url": "https://perfectdailygrind.com/2025/02/how-single-dose-grinding-is-changing/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://perfectdailygrind.com › Brewing Essentials",
+        "website_name": "Perfect Daily Grind",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "11 Feb 2025 — The technique allows you to grind one dose at a time, preserving freshness and making it easier to switch between different coffees. Read more",
+        "pre_snippet": "02/11/2025 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "grind one dose at a time"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://perfectdailygrind.com/2025/02/how-single-dose-grinding-is-changing/#:~:text=The%20technique%20allows%20you%20to,to%20switch%20between%20different%20coffees.",
+          "domain": "perfectdailygrind.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2025-02-11 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[18]/div[1]/div[1]",
+        "domain": "sigmacoffee.co.uk",
+        "title": "Coffee Hand Grinders",
+        "url": "https://sigmacoffee.co.uk/collections/grinders?srsltid=AU7gw4WCzljp0f2tyCfIALFoZhEdg6t6scqd0ZkhmpXqJ8VxrPRuTmwx",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://sigmacoffee.co.uk › collections › grinders",
+        "website_name": "Sigma Coffee UK",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "collection of Manual Coffee Hand Grinders. Coffee Grinder £85.00. The DF83V Single Dose Electric Coffee Grinder",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": {
+         "current": 39.99,
+         "regular": null,
+         "max_value": null,
+         "currency": "GBP",
+         "is_price_range": false,
+         "displayed_price": "Free delivery over £39.99"
+        },
+        "highlighted": [
+         "Coffee",
+         "Grinders",
+         "Coffee Grinder",
+         "Single Dose"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 7,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[19]/div[1]/div[1]/div[1]",
+        "domain": "www.youtube.com",
+        "title": "Solo Single Dose Coffee Grinder",
+        "url": "https://www.youtube.com/watch?v=l3PGVx8t3xw",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "8.6k+ views  ·  5 years ago",
+        "website_name": "YouTube · Bella Barista",
+        "is_image": false,
+        "is_video": true,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": [
+         "is_video"
+        ],
+        "description": null,
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2021-03-24 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 8,
+        "rank_absolute": 12,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[21]/div[1]/div[1]",
+        "domain": "www.coffeeomega.co.uk",
+        "title": "Eureka Oro Mignon Single Dose Grinder – White",
+        "url": "https://www.coffeeomega.co.uk/product/eureka-mignon-single-dose-grinder-white/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.coffeeomega.co.uk › ... › Eureka",
+        "website_name": "Coffee Omega UK Ltd",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "460.00 · Brand: Eureka · Hopper capacity: 45g · Grinding speed: 2.3-2.8 g/s (espresso) / 2.8-3.3 g/s (brew) · Colour: chrome · Burrs type: 65mm flat · Burrs material: ... Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": {
+         "current": 460,
+         "regular": null,
+         "max_value": null,
+         "currency": "GBP",
+         "is_price_range": false,
+         "displayed_price": "£460.00"
+        },
+        "highlighted": [
+         "Hopper capacity: 45g"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://www.coffeeomega.co.uk/product/eureka-mignon-single-dose-grinder-white/#:~:text=%C2%A3460.00&text=Brand%3A%20Eureka&text=Hopper%20capacity%3A%2045g&text=Grinding%20speed%3A%202.3-2.8%20g%2Fs%20(espresso),%2F%202.8-3.3%20g%2Fs%20(brew)&text=Colour%3A%20chrome&text=Burrs%20type%3A%2065mm%20flat&text=Burrs%20material%3A%20diamond%20inside",
+          "domain": "www.coffeeomega.co.uk"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "related_searches",
+        "rank_group": 1,
+        "rank_absolute": 13,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[2]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "items": [
+         "Best single dose coffee grinder",
+         "Best single dose grinder 2026",
+         "Niche Zero",
+         "Niche Zero grinder",
+         "Best single dose espresso grinder 2026",
+         "Eureka Mignon Single Dose",
+         "Eureka Single Dose",
+         "Niche coffee grinder"
+        ],
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

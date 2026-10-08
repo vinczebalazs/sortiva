@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import { CONFIG, type Language } from '../config.ts'
 import { canonicalKey } from './canonical.ts'
-import { coveringPage } from './check.ts'
+import { possibleOverlaps } from './check.ts'
+import { judgeOverlaps } from './overlap.ts'
 import { distinctFacts, evidenceFor, topicContext, type TopicDeps } from './discover.ts'
 import { moveToTop } from './queue.ts'
 
@@ -47,9 +48,6 @@ export async function addManualTopic(deps: TopicDeps, storeId: number, phrase: s
   const typed = await queuedMatch(canonicalKey(phrase, language))
   if (typed?.state === 'queued' && (await moveToTop(deps.db, storeId, typed.id))) return { kind: 'moved', topicId: typed.id }
 
-  const typedPage = coveringPage(phrase, language, ctx.pages, ctx.storeWords)
-  if (typedPage) return { kind: 'existing_page', title: typedPage.title, url: typedPage.url }
-
   const { rows: all } = await deps.db.query<{ id: number; title: string; product_type: string; richness: number | null }>(
     `select id::int, title, product_type, richness from products where store_id = $1 and deleted_at is null order by product_type, id`,
     [storeId],
@@ -63,19 +61,24 @@ export async function addManualTopic(deps: TopicDeps, storeId: number, phrase: s
     effort: 'low',
     maxTokens: 4_000,
   })
+  const targetQuery = answer.target_query.trim().toLowerCase() || phrase.trim().toLowerCase()
+  // Before asking about product facts: a page the shop already has is the more useful answer.
+  const phrasings = [...new Set([phrase.trim().toLowerCase(), targetQuery])]
+  const [page] = await judgeOverlaps(deps.llm, storeId, language, [
+    { phrasings, workingTitle: answer.working_title, candidates: possibleOverlaps(phrasings, language, ctx.pages, ctx.storeWords) },
+  ])
+  if (page) return { kind: 'existing_page', title: page.title, url: page.url }
+
   const related = [...new Set(answer.products.map((ref) => all[Number(ref.replace(/\D/g, '')) - 1]).filter((p) => p !== undefined))]
   const backed = related.filter((p) => (p.richness ?? 0) >= CONFIG.minFactsPerProduct).map((p) => p.id)
   if (!backed.length) return { kind: 'cannot_back', products: related.map((p) => ({ id: p.id, title: p.title })) }
 
-  const targetQuery = answer.target_query.trim().toLowerCase() || phrase.trim().toLowerCase()
   const key = canonicalKey(targetQuery, language)
   const existing = await queuedMatch(key)
   if (existing?.state === 'queued' && (await moveToTop(deps.db, storeId, existing.id))) return { kind: 'moved', topicId: existing.id }
   if (existing && (existing.state === 'written' || existing.state === 'delivered')) {
     return { kind: 'existing_page', title: existing.title, url: '' }
   }
-  const page = coveringPage(targetQuery, language, ctx.pages, ctx.storeWords)
-  if (page) return { kind: 'existing_page', title: page.title, url: page.url }
 
   const [volume] = await deps.demand.searchVolumes({ storeId, market: ctx.market, keywords: [targetQuery] })
   const [top] = await deps.demand.topResults({ storeId, market: ctx.market, keywords: [targetQuery] })

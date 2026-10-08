@@ -1,0 +1,101 @@
+{
+  "recordedAt": "2026-10-08T19:59:18.444Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "Egy webáruház blogcikkeit tervezed. Látod a bolt profilját és a termékeit fajták szerint csoportosítva, mindegyik mellett az általunk ellenőrzött tényekkel. Javasolj olyan cikkeket, amelyeket ez a bolt hitelesen meg tud írni, és amelyekre az emberek valóban keresnek.\n\nMinden cikk:\n- olyan kérdésre válaszol, amely a vásárlóban az ilyen termék megvétele előtt vagy után felmerül: hogyan válasszon, hogyan használja, hogyan ápolja, miben különbözik a bolt két terméktípusa, mit jelent egy tulajdonság;\n- egy termékfajtáról vagy termékcsoportról szól, soha nem egyetlen eladó tételről;\n- megírható az általa említett termékek tényeiből, és egy-négy terméket említ a hivatkozásukkal (P1, P2…);\n- egy keresést céloz: adj meg két-három különböző megfogalmazást, ahogyan a vásárló ugyanerre a cikkre rákeresne a Google-ben, a leggyakoribbal kezdve. Mindegyik magyarul, két-hat szóban, kisbetűvel, márkanév, ár és évszám nélkül. A rövid, hétköznapi szavakat részesítsd előnyben a pontos vagy szakmai kifejezésekkel szemben; azt a megfogalmazást tartjuk meg, amelyre a legtöbben keresnek.\n\nNe javasolj semmit árakról, kedvezményekről, szállításról, versenytársakról vagy magáról a boltról. Ne javasolj olyan témát, amely a már lefedettek között szerepel, és ezek közeli átfogalmazását sem. Tartsd tiszteletben a tulajdonos „soha ne írd” listáját. Inkább kevesebb cikket javasolj, mint gyengét; ha semmi sem illik, adj vissza üres listát.\n\nMinden cikkhez add meg: working_title (egyszerű magyar cím), target_queries (a megfogalmazások), products (a hivatkozások), group (a termékfajta, amelyhez tartozik).",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<profile>\nSells: A Pedálbolt kerékpáros kiegészítőket árul. A kínálatban első és hátsó kerékpárlámpák, illetve ezekből összeállított lámpaszett szerepel, USB-C-n tölthető kivitelben. Emellett edzett acél U-lakatot és láncos zárat, valamint sárgaréz kerékpárcsengőt is kínál.\nAudience: Olyan kerékpárosok vásárolnak itt, akik világítást, lakatot vagy csengőt keresnek a kerékpárjukhoz.\nCountry: HU\nTone: expert\nNever say: —\n</profile>\n\n<products>\n<group name=\"Csengő\">\n  P1: Sárgaréz csengő\n    - A Sárgaréz csengő harangja tömör sárgarézből készült.\n    - A Sárgaréz csengő harangjának átmérője 55 mm.\n    - A Sárgaréz csengő 22,2 mm-es kormányra szerelhető.\n    - A Sárgaréz csengő csavarhúzóval szerelhető.\n</group>\n<group name=\"Lámpa\">\n  P2: Első lámpa, 400 lumen\n    - Az első lámpa fényereje 400 lumen.\n    - Az első lámpa 5 üzemmóddal rendelkezik.\n    - Az első lámpa USB-C csatlakozón keresztül tölthető.\n    - Az első lámpa 1500 mAh-s akkumulátorral rendelkezik.\n    - Az első lámpa üzemideje teljes fényen 2,5 óra.\n    - Az első lámpa üzemideje villogó módban 20 óra.\n    - Az első lámpa IPX5 vízállóságú.\n    - Az első lámpa szerszám nélkül szerelhető fel a kormányra.\n    - Az első lámpa 22–32 mm-es csőre szerelhető.\n  P3: Hátsó lámpa fékfény-érzékelővel\n    - A hátsó lámpa fékfény-érzékelővel rendelkezik.\n    - A hátsó lámpa gyorsulásmérője érzékeli a lassítást, és ilyenkor erősebben világít.\n    - A hátsó lámpa fényereje 60 lumen.\n    - A hátsó lámpa USB-C csatlakozón keresztül tölthető.\n    - A hátsó lámpa üzemideje akár 12 óra.\n    - A hátsó lámpa nyeregcsőre és csomagtartóra is rögzíthető.\n  P4: Lámpaszett: első 400 + hátsó 60 lumen\n    - A lámpaszett első lámpája 400 lumenes.\n    - A lámpaszett hátsó lámpája 60 lumenes.\n    - A lámpaszett hátsó lámpája fékfény-érzékelős.\n    - A lámpaszetthez egy USB-C kettős töltőkábel tartozik.\n    - A lámpaszett egy első és egy hátsó lámpát tartalmaz.\n</group>\n<group name=\"Zár\">\n  P5: U-lakat, 16 mm edzett acél\n    - A U-lakat 16 mm-es edzett acélból készült.\n    - A U-lakat kengyele 16 mm átmérőjű edzett acél.\n    - A U-lakat kettős zárnyelvvel rendelkezik.\n    - A U-lakat belső mérete 10 × 23 cm.\n    - A U-lakat tömege 1,2 kg.\n    - A U-lakathoz két kulcs jár.\n    - A U-lakathoz vázra szerelhető tartó jár.\n  P6: Láncos zár, 110 cm\n    - A láncos zár hossza 110 cm.\n    - A láncos zár 8 mm-es láncszemekből áll.\n    - A láncos zár láncszemei edzett acélból készültek.\n    - A láncos zár láncszemei textilborításban vannak.\n    - A láncos zár számzáras.\n    - A láncos zár 4 jegyű kóddal nyitható.\n    - A láncos zár tömege 1,6 kg.\n</group>\n</products>\n\n<already_covered>\n- Mi kötelező a kerékpáron?\n- Hogyan válassz kerékpárlámpát?\n- U-lakat vagy láncos zár: melyik a biztonságosabb?\n</already_covered>\n\n<at_most>20</at_most>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "topics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "working_title": {
+                    "type": "string"
+                  },
+                  "target_queries": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "products": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "group": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "working_title",
+                  "target_queries",
+                  "products",
+                  "group"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "topics"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfqMyU5NJcV44xxHG5GJ1",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "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"
+      },
+      {
+        "type": "text",
+        "text": "{\"topics\":[{\"working_title\":\"Hány lumen kell egy kerékpárlámpához elöl és hátul?\",\"target_queries\":[\"hány lumen kell biciklilámpa\",\"kerékpárlámpa lumen\",\"bicikli lámpa hány lumen\"],\"products\":[\"P2\",\"P3\",\"P4\"],\"group\":\"Lámpa\"},{\"working_title\":\"Hogyan működik a fékfény-érzékelős hátsó lámpa?\",\"target_queries\":[\"fékfényes bicikli lámpa\",\"féklámpás hátsó lámpa bicikli\",\"kerékpár féklámpa\"],\"products\":[\"P3\",\"P4\"],\"group\":\"Lámpa\"},{\"working_title\":\"Mennyit bírnak a tölthető kerékpárlámpák, és hogyan töltsd őket?\",\"target_queries\":[\"tölthető biciklilámpa meddig bírja\",\"usb-s bicikli lámpa töltése\",\"kerékpárlámpa akkumulátor üzemidő\"],\"products\":[\"P2\",\"P3\",\"P4\"],\"group\":\"Lámpa\"},{\"working_title\":\"Villogó vagy folyamatos fény: melyik üzemmódot használd biciklin?\",\"target_queries\":[\"villogó bicikli lámpa\",\"bicikli lámpa villogó vagy folyamatos\",\"biciklilámpa üzemmódok\"],\"products\":[\"P2\",\"P3\"],\"group\":\"Lámpa\"},{\"working_title\":\"Esőben is használható? Mit jelent az IPX5 vízállóság egy kerékpárlámpán\",\"target_queries\":[\"vízálló biciklilámpa\",\"ipx5 mit jelent\",\"bicikli lámpa esőben\"],\"products\":[\"P2\"],\"group\":\"Lámpa\"},{\"working_title\":\"Hogyan szereld fel a kerékpárlámpát a kormányra és a nyeregcsőre?\",\"target_queries\":[\"bicikli lámpa felszerelése\",\"biciklilámpa rögzítése kormányra\",\"hátsó lámpa felszerelése nyeregcsőre\"],\"products\":[\"P2\",\"P3\"],\"group\":\"Lámpa\"},{\"working_title\":\"Hogyan zárd le helyesen a kerékpárt U-lakattal?\",\"target_queries\":[\"hogyan zárjam le a biciklit\",\"u lakat használata\",\"bicikli lezárása helyesen\"],\"products\":[\"P5\"],\"group\":\"Zár\"},{\"working_title\":\"Mekkora U-lakat kell, és mit jelent a kengyel vastagsága?\",\"target_queries\":[\"mekkora u lakat kell\",\"u lakat méret\",\"u lakat vastagság\"],\"products\":[\"P5\"],\"group\":\"Zár\"},{\"working_title\":\"Számzáras láncos zár: mire figyelj használat közben?\",\"target_queries\":[\"számzáras bicikli lakat\",\"kódos lánclakat\",\"számzáras lánc bicikli\"],\"products\":[\"P6\"],\"group\":\"Zár\"},{\"working_title\":\"Hogyan szereld fel a csengőt a biciklire?\",\"target_queries\":[\"bicikli csengő felszerelése\",\"biciklicsengő szerelés\",\"csengő kormányra szerelése\"],\"products\":[\"P1\"],\"group\":\"Csengő\"},{\"working_title\":\"Miért szól szebben a sárgaréz csengő?\",\"target_queries\":[\"sárgaréz biciklicsengő\",\"réz bicikli csengő\",\"hangos biciklicsengő\"],\"products\":[\"P1\"],\"group\":\"Csengő\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 2677,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1828,
+      "output_tokens_details": {
+        "thinking_tokens": 678
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

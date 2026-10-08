@@ -1,0 +1,101 @@
+{
+  "recordedAt": "2026-10-08T20:02:40.556Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "You plan blog articles for an online shop. You see the shop's profile and its products, grouped by kind, each with the checked facts we hold about it. Propose articles that this shop can write credibly and that people actually search for.\n\nEach article:\n- answers a question a shopper has before or after buying this kind of product: how to choose, how to use, how to care for it, how two kinds the shop sells differ, what a feature means;\n- is about a kind of product or a group of products, never about one single item for sale;\n- can be written from the facts of the products it mentions, and mentions one to four of them by their reference (P1, P2…);\n- targets one search: give two or three different phrasings a shopper might type into Google for this same article, the most common wording first. Each in English, two to six words, lower case, no brand names, no prices, no years. Prefer the short, everyday words people actually type over precise or technical ones; we keep whichever phrasing most people search.\n\nDo not propose anything about prices, discounts, delivery, competitors or the shop itself. Do not propose topics listed as already covered, nor close rewordings of them. Respect the owner's \"never say\" list. Propose fewer articles rather than weak ones; return an empty list if nothing fits.\n\nFor each article give: working_title (a plain headline in English), target_queries (the phrasings), products (the references), group (the product kind it belongs to).",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<profile>\nSells: Fernhill Coffee Supply sells home coffee brewing equipment and coffee beans. The range covers pour-over gear (ceramic and stainless steel drippers, size 02 paper filters, stovetop and electric gooseneck kettles, and a brew scale with timer), immersion brewers such as a French press and a cold brew jar, and manual and electric burr grinders. It also sells single-origin coffee beans from Fernhill Roastery in 250 g and 1 kg bags, whole bean or ground.\nAudience: People who brew coffee at home, especially by pour-over or immersion, and who want to grind, weigh and control water temperature themselves. Some products, such as the single-dose flat-burr grinder and the temperature-hold kettle, suit buyers who care about precise brewing.\nCountry: GB\nTone: expert\nNever say: —\n</profile>\n\n<products>\n<group name=\"Coffee beans\">\n  P1: Ethiopia Guji, natural process\n    - Ethiopia Guji, natural process is coffee beans.\n    - Ethiopia Guji, natural process is sold by Fernhill Roastery.\n    - Ethiopia Guji, natural process is available in 250 g and 1 kg sizes.\n    - Ethiopia Guji, natural process is available as whole bean, filter grind, or espresso grind.\n    - Ethiopia Guji, natural process is a single origin coffee.\n    - Ethiopia Guji, natural process is grown at 1,900–2,100 m in the Guji zone.\n    - Ethiopia Guji, natural process is grown by smallholders delivering to the Hambela washing station.\n    - Ethiopia Guji, natural process is made from heirloom varieties.\n    - Ethiopia Guji, natural process is natural processed and dried on raised beds for 21 days.\n    - Ethiopia Guji, natural process is a light roast.\n    - Ethiopia Guji, natural process has tasting notes of blueberry, dark chocolate and jasmine.\n  P2: Colombia Huila, washed\n    - The Colombia Huila coffee is washed-process.\n    - The Colombia Huila product is coffee beans.\n    - The Colombia Huila coffee is from Fernhill Roastery.\n    - The Colombia Huila coffee comes in 250 g and 1 kg sizes.\n    - The Colombia Huila coffee is single origin.\n    - The Colombia Huila coffee comes from the Pitalito municipality in Huila.\n    - The Colombia Huila coffee is grown at 1,600–1,800 m.\n    - The Colombia Huila coffee is made from Caturra and Castillo varieties.\n    - The Colombia Huila coffee is fully washed and fermented 36 hours.\n    - The Colombia Huila coffee is a medium roast.\n    - The Colombia Huila coffee is suited to both filter and espresso.\n    - The Colombia Huila coffee has tasting notes of red apple, caramel, and milk chocolate.\n</group>\n<group name=\"Dripper\">\n  P3: Ceramic Cone Dripper, size 02\n    - The Ceramic Cone Dripper is size 02.\n    - The Ceramic Cone Dripper is a dripper.\n    - The Ceramic Cone Dripper is made by Fernhill.\n    - The Ceramic Cone Dripper comes in White and Matte black.\n    - The Ceramic Cone Dripper is made of porcelain.\n    - The Ceramic Cone Dripper is made from glazed porcelain fired in Arita, Japan.\n    - The Ceramic Cone Dripper fits size 02 cone filters.\n    - The Ceramic Cone Dripper brews 1 to 4 cups.\n    - The Ceramic Cone Dripper has a single large outlet hole.\n    - The Ceramic Cone Dripper has spiral ribs on the inner wall that leave room for air to escape.\n    - The Ceramic Cone Dripper weighs 380 g.\n    - The Ceramic Cone Dripper is dishwasher safe.\n  P4: Flat-Bottom Dripper, stainless steel\n    - The Flat-Bottom Dripper is made of stainless steel.\n    - The Flat-Bottom Dripper is made by Fernhill.\n    - The Flat-Bottom Dripper has a brushed 18/8 stainless steel body.\n    - The Flat-Bottom Dripper has three small holes in a flat bed.\n    - The Flat-Bottom Dripper takes 185-size wave filters.\n    - The Flat-Bottom Dripper brews 1 to 2 cups (up to 500 ml).\n    - The Flat-Bottom Dripper has a double wall.\n    - The Flat-Bottom Dripper weighs 210 g.\n</group>\n<group name=\"Filter\">\n  P5: Paper Filters, size 02 (100 pack)\n    - The Fernhill Paper Filters are size 02.\n    - The Fernhill Paper Filters come in a pack of 100.\n    - The Fernhill Paper Filters are available in Unbleached and White types.\n    - The Fernhill Paper Filters are cone filters for size 02 drippers.\n    - The Fernhill Paper Filters have an oxygen-whitened alternative available.\n    - The Fernhill Paper Filters should be rinsed with hot water before brewing to remove paper taste.\n    - The Fernhill Paper Filters are made by Fernhill.\n</group>\n<group name=\"Grinder\">\n  P6: Hand Grinder, conical steel burrs\n    - The Fernhill Hand Grinder has conical steel burrs.\n    - The Fernhill Hand Grinder is a manual grinder.\n    - The Fernhill Hand Grinder has 38 mm hardened stainless steel conical burrs.\n    - The Fernhill Hand Grinder has external click adjustment with 30 settings.\n    - The Fernhill Hand Grinder's settings range from espresso to French press.\n    - The Fernhill Hand Grinder holds 25 g of beans.\n    - The Fernhill Hand Grinder has an aluminium body.\n    - The Fernhill Hand Grinder weighs 520 g.\n    - The Fernhill Hand Grinder grinds a 15 g dose for pour-over in about 40 seconds.\n  P7: Electric Flat-Burr Grinder\n    - The Electric Flat-Burr Grinder has 64 mm flat steel burrs.\n    - The Electric Flat-Burr Grinder has stepless adjustment.\n    - The Electric Flat-Burr Grinder has a single-dose design.\n    - The Electric Flat-Burr Grinder has retention under 0.1 g.\n    - The Electric Flat-Burr Grinder has a 250 W motor running at 1,400 rpm.\n    - The Electric Flat-Burr Grinder has bellows on top to puff out remaining grounds.\n    - The Electric Flat-Burr Grinder has a height of 38 cm.\n    - The Electric Flat-Burr Grinder is made by Fernhill.\n    - The Electric Flat-Burr Grinder is an electric grinder.\n</group>\n<group name=\"Immersion brewer\">\n  P8: French Press 1 litre\n    - The French Press has a capacity of 1 litre.\n    - The French Press is an immersion brewer.\n    - The French Press is made by Fernhill.\n    - The French Press has a borosilicate glass beaker.\n    - The French Press beaker sits in a stainless steel frame.\n    - The French Press makes about 4 mugs.\n    - The French Press has a four-layer mesh filter.\n    - All parts of the French Press come apart for cleaning.\n    - The French Press beaker is replaceable.\n  P9: Cold Brew Jar 1.5 litre\n    - The Cold Brew Jar has a capacity of 1.5 litre.\n    - The Cold Brew Jar is an immersion brewer.\n    - The Cold Brew Jar is made by Fernhill.\n    - The Cold Brew Jar is a glass jar.\n    - The Cold Brew Jar has a fine stainless steel filter basket.\n    - The Cold Brew Jar filter basket holds up to 150 g of coarse ground coffee.\n    - The Cold Brew Jar makes 1.5 litres of concentrate.\n    - The Cold Brew Jar has an airtight lid.\n    - The Cold Brew Jar fits in a fridge door.\n    - The recommended steep time for the Cold Brew Jar is 12 to 18 hours in the fridge.\n</group>\n<group name=\"Kettle\">\n  P10: Gooseneck Pour-Over Kettle 900 ml\n    - The Fernhill Gooseneck Pour-Over Kettle has a capacity of 900 ml.\n    - The Fernhill Gooseneck Pour-Over Kettle has a recommended fill of 600 ml.\n    - The Fernhill Gooseneck Pour-Over Kettle has a spout opening of 8 mm.\n    - The Fernhill Gooseneck Pour-Over Kettle has a built-in thermometer reading 40–100 °C.\n    - The Fernhill Gooseneck Pour-Over Kettle is made of stainless steel.\n    - The Fernhill Gooseneck Pour-Over Kettle works on gas, electric and induction hobs.\n    - The Gooseneck Pour-Over Kettle is made by Fernhill.\n  P11: Electric Gooseneck Kettle with Temperature Hold\n    - The Electric Gooseneck Kettle with Temperature Hold lets you set the temperature in 1 °C steps from 60 to 100 °C.\n    - The Electric Gooseneck Kettle with Temperature Hold base holds the set temperature for 60 minutes.\n    - The Electric Gooseneck Kettle with Temperature Hold has an 800 ml capacity.\n    - The Electric Gooseneck Kettle with Temperature Hold has a 1200 W heating element.\n    - The Electric Gooseneck Kettle with Temperature Hold has a UK plug.\n    - The Electric Gooseneck Kettle with Temperature Hold has a 75 cm base cable.\n    - The Electric Gooseneck Kettle with Temperature Hold has a gooseneck spout.\n    - The Electric Gooseneck Kettle with Temperature Hold is made by Fernhill.\n</group>\n<group name=\"Scale\">\n  P12: Brew Scale with Timer\n    - The Brew Scale with Timer weighs up to 2 kg.\n    - The Brew Scale with Timer weighs in 0.1 g steps.\n    - The Brew Scale with Timer has a built-in timer that starts automatically when the first drops land.\n    - The Brew Scale with Timer has a USB-C rechargeable battery.\n    - The Brew Scale with Timer battery lasts about 30 hours per charge.\n    - The Brew Scale with Timer has a silicone pad that protects against heat.\n    - The Brew Scale with Timer measures 13 × 13 × 2.5 cm.\n    - The Brew Scale with Timer is made by Fernhill.\n</group>\n</products>\n\n<already_covered>\n- how to make cold brew\n- conical burr vs flat burr\n- coffee grind size chart\n- single dose coffee grinder\n- manual vs electric coffee grinder\n- how to make pour over coffee\n- pour over coffee ratio\n- best water temperature for coffee\n- how to use a french press\n- About Fernhill\n- Shipping and returns\n</already_covered>\n\n<at_most>20</at_most>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "topics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "working_title": {
+                    "type": "string"
+                  },
+                  "target_queries": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "products": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "group": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "working_title",
+                  "target_queries",
+                  "products",
+                  "group"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "topics"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfqNEf26qMEPdjU3uTQPv",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "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"
+      },
+      {
+        "type": "text",
+        "text": "{\"topics\":[{\"working_title\":\"Natural vs Washed Coffee: How Processing Changes the Taste in Your Cup\",\"target_queries\":[\"natural vs washed coffee\",\"washed vs natural process coffee\",\"what is natural process coffee\"],\"products\":[\"P1\",\"P2\"],\"group\":\"Coffee beans\"},{\"working_title\":\"Light vs Medium Roast Coffee: Which Suits Your Brewing Method?\",\"target_queries\":[\"light vs medium roast coffee\",\"light roast vs medium roast\",\"what is light roast coffee\"],\"products\":[\"P1\",\"P2\"],\"group\":\"Coffee beans\"},{\"working_title\":\"Whole Bean vs Ground Coffee: Which Should You Buy?\",\"target_queries\":[\"whole bean vs ground coffee\",\"is whole bean coffee better\",\"should i buy ground coffee\"],\"products\":[\"P1\",\"P2\",\"P6\"],\"group\":\"Coffee beans\"},{\"working_title\":\"Flat-Bottom vs Cone Dripper: How the Shape Changes Your Brew\",\"target_queries\":[\"flat bottom vs cone dripper\",\"cone vs flat bottom pour over\",\"which pour over dripper to buy\"],\"products\":[\"P3\",\"P4\"],\"group\":\"Dripper\"},{\"working_title\":\"Bleached vs Unbleached Coffee Filters: Does It Affect Flavour?\",\"target_queries\":[\"bleached vs unbleached coffee filters\",\"white vs brown coffee filters\",\"are unbleached coffee filters better\"],\"products\":[\"P5\"],\"group\":\"Filter\"},{\"working_title\":\"Should You Rinse Paper Coffee Filters Before Brewing?\",\"target_queries\":[\"should you rinse coffee filters\",\"rinse paper filter pour over\",\"why rinse coffee filter\"],\"products\":[\"P5\",\"P3\"],\"group\":\"Filter\"},{\"working_title\":\"Do You Need a Gooseneck Kettle for Pour-Over?\",\"target_queries\":[\"do i need a gooseneck kettle\",\"why use a gooseneck kettle\",\"gooseneck kettle for pour over\"],\"products\":[\"P10\",\"P11\"],\"group\":\"Kettle\"},{\"working_title\":\"Stovetop vs Electric Gooseneck Kettle: Which Is Right for You?\",\"target_queries\":[\"electric vs stovetop gooseneck kettle\",\"stovetop gooseneck kettle\",\"electric gooseneck kettle worth it\"],\"products\":[\"P10\",\"P11\"],\"group\":\"Kettle\"},{\"working_title\":\"Do You Need a Coffee Scale? Why Weighing Improves Your Brew\",\"target_queries\":[\"do you need a coffee scale\",\"why use a coffee scale\",\"coffee scale with timer\"],\"products\":[\"P12\"],\"group\":\"Scale\"},{\"working_title\":\"How to Clean a French Press Properly\",\"target_queries\":[\"how to clean a french press\",\"cleaning french press filter\",\"french press cleaning\"],\"products\":[\"P8\"],\"group\":\"Immersion brewer\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 4763,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1772,
+      "output_tokens_details": {
+        "thinking_tokens": 806
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

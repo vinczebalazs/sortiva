@@ -1,11 +1,12 @@
 import type { Db } from '../../db/pool.ts'
 import { CONFIG, type Language } from '../config.ts'
-import type { Demand, Market, TopResults } from '../demand.ts'
+import type { Demand, Market, TopResults, VolumeReading } from '../demand.ts'
 import type { Llm } from '../llm.ts'
 import { canonicalKey } from './canonical.ts'
 import { proposeCandidates, type Candidate, type ProfileForTopics, type ProductForTopics } from './candidates.ts'
-import { coveringPage, onlyProductListings, rankScore, sameIntent, storeWideWords, top3, type StorePage } from './check.ts'
+import { onlyProductListings, possibleOverlaps, rankScore, sameIntent, storeWideWords, top3, type StorePage } from './check.ts'
 import type { Evidence } from './evidence.ts'
+import { judgeOverlaps } from './overlap.ts'
 
 export type TopicDeps = { db: Db; llm: Llm; demand: Demand }
 
@@ -13,7 +14,7 @@ export type DropReason = 'already_ours' | 'not_interested' | 'existing_page' | '
 
 export type DiscoveryOutcome =
   | { ran: false; why: 'profile_not_confirmed' | 'queue_full' | 'no_usable_products' }
-  | { ran: true; proposed: number; queued: { query: string; searches: number }[]; dropped: { query: string; reason: DropReason; detail?: string; searches?: number }[] }
+  | { ran: true; proposed: number; queued: { query: string; searches: number; phrasings: { query: string; searches: number | null }[] }[]; dropped: { query: string; reason: DropReason; detail?: string; searches?: number }[] }
 
 export type StoreTopicContext = {
   profile: ProfileForTopics
@@ -40,7 +41,7 @@ export async function topicContext(db: Db, storeId: number): Promise<StoreTopicC
      order by p.product_type, p.id`,
     [storeId, CONFIG.minFactsPerProduct],
   )
-  const { rows: pages } = await db.query<StorePage>(`select kind, title, handle, url from store_pages where store_id = $1`, [storeId])
+  const { rows: pages } = await db.query<StorePage>(`select kind, title, handle, url, excerpt from store_pages where store_id = $1`, [storeId])
   const { rows: titles } = await db.query<{ title: string }>(
     `select title from products where store_id = $1 and deleted_at is null
      union all select title from store_pages where store_id = $1 and kind in ('article', 'page')
@@ -116,32 +117,51 @@ export async function discoverTopics(deps: TopicDeps, storeId: number): Promise<
   // A topic the merchant skipped (state 'candidate') may be proposed again; every other state is ours already.
   const ourKeys = new Set(existing.filter((t) => t.state !== 'candidate').map((t) => t.canonical_key))
   const vetoedKeys = new Set(vetoed.map((v) => v.canonical_key))
-  const seen = new Set<string>()
-  const lexical: (Candidate & { key: string })[] = []
+  const lexical: Candidate[] = []
   for (const c of proposed) {
-    const key = canonicalKey(c.targetQuery, language)
-    if (!key || seen.has(key) || ourKeys.has(key)) {
-      dropped.push({ query: c.targetQuery, reason: 'already_ours' })
+    // The phrasings are one article, so if any of them is already ours, vetoed or covered, the article is.
+    const keys = c.phrasings.map((q) => canonicalKey(q, language))
+    const label = c.phrasings[0]!
+    if (keys.some((k) => !k || ourKeys.has(k))) {
+      dropped.push({ query: label, reason: 'already_ours' })
+      continue
+    }
+    if (keys.some((k) => vetoedKeys.has(k))) {
+      dropped.push({ query: label, reason: 'not_interested' })
+      continue
+    }
+    lexical.push(c)
+  }
+  const verdicts = await judgeOverlaps(
+    deps.llm,
+    storeId,
+    language,
+    lexical.map((c) => ({ phrasings: c.phrasings, workingTitle: c.workingTitle, candidates: possibleOverlaps(c.phrasings, language, ctx.pages, ctx.storeWords) })),
+  )
+  const fresh = lexical.filter((c, i) => {
+    const page = verdicts[i]
+    if (page) dropped.push({ query: c.phrasings[0]!, reason: 'existing_page', detail: page.title })
+    return !page
+  })
+
+  // Every phrasing of every candidate in one request, which costs the same as one phrase.
+  const volumes = await deps.demand.searchVolumes({ storeId, market: ctx.market, keywords: fresh.flatMap((c) => c.phrasings) })
+  const volumeOf = new Map(volumes.map((v) => [v.keyword, v]))
+  const seen = new Set<string>()
+  const chosen: (Candidate & { targetQuery: string; key: string; volume: VolumeReading })[] = []
+  for (const c of fresh) {
+    // The most searched phrasing; on a tie or no figures at all, the model's first.
+    const best = c.phrasings.reduce((a, b) => ((volumeOf.get(b)?.searches ?? 0) > (volumeOf.get(a)?.searches ?? 0) ? b : a))
+    const key = canonicalKey(best, language)
+    if (seen.has(key)) {
+      dropped.push({ query: best, reason: 'already_ours' })
       continue
     }
     seen.add(key)
-    if (vetoedKeys.has(key)) {
-      dropped.push({ query: c.targetQuery, reason: 'not_interested' })
-      continue
-    }
-    const page = coveringPage(c.targetQuery, language, ctx.pages, ctx.storeWords)
-    if (page) {
-      dropped.push({ query: c.targetQuery, reason: 'existing_page', detail: page.title })
-      continue
-    }
-    lexical.push({ ...c, key })
+    chosen.push({ ...c, targetQuery: best, key, volume: volumeOf.get(best)! })
   }
-
-  const volumes = await deps.demand.searchVolumes({ storeId, market: ctx.market, keywords: lexical.map((c) => c.targetQuery) })
-  const volumeOf = new Map(volumes.map((v) => [v.keyword, v]))
   const floor = CONFIG.demandFloor[language]
-  const withDemand = lexical
-    .map((c) => ({ ...c, volume: volumeOf.get(c.targetQuery)! }))
+  const withDemand = chosen
     .filter((c) => {
       const ok = (c.volume?.searches ?? 0) >= floor
       if (!ok) dropped.push({ query: c.targetQuery, reason: 'below_demand_floor', detail: String(c.volume?.searches ?? 'none') })
@@ -183,7 +203,7 @@ export async function discoverTopics(deps: TopicDeps, storeId: number): Promise<
     )
   }
   await markDiscovered(deps.db, storeId)
-  return { ran: true, proposed: proposed.length, queued: keep.map((k) => ({ query: k.candidate.targetQuery, searches: k.candidate.volume.searches! })), dropped }
+  return { ran: true, proposed: proposed.length, queued: keep.map((k) => ({ query: k.candidate.targetQuery, searches: k.candidate.volume.searches!, phrasings: k.candidate.phrasings.map((q) => ({ query: q, searches: volumeOf.get(q)?.searches ?? null })) })), dropped }
 }
 
 async function markDiscovered(db: Db, storeId: number): Promise<void> {

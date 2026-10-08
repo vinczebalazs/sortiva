@@ -1,0 +1,765 @@
+{
+ "recordedAt": "2026-10-08T20:00:14.848Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "zöld tea készítése",
+  "location_code": 2348,
+  "language_code": "hu",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0162 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10082000-2302-0066-0000-729bdd2ac142",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0135 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10082000-2302-0066-0000-729bdd2ac142"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "zöld tea készítése",
+     "location_code": 2348,
+     "language_code": "hu",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "zöld tea készítése",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2348,
+      "language_code": "hu",
+      "check_url": "https://www.google.com/search?q=z%C3%B6ld%20tea%20k%C3%A9sz%C3%ADt%C3%A9se&hl=hu&gl=HU&ie=UTF-8&uule=w+CAIQIFISCcPkN997g0FHERAQHgwpxAAA",
+      "datetime": "2026-10-08 20:00:13 +00:00",
+      "spell": {
+       "keyword": "zöld tea elkészítése",
+       "type": "did_you_mean"
+      },
+      "refinement_chips": null,
+      "item_types": [
+       "ai_overview",
+       "organic",
+       "video",
+       "people_also_ask",
+       "related_searches"
+      ],
+      "se_results_count": 119,
+      "pages_count": 1,
+      "items_count": 12,
+      "items": [
+       {
+        "type": "ai_overview",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+        "asynchronous_ai_overview": false,
+        "markdown": "`A tökéletes zöld tea elkészítéséhez 70–80 °C-os vizet és 1–2 perc áztatási időt használj, hogy a tea ne legyen keserű`.[[1]](https://teaacademy.hu/zold-tea-elkeszitese/)\n\n### Hozzávalók és arányok\n\n- **Tea mennyisége:** 1 teáskanál (vagy 2–3 gramm) szálas zöld tea egy csészéhez (kb. 2,5 dl).\n- **Víz:** Lágy, klórmentes vagy szűrt víz.[[1]](https://sobors.hu/gasztro/zold-tea-hatasai-es-helyes-elkeszitese/)[[2]](https://teaacademy.hu/zold-tea-elkeszitese/)[[3]](https://ecofamily.hu/cikkek/tea-fozese)\n\n### Elkészítési lépések\n\n1. **Víz forralása:** Forrald fel a vizet, majd hagyd visszahűlni 70–80 °C-ra (a lobogó, 100 fokos víz megégeti a leveleket és keserűvé teszi az italt).[[1]](https://lutherteahaz.hu/miert-igyunk-zold-teat-hatasai-elkeszitese/)[[2]](https://teaacademy.hu/zold-tea-elkeszitese/)[[3]](https://sobors.hu/gasztro/zold-tea-hatasai-es-helyes-elkeszitese/)\n2. **Beáztatás:** Tedd a tealeveleket egy csészébe vagy teáskannába, majd öntsd le a mérsékelt hőmérsékletű vízzel.[[1]](https://www.gourmetkave.hu/hu/blog/tea-keszitese/zoeld-tea-elkeszitese)[[2]](https://teaacademy.hu/zold-tea-elkeszitese/)\n3. **Áztatás:** Áztasd 1–3 percig. Fél percenként akár meg is kóstolhatod, ha pontosan a kedvedre való ízt keresed.[[1]](https://kapszulashop.hu/zold-tea-elkeszitese-es-hatasa/)[[2]](https://sobors.hu/gasztro/zold-tea-hatasai-es-helyes-elkeszitese/)\n4. **Szűrés:** Szűrd le a teát, hogy ne ázzon tovább.[[1]](https://kapszulashop.hu/zold-tea-elkeszitese-es-hatasa/)\n5. **Újraöntés:** A minőségi szálas zöld teákat 2–3 alkalommal is felöntheted újra, de a következő alkalommal kissé rövidebb vagy hosszabb áztatási időt alkalmazz.[[1]](https://teaacademy.hu/zold-tea-elkeszitese/)\n\nRészletesebb útmutatást a [Tea Akadémia](https://teaacademy.hu/zold-tea-elkeszitese/) vagy a [GourmetKavé](https://www.gourmetkave.hu/hu/blog/tea-keszitese/zoeld-tea-elkeszitese) oldalán olvashatsz.[[1]](https://teaacademy.hu/zold-tea-elkeszitese/)[[2]](https://www.gourmetkave.hu/hu/blog/tea-keszitese/zoeld-tea-elkeszitese)Ha gondolod, oszd meg velem:\n\n- Milyen **típusú zöld teát** használsz (pl. kínai, japán Sencha vagy Matcha)?\n- Szeretnél-e tippet kapni a **tárolására** vagy a **helyes eszközök kiválasztására**?",
+        "items": [
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "A tökéletes zöld tea elkészítéséhez 70–80 °C-os vizet és 1–2 perc áztatási időt használj, hogy a tea ne legyen keserű.",
+          "markdown": "`A tökéletes zöld tea elkészítéséhez 70–80 °C-os vizet és 1–2 perc áztatási időt használj, hogy a tea ne legyen keserű`.[[1]](https://teaacademy.hu/zold-tea-elkeszitese/)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Tea Akadémia",
+            "domain": "teaacademy.hu",
+            "url": "https://teaacademy.hu/zold-tea-elkeszitese/",
+            "title": "Zöld tea elkészítése – hőmérséklet, áztatási idő és a leggyakoribb hibák - Tea Akadémia - Online Tea Bolt",
+            "text": "- Szerző: Olekszik Dorottya (2024-09-07) - Növény: Camellia sinensis, nem oxidálódik - Víz hőmérséklet: 70–80 °C (túl forró = kese..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Hozzávalók és arányok",
+          "text": "Tea mennyisége: 1 teáskanál (vagy 2–3 gramm) szálas zöld tea egy csészéhez (kb. 2,5 dl). Víz: Lágy, klórmentes vagy szűrt víz.",
+          "markdown": "- **Tea mennyisége:** 1 teáskanál (vagy 2–3 gramm) szálas zöld tea egy csészéhez (kb. 2,5 dl).\n- **Víz:** Lágy, klórmentes vagy szűrt víz.[[1]](https://sobors.hu/gasztro/zold-tea-hatasai-es-helyes-elkeszitese/)[[2]](https://teaacademy.hu/zold-tea-elkeszitese/)[[3]](https://ecofamily.hu/cikkek/tea-fozese)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Sóbors",
+            "domain": "sobors.hu",
+            "url": "https://sobors.hu/gasztro/zold-tea-hatasai-es-helyes-elkeszitese/",
+            "title": "Így idd a zöld teát, hogy frissítsen, ébresszen és fogyasszon - Gasztro | Sóbors",
+            "text": "- Szerző: Ács Borbála (2020. január 2.) - Adagolás: 1 teáskanál szálas tea / 2,5 dl (bögre) - Vízhőmérséklet: max 80 °C (nem lobog..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Tea Akadémia",
+            "domain": "teaacademy.hu",
+            "url": "https://teaacademy.hu/zold-tea-elkeszitese/",
+            "title": "Zöld tea elkészítése – hőmérséklet, áztatási idő és a leggyakoribb hibák - Tea Akadémia - Online Tea Bolt",
+            "text": "- Szerző: Olekszik Dorottya (2024-09-07) - Növény: Camellia sinensis, nem oxidálódik - Víz hőmérséklet: 70–80 °C (túl forró = kese..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Ecofamily",
+            "domain": "ecofamily.hu",
+            "url": "https://ecofamily.hu/cikkek/tea-fozese",
+            "title": "A tea főzése: hogyan készítsd el az egyes fajtákat?",
+            "text": "Vízminőség: 99% víz, semleges pH 7, klórmentes, friss. Hőmérséklet/idő: - Fekete/Pu-erh: 100 °C, 2-5 p. - Oolong: 80-90 °C (hűtés:"
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Elkészítési lépések",
+          "text": "Víz forralása: Forrald fel a vizet, majd hagyd visszahűlni 70–80 °C-ra (a lobogó, 100 fokos víz megégeti a leveleket és keserűvé teszi az italt). Beáztatás: Tedd a tealeveleket egy csészébe vagy teáskannába, majd öntsd le a mérsékelt hőmérsékletű vízzel. Áztatás: Áztasd 1–3 percig. Fél percenként akár meg is kóstolhatod, ha pontosan a kedvedre való ízt keresed. Szűrés: Szűrd le a teát, hogy ne ázzon tovább. Újraöntés: A minőségi szálas zöld teákat 2–3 alkalommal is felöntheted újra, de a következő alkalommal kissé rövidebb vagy hosszabb áztatási időt alkalmazz.",
+          "markdown": "1. **Víz forralása:** Forrald fel a vizet, majd hagyd visszahűlni 70–80 °C-ra (a lobogó, 100 fokos víz megégeti a leveleket és keserűvé teszi az italt).[[1]](https://lutherteahaz.hu/miert-igyunk-zold-teat-hatasai-elkeszitese/)[[2]](https://teaacademy.hu/zold-tea-elkeszitese/)[[3]](https://sobors.hu/gasztro/zold-tea-hatasai-es-helyes-elkeszitese/)\n2. **Beáztatás:** Tedd a tealeveleket egy csészébe vagy teáskannába, majd öntsd le a mérsékelt hőmérsékletű vízzel.[[1]](https://www.gourmetkave.hu/hu/blog/tea-keszitese/zoeld-tea-elkeszitese)[[2]](https://teaacademy.hu/zold-tea-elkeszitese/)\n3. **Áztatás:** Áztasd 1–3 percig. Fél percenként akár meg is kóstolhatod, ha pontosan a kedvedre való ízt keresed.[[1]](https://kapszulashop.hu/zold-tea-elkeszitese-es-hatasa/)[[2]](https://sobors.hu/gasztro/zold-tea-hatasai-es-helyes-elkeszitese/)\n4. **Szűrés:** Szűrd le a teát, hogy ne ázzon tovább.[[1]](https://kapszulashop.hu/zold-tea-elkeszitese-es-hatasa/)\n5. **Újraöntés:** A minőségi szálas zöld teákat 2–3 alkalommal is felöntheted újra, de a következő alkalommal kissé rövidebb vagy hosszabb áztatási időt alkalmazz.[[1]](https://teaacademy.hu/zold-tea-elkeszitese/)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Luther teaház",
+            "domain": "lutherteahaz.hu",
+            "url": "https://lutherteahaz.hu/miert-igyunk-zold-teat-hatasai-elkeszitese/",
+            "title": "Miért igyunk zöld teát? - Hatásai, elkészítése - Luther teaház",
+            "text": "Víz forralása : Forralj fel vizet, majd hagyd lehűlni 70-80 °C-ra (160-175 °F). · Tea előkészítése : Mérj ki 1-2 teáskanál szálas ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Tea Akadémia",
+            "domain": "teaacademy.hu",
+            "url": "https://teaacademy.hu/zold-tea-elkeszitese/",
+            "title": "Zöld tea elkészítése – hőmérséklet, áztatási idő és a leggyakoribb hibák - Tea Akadémia - Online Tea Bolt",
+            "text": "- Szerző: Olekszik Dorottya (2024-09-07) - Növény: Camellia sinensis, nem oxidálódik - Víz hőmérséklet: 70–80 °C (túl forró = kese..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Sóbors",
+            "domain": "sobors.hu",
+            "url": "https://sobors.hu/gasztro/zold-tea-hatasai-es-helyes-elkeszitese/",
+            "title": "Így idd a zöld teát, hogy frissítsen, ébresszen és fogyasszon - Gasztro | Sóbors",
+            "text": "- Szerző: Ács Borbála (2020. január 2.) - Adagolás: 1 teáskanál szálas tea / 2,5 dl (bögre) - Vízhőmérséklet: max 80 °C (nem lobog..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "GourmetKave.hu",
+            "domain": "www.gourmetkave.hu",
+            "url": "https://www.gourmetkave.hu/hu/blog/tea-keszitese/zoeld-tea-elkeszitese",
+            "title": "Zöld tea elkészítése: Íz és hatóanyagok megőrzése | GourmetKavé",
+            "text": "- Global consump: 600k tons/yr - History: >4k yrs - Effects: antioxidant, cognitive support, fat burning, anti-aging - Prep temp: ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "KapszulaShop",
+            "domain": "kapszulashop.hu",
+            "url": "https://kapszulashop.hu/zold-tea-elkeszitese-es-hatasa/",
+            "title": "Zöld tea elkészítése és hatása - KapszulaShop",
+            "text": "* Zöld tea: nem erjesztett, gőzölt/melegített, szárított levél (kézi válogatás a minőséginél). * Hatások: kínai tradicionális orvo..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Részletesebb útmutatást a Tea Akadémia vagy a GourmetKavé oldalán olvashatsz.",
+          "markdown": "Részletesebb útmutatást a [Tea Akadémia](https://teaacademy.hu/zold-tea-elkeszitese/) vagy a [GourmetKavé](https://www.gourmetkave.hu/hu/blog/tea-keszitese/zoeld-tea-elkeszitese) oldalán olvashatsz.[[1]](https://teaacademy.hu/zold-tea-elkeszitese/)[[2]](https://www.gourmetkave.hu/hu/blog/tea-keszitese/zoeld-tea-elkeszitese)",
+          "links": [
+           {
+            "type": "link_element",
+            "title": "Tea Akadémia",
+            "description": null,
+            "url": "https://teaacademy.hu/zold-tea-elkeszitese/",
+            "domain": "teaacademy.hu"
+           },
+           {
+            "type": "link_element",
+            "title": "GourmetKavé",
+            "description": null,
+            "url": "https://www.gourmetkave.hu/hu/blog/tea-keszitese/zoeld-tea-elkeszitese",
+            "domain": "www.gourmetkave.hu"
+           }
+          ],
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Tea Akadémia",
+            "domain": "teaacademy.hu",
+            "url": "https://teaacademy.hu/zold-tea-elkeszitese/",
+            "title": "Zöld tea elkészítése – hőmérséklet, áztatási idő és a leggyakoribb hibák - Tea Akadémia - Online Tea Bolt",
+            "text": "- Szerző: Olekszik Dorottya (2024-09-07) - Növény: Camellia sinensis, nem oxidálódik - Víz hőmérséklet: 70–80 °C (túl forró = kese..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "GourmetKave.hu",
+            "domain": "www.gourmetkave.hu",
+            "url": "https://www.gourmetkave.hu/hu/blog/tea-keszitese/zoeld-tea-elkeszitese",
+            "title": "Zöld tea elkészítése: Íz és hatóanyagok megőrzése | GourmetKavé",
+            "text": "- Global consump: 600k tons/yr - History: >4k yrs - Effects: antioxidant, cognitive support, fat burning, anti-aging - Prep temp: ..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Ha gondolod, oszd meg velem:Milyen típusú zöld teát használsz (pl. kínai, japán Sencha vagy Matcha)?\nSzeretnél-e tippet kapni a tárolására vagy a helyes eszközök kiválasztására ?",
+          "markdown": "Ha gondolod, oszd meg velem:\n\n- Milyen **típusú zöld teát** használsz (pl. kínai, japán Sencha vagy Matcha)?\n- Szeretnél-e tippet kapni a **tárolására** vagy a **helyes eszközök kiválasztására**?",
+          "links": null,
+          "images": null,
+          "references": null
+         }
+        ],
+        "references": [
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Tea Akadémia",
+          "domain": "teaacademy.hu",
+          "url": "https://teaacademy.hu/zold-tea-elkeszitese/",
+          "title": "Zöld tea elkészítése – hőmérséklet, áztatási idő és a leggyakoribb hibák - Tea Akadémia - Online Tea Bolt",
+          "text": "- Szerző: Olekszik Dorottya (2024-09-07) - Növény: Camellia sinensis, nem oxidálódik - Víz hőmérséklet: 70–80 °C (túl forró = kese..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Sóbors",
+          "domain": "sobors.hu",
+          "url": "https://sobors.hu/gasztro/zold-tea-hatasai-es-helyes-elkeszitese/",
+          "title": "Így idd a zöld teát, hogy frissítsen, ébresszen és fogyasszon - Gasztro | Sóbors",
+          "text": "- Szerző: Ács Borbála (2020. január 2.) - Adagolás: 1 teáskanál szálas tea / 2,5 dl (bögre) - Vízhőmérséklet: max 80 °C (nem lobog..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "GourmetKave.hu",
+          "domain": "www.gourmetkave.hu",
+          "url": "https://www.gourmetkave.hu/hu/blog/tea-keszitese/zoeld-tea-elkeszitese",
+          "title": "Zöld tea elkészítése: Íz és hatóanyagok megőrzése | GourmetKavé",
+          "text": "- Global consump: 600k tons/yr - History: >4k yrs - Effects: antioxidant, cognitive support, fat burning, anti-aging - Prep temp: ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "KapszulaShop",
+          "domain": "kapszulashop.hu",
+          "url": "https://kapszulashop.hu/zold-tea-elkeszitese-es-hatasa/",
+          "title": "Zöld tea elkészítése és hatása - KapszulaShop",
+          "text": "* Zöld tea: nem erjesztett, gőzölt/melegített, szárított levél (kézi válogatás a minőséginél). * Hatások: kínai tradicionális orvo..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Luther teaház",
+          "domain": "lutherteahaz.hu",
+          "url": "https://lutherteahaz.hu/miert-igyunk-zold-teat-hatasai-elkeszitese/",
+          "title": "Miért igyunk zöld teát? - Hatásai, elkészítése - Luther teaház",
+          "text": "Víz forralása : Forralj fel vizet, majd hagyd lehűlni 70-80 °C-ra (160-175 °F). · Tea előkészítése : Mérj ki 1-2 teáskanál szálas ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Ecofamily",
+          "domain": "ecofamily.hu",
+          "url": "https://ecofamily.hu/cikkek/tea-fozese",
+          "title": "A tea főzése: hogyan készítsd el az egyes fajtákat?",
+          "text": "Vízminőség: 99% víz, semleges pH 7, klórmentes, friss. Hőmérséklet/idő: - Fekete/Pu-erh: 100 °C, 2-5 p. - Oolong: 80-90 °C (hűtés:"
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]",
+        "domain": "sobors.hu",
+        "title": "zöld tea hatásai és helyes elkészítése",
+        "url": "https://sobors.hu/gasztro/zold-tea-hatasai-es-helyes-elkeszitese/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://sobors.hu › Gasztro",
+        "website_name": "Sóbors",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Bögrénként, tehát 2,5 deciliterenként, 1 teáskanálnyit kell beletenni. Fontos, hogy a víz, amivel a zöld tea készül, ne legyen magasabb hőmérsékletű 80 fokosnál ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "zöld tea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]",
+        "domain": "www.gourmetkave.hu",
+        "title": "Zöld tea elkészítése: Íz és hatóanyagok megőrzése",
+        "url": "https://www.gourmetkave.hu/hu/blog/tea-keszitese/zoeld-tea-elkeszitese",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.gourmetkave.hu › ... › Blog › Tea készítése",
+        "website_name": "GourmetKave.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Hogyan készítsd el a zöld tea ennyi jótékony hatású italát · Töltsön 80-85 °C-os vizet egy vízforralóba vagy Franciaprésbe. A felforralt víz lehűtésének eljárása ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Töltsön 80-85 °C-os vizet egy vízforralóba vagy Franciaprésbe"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[6]/div[1]/div[1]",
+        "domain": "teaacademy.hu",
+        "title": "Zöld tea elkészítése – hőmérséklet, áztatási idő és a ...",
+        "url": "https://teaacademy.hu/zold-tea-elkeszitese/?srsltid=AU7gw4VCi-ddW1JwDAuHUsZ9c3urHG2tG1TZs0HLUuEQxGDc0aQ_jpkA",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://teaacademy.hu › zold-tea-elkeszitese",
+        "website_name": "Tea Akadémia",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2024. szept. 7. — Melegítsük fel a vizet kb. 70–80 °C-ra · Tegyünk 2–3 gramm zöld teát egy csészébe vagy teáskannába · Öntsük rá a forró vizet · Hagyjuk ázni 1–2 ...",
+        "pre_snippet": "09/07/2024 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Melegítsük fel a vizet kb. 70–80 °C-ra"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2024-09-07 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]",
+        "domain": "kapszulashop.hu",
+        "title": "Zöld tea elkészítése és hatása",
+        "url": "https://kapszulashop.hu/zold-tea-elkeszitese-es-hatasa/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://kapszulashop.hu › zold-tea-elkeszitese-es-hatasa",
+        "website_name": "KapszulaShop",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Érdemes alacsony ásványtartalmú, klórmentes tiszta vizet használni a zöld tea elkészítéséhez. · A legjobb vízforraló a teához rozsdamentes acélból készült. · A ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Érdemes alacsony ásványtartalmú, klórmentes tiszta vizet használni a zöld tea elkészítéséhez"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "video",
+        "rank_group": 1,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[10]/div[1]",
+        "items": [
+         {
+          "type": "video_element",
+          "source": "YouTube · Kamélia kert - A teáról magyarul",
+          "title": "Zöld tea elkészítése helyesen",
+          "timestamp": "2026-04-05 00:00:00 +00:00",
+          "url": "https://www.youtube.com/shorts/4U_dz77-9Pk"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · ManuTea hu - Prémium minőségű, szálas tea",
+          "title": "Zöld tea készítése | ManuTea.hu",
+          "timestamp": "2018-12-15 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=q_ji6q7vRDg"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · it's LILI",
+          "title": "A zöld tea | készítése, fajtái, jótékony élettani hatásai",
+          "timestamp": "2023-08-06 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=y_XkpWA4z6s"
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "people_also_ask",
+        "rank_group": 1,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[12]/div[1]/div[1]/div[1]",
+        "items": [
+         {
+          "type": "people_also_ask_element",
+          "title": "Hogyan lehet ízesíteni a zöld teát?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[12]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Hogyan készítsünk filteres zöld teát?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[12]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Meddig kell áztatni a zöld teát?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[12]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "Mennyi zöld tea fogyasztható naponta?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[12]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[14]/div[1]/div[1]",
+        "domain": "lutherteahaz.hu",
+        "title": "Miért igyunk zöld teát? - Hatásai, elkészítése",
+        "url": "https://lutherteahaz.hu/miert-igyunk-zold-teat-hatasai-elkeszitese/?srsltid=AU7gw4WYeLXKiLSyJGneN-J0CGNzTTEm3O7DxUGDE7orw2GM7Uddjz0O",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://lutherteahaz.hu › miert-igyunk-zold-teat-hatasai-...",
+        "website_name": "Luther teaház",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2025. ápr. 25. — Víz forralása : Forralj fel vizet, majd hagyd lehűlni 70-80 °C-ra (160-175 °F). · Tea előkészítése : Mérj ki 1-2 teáskanál szálas zöld teát.",
+        "pre_snippet": "04/25/2025 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Tea",
+         "zöld"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2025-04-25 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[16]/div[1]/div[1]",
+        "domain": "dietless.hu",
+        "title": "A zöld tea jótékony hatásai",
+        "url": "https://dietless.hu/zold-tea/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://dietless.hu › Ételek › Ital",
+        "website_name": "Dietless",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2020. jan. 23. — A fő teafajták a zöld, fekete és oolong tea, illetve itt készül a Longjing („Sárkány-kút”) nevezetű zöld tea is, amely népszerű ital Kínában.",
+        "pre_snippet": "01/23/2020 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "zöld tea"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Teatípusok",
+          "description": null,
+          "url": "https://dietless.hu/zold-tea/#2_Teatipusok",
+          "domain": "dietless.hu"
+         },
+         {
+          "type": "link_element",
+          "title": "A zöld tea eredete",
+          "description": null,
+          "url": "https://dietless.hu/zold-tea/#3_A_zold_tea_eredete",
+          "domain": "dietless.hu"
+         },
+         {
+          "type": "link_element",
+          "title": "A zöld tea kedvező élettani...",
+          "description": null,
+          "url": "https://dietless.hu/zold-tea/#4_A_zold_tea_kedvezo_elettani_hatasai",
+          "domain": "dietless.hu"
+         },
+         {
+          "type": "link_element",
+          "title": "A zöld tea jellemzői",
+          "description": null,
+          "url": "https://dietless.hu/zold-tea/#5_A_zold_tea_jellemzoi",
+          "domain": "dietless.hu"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2020-01-23 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 7,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[18]/div[1]/div[1]",
+        "domain": "ecofamily.hu",
+        "title": "A tea főzése: hogyan készítsd el az egyes fajtákat?",
+        "url": "https://ecofamily.hu/cikkek/tea-fozese",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://ecofamily.hu › Blog › Receptek",
+        "website_name": "Ecofamily",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "A friss gyömbér teához vágj egy hüvelykujjnyi gyömbért vékony szeletekre vagy reszeld le, majd forrásban lévő vízben főzd 10-15 percig. Ízesítheted citrommal és ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 8,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[20]/div[1]/div[1]",
+        "domain": "flyingbirdteahouse.hu",
+        "title": "A zöld tea valódi hatásai",
+        "url": "https://flyingbirdteahouse.hu/a-zold-tea-hatasai/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://flyingbirdteahouse.hu › a-zold-tea-hatasai",
+        "website_name": "Flying Bird Tea House",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Számoljuk úgy a tea és víz részarányát, hogy 1-2 g teára jusson 1 dl víz. Tehát 2 dl vízhez 2-4g tea szükséges. A tea mennyisége befolyásolja a főzet ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "1-2 g teára jusson 1 dl víz"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "related_searches",
+        "rank_group": 1,
+        "rank_absolute": 12,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[2]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "items": [
+         "Zöld tea reggel vagy este",
+         "A zöld tea mellékhatásai",
+         "Zöld tea fogyasztása naponta",
+         "Zöld tea hatása a belekre",
+         "Melyik a legjobb filteres zöld tea",
+         "Zöld tea nestea",
+         "Zöld tea dilmah",
+         "Zöld tea ár"
+        ],
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

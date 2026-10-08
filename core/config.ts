@@ -27,8 +27,6 @@ export const CONFIG = {
     rediscoverAfterDays: 7,
     // Most candidates a single model call is asked for.
     maxCandidates: 20,
-    // Share of a query's content words an existing page must cover to count as already answering it.
-    pageOverlapShare: 2 / 3,
     // A word in at least this share of the store's titles is store-wide and ignored when comparing titles.
     storeWideWordShare: 0.3,
     // Top-three pages two queries must share to be the same intent.

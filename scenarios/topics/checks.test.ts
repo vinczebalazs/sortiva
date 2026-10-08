@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { Demand } from '../../core/demand.ts'
-import { coveringPage } from '../../core/topics/check.ts'
-import { topicContext } from '../../core/topics/discover.ts'
+import { canonicalKey } from '../../core/topics/canonical.ts'
 import { addManualTopic } from '../../core/topics/manual.ts'
 import { homeQueue, notInterested } from '../../core/topics/queue.ts'
 import { startPipeline, type Pipeline } from '../pipeline.ts'
@@ -37,8 +36,9 @@ describe('a candidate the store already has a page about is dropped', () => {
   ] as const)('%s: no queued topic competes with an existing post, and asking for one is answered with that post', async (name, existingTitle) => {
     const store = await setUp(name)
     const language = name.endsWith('-hu') ? 'hu' : 'en'
-    const ctx = (await topicContext(p.db.pool, store.id))!
-    for (const t of await queued(store.id)) expect(coveringPage(t.target_query, language, ctx.pages, ctx.storeWords), t.target_query).toBeNull()
+    const { rows: posts } = await p.db.pool.query(`select title from store_pages where store_id = $1 and kind in ('article', 'page')`, [store.id])
+    const postKeys = posts.map((x) => canonicalKey(x.title, language))
+    for (const t of await queued(store.id)) expect(postKeys, t.target_query).not.toContain(t.canonical_key)
 
     const outcome = await addManualTopic(topicDeps(), store.id, existingTitle)
     expect(outcome).toMatchObject({ kind: 'existing_page' })

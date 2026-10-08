@@ -1,0 +1,712 @@
+{
+ "recordedAt": "2026-10-08T20:00:14.625Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "csipkebogyó tea készítése",
+  "location_code": 2348,
+  "language_code": "hu",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0338 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10082000-2302-0066-0000-47a002110289",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0290 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10082000-2302-0066-0000-47a002110289"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "csipkebogyó tea készítése",
+     "location_code": 2348,
+     "language_code": "hu",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "csipkebogyó tea készítése",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2348,
+      "language_code": "hu",
+      "check_url": "https://www.google.com/search?q=csipkebogy%C3%B3%20tea%20k%C3%A9sz%C3%ADt%C3%A9se&hl=hu&gl=HU&ie=UTF-8&uule=w+CAIQIFISCcPkN997g0FHERAQHgwpxAAA",
+      "datetime": "2026-10-08 20:00:06 +00:00",
+      "spell": null,
+      "refinement_chips": {
+       "type": "refinement_chips",
+       "xpath": "/html[1]/body[1]/div[3]/div[1]/div[5]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+       "items": [
+        {
+         "type": "refinement_chips_element",
+         "title": "Szárított",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnt0NaZAZVNmwp5arktTDvDDauHieg:1791489604007&q=Sz%C3%A1r%C3%ADtott+csipkebogy%C3%B3+tea+k%C3%A9sz%C3%ADt%C3%A9se&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rMmf0nfRZdSyzf37FZ9D2DGCFfxoVaexrwThDeT2qB5Yfq9Z4fcKte-lZn4EjiswwforcQqH-FlOdMDbBulTNFScED77j3iEjfBdfSwFKx062pgcbpirr_wbLlQK6o1OLvR7xBZfiVXzvLZ3yw2bHwNuukVSAbrXSwwnt8jFBvxfKOao1YAGGYPd8uHKGuUF3QZJWNF37XLNJiwTwQk0gTmYGcPs6S0G87I4NSqZ0AbnovJ1a&sa=X&ved=2ahUKEwjhmdzrmquXAxXo9rsIHad0BusQxKsJKAB6BAgbEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Friss",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnt0NaZAZVNmwp5arktTDvDDauHieg:1791489604007&q=Friss+csipkebogy%C3%B3+tea+k%C3%A9sz%C3%ADt%C3%A9se&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rnmBbbta3uw4IgxNnaFxK2UZ923AP0VtwVdiXeLsJUuKLE7rmjp7MJ9YZg-uIXx9yomuj5Dap8AfFtltHpIkBO1kLFZTv4F5rTvaf51dr9xtO0T00EXpbuA9X9eaY9Hi9zoIe1gBPd8q9-arkALFfubRIrqsPVHjzgLQURhkWeQMK4uHx2qWgiqSrOArhWf_sZdOM-FNyAyhQjth0rrReGwhADb8&sa=X&ved=2ahUKEwjhmdzrmquXAxXo9rsIHad0BusQxKsJKAF6BAgdEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Filteres",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnt0NaZAZVNmwp5arktTDvDDauHieg:1791489604007&q=Filteres+csipkebogy%C3%B3+tea+k%C3%A9sz%C3%ADt%C3%A9se&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rTKTrAcA9LLG0jS40-ARo9CjSHoW6Rsw94rkhoY5XaWclxRI4UvOKzQNaLqC7SI_0trGjqU0Yf3mqn5F5Foovm5ilG0WhaO5W_QX9MpfMs_NfS4D0-5HDQQT-FgVZFRMWrtWKbLaP4JB-3AIConaMVzAHvzmRZww_zvoQra-rQCdBr3h9qQQid-zchT36ufo8Aavc2Zq0nrrLzI7hw5Qq5DNNin7fT-gfOQEfcSZXQjDDaafD&sa=X&ved=2ahUKEwjhmdzrmquXAxXo9rsIHad0BusQxKsJKAJ6BAgcEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "A bőrre",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnt0NaZAZVNmwp5arktTDvDDauHieg:1791489604007&q=Csipkebogy%C3%B3+tea+hat%C3%A1sa+a+b%C5%91rre&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rELFqA10R_k8jLicrEJ-YvYXSWVnVTH3OYVSRfSOrG0a9rsmqje8hAPNIihtT0ENkl1bSlXFGEhoPko7G2oNZJOucDmZUcFRxdYiKrvrTxxkPAKgBoJ62lBw8YjxsvzaJ9zPWQwrXtafruhu_MqyRvHytv9Qy2rLHVahoFXcJvJlq1TmRR2OSJkMrCJuyGJw8li3ppih3AS2sOdTD4DzMoEAA5S8_BeBjbKPDg9i6qR7BpaZd&sa=X&ved=2ahUKEwjhmdzrmquXAxXo9rsIHad0BusQxKsJKAN6BAgeEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        }
+       ]
+      },
+      "item_types": [
+       "ai_overview",
+       "video",
+       "organic",
+       "related_searches"
+      ],
+      "se_results_count": 130,
+      "pages_count": 1,
+      "items_count": 11,
+      "items": [
+       {
+        "type": "ai_overview",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+        "asynchronous_ai_overview": false,
+        "markdown": "`A C-vitamin-gazdag csipkebogyó teát nem szabad forró vízzel leforrázni, hanem hideg vagy langyos vízben (legfeljebb 40–50 °C-on) kell áztatni 8–12 órán keresztül`.[[1]](https://anapfenyillata.hu/2020/10/24/csipkebogyo-tea-keszitese-hazilag/)[[2]](https://www.nosalty.hu/recept/csipkebogyo-tea)[[3]](https://fubolfabol.hu/csipkebogyo-tea/)\n\n### Helyes elkészítés lépései\n\n- **Áztatás (a C-vitamin megőrzéséhez):** \n\t- Vegyél 2-3 evőkanál (vagy 10–12 darab félbevágott/megroppantott) szárított vagy friss csipkebogyót.\n\t- Öntsd le 2,5–3 dl hideg vagy langyos (legfeljebb 40 °C-os) vízzel.\n\t- Hagyd állni lefedve 8–12 órán át (például egy éjszakán keresztül).\n\t- Reggel szűrd le ezt a levet egy tiszta pohárba . Ezzel a hideg eljárással a hőérzékeny C-vitamin sértetlen marad.[[1]](https://fubolfabol.hu/csipkebogyo-tea/)[[2]](https://anapfenyillata.hu/2020/10/24/csipkebogyo-tea-keszitese-hazilag/)[[3]](https://gyogyfuveskertem.hu/csipkebogyotea-keszitese/)[[4]](https://www.agraroldal.hu/csipkebogyotea.html)[[5]](https://www.mindmegette.hu/egeszseges/csipkebogyo-a-csodaszer-tea-lekvar-vitamin)[[6]](https://www.hazipatika.com/eletmod/termeszetes_gyogymodok/cikkek/igazabol-igy-kellene-kesziteni-a-csipkebogyoteat)\n- **Főzés (a többi hatóanyag kioldásához):** \n\t- A leszűrt, visszamaradt bogyókat ne dobjad ki, mert még sok ásványi anyagot és pektint tartalmaznak.\n\t- Öntsd fel a bogyókat ugyanennyi friss vízzel, és főzd néhány percig.\n\t- Hagyd kicsit hűlni, majd szűrd le ezt a főzetet is.\n\t- Keverd össze a langyosra hűlt főzetet a hideg áztatóvízzel.[[1]](https://www.tiktok.com/@andival.hu/video/7420814884729883937)[[2]](https://fubolfabol.hu/csipkebogyo-tea/)[[3]](https://anapfenyillata.hu/2020/10/24/csipkebogyo-tea-keszitese-hazilag/)\n- **Fogyasztás:** \n\t- Ízlés szerint kevés mézzel ízesítheted.\n\t- Részletesebb recepteket és tippeket találsz a [Nosalty](https://www.nosalty.hu/recept/csipkebogyo-tea) oldalán vagy az [A napfény illata](https://anapfenyillata.hu/2020/10/24/csipkebogyo-tea-keszitese-hazilag/) blogon.[[1]](https://www.nosalty.hu/recept/csipkebogyo-tea)[[2]](https://anapfenyillata.hu/2020/10/24/csipkebogyo-tea-keszitese-hazilag/)\n\nHa gondolod, oszd meg velem:\n\n- **Friss** vagy **szárított** csipkebogyót használsz?\n- Készíted-e **gyerekeknek** is a teát?\n\nÍgy tudok még pontosabb tanácsot adni az adagoláshoz vagy az ízesítéshez.",
+        "items": [
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "A C-vitamin-gazdag csipkebogyó teát nem szabad forró vízzel leforrázni, hanem hideg vagy langyos vízben (legfeljebb 40–50 °C-on) kell áztatni 8–12 órán keresztül.",
+          "markdown": "`A C-vitamin-gazdag csipkebogyó teát nem szabad forró vízzel leforrázni, hanem hideg vagy langyos vízben (legfeljebb 40–50 °C-on) kell áztatni 8–12 órán keresztül`.[[1]](https://anapfenyillata.hu/2020/10/24/csipkebogyo-tea-keszitese-hazilag/)[[2]](https://www.nosalty.hu/recept/csipkebogyo-tea)[[3]](https://fubolfabol.hu/csipkebogyo-tea/)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "A napfény illata",
+            "domain": "anapfenyillata.hu",
+            "url": "https://anapfenyillata.hu/2020/10/24/csipkebogyo-tea-keszitese-hazilag/",
+            "title": "Csipkebogyó tea készítése házilag – A napfény illata",
+            "text": "Csipkebogyó tea készítés (Anikó, 2020.10.24.): - C-vitamin: 22x goji bogyó. - 1. fázis (hideg): 2,5 dl langyos/max 40°C víz + 10-1..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Nosalty",
+            "domain": "www.nosalty.hu",
+            "url": "https://www.nosalty.hu/recept/csipkebogyo-tea",
+            "title": "Csipkebogyó tea | Nosalty",
+            "text": "Csipkebogyó tea recept: - Idő: 15 p (Előkészítés: 10 p, Főzés: 5 p) - Adag: 4 - Nehézség: könnyű - Költség: megfizethető - Hozzáva..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "fubolfabol.hu",
+            "domain": "fubolfabol.hu",
+            "url": "https://fubolfabol.hu/csipkebogyo-tea/",
+            "title": "Csipkebogyó tea - Fűből Fából gyógynövény webshop",
+            "text": "Csipkebogyó tea készítése. Este langyos vízben kell a bogyókat beáztatni (lehetőleg összetörve vagy összevagdalva), ezt reggel le ..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Helyes elkészítés lépései",
+          "text": "Áztatás (a C-vitamin megőrzéséhez):Vegyél 2-3 evőkanál (vagy 10–12 darab félbevágott/megroppantott) szárított vagy friss csipkebogyót.\nÖntsd le 2,5–3 dl hideg vagy langyos (legfeljebb 40 °C-os) vízzel.\nHagyd állni lefedve 8–12 órán át (például egy éjszakán keresztül).\nReggel szűrd le ezt a levet egy tiszta pohárba. Ezzel a hideg eljárással a hőérzékeny C-vitamin sértetlen marad. Vegyél 2-3 evőkanál (vagy 10–12 darab félbevágott/megroppantott) szárított vagy friss csipkebogyót. Öntsd le 2,5–3 dl hideg vagy langyos (legfeljebb 40 °C-os) vízzel. Hagyd állni lefedve 8–12 órán át (például egy éjszakán keresztül). Reggel szűrd le ezt a levet egy tiszta pohárba. Ezzel a hideg eljárással a hőérzékeny C-vitamin sértetlen marad. Főzés (a többi hatóanyag kioldásához):A leszűrt, visszamaradt bogyókat ne dobjad ki, mert még sok ásványi anyagot és pektint tartalmaznak.\nÖntsd fel a bogyókat ugyanennyi friss vízzel, és főzd néhány percig.\nHagyd kicsit hűlni, majd szűrd le ezt a főzetet is.\nKeverd össze a langyosra hűlt főzetet a hideg áztatóvízzel. A leszűrt, visszamaradt bogyókat ne dobjad ki, mert még sok ásványi anyagot és pektint tartalmaznak. Öntsd fel a bogyókat ugyanennyi friss vízzel, és főzd néhány percig. Hagyd kicsit hűlni, majd szűrd le ezt a főzetet is. Keverd össze a langyosra hűlt főzetet a hideg áztatóvízzel. Fogyasztás:Ízlés szerint kevés mézzel ízesítheted.\nRészletesebb recepteket és tippeket találsz a Nosalty oldalán vagy az A napfény illata blogon. Ízlés szerint kevés mézzel ízesítheted. Részletesebb recepteket és tippeket találsz a Nosalty oldalán vagy az A napfény illata blogon.",
+          "markdown": "- **Áztatás (a C-vitamin megőrzéséhez):** \n\t- Vegyél 2-3 evőkanál (vagy 10–12 darab félbevágott/megroppantott) szárított vagy friss csipkebogyót.\n\t- Öntsd le 2,5–3 dl hideg vagy langyos (legfeljebb 40 °C-os) vízzel.\n\t- Hagyd állni lefedve 8–12 órán át (például egy éjszakán keresztül).\n\t- Reggel szűrd le ezt a levet egy tiszta pohárba . Ezzel a hideg eljárással a hőérzékeny C-vitamin sértetlen marad.[[1]](https://fubolfabol.hu/csipkebogyo-tea/)[[2]](https://anapfenyillata.hu/2020/10/24/csipkebogyo-tea-keszitese-hazilag/)[[3]](https://gyogyfuveskertem.hu/csipkebogyotea-keszitese/)[[4]](https://www.agraroldal.hu/csipkebogyotea.html)[[5]](https://www.mindmegette.hu/egeszseges/csipkebogyo-a-csodaszer-tea-lekvar-vitamin)[[6]](https://www.hazipatika.com/eletmod/termeszetes_gyogymodok/cikkek/igazabol-igy-kellene-kesziteni-a-csipkebogyoteat)\n- **Főzés (a többi hatóanyag kioldásához):** \n\t- A leszűrt, visszamaradt bogyókat ne dobjad ki, mert még sok ásványi anyagot és pektint tartalmaznak.\n\t- Öntsd fel a bogyókat ugyanennyi friss vízzel, és főzd néhány percig.\n\t- Hagyd kicsit hűlni, majd szűrd le ezt a főzetet is.\n\t- Keverd össze a langyosra hűlt főzetet a hideg áztatóvízzel.[[1]](https://www.tiktok.com/@andival.hu/video/7420814884729883937)[[2]](https://fubolfabol.hu/csipkebogyo-tea/)[[3]](https://anapfenyillata.hu/2020/10/24/csipkebogyo-tea-keszitese-hazilag/)\n- **Fogyasztás:** \n\t- Ízlés szerint kevés mézzel ízesítheted.\n\t- Részletesebb recepteket és tippeket találsz a [Nosalty](https://www.nosalty.hu/recept/csipkebogyo-tea) oldalán vagy az [A napfény illata](https://anapfenyillata.hu/2020/10/24/csipkebogyo-tea-keszitese-hazilag/) blogon.[[1]](https://www.nosalty.hu/recept/csipkebogyo-tea)[[2]](https://anapfenyillata.hu/2020/10/24/csipkebogyo-tea-keszitese-hazilag/)",
+          "links": [
+           {
+            "type": "link_element",
+            "title": "Nosalty",
+            "description": null,
+            "url": "https://www.nosalty.hu/recept/csipkebogyo-tea",
+            "domain": "www.nosalty.hu"
+           },
+           {
+            "type": "link_element",
+            "title": "A napfény illata",
+            "description": null,
+            "url": "https://anapfenyillata.hu/2020/10/24/csipkebogyo-tea-keszitese-hazilag/",
+            "domain": "anapfenyillata.hu"
+           }
+          ],
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "fubolfabol.hu",
+            "domain": "fubolfabol.hu",
+            "url": "https://fubolfabol.hu/csipkebogyo-tea/",
+            "title": "Csipkebogyó tea - Fűből Fából gyógynövény webshop",
+            "text": "Csipkebogyó tea készítése. Este langyos vízben kell a bogyókat beáztatni (lehetőleg összetörve vagy összevagdalva), ezt reggel le ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "A napfény illata",
+            "domain": "anapfenyillata.hu",
+            "url": "https://anapfenyillata.hu/2020/10/24/csipkebogyo-tea-keszitese-hazilag/",
+            "title": "Csipkebogyó tea készítése házilag – A napfény illata",
+            "text": "Csipkebogyó tea készítés (Anikó, 2020.10.24.): - C-vitamin: 22x goji bogyó. - 1. fázis (hideg): 2,5 dl langyos/max 40°C víz + 10-1..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "GyógyfüvesKertem",
+            "domain": "gyogyfuveskertem.hu",
+            "url": "https://gyogyfuveskertem.hu/csipkebogyotea-keszitese/",
+            "title": "Csipkebogyótea készítése - GyógyfüvesKertem",
+            "text": "Teljes értékű csipkebogyótea készítése. Ezzel a módszerrel a kőoldó anyagok és az E-vitamin is kinyerhető a magokból. Hozzávalók. ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "www.agraroldal.hu",
+            "domain": "www.agraroldal.hu",
+            "url": "https://www.agraroldal.hu/csipkebogyotea.html",
+            "title": "Sokan elrontják – Így készíts csipkebogyóteát!",
+            "text": "Szerző: szelesiferenc (2019. dec. 3) Gyűjtés: első őszi fagyok idején (narancsszínű: nem érett; sötét mélyvörös/puhahúsú: túlérett..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Mindmegette.hu",
+            "domain": "www.mindmegette.hu",
+            "url": "https://www.mindmegette.hu/egeszseges/csipkebogyo-a-csodaszer-tea-lekvar-vitamin",
+            "title": "A csipkebogyó valódi csodaszer! Így készíts belőle gyógyteát és lekvárt",
+            "text": "Így készíts csipkebogyóteát! Teához forrázás helyett áztasd a bogyót, mert C-vitamin-tartalma 50 fok körüli hőmérsékleten már jele..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Házipatika",
+            "domain": "www.hazipatika.com",
+            "url": "https://www.hazipatika.com/eletmod/termeszetes_gyogymodok/cikkek/igazabol-igy-kellene-kesziteni-a-csipkebogyoteat",
+            "title": "Igazából így kellene készíteni a csipkebogyóteát - Házipatika",
+            "text": "ha azt szeretnéd, hogy az élénkpiros színű tea a lehető legtöbb hatóanyagot tartalmazza. A Málnalevél Patika szakértői az alábbi m..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "TikTok",
+            "domain": "www.tiktok.com",
+            "url": "https://www.tiktok.com/@andival.hu/video/7420814884729883937",
+            "title": "Csipkebogyó tea készítése: hogyan őrizd meg a C‑vitamint",
+            "text": "A langyosra hűlt teát öntsd vissza az áztatott tea mellé. 5. Fogyasztás A csipkebogyó teát fogyasztás előtt keverd össze. Ízlés sz..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Nosalty",
+            "domain": "www.nosalty.hu",
+            "url": "https://www.nosalty.hu/recept/csipkebogyo-tea",
+            "title": "Csipkebogyó tea | Nosalty",
+            "text": "Csipkebogyó tea recept: - Idő: 15 p (Előkészítés: 10 p, Főzés: 5 p) - Adag: 4 - Nehézség: könnyű - Költség: megfizethető - Hozzáva..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Ha gondolod, oszd meg velem:Friss vagy szárított csipkebogyót használsz?\nKészíted-e gyerekeknek is a teát?\nÍgy tudok még pontosabb tanácsot adni az adagoláshoz vagy az ízesítéshez.",
+          "markdown": "Ha gondolod, oszd meg velem:\n\n- **Friss** vagy **szárított** csipkebogyót használsz?\n- Készíted-e **gyerekeknek** is a teát?\n\nÍgy tudok még pontosabb tanácsot adni az adagoláshoz vagy az ízesítéshez.",
+          "links": null,
+          "images": null,
+          "references": null
+         }
+        ],
+        "references": [
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "A napfény illata",
+          "domain": "anapfenyillata.hu",
+          "url": "https://anapfenyillata.hu/2020/10/24/csipkebogyo-tea-keszitese-hazilag/",
+          "title": "Csipkebogyó tea készítése házilag – A napfény illata",
+          "text": "Csipkebogyó tea készítés (Anikó, 2020.10.24.): - C-vitamin: 22x goji bogyó. - 1. fázis (hideg): 2,5 dl langyos/max 40°C víz + 10-1..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Nosalty",
+          "domain": "www.nosalty.hu",
+          "url": "https://www.nosalty.hu/recept/csipkebogyo-tea",
+          "title": "Csipkebogyó tea | Nosalty",
+          "text": "Csipkebogyó tea recept: - Idő: 15 p (Előkészítés: 10 p, Főzés: 5 p) - Adag: 4 - Nehézség: könnyű - Költség: megfizethető - Hozzáva..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "fubolfabol.hu",
+          "domain": "fubolfabol.hu",
+          "url": "https://fubolfabol.hu/csipkebogyo-tea/",
+          "title": "Csipkebogyó tea - Fűből Fából gyógynövény webshop",
+          "text": "Csipkebogyó tea készítése. Este langyos vízben kell a bogyókat beáztatni (lehetőleg összetörve vagy összevagdalva), ezt reggel le ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "GyógyfüvesKertem",
+          "domain": "gyogyfuveskertem.hu",
+          "url": "https://gyogyfuveskertem.hu/csipkebogyotea-keszitese/",
+          "title": "Csipkebogyótea készítése - GyógyfüvesKertem",
+          "text": "Teljes értékű csipkebogyótea készítése. Ezzel a módszerrel a kőoldó anyagok és az E-vitamin is kinyerhető a magokból. Hozzávalók. ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "www.agraroldal.hu",
+          "domain": "www.agraroldal.hu",
+          "url": "https://www.agraroldal.hu/csipkebogyotea.html",
+          "title": "Sokan elrontják – Így készíts csipkebogyóteát!",
+          "text": "Szerző: szelesiferenc (2019. dec. 3) Gyűjtés: első őszi fagyok idején (narancsszínű: nem érett; sötét mélyvörös/puhahúsú: túlérett..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "TikTok",
+          "domain": "www.tiktok.com",
+          "url": "https://www.tiktok.com/@andival.hu/video/7420814884729883937",
+          "title": "Csipkebogyó tea készítése: hogyan őrizd meg a C‑vitamint",
+          "text": "A langyosra hűlt teát öntsd vissza az áztatott tea mellé. 5. Fogyasztás A csipkebogyó teát fogyasztás előtt keverd össze. Ízlés sz..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Mindmegette.hu",
+          "domain": "www.mindmegette.hu",
+          "url": "https://www.mindmegette.hu/egeszseges/csipkebogyo-a-csodaszer-tea-lekvar-vitamin",
+          "title": "A csipkebogyó valódi csodaszer! Így készíts belőle gyógyteát és lekvárt",
+          "text": "Így készíts csipkebogyóteát! Teához forrázás helyett áztasd a bogyót, mert C-vitamin-tartalma 50 fok körüli hőmérsékleten már jele..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Házipatika",
+          "domain": "www.hazipatika.com",
+          "url": "https://www.hazipatika.com/eletmod/termeszetes_gyogymodok/cikkek/igazabol-igy-kellene-kesziteni-a-csipkebogyoteat",
+          "title": "Igazából így kellene készíteni a csipkebogyóteát - Házipatika",
+          "text": "ha azt szeretnéd, hogy az élénkpiros színű tea a lehető legtöbb hatóanyagot tartalmazza. A Málnalevél Patika szakértői az alábbi m..."
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "video",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[3]/div[1]",
+        "items": [
+         {
+          "type": "video_element",
+          "source": "YouTube · Borostyán Inspirációs Műhely",
+          "title": "Csipkebogyó tea készítése",
+          "timestamp": "2022-02-15 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=BpxtpfDyrPY"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · Napfényes Gyógyközpont",
+          "title": "A csipkebogyó gyógyító hatásai - A csipkebogyótea elkészítése",
+          "timestamp": "2021-11-17 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=tokNewXWKqM"
+         },
+         {
+          "type": "video_element",
+          "source": "TikTok · andival.hu",
+          "title": "Csipkebogyó tea készítése: hogyan őrizd meg a C‑vitamint",
+          "timestamp": "2024-10-01 00:00:00 +00:00",
+          "url": "https://www.tiktok.com/@andival.hu/video/7420814884729883937"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · Emil bácsi konyhája",
+          "title": "Anyós - Só konyhája (Csipkebogyó tea & pirítós",
+          "timestamp": "2024-11-12 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=u-WIKSVLkRM"
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[5]/div[1]/div[1]",
+        "domain": "shop.naturland.hu",
+        "title": "NATURLAND Csipkebogyó tea filteres 20x2,5g",
+        "url": "https://shop.naturland.hu/termek/naturland-csipkebogyo-tea-filteres-20x25g/?srsltid=AU7gw4WAOQVQxjV6_YNl0QsbnrwgmkJPTJ9INVbUalibz-YvGVu49_ci",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://shop.naturland.hu › Teák, teakeverékek",
+        "website_name": "NATURLAND Webáruház",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Használati javaslat: A tea elkészíthető hagyományos módon forrázással, de a C-vitamin és egyéb gyümölcssavak kioldódása hideg vízben 12 órás áztatással ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": {
+         "current": 1290,
+         "regular": null,
+         "max_value": null,
+         "currency": "HUF",
+         "is_price_range": false,
+         "displayed_price": "Szállítási díj: 1 290 Ft"
+        },
+        "highlighted": [
+         "A tea elkészíthető hagyományos módon forrázással"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[7]/div[1]/div[1]",
+        "domain": "gyogyfuveskertem.hu",
+        "title": "Csipkebogyó gyűjtése és felhasználása",
+        "url": "https://gyogyfuveskertem.hu/csipkebogyo-gyujtese-es-felhasznalasa/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://gyogyfuveskertem.hu › csipkebogyo-gyujtese-es...",
+        "website_name": "GyógyfüvesKertem",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2020. nov. 3. — A begyűjtött csipkebogyót megszáríthatjuk teának, vagy használhatjuk frissen is akár teának, akár ételekbe, vagy lefagyaszthatjuk későbbi ...",
+        "pre_snippet": "11/03/2020 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2020-11-03 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[9]/div[1]/div[1]",
+        "domain": "benu.hu",
+        "title": "Tudjon meg mindent a csipkebogyó jótékony hatásairól - BENU",
+        "url": "https://benu.hu/blogs/eletmod/tudjon-meg-mindent-a-csipkebogyo-jotekony-hatasairol",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://benu.hu › Életmód",
+        "website_name": "benu.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2022. nov. 25. — A mennyei csipkebogyószörphöz vágjuk le a bogyók mindkét végét, a bogyókat alaposan zúzzuk össze őket (például húsdaráló segítségével), majd ...",
+        "pre_snippet": "11/25/2022 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2022-11-25 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[10]/div[1]/div[1]/div[1]",
+        "domain": "www.youtube.com",
+        "title": "Tea Time Teahouse Gyümölcsös csipkebogyó tea készítése",
+        "url": "https://www.youtube.com/watch?v=M_jsoyiEAH0",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "830 megtekintés  ·  5 évvel ezelőtt",
+        "website_name": "YouTube · Női Net Portál Magazin filmek",
+        "is_image": false,
+        "is_video": true,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": [
+         "is_video"
+        ],
+        "description": "Tea Time Teahouse Gyümölcsös csipkebogyó tea készítése Honlap: https://noinet.hu/",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "csipkebogyó tea készítése"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2021-08-25 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[12]/div[1]/div[1]",
+        "domain": "erdokostolo.blogspot.com",
+        "title": "Csipkebogyótea avagy csipkeital készítése",
+        "url": "http://erdokostolo.blogspot.com/2023/10/csipkebogyotea-avagy-csipkeital.html",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "http://erdokostolo.blogspot.com › 2023/10 › csipkebog...",
+        "website_name": "Erdőkóstoló",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2023. okt. 15. — Áztatás egy fél nap, egy éjszaka legalább. Ebben az italban/teában még szárított japánbirs szeletek is vannak, amiből szintén C-vitamin ázott ki ...",
+        "pre_snippet": "10/15/2023 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2023-10-15 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[14]/div[1]/div[1]",
+        "domain": "teaacademy.hu",
+        "title": "Csipkebogyó szárított egész",
+        "url": "https://teaacademy.hu/termek/csipkebogyo-szaritott-egesz/?srsltid=AU7gw4VMVjKzbp3L24OzCkXBNj3i9YoPo-u5q6S2Y-pjLYAWB-qzAGK4",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://teaacademy.hu › csipkebogyo-szaritott-egesz",
+        "website_name": "Tea Akadémia",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Elkészítése : 1 tk/ 2 dl szűrt, visszahűtött, langyos víz. Ebben áztatjuk min. 3-4 órát, de ajánlott egy egész éjszakát. Utána szűrjük ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": {
+         "current": 1890,
+         "regular": null,
+         "max_value": null,
+         "currency": "HUF",
+         "is_price_range": false,
+         "displayed_price": "Szállítási díj: 1 890 Ft"
+        },
+        "highlighted": [
+         "Elkészítése"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 7,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[16]/div[1]/div[1]",
+        "domain": "www.nosalty.hu",
+        "title": "Csipkebogyó tea Fahéj konyhájából",
+        "url": "https://www.nosalty.hu/recept/csipkebogyo-tea-fahej-konyhajabol",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.nosalty.hu › recept › csipkebogyo-tea-fahe...",
+        "website_name": "Nosalty",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "A csipkebogyót alaposan megmossuk, a hibásakat kidobjuk. · 4 púpozott ek csipkebogyót kisebb darabokra törünk, és fél l hideg vízben egy éjszakán át áztatjuk.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "A csipkebogyót alaposan megmossuk, a hibásakat kidobjuk"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 8,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[18]/div[1]/div[1]",
+        "domain": "www.manutea.hu",
+        "title": "CSIPKEBOGYÓ - termés",
+        "url": "https://www.manutea.hu/csipkebogyo-termes-x11149",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.manutea.hu › csipkebogyo-termes-x11149",
+        "website_name": "ManuTea.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Adagolása 2 evőkanál ebből a zúzalékból 0,5 liter vízhez. · Öntsük fel hideg vízzel, és hagyjuk egy éjszakán át ázni. · Utána szűrje le. A kész italt mézzel ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Adagolása 2 evőkanál ebből a zúzalékból 0,5 liter vízhez"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "related_searches",
+        "rank_group": 1,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[2]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "items": [
+         "Szárított csipkebogyó tea készítése",
+         "Friss csipkebogyó tea készítése",
+         "Filteres csipkebogyó tea készítése",
+         "Naturland csipkebogyó tea",
+         "Csipkebogyó tea dm",
+         "Csipkebogyó tea filteres",
+         "Csipkebogyó tea hatása a bőrre",
+         "Csipkebogyó tea mellékhatása"
+        ],
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

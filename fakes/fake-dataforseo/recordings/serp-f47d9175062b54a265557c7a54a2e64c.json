@@ -1,0 +1,732 @@
+{
+ "recordedAt": "2026-10-08T20:00:20.846Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "coffee grind size chart",
+  "location_code": 2826,
+  "language_code": "en",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0210 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10082000-2302-0066-0000-093833729c9c",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0146 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10082000-2302-0066-0000-093833729c9c"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "coffee grind size chart",
+     "location_code": 2826,
+     "language_code": "en",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "coffee grind size chart",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2826,
+      "language_code": "en",
+      "check_url": "https://www.google.com/search?q=coffee%20grind%20size%20chart&hl=en&gl=GB&ie=UTF-8&uule=w+CAIQIFISCamRx0IRO1oCEXoliDJDoPjE",
+      "datetime": "2026-10-08 20:00:17 +00:00",
+      "spell": null,
+      "refinement_chips": null,
+      "item_types": [
+       "images",
+       "organic",
+       "people_also_ask",
+       "related_searches"
+      ],
+      "se_results_count": 112,
+      "pages_count": 1,
+      "items_count": 12,
+      "items": [
+       {
+        "type": "images",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "title": "Coffee Grind Size Chart for Better-Tasting Coffee",
+        "url": null,
+        "items": [
+         {
+          "type": "images_element",
+          "alt": "Coffee Grind Size Chart for Better-Tasting Coffee",
+          "url": "https://www.verenastreet.com/blogs/all-about-coffee/coffee-grind-size-chart?srsltid=AU7gw4XqKgEAA8dpmf3bDn35HB5HRtJtCeOqTyaj3JAAVvCS3WFxOydC",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-093833729c9c:0"
+         },
+         {
+          "type": "images_element",
+          "alt": "Coffee Grinding Guide | Red Cup Coffee",
+          "url": "https://www.redcupcoffee.com.au/featured/coffee-grinding-guide/",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-093833729c9c:1"
+         },
+         {
+          "type": "images_element",
+          "alt": "Mastering Your Grind: The Ultimate Guide to Coffee Grind ...",
+          "url": "https://truegrindcoffee.com/blogs/main/mastering-your-grind-the-ultimate-guide-to-coffee-grind-size-for-every-brew?srsltid=AU7gw4Ve_TqvVnys4K2tfxlRFUZ_oym5DnFVKvd3PEDT9BNiPN3NBoF_",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-093833729c9c:2"
+         },
+         {
+          "type": "images_element",
+          "alt": "Brew Guide – KRUVE",
+          "url": "https://www.kruveinc.com/pages/brew-guide?srsltid=AU7gw4XUG4MFs0BZEgBf41DPSiGJOJhSshk0Em3FQr-q0G9HS43X2fC9",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-093833729c9c:3"
+         },
+         {
+          "type": "images_element",
+          "alt": "Simple coffee Grind size chart for Baristas",
+          "url": "https://www.instagram.com/p/DUN0bGVgZga/",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-093833729c9c:4"
+         },
+         {
+          "type": "images_element",
+          "alt": "The Best Coffee Grind Size Chart",
+          "url": "https://primulaproducts.com/a/blog/coffee-grind-size-chart?srsltid=AU7gw4WY7nEcqy0mblRYmoookeTKlVMPn__KiOXlpjFAuIek3ltwyX0-",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-093833729c9c:5"
+         },
+         {
+          "type": "images_element",
+          "alt": "Coffee grind size chart information",
+          "url": "https://www.facebook.com/groups/coffeeloversromania/posts/23976557718669740/",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-093833729c9c:6"
+         },
+         {
+          "type": "images_element",
+          "alt": "Coffee Grind Size Reference Chart | PDF",
+          "url": "https://www.scribd.com/document/409238625/Homegrounds-Coffee-Grind-Chart",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-093833729c9c:7"
+         },
+         {
+          "type": "images_element",
+          "alt": "Choosing a Grind – Upper Valley Coffee Roasters",
+          "url": "https://uppervalleycoffeeroasters.com/coffee/grind/",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-093833729c9c:8"
+         },
+         {
+          "type": "images_element",
+          "alt": "Ultimate coffee grind size chart #coffee #Coffee",
+          "url": "https://www.facebook.com/winespirite/posts/ultimate-coffee-grind-size-chart-coffee-coffee/1199883212155065/",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-093833729c9c:9"
+         },
+         {
+          "type": "images_element",
+          "alt": "Coffee Grind Size - Maleny Coffee",
+          "url": "https://www.malenycoffee.com.au/articles/coffee-grind/",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-093833729c9c:10"
+         },
+         {
+          "type": "images_element",
+          "alt": "The Complete Guide to Coffee Grind Size | Trade Coffee",
+          "url": "https://www.drinktrade.com/blogs/how-to/coffee-grind-size-chart?srsltid=AU7gw4XpLPnYWpI69FbBJVVYwX2V03zbYC0HkTT4j3Tg5X0oG7p_dvO7",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-093833729c9c:11"
+         },
+         {
+          "type": "images_element",
+          "alt": "Coffee Grind Chart - Watercolor Illustration Infographic •",
+          "url": "https://www.colorsnack.com/illustration/coffee-grind-chart-watercolor-illustration-infographic/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRG3o9nfb4HS8GBlHFjcIsVJLfMg3G4Y7HKDwN4esNqKret62K8Ub9fxA4&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Coffee Grinds: Types, Sizes, and Brewing Methods – Colipse",
+          "url": "https://colipsecoffee.com/blogs/coffee/grinds?srsltid=AU7gw4UorFQIdeOzgDDFXf6IOfiPLvydgQe_6qP7lKwle2zThR1UFGOQ",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXDTny-Gc8a0Q1StvE-uzeDXR16PVOWw0AkNG0R8y_Ec75gCJkJOcPCsdDgw&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Stitch Coffee | Grind Size Chart for Single Origins",
+          "url": "https://stitch.coffee/pages/grind-size-chart-single-origins?srsltid=AU7gw4VD8PN98f-KNjsOg9Xxl41z6qczxfXFq4K3CCLtnJe_v_j3_cDt",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrXMkpFDaNOfBFgsOR1hGhic9N-KRagKuBmqIAKxendxRF27DSyOeMHAo&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Coffee Grind Size | A Conversion Chart for the Most Popular ...",
+          "url": "https://frequentcoffee.com/blogs/journal/best-grind-size-for-my-coffee-grinder?srsltid=AU7gw4U2MIYWcTBJDLsfxscC8GeA9dnrIVB_wC0lsf3NAqTaGXDL4jOm",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXPgAnu9UYmqGKYOHLtFZ5zT8nyiDPHH92g8xK7-awrIlQ1vrIiiPiuYj-Ow&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Coffee grind size chart - Why is it important? – 88 COFFEE ...",
+          "url": "https://88coffeecompany.com/blogs/manifest-greatness-blog/coffee-grind-size-chart?srsltid=AU7gw4VZLllYqAQeKvDrDJ2UZmaIaTr0wJMSTkpUCO1QdXQqmNZhHqqS",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKt-pz4V7Xw4EWRTXErdADacR1YBixHR0LSth1Ey1JRDYx2cnIlb6gac8&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Stitch Coffee | Grind Size Chart for Single Origins",
+          "url": "https://stitch.coffee/pages/grind-size-chart-single-origins?srsltid=AU7gw4WK7ko1ZsRwosU0mItrx1fRwynR5qDmymvnd4ys761zFzHTKlCk",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeuPLg8U-AxEpbS-lc4ycEt7z3MhoQwmlE3OPb3E57w6iE4C-hFvngbw0&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "📊 Grind Size Guide: Unlocking Perfect Extraction ...",
+          "url": "https://www.instagram.com/p/DDhB5vRM0Qd/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCmBtG-pvzM_0n6A7yZSV6WhTiICJqbXo5K1RScaq8JRpShGl3sK1sO4c&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "The Complete Guide to Coffee Grind Size | Trade Coffee",
+          "url": "https://www.drinktrade.com/blogs/how-to/coffee-grind-size-chart?srsltid=AU7gw4UKT5sPW4094PHDrRk4bi_3V1zi3ULeoLC9PXGi-6InNU6j5cJo",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQaYmmO7sTO8MOSnWXrZrVt76fkOXEb7X_pZOxyNmCQpY_Ly1PePNthNU&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Coffee Grind Size Chart — Settings for Every Brew Method ...",
+          "url": "https://instacuppastore.com/blogs/main-page/coffee-grind-size-chart-the-only-visual-guide-you-need-for-every-brew-method?srsltid=AU7gw4WttUERYfgSQPe2_-r7DMSXlMjWVtqGZ8SXPsKdix5bW9QYrole",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSpwOO9PiTQ8rf6SLlSGzktmYf0Q7fzaJoTwounVpTGlD-G226q9K-7wx0T1A&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "The Only Coffee Grind Chart You'll Ever Need - Beancraft",
+          "url": "https://beancraft.coffee/blogs/news/the-only-coffee-grind-chart-youll-ever-need?srsltid=AU7gw4Xt0z2IJIPj9N1RzVYPQJWM9wJSXE5stLZvfFvD3Z83wwsZ9q41",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSvqlUwBueq1C_fOTQN7wfu4vprWKpZFWaB2irP9Pg4wfQhAd2LFm3J2Fj6SQ&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Coffee Grind Size Chart for Better-Tasting Coffee",
+          "url": "https://www.verenastreet.com/blogs/all-about-coffee/coffee-grind-size-chart?srsltid=AU7gw4WtAGLI7eqKq2xdZ8T2nG9Kq5URTQzlsjRGq4qGDo4T7hDuMNe8",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSysM2CxU6rAhG9cxi47U4iDaMU-50VUbPu_UfIpyskETJZcSlVqppLlh0&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Coffee grind size chart - Why is it important? – 88 COFFEE ...",
+          "url": "https://88coffeecompany.com/blogs/manifest-greatness-blog/coffee-grind-size-chart?srsltid=AU7gw4X4Kh0lFb90N3YoVvR23GfU3p4pB5_yLkFpM8nL1pl_o7POgNdd",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT08tFSgIKFOSJFbji4NzOzUfKfPuRHUff679Ix0odlhpWfjOnGISdwQSY&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Brew Guide – KRUVE",
+          "url": "https://www.kruveinc.com/pages/brew-guide?srsltid=AU7gw4WdFspwQG6H6MCZTmrrmOAjVD_lSLFejPqlDZ2BvKQUz1JKh8-B",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgLZv9YURd3wKWRchs11dPhlg9LRJEOkXETevOgLMZ1JKix4pKAM9P5as&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "The Ultimate Coffee Grind Size Guide | Black Creek Coffee",
+          "url": "https://blackcreekcoffee.com/blogs/brewguides/size-matters?srsltid=AU7gw4UVmHu4uyDWRC7tnvV6aqkRx92lMk0b92sv0slg3sVIXnEImzNc",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSmYpKoKBcnGyQPng5OrDgVnocrY15wYRyrgFHarRbSrKm2ZfPZV9dgJcU&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Understanding Coffee Grind Sizes And How To Enjoy Them ...",
+          "url": "https://royalhindia.com/understanding-coffee-grind-sizes/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHs01wUCco-vhnS845hi_c4hEFtdhHslOhXqz9BC1ni9Cx1dZTzsUOgxY&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Coffee grind size chart information",
+          "url": "https://www.facebook.com/groups/coffeeloversromania/posts/23976557718669740/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdwtju4WQitR474kVVU0_HMx-NH8V0kxVSyNHTmahhs_N-K8vQ40g5LHw&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Simple coffee Grind size chart for Baristas",
+          "url": "https://www.instagram.com/p/DUN0bGVgZga/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzoscgkBirWiIwVRGPFM-LTrTfD5sOeI4_EXxUpY-Oz8d8ShiuXT2RpBs&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Simple coffee Grind size chart for Baristas",
+          "url": "https://www.instagram.com/p/DUN0bGVgZga/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQo7c3zRTpxTG5W3Dt2LIBpJNAc4ZN4B7AT35ByCoAEzTMWUelwXRL2eOM&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Ultimate coffee grind size chart #coffee #Coffee",
+          "url": "https://www.facebook.com/winespirite/posts/ultimate-coffee-grind-size-chart-coffee-coffee/1199883212155065/",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGXTBxXqYQ7aUn-gvFE3AMMFLCe4CHj_XPO6QCSimbtOzrhI5a8joflGA&s"
+         }
+        ],
+        "related_image_searches": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]",
+        "domain": "www.coffeecircle.com",
+        "title": "How to find the right grind settings",
+        "url": "https://www.coffeecircle.com/en/e/coffee-grind-size",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.coffeecircle.com › coffee-grind-size",
+        "website_name": "Coffee Circle",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "To help you find the right grind, we have provided a scale from 1 (= very fine) to 10 (= very coarse). In addition, we have specified a contact time that you ... Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": {
+         "rating_type": "Max5",
+         "value": 4.9,
+         "votes_count": 13702,
+         "rating_max": 5
+        },
+        "price": null,
+        "highlighted": [
+         "grind"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://www.coffeecircle.com/en/e/coffee-grind-size#:~:text=To%20help%20you%20find%20the,as%20a%20guide%20when%20brewing.",
+          "domain": "www.coffeecircle.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]",
+        "domain": "counterculturecoffee.com",
+        "title": "Coffee Basics: Grind Size",
+        "url": "https://counterculturecoffee.com/blogs/counter-culture-coffee/coffee-basics-grind-size?srsltid=AU7gw4WJIWhtjLOU2vISPHN9yyVeddI_e2bqx6mDS81TFGYlEfuzS5-7",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://counterculturecoffee.com › counter-culture-coffee",
+        "website_name": "Counter Culture Coffee",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Chart showing coffee being 30% soluble material. Shorter brew time = finer grind Longer brew time = coarser grind French Press: 5 (super coarse, like sea salt) ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Chart showing coffee being 30% soluble material"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "people_also_ask",
+        "rank_group": 1,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[6]/div[1]/div[1]/div[1]",
+        "items": [
+         {
+          "type": "people_also_ask_element",
+          "title": "What is a medium-coarse grind for coffee?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[6]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "What is the 15-15-15 rule for coffee?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[6]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "What is the recommended grind setting for Baratza Encore medium-coarse coffee?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[6]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "How do I adjust the grind setting on my coffee grinder?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[6]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]",
+        "domain": "www.pinterest.com",
+        "title": "Coffee Grind Size Chart Filter Coffee",
+        "url": "https://www.pinterest.com/ideas/coffee-grind-size-chart-filter-coffee/901055953718/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.pinterest.com › ... › Coffee Condiments",
+        "website_name": "Pinterest",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Find and save ideas about coffee grind size chart … 5d Coffee Grind Size Chart. Grind Size Chart for Every Brewing Method",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "coffee grind size chart"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[10]/div[1]/div[1]",
+        "domain": "stitch.coffee",
+        "title": "Grind Size Chart - Blends",
+        "url": "https://stitch.coffee/pages/copy-of-grind-size-chart-blends?srsltid=AU7gw4XARG1PdsPXAIN2q4mIKPcDLas42wWddO0__ZoZTuJVWiTPxU1W",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://stitch.coffee › pages › copy-of-grind-size-chart-...",
+        "website_name": "Stitch Coffee",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "we've created below charts that detail how to grind our signature blends for espresso using the top 4 coffee grinders on the market. Use this chart as a ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "how to grind our signature blends for espresso"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[12]/div[1]/div[1]",
+        "domain": "www.nomadcoffeeclub.com",
+        "title": "Coffee Grind Size Chart: The Easy-to-Learn Guide You Need",
+        "url": "https://www.nomadcoffeeclub.com/blogs/news/coffee-grind-size-chart?srsltid=AU7gw4VkjAaOEvdIRi3k3t70iqrdsOSRPMocVE7ytYnQ-_M_ytvtg4di",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.nomadcoffeeclub.com › blogs › news › co...",
+        "website_name": "Nomad Coffee Club",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "3 Feb 2022 — The size of your coffee grinds depends on the brew method you plan to use. grounds should be about the size of sea salt. Medium-Coarse Grind - ...",
+        "pre_snippet": "02/03/2022 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "grounds should be about the size of sea salt"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2022-02-03 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[14]/div[1]/div[1]",
+        "domain": "tastinggrounds.com",
+        "title": "Guide to Coffee Grind Sizes",
+        "url": "https://tastinggrounds.com/learn/grind-sizes",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://tastinggrounds.com › Learn",
+        "website_name": "Tasting Grounds",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "The Tasting Grounds coffee app guide to coffee grind sizes based on the brew method and recommended settings for Comandante C40, Timemore C2, Fellow Ode, ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "coffee grind sizes"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 7,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[16]/div[1]/div[1]",
+        "domain": "www.pinterest.com",
+        "title": "Coffee Grinder Grind Size Chart",
+        "url": "https://www.pinterest.com/pin/311100286776051766/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.pinterest.com › pin",
+        "website_name": "Pinterest",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "18 Feb 2024 — Here is a coffee grind chart including the common grind sizes and their texture, particle size, and suitable brewing methods. Read more",
+        "pre_snippet": "02/18/2024 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "common grind sizes"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://www.pinterest.com/pin/311100286776051766/#:~:text=The%20Complete%20Guide%20To%20Coffee",
+          "domain": "www.pinterest.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2024-02-18 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 8,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[18]/div[1]/div[1]",
+        "domain": "brewmark.io",
+        "title": "The Complete Coffee Grind Size Chart: From Espresso to ...",
+        "url": "https://brewmark.io/blog/coffee-grind-size-chart",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://brewmark.io › Blog",
+        "website_name": "brewmark.io",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "13 Apr 2026 — A practical guide to coffee grind sizes for every brew method. Learn what grind size to use, why it matters, and how to dial in your grinder ...",
+        "pre_snippet": "04/13/2026 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Learn what grind size to use"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2026-04-13 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 9,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[20]/div[1]/div[1]",
+        "domain": "outin.com",
+        "title": "Coffee Grind Size Guide: Coarse to Fine Explained",
+        "url": "https://outin.com/blogs/news/choose-coffee-grind-size-brew",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://outin.com › Blogs",
+        "website_name": "OutIn Portable Espresso Machine",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "3 Apr 2025 — Start out by discovering your grind in proportion to your brewing method—coarse for slow brewing times, fine for quick ones. Make small ... Read more",
+        "pre_snippet": "04/03/2025 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "grind",
+         "brewing"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://outin.com/blogs/news/choose-coffee-grind-size-brew#:~:text=Start%20out%20by%20discovering%20your,coarse%20if%20it%20is%20bitter.",
+          "domain": "outin.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2025-04-03 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "related_searches",
+        "rank_group": 1,
+        "rank_absolute": 12,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[2]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "items": [
+         "Coffee grind size numbers",
+         "Coffee grind size chart cups",
+         "Coffee grind size chart PDF",
+         "Coffee grind size calculator",
+         "Coffee grind size chart Breville",
+         "Grind size for espresso Breville",
+         "Grind size for medium roast espresso",
+         "Espresso grind size chart"
+        ],
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

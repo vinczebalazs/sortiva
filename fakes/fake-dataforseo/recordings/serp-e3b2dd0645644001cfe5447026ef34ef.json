@@ -1,0 +1,689 @@
+{
+ "recordedAt": "2026-10-08T20:00:14.914Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "kamilla tea készítése",
+  "location_code": 2348,
+  "language_code": "hu",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0183 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10082000-2302-0066-0000-a0efb1d37cb6",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0129 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10082000-2302-0066-0000-a0efb1d37cb6"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "kamilla tea készítése",
+     "location_code": 2348,
+     "language_code": "hu",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "kamilla tea készítése",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2348,
+      "language_code": "hu",
+      "check_url": "https://www.google.com/search?q=kamilla%20tea%20k%C3%A9sz%C3%ADt%C3%A9se&hl=hu&gl=HU&ie=UTF-8&uule=w+CAIQIFISCcPkN997g0FHERAQHgwpxAAA",
+      "datetime": "2026-10-08 20:00:08 +00:00",
+      "spell": null,
+      "refinement_chips": {
+       "type": "refinement_chips",
+       "xpath": "/html[1]/body[1]/div[3]/div[1]/div[5]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+       "items": [
+        {
+         "type": "refinement_chips_element",
+         "title": "A májra",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQns3_3egxqTOs0CaixOALkb4I6YyBQ:1791489606735&q=Kamilla+tea+hat%C3%A1sa+a+m%C3%A1jra&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rI33qnixvZ6Fp5P8_sPSf9G7uy3AWm7jYEzmsSeOifnuI6JB6MxvLQ29dhQyMw11Ze-US0LY2Z8d8vIWGHO4Y5QcDu4Yx6NhxUQpi6iXGu_kkNFRVR7uSpuCzUI0-03idK7vMbZNcniGsAgCihQ0DXCuAtFq7UkA9vh5wJPtTOFbxk1FqGx7COPUhykcohZ3v0jZaNOGWSqwMkZXK2TCvZaVsQoBCAOFqnbbq1-mTq2nLR_j4&sa=X&ved=2ahUKEwj64oLtmquXAxWwlJUCHbxjA4gQxKsJKAB6BAgaEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Az emésztésre",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQns3_3egxqTOs0CaixOALkb4I6YyBQ:1791489606735&q=Kamilla+tea+hat%C3%A1sa+az+em%C3%A9szt%C3%A9sre&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4raKSLYyw4dOLnaAouEoyC1JYNwNDPelMa_hqzmSkPpcxJK4gf1H3AzGBw40hED1wsoqE5xygCj6gGsf2Z6QgmwPptF6--IbbfwpFgLZUedyZZ7tSPjcknxaMqcslbbqUn7tTKg1uUrSH8yn_VD09H88XdS8W9C6xmUrGERsGrvAj966Xy-owYc_5ThSE8xcYXneEY5FUx6z3M735MNEuHEjSySwuffoOTDU8r9nyMI4GL-I78&sa=X&ved=2ahUKEwj64oLtmquXAxWwlJUCHbxjA4gQxKsJKAF6BAgdEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Filteres",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQns3_3egxqTOs0CaixOALkb4I6YyBQ:1791489606735&q=Filteres+kamilla+tea+hat%C3%A1sa&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rBPRy1rIte57qM8In1Vrg5Agr8MfLM5roM2ripvsUIqqdJAuEEumYA-4uKokdL9SnLPPFr9G4MwDghsrBW25bEAi6jcoCM1R1iCHZpL9mw3aXPtG4SVxmPhd027xPTRa1juPvIpchySh6Yas0emv8j55JEBgKdSbucm-_xRH71y_WvBV4duxsT_rCG-mXrxA70Jr_g5tewazO82b-kq0w9vqbi1WF7VIWRQbxNJp6K_-OctM_&sa=X&ved=2ahUKEwj64oLtmquXAxWwlJUCHbxjA4gQxKsJKAJ6BAgcEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Pickwick",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQns3_3egxqTOs0CaixOALkb4I6YyBQ:1791489606735&q=Pickwick+kamilla+tea+hat%C3%A1sa&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rBPRy1rIte57qM8In1Vrg5Agr8MfLM5roM2ripvsUIqqdJAuEEumYA-4uKokdL9SnhPKxb451OPTC1ovA4KBQa16dpxmnLiTPUe5FlOjNLqCci-uuL4uXXfic8ut8JLxHLrGlnLXDEI4Zl7HKKd3hQOAk2KJsD0aGIM4wfYwfy0FiEdTTtWZbkRV6z0a0I_nE1bj8nyZfmDJS0Zj5SRt4ZEDeg7YpFqOPZw8hD5CeP8wwVWCt&sa=X&ved=2ahUKEwj64oLtmquXAxWwlJUCHbxjA4gQxKsJKAN6BAgbEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        }
+       ]
+      },
+      "item_types": [
+       "ai_overview",
+       "organic",
+       "video",
+       "related_searches"
+      ],
+      "se_results_count": 151,
+      "pages_count": 1,
+      "items_count": 11,
+      "items": [
+       {
+        "type": "ai_overview",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+        "asynchronous_ai_overview": false,
+        "markdown": "`A tökéletes kamillatea elkészítéséhez 1 teáskanál szárított vagy 2 teáskanál friss kamillavirágot kell leforrázni 2-2,5 dl vízzel, majd lefedve 10-15 percig áztatni`.[[1]](https://gyogyfuveskertem.hu/igy-keszul-a-kamillatea-orvosi-szekfu-tea/)[[2]](https://rakocziudvar.hu/termek/kamilla-tea/)\n\n### Hozzávalók\n\n- **Kamilla:** 1 teáskanál szárított vagy 2-3 teáskanál friss kamillavirág (orvosi székfű)\n- **Víz:** 2-2,5 dl frissen forralt víz[[1]](https://rakocziudvar.hu/termek/kamilla-tea/)[[2]](https://gyogyfuveskertem.hu/igy-keszul-a-kamillatea-orvosi-szekfu-tea/)\n\n### Elkészítés lépései\n\n1. **Forralás:** Forraljuk fel a vizet. Ha gyógyhatást szeretnénk (gyulladáscsökkentés), használjunk lobogó vizet; ha csak az íze miatt isszuk, hagyjuk 1-2 percig 70–80 °C-ra visszahűlni.\n2. **Leforrázás:** Helyezzük a kamillavirágot egy csészébe vagy teatojásba, majd öntsük le a vízzel.\n3. **Áztatás:** Fedjük le a csészét (hogy az illóolajok ne illanjanak el), és hagyjuk állni **10–15 percig**.\n4. **Szűrés:** Szűrjük le a teát. Ízlés szerint mézzel vagy citrommal ízesíthető.[[1]](https://benu.hu/blogs/eletmod/melyek-a-kamillatea-hatasai-mutatjuk-a-legfontosabbakat)[[2]](https://gyogyfuveskertem.hu/igy-keszul-a-kamillatea-orvosi-szekfu-tea/)[[3]](https://moccabit.hu/kamilla-tea-hatasa)[[4]](https://cookpad.com/hu/receptek/16782458)[[5]](https://rakocziudvar.hu/termek/kamilla-tea/)\n\nRészletesebb gyógynövény-leírásért és hatásokért látogasson el az [Egészségvonal](https://egeszsegvonal.gov.hu/gyogyszerek-a-z/k/kamilla.html) oldalára.[[1]](https://egeszsegvonal.gov.hu/gyogyszerek-a-z/k/kamilla.html)Ha szeretné, segíthetek abban is, hogy:\n\n- Mire kívánja használni a teát (**megfázás, emésztés, külső borogatás**)?\n- Kinek készül a tea (**felnőtt vagy gyermek** részére)?",
+        "items": [
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "A tökéletes kamillatea elkészítéséhez 1 teáskanál szárított vagy 2 teáskanál friss kamillavirágot kell leforrázni 2-2,5 dl vízzel, majd lefedve 10-15 percig áztatni.",
+          "markdown": "`A tökéletes kamillatea elkészítéséhez 1 teáskanál szárított vagy 2 teáskanál friss kamillavirágot kell leforrázni 2-2,5 dl vízzel, majd lefedve 10-15 percig áztatni`.[[1]](https://gyogyfuveskertem.hu/igy-keszul-a-kamillatea-orvosi-szekfu-tea/)[[2]](https://rakocziudvar.hu/termek/kamilla-tea/)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "GyógyfüvesKertem",
+            "domain": "gyogyfuveskertem.hu",
+            "url": "https://gyogyfuveskertem.hu/igy-keszul-a-kamillatea-orvosi-szekfu-tea/",
+            "title": "Így készül a kamillatea (orvosi székfű tea) - GyógyfüvesKertem",
+            "text": "Kamillatea – gyógytea készítése. Gyógytea célzattal a kamillatea készülhet szárított és friss virágokból egyaránt. Kamillatea hozz..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Gyógynövényes Rákóczi Udvar",
+            "domain": "rakocziudvar.hu",
+            "url": "https://rakocziudvar.hu/termek/kamilla-tea/",
+            "title": "Kamilla tea - Gyógynövényes Rákóczi Udvar",
+            "text": "Külsőleg szemborogatásra alkalmazható, fogínyerősítésre, sebgyógyulás segítésére. Rendszeres fogyasztása csökkenti a koleszterinsz..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Hozzávalók",
+          "text": "Kamilla: 1 teáskanál szárított vagy 2-3 teáskanál friss kamillavirág (orvosi székfű) Víz: 2-2,5 dl frissen forralt víz",
+          "markdown": "- **Kamilla:** 1 teáskanál szárított vagy 2-3 teáskanál friss kamillavirág (orvosi székfű)\n- **Víz:** 2-2,5 dl frissen forralt víz[[1]](https://rakocziudvar.hu/termek/kamilla-tea/)[[2]](https://gyogyfuveskertem.hu/igy-keszul-a-kamillatea-orvosi-szekfu-tea/)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Gyógynövényes Rákóczi Udvar",
+            "domain": "rakocziudvar.hu",
+            "url": "https://rakocziudvar.hu/termek/kamilla-tea/",
+            "title": "Kamilla tea - Gyógynövényes Rákóczi Udvar",
+            "text": "Külsőleg szemborogatásra alkalmazható, fogínyerősítésre, sebgyógyulás segítésére. Rendszeres fogyasztása csökkenti a koleszterinsz..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "GyógyfüvesKertem",
+            "domain": "gyogyfuveskertem.hu",
+            "url": "https://gyogyfuveskertem.hu/igy-keszul-a-kamillatea-orvosi-szekfu-tea/",
+            "title": "Így készül a kamillatea (orvosi székfű tea) - GyógyfüvesKertem",
+            "text": "Kamillatea – gyógytea készítése. Gyógytea célzattal a kamillatea készülhet szárított és friss virágokból egyaránt. Kamillatea hozz..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Elkészítés lépései",
+          "text": "Forralás: Forraljuk fel a vizet. Ha gyógyhatást szeretnénk (gyulladáscsökkentés), használjunk lobogó vizet; ha csak az íze miatt isszuk, hagyjuk 1-2 percig 70–80 °C-ra visszahűlni. Leforrázás: Helyezzük a kamillavirágot egy csészébe vagy teatojásba, majd öntsük le a vízzel. Áztatás: Fedjük le a csészét (hogy az illóolajok ne illanjanak el), és hagyjuk állni 10–15 percig. Szűrés: Szűrjük le a teát. Ízlés szerint mézzel vagy citrommal ízesíthető.",
+          "markdown": "1. **Forralás:** Forraljuk fel a vizet. Ha gyógyhatást szeretnénk (gyulladáscsökkentés), használjunk lobogó vizet; ha csak az íze miatt isszuk, hagyjuk 1-2 percig 70–80 °C-ra visszahűlni.\n2. **Leforrázás:** Helyezzük a kamillavirágot egy csészébe vagy teatojásba, majd öntsük le a vízzel.\n3. **Áztatás:** Fedjük le a csészét (hogy az illóolajok ne illanjanak el), és hagyjuk állni **10–15 percig**.\n4. **Szűrés:** Szűrjük le a teát. Ízlés szerint mézzel vagy citrommal ízesíthető.[[1]](https://benu.hu/blogs/eletmod/melyek-a-kamillatea-hatasai-mutatjuk-a-legfontosabbakat)[[2]](https://gyogyfuveskertem.hu/igy-keszul-a-kamillatea-orvosi-szekfu-tea/)[[3]](https://moccabit.hu/kamilla-tea-hatasa)[[4]](https://cookpad.com/hu/receptek/16782458)[[5]](https://rakocziudvar.hu/termek/kamilla-tea/)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "benu.hu",
+            "domain": "benu.hu",
+            "url": "https://benu.hu/blogs/eletmod/melyek-a-kamillatea-hatasai-mutatjuk-a-legfontosabbakat",
+            "title": "Melyek a kamillatea hatásai? Mutatjuk a legfontosabbakat! - BENU",
+            "text": "Először forraljunk fel 2 dl vizet, majd azzal öntsünk le körülbelül 1 teáskanál szárított kamillavirágot, vagy a 2-3 teáskanál fri..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "GyógyfüvesKertem",
+            "domain": "gyogyfuveskertem.hu",
+            "url": "https://gyogyfuveskertem.hu/igy-keszul-a-kamillatea-orvosi-szekfu-tea/",
+            "title": "Így készül a kamillatea (orvosi székfű tea) - GyógyfüvesKertem",
+            "text": "Kamillatea – gyógytea készítése. Gyógytea célzattal a kamillatea készülhet szárított és friss virágokból egyaránt. Kamillatea hozz..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Moccabit Kft.",
+            "domain": "moccabit.hu",
+            "url": "https://moccabit.hu/kamilla-tea-hatasa",
+            "title": "A kamilla tea jótékony hatása az emberi szervezetre - moccabit.hu",
+            "text": "Kamilla tea készítése. A kamilla tea elkészítése egyszerű, ugyanakkor néhány apró részlet befolyásolhatja az ízét és a hatását: Fo..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Cookpad",
+            "domain": "cookpad.com",
+            "url": "https://cookpad.com/hu/receptek/16782458",
+            "title": "Kamilla Tea | Erka ☺️ receptje - Cookpad receptek",
+            "text": "1 liter vízet felforralok, a kamilla virágokat tea tojásban a forrásban lévő vizhez adom. Fedővel letakarom, és tíz percig állni h..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Gyógynövényes Rákóczi Udvar",
+            "domain": "rakocziudvar.hu",
+            "url": "https://rakocziudvar.hu/termek/kamilla-tea/",
+            "title": "Kamilla tea - Gyógynövényes Rákóczi Udvar",
+            "text": "Külsőleg szemborogatásra alkalmazható, fogínyerősítésre, sebgyógyulás segítésére. Rendszeres fogyasztása csökkenti a koleszterinsz..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Részletesebb gyógynövény-leírásért és hatásokért látogasson el az Egészségvonal oldalára.",
+          "markdown": "Részletesebb gyógynövény-leírásért és hatásokért látogasson el az [Egészségvonal](https://egeszsegvonal.gov.hu/gyogyszerek-a-z/k/kamilla.html) oldalára.[[1]](https://egeszsegvonal.gov.hu/gyogyszerek-a-z/k/kamilla.html)",
+          "links": [
+           {
+            "type": "link_element",
+            "title": "Egészségvonal",
+            "description": null,
+            "url": "https://egeszsegvonal.gov.hu/gyogyszerek-a-z/k/kamilla.html",
+            "domain": "egeszsegvonal.gov.hu"
+           }
+          ],
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Egészségvonal",
+            "domain": "egeszsegvonal.gov.hu",
+            "url": "https://egeszsegvonal.gov.hu/gyogyszerek-a-z/k/kamilla.html",
+            "title": "Kamilla",
+            "text": "* Növény: Kamilla (Matricaria chamomilla / orvosi székfű), Asteraceae család. * Hatóanyagok: Kék illóolaj (kamazulén), bisabolol, ..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "Ha szeretné, segíthetek abban is, hogy:Mire kívánja használni a teát ( megfázás, emésztés, külső borogatás )?\nKinek készül a tea ( felnőtt vagy gyermek részére)?",
+          "markdown": "Ha szeretné, segíthetek abban is, hogy:\n\n- Mire kívánja használni a teát (**megfázás, emésztés, külső borogatás**)?\n- Kinek készül a tea (**felnőtt vagy gyermek** részére)?",
+          "links": null,
+          "images": null,
+          "references": null
+         }
+        ],
+        "references": [
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "GyógyfüvesKertem",
+          "domain": "gyogyfuveskertem.hu",
+          "url": "https://gyogyfuveskertem.hu/igy-keszul-a-kamillatea-orvosi-szekfu-tea/",
+          "title": "Így készül a kamillatea (orvosi székfű tea) - GyógyfüvesKertem",
+          "text": "Kamillatea – gyógytea készítése. Gyógytea célzattal a kamillatea készülhet szárított és friss virágokból egyaránt. Kamillatea hozz..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "benu.hu",
+          "domain": "benu.hu",
+          "url": "https://benu.hu/blogs/eletmod/melyek-a-kamillatea-hatasai-mutatjuk-a-legfontosabbakat",
+          "title": "Melyek a kamillatea hatásai? Mutatjuk a legfontosabbakat! - BENU",
+          "text": "Először forraljunk fel 2 dl vizet, majd azzal öntsünk le körülbelül 1 teáskanál szárított kamillavirágot, vagy a 2-3 teáskanál fri..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Moccabit Kft.",
+          "domain": "moccabit.hu",
+          "url": "https://moccabit.hu/kamilla-tea-hatasa",
+          "title": "A kamilla tea jótékony hatása az emberi szervezetre - moccabit.hu",
+          "text": "Kamilla tea készítése. A kamilla tea elkészítése egyszerű, ugyanakkor néhány apró részlet befolyásolhatja az ízét és a hatását: Fo..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Gyógynövényes Rákóczi Udvar",
+          "domain": "rakocziudvar.hu",
+          "url": "https://rakocziudvar.hu/termek/kamilla-tea/",
+          "title": "Kamilla tea - Gyógynövényes Rákóczi Udvar",
+          "text": "Külsőleg szemborogatásra alkalmazható, fogínyerősítésre, sebgyógyulás segítésére. Rendszeres fogyasztása csökkenti a koleszterinsz..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Egészségvonal",
+          "domain": "egeszsegvonal.gov.hu",
+          "url": "https://egeszsegvonal.gov.hu/gyogyszerek-a-z/k/kamilla.html",
+          "title": "Kamilla",
+          "text": "* Növény: Kamilla (Matricaria chamomilla / orvosi székfű), Asteraceae család. * Hatóanyagok: Kék illóolaj (kamazulén), bisabolol, ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Cookpad",
+          "domain": "cookpad.com",
+          "url": "https://cookpad.com/hu/receptek/16782458",
+          "title": "Kamilla Tea | Erka ☺️ receptje - Cookpad receptek",
+          "text": "1 liter vízet felforralok, a kamilla virágokat tea tojásban a forrásban lévő vizhez adom. Fedővel letakarom, és tíz percig állni h..."
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]",
+        "domain": "catalase.hu",
+        "title": "Ne csak igyuk! Mire jó még a kamilla tea? - Catalase",
+        "url": "https://catalase.hu/kamilla/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://catalase.hu › kamilla",
+        "website_name": "catalase.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "– Nem csak a korpásodás, hanem a haj zsírosodására is megfelelő. Hajproblémákra zseniális – és egyszerű – recept is található. És mi segíthet még? Természetes ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "video",
+        "rank_group": 1,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]",
+        "items": [
+         {
+          "type": "video_element",
+          "source": "YouTube · ManuTea hu - Prémium minőségű, szálas tea",
+          "title": "Kamilla tea elkészítése | ManuTea.hu",
+          "timestamp": "2018-12-15 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=nlgbJ2ue_nE"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · Női Net Portál Magazin filmek",
+          "title": "Kamilla tea Herbal tea Chamomlie jeges citromos tea készítése",
+          "timestamp": "2021-08-25 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=nUVFWWS6sY8"
+         },
+         {
+          "type": "video_element",
+          "source": "Facebook · Lopes-Szabó Zsuzsa",
+          "title": "Kamilla és levendula. Ennél finomabb tea alig van. És nem vicc ...",
+          "timestamp": "2025-05-28 00:00:00 +00:00",
+          "url": "https://www.facebook.com/lopesszabozsuzsa/videos/kamilla-%C3%A9s-levendula-enn%C3%A9l-finomabb-tea-alig-van-%C3%A9s-nem-vicc-megsz%C3%BCnteti-az-%C3%A9jsz/1974071319790487/"
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[6]/div[1]/div[1]",
+        "domain": "vitaminnagyker.hu",
+        "title": "Bélfal-nyugtatás: kamilla tea vastagbélgyulladásra",
+        "url": "https://vitaminnagyker.hu/a-kamilla-gyulladascsokkento-gorcsoldo-es-nyugtato-hatasu/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://vitaminnagyker.hu › Magazin › Tudástár",
+        "website_name": "VitaminNagyker webáruház",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2023. aug. 15. — A kamillából főzött tea hatékony segítséget nyújthat a megfázás, a felső légúti fertőzés tüneteinek csökkentésében is. Izzasztó tulajdonságával ...",
+        "pre_snippet": "08/15/2023 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "kamillá",
+         "tea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2023-08-15 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]",
+        "domain": "www.webbeteg.hu",
+        "title": "A természet patikájának leggyakrabban alkalmazott ...",
+        "url": "https://www.webbeteg.hu/cikkek/egeszseges/28180/kamilla",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.webbeteg.hu › ... › Egészséges élet aloldal",
+        "website_name": "WEBBeteg",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2025. aug. 10. — Az általános tapasztalatok alapján a kamilla teájának enyhe nyugtató hatása is van. Bőrnyugtató, külsőlegesen gyulladáscsökkentő és ...",
+        "pre_snippet": "08/10/2025 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "kamilla"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2025-08-10 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[10]/div[1]/div[1]",
+        "domain": "www.egeszsegkalauz.hu",
+        "title": "Megfázott, náthás és köhög? Így használja a kamillát?",
+        "url": "https://www.egeszsegkalauz.hu/betegsegek/allergia-kamilla-tea-megfazas-natha-kohoges-gyogynoveny/k69gq5b",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.egeszsegkalauz.hu › Betegségek",
+        "website_name": "egeszsegkalauz.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2024. febr. 16. — A mézes kamillatea jégkrémöntő formákban való lefagyasztása és ínypanaszok esetén történő nyalogatása mellett a smoothie-ba kevert ...",
+        "pre_snippet": "02/16/2024 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "kamillatea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2024-02-16 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[12]/div[1]/div[1]",
+        "domain": "herbacio.hu",
+        "title": "Legismertebb gyógynövényünk a kamilla",
+        "url": "https://herbacio.hu/cikkek/legismertebb-gyogynovenyunk-a-kamilla",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://herbacio.hu › cikkek › legismertebb-gyogynoven...",
+        "website_name": "Herbáció",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "A kamillatea fogyasztása serkenti a veseműködést, jótékonyan hat a húgyutak állapotára, a húgyhólyag működésére, enyhe vízhajtó hatással is bír. Enyhébb ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "kamillatea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[14]/div[1]/div[1]",
+        "domain": "sobors.hu",
+        "title": "Kamillatea jótékony hatásai",
+        "url": "https://sobors.hu/gasztro/kamillatea-jotekony-hatasai/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://sobors.hu › Gasztro",
+        "website_name": "Sóbors",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Házi kamillatea · Gyulladáscsökkentő, enyhíti a megfázás tüneteit · A menstruációs fájdalmat is enyhíti · Az emésztésnek is jót tesz · Csillapítja a háborgó lelket.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "kamillatea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 7,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[16]/div[1]/div[1]",
+        "domain": "www.ukko.hu",
+        "title": "Kamilla Tea - Ukko",
+        "url": "https://www.ukko.hu/webaruhaz/monoteak/kamilla-tea/?srsltid=AU7gw4WHd9JT4Mt1LiolCc_AIF1TLghcrAmRvrBDmtT8fzZZNTsZz_NA",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.ukko.hu › Webáruház › Monoteák",
+        "website_name": "ukko.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Forrázz le 1 teáskanál (kb. 1,5–2 g) kamillavirágzatot 2–2,5 dl forró vízzel. · Fedd le, és hagyd ázni 5–10 percig – a lefedés megőrzi az illóolajokat. · Szűrd le ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": {
+         "current": 1190,
+         "regular": null,
+         "max_value": null,
+         "currency": "HUF",
+         "is_price_range": false,
+         "displayed_price": "1190 Ft"
+        },
+        "highlighted": [
+         "Forrázz le 1 teáskanál (kb. 1,5–2 g) kamillavirágzatot 2–2,5 dl forró vízzel"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 8,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[1]/div[2]/div[1]/div[1]/div[18]/div[1]/div[1]",
+        "domain": "www.manutea.hu",
+        "title": "Hatásai - Kamilla",
+        "url": "https://www.manutea.hu/herbarium-gyogynoveny-kamilla",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.manutea.hu › herbarium-gyogynoveny-kam...",
+        "website_name": "ManuTea.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "A kamillatea a legfinomabb mézzel, és valóban az otthoni kényelem érzetét nyújtja. Napi három csészével is fogyaszthat a főzetéből, de mi inkább étkezés után ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "kamillatea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "related_searches",
+        "rank_group": 1,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[2]/div[2]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "items": [
+         "Kamilla tea napi fogyasztása",
+         "Kamilla tea mellékhatása",
+         "Kamilla tea borogatás",
+         "Kamilla tea hatása az emésztésre",
+         "Kamilla tea hatása a májra",
+         "Kamilla tea vérnyomás",
+         "Kamilla tea gyerekeknek",
+         "Kamilla tea hasmenést okoz"
+        ],
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

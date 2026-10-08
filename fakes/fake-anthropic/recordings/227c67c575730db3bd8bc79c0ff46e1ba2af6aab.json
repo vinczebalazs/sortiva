@@ -1,0 +1,101 @@
+{
+  "recordedAt": "2026-10-08T20:03:13.817Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "Egy webáruház blogcikkeit tervezed. Látod a bolt profilját és a termékeit fajták szerint csoportosítva, mindegyik mellett az általunk ellenőrzött tényekkel. Javasolj olyan cikkeket, amelyeket ez a bolt hitelesen meg tud írni, és amelyekre az emberek valóban keresnek.\n\nMinden cikk:\n- olyan kérdésre válaszol, amely a vásárlóban az ilyen termék megvétele előtt vagy után felmerül: hogyan válasszon, hogyan használja, hogyan ápolja, miben különbözik a bolt két terméktípusa, mit jelent egy tulajdonság;\n- egy termékfajtáról vagy termékcsoportról szól, soha nem egyetlen eladó tételről;\n- megírható az általa említett termékek tényeiből, és egy-négy terméket említ a hivatkozásukkal (P1, P2…);\n- egy keresést céloz: adj meg két-három különböző megfogalmazást, ahogyan a vásárló ugyanerre a cikkre rákeresne a Google-ben, a leggyakoribbal kezdve. Mindegyik magyarul, két-hat szóban, kisbetűvel, márkanév, ár és évszám nélkül. A rövid, hétköznapi szavakat részesítsd előnyben a pontos vagy szakmai kifejezésekkel szemben; azt a megfogalmazást tartjuk meg, amelyre a legtöbben keresnek.\n\nNe javasolj semmit árakról, kedvezményekről, szállításról, versenytársakról vagy magáról a boltról. Ne javasolj olyan témát, amely a már lefedettek között szerepel, és ezek közeli átfogalmazását sem. Tartsd tiszteletben a tulajdonos „soha ne írd” listáját. Inkább kevesebb cikket javasolj, mint gyengét; ha semmi sem illik, adj vissza üres listát.\n\nMinden cikkhez add meg: working_title (egyszerű magyar cím), target_queries (a megfogalmazások), products (a hivatkozások), group (a termékfajta, amelyhez tartozik).",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<profile>\nSells: A bolt szálas gyógyteákat árul, főként egynövényes teákat (kakukkfű, csalánlevél, kamillavirág, borsmentalevél), valamint egy esti teakeveréket és magozott csipkebogyó gyümölcsteát. Kínálatában fekete és zöld tea is szerepel: Assam fekete tea és japán Sencha zöld tea. Teaeszközöket is forgalmaz: öntöttvas és hőálló üveg teáskannát, bögrébe való teaszűrőt és fém teatartó dobozt.\nAudience: Olyan vásárlóknak szól, akik szálas gyógy-, gyümölcs-, fekete és zöld teát főznek otthon. Azoknak is, akiknek a teafőzéshez és -tároláshoz eszközök is kellenek.\nCountry: HU\nTone: friendly\nNever say: —\n</profile>\n\n<products>\n<group name=\"Fekete tea\">\n  P1: Assam fekete tea, TGFOP\n    - Az Assam fekete tea TGFOP minősítésű.\n    - Az Assam fekete tea a Bükki Füvesház terméke.\n    - Az Assam fekete tea koffeines.\n    - Az Assam fekete tea második szüretelésű (second flush).\n    - Az Assam fekete tea Indiából, a Halmari ültetvényről származik.\n    - Az Assam fekete tea aranyszínű levélhegyeket tartalmaz.\n    - Az Assam fekete tea íze malátás, erőteljes.\n    - Az Assam fekete tea tejjel is iható.\n    - Az Assam fekete teából 1 teáskanál kell 2,5 dl 95 °C-os vízhez.\n    - Az Assam fekete teát 3–4 percig kell áztatni.\n    - Az Assam fekete tea kiszerelése 100 g.\n</group>\n<group name=\"Gyógytea\">\n  P2: Kakukkfű tea, szálas\n    - A kakukkfű tea szálas kiszerelésű.\n    - A kakukkfű tea gyógytea.\n    - A kakukkfű tea forgalmazója a Bükki Füvesház.\n    - A kakukkfű tea egynövényes tea.\n    - A kakukkfű tea vadon termő mezei kakukkfű (Thymus serpyllum) virágos hajtásából készül.\n    - A kakukkfű tea alapanyaga a Bükk déli lejtőiről származik.\n    - A kakukkfű tea alapanyagát kézzel gyűjtik júniusban.\n    - A kakukkfű tea alapanyagát árnyékban szárítják.\n    - A kakukkfű tea vágott formában kapható.\n    - A kakukkfű teából egy csészéhez 1 teáskanál (kb. 1,5 g) elegendő.\n    - A kakukkfű teát 95 °C-os vízzel, 8–10 perc áztatással kell elkészíteni.\n    - A kakukkfű tea kiszerelése 50 g.\n  P3: Csalánlevél tea, szálas\n    - A csalánlevél tea szálas kivitelű.\n    - A csalánlevél tea gyógytea.\n    - A csalánlevél teát a Bükki Füvesház forgalmazza.\n    - A csalánlevél tea egynövényes tea.\n    - A csalánlevél tea nagy csalán (Urtica dioica) leveléből készül.\n    - A csalánlevél tea alapanyagát virágzás előtt, májusban gyűjtik.\n    - A csalánlevél tea vágott, szálas tea.\n    - A csalánlevél tea adagolása 2 teáskanál 2,5 dl forrásban lévő vízhez.\n    - A csalánlevél teát 10 percig kell áztatni.\n    - A csalánlevél tea kiszerelése 70 g.\n    - A csalánlevél tea visszazárható papírtasakban kapható.\n  P4: Kamillavirág tea\n    - A Kamillavirág tea gyógytea.\n    - A Kamillavirág tea forgalmazója a Bükki Füvesház.\n    - A Kamillavirág tea egynövényes tea.\n    - A Kamillavirág tea orvosi székfű (Matricaria chamomilla) egész virágzata.\n    - A Kamillavirág tea a Hortobágy széléről származik.\n    - A Kamillavirág tea saját termesztésből származik.\n    - A Kamillavirág tea egész virágfejekből áll, nem tört.\n    - A Kamillavirág teából 1 evőkanálnyit kell 2 dl vízhez adni.\n    - A Kamillavirág teát 5–7 percig kell áztatni, fedő alatt.\n    - A Kamillavirág tea kiszerelése 40 g.\n  P5: Borsmentalevél tea\n    - A Borsmentalevél tea borsosmenta (Mentha × piperita) leveléből készül.\n    - A Borsmentalevél tea saját kertből származik.\n    - A Borsmentalevél tea júliusi vágásból készül.\n    - A Borsmentalevél tea hidegen áztatva 2 teáskanál 5 dl hideg vízben 4 órán át a hűtőben készíthető.\n    - A Borsmentalevél tea forrón 1 teáskanál 2 dl vízhez, 5 percig áztatva készíthető.\n    - A Borsmentalevél tea kiszerelése 50 g.\n    - A Borsmentalevél tea gyógytea.\n    - A Borsmentalevél tea egynövényes tea.\n    - A Borsmentalevél tea forgalmazója a Bükki Füvesház.\n</group>\n<group name=\"Gyümölcstea\">\n  P6: Csipkebogyó tea, magozott\n    - A Csipkebogyó tea magozott.\n    - A Csipkebogyó tea gyümölcstea.\n    - A Csipkebogyó tea gyártója a Bükki Füvesház.\n    - A Csipkebogyó tea a gyepűrózsa (Rosa canina) magozott, szárított terméséből készül.\n    - A Csipkebogyó tea termését októberben gyűjtik.\n    - A Csipkebogyó tea darabolt.\n    - A Csipkebogyó teából 1 evőkanálnyit 3 dl hideg vízben kell felforralni.\n    - A Csipkebogyó teát forralás után 10 percig lassú tűzön kell főzni.\n    - A Csipkebogyó tea kiszerelése 100 g.\n</group>\n<group name=\"Tárolás\">\n  P7: Fém teatartó doboz\n    - A Fém teatartó doboz ónozott acélból készült.\n    - A Fém teatartó doboz fényzáró.\n    - A Fém teatartó doboz dupla fedővel rendelkezik.\n    - A Fém teatartó doboz légmentesen zár.\n    - A Fém teatartó dobozba 100 g szálas tea fér bele.\n    - A Fém teatartó doboz magassága 12 cm.\n    - A Fém teatartó doboz átmérője 8 cm.\n</group>\n<group name=\"Teakeverék\">\n  P8: Esti teakeverék\n    - Az Esti teakeverék 40% citromfűlevelet tartalmaz.\n    - Az Esti teakeverék 20% levendulavirágot tartalmaz.\n    - Az Esti teakeverék 25% kamillavirágot tartalmaz.\n    - Az Esti teakeverék 15% komlótobozt tartalmaz.\n    - Az Esti teakeverék koffeinmentes.\n    - Az Esti teakeverékből 1 teáskanalat kell 2 dl 90 °C-os vízhez adni.\n    - Az Esti teakeveréket 7 percig kell áztatni.\n    - Az Esti teakeverék tömege 60 g.\n    - Az Esti teakeveréket a Bükki Füvesház forgalmazza.\n    - Az Esti teakeverék gyógytea.\n</group>\n<group name=\"Teáskanna\">\n  P9: Öntöttvas teáskanna 0,8 l\n    - Az öntöttvas teáskanna űrtartalma 0,8 l.\n    - Az öntöttvas teáskanna fekete és mélyzöld színben kapható.\n    - Az öntöttvas teáskanna belül zománcozott.\n    - Az öntöttvas teáskanna rozsdamentes acél szűrőbetéttel rendelkezik.\n    - Az öntöttvas teáskanna űrtartalma 0,8 liter, ami kb. 3 csésze.\n    - Az öntöttvas teáskanna nem tűzhelyre való, csak forró víz töltésére használható.\n    - Az öntöttvas teáskanna kézzel mosandó, mosogatószer nélkül.\n    - Az öntöttvas teáskanna tömege 1,3 kg.\n  P10: Hőálló üveg teáskanna 1 l\n    - A teáskanna hőálló üvegből készült.\n    - A teáskanna űrtartalma 1 liter.\n    - A teáskanna boroszilikát üvegből készült.\n    - A teáskanna kivehető üveg szűrőhengerrel rendelkezik.\n    - A teáskanna gázfőzőlapon melegíthető.\n    - A teáskanna elektromos főzőlapon melegíthető.\n    - A teáskanna mikrohullámú sütőbe tehető.\n    - A teáskanna mosogatógépben mosható.\n</group>\n<group name=\"Teaszűrő\">\n  P11: Rozsdamentes teaszűrő bögrébe\n    - A teaszűrő rozsdamentes acél hálóból készült.\n    - A teaszűrő hálójának lyukbősége 0,3 mm.\n    - A teaszűrő két füllel rendelkezik.\n    - A teaszűrő 7–9 cm átmérőjű bögrékhez való.\n    - A teaszűrőhöz fedő tartozik, amely tálcaként is használható.\n    - A teaszűrő mosogatógépben mosható.\n    - A teaszűrő bögrébe való.\n</group>\n<group name=\"Zöld tea\">\n  P12: Sencha zöld tea\n    - A Sencha zöld tea japán sencha Shizuoka prefektúrából.\n    - A Sencha zöld tea első tavaszi szüretből származik.\n    - A Sencha zöld tea gőzölt, sodort levél.\n    - A Sencha zöld teát 70–80 °C-os vízzel kell elkészíteni.\n    - A Sencha zöld teát 1–2 percig kell áztatni.\n    - A Sencha zöld tea levele háromszor is felönthető.\n    - A Sencha zöld tea kiszerelése 80 g.\n    - A Sencha zöld tea koffeines.\n    - A Sencha zöld tea forgalmazója a Bükki Füvesház.\n</group>\n</products>\n\n<already_covered>\n- borsmenta tea készítése\n- csalán tea készítése\n- csipkebogyó tea készítése\n- fekete tea készítése\n- kakukkfű tea készítése\n- kamilla tea készítése\n- zöld tea készítése\n- koffeinmentes tea\n- szálas tea szűrő\n- Rólunk\n- Szállítás és visszaküldés\n</already_covered>\n\n<at_most>20</at_most>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "topics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "working_title": {
+                    "type": "string"
+                  },
+                  "target_queries": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "products": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "group": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "working_title",
+                  "target_queries",
+                  "products",
+                  "group"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "topics"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfqNFrHYzFdTmpTDMRcEg",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "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"
+      },
+      {
+        "type": "text",
+        "text": "{\"topics\":[{\"working_title\":\"Hogyan tároljuk a szálas teát, hogy sokáig friss maradjon?\",\"target_queries\":[\"tea tárolása\",\"szálas tea tárolása\",\"teát miben tároljunk\"],\"products\":[\"P7\",\"P3\",\"P12\"],\"group\":\"Tárolás\"},{\"working_title\":\"Öntöttvas teáskanna használata és tisztítása\",\"target_queries\":[\"öntöttvas teáskanna tisztítása\",\"öntöttvas teáskanna használata\",\"öntöttvas kanna ápolása\"],\"products\":[\"P9\"],\"group\":\"Teáskanna\"},{\"working_title\":\"Üveg vagy öntöttvas teáskanna: melyiket válasszam?\",\"target_queries\":[\"milyen teáskannát vegyek\",\"üveg vagy öntöttvas teáskanna\",\"üveg teáskanna tűzhelyre\"],\"products\":[\"P9\",\"P10\"],\"group\":\"Teáskanna\"},{\"working_title\":\"Hidegen áztatott tea: frissítő menta tea a hűtőből\",\"target_queries\":[\"hidegen áztatott tea\",\"menta tea hidegen\",\"jeges tea házilag\"],\"products\":[\"P5\"],\"group\":\"Gyógytea\"},{\"working_title\":\"Fekete tea tejjel: melyik teához illik a tej?\",\"target_queries\":[\"tejes tea\",\"fekete tea tejjel\",\"assam tea tejjel\"],\"products\":[\"P1\"],\"group\":\"Fekete tea\"},{\"working_title\":\"Mit jelent a TGFOP a tea csomagolásán?\",\"target_queries\":[\"tgfop jelentése\",\"tea minősítés betűk\",\"tgfop tea\"],\"products\":[\"P1\"],\"group\":\"Fekete tea\"},{\"working_title\":\"First flush, second flush: mit jelent a tea szürete?\",\"target_queries\":[\"first flush second flush\",\"second flush tea\",\"tea szüret jelentése\"],\"products\":[\"P1\",\"P12\"],\"group\":\"Fekete tea\"},{\"working_title\":\"Mi a különbség a zöld tea és a fekete tea között?\",\"target_queries\":[\"zöld tea és fekete tea különbség\",\"zöld tea vagy fekete tea\",\"fekete tea zöld tea\"],\"products\":[\"P1\",\"P12\"],\"group\":\"Zöld tea\"},{\"working_title\":\"Hányszor önthető fel a zöld tea?\",\"target_queries\":[\"zöld tea többször felönthető\",\"zöld tea újra felöntése\",\"hányszor önthető fel a tea\"],\"products\":[\"P12\"],\"group\":\"Zöld tea\"},{\"working_title\":\"Mi kerül egy esti teába? Citromfű, levendula, kamilla és komló\",\"target_queries\":[\"esti tea\",\"lefekvés előtti tea\",\"esti tea keverék\"],\"products\":[\"P8\",\"P4\"],\"group\":\"Teakeverék\"},{\"working_title\":\"Szálas tea vagy filteres tea: miben más a szálas?\",\"target_queries\":[\"szálas tea vagy filteres\",\"szálas tea előnyei\",\"szálas tea\"],\"products\":[\"P4\",\"P2\",\"P3\"],\"group\":\"Gyógytea\"},{\"working_title\":\"Mikor gyűjtik a gyógynövényeket? Kakukkfű, csalán, menta és csipkebogyó\",\"target_queries\":[\"gyógynövények gyűjtési ideje\",\"mikor kell szedni a csalánt\",\"mikor szedjük a kakukkfüvet\"],\"products\":[\"P2\",\"P3\",\"P5\",\"P6\"],\"group\":\"Gyógytea\"},{\"working_title\":\"Mennyi teát tegyek egy csészébe?\",\"target_queries\":[\"mennyi tea egy csészébe\",\"tea adagolása\",\"hány gramm tea egy csészéhez\"],\"products\":[\"P1\",\"P2\",\"P4\",\"P12\"],\"group\":\"Gyógytea\"},{\"working_title\":\"Hány fokos víz kell a teához? Hőmérséklet teafajtánként\",\"target_queries\":[\"tea víz hőmérséklete\",\"hány fokos víz kell a teához\",\"teafőzés hőmérséklet\"],\"products\":[\"P12\",\"P1\",\"P8\",\"P3\"],\"group\":\"Zöld tea\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 5117,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 2671,
+      "output_tokens_details": {
+        "thinking_tokens": 1301
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

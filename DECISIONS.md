@@ -109,7 +109,7 @@ Asked at the start of phase 2; answered in the session.
 ## 2026-10-08 — Assumed: how topics are found and checked (phase 2)
 
 - **Demand floors are the old build's: 100 monthly searches for English, 20 for Hungarian**, as `mvp-plan.md` §3.3 says to keep them. The handoff's placeholder for English was 50. The old file itself marked these numbers as never signed off, so they are worth a look once real volumes come in.
-- **"Already has a page about this"** means an existing blog post or page whose title or address covers at least two thirds of the query's meaningful words, ignoring words that run through the whole shop (such as "dog" in a dog shop). Without that exception, "how to clean a dog leash" was thrown out because the shop has a post on leash length. Collections are not compared: they are the shop's product listings, which an article links to rather than competes with. Hungarian title matching is weak (word forms change a lot), so for Hungarian the main duplicate check is the next one.
+- **"Already has a page about this"** was first a pure word comparison; superseded the same day by the founder's rough-check-then-model design (entry below). What survives: words that run through the whole shop (such as "dog" in a dog shop) are ignored when flagging. Collections are not compared: they are the shop's product listings, which an article links to rather than competes with. Hungarian title matching is weak (word forms change a lot), so for Hungarian the main duplicate check is the next one.
 - **Same intent** means two phrases whose top three Google results share at least two pages. The higher-demand one is kept; a new candidate never displaces a topic already waiting in the queue.
 - **"All ten results are product listings"** is judged per result: one with a price on Google or with a shop address (/products/, /collections/, /termek/ and similar) counts as a listing.
 - **Ranking** multiplies demand (on a log scale) by how many distinct facts back the topic and by how much of the first page is not shop listings. The weights are in `core/config.ts`.
@@ -132,9 +132,15 @@ DataForSEO's instant ("live") top-ten request answers this account only with "50
 
 **What to look at.** The queues for the Hungarian and English rich shops, with real monthly searches and Google results: `docs/checkpoints/checkpoint-2-queues.html` (published privately: https://claude.ai/artifact/LvjY53S6G8mvCXi9BQ4Kty). On screen: `pnpm seed:preview rich-hu:done rich-en:done`, then `pnpm preview` and the addresses it prints. Regenerate the page with `npx tsx scripts/checkpoint-2.ts`.
 
-**Agent's reading of it.** The topics are ones these shops can write credibly (brewing cold brew, using a French press, preparing nettle and thyme tea), and the why lines state only what the numbers show. But only 8 of 35 proposed topics cleared the minimum: Google Ads reports no figure, or a tiny one, for most of the exact phrases the model chose. At this rate a rich shop runs dry in about a week. **Open question for the founders**, with the agent's recommendation first: (1) ask the model for two or three phrasings per topic and keep the most searched, at no extra DataForSEO cost; (2) lower the minimums (100 English, 20 Hungarian); (3) leave it.
+**Agent's reading of it.** The topics are ones these shops can write credibly (brewing cold brew, using a French press, preparing nettle and thyme tea), and the why lines state only what the numbers show. But only 8 of 35 proposed topics cleared the minimum: Google Ads reports no figure, or a tiny one, for most of the exact phrases the model chose. At this rate a rich shop runs dry in about a week. **Answered by the founder** the same day: several phrasings per topic (see the entry below). The page was regenerated: 18 of 34 queued.
 
 **Unverified.** Everything touching Shopify (no dev store yet), the embedded navigation inside the real admin, DataForSEO error answers other than the ones seen (their bodies are not published), and the volumes and results for the fixture shops other than the two rich ones, which still come from the fake's stable placeholder numbers.
+
+## 2026-10-08 — Founder: several phrasings per topic; the model decides whether a post already covers a topic
+
+Answering checkpoint 2's open question, the founder chose phrasings. The topic prompt (version 2) asks for two or three ways a shopper would search for each article; all of them go into the single demand request, and each topic keeps its most-searched phrasing. On the same two rich shops the queue grew from 8 to 18 of about 35 proposed topics.
+
+The founder also asked for title matching to be a rough word check with the model making the final call. The word check now only flags existing blog posts and pages that share a meaningful word with any phrasing of a topic (ignoring shop-wide words); one model call per topic search then decides, for the flagged topics, whether one of those posts already answers it, and may name only a post it was shown. "Add a topic" does the same before asking about product facts. If that call fails, topic-finding stops and retries; it does not fall back to the word check alone (rule 8). In a test of ten cases, five per language, the model matched the expected answer every time, including Hungarian word forms the word check could not link.
 
 ## Spend
 
@@ -145,5 +151,7 @@ Running total of what this build has spent on the founders' keys.
 | 2026-10-08 | Anthropic | Phase 1 recordings: fact sheets and profile drafts for the ten fixture stores and the 250-product catalogue (69 calls, Claude Opus 5.5) | 0.92 |
 | 2026-10-08 | Anthropic | Phase 2 recordings: topic proposals and "Add a topic" matches (14 calls) | 0.53 |
 | 2026-10-08 | DataForSEO | Checkpoint 2: monthly searches for the two rich shops (2 requests), their top ten through the queue (9 tasks) | 0.19 |
+| 2026-10-08 | Anthropic | Topic prompt version 2 (phrasings) and the model's existing-post check, across all scenarios (20 calls) | 0.63 |
+| 2026-10-08 | DataForSEO | Checkpoint 2 again with phrasings: monthly searches for the two rich shops, their top ten | 0.19 |
 
-**Total: 1.64 USD** (Anthropic 1.45, DataForSEO 0.19). DataForSEO balance left: 0.64 USD. Anthropic figures are computed from the token counts in the committed recordings at 4 / 20 USD per million input / output tokens; DataForSEO figures from the account balance before and after.
+**Total: 2.46 USD** (Anthropic 2.08, DataForSEO 0.38). DataForSEO balance left: 0.45 USD. Anthropic figures are computed from the token counts in the committed recordings at 4 / 20 USD per million input / output tokens; DataForSEO figures from the account balance before and after.

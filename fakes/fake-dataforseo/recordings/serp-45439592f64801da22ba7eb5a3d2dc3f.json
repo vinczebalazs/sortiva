@@ -1,0 +1,861 @@
+{
+ "recordedAt": "2026-10-08T20:00:09.968Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "pour over coffee ratio",
+  "location_code": 2826,
+  "language_code": "en",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0161 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10082000-2302-0066-0000-1f7ae20ce467",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0114 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10082000-2302-0066-0000-1f7ae20ce467"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "pour over coffee ratio",
+     "location_code": 2826,
+     "language_code": "en",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "pour over coffee ratio",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2826,
+      "language_code": "en",
+      "check_url": "https://www.google.com/search?q=pour%20over%20coffee%20ratio&hl=en&gl=GB&ie=UTF-8&uule=w+CAIQIFISCamRx0IRO1oCEXoliDJDoPjE",
+      "datetime": "2026-10-08 20:00:09 +00:00",
+      "spell": null,
+      "refinement_chips": null,
+      "item_types": [
+       "ai_overview",
+       "organic",
+       "people_also_ask",
+       "video",
+       "related_searches"
+      ],
+      "se_results_count": 191,
+      "pages_count": 1,
+      "items_count": 12,
+      "items": [
+       {
+        "type": "ai_overview",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+        "asynchronous_ai_overview": false,
+        "markdown": "![How to Make Pour Over Coffee - Brew Guide | The Worktop](https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-1f7ae20ce467:20)\n![How to Make Pour Over Coffee – A Simple Tutorial and Brew ...](https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-1f7ae20ce467:21)\n![Beginner&#39;s Guide To V60 Pour Over | Two Chimps Coffee](https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-1f7ae20ce467:22)\n![How to Make Pour-Over Coffee - Minimalist Baker Recipes](https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-1f7ae20ce467:23)\n![The Best Coffee to Water Ratio Explained](https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-1f7ae20ce467:24)\n\nThe ideal coffee-to-water ratio for a pour-over is **1:16** (1 gram of coffee for every 16 grams or milliliters of water).[[1]](https://www.reddit.com/r/pourover/comments/1ey0rx4/what_is_your_typical_ratio/)[[2]](https://batchcoffee.co.uk/stories/how-much-coffee-in-pour-over/)[[3]](https://www.stonecreekcoffee.com/blogs/news/how-to-make-a-perfect-pour-over-coffee)\n\n### Standard Pour-Over Ratios\n\n- **Balanced & Standard (1:16):** Use **20 grams of coffee** to **320 grams (ml) of water** for a standard single cup.\n- **Stronger / Bolder (1:15):** Use **20 grams of coffee** to **300 grams (ml) of water**.\n- **Lighter / Brighter (1:17):** Use **20 grams of coffee** to **340 grams (ml) of water**.\n- **General Range:** Most manual methods taste best within a **1:15 to 1:17** range. For a deeper dive into adjusting these values, you can use the [Coffee to Water Ratio Calculator](https://coffeebros.com/pages/coffee-to-water-ratio-calculator).[[1]](https://pullandpourcoffee.com/how-to-make-pour-over-coffee/)[[2]](https://www.youtube.com/shorts/3TiNZXFIxNc)[[3]](https://www.stonecreekcoffee.com/blogs/news/how-to-make-a-perfect-pour-over-coffee)[[4]](https://www.youtube.com/shorts/srAJGG-eWgI?vl=en)[[5]](https://www.reddit.com/r/pourover/comments/1ey0rx4/what_is_your_typical_ratio/)[[6]](https://coffeebros.com/pages/coffee-to-water-ratio-calculator)\n\n### Quick Measurements\nIf you do not have a digital kitchen scale, use these basic approximations:\n\n- **1:14 Ratio:** Roughly **7 grams** (about 1 rounded tablespoon) of coffee per **100 ml** of water.\n- **Standard Scoop:** Roughly **2 tablespoons (10 grams)** of coffee per **6 fluid ounces (180 ml)** of water.[[1]](https://athome.starbucks.com/brewing-guide/how-make-pour-over-coffee)[[2]](https://coffeegeek.com/blog/techniques/one-to-fourteen/)\n\nIf you'd like, let me know:\n\n- **Which pour-over device** you are using (like a Hario V60 or Chemex)\n- **How many cups** you want to brew at once\n\nI can give you a step-by-step recipe with exact gram weights and pour times.",
+        "items": [
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": null,
+          "markdown": "![How to Make Pour Over Coffee - Brew Guide | The Worktop](https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-1f7ae20ce467:10)\n![How to Make Pour Over Coffee – A Simple Tutorial and Brew ...](https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-1f7ae20ce467:11)\n![Beginner&#39;s Guide To V60 Pour Over | Two Chimps Coffee](https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-1f7ae20ce467:12)\n![How to Make Pour-Over Coffee - Minimalist Baker Recipes](https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-1f7ae20ce467:13)\n![The Best Coffee to Water Ratio Explained](https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-1f7ae20ce467:14)",
+          "links": null,
+          "images": [
+           {
+            "type": "images_element",
+            "alt": "How to Make Pour Over Coffee - Brew Guide | The Worktop",
+            "url": null,
+            "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-1f7ae20ce467:15"
+           },
+           {
+            "type": "images_element",
+            "alt": "How to Make Pour Over Coffee – A Simple Tutorial and Brew ...",
+            "url": null,
+            "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-1f7ae20ce467:16"
+           },
+           {
+            "type": "images_element",
+            "alt": "Beginner's Guide To V60 Pour Over | Two Chimps Coffee",
+            "url": null,
+            "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-1f7ae20ce467:17"
+           },
+           {
+            "type": "images_element",
+            "alt": "How to Make Pour-Over Coffee - Minimalist Baker Recipes",
+            "url": null,
+            "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-1f7ae20ce467:18"
+           },
+           {
+            "type": "images_element",
+            "alt": "The Best Coffee to Water Ratio Explained",
+            "url": null,
+            "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-1f7ae20ce467:19"
+           }
+          ],
+          "references": null
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "The ideal coffee-to-water ratio for a pour-over is 1:16 (1 gram of coffee for every 16 grams or milliliters of water).",
+          "markdown": "The ideal coffee-to-water ratio for a pour-over is **1:16** (1 gram of coffee for every 16 grams or milliliters of water).[[1]](https://www.reddit.com/r/pourover/comments/1ey0rx4/what_is_your_typical_ratio/)[[2]](https://batchcoffee.co.uk/stories/how-much-coffee-in-pour-over/)[[3]](https://www.stonecreekcoffee.com/blogs/news/how-to-make-a-perfect-pour-over-coffee)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Reddit",
+            "domain": "www.reddit.com",
+            "url": "https://www.reddit.com/r/pourover/comments/1ey0rx4/what_is_your_typical_ratio/",
+            "title": "What is your typical ratio? : r/pourover - Reddit",
+            "text": "Optimal Brew Ratios: The most commonly used coffee-to-water ratio for pour-over, particularly with a V60, falls within the 1:15 to..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "batchcoffee.co.uk",
+            "domain": "batchcoffee.co.uk",
+            "url": "https://batchcoffee.co.uk/stories/how-much-coffee-in-pour-over/",
+            "title": "How Much Coffee in a Pour Over?",
+            "text": "For a single cup, my go-to ratio is about 1:16, which means for every 1 gram of coffee in pour over, I use 16 grams (or millilitre..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Stone Creek Coffee",
+            "domain": "www.stonecreekcoffee.com",
+            "url": "https://www.stonecreekcoffee.com/blogs/news/how-to-make-a-perfect-pour-over-coffee",
+            "title": "How to Make a Perfect Pour Over Coffee | Brewing Tips",
+            "text": "What Is Pour Over Coffee? Simply put, pour over coffee is a gravity-powered extraction brewing method. You set ground coffee in a ..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Standard Pour-Over Ratios",
+          "text": "Balanced & Standard (1:16): Use 20 grams of coffee to 320 grams (ml) of water for a standard single cup. Stronger / Bolder (1:15): Use 20 grams of coffee to 300 grams (ml) of water. Lighter / Brighter (1:17): Use 20 grams of coffee to 340 grams (ml) of water. General Range: Most manual methods taste best within a 1:15 to 1:17 range. For a deeper dive into adjusting these values, you can use the Coffee to Water Ratio Calculator.",
+          "markdown": "- **Balanced & Standard (1:16):** Use **20 grams of coffee** to **320 grams (ml) of water** for a standard single cup.\n- **Stronger / Bolder (1:15):** Use **20 grams of coffee** to **300 grams (ml) of water**.\n- **Lighter / Brighter (1:17):** Use **20 grams of coffee** to **340 grams (ml) of water**.\n- **General Range:** Most manual methods taste best within a **1:15 to 1:17** range. For a deeper dive into adjusting these values, you can use the [Coffee to Water Ratio Calculator](https://coffeebros.com/pages/coffee-to-water-ratio-calculator).[[1]](https://pullandpourcoffee.com/how-to-make-pour-over-coffee/)[[2]](https://www.youtube.com/shorts/3TiNZXFIxNc)[[3]](https://www.stonecreekcoffee.com/blogs/news/how-to-make-a-perfect-pour-over-coffee)[[4]](https://www.youtube.com/shorts/srAJGG-eWgI?vl=en)[[5]](https://www.reddit.com/r/pourover/comments/1ey0rx4/what_is_your_typical_ratio/)[[6]](https://coffeebros.com/pages/coffee-to-water-ratio-calculator)",
+          "links": [
+           {
+            "type": "link_element",
+            "title": "Coffee to Water Ratio Calculator",
+            "description": null,
+            "url": "https://coffeebros.com/pages/coffee-to-water-ratio-calculator",
+            "domain": "coffeebros.com"
+           }
+          ],
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Pull & Pour Coffee",
+            "domain": "pullandpourcoffee.com",
+            "url": "https://pullandpourcoffee.com/how-to-make-pour-over-coffee/",
+            "title": "How to Make Pour Over Coffee – A Simple Tutorial and Brew Framework",
+            "text": "Dosage & Ratio: 12g-30g coffee (20g baseline), 1:16 ratio (320g water for 20g dose). Bloom: 3x coffee weight (60g water), wait 30-"
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/shorts/3TiNZXFIxNc",
+            "title": "How To Make a Pourover Coffee",
+            "text": "How To Make a Pourover Coffee this is a pourover. and in my opinion. it's the best way to experience specialty coffee to make one ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Stone Creek Coffee",
+            "domain": "www.stonecreekcoffee.com",
+            "url": "https://www.stonecreekcoffee.com/blogs/news/how-to-make-a-perfect-pour-over-coffee",
+            "title": "How to Make a Perfect Pour Over Coffee | Brewing Tips",
+            "text": "What Is Pour Over Coffee? Simply put, pour over coffee is a gravity-powered extraction brewing method. You set ground coffee in a ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "YouTube",
+            "domain": "www.youtube.com",
+            "url": "https://www.youtube.com/shorts/srAJGG-eWgI?vl=en",
+            "title": "How to Make a Perfect Single Serving Pourover Coffee #coffee #dripcoffee ...",
+            "text": "How to Make a Perfect Single Serving Pourover Coffee #coffee #dripcoffee #pourovercoffee most pourover recipes are made for two cu..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Reddit",
+            "domain": "www.reddit.com",
+            "url": "https://www.reddit.com/r/pourover/comments/1ey0rx4/what_is_your_typical_ratio/",
+            "title": "What is your typical ratio? : r/pourover - Reddit",
+            "text": "Optimal Brew Ratios: The most commonly used coffee-to-water ratio for pour-over, particularly with a V60, falls within the 1:15 to..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Coffee Bros.",
+            "domain": "coffeebros.com",
+            "url": "https://coffeebros.com/pages/coffee-to-water-ratio-calculator",
+            "title": "Coffee to Water Ratio Calculator: The Ultimate Coffee Brewing Tool – Coffee Bros.",
+            "text": "Coffee Ratios: Mild 1:18 (SCA standard), Average 1:16, Robust 1:13 for pour-over, Chemex, and autodrip; French press Average 1:15;"
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Quick Measurements",
+          "text": "If you do not have a digital kitchen scale, use these basic approximations:",
+          "markdown": "If you do not have a digital kitchen scale, use these basic approximations:",
+          "links": null,
+          "images": null,
+          "references": null
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "1:14 Ratio: Roughly 7 grams (about 1 rounded tablespoon) of coffee per 100 ml of water. Standard Scoop: Roughly 2 tablespoons (10 grams) of coffee per 6 fluid ounces (180 ml) of water.",
+          "markdown": "- **1:14 Ratio:** Roughly **7 grams** (about 1 rounded tablespoon) of coffee per **100 ml** of water.\n- **Standard Scoop:** Roughly **2 tablespoons (10 grams)** of coffee per **6 fluid ounces (180 ml)** of water.[[1]](https://athome.starbucks.com/brewing-guide/how-make-pour-over-coffee)[[2]](https://coffeegeek.com/blog/techniques/one-to-fourteen/)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Starbucks",
+            "domain": "athome.starbucks.com",
+            "url": "https://athome.starbucks.com/brewing-guide/how-make-pour-over-coffee",
+            "title": "How to Make Pour-Over Coffee | Starbucks",
+            "text": "Equipment: Gooseneck kettle, scale, mug, pour-over cone and filter, tablespoon, whole bean coffee (coarse grind), water. Ratio: 2 ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "CoffeeGeek",
+            "domain": "coffeegeek.com",
+            "url": "https://coffeegeek.com/blog/techniques/one-to-fourteen/",
+            "title": "One to Fourteen - CoffeeGeek",
+            "text": "1:14; seven; and one hundred. 1:14 is your starting target ratio of ground coffee to brewing water used to make most non-pressuriz..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "If you'd like, let me know:Which pour-over device you are using (like a Hario V60 or Chemex)\nHow many cups you want to brew at once\nI can give you a step-by-step recipe with exact gram weights and pour times.",
+          "markdown": "If you'd like, let me know:\n\n- **Which pour-over device** you are using (like a Hario V60 or Chemex)\n- **How many cups** you want to brew at once\n\nI can give you a step-by-step recipe with exact gram weights and pour times.",
+          "links": null,
+          "images": null,
+          "references": null
+         }
+        ],
+        "references": [
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Reddit",
+          "domain": "www.reddit.com",
+          "url": "https://www.reddit.com/r/pourover/comments/1ey0rx4/what_is_your_typical_ratio/",
+          "title": "What is your typical ratio? : r/pourover - Reddit",
+          "text": "Optimal Brew Ratios: The most commonly used coffee-to-water ratio for pour-over, particularly with a V60, falls within the 1:15 to..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Coffee Bros.",
+          "domain": "coffeebros.com",
+          "url": "https://coffeebros.com/pages/coffee-to-water-ratio-calculator",
+          "title": "Coffee to Water Ratio Calculator: The Ultimate Coffee Brewing Tool – Coffee Bros.",
+          "text": "Coffee Ratios: Mild 1:18 (SCA standard), Average 1:16, Robust 1:13 for pour-over, Chemex, and autodrip; French press Average 1:15;"
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "YouTube",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/shorts/3TiNZXFIxNc",
+          "title": "How To Make a Pourover Coffee",
+          "text": "How To Make a Pourover Coffee this is a pourover. and in my opinion. it's the best way to experience specialty coffee to make one ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Pull & Pour Coffee",
+          "domain": "pullandpourcoffee.com",
+          "url": "https://pullandpourcoffee.com/how-to-make-pour-over-coffee/",
+          "title": "How to Make Pour Over Coffee – A Simple Tutorial and Brew Framework",
+          "text": "Dosage & Ratio: 12g-30g coffee (20g baseline), 1:16 ratio (320g water for 20g dose). Bloom: 3x coffee weight (60g water), wait 30-"
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Stone Creek Coffee",
+          "domain": "www.stonecreekcoffee.com",
+          "url": "https://www.stonecreekcoffee.com/blogs/news/how-to-make-a-perfect-pour-over-coffee",
+          "title": "How to Make a Perfect Pour Over Coffee | Brewing Tips",
+          "text": "What Is Pour Over Coffee? Simply put, pour over coffee is a gravity-powered extraction brewing method. You set ground coffee in a ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Starbucks",
+          "domain": "athome.starbucks.com",
+          "url": "https://athome.starbucks.com/brewing-guide/how-make-pour-over-coffee",
+          "title": "How to Make Pour-Over Coffee | Starbucks",
+          "text": "Equipment: Gooseneck kettle, scale, mug, pour-over cone and filter, tablespoon, whole bean coffee (coarse grind), water. Ratio: 2 ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "batchcoffee.co.uk",
+          "domain": "batchcoffee.co.uk",
+          "url": "https://batchcoffee.co.uk/stories/how-much-coffee-in-pour-over/",
+          "title": "How Much Coffee in a Pour Over?",
+          "text": "For a single cup, my go-to ratio is about 1:16, which means for every 1 gram of coffee in pour over, I use 16 grams (or millilitre..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "YouTube",
+          "domain": "www.youtube.com",
+          "url": "https://www.youtube.com/shorts/srAJGG-eWgI?vl=en",
+          "title": "How to Make a Perfect Single Serving Pourover Coffee #coffee #dripcoffee ...",
+          "text": "How to Make a Perfect Single Serving Pourover Coffee #coffee #dripcoffee #pourovercoffee most pourover recipes are made for two cu..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "CoffeeGeek",
+          "domain": "coffeegeek.com",
+          "url": "https://coffeegeek.com/blog/techniques/one-to-fourteen/",
+          "title": "One to Fourteen - CoffeeGeek",
+          "text": "1:14; seven; and one hundred. 1:14 is your starting target ratio of ground coffee to brewing water used to make most non-pressuriz..."
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]",
+        "domain": "www.reddit.com",
+        "title": "What is your typical ratio? : r/pourover",
+        "url": "https://www.reddit.com/r/pourover/comments/1ey0rx4/what_is_your_typical_ratio/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "70+ comments  ·  2 years ago",
+        "website_name": "Reddit · r/pourover",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Just got into brewing at home and got the Kingrinder K6 and a Hario V60 for pour over\n\nI have watched way to many YouTube videos and they all say different ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Ratio of coffee to water : r/pourover",
+          "description": null,
+          "url": "https://www.reddit.com/r/pourover/comments/15w45uj/ratio_of_coffee_to_water/",
+          "domain": "www.reddit.com"
+         },
+         {
+          "type": "link_element",
+          "title": "Pour over- what ratio do you prefer? : r/Coffee",
+          "description": null,
+          "url": "https://www.reddit.com/r/Coffee/comments/jgoccr/pour_over_what_ratio_do_you_prefer/",
+          "domain": "www.reddit.com"
+         },
+         {
+          "type": "link_element",
+          "title": "More results from www.reddit.com",
+          "description": null,
+          "url": "https://www.google.com/search?q=pour+over+coffee+ratio+site:www.reddit.com&sca_esv=ad2f53e9788d7fab&hl=en&gl=GB&sxsrf=APpeQnsCk2nLeeBPrLuiVaaN5-b98FKibA:1791489607200&sa=X&ved=2ahUKEwifj5_tmquXAxWQpJUCHUS3A0gQrQIoAnoECCsQAw",
+          "domain": "www.google.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "people_also_ask",
+        "rank_group": 1,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]",
+        "items": [
+         {
+          "type": "people_also_ask_element",
+          "title": "What is the best ratio for pour over coffee?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "How much coffee for 500 ml pour over?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "How many tablespoons of coffee for 16 oz of pour over?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "What is the 4-6 method for pour over coffee?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[6]/div[1]/div[1]",
+        "domain": "counterculturecoffee.com",
+        "title": "Guide To Pour-Over Coffee",
+        "url": "https://counterculturecoffee.com/blogs/counter-culture-coffee/guide-to-pour-over-coffee?srsltid=AU7gw4XrQfxiQ6ZpVotw7CDfrlzqJnFUpvXIDYuxe20MaBOC0QYBpEgt",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://counterculturecoffee.com › counter-culture-coffee",
+        "website_name": "Counter Culture Coffee",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "We recommend somewhere between 1:14 and 1:20. That means that for every 1 gram of coffee you will want to use between 14 and 20 grams of water.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "1:14 and 1:20"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]",
+        "domain": "coffeebros.com",
+        "title": "Coffee to Water Ratio Calculator",
+        "url": "https://coffeebros.com/pages/coffee-to-water-ratio-calculator?srsltid=AU7gw4XU2t5Np5WgtBB1Ix-4bC6Ho3JLJhJHcus1i9wnrdWuJ2i7qk-T",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://coffeebros.com › pages › coffee-to-water-ratio-cal...",
+        "website_name": "Coffee Bros.",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "The Specialty Coffee Association recommends a 1:18 coffee-to-water ratio as their Golden Cup Standard for many brewing methods like pour-over, French Press, ... Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "1:18 coffee-to-water ratio"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://coffeebros.com/pages/coffee-to-water-ratio-calculator?srsltid=AU7gw4XU2t5Np5WgtBB1Ix-4bC6Ho3JLJhJHcus1i9wnrdWuJ2i7qk-T#:~:text=The%20Specialty%20Coffee%20Association%20recommends,French%20Press%2C%20Chemex%2C%20and%20Autodrip.",
+          "domain": "coffeebros.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[10]/div[1]/div[1]",
+        "domain": "athome.starbucks.com",
+        "title": "How to Make Pour-Over Coffee",
+        "url": "https://athome.starbucks.com/brewing-guide/how-make-pour-over-coffee",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://athome.starbucks.com › brewing-guide › how-ma...",
+        "website_name": "Starbucks",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Use 2 Tbsp (10 g) of coffee grounds for every cup (6 fl oz, 180 ml) of water. Even out the grounds and set the scale to zero. Grind size is everything. Too ... Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Use 2 Tbsp (10 g) of coffee grounds for every cup (6 fl oz, 180 ml) of water"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://athome.starbucks.com/brewing-guide/how-make-pour-over-coffee#:~:text=Use%202%20Tbsp%20(10%20g),Grind%20size%20is%20everything.%20Too",
+          "domain": "athome.starbucks.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "video",
+        "rank_group": 1,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[12]/div[1]",
+        "items": [
+         {
+          "type": "video_element",
+          "source": "YouTube · Tanner Colson",
+          "title": "How To Make a Pourover Coffee",
+          "timestamp": "2025-02-04 00:00:00 +00:00",
+          "url": "https://www.youtube.com/shorts/3TiNZXFIxNc"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · Whole Latte Love",
+          "title": "Your Pour-Over Coffee Road Map",
+          "timestamp": "2025-03-14 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=63e5Abgb76U"
+         },
+         {
+          "type": "video_element",
+          "source": "YouTube · Alternative Brewing",
+          "title": "The 4:6 Pour Over Method - The Best Way To Make Coffee ...",
+          "timestamp": "2023-10-06 00:00:00 +00:00",
+          "url": "https://www.youtube.com/watch?v=3YYOWBCd4zo"
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[14]/div[1]/div[1]",
+        "domain": "pullandpourcoffee.com",
+        "title": "How to Make Pour Over Coffee – A Simple Tutorial and ...",
+        "url": "https://pullandpourcoffee.com/how-to-make-pour-over-coffee/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://pullandpourcoffee.com › how-to-make-pour-ov...",
+        "website_name": "Pull & Pour Coffee",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Ratio: 1:16 – 1 gram coffee to 16 grams water. For this example, it is 20g of coffee to 320g of water. anywhere in the 2:45-3:30 range is good.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Ratio: 1:16 – 1 gram coffee to 16 grams water"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[16]/div[1]/div[1]",
+        "domain": "batchcoffee.co.uk",
+        "title": "How Much Coffee in a Pour Over?",
+        "url": "https://batchcoffee.co.uk/stories/how-much-coffee-in-pour-over/?srsltid=AU7gw4XSA0tLX2SPbXcC84mJvA2E50u9_nNTav4mIt8KEQt9U9O-g6lY",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://batchcoffee.co.uk › stories › how-much-coffee-i...",
+        "website_name": "batchcoffee.co.uk",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "12 Mar 2024 — For a single cup, my go-to ratio is about 1:16, which means for every 1 gram of coffee in pour over, I use 16 grams (or millilitres) of water. Read more",
+        "pre_snippet": "03/12/2024 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "ratio",
+         "coffee",
+         "pour over"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://batchcoffee.co.uk/stories/how-much-coffee-in-pour-over/?srsltid=AU7gw4XSA0tLX2SPbXcC84mJvA2E50u9_nNTav4mIt8KEQt9U9O-g6lY#:~:text=For%20a%20single%20cup%2C%20my,grams%20(or%20millilitres)%20of%20water.",
+          "domain": "batchcoffee.co.uk"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2024-03-12 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 7,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[18]/div[1]/div[1]",
+        "domain": "coffeegeek.com",
+        "title": "One to Fourteen",
+        "url": "https://coffeegeek.com/blog/techniques/one-to-fourteen/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://coffeegeek.com › blog › techniques › one-to-fo...",
+        "website_name": "CoffeeGeek",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "19 Mar 2024 — We settled on this ratio: 1:14, or 7g of coffee for every 100ml of water used as recommended baseline for most non pressurized coffee brewing ... Read more",
+        "pre_snippet": "03/19/2024 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "1:14, or 7g of coffee for every 100ml of water"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://coffeegeek.com/blog/techniques/one-to-fourteen/#:~:text=We%20settled%20on%20this%20ratio%3A,non%20pressurized%20coffee%20brewing%20methods.",
+          "domain": "coffeegeek.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2024-03-19 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 8,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[20]/div[1]/div[1]",
+        "domain": "altonbrown.com",
+        "title": "Perfect Pour Over Coffee Recipe | Alton Brown",
+        "url": "https://altonbrown.com/recipes/perfect-pour-over-coffee/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://altonbrown.com › recipes › perfect-pour-over-c...",
+        "website_name": "altonbrown.com",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "17 fluid ounces filtered water · 1/4 cup plus 1 tablespoon coffee, ground medium in a burr grinder ... Read more",
+        "pre_snippet": "4.4(65) · 5 mins",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": {
+         "rating_type": "Max5",
+         "value": 4.4,
+         "votes_count": 65,
+         "rating_max": 5
+        },
+        "price": null,
+        "highlighted": [
+         "1/4 cup plus 1 tablespoon coffee"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://altonbrown.com/recipes/perfect-pour-over-coffee/#:~:text=17%20fluid%20ounces%20filtered%20water&text=1%2F4%20cup%20plus%201%20tablespoon,medium%20in%20a%20burr%20grinder",
+          "domain": "altonbrown.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "related_searches",
+        "rank_group": 1,
+        "rank_absolute": 12,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[2]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "items": [
+         "Pour over coffee Maker",
+         "Pour over coffee ratio grams",
+         "Pour over coffee ratio calculator",
+         "Pour over coffee ratio tbsp",
+         "Pour over coffee ratio for one cup",
+         "Pour over coffee ratio reddit",
+         "Pour over coffee ratio for 2 cups",
+         "Pour over coffee ratio Chart"
+        ],
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

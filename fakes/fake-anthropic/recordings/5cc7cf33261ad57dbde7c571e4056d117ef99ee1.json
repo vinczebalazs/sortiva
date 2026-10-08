@@ -1,0 +1,101 @@
+{
+  "recordedAt": "2026-10-08T19:58:55.109Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "You plan blog articles for an online shop. You see the shop's profile and its products, grouped by kind, each with the checked facts we hold about it. Propose articles that this shop can write credibly and that people actually search for.\n\nEach article:\n- answers a question a shopper has before or after buying this kind of product: how to choose, how to use, how to care for it, how two kinds the shop sells differ, what a feature means;\n- is about a kind of product or a group of products, never about one single item for sale;\n- can be written from the facts of the products it mentions, and mentions one to four of them by their reference (P1, P2…);\n- targets one search: give two or three different phrasings a shopper might type into Google for this same article, the most common wording first. Each in English, two to six words, lower case, no brand names, no prices, no years. Prefer the short, everyday words people actually type over precise or technical ones; we keep whichever phrasing most people search.\n\nDo not propose anything about prices, discounts, delivery, competitors or the shop itself. Do not propose topics listed as already covered, nor close rewordings of them. Respect the owner's \"never say\" list. Propose fewer articles rather than weak ones; return an empty list if nothing fits.\n\nFor each article give: working_title (a plain headline in English), target_queries (the phrasings), products (the references), group (the product kind it belongs to).",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<profile>\nSells: Tidewell Candles sells candles: scented container candles and unscented taper candles. The range includes an 8 oz sea salt soy candle hand-poured in Portland, Maine, a 12 oz cedar candle in a coconut and soy wax blend with a crackling cherry-wood wick, and a pair of 10-inch pure beeswax tapers made with beeswax from Maine apiaries.\nAudience: People shopping for home candles who care about the wax and wick, such as soy, coconut-soy or pure beeswax, hand-poured or locally sourced in Maine.\nCountry: US\nTone: friendly\nNever say: —\n</profile>\n\n<products>\n<group name=\"Candle\">\n  P1: Sea Salt Soy Candle, 8 oz\n    - The Sea Salt Soy Candle is 8 oz.\n    - The Sea Salt Soy Candle is made of 100% soy wax.\n    - The Sea Salt Soy Candle is poured by hand in Portland, Maine.\n    - The Sea Salt Soy Candle has a cotton wick.\n    - The Sea Salt Soy Candle's wick is lead-free.\n    - The Sea Salt Soy Candle has a burn time of about 45 hours.\n    - The Sea Salt Soy Candle comes in an 8 oz amber glass jar.\n    - The Sea Salt Soy Candle's jar has a tin lid.\n    - The Sea Salt Soy Candle has scent notes of sea salt, driftwood, and sage.\n    - The Sea Salt Soy Candle is made by Tidewell.\n  P2: Cedar Wood-Wick Candle, 12 oz\n    - The Cedar Wood-Wick Candle is 12 oz.\n    - The Cedar Wood-Wick Candle is made by Tidewell.\n    - The Cedar Wood-Wick Candle is made with a coconut and soy wax blend.\n    - The Cedar Wood-Wick Candle has a cherry-wood wick that crackles as it burns.\n    - The Cedar Wood-Wick Candle has a burn time of about 60 hours.\n    - The Cedar Wood-Wick Candle comes in a 12 oz ceramic vessel.\n    - The Cedar Wood-Wick Candle's vessel is reusable.\n    - The Cedar Wood-Wick Candle's wick should be trimmed to 3 mm before each burn.\n    - The Cedar Wood-Wick Candle has scent notes of cedar, black pepper, and vetiver.\n</group>\n<group name=\"Taper\">\n  P3: Beeswax Taper Candles, pair\n    - The Beeswax Taper Candles come as a pair.\n    - The Beeswax Taper Candles set contains two tapers that are 10 inches long.\n    - The Beeswax Taper Candles are made of pure beeswax from Maine apiaries.\n    - The Beeswax Taper Candles are unscented.\n    - The Beeswax Taper Candles have a standard 7/8-inch base that fits most candlesticks.\n    - Each Beeswax Taper Candle burns about 8 hours.\n    - The Beeswax Taper Candles are dripless when kept away from drafts.\n</group>\n</products>\n\n<already_covered>\n—\n</already_covered>\n\n<at_most>6</at_most>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "topics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "working_title": {
+                    "type": "string"
+                  },
+                  "target_queries": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "products": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "group": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "working_title",
+                  "target_queries",
+                  "products",
+                  "group"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "topics"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfqMxPoNVnXQUcytHJ2m9",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "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"
+      },
+      {
+        "type": "text",
+        "text": "{\"topics\":[{\"working_title\":\"Wood Wick vs. Cotton Wick Candles: What's the Difference?\",\"target_queries\":[\"wood wick vs cotton wick\",\"are wood wick candles better\",\"wood wick candle pros and cons\"],\"products\":[\"P1\",\"P2\"],\"group\":\"Candle\"},{\"working_title\":\"How to Trim a Wood Wick Candle for a Clean, Crackling Burn\",\"target_queries\":[\"how to trim a wood wick\",\"wood wick candle care\",\"wood wick not staying lit\"],\"products\":[\"P2\"],\"group\":\"Candle\"},{\"working_title\":\"Soy vs. Coconut Soy Wax Candles: Which Should You Choose?\",\"target_queries\":[\"soy vs coconut wax candles\",\"coconut soy wax vs soy wax\",\"is coconut wax better than soy\"],\"products\":[\"P1\",\"P2\"],\"group\":\"Candle\"},{\"working_title\":\"Beeswax vs. Soy Candles: How They Compare\",\"target_queries\":[\"beeswax vs soy candles\",\"is beeswax better than soy\",\"beeswax or soy candles\"],\"products\":[\"P1\",\"P3\"],\"group\":\"Taper\"},{\"working_title\":\"Why Taper Candles Drip and How to Stop It\",\"target_queries\":[\"how to stop candles dripping\",\"why do taper candles drip\",\"dripless taper candles\"],\"products\":[\"P3\"],\"group\":\"Taper\"},{\"working_title\":\"Taper Candle Sizes: Will It Fit Your Candlestick?\",\"target_queries\":[\"standard taper candle size\",\"taper candle size guide\",\"what size candles fit candlesticks\"],\"products\":[\"P3\"],\"group\":\"Taper\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1960,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1170,
+      "output_tokens_details": {
+        "thinking_tokens": 628
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

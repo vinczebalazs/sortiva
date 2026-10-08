@@ -1,44 +1,35 @@
 import { describe, expect, it } from 'vitest'
 import { fixture } from '../../scenarios/fixtures/index.ts'
 import { canonicalKey } from './canonical.ts'
-import { coveringPage, onlyProductListings, sameIntent, storeWideWords, top3, type StorePage } from './check.ts'
+import { onlyProductListings, possibleOverlaps, sameIntent, storeWideWords, top3, type StorePage } from './check.ts'
 
 function storeOf(name: string) {
   const f = fixture(name) as any
   const pages: StorePage[] = [
-    ...(f.pages ?? []).map((p: any) => ({ kind: 'page', title: p.title, handle: p.handle, url: `/pages/${p.handle}` })),
-    ...(f.blogs ?? []).flatMap((b: any) => (b.articles ?? []).map((a: any) => ({ kind: 'article', title: a.title, handle: a.handle, url: `/blogs/${b.handle}/${a.handle}` }))),
+    ...(f.pages ?? []).map((p: any) => ({ kind: 'page', title: p.title, handle: p.handle, url: `/pages/${p.handle}`, excerpt: '' })),
+    ...(f.blogs ?? []).flatMap((b: any) => (b.articles ?? []).map((a: any) => ({ kind: 'article', title: a.title, handle: a.handle, url: `/blogs/${b.handle}/${a.handle}`, excerpt: '' }))),
   ]
   const titles = [f.shop.name, ...f.products.map((p: any) => p.title), ...pages.map((p) => p.title)]
   return { pages, words: storeWideWords(titles, name.endsWith('-hu') ? 'hu' : 'en') }
 }
 
-describe('an existing page answers a query only when it covers what the query is about', () => {
+describe('the word check flags existing pages that might answer a topic, for the model to decide', () => {
   const en = storeOf('blog-en')
-  it.each([
-    ['how to choose a dog harness', 'How to choose a dog harness'],
-    ['choosing a dog harness', 'How to choose a dog harness'],
-    ['dog harness size', 'Harness size guide'],
-    ['dog leash length', 'Dog leash length guide: 4 ft, 6 ft or long line?'],
-  ])('blog-en: "%s" is covered by "%s"', (query, title) => {
-    expect(coveringPage(query, 'en', en.pages, en.words)?.title).toBe(title)
+  const flagged = (q: string, store = en, lang: 'en' | 'hu' = 'en') => possibleOverlaps([q], lang, store.pages, store.words).map((p) => p.title)
+  it('flags a page sharing a meaningful word', () => {
+    expect(flagged('choosing a harness for your dog')).toContain('How to choose a dog harness')
+    expect(flagged('how to clean a dog leash')).toContain('Dog leash length guide: 4 ft, 6 ft or long line?')
   })
-
-  it.each(['how to clean a dog leash', 'what size dog bed', 'dog bed vs blanket', 'how to wash a dog blanket'])('blog-en: "%s" is not covered just because it shares "dog" and a product word', (query) => {
-    expect(coveringPage(query, 'en', en.pages, en.words)).toBeNull()
+  it('does not flag on words that run through the whole shop', () => {
+    expect(en.words.has('dog')).toBe(true)
+    expect(flagged('best dog toys')).toEqual([])
   })
-
+  it('looks at every phrasing of a topic', () => {
+    expect(possibleOverlaps(['dog chew toys', 'orthopedic bed'], 'en', en.pages, en.words).map((p) => p.title)).toEqual(['Orthopedic dog beds explained'])
+  })
   const hu = storeOf('blog-hu')
-  it.each([
-    ['hogyan válassz kerékpárlámpát', 'Hogyan válassz kerékpárlámpát?'],
-    ['kerékpárlámpát hogyan válassz', 'Hogyan válassz kerékpárlámpát?'],
-    ['u-lakat vagy láncos zár', 'U-lakat vagy láncos zár: melyik a biztonságosabb?'],
-  ])('blog-hu: "%s" is covered by "%s"', (query, title) => {
-    expect(coveringPage(query, 'hu', hu.pages, hu.words)?.title).toBe(title)
-  })
-
-  it.each(['kerékpárlámpa akkumulátor üzemidő', 'u-lakat helyes használata', 'sárgaréz kerékpárcsengő'])('blog-hu: "%s" is not covered', (query) => {
-    expect(coveringPage(query, 'hu', hu.pages, hu.words)).toBeNull()
+  it('flags Hungarian word forms of the same word', () => {
+    expect(flagged('kerékpárlámpa akkumulátor', hu, 'hu')).toContain('Hogyan válassz kerékpárlámpát?')
   })
 })
 

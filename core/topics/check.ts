@@ -2,23 +2,22 @@ import { CONFIG, type Language } from '../config.ts'
 import type { RankingPage } from '../demand.ts'
 import { contentWords, foldAccents } from './canonical.ts'
 
-export type StorePage = { kind: string; title: string; handle: string; url: string }
+export type StorePage = { kind: string; title: string; handle: string; url: string; excerpt: string }
 
 /**
- * An existing article or page that already answers this query: it covers most of the query's
- * content words, in its title or its URL slug. Collections are left out on purpose: they are
- * the store's product listings, which an article links to rather than competes with.
+ * Existing articles and pages that might already answer this query: they share at least one
+ * meaningful word with it, in the title or the address. Deliberately loose; the model makes the
+ * final call (overlap.ts). Collections are left out on purpose: they are the store's product
+ * listings, which an article links to rather than competes with.
  */
-export function coveringPage(query: string, language: Language, pages: StorePage[], storeWords: Set<string> = new Set()): StorePage | null {
-  const wanted = new Set(contentWords(query, language).map(foldAccents).filter((w) => !storeWords.has(w)))
-  if (!wanted.size) return null
-  for (const page of pages) {
-    if (page.kind !== 'article' && page.kind !== 'page') continue
-    const have = new Set([...contentWords(page.title, language), ...contentWords(page.handle.replace(/-/g, ' '), language)].map(foldAccents).filter((w) => !storeWords.has(w)))
-    const shared = [...wanted].filter((w) => have.has(w)).length
-    if (shared / wanted.size >= CONFIG.topics.pageOverlapShare) return page
-  }
-  return null
+export function possibleOverlaps(queries: string[], language: Language, pages: StorePage[], storeWords: Set<string>): StorePage[] {
+  const wanted = new Set(queries.flatMap((q) => contentWords(q, language)).map(foldAccents).filter((w) => !storeWords.has(w)))
+  if (!wanted.size) return []
+  return pages.filter((page) => {
+    if (page.kind !== 'article' && page.kind !== 'page') return false
+    const words = [...contentWords(page.title, language), ...contentWords(page.handle.replace(/-/g, ' '), language)].map(foldAccents)
+    return words.some((w) => wanted.has(w))
+  })
 }
 
 /**

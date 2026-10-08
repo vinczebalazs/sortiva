@@ -1,0 +1,85 @@
+{
+  "recordedAt": "2026-10-08T20:02:08.066Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 4000,
+    "system": "An online shop plans new blog articles. For each planned article you see the searches it targets and some of the shop's existing posts and pages, each with its title and opening text. Decide whether one of those existing posts or pages already answers what a person making those searches wants to know.\n\nCovered means a reader of the existing post would not need the new article: same question, same purpose. Sharing a product or a subject is not enough. \"How to clean a dog leash\" is not covered by a post on choosing leash length; \"choosing a harness for your dog\" is covered by \"How to choose a dog harness\".\n\nFor each planned article answer with its reference (T1, T2…) and covered_by: the reference of the existing post or page that covers it (A1, A2…), or null if none does.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<existing>\nA1: Harness size guide\n   Measure the widest part of your dog's chest, just behind the front legs.\nA2: How to choose a dog harness\n   Front-clip harnesses reduce pulling; back-clip harnesses suit calm walkers. Measure the chest girth before you buy.\nA3: Dog leash length guide: 4 ft, 6 ft or long line?\n   A 6 ft leash is the standard for city walking. Long lines are for recall training in open spaces.\nA4: Orthopedic dog beds explained\n   Memory foam supports older dogs' joints. Look for at least 3 inches of foam.\n</existing>\n\n<planned>\nT1: choosing a harness for your dog\n   searches: choosing a harness for your dog | best dog harness\n   compare with: A1, A2\nT2: how to clean a dog leash\n   searches: how to clean a dog leash | wash dog lead\n   compare with: A3\nT3: what length dog leash\n   searches: what length dog leash | dog leash length\n   compare with: A3\nT4: dog blanket vs dog bed\n   searches: dog blanket vs dog bed | do dogs need a bed\n   compare with: A4\nT5: how to measure a dog for a harness\n   searches: how to measure a dog for a harness | dog harness size\n   compare with: A1, A2\n</planned>"
+      }
+    ],
+    "output_config": {
+      "effort": "low",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "verdicts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "topic": {
+                    "type": "string"
+                  },
+                  "covered_by": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "topic",
+                  "covered_by"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "verdicts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfqNDFhcxJ9gNb3nhm4pJ",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"verdicts\":[{\"topic\":\"T1\",\"covered_by\":\"A2\"},{\"topic\":\"T2\",\"covered_by\":null},{\"topic\":\"T3\",\"covered_by\":\"A3\"},{\"topic\":\"T4\",\"covered_by\":null},{\"topic\":\"T5\",\"covered_by\":\"A1\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1020,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 101,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

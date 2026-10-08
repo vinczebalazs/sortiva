@@ -1,0 +1,101 @@
+{
+  "recordedAt": "2026-10-08T19:59:46.369Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "You plan blog articles for an online shop. You see the shop's profile and its products, grouped by kind, each with the checked facts we hold about it. Propose articles that this shop can write credibly and that people actually search for.\n\nEach article:\n- answers a question a shopper has before or after buying this kind of product: how to choose, how to use, how to care for it, how two kinds the shop sells differ, what a feature means;\n- is about a kind of product or a group of products, never about one single item for sale;\n- can be written from the facts of the products it mentions, and mentions one to four of them by their reference (P1, P2…);\n- targets one search: give two or three different phrasings a shopper might type into Google for this same article, the most common wording first. Each in English, two to six words, lower case, no brand names, no prices, no years. Prefer the short, everyday words people actually type over precise or technical ones; we keep whichever phrasing most people search.\n\nDo not propose anything about prices, discounts, delivery, competitors or the shop itself. Do not propose topics listed as already covered, nor close rewordings of them. Respect the owner's \"never say\" list. Propose fewer articles rather than weak ones; return an empty list if nothing fits.\n\nFor each article give: working_title (a plain headline in English), target_queries (the phrasings), products (the references), group (the product kind it belongs to).",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<profile>\nSells: Lumière Living sells home goods under its own Lumière brand. The catalogue includes soft furnishings such as a throw and a cushion, decorative pieces such as a vase and a diffuser, and table linen in the form of linen napkins sold as a set of four in Oat, Sage and Charcoal.\nAudience: The products suit people furnishing and decorating their homes, including those looking for soft furnishings, decor and table linen.\nCountry: US\nTone: friendly\nNever say: —\n</profile>\n\n<products>\n<group name=\"Table linen\">\n  P1: Linen Napkins, set of 4\n    - The Linen Napkins come as a set of 4.\n    - The Linen Napkins are table linen.\n    - The Linen Napkins are made by Lumière.\n    - The Linen Napkins are available in the colours Oat, Sage and Charcoal.\n    - The Linen Napkins are made of 100% European flax linen.\n    - The Linen Napkins are stonewashed.\n    - Each Linen Napkin measures 45 × 45 cm.\n    - The Linen Napkins can be machine washed at 40 °C.\n    - The Linen Napkins set contains four napkins in one colour.\n</group>\n</products>\n\n<already_covered>\n—\n</already_covered>\n\n<at_most>2</at_most>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "topics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "working_title": {
+                    "type": "string"
+                  },
+                  "target_queries": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "products": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "group": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "working_title",
+                  "target_queries",
+                  "products",
+                  "group"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "topics"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfqN2XbJELHbtqwD7eQqq",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQS0gkKEAgSGAI4AUIIdGhpbmtpbmcSDGohwaqTkYYoO66NthoMlEfs/Jv4B/LlfTP2IjCnPsALQx5zoaSx7ENCIQZxSHlljHxL/u/n8QiNwG+b5UZovifWkFaTEBEcixqu1+Aq7widwge8hl1g3ivPf1N7csA5MCr3M+kxdLmPIWI3XxpufUZyVww+ZLBBaiSyS9sRKIcS+iGFxB7PrE5JH6zTx5zdlYDAWrPilTuxXX5heJB2D/A3ukBkSYzCTrFMbl+t1I5eHXFXJOwDQAN3BBg9QdCoKM+quw2cqRgd9rJH7es6PQrV/kNSl2jacdUlORVCghUeOA0QUgrQDjMwx7HvzvyA+yTOIlgz7OEX1gFCqN928D5Gf8cB0p26J199BiMEphEnC0YUdaLYRsT7HegABo00RGGo7rKN4+gv/ymI2f3/CnVoHqeJmQHoR2jF74d0kXHqK1mJh7wyZ46h3E2ZGLUJJ0rJqON/hKDxbPNl59KAqU5AFWCmXA83J7+ghJoafbPFuJegbqxlepo4Skqm9+DLfP3fmDH8GTNG1ieFDcha8aT4T9K4bdPwtUToArlTtqAoU3vPSbwgsUs12x9IkDesQfioEHqtxOR9yHvV7DSJxROzLOcoeMeoSJU5fe8IEIajw7ShQbiAv+12KdAKqxvsB/hPTFUTIJAbfDB4hlNdPESRFJjajjbwdeUc9IfHQAo3ciB/4/TYQXkm+B6xuO7syq2jr4kV0xlPYIjM3YRhICbKgc+7lx1PBEOlwdjO5uIbGUfT4U0kmbY58Jf35MFSSm2s2GTAssSpU4YJ3t8ZKa23n5U2TcksD8Mv1jG0eIqM0I3A4XIpA2EbfdgxlVOucgILYD51tq5fU8gZTw33eMkp37t1S8eY0DqiRGf3bRYpJHaJ6aM4dTpgGvoNg/e39N32NzVIAYNG7OMr06EyrOZfGdnXttRKjPsl80ACs4HPRw6unapbDvUD1laFi5dUghORYIr78lLp+9tpT/I4xWgJGtJBjIgeBDavcPTOY5vl2UIAw72hJnK7Zz9MDFkvtu7ai9eiX8K0JuvoD7LAsB6yvNdZ+MLMGOsF4iHfIVMOPE9ieAWwwWDETKMOzNzZekutKT6eFWhqCfpBez4MrRe3slPzkq0ytUngwdzN2uqkmAXLJ6XD49USFPB5Ai0S5eOMt+6YRV+tfvcjBpzL9cwkJD4qYPC8WSbwlSRZB4wr+nIs1u7R0wwC0Xp8Tnu0wnzGj0HuUbnaRB3i3BXrlnbcifgUaRIU/6Z6Fziy8EyHezm9kX4R0vFmvkhU5EuKyxnz76LxJxeEJ0J8hceBJeGgE41cfEZAuTCyUbQCCW/IHnCPWUrX/eYRHQyAOGFw0UEP5wz9en2VqXQp1boY8AuIRk/w6XdGCaSvqBSxrFrAt9wa5yY/L3sqWtQidm8G77pgh/goNmbyUcbPoaWEjWjCE8VuDWhezgOMj/AbbiTCJHZQo3zJLIQKaSv+te/1S9Pu6TdqESi+IQYVHhF9G9DZbVf/c7zkeNPY3KOEiaQqkDXxJSJ9HxrYBpLkv01zV77PkbYKt0yNqjwAgoIKSVMGKV8CcObvdtq2Qt2w3+oOSMxOOtI9NraT126qV4XTaVTBKyUAu7eEye0TQ5TQGAE="
+      },
+      {
+        "type": "text",
+        "text": "{\"topics\":[{\"working_title\":\"How to Wash Linen Napkins So They Stay Soft\",\"target_queries\":[\"how to wash linen napkins\",\"linen napkin care\",\"washing cloth napkins\"],\"products\":[\"P1\"],\"group\":\"Table linen\"},{\"working_title\":\"What Size Should Dinner Napkins Be?\",\"target_queries\":[\"standard napkin size\",\"dinner napkin size\",\"what size are cloth napkins\"],\"products\":[\"P1\"],\"group\":\"Table linen\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1281,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 436,
+      "output_tokens_details": {
+        "thinking_tokens": 273
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

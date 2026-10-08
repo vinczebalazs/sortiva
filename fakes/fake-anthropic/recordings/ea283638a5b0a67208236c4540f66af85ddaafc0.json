@@ -1,0 +1,101 @@
+{
+  "recordedAt": "2026-10-08T19:59:05.850Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "Egy webáruház blogcikkeit tervezed. Látod a bolt profilját és a termékeit fajták szerint csoportosítva, mindegyik mellett az általunk ellenőrzött tényekkel. Javasolj olyan cikkeket, amelyeket ez a bolt hitelesen meg tud írni, és amelyekre az emberek valóban keresnek.\n\nMinden cikk:\n- olyan kérdésre válaszol, amely a vásárlóban az ilyen termék megvétele előtt vagy után felmerül: hogyan válasszon, hogyan használja, hogyan ápolja, miben különbözik a bolt két terméktípusa, mit jelent egy tulajdonság;\n- egy termékfajtáról vagy termékcsoportról szól, soha nem egyetlen eladó tételről;\n- megírható az általa említett termékek tényeiből, és egy-négy terméket említ a hivatkozásukkal (P1, P2…);\n- egy keresést céloz: adj meg két-három különböző megfogalmazást, ahogyan a vásárló ugyanerre a cikkre rákeresne a Google-ben, a leggyakoribbal kezdve. Mindegyik magyarul, két-hat szóban, kisbetűvel, márkanév, ár és évszám nélkül. A rövid, hétköznapi szavakat részesítsd előnyben a pontos vagy szakmai kifejezésekkel szemben; azt a megfogalmazást tartjuk meg, amelyre a legtöbben keresnek.\n\nNe javasolj semmit árakról, kedvezményekről, szállításról, versenytársakról vagy magáról a boltról. Ne javasolj olyan témát, amely a már lefedettek között szerepel, és ezek közeli átfogalmazását sem. Tartsd tiszteletben a tulajdonos „soha ne írd” listáját. Inkább kevesebb cikket javasolj, mint gyengét; ha semmi sem illik, adj vissza üres listát.\n\nMinden cikkhez add meg: working_title (egyszerű magyar cím), target_queries (a megfogalmazások), products (a hivatkozások), group (a termékfajta, amelyhez tartozik).",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<profile>\nSells: A Mézeskert Méhészet mézeket árul: két fajtamézet, 500 g-os kiszerelésben, a nyírségi májusi pergetésű akácmézet és a júniusban pergetett hársmézet. Emellett van egy 250 g-os krémméz is, amely vegyes virágmézből készül kenhetőre keverve, 2% szárított tihanyi levendulavirággal.\nAudience: Azoknak szól, akik mézet keresnek: fajtamézet vagy kenhető, ízesített krémmézet.\nCountry: HU\nTone: friendly\nNever say: —\n</profile>\n\n<products>\n<group name=\"Krémméz\">\n  P1: Krémméz levendulával, 250 g\n    - A Krémméz levendulával kiszerelése 250 g.\n    - A Krémméz levendulával vegyes virágmézből készül.\n    - A Krémméz levendulával irányított kristályosítással kenhető krémmé keverve készül.\n    - A Krémméz levendulával 2% szárított tihanyi levendulavirágot tartalmaz.\n    - A Krémméz levendulával szobahőmérsékleten, napfénytől védve tárolandó.\n    - A Krémméz levendulával a Mézeskert terméke.\n</group>\n<group name=\"Méz\">\n  P2: Akácméz 500 g\n    - Az Akácméz nettó tömege 500 g.\n    - Az Akácméz fajtaméz.\n    - Az Akácméz a Nyírségből származik.\n    - Az Akácméz 2026. májusi pergetésű.\n    - Az Akácméz hőkezeletlen.\n    - Az Akácméz szűrt.\n    - Az Akácméz színe világos, vízszerű.\n    - Az Akácméz magas fruktóztartalma miatt sokáig folyékony marad.\n    - Az Akácméz 500 g-os üvegben, fém tetővel kapható.\n  P3: Hársméz 500 g\n    - A Hársméz nettó tömege 500 g.\n    - A Hársméz a Mézeskert terméke.\n    - A Hársméz fajtaméz.\n    - A Hársmézet hársvirágzáskor, júniusban pergették.\n    - A Hársméz a Bakonyból származik.\n    - A Hársméz hőkezeletlen.\n    - A Hársméz enyhén mentolos, kesernyés utóízű.\n    - A Hársméz néhány hónap alatt finom szemcsésre kristályosodik.\n    - A kristályosodott Hársméz 40 °C alatti vízfürdőben újra folyékony lesz.\n</group>\n</products>\n\n<already_covered>\n—\n</already_covered>\n\n<at_most>6</at_most>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "topics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "working_title": {
+                    "type": "string"
+                  },
+                  "target_queries": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "products": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "group": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "working_title",
+                  "target_queries",
+                  "products",
+                  "group"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "topics"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfqMyEhTkGGbKVoTWKdtv",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQSlQsKEAgSGAI4AUIIdGhpbmtpbmcSDLZYViL2cNiUYrqYehoM8mKr6cToDy8q4flrIjDKfq8Ep6wKNSIeoo0ZvuSeXbogHT5uBCMu1p3xiVG9OyuCeVY4zM7D9RN4G/LWrSUqsgpe03kt+Y95x6Not3sb6vOfwxnvvFljSsW3kHZ1oEPPvKJ9YHMy4P+KYcyg2VsAHElV+hYposyEchqx9I2ZUEXXCD0IBFY1e2u6Q2GV9SkGxAJB4Zdwa7K+MquDSc7HS5MzmxwX8pqs9tefRtICYf9qJCkUdwvBoaAZ8GEHwPuKcJDD7rmOlDlEU1MYalFe0u6/lyOPG4S9k/4U+l9TCEOrNBo1kujklux3YPXWZ7Hulpt5AnAGcZrTsekbNdhbgqMKi3gZcROq9f9PyNbYBWdMhPWGLsbicaJQ5pFUV9CD74CilckDLvyB3lKGJSq13eDrgTjGxgoiEDUbIzwmTdtymWnkQ30sd7cA5DLy0jFKcVa1oGMvy3Y9YspQCt9o0gv2cqNBszLQAx8XJCyAt5PE1frMHJpZNyZ3dlVV4b1LYRdGj3DF2utl+y2CgtG/j3XPEgGinmHihxvHKviP9oBKHxs3OyHP2Lo69c7IeD1N8lQFtzzwik9zXRPjN4zeMzBrJlOJm/jdDpb9BHmlrCl+8V8L5ShIg2vsPv84spVkXLkSyrd0EwXG+we43R/njO55H/1YRg2gvV/0sUB2kq5C4hBonWLmFk/6t4G8lPPGAzpe0WXjw2JMrQGwMIBTZFRfHqWDmYV2eKRNNjDVNUNssvvx7nHIoH5NpfosQPaAseYW4QCUhqZMWFYA5dJWydy0im3GJbkm/LrB4FsK82fY3Hak3cdcIb2JnvjYJ3ieNBJwwSPmdUc5HFGkfM3fflZT+UKrhCOL4PrkervjSZlULBOlWQ/HmTiQMRmNfRLHlBXdWLkUkQCZk/JgIUIJs261UXoy4gtSbKQUXk9BHkeO1fgr+YZASk/uzvmJjGrZ8G9BUmSuoFgyRTMLjDtM4rcVOtmZaxoil8rVOlKrowLbgfJvT63LvEdEfy+0NlKSINVPt/53KURj2LhPaysw93lvR7fHuDQx2efQYLFHwLtaPxEAA0Ghtt2oaz1i0FqzFayb/GstayJixWDXgJT89w7hC9a7F+1eFG5PxgyW+HKICb9jAp7sEnRI8gXwhIfCYUKsE/yXAd6ouBXwK7XUUKYYvm2+31rj5lQ4PhvLAd0yOqupY7VFSqSfLppR237IPzrW02NhK/RoatR2a7LDuVgxRJD264pheMK3NXy/wI1otJuAhGGYxtQcAcy4nORHlXKHakmoz/bY8runrFNxCWUn9O/jLntGqQAnB1s/0000UbRVXCec8I5XSyF0994qcg3wEs71m3aLPoPFlywFH0ydcCrusjiWEbEA0KDpRxdqiOHeF1v4NcRElZR1BUgZjbE3NxNN1wkhydooTCFrlAVCffb0xEXmQSNmejSSbzJPbD6aKXqixOa74ON09LbNwgOHP90Rm8aBLHCik2+16UTvz1y0K42uM7GWh0c6MEkRYw0hafSgpRvoDZu8hWyGDEFUXXAE+HfcIPaYtVUhaPLP0zXLHs76VyQWeQl21aN/Qyo2K5i51wpWzm+nwlW/n9OJPDS3IkWZO0Ksvd29r332l0mWKBSag2xwp5bqTYPcXCrm1PTyiydzSkkrKKUM4pegp9n5rFynDfct/etoT3xmC/+Aj2jDsoeNOKeTaS+8sNU/B36GqW4Log1s+XMgL5sPx+P4v0kNO3+oygwvlY3Wq5wyenFumj9/wFeaU9i19731JXRiQsRe7N2Z3uBkMJ0cKVSJblobkdwtYHfoMNMpOLOmt+QYGCIMGFZLcZH28DfL1EMdx6EU5SeTfbfyrVkwGAE="
+      },
+      {
+        "type": "text",
+        "text": "{\"topics\":[{\"working_title\":\"Miért kristályosodik a méz, és hogyan lesz újra folyékony?\",\"target_queries\":[\"megcukrosodott méz\",\"kristályos méz felolvasztása\",\"miért kristályosodik a méz\"],\"products\":[\"P3\",\"P2\"],\"group\":\"Méz\"},{\"working_title\":\"Akácméz vagy hársméz: miben különböznek?\",\"target_queries\":[\"akácméz vagy hársméz\",\"akácméz és hársméz különbség\",\"melyik méz a legjobb\"],\"products\":[\"P2\",\"P3\"],\"group\":\"Méz\"},{\"working_title\":\"Mi az a krémméz, és hogyan lesz kenhető?\",\"target_queries\":[\"mi az a krémméz\",\"krémméz\",\"kenhető méz\"],\"products\":[\"P1\"],\"group\":\"Krémméz\"},{\"working_title\":\"Hogyan tároljuk helyesen a mézet?\",\"target_queries\":[\"méz tárolása\",\"hogyan tároljuk a mézet\",\"méz hűtőben\"],\"products\":[\"P1\",\"P2\",\"P3\"],\"group\":\"Méz\"},{\"working_title\":\"Mit jelent az, hogy hőkezeletlen méz?\",\"target_queries\":[\"hőkezeletlen méz\",\"nyers méz\",\"hőkezelt méz\"],\"products\":[\"P2\",\"P3\"],\"group\":\"Méz\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 2111,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 861,
+      "output_tokens_details": {
+        "thinking_tokens": 415
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

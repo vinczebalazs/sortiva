@@ -1,0 +1,738 @@
+{
+ "recordedAt": "2026-10-08T20:00:15.622Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "best water temperature for coffee",
+  "location_code": 2826,
+  "language_code": "en",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0352 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10082000-2302-0066-0000-2aca44f98e53",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0265 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10082000-2302-0066-0000-2aca44f98e53"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "best water temperature for coffee",
+     "location_code": 2826,
+     "language_code": "en",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "best water temperature for coffee",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2826,
+      "language_code": "en",
+      "check_url": "https://www.google.com/search?q=best%20water%20temperature%20for%20coffee&hl=en&gl=GB&ie=UTF-8&uule=w+CAIQIFISCamRx0IRO1oCEXoliDJDoPjE",
+      "datetime": "2026-10-08 20:00:12 +00:00",
+      "spell": null,
+      "refinement_chips": null,
+      "item_types": [
+       "ai_overview",
+       "organic",
+       "people_also_ask",
+       "related_searches"
+      ],
+      "se_results_count": 99,
+      "pages_count": 1,
+      "items_count": 12,
+      "items": [
+       {
+        "type": "ai_overview",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+        "asynchronous_ai_overview": false,
+        "markdown": "The ideal water temperature for brewing coffee is **195°F to 205°F (90°C to 96°C)** , according to the [Specialty Coffee Association](https://goldberryroasting.com/blogs/news/how-water-temperature-affects-your-coffee-brew).[[1]](https://goldberryroasting.com/blogs/news/how-water-temperature-affects-your-coffee-brew)\n\n### Temperature Guidelines\n\n- **Sweet spot:** 200°F–205°F (93°C–96°C) for most standard filter, pour-over, and cafetière/French press methods.\n- **Light roasts:** Benefit from hotter water (closer to 205°F–208°F or 94°C–96°C) to break down dense beans and pull out sweet, fruity notes.\n- **Dark roasts:** Require cooler temperatures (around 195°F or 88°C–90°C) to prevent pulling out overly bitter, ashy compounds.\n- **AeroPress:** Often uses lower temperatures (165°F–185°F or 74°C–85°C) depending on the recipe and grind size.[[1]](https://www.reddit.com/r/Coffee/comments/g21exs/what_temperature_to_you_use_for_your_coffee/)[[2]](https://twochimpscoffee.com/blogs/what-is-the-best-temperature-for-brewing-coffee/)[[3]](https://www.sageappliances.com/uk/en/blog/coffee-and-espresso/coffee-water-temperature.html)[[4]](https://www.redber.co.uk/blogs/coffee-guides/what-is-the-correct-temperature-for-brewing-coffee)[[5]](https://www.uecoffeeroasters.com/blogs/articles/coffee-brewing-temperature)\n\n### Why Temperature Matters\n\n- **Too hot (>205°F / 96°C):** Over-extracts the grounds, leaving a bitter, harsh, or burnt taste.\n- **Too cool (<195°F / 90°C):** Under-extracts the grounds, resulting in a weak, sour, or flat cup.[[1]](https://twochimpscoffee.com/blogs/what-is-the-best-temperature-for-brewing-coffee/)[[2]](https://www.sageappliances.com/uk/en/blog/coffee-and-espresso/coffee-water-temperature.html)\n\n### Quick Tip\nIf you do not have a temperature-control kettle, bring your water to a full boil and let it **rest for about 30 seconds** before pouring.[[1]](https://twochimpscoffee.com/blogs/what-is-the-best-temperature-for-brewing-coffee/)If you'd like, let me know:\n\n- **What brewing method** you are using (pour-over, French press, espresso, drip machine)\n- **What roast level** your coffee beans are (light, medium, or dark)\n\nI can give you a more exact temperature and recipe target.",
+        "items": [
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "The ideal water temperature for brewing coffee is 195°F to 205°F (90°C to 96°C), according to the Specialty Coffee Association.",
+          "markdown": "The ideal water temperature for brewing coffee is **195°F to 205°F (90°C to 96°C)** , according to the [Specialty Coffee Association](https://goldberryroasting.com/blogs/news/how-water-temperature-affects-your-coffee-brew).[[1]](https://goldberryroasting.com/blogs/news/how-water-temperature-affects-your-coffee-brew)",
+          "links": [
+           {
+            "type": "link_element",
+            "title": "Specialty Coffee Association",
+            "description": null,
+            "url": "https://goldberryroasting.com/blogs/news/how-water-temperature-affects-your-coffee-brew",
+            "domain": "goldberryroasting.com"
+           }
+          ],
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Goldberry Roasting Company",
+            "domain": "goldberryroasting.com",
+            "url": "https://goldberryroasting.com/blogs/news/how-water-temperature-affects-your-coffee-brew",
+            "title": "How Water Temperature Affects Your Coffee Brew",
+            "text": "How Water Temperature Affects Your Coffee Brew * The Specialty Coffee Association recommends brewing coffee at a water temperature..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Temperature Guidelines",
+          "text": "Sweet spot: 200°F–205°F (93°C–96°C) for most standard filter, pour-over, and cafetière/French press methods. Light roasts: Benefit from hotter water (closer to 205°F–208°F or 94°C–96°C) to break down dense beans and pull out sweet, fruity notes. Dark roasts: Require cooler temperatures (around 195°F or 88°C–90°C) to prevent pulling out overly bitter, ashy compounds. AeroPress: Often uses lower temperatures (165°F–185°F or 74°C–85°C) depending on the recipe and grind size.",
+          "markdown": "- **Sweet spot:** 200°F–205°F (93°C–96°C) for most standard filter, pour-over, and cafetière/French press methods.\n- **Light roasts:** Benefit from hotter water (closer to 205°F–208°F or 94°C–96°C) to break down dense beans and pull out sweet, fruity notes.\n- **Dark roasts:** Require cooler temperatures (around 195°F or 88°C–90°C) to prevent pulling out overly bitter, ashy compounds.\n- **AeroPress:** Often uses lower temperatures (165°F–185°F or 74°C–85°C) depending on the recipe and grind size.[[1]](https://www.reddit.com/r/Coffee/comments/g21exs/what_temperature_to_you_use_for_your_coffee/)[[2]](https://twochimpscoffee.com/blogs/what-is-the-best-temperature-for-brewing-coffee/)[[3]](https://www.sageappliances.com/uk/en/blog/coffee-and-espresso/coffee-water-temperature.html)[[4]](https://www.redber.co.uk/blogs/coffee-guides/what-is-the-correct-temperature-for-brewing-coffee)[[5]](https://www.uecoffeeroasters.com/blogs/articles/coffee-brewing-temperature)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Reddit",
+            "domain": "www.reddit.com",
+            "url": "https://www.reddit.com/r/Coffee/comments/g21exs/what_temperature_to_you_use_for_your_coffee/",
+            "title": "What temperature to you use for your coffee? - Reddit",
+            "text": "Brewing Method Specifics: Different brewing methods may have distinct optimal temperature requirements. While many methods benefit..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Two Chimps Coffee",
+            "domain": "twochimpscoffee.com",
+            "url": "https://twochimpscoffee.com/blogs/what-is-the-best-temperature-for-brewing-coffee/",
+            "title": "What Is The Best Temperature For Brewing Coffee? - Two Chimps Coffee",
+            "text": "Optimum Temperature: 200°F (93.33°C); general range 195°F–205°F (90°C–96°C). Water above 205°F over-extracts, causing bitterness; ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "www.sageappliances.com",
+            "domain": "www.sageappliances.com",
+            "url": "https://www.sageappliances.com/uk/en/blog/coffee-and-espresso/coffee-water-temperature.html",
+            "title": "What is the best coffee water temperature?",
+            "text": "Ideal Temperature: 92 to 96°C for general and filter brewing; 88 to 96°C overall range. Roast and Bean Adjustments: Darker roasts ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Redber Coffee",
+            "domain": "www.redber.co.uk",
+            "url": "https://www.redber.co.uk/blogs/coffee-guides/what-is-the-correct-temperature-for-brewing-coffee",
+            "title": "What is the correct temperature for brewing coffee? – Redber Coffee",
+            "text": "Optimal Temperature: 195°F–205°F (90°C–96°C) for balanced extraction; scorching water causes bitterness (over-extraction), lukewar..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Ue Coffee Roasters",
+            "domain": "www.uecoffeeroasters.com",
+            "url": "https://www.uecoffeeroasters.com/blogs/articles/coffee-brewing-temperature",
+            "title": "Master Your Coffee Brewing Temperature",
+            "text": "Recommended Range: Start somewhere between 94°C and 96°C. This is the sweet spot for most light roasts. Why It Works: That extra h..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Why Temperature Matters",
+          "text": "Too hot (>205°F / 96°C): Over-extracts the grounds, leaving a bitter, harsh, or burnt taste. Too cool (<195°F / 90°C): Under-extracts the grounds, resulting in a weak, sour, or flat cup.",
+          "markdown": "- **Too hot (>205°F / 96°C):** Over-extracts the grounds, leaving a bitter, harsh, or burnt taste.\n- **Too cool (<195°F / 90°C):** Under-extracts the grounds, resulting in a weak, sour, or flat cup.[[1]](https://twochimpscoffee.com/blogs/what-is-the-best-temperature-for-brewing-coffee/)[[2]](https://www.sageappliances.com/uk/en/blog/coffee-and-espresso/coffee-water-temperature.html)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Two Chimps Coffee",
+            "domain": "twochimpscoffee.com",
+            "url": "https://twochimpscoffee.com/blogs/what-is-the-best-temperature-for-brewing-coffee/",
+            "title": "What Is The Best Temperature For Brewing Coffee? - Two Chimps Coffee",
+            "text": "Optimum Temperature: 200°F (93.33°C); general range 195°F–205°F (90°C–96°C). Water above 205°F over-extracts, causing bitterness; ..."
+           },
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "www.sageappliances.com",
+            "domain": "www.sageappliances.com",
+            "url": "https://www.sageappliances.com/uk/en/blog/coffee-and-espresso/coffee-water-temperature.html",
+            "title": "What is the best coffee water temperature?",
+            "text": "Ideal Temperature: 92 to 96°C for general and filter brewing; 88 to 96°C overall range. Roast and Bean Adjustments: Darker roasts ..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": "Quick Tip",
+          "text": "If you do not have a temperature-control kettle, bring your water to a full boil and let it rest for about 30 seconds before pouring.",
+          "markdown": "If you do not have a temperature-control kettle, bring your water to a full boil and let it **rest for about 30 seconds** before pouring.[[1]](https://twochimpscoffee.com/blogs/what-is-the-best-temperature-for-brewing-coffee/)",
+          "links": null,
+          "images": null,
+          "references": [
+           {
+            "type": "ai_overview_reference",
+            "position": "left",
+            "source": "Two Chimps Coffee",
+            "domain": "twochimpscoffee.com",
+            "url": "https://twochimpscoffee.com/blogs/what-is-the-best-temperature-for-brewing-coffee/",
+            "title": "What Is The Best Temperature For Brewing Coffee? - Two Chimps Coffee",
+            "text": "Optimum Temperature: 200°F (93.33°C); general range 195°F–205°F (90°C–96°C). Water above 205°F over-extracts, causing bitterness; ..."
+           }
+          ]
+         },
+         {
+          "type": "ai_overview_element",
+          "position": "left",
+          "title": null,
+          "text": "If you'd like, let me know:What brewing method you are using (pour-over, French press, espresso, drip machine)\nWhat roast level your coffee beans are (light, medium, or dark)\nI can give you a more exact temperature and recipe target.",
+          "markdown": "If you'd like, let me know:\n\n- **What brewing method** you are using (pour-over, French press, espresso, drip machine)\n- **What roast level** your coffee beans are (light, medium, or dark)\n\nI can give you a more exact temperature and recipe target.",
+          "links": null,
+          "images": null,
+          "references": null
+         }
+        ],
+        "references": [
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Reddit",
+          "domain": "www.reddit.com",
+          "url": "https://www.reddit.com/r/Coffee/comments/g21exs/what_temperature_to_you_use_for_your_coffee/",
+          "title": "What temperature to you use for your coffee? - Reddit",
+          "text": "Brewing Method Specifics: Different brewing methods may have distinct optimal temperature requirements. While many methods benefit..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Two Chimps Coffee",
+          "domain": "twochimpscoffee.com",
+          "url": "https://twochimpscoffee.com/blogs/what-is-the-best-temperature-for-brewing-coffee/",
+          "title": "What Is The Best Temperature For Brewing Coffee? - Two Chimps Coffee",
+          "text": "Optimum Temperature: 200°F (93.33°C); general range 195°F–205°F (90°C–96°C). Water above 205°F over-extracts, causing bitterness; ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "www.sageappliances.com",
+          "domain": "www.sageappliances.com",
+          "url": "https://www.sageappliances.com/uk/en/blog/coffee-and-espresso/coffee-water-temperature.html",
+          "title": "What is the best coffee water temperature?",
+          "text": "Ideal Temperature: 92 to 96°C for general and filter brewing; 88 to 96°C overall range. Roast and Bean Adjustments: Darker roasts ..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Redber Coffee",
+          "domain": "www.redber.co.uk",
+          "url": "https://www.redber.co.uk/blogs/coffee-guides/what-is-the-correct-temperature-for-brewing-coffee",
+          "title": "What is the correct temperature for brewing coffee? – Redber Coffee",
+          "text": "Optimal Temperature: 195°F–205°F (90°C–96°C) for balanced extraction; scorching water causes bitterness (over-extraction), lukewar..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Ue Coffee Roasters",
+          "domain": "www.uecoffeeroasters.com",
+          "url": "https://www.uecoffeeroasters.com/blogs/articles/coffee-brewing-temperature",
+          "title": "Master Your Coffee Brewing Temperature",
+          "text": "Recommended Range: Start somewhere between 94°C and 96°C. This is the sweet spot for most light roasts. Why It Works: That extra h..."
+         },
+         {
+          "type": "ai_overview_reference",
+          "position": "right",
+          "source": "Goldberry Roasting Company",
+          "domain": "goldberryroasting.com",
+          "url": "https://goldberryroasting.com/blogs/news/how-water-temperature-affects-your-coffee-brew",
+          "title": "How Water Temperature Affects Your Coffee Brew",
+          "text": "How Water Temperature Affects Your Coffee Brew * The Specialty Coffee Association recommends brewing coffee at a water temperature..."
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]",
+        "domain": "www.coffeeam.com",
+        "title": "The Heat Is On - How the Temperature of Your Water ...",
+        "url": "https://www.coffeeam.com/blogs/blog/the-heat-is-on-how-the-temperature-of-your-water-makes-a-difference?srsltid=AU7gw4V6-uIbpTfiqvBowksDa6KJm1YcnqIbCjE6U2fM0qtlVt40SjiV",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.coffeeam.com › Coffee Knowledge",
+        "website_name": "CoffeeAM",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "18 Sept 2020 — when you're brewing your coffee, your water should be around 195 to 205 degrees Fahrenheit. Water typically boils at around the 212-degree mark ...",
+        "pre_snippet": "09/18/2020 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "195 to 205 degrees Fahrenheit"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2020-09-18 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "people_also_ask",
+        "rank_group": 1,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]",
+        "items": [
+         {
+          "type": "people_also_ask_element",
+          "title": "What is the ideal water temperature for brewing coffee?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "How did cowboys make coffee over a campfire?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "What is the 15-15-15 rule for coffee?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         },
+         {
+          "type": "people_also_ask_element",
+          "title": "What is the 80/20 rule for coffee?",
+          "seed_question": null,
+          "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+          "expanded_element": [
+           {
+            "type": "people_also_ask_ai_overview_expanded_element",
+            "items": null,
+            "references": null,
+            "asynchronous_ai_overview": true
+           }
+          ]
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[6]/div[1]/div[1]",
+        "domain": "phillyfairtrade.com",
+        "title": "What is the Best Temperature to Brew Coffee?",
+        "url": "https://phillyfairtrade.com/blogs/learn/what-is-the-best-temperature-to-brew-coffee?srsltid=AU7gw4XRiHDr1YOVzlaozVJchqQ4EO8C-gzyBYRuPDL5l236oJnvFqip",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://phillyfairtrade.com › blogs › learn › what-is-the-b...",
+        "website_name": "Philly Fair Trade Roasters",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "8 Jul 2025 — As a generalization, the best overall temperature to brew coffee is between 195-205 degrees Fahrenheit. Now, this can vary a few degrees ... Read more",
+        "pre_snippet": "07/08/2025 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "195-205 degrees Fahrenheit"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://phillyfairtrade.com/blogs/learn/what-is-the-best-temperature-to-brew-coffee?srsltid=AU7gw4XRiHDr1YOVzlaozVJchqQ4EO8C-gzyBYRuPDL5l236oJnvFqip#:~:text=As%20a%20generalization%2C%20the%20best,over%2C%20French%20Press%2C%20and%20Espresso.",
+          "domain": "phillyfairtrade.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2025-07-08 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[8]/div[1]/div[1]",
+        "domain": "www.bonlifecoffee.com",
+        "title": "How Water Temperature Affects the Taste of Coffee",
+        "url": "https://www.bonlifecoffee.com/blog/water-temperature-why-does-it-matter-so-much-when-brewing-coffee?srsltid=AU7gw4XMHjTlMRadZEOjKPQW1qvDGmjagVqJGbLRJVCkFEw87RNMOmL2",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.bonlifecoffee.com › blog › water-temperat...",
+        "website_name": "Bonlife Coffee",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "23 Jul 2024 — The National Coffee Association says that the ideal water temperature for extraction is between 195°F and 205°F, which is just below the ...",
+        "pre_snippet": "07/23/2024 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "between 195°F and 205°F"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2024-07-23 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[10]/div[1]/div[1]",
+        "domain": "www.breville.com",
+        "title": "A guide to coffee brewing temperature",
+        "url": "https://www.breville.com/us/en/blog/coffee-and-espresso/a-guide-to-coffee-brewing-temperature.html",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.breville.com › blog › coffee-and-espresso",
+        "website_name": "Breville",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "According to the National Coffee Association, the ideal water temperature for brewing coffee is “between 195 to 205 degrees Fahrenheit for optimal coffee ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "195 to 205 degrees Fahrenheit"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[12]/div[1]/div[1]",
+        "domain": "www.reddit.com",
+        "title": "What temperature do you guys like to brew at? : r/pourover",
+        "url": "https://www.reddit.com/r/pourover/comments/1ua9hls/what_temperature_do_you_guys_like_to_brew_at/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "30+ comments  ·  3 months ago",
+        "website_name": "Reddit · r/pourover",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Hello all, I recently started trying to brew with a v60 and I am struggling quite a bit. I’ve bought a k ultra for my set up. I’ve tried James and Lance’s ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": [
+         {
+          "type": "link_element",
+          "title": "34 answers",
+          "description": null,
+          "url": "https://www.reddit.com/r/pourover/comments/1ua9hls/what_temperature_do_you_guys_like_to_brew_at/osmet5l/",
+          "domain": "www.reddit.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[14]/div[1]/div[1]",
+        "domain": "moonroast.co.uk",
+        "title": "The Best Brew for You (4) - Temperature",
+        "url": "https://moonroast.co.uk/blogs/news/the-best-brew-for-you-3-temperature?srsltid=AU7gw4XUe7GXkj0tuJZKNQRKfFKT3GFkvfwQpf_7IwDTqGfDe43xNaHN",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://moonroast.co.uk › Blog & Updates",
+        "website_name": "Moon Roast Coffee",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "5 Jun 2020 — you may want to brew with water that is a little less hot (maybe 90°C-95°C). using 93°C water, it may have dropped to lower than 85°C. between ...",
+        "pre_snippet": "06/05/2020 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "90°C-95°C"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2020-06-05 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 7,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[16]/div[1]/div[1]",
+        "domain": "www.facebook.com",
+        "title": "The “perfect” coffee temperature is scientifically debated. ...",
+        "url": "https://www.facebook.com/maythecoffeebewithyou/posts/the-perfect-coffee-temperature-is-scientifically-debatedbut-everyone-agrees-its-/1495284388739420/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "110+ reactions  ·  5 months ago",
+        "website_name": "Facebook · Coffee",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "the ideal temperature range for brewing coffee is between 195°F (90°C) and 205°F (96°C). Water below 195°F",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "ideal temperature",
+         "coffee",
+         "Water"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 8,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[18]/div[1]/div[1]",
+        "domain": "ratiocoffee.com",
+        "title": "Home Coffee Brewing Tips Every Coffee Lover Should Know",
+        "url": "https://ratiocoffee.com/blogs/coffee-guides/home-coffee-brewing-tips-every-coffee-lover-should-know?srsltid=AU7gw4WEwGw75hXq5A4chXLj8jW9VeKKl3GeuwzpZDWPqOHLAOeDfwxU",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://ratiocoffee.com › blogs › home-coffee-brewing-ti...",
+        "website_name": "Ratio Coffee Machines",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Water Temperature: Ideal brewing temperature ranges from 195°F to 205°F. Too hot can lead to over-extraction, while too cold can under-extract flavors.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "195°F to 205°F"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 9,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[20]/div[1]/div[1]",
+        "domain": "frenchpressandco.com",
+        "title": "Best Water Temperature for Coffee: The 205°F Sweet Spot",
+        "url": "https://frenchpressandco.com/blogs/coffee-blog/best-water-temperature-for-coffee?srsltid=AU7gw4UHeRWK0vOw0aSbrde5MCaurOL2dC8cIlcJkxtE7swY-Via0auE",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://frenchpressandco.com › blogs › best-water-temp...",
+        "website_name": "French Press & Co.",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "The absolute best water temperature for brewing coffee falls safely between 195°F and 205°F. This specific range provides enough thermal energy to dissolve ... Read more",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "195°F and 205°F"
+        ],
+        "links": [
+         {
+          "type": "link_element",
+          "title": "Read more",
+          "description": null,
+          "url": "https://frenchpressandco.com/blogs/coffee-blog/best-water-temperature-for-coffee?srsltid=AU7gw4UHeRWK0vOw0aSbrde5MCaurOL2dC8cIlcJkxtE7swY-Via0auE#:~:text=The%20absolute%20best%20water%20temperature,without%20extracting%20harsh%2C%20bitter%20tannins.",
+          "domain": "frenchpressandco.com"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "related_searches",
+        "rank_group": 1,
+        "rank_absolute": 12,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[2]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "items": [
+         "What temperature for coffee Celsius",
+         "Coffee brew temperature chart",
+         "Best temperature for coffee pour over",
+         "Best temperature to brew coffee French press",
+         "Best temp for instant coffee",
+         "Drip coffee water temperature",
+         "Coffee brew temperature espresso",
+         "Coffee temperature cappuccino"
+        ],
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

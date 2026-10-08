@@ -1,0 +1,1049 @@
+{
+ "recordedAt": "2026-10-08T20:00:14.785Z",
+ "endpoint": "serp/google/organic/task_get/advanced",
+ "task": {
+  "keyword": "koffeinmentes tea",
+  "location_code": 2348,
+  "language_code": "hu",
+  "depth": 10
+ },
+ "response": {
+  "version": "0.1.20260917",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0206 sec.",
+  "cost": 0.0006,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+   {
+    "id": "10082000-2302-0066-0000-f02e935f8a7e",
+    "status_code": 20000,
+    "status_message": "Ok.",
+    "time": "0.0164 sec.",
+    "cost": 0.0006,
+    "result_count": 1,
+    "path": [
+     "v3",
+     "serp",
+     "google",
+     "organic",
+     "task_get",
+     "advanced",
+     "10082000-2302-0066-0000-f02e935f8a7e"
+    ],
+    "data": {
+     "api": "serp",
+     "function": "task_get",
+     "se": "google",
+     "se_type": "organic",
+     "keyword": "koffeinmentes tea",
+     "location_code": 2348,
+     "language_code": "hu",
+     "depth": 10,
+     "device": "desktop",
+     "os": "windows"
+    },
+    "result": [
+     {
+      "keyword": "koffeinmentes tea",
+      "type": "organic",
+      "se_domain": "google.com",
+      "location_code": 2348,
+      "language_code": "hu",
+      "check_url": "https://www.google.com/search?q=koffeinmentes%20tea&hl=hu&gl=HU&ie=UTF-8&uule=w+CAIQIFISCcPkN997g0FHERAQHgwpxAAA",
+      "datetime": "2026-10-08 20:00:08 +00:00",
+      "spell": null,
+      "refinement_chips": {
+       "type": "refinement_chips",
+       "xpath": "/html[1]/body[1]/div[3]/div[1]/div[5]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]",
+       "items": [
+        {
+         "type": "refinement_chips_element",
+         "title": "Buy",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnuc7bcqe_pCKI8768ArATNrdib01Q:1791489606684&q=buy+koffeinmentes+tea&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rM4C1ogCMDpmOJgEzBCm9o3kGCA3vMqhkR4snr_3gw1hvPDaLwHki81JYA1wIr62UWW9sxS2kZLrgbRq0zJD5fI_8lTD2cNLXusLSemUqj7Rt9nf8ovEf7kU-kerQeguZ-ZCBRQZoSprDqws5T-vhiYjvC_HJQx0F2nla0qUvIAeaU0Xj&sa=X&ved=2ahUKEwi_pv_smquXAxUQb-sIHbKTBkoQxKsJKAB6BAgYEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Reviews",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnuc7bcqe_pCKI8768ArATNrdib01Q:1791489606684&q=reviews+koffeinmentes+tea&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rbdAMqvNNc_Qrf1pUsnWcB82SA71T-K7KbNDNkKHNcoqPtrPAe0-LMFej-GJxH2DZmFoTReMthIeRUwkDB8HYcml-wD_ADyVkERKYerSs0i7h3VUw3b_b68gaiWKsSVkryRXxAIp6NZGCx3bzkQYKXY059sXMrzYJQ_7Rix5fD52U71aP&sa=X&ved=2ahUKEwi_pv_smquXAxUQb-sIHbKTBkoQxKsJKAF6BAgZEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Price",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnuc7bcqe_pCKI8768ArATNrdib01Q:1791489606684&q=price+koffeinmentes+tea&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rHfOjuRCfV2iX3EB0hrETeAO3eMwrMTNWKwlJ7K0EOT-IkXoTUQ_3ys_EnCcSdYedaSQPEF4LKdbpHnxALebBBsi5AzRgO6Q0XU4RZX8pgVdto8Jc_Xq_7X4wpDJgRQkhaqko15t7YTgbgyAJa-gUPj0-3962o2pTbySWil7_2Edz-57i&sa=X&ved=2ahUKEwi_pv_smquXAxUQb-sIHbKTBkoQxKsJKAJ6BAgaEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Man",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnuc7bcqe_pCKI8768ArATNrdib01Q:1791489606684&q=man+koffeinmentes+tea&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rM4C1ogCMDpmOJgEzBCm9o3kGCA3vMqhkR4snr_3gw1hywrMyp6jgXRE_NU8fetcue_QpI2mbDlafPBM_HN6zLjVqzTiu6XDlcX3vainund00Qv73XqeW6sSZHrtNUoS4Cwq7pt7cvnT9s7mGflup3G_XZGEhzYG5E0CplxKgldnEQcp7&sa=X&ved=2ahUKEwi_pv_smquXAxUQb-sIHbKTBkoQxKsJKAN6BAgbEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Online",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnuc7bcqe_pCKI8768ArATNrdib01Q:1791489606684&q=online+koffeinmentes+tea&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4r03JvPzvGy4Kh_E-W0bL94IL8VyCaHBB68g8AzLb9OvoJY2HFcGAS_2eNbGOdsQtDHpjXXZdhO0K_LuU5cXE03WCMOMf8yElbunaH8V7e0ZzKhq2Bcft3T7IXJ84SWtqXKgMoFZwxIrexx_pg5HIcm4VmLkfQQ4NI_atyUCx8syqVSjf7&sa=X&ved=2ahUKEwi_pv_smquXAxUQb-sIHbKTBkoQxKsJKAR6BAgdEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Woman",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnuc7bcqe_pCKI8768ArATNrdib01Q:1791489606684&q=woman+koffeinmentes+tea&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rHfOjuRCfV2iX3EB0hrETeAO3eMwrMTNWKwlJ7K0EOT8VOB1uquO_xQ5Ia33nXRWSkRQG6rCl8cIqoIRmBKMaqDfj5LAr57nmAn_mHPaIhwtD-juEB_rKn_hBPfM47wfC_3DjM8yN-0ceh3eDJgEp8VHUcm2q5kOvo1fAZAjqTlEecbBi&sa=X&ved=2ahUKEwi_pv_smquXAxUQb-sIHbKTBkoQxKsJKAV6BAhzEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "For Sale",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnuc7bcqe_pCKI8768ArATNrdib01Q:1791489606684&q=koffeinmentes+tea+for+sale&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rbdAMqvNNc_Qrf1pUsnWcB82SA71T-K7KbNDNkKHNcopcV9QOv93d2vipXW4QZYNBIxOuiQeGgDu2hEYBdv6dBLwgQiz4q6IRoDZzRZZ7Uc2EbwPHeRLRMGYZuLL2XQ-9ED7L1CPsJHlNWDUQUiysMwCdtMs7XHGpFvofj2Vu1yvoyAgJ&sa=X&ved=2ahUKEwi_pv_smquXAxUQb-sIHbKTBkoQxKsJKAZ6BAhyEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        },
+        {
+         "type": "refinement_chips_element",
+         "title": "Girl",
+         "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnuc7bcqe_pCKI8768ArATNrdib01Q:1791489606684&q=girl+koffeinmentes+tea&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rHnjL-cLBgWFh2Rjf_gduiVQiL7aFYQKFjKEq09BnLR2tjcj-AQtPxVXLfPrCSdUsfqWvO4h7qzf6v9vp6UUcRQsd2Hz0DwK__dKEa-vKm9LpZMga3lXR1nzUeLUwX98fzS-vyXZtzVNUdxz2-jBRMy94r2QCVlpDDAoQgplRxUwJG1RV&sa=X&ved=2ahUKEwi_pv_smquXAxUQb-sIHbKTBkoQxKsJKAd6BAhxEAE&ictx=0",
+         "domain": "www.google.com",
+         "options": null
+        }
+       ]
+      },
+      "item_types": [
+       "organic",
+       "images",
+       "popular_products",
+       "related_searches"
+      ],
+      "se_results_count": 120,
+      "pages_count": 1,
+      "items_count": 13,
+      "items": [
+       {
+        "type": "organic",
+        "rank_group": 1,
+        "rank_absolute": 1,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]",
+        "domain": "kameliakert.hu",
+        "title": "Koffein nélkül Kategória",
+        "url": "https://kameliakert.hu/termekkategoria/teak/koffeinmentes/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://kameliakert.hu › teak › koffeinmentes",
+        "website_name": "Kamélia Kert",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Koffein nélkül · Csiga Ernő – álmot hozó gyerektea · Csoki-tea (kakaóbab héj) · Fűszeres csoki-tea · Fűszerkert · Gyermektea csomag · Hibiszkusz tea · Immun – ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Csiga Ernő – álmot hozó gyerektea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 2,
+        "rank_absolute": 2,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[3]/div[1]/div[1]",
+        "domain": "gourmetvillage.hu",
+        "title": "Koffeinmentes tea | Gourmet Village gasztroajándék ...",
+        "url": "https://gourmetvillage.hu/termekcimkek/koffeinmentes-tea/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://gourmetvillage.hu › Termékeink",
+        "website_name": "GourmetVillage Gasztroajándék Webáruház",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Koffeinmentes tea kínálatunk: szálas gyümölcsteák, koffeinmentes Earl Grey zöld tea, rooibos, aromamentes tea gyerekeknek. Zamatok,illatok. Élvezd bármikor.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "Koffeinmentes tea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "images",
+        "rank_group": 1,
+        "rank_absolute": 3,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[5]/div[1]",
+        "title": "Képek",
+        "url": "https://www.google.com/search?sca_esv=ad2f53e9788d7fab&hl=hu&gl=HU&sxsrf=APpeQnuc7bcqe_pCKI8768ArATNrdib01Q:1791489606684&q=koffeinmentes+tea&udm=2&source=univ&fir=omRuqkNvLYCjIM%252CRzG44FlIxkph0M%252C_%253BIWPsC6W_4UWIkM%252CWOOyx55XJbdQxM%252C_%253BX76ykdzU3ebtHM%252C3n6hgCEWbFszsM%252C_%253BaLRhlDBfM9YLqM%252CzDbDrDJPEvguLM%252C_%253Boy76FpCcg51LOM%252CMudUE-g7ID2v8M%252C_%253BuhOVNfSUpUR_9M%252CqUtvNxD4gLNXNM%252C_%253BgW2HXWLssybW-M%252CRgB8uFejVsQ63M%252C_%253BSKmYhIEHXDYMHM%252CjqgBcKxX_Gre5M%252C_%253BvoOQBTtPVrZCfM%252CRgB8uFejVsQ63M%252C_&usg=AI4_-kSYymy6Skf_iM8xTg279EFk4ErbcA&sa=X&ved=2ahUKEwi_pv_smquXAxUQb-sIHbKTBkoQ7Al6BAgeEAU",
+        "items": [
+         {
+          "type": "images_element",
+          "alt": "Teekanne Forest fruit erdei gyümölcs tea - 20 filter ...",
+          "url": "https://vitaminbolt.net/termek/teekanne-forest-fruit-erdei-gyumolcs-tea-20-filter/",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-f02e935f8a7e:0"
+         },
+         {
+          "type": "images_element",
+          "alt": "Zöld tea, koffeinmentes, 20 tasak teás, 40 g",
+          "url": "https://hu.iherb.com/pr/twinings-green-tea-decaffeinated-20-tea-bags-1-41-oz-40-g/70571",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-f02e935f8a7e:1"
+         },
+         {
+          "type": "images_element",
+          "alt": "Gyümölcs tea koffein tartalma - szeretlekTEA",
+          "url": "https://szeretlektea.hu/gyumolcs-tea-koffein-tartalma/",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-f02e935f8a7e:2"
+         },
+         {
+          "type": "images_element",
+          "alt": "Melyik tea nem tartalmaz koffeint? – a koffeinmentes teák ...",
+          "url": "https://teaacademy.hu/melyik-tea-nem-tartalmaz-koffeint/?srsltid=AU7gw4W-wkwXAHmogE8VQOGIqr0nn4MbeIJA15Kz7xjBu53AojxabX2H",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTliLBbkQG-YP2b-tQzhXZQ918zfDssaxfG9xkj7oeuH_GcG6mpnSiFp1I&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Breakfast Fekete tea Koffeinmentes - bio - 20db",
+          "url": "https://bio-barat.hu/products/breakfast-fekete-tea-koffeinmentes-bio-20db",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTivlPnFcTMGKr3iNMRHGiMNxurfmZi0fKYIid937Q5MCoXqskXsxkkSS4&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Koffeinmentes Earl Grey Sencha - ízesített zöld tea - Luther teaház",
+          "url": "https://lutherteahaz.hu/termek/koffeinmentes-earl-grey-sencha-izesitett-zold-tea/?srsltid=AU7gw4WzUzKaUAbmOdY4gFofBd6ChOfxUWPufQ7LAlZTfWjySO7tpDR-",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQNmihEP60iOrWSKz6aAwsVsdtYGLojqBInA4fr10hiS9FtUpiCk2lwSM&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Koffeinmentes tea | Bármikor fogyasztható | Teanet.hu",
+          "url": "https://teanet.hu/Koffeinmentes-tea?srsltid=AU7gw4U2wtLDjyy866SWLcJRMz3-Ki0kTXtoCBaRZU0WQIGfLhnYgD90",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXXxObT8ku2QOQ39JOLZW1ht-ZkqFJQL6juhNSKZ8WzR8smQtOxSRI_bk&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Twinings Earl Grey koffeinmentes fekete tea 25 filter - 50 g",
+          "url": "https://shop.rossmann.hu/termek/twinings-the-earl-grey-bergamott-es-citromizu-koffeinmentes-fekete-tea-25-filter-50-g?srsltid=AU7gw4UH0nhbWV39vnkCSi9qpoV2yZMQfdBGZjMHDAeK5Rd_9z6qXv6w",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSFyjNAN4s--iR_8DzIxNfmUrlOwtcUD9l6CuTjbtr7rQPRNHGUgmhm7Q&s"
+         },
+         {
+          "type": "images_element",
+          "alt": "Koffeinmentes tea | Bármikor fogyasztható | Teanet.hu",
+          "url": "https://teanet.hu/Koffeinmentes-tea?srsltid=AU7gw4XiS6MKkeVi7CX5PjakUH-BhdkuXnUkSssEDpZ4x3e-Rg2flsdv",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMsCDx4UjsMQaFYr2kOizDroEXwLmtsQIzkWuvMFKa8QVnBx0l3MZt2M0&s"
+         }
+        ],
+        "related_image_searches": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 3,
+        "rank_absolute": 4,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[7]/div[1]/div[1]",
+        "domain": "www.reddit.com",
+        "title": "A LEGJOBB koffeinmentes zöld tea : r/tea",
+        "url": "https://www.reddit.com/r/tea/comments/1kd37lz/the_best_decaf_green_tea/?tl=hu",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "6 megjegyzés  ·  1 évvel ezelőtt",
+        "website_name": "Reddit · r/tea",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Két hónapot töltöttem azzal, hogy megtaláljam a legjobb koffeinmentes zöld tea filtereket. 11 márka kipróbálása után a preferenciám szerint ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "koffeinmentes",
+         "tea"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 4,
+        "rank_absolute": 5,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[9]/div[1]/div[1]",
+        "domain": "azsiabolt.hu",
+        "title": "Koffeinmentes assam broken fekete tea szálas",
+        "url": "https://azsiabolt.hu/termekek/feketet/koffeinmentes-assam-broken-fekete-tea-szalas-24474/24474",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://azsiabolt.hu › termekek › feketet › koffeinmente...",
+        "website_name": "Négy égtáj ízei Kft.",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Újabb különlegesség a koffeinmentes fekete teák között! Ez az Assam Broken (tört levelű), Breakfast minőségű keverék egyenletes szemcseméretű, ...",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "koffeinmentes"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "popular_products",
+        "rank_group": 1,
+        "rank_absolute": 6,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[11]",
+        "title": null,
+        "items": [
+         {
+          "type": "popular_products_element",
+          "title": "Traditional Medicinals Organikus csalánlevél koffeinmentes",
+          "url": null,
+          "domain": null,
+          "description": "iHerb",
+          "more_sellers": false,
+          "seller": "iHerb",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-f02e935f8a7e:3",
+          "price": {
+           "current": 3517,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "3517 Ft"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 4.6,
+           "votes_count": 3517,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": "5778614936186720521",
+           "data_docid": "10718820575178630210",
+           "gid": "7345484532161966498"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Koffeinmentes fekete tea 160 filter Yorkshire Decaf Tea__UK",
+          "url": null,
+          "domain": null,
+          "description": "Allegro.hu - Allegro",
+          "more_sellers": false,
+          "seller": "Allegro.hu - Allegro",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-f02e935f8a7e:4",
+          "price": {
+           "current": 5605,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "5605 Ft"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 4.6,
+           "votes_count": 379,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": null,
+           "data_docid": "18145724347749890555",
+           "gid": null
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Ahmad Tea Decaffeinated Evening fekete Tea 20x2g alu zacskó",
+          "url": null,
+          "domain": null,
+          "description": "Allegro.hu - Allegro és továbbiak",
+          "more_sellers": false,
+          "seller": "Allegro.hu - Allegro",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-f02e935f8a7e:5",
+          "price": {
+           "current": 1390,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "1390 Ft"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 4.8,
+           "votes_count": 127,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": "10069450590841847770",
+           "data_docid": "7750015033912429642",
+           "gid": "9115868137617658928"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Cupper Bio Skinni Vanilli Vaníliás Gyümölcstea 20 Db 40 G",
+          "url": null,
+          "domain": null,
+          "description": "Dr. Lenkei Clean Food és továbbiak",
+          "more_sellers": false,
+          "seller": "Dr. Lenkei Clean Food",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-f02e935f8a7e:6",
+          "price": {
+           "current": 1620,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "1620 Ft"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 5,
+           "votes_count": 2,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": "14349402867008471773",
+           "data_docid": "18022138090974166538",
+           "gid": "9344144286270245265"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Birchall Koffeinmentes Tea Filter",
+          "url": null,
+          "domain": null,
+          "description": "Allegro.hu - Allegro",
+          "more_sellers": false,
+          "seller": "Allegro.hu - Allegro",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-f02e935f8a7e:7",
+          "price": {
+           "current": 1355,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "1355 Ft"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 4.8,
+           "votes_count": 20,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": "5987259262333803238",
+           "data_docid": "9775891575302755270",
+           "gid": "11196848816032367112"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "China Sencha koffeinmentes zöld tea Változat",
+          "url": null,
+          "domain": null,
+          "description": "Alza.hu és továbbiak",
+          "more_sellers": false,
+          "seller": "Alza.hu",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-f02e935f8a7e:8",
+          "price": {
+           "current": 23000,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "23 000 Ft"
+          },
+          "rating": {
+           "rating_type": "CustomMax",
+           "value": 23,
+           "votes_count": 23000,
+           "rating_max": null
+          },
+          "product_identifiers": {
+           "product_id": "3556397801654290171",
+           "data_docid": "10899312326108494157",
+           "gid": "8191585253028742602"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Decaf Sencha China koffeinmentes zöld tea 50g",
+          "url": null,
+          "domain": null,
+          "description": "Allegro.hu - Allegro",
+          "more_sellers": false,
+          "seller": "Allegro.hu - Allegro",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-f02e935f8a7e:9",
+          "price": {
+           "current": 905,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "905 Ft"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": "12604723597551537209",
+           "data_docid": "8591329021832081869",
+           "gid": "9707162949469303949"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Traditional Medicinals, Bio kamilla, koffeinmentes, 16 csomagolt teatasak, 20,8 g",
+          "url": null,
+          "domain": null,
+          "description": "iHerb",
+          "more_sellers": false,
+          "seller": "iHerb",
+          "image_url": "https://api.dataforseo.com/cdn/i/10082000-2302-0066-0000-f02e935f8a7e:10",
+          "price": {
+           "current": 3506,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "3506 Ft"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 4.8,
+           "votes_count": 3506,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": "8715038536318582497",
+           "data_docid": "608256711007355473",
+           "gid": "4109240490655413574"
+          }
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "popular_products",
+        "rank_group": 2,
+        "rank_absolute": 7,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[13]",
+        "title": null,
+        "items": [
+         {
+          "type": "popular_products_element",
+          "title": "English Tea Shop Bio Wellness Tea Sleepy Me",
+          "url": null,
+          "domain": null,
+          "description": "Árukereső és továbbiak",
+          "more_sellers": false,
+          "seller": "Árukereső",
+          "image_url": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRbKxzbTwUh-c3ShzBhqIYRt2kQzCfiYYMeteZJ8CDEYh-SADx5u4J2zQCXF5NTzlxLXcm9jbh-iXoqN_goh2EabLTPKgHItJeqeebCJNt4BPqIs5Kpqcjo5g",
+          "price": {
+           "current": 1169,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "1169 Ft"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 4.5,
+           "votes_count": 212,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": "8036859841534884798",
+           "data_docid": "6296292538637505215",
+           "gid": "1193568227064456673"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Decaf Ceylon koffeinmentes fekete tea BOP1 50g",
+          "url": null,
+          "domain": null,
+          "description": "Allegro.hu - Allegro",
+          "more_sellers": false,
+          "seller": "Allegro.hu - Allegro",
+          "image_url": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcT0M2JBbldLS_XOKeK662bnQ3MFeay8NQ3c63lWoct284NzfJxAWXKePHrEB4guS6ybLfrMt-Jw9Vk9hktm8_AstPPHc_WFUHjzlI4L4DYMv3I9ZFLjRQMj7g",
+          "price": {
+           "current": 1180,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "1180 Ft"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": "9951458238494355810",
+           "data_docid": "5481796110870874324",
+           "gid": "8417055407157607568"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "English Tea Shop Ets Bio Wellness Tea Energise Me",
+          "url": null,
+          "domain": null,
+          "description": "alto.hu és továbbiak",
+          "more_sellers": false,
+          "seller": "alto.hu",
+          "image_url": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcSG9k86_ArsQCEI8aBzlGeQ3emHKoQOc-p-3sEz0Arb5_-N7za2hsp-bup2rQk2KympGdyF9DJ7E98UPmYeoZ83TIu19t_uhNisFLcw6Ovs8xCKgGyHVvKS",
+          "price": {
+           "current": 1399,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "1399 Ft"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 4.8,
+           "votes_count": 7,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": "16570834598080196826",
+           "data_docid": "15774796230465868010",
+           "gid": "18344199969703188382"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "English Tea Shop koffeinmentes Breakfast fekete bio Tea",
+          "url": null,
+          "domain": null,
+          "description": "Alza.hu és továbbiak",
+          "more_sellers": false,
+          "seller": "Alza.hu",
+          "image_url": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcQ_QdimyQPQELKZDjMP5qlJ3URNAWGN49NUaj18KQ2tVqBvsngYGV21_Ba5PwTatGyHNQ2W7SqzOr0ZHbRJk0gZhkQ1nIYB9Vj0TU396ZrOPu69mLquBy5a-Q",
+          "price": {
+           "current": 1490,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "1490 Ft"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 4.6,
+           "votes_count": 87,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": "12535140804809601396",
+           "data_docid": "815369621261230874",
+           "gid": "4247278588719176973"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Yorkshire Tea Bedtime Koffeinmentes Fekete Tea Vaníliával és Szerecsendióval 40 Filter 100g",
+          "url": null,
+          "domain": null,
+          "description": "eMAG és továbbiak",
+          "more_sellers": false,
+          "seller": "eMAG",
+          "image_url": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQnLxFyaN8BFYpDg6jlwLItfqjXhKfTxHKLxYFRmRywttVW6ZQUClP4mwOVRzQaG63Y7uE1akEJa_ntTnZzam8x48pATapodUfyZM2O_0zF9LI3rSWMdHHk",
+          "price": {
+           "current": 2047,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "2047 Ft"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 4.3,
+           "votes_count": 293,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": "10136882563215339283",
+           "data_docid": "15065576788616877658",
+           "gid": "11822463682358815867"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Cupper bio tea Little Dreamer",
+          "url": null,
+          "domain": null,
+          "description": "Herbaház és továbbiak",
+          "more_sellers": false,
+          "seller": "Herbaház",
+          "image_url": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcSeLMbkOKLlGMnmbrHHHsBE8acNs2qwdHV9MnW8qAlNMiFjTnBMLQcBqyIvuRzrT4WbCKCY4ZqyWqI09wgPHx8cpV8fX6ld-jpR0LIzWwEg9wtynkUrwh4qUnk",
+          "price": {
+           "current": 1598,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "1598 Ft"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 4.8,
+           "votes_count": 92,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": "10045742391386847114",
+           "data_docid": "4578545537291458334",
+           "gid": "4225961954334823351"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "Clipper fair trade koffeinmentes fekete tea BIO 50 g",
+          "url": null,
+          "domain": null,
+          "description": "Allegro.hu - Allegro és továbbiak",
+          "more_sellers": false,
+          "seller": "Allegro.hu - Allegro",
+          "image_url": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcTIyb6jc_RnZgY_lW6D_oif37c6YaK6CMXre-BpgVAIt6QlvDymdWniiNEUHu67zG4X4u52xKGH7ZFKV7_pKNCl7Ivuxr-YKDw_KIAVRUB5dxTmxdVKnDfN",
+          "price": {
+           "current": 1340,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "1340 Ft"
+          },
+          "rating": {
+           "rating_type": "Max5",
+           "value": 4.5,
+           "votes_count": 61,
+           "rating_max": 5
+          },
+          "product_identifiers": {
+           "product_id": "4849308380824312881",
+           "data_docid": "9430723919427325862",
+           "gid": "17431843403029549589"
+          }
+         },
+         {
+          "type": "popular_products_element",
+          "title": "24tea natural soba tea natúr hajdina tea 45 g",
+          "url": null,
+          "domain": null,
+          "description": "www.mentes24.hu és továbbiak",
+          "more_sellers": false,
+          "seller": "www.mentes24.hu",
+          "image_url": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcQJSiltMRpyDPQDpF1S0s9NjNobQGQAKQQgSqqq0BWbMf091iKixAF12sGEu4thDYbjai1_ry1eHJPDutfNEGkzxsMMLxLnrCTw2jffx8OYABCnOwhb9ecz",
+          "price": {
+           "current": 1998,
+           "regular": null,
+           "max_value": null,
+           "currency": "HUF",
+           "is_price_range": false,
+           "displayed_price": "1998 Ft"
+          },
+          "rating": null,
+          "product_identifiers": {
+           "product_id": "9528241567124642551",
+           "data_docid": "11276964725900677989",
+           "gid": "12157749056195781277"
+          }
+         }
+        ],
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 5,
+        "rank_absolute": 8,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[15]/div[1]/div[1]",
+        "domain": "www.gyakorikerdesek.hu",
+        "title": "Milyen a koffeinmentes tea? Hol lehet ilyet venni?",
+        "url": "https://www.gyakorikerdesek.hu/etelek-italok__egyeb-kerdesek__124115-milyen-a-koffeinmentes-tea-hol-lehet-ilyet-venni",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.gyakorikerdesek.hu › etelek-italok__egyeb...",
+        "website_name": "Gyakori kérdések",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2009. jan. 2. — Milyen a koffeinmentes tea? Hol lehet ilyet venni?",
+        "pre_snippet": "01/02/2009 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": null,
+        "links": [
+         {
+          "type": "link_element",
+          "title": "5 válasz",
+          "description": null,
+          "url": "https://www.gyakorikerdesek.hu/etelek-italok__egyeb-kerdesek__124115-milyen-a-koffeinmentes-tea-hol-lehet-ilyet-venni#valasz-562939",
+          "domain": "www.gyakorikerdesek.hu"
+         }
+        ],
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2009-01-02 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 6,
+        "rank_absolute": 9,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[17]/div[1]/div[1]",
+        "domain": "serenitea.hu",
+        "title": "Koffeinmentes tea újdonságok az esti rituáléhoz",
+        "url": "https://serenitea.hu/blogs/news/koffeinmentes-tea-ujdonsagok?srsltid=AU7gw4UmS_tXRRayRIH4O9VfYM9XwFBrJTuSl9MbUi7P1BsfGbnNCLu_",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://serenitea.hu › news › koffeinmentes-tea-ujdonsagok",
+        "website_name": "serenitea.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "4 nappal ezelőtt — A koffeinmentesített fekete tea megőrizheti a klasszikus, malátásan telt teakaraktert, ezért jó választás lehet annak, aki a megszokott reggeli ...",
+        "pre_snippet": "4 nappal ezelőtt",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "A koffeinmentesített fekete tea megőrizheti a klasszikus, malátásan telt teakaraktert"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 7,
+        "rank_absolute": 10,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[19]/div[1]/div[1]",
+        "domain": "pingvinpatika.hu",
+        "title": "A zöld tea nem koffeinmentes",
+        "url": "https://pingvinpatika.hu/blog/post/a-zold-tea-nem-koffeinmentes.html",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://pingvinpatika.hu › blog › post › a-zold-tea-nem-...",
+        "website_name": "Pingvin Patika",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2019. szept. 23. — A zöld tea magas cserzőanyag-tartalma mérsékli a koffein felszívódását, ami csökkenti az élénkítő hatást. A fekete és a zöld tea stimuláló ...",
+        "pre_snippet": "09/23/2019 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "A zöld tea magas cserzőanyag-tartalma mérsékli a koffein felszívódását"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2019-09-23 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 8,
+        "rank_absolute": 11,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[21]/div[1]/div[1]",
+        "domain": "www.naturteka.hu",
+        "title": "Koffeinmentes termékek webáruház",
+        "url": "https://www.naturteka.hu/kereses?q=koffeinmentes",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://www.naturteka.hu › kereses › q=koffeinmentes",
+        "website_name": "naturteka.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "Cupper bio alma-fahéj tea 20 filter 40g · Cupper bio koffeinmentes áfonya-málna tea 20 db 50g. 1 665 Ft.",
+        "pre_snippet": null,
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": {
+         "current": 890,
+         "regular": null,
+         "max_value": null,
+         "currency": "HUF",
+         "is_price_range": false,
+         "displayed_price": "Szállítási díj: 890 Ft"
+        },
+        "highlighted": [
+         "Cupper bio alma-fahéj tea 20 filter 40g"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": null,
+        "rectangle": null
+       },
+       {
+        "type": "organic",
+        "rank_group": 9,
+        "rank_absolute": 12,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[2]/div[1]/div[1]/div[23]/div[1]/div[1]",
+        "domain": "szeretlektea.hu",
+        "title": "Mennyi a fekete tea koffein tartalma? - tények és tévhitek",
+        "url": "https://szeretlektea.hu/fekete-tea-koffein/",
+        "cache_url": null,
+        "related_search_url": null,
+        "breadcrumb": "https://szeretlektea.hu › fekete tea",
+        "website_name": "szeretlektea.hu",
+        "is_image": false,
+        "is_video": false,
+        "is_featured_snippet": false,
+        "is_malicious": false,
+        "is_web_story": false,
+        "checks": null,
+        "description": "2018. szept. 16. — A „koffeinmentes” fekete tea is tartalmaz koffeint. Ez kb 1-10 mg bögrénként, ami már szinte elhanyagolható hatású. Ha mégis teljes mértékben ...",
+        "pre_snippet": "09/16/2018 00:00:00",
+        "extended_snippet": null,
+        "images": null,
+        "amp_version": false,
+        "rating": null,
+        "price": null,
+        "highlighted": [
+         "A „koffeinmentes” fekete tea is tartalmaz koffeint"
+        ],
+        "links": null,
+        "faq": null,
+        "extended_people_also_search": null,
+        "about_this_result": null,
+        "related_result": null,
+        "timestamp": "2018-09-16 00:00:00 +00:00",
+        "rectangle": null
+       },
+       {
+        "type": "related_searches",
+        "rank_group": 1,
+        "rank_absolute": 13,
+        "page": 1,
+        "position": "left",
+        "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[3]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]",
+        "items": [
+         "Koffeinmentes tea dm",
+         "Teaház tea",
+         "Koffeinmentes fekete tea",
+         "Teaház tea hol kapható",
+         "Gárdonyi teaház fekete tea válogatás",
+         "Gárdonyi teaház teaválogatás 100 filter"
+        ],
+        "rectangle": null
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -4,7 +4,7 @@ Written 2026-10-08 at the end of the first build session and updated at the end 
 
 ## Where things stand
 
-Phases 1 and 2 are done and committed (`git log` tells the story). `pnpm test` runs 169 tests green and 28 skipped; the skipped ones switch on by themselves when the first real Shopify recording lands. Checkpoint 1 is written up in `DECISIONS.md` and its review page is `docs/checkpoints/checkpoint-1-fact-sheets.html` (published privately at https://claude.ai/artifact/LsPqnSMS1Nj8qaMtZKtqKJ). The founders' to-do list is `docs/for-the-founders.md`; keep it current at each phase end.
+Phases 1 and 2 are done and committed (`git log` tells the story). `pnpm test` runs 162 tests green and 28 skipped; the skipped ones switch on by themselves when the first real Shopify recording lands. Checkpoint 1 is written up in `DECISIONS.md` and its review page is `docs/checkpoints/checkpoint-1-fact-sheets.html` (published privately at https://claude.ai/artifact/LsPqnSMS1Nj8qaMtZKtqKJ). The founders' to-do list is `docs/for-the-founders.md`; keep it current at each phase end.
 
 No Shopify dev store and no Search Console property exist yet. Everything touching them is built against fakes and labelled unverified.
 
@@ -28,13 +28,13 @@ Checkpoint 2 is in `DECISIONS.md`; its page is `docs/checkpoints/checkpoint-2-qu
 
 - `core/demand.ts` — the `Demand` port (monthly searches; Google's top ten for a batch of phrases). `vendors/dataforseo/` implements it: `client.ts`, `prices.ts`, `locations.json` (country → DataForSEO location code). **Top ten goes through DataForSEO's queue** (task_post, then task_get): their live request fails for this account (founder's decision, see DECISIONS). Pending submitted tasks are collected by the next run, never re-submitted.
 - `fakes/fake-dataforseo/` — answers from a scenario script, then `recordings/`, then the real API when `RECORD_DATAFORSEO=1` (kept apart from `RECORD=1` because the balance is small), then stable placeholder numbers. `published-samples/` are DataForSEO's documented examples; the fake's shapes are tested against them and against every recording.
-- `core/topics/` — `canonical.ts` (topic key), `check.ts` (existing-page check ignoring shop-wide words, same intent by shared top-three pages, shop-listings check, rank score), `candidates.ts` (the one model call), `discover.ts` (the whole run; its output, including every dropped candidate and why, is the `find_topics` row in `job_ledger`), `manual.ts` ("Add a topic"), `queue.ts` (Home's Today and Up next, expected dates, Not interested, Move to top, Skip), `evidence.ts` (the why line's template input).
+- `core/topics/` — `canonical.ts` (topic key), `check.ts` (loose word check flagging existing posts, ignoring shop-wide words; `overlap.ts` is the model's final call on them; same intent by shared top-three pages, shop-listings check, rank score), `candidates.ts` (the proposal call; two or three phrasings per topic, the most searched kept), `discover.ts` (the whole run; its output, including every dropped candidate and why, is the `find_topics` row in `job_ledger`), `manual.ts` ("Add a topic"), `queue.ts` (Home's Today and Up next, expected dates, Not interested, Move to top, Skip), `evidence.ts` (the why line's template input).
 - `jobs/topics.ts` — `find_topics`, `daily_pick` (one decision per shop-local day, also stored in `schedule_days`, whose primary key is rule 4), the hourly `daily_sweep`, `requestDiscovery`. In phase 3 the write job starts from a topic in state `scheduled` with `scheduled_for` = the local day.
 - `core/settings.ts`, `core/screens.ts` — what Settings, Home and Products read and write. Screens in `app/screens/`; `App.tsx` shows setup until it is done, then the host navigation, banners, and the screen.
 - `scenarios/topics/`, `scenarios/schedule/` — the phase 2 scenarios. `pipeline.completeSetup(id)` takes a fixture through setup; `pipeline.lastDiscovery(id)` returns what topic-finding kept and dropped.
 - `pnpm seed:preview rich-hu:done …` takes fixtures through setup for the preview; `scripts/checkpoint-2.ts` builds the review page.
 
-Open with the founders: topic wording (most proposed phrases have no measurable demand; recommendation: several phrasings per topic), the DataForSEO top-up (0.64 USD left; the other six fixture shops still use placeholder numbers), and the trivial-facts question from checkpoint 1.
+Open with the founders: the DataForSEO top-up (0.45 USD left; the other six fixture shops still use placeholder numbers), and the trivial-facts question from checkpoint 1.
 
 ## Phase 3 — what to build
 
@@ -42,7 +42,7 @@ Write (evidence pack from fact sheets only, plan call, draft call, deterministic
 
 ## Things the next session must know
 
-- **DataForSEO balance is 0.64 USD** (was 0.82). Checked 2026-10-08 with the free `GET /v3/appendix/user_data`. Search volume (`keywords_data/google_ads/search_volume/live`) costs 0.09 USD per request, for up to 1,000 keywords, so batch every store's candidates into one request. The price of the top-ten results call was not yet looked up (it is in the same `user_data` response under `price.serp`). Budget the recordings before making any: roughly one volume request and a few SERP requests per fixture store, both languages. If 0.82 USD cannot cover them, stop and tell the founders the account needs topping up. Spend on this key is approved, but the brief's per-run stop is 20 USD. Record real numbers with `RECORD_DATAFORSEO=1`.
+- **DataForSEO balance is 0.45 USD** (was 0.82). Checked 2026-10-08 with the free `GET /v3/appendix/user_data`. Search volume (`keywords_data/google_ads/search_volume/live`) costs 0.09 USD per request, for up to 1,000 keywords, so batch every store's candidates into one request. The price of the top-ten results call was not yet looked up (it is in the same `user_data` response under `price.serp`). Budget the recordings before making any: roughly one volume request and a few SERP requests per fixture store, both languages. If 0.82 USD cannot cover them, stop and tell the founders the account needs topping up. Spend on this key is approved, but the brief's per-run stop is 20 USD. Record real numbers with `RECORD_DATAFORSEO=1`.
 - **Record every spend** in the "Spend" table in `DECISIONS.md` (now 0.92 USD, all Anthropic). The Anthropic total can be recomputed from the token counts in `fakes/fake-anthropic/recordings/`.
 - **The founder is reachable in the session now** and answers questions; decisions that shape the system go to them (their global instructions require it), or into DECISIONS.md as "Assumed" when they are away.
 - **Demand floors** are the old build's (en 100, hu 20); see DECISIONS.

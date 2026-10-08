@@ -46,6 +46,7 @@ p { margin: 0; }
 .topic-body { display: grid; gap: 9px; min-width: 0; }
 .query { display: flex; gap: 10px; flex-wrap: wrap; align-items: baseline; font-size: 13px; color: var(--mut); }
 .q { font-weight: 600; color: var(--ink2); }
+.alt { font-size: 12.5px; color: var(--mut); }
 .why { background: var(--soft); border-radius: 11px; padding: 10px 12px; font-size: 13px; color: var(--ink2); }
 .meta { display: grid; grid-template-columns: 1.3fr .5fr 1.6fr .7fr; gap: 16px; font-size: 12.5px; color: var(--ink2); }
 .meta > div { display: grid; gap: 6px; align-content: start; min-width: 0; }
@@ -68,16 +69,12 @@ td:first-child { color: var(--ink); font-weight: 500; }
   <header>
     <p class="label">Sortiva · checkpoint 2 · fixture shops, real Google demand, 2026-10-08</p>
     <h1 style="margin-top:10px">Are these topics a merchant would want? Are the why lines true?</h1>
-    <p class="lede">Two made-up shops, one Hungarian and one English, went through setup the way a merchant would. The model then proposed article topics from each shop's checked product facts. Every topic's monthly searches and Google's top ten results are real, fetched from DataForSEO for the shop's country and language on 2026-10-08. Below is each shop's queue in the order it would be written, one a day, with the numbers behind every topic and what was proposed but left out. 8 queued of 35 proposed.</p>
+    <p class="lede">Two made-up shops, one Hungarian and one English, went through setup the way a merchant would. The model then proposed article topics from each shop's checked product facts. Every topic's monthly searches and Google's top ten results are real, fetched from DataForSEO for the shop's country and language on 2026-10-08. Below is each shop's queue in the order it would be written, one a day, with the numbers behind every topic and what was proposed but left out. 18 queued of 34 proposed.</p>
   </header>
   <div class="panel finding">
-    <p class="label">The main finding</p>
-    <p>Most proposed topics were left out because Google reports almost nobody searching for the exact phrase the model chose. Many phrases have no figure at all, which Google Ads gives for very rare searches. The topics are sensible; their wording is too specific. A decision for you:</p>
-    <ul>
-      <li><b>Ask the model for two or three phrasings per topic</b> and keep the one people search most. It costs nothing extra, because all phrasings go in the same single demand request. This is my recommendation.</li>
-      <li><b>Lower the minimum</b> from 100 (English) and 20 (Hungarian) searches a month. Articles would then target phrases almost nobody types.</li>
-      <li><b>Keep it as it is.</b> Fewer, safer topics; a rich shop would run dry in about a week.</li>
-    </ul>
+    <p class="label">What changed since the first version of this page</p>
+    <p>The first run queued only 8 of 35 proposed topics: Google reports almost nobody searching the exact phrase the model chose. On your decision, the model now offers two or three phrasings per topic, all are measured in the same single request, and each topic keeps its most-searched phrasing. The same two shops now queue 18 of 34. Under each topic, "also measured" shows the phrasings that lost.</p>
+    <p>Also on your decision: whether an existing blog post already answers a topic is now decided by the model, after a loose word check picks which posts to compare. In a test of ten cases, five per language, it agreed with the expected answer every time. These two shops have no blog posts, so it does not show here.</p>
   </div>
   <div class="panel">
     <p class="label">What to look for</p>
@@ -95,7 +92,7 @@ td:first-child { color: var(--ink); font-weight: 500; }
           <p class="label">Hungarian · customers in HU · minimum 20 searches a month</p>
           <h2>Bükki Füvesház</h2>
         </div>
-        <span class="count">4 queued of 15 proposed</span>
+        <span class="count">9 queued of 15 proposed</span>
       </div>
       <div class="profile">
         <div><p class="label">What it sells (as confirmed)</p><p>A bolt szálas gyógyteákat árul, főként egynövényes teákat (kakukkfű, csalánlevél, kamillavirág, borsmentalevél), valamint egy esti teakeveréket és magozott csipkebogyó gyümölcsteát. Kínálatában fekete és zöld tea is szerepel: Assam fekete tea és japán Sencha zöld tea. Teaeszközöket is forgalmaz: öntöttvas és hőálló üveg teáskannát, bögrébe való teaszűrőt és fém teatartó dobozt.</p></div>
@@ -105,13 +102,14 @@ td:first-child { color: var(--ink); font-weight: 500; }
       <li class="topic">
         <span class="pos">1</span>
         <div class="topic-body">
-          <h3>Csalántea készítése: adagolás és áztatási idő</h3>
-          <p class="query"><span class="q">csalántea készítése</span><span class="num">480 searches a month</span></p>
-          <p class="why">Havonta nagyjából 480 ember keres erre, és a boltodban még nincs róla oldal.</p>
+          <h3>Hogyan készítsünk jó zöld teát? Vízhőfok, áztatási idő, többszöri felöntés</h3>
+          <p class="query"><span class="q">zöld tea készítése</span><span class="num">260 searches a month</span></p>
+          <p class="alt">Also measured: zöld tea hány fokos víz <span class="num">(no figure)</span> · zöld tea többszöri felöntése <span class="num">(no figure)</span></p>
+          <p class="why">Havonta nagyjából 260 ember keres erre, és a boltodban még nincs róla oldal.</p>
           <div class="meta">
-            <div><p class="label">Products it mentions</p><p>Csalánlevél tea, szálas</p></div>
-            <div><p class="label">Facts behind it</p><p class="num">11</p></div>
-            <div><p class="label">Google's top three</p><ol class="urls"><li><b>hillvital.hu</b>/csalan-tea-jotekony-hatasai</li><li><b>hillvital.hu</b>/csalan-tea-fogyasztasa</li><li><b>manutea.hu</b>/csalan-tea-hogyan-jutott-el-ez-a-gyom-a-csucsra-x32056</li></ol></div>
+            <div><p class="label">Products it mentions</p><p>Sencha zöld tea · Rozsdamentes teaszűrő bögrébe</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">16</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>sobors.hu</b>/gasztro/zold-tea-hatasai-es-helyes-elkeszitese</li><li><b>gourmetkave.hu</b>/hu/blog/tea-keszitese/zoeld-tea-elkeszitese</li><li><b>teaacademy.hu</b>/zold-tea-elkeszitese</li></ol></div>
             <div><p class="label">Shop listings in the top ten</p><p class="num">0 of 8</p></div>
           </div>
         </div>
@@ -119,8 +117,84 @@ td:first-child { color: var(--ink); font-weight: 500; }
       <li class="topic">
         <span class="pos">2</span>
         <div class="topic-body">
-          <h3>Kakukkfű tea: miből készül és hogyan főzzük?</h3>
+          <h3>Csalántea készítése: adagolás és áztatás</h3>
+          <p class="query"><span class="q">csalán tea készítése</span><span class="num">480 searches a month</span></p>
+          <p class="alt">Also measured: csalántea hány percig áztassuk <span class="num">(no figure)</span></p>
+          <p class="why">Havonta nagyjából 480 ember keres erre, és a boltodban még nincs róla oldal.</p>
+          <div class="meta">
+            <div><p class="label">Products it mentions</p><p>Csalánlevél tea, szálas</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">11</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>napfenyesgyogykozpont.hu</b>/csalantea-kura</li><li><b>hillvital.hu</b>/csalan-tea-hatasa</li><li><b>streetkitchen.hu</b>/cikkek/erositsd-csalanteaval-a-novenyeidet</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">1 of 8</p></div>
+          </div>
+        </div>
+      </li>
+      <li class="topic">
+        <span class="pos">3</span>
+        <div class="topic-body">
+          <h3>Csipkebogyó tea főzése lépésről lépésre</h3>
+          <p class="query"><span class="q">csipkebogyó tea készítése</span><span class="num">480 searches a month</span></p>
+          <p class="alt">Also measured: csipkebogyó tea főzése <span class="num">(10)</span> · hogyan főzzük a csipkebogyó teát <span class="num">(no figure)</span></p>
+          <p class="why">Havonta nagyjából 480 ember keres erre, és a boltodban még nincs róla oldal.</p>
+          <div class="meta">
+            <div><p class="label">Products it mentions</p><p>Csipkebogyó tea, magozott · Hőálló üveg teáskanna 1 l</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">17</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>shop.naturland.hu</b>/termek/naturland-csipkebogyo-tea-filteres-20x25g</li><li><b>gyogyfuveskertem.hu</b>/csipkebogyo-gyujtese-es-felhasznalasa</li><li><b>benu.hu</b>/blogs/eletmod/tudjon-meg-mindent-a-csipkebogyo-jotekony-hatasairol</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">2 of 8</p></div>
+          </div>
+        </div>
+      </li>
+      <li class="topic">
+        <span class="pos">4</span>
+        <div class="topic-body">
+          <h3>Koffeinmentes teák esténként: mit igyunk lefekvés előtt?</h3>
+          <p class="query"><span class="q">koffeinmentes tea</span><span class="num">390 searches a month</span></p>
+          <p class="alt">Also measured: esti tea <span class="num">(30)</span> · lefekvés előtti tea <span class="num">(no figure)</span></p>
+          <p class="why">Havonta nagyjából 390 ember keres erre, és a boltodban még nincs róla oldal.</p>
+          <div class="meta">
+            <div><p class="label">Products it mentions</p><p>Kamillavirág tea · Esti teakeverék · Borsmentalevél tea</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">29</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>kameliakert.hu</b>/termekkategoria/teak/koffeinmentes</li><li><b>gourmetvillage.hu</b>/termekcimkek/koffeinmentes-tea</li><li><b>reddit.com</b>/r/tea/comments/1kd37lz/the_best_decaf_green_tea</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">2 of 9</p></div>
+          </div>
+        </div>
+      </li>
+      <li class="topic">
+        <span class="pos">5</span>
+        <div class="topic-body">
+          <h3>Kamillatea készítése szálas virágból</h3>
+          <p class="query"><span class="q">kamilla tea készítése</span><span class="num">260 searches a month</span></p>
+          <p class="alt">Also measured: kamillatea áztatási idő <span class="num">(no figure)</span> · kamillatea fedő alatt <span class="num">(no figure)</span></p>
+          <p class="why">Havonta nagyjából 260 ember keres erre, és a boltodban még nincs róla oldal.</p>
+          <div class="meta">
+            <div><p class="label">Products it mentions</p><p>Kamillavirág tea · Rozsdamentes teaszűrő bögrébe</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">17</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>catalase.hu</b>/kamilla</li><li><b>vitaminnagyker.hu</b>/a-kamilla-gyulladascsokkento-gorcsoldo-es-nyugtato-hatasu</li><li><b>webbeteg.hu</b>/cikkek/egeszseges/28180/kamilla</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">1 of 8</p></div>
+          </div>
+        </div>
+      </li>
+      <li class="topic">
+        <span class="pos">6</span>
+        <div class="topic-body">
+          <h3>Hidegen áztatott mentatea: így készül a hűtőben</h3>
+          <p class="query"><span class="q">borsmenta tea készítése</span><span class="num">110 searches a month</span></p>
+          <p class="alt">Also measured: hidegen áztatott tea <span class="num">(40)</span> · menta tea hidegen <span class="num">(no figure)</span></p>
+          <p class="why">Havonta nagyjából 110 ember keres erre, és a boltodban még nincs róla oldal.</p>
+          <div class="meta">
+            <div><p class="label">Products it mentions</p><p>Hőálló üveg teáskanna 1 l · Borsmentalevél tea</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">17</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>hillvital.hu</b>/borsmenta-olaj-keszitese-hazilag</li><li><b>herbacio.hu</b>/lapok/gyogynovenyes-uditoitalok-keszitese</li><li><b>recept.fokhagymaa.hu</b>/recipe/menta</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">0 of 8</p></div>
+          </div>
+        </div>
+      </li>
+      <li class="topic">
+        <span class="pos">7</span>
+        <div class="topic-body">
+          <h3>Kakukkfű tea készítése szálas teából</h3>
           <p class="query"><span class="q">kakukkfű tea készítése</span><span class="num">260 searches a month</span></p>
+          <p class="alt">Also measured: kakukkfű tea áztatása <span class="num">(no figure)</span> · mezei kakukkfű tea <span class="num">(70)</span></p>
           <p class="why">Havonta nagyjából 260 ember keres erre, és a boltodban még nincs róla oldal.</p>
           <div class="meta">
             <div><p class="label">Products it mentions</p><p>Kakukkfű tea, szálas</p></div>
@@ -131,36 +205,38 @@ td:first-child { color: var(--ink); font-weight: 500; }
         </div>
       </li>
       <li class="topic">
-        <span class="pos">3</span>
+        <span class="pos">8</span>
         <div class="topic-body">
-          <h3>Hogyan igyuk az Assam teát tejjel?</h3>
-          <p class="query"><span class="q">fekete tea tejjel</span><span class="num">40 searches a month</span></p>
-          <p class="why">Havonta nagyjából 40 ember keres erre, és a boltodban még nincs róla oldal.</p>
+          <h3>Fekete tea készítése otthon, tejjel vagy anélkül</h3>
+          <p class="query"><span class="q">fekete tea készítése</span><span class="num">50 searches a month</span></p>
+          <p class="alt">Also measured: fekete tea tejjel <span class="num">(40)</span> · assam tea elkészítése <span class="num">(no figure)</span></p>
+          <p class="why">Havonta nagyjából 50 ember keres erre, és a boltodban még nincs róla oldal.</p>
           <div class="meta">
-            <div><p class="label">Products it mentions</p><p>Assam fekete tea, TGFOP</p></div>
-            <div><p class="label">Facts behind it</p><p class="num">11</p></div>
-            <div><p class="label">Google's top three</p><ol class="urls"><li><b>nosalty.hu</b>/ajanlo/tea-tejjel-angol-szokas-brit-teafogyasztas-nagy-britannia-etikett</li><li><b>tea.hu</b>/minden-amit-tejes-tearol-tudni-szerettel-volna</li><li><b>moccabit.hu</b>/spg/536505,3088151/hogyan-keszitsd-el-tokeletesen-az-english-breakfas</li></ol></div>
-            <div><p class="label">Shop listings in the top ten</p><p class="num">2 of 9</p></div>
+            <div><p class="label">Products it mentions</p><p>Assam fekete tea, TGFOP · Rozsdamentes teaszűrő bögrébe</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">18</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>tea-gyogytea.arukereso.hu</b>/fekete-tea-earl-grey-40g-p881871609</li><li><b>lutherteahaz.hu</b>/a-fekete-tea</li><li><b>lutherteahaz.hu</b>/fekete-tea-kinalatunk</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">1 of 9</p></div>
           </div>
         </div>
       </li>
       <li class="topic">
-        <span class="pos">4</span>
+        <span class="pos">9</span>
         <div class="topic-body">
-          <h3>Kamillatea készítése egész virágból: miért fedő alatt áztassuk?</h3>
-          <p class="query"><span class="q">kamillatea készítése</span><span class="num">30 searches a month</span></p>
-          <p class="why">Havonta nagyjából 30 ember keres erre, és a boltodban még nincs róla oldal.</p>
+          <h3>Szálas tea készítése bögrében teaszűrővel</h3>
+          <p class="query"><span class="q">szálas tea szűrő</span><span class="num">50 searches a month</span></p>
+          <p class="alt">Also measured: szálas tea készítése bögrében <span class="num">(no figure)</span> · bögrébe való teaszűrő <span class="num">(no figure)</span></p>
+          <p class="why">Havonta nagyjából 50 ember keres erre, és a boltodban még nincs róla oldal.</p>
           <div class="meta">
-            <div><p class="label">Products it mentions</p><p>Kamillavirág tea</p></div>
-            <div><p class="label">Facts behind it</p><p class="num">10</p></div>
-            <div><p class="label">Google's top three</p><ol class="urls"><li><b>cookpad.com</b>/hu/kereses/kamilla</li><li><b>herbacio.hu</b>/cikkek/orvosi-kamilla-receptre-is</li><li><b>webbeteg.hu</b>/orvos-valaszol/egyeb/128244</li></ol></div>
-            <div><p class="label">Shop listings in the top ten</p><p class="num">0 of 9</p></div>
+            <div><p class="label">Products it mentions</p><p>Kamillavirág tea · Sencha zöld tea · Rozsdamentes teaszűrő bögrébe</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">26</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>tescoma.hu</b>/teaszurok</li><li><b>tea.hu</b>/webaruhaz/kiegeszitok/teaszuro-duplanyelu-bogrehez</li><li><b>gyorgytea.hu</b>/gyik-kerdesek/a-filteres-teakrol</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">2 of 8</p></div>
           </div>
         </div>
       </li></ol>
       <details class="dropped" open>
-        <summary><span class="label">Proposed but not queued</span> <span class="num">11</span></summary>
-        <div class="scroll"><table><thead><tr><th>Search phrase</th><th>Why it was left out</th><th>Figure</th></tr></thead><tbody><tr><td>csipkebogyó tea főzése</td><td>Too few searches</td><td class="num">10 a month</td></tr><tr><td>fekete tea és zöld tea különbség</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>hidegen áztatott mentatea</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>koffeinmentes esti tea</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>öntöttvas teáskanna tisztítása</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>öntöttvas vagy üveg teáskanna</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>sencha zöld tea elkészítése</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>szálas gyógytea elkészítése</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>szálas tea tárolása</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>teaszűrő bögrébe</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>tgfop jelentése fekete tea</td><td>Too few searches</td><td class="num">no figure</td></tr></tbody></table></div>
+        <summary><span class="label">Proposed but not queued</span> <span class="num">6</span></summary>
+        <div class="scroll"><table><thead><tr><th>Search phrase</th><th>Why it was left out</th><th>Figure</th></tr></thead><tbody><tr><td>milyen teáskannát vegyek</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>öntöttvas teáskanna használata</td><td>Too few searches</td><td class="num">10 a month</td></tr><tr><td>second flush tea</td><td>Too few searches</td><td class="num">10 a month</td></tr><tr><td>tea áztatási idő</td><td>Too few searches</td><td class="num">10 a month</td></tr><tr><td>tea tárolása</td><td>Too few searches</td><td class="num">10 a month</td></tr><tr><td>zöld tea vagy fekete tea</td><td>Too few searches</td><td class="num">10 a month</td></tr></tbody></table></div>
       </details>
     </section>
     <section class="store" id="store-2">
@@ -169,7 +245,7 @@ td:first-child { color: var(--ink); font-weight: 500; }
           <p class="label">English · customers in GB · minimum 100 searches a month</p>
           <h2>Fernhill Coffee Supply</h2>
         </div>
-        <span class="count">4 queued of 20 proposed</span>
+        <span class="count">9 queued of 19 proposed</span>
       </div>
       <div class="profile">
         <div><p class="label">What it sells (as confirmed)</p><p>Fernhill Coffee Supply sells home coffee brewing equipment and coffee beans. The range covers pour-over gear (ceramic and stainless steel drippers, size 02 paper filters, stovetop and electric gooseneck kettles, and a brew scale with timer), immersion brewers such as a French press and a cold brew jar, and manual and electric burr grinders. It also sells single-origin coffee beans from Fernhill Roastery in 250 g and 1 kg bags, whole bean or ground.</p></div>
@@ -179,41 +255,44 @@ td:first-child { color: var(--ink); font-weight: 500; }
       <li class="topic">
         <span class="pos">1</span>
         <div class="topic-body">
-          <h3>How to Make Cold Brew Coffee at Home</h3>
-          <p class="query"><span class="q">how to make cold brew</span><span class="num">880 searches a month</span></p>
-          <p class="why">About 880 people a month search for this and your store has no page about it.</p>
+          <h3>How to Use a French Press for a Clean, Full Cup</h3>
+          <p class="query"><span class="q">how to use a french press</span><span class="num">2,400 searches a month</span></p>
+          <p class="alt">Also measured: french press coffee ratio <span class="num">(880)</span> · how to make french press coffee <span class="num">(1,300)</span></p>
+          <p class="why">About 2,400 people a month search for this and your store has no page about it.</p>
           <div class="meta">
-            <div><p class="label">Products it mentions</p><p>Hand Grinder, conical steel burrs · Cold Brew Jar 1.5 litre</p></div>
-            <div><p class="label">Facts behind it</p><p class="num">19</p></div>
-            <div><p class="label">Google's top three</p><ol class="urls"><li><b>steampunkcoffee.co.uk</b>/blogs/steampunk-coffee-blog/make-cold-brew-at-home-with-no-fancy-equipment</li><li><b>reddit.com</b>/r/coffee/comments/oi7rm7/how_do_you_guys_make_cold_brew</li><li><b>northstarroast.com</b>/en-gb/blogs/all-blogs/how-to-make-cold-brew-coffee</li></ol></div>
-            <div><p class="label">Shop listings in the top ten</p><p class="num">0 of 8</p></div>
+            <div><p class="label">Products it mentions</p><p>Hand Grinder, conical steel burrs · French Press 1 litre · Brew Scale with Timer</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">26</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>reddit.com</b>/r/coffee/comments/ff71at/how_to_make_good_coffee_with_a_french_press</li><li><b>espro.com</b>/blogs/brew-guide/french-press</li><li><b>youtube.com</b>/watch</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">0 of 7</p></div>
           </div>
         </div>
       </li>
       <li class="topic">
         <span class="pos">2</span>
         <div class="topic-body">
-          <h3>How to Use a French Press for a Cleaner Cup</h3>
-          <p class="query"><span class="q">how to use french press</span><span class="num">720 searches a month</span></p>
-          <p class="why">About 720 people a month search for this and your store has no page about it.</p>
+          <h3>How to Make Cold Brew Coffee at Home</h3>
+          <p class="query"><span class="q">how to make cold brew</span><span class="num">880 searches a month</span></p>
+          <p class="alt">Also measured: cold brew coffee ratio <span class="num">(590)</span> · how long to steep cold brew <span class="num">(20)</span></p>
+          <p class="why">About 880 people a month search for this and your store has no page about it.</p>
           <div class="meta">
-            <div><p class="label">Products it mentions</p><p>Hand Grinder, conical steel burrs · French Press 1 litre · Brew Scale with Timer</p></div>
-            <div><p class="label">Facts behind it</p><p class="num">26</p></div>
-            <div><p class="label">Google's top three</p><ol class="urls"><li><b>illy.com</b>/en-us/coffee/coffee-preparation/how-to-use-a-french-press</li><li><b>reddit.com</b>/r/coffee/comments/g97uc6/french_press_guide_ultimate_beginners_guide_from</li><li><b>athome.starbucks.com</b>/brewing-guide/how-brew-coffee-press</li></ol></div>
-            <div><p class="label">Shop listings in the top ten</p><p class="num">0 of 6</p></div>
+            <div><p class="label">Products it mentions</p><p>Hand Grinder, conical steel burrs · Cold Brew Jar 1.5 litre · Colombia Huila, washed</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">31</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>steampunkcoffee.co.uk</b>/blogs/steampunk-coffee-blog/make-cold-brew-at-home-with-no-fancy-equipment</li><li><b>reddit.com</b>/r/coffee/comments/oi7rm7/how_do_you_guys_make_cold_brew</li><li><b>northstarroast.com</b>/en-gb/blogs/all-blogs/how-to-make-cold-brew-coffee</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">0 of 8</p></div>
           </div>
         </div>
       </li>
       <li class="topic">
         <span class="pos">3</span>
         <div class="topic-body">
-          <h3>Grind Size Guide: From Espresso to French Press</h3>
-          <p class="query"><span class="q">coffee grind size guide</span><span class="num">210 searches a month</span></p>
+          <h3>Coffee Grind Size Guide: From Espresso to French Press</h3>
+          <p class="query"><span class="q">coffee grind size chart</span><span class="num">210 searches a month</span></p>
+          <p class="alt">Also measured: grind size for pour over <span class="num">(20)</span> · french press grind size <span class="num">(170)</span></p>
           <p class="why">About 210 people a month search for this and your store has no page about it.</p>
           <div class="meta">
-            <div><p class="label">Products it mentions</p><p>Ceramic Cone Dripper, size 02 · Hand Grinder, conical steel burrs · French Press 1 litre</p></div>
-            <div><p class="label">Facts behind it</p><p class="num">30</p></div>
-            <div><p class="label">Google's top three</p><ol class="urls"><li><b>honestcoffeeguide.com</b>/coffee-grind-size-chart</li><li><b>uecoffeeroasters.com</b>/blogs/articles/coffee-grind-size-guide</li><li><b>masterclass.com</b>/articles/coffee-grind-size-chart</li></ol></div>
+            <div><p class="label">Products it mentions</p><p>Hand Grinder, conical steel burrs · Electric Flat-Burr Grinder</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">18</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>coffeecircle.com</b>/en/e/coffee-grind-size</li><li><b>counterculturecoffee.com</b>/blogs/counter-culture-coffee/coffee-basics-grind-size</li><li><b>pinterest.com</b>/ideas/coffee-grind-size-chart-filter-coffee/901055953718</li></ol></div>
             <div><p class="label">Shop listings in the top ten</p><p class="num">0 of 9</p></div>
           </div>
         </div>
@@ -221,8 +300,54 @@ td:first-child { color: var(--ink); font-weight: 500; }
       <li class="topic">
         <span class="pos">4</span>
         <div class="topic-body">
-          <h3>Manual or Electric Coffee Grinder: How to Choose</h3>
+          <h3>Why Weigh Your Coffee: Using a Scale and Getting the Ratio Right</h3>
+          <p class="query"><span class="q">pour over coffee ratio</span><span class="num">170 searches a month</span></p>
+          <p class="alt">Also measured: do you need a coffee scale <span class="num">(no figure)</span> · coffee to water ratio <span class="num">(170)</span></p>
+          <p class="why">About 170 people a month search for this and your store has no page about it.</p>
+          <div class="meta">
+            <div><p class="label">Products it mentions</p><p>Ceramic Cone Dripper, size 02 · Brew Scale with Timer</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">20</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>reddit.com</b>/r/pourover/comments/1ey0rx4/what_is_your_typical_ratio</li><li><b>counterculturecoffee.com</b>/blogs/counter-culture-coffee/guide-to-pour-over-coffee</li><li><b>coffeebros.com</b>/pages/coffee-to-water-ratio-calculator</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">0 of 8</p></div>
+          </div>
+        </div>
+      </li>
+      <li class="topic">
+        <span class="pos">5</span>
+        <div class="topic-body">
+          <h3>How to Make Pour-Over Coffee at Home, Step by Step</h3>
+          <p class="query"><span class="q">how to make pour over coffee</span><span class="num">140 searches a month</span></p>
+          <p class="alt">Also measured: pour over coffee method <span class="num">(30)</span> · pour over coffee guide <span class="num">(10)</span></p>
+          <p class="why">About 140 people a month search for this and your store has no page about it.</p>
+          <div class="meta">
+            <div><p class="label">Products it mentions</p><p>Ceramic Cone Dripper, size 02 · Gooseneck Pour-Over Kettle 900 ml · Paper Filters, size 02 (100 pack) · Brew Scale with Timer</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">34</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>pullandpourcoffee.com</b>/how-to-make-pour-over-coffee</li><li><b>reddit.com</b>/r/coffee/comments/jzj1iq/a_totally_nonexhaustive_but_hopefully_helpful</li><li><b>minimalistbaker.com</b>/how-to-make-pour-over-coffee</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">0 of 8</p></div>
+          </div>
+        </div>
+      </li>
+      <li class="topic">
+        <span class="pos">6</span>
+        <div class="topic-body">
+          <h3>Flat vs Conical Burr Grinders Explained</h3>
+          <p class="query"><span class="q">conical burr vs flat burr</span><span class="num">140 searches a month</span></p>
+          <p class="alt">Also measured: flat vs conical burr grinder <span class="num">(90)</span> · flat burr grinder benefits <span class="num">(no figure)</span></p>
+          <p class="why">About 140 people a month search for this and your store has no page about it.</p>
+          <div class="meta">
+            <div><p class="label">Products it mentions</p><p>Hand Grinder, conical steel burrs · Electric Flat-Burr Grinder</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">18</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>reddit.com</b>/r/espresso/comments/yfeviu/what_are_your_thoughts_on_conical_vs_flat_burrs</li><li><b>coffeeness.de</b>/en/conical-vs-flat-burr-grinders</li><li><b>nichecoffee.co.uk</b>/blogs/exploring-coffee/conical-vs-flat-burr-grinders-which-are-the-best</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">0 of 8</p></div>
+          </div>
+        </div>
+      </li>
+      <li class="topic">
+        <span class="pos">7</span>
+        <div class="topic-body">
+          <h3>Manual or Electric Coffee Grinder: Which Is Right for You?</h3>
           <p class="query"><span class="q">manual vs electric coffee grinder</span><span class="num">110 searches a month</span></p>
+          <p class="alt">Also measured: is a hand grinder worth it <span class="num">(no figure)</span> · hand grinder vs electric grinder <span class="num">(10)</span></p>
           <p class="why">About 110 people a month search for this and your store has no page about it.</p>
           <div class="meta">
             <div><p class="label">Products it mentions</p><p>Hand Grinder, conical steel burrs · Electric Flat-Burr Grinder</p></div>
@@ -231,10 +356,40 @@ td:first-child { color: var(--ink); font-weight: 500; }
             <div><p class="label">Shop listings in the top ten</p><p class="num">0 of 7</p></div>
           </div>
         </div>
+      </li>
+      <li class="topic">
+        <span class="pos">8</span>
+        <div class="topic-body">
+          <h3>The Best Water Temperature for Brewing Coffee</h3>
+          <p class="query"><span class="q">best water temperature for coffee</span><span class="num">110 searches a month</span></p>
+          <p class="alt">Also measured: water temperature for pour over <span class="num">(10)</span> · what temperature to brew coffee <span class="num">(20)</span></p>
+          <p class="why">About 110 people a month search for this and your store has no page about it.</p>
+          <div class="meta">
+            <div><p class="label">Products it mentions</p><p>Gooseneck Pour-Over Kettle 900 ml · Electric Gooseneck Kettle with Temperature Hold · Ethiopia Guji, natural process</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">26</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>coffeeam.com</b>/blogs/blog/the-heat-is-on-how-the-temperature-of-your-water-makes-a-difference</li><li><b>phillyfairtrade.com</b>/blogs/learn/what-is-the-best-temperature-to-brew-coffee</li><li><b>bonlifecoffee.com</b>/blog/water-temperature-why-does-it-matter-so-much-when-brewing-coffee</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">0 of 9</p></div>
+          </div>
+        </div>
+      </li>
+      <li class="topic">
+        <span class="pos">9</span>
+        <div class="topic-body">
+          <h3>What Is a Single-Dose Grinder and Why Retention Matters</h3>
+          <p class="query"><span class="q">single dose coffee grinder</span><span class="num">320 searches a month</span></p>
+          <p class="alt">Also measured: what is a single dose grinder <span class="num">(10)</span> · coffee grinder retention <span class="num">(10)</span></p>
+          <p class="why">About 320 people a month search for this and your store has no page about it.</p>
+          <div class="meta">
+            <div><p class="label">Products it mentions</p><p>Electric Flat-Burr Grinder</p></div>
+            <div><p class="label">Facts behind it</p><p class="num">9</p></div>
+            <div><p class="label">Google's top three</p><ol class="urls"><li><b>comoricoffee.com</b>/en/singledose-grinder-best3-en</li><li><b>kaffeemacher.de</b>/en/blogs/kaffeewissen/single-dosing</li><li><b>vancouvercoffeesnob.com</b>/gear/the-top-three-single-dose-espresso-grinders-for-home</li></ol></div>
+            <div><p class="label">Shop listings in the top ten</p><p class="num">3 of 8</p></div>
+          </div>
+        </div>
       </li></ol>
       <details class="dropped">
-        <summary><span class="label">Proposed but not queued</span> <span class="num">16</span></summary>
-        <div class="scroll"><table><thead><tr><th>Search phrase</th><th>Why it was left out</th><th>Figure</th></tr></thead><tbody><tr><td>bleached vs unbleached coffee filters</td><td>Too few searches</td><td class="num">20 a month</td></tr><tr><td>ceramic vs stainless steel dripper</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>coffee altitude flavour</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>cold brew steep time</td><td>Too few searches</td><td class="num">10 a month</td></tr><tr><td>cone vs flat bottom dripper</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>conical vs flat burr grinder</td><td>Too few searches</td><td class="num">90 a month</td></tr><tr><td>how to clean french press</td><td>Too few searches</td><td class="num">90 a month</td></tr><tr><td>light vs medium roast coffee</td><td>Too few searches</td><td class="num">10 a month</td></tr><tr><td>natural vs washed coffee</td><td>Too few searches</td><td class="num">50 a month</td></tr><tr><td>pour over coffee ratio scale</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>pour over water temperature</td><td>Too few searches</td><td class="num">10 a month</td></tr><tr><td>rinse paper coffee filter</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>single dose grinder retention</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>stovetop vs electric gooseneck kettle</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>whole bean vs ground coffee</td><td>Too few searches</td><td class="num">50 a month</td></tr><tr><td>why gooseneck kettle pour over</td><td>Too few searches</td><td class="num">no figure</td></tr></tbody></table></div>
+        <summary><span class="label">Proposed but not queued</span> <span class="num">10</span></summary>
+        <div class="scroll"><table><thead><tr><th>Search phrase</th><th>Why it was left out</th><th>Figure</th></tr></thead><tbody><tr><td>bleached vs unbleached coffee filters</td><td>Too few searches</td><td class="num">20 a month</td></tr><tr><td>cone vs flat bottom dripper</td><td>Too few searches</td><td class="num">no figure</td></tr><tr><td>espresso vs filter coffee beans</td><td>Too few searches</td><td class="num">10 a month</td></tr><tr><td>gooseneck kettle for pour over</td><td>Too few searches</td><td class="num">30 a month</td></tr><tr><td>how to clean a french press</td><td>Too few searches</td><td class="num">90 a month</td></tr><tr><td>light vs medium roast coffee</td><td>Too few searches</td><td class="num">10 a month</td></tr><tr><td>natural vs washed coffee</td><td>Too few searches</td><td class="num">50 a month</td></tr><tr><td>rinsing paper coffee filters</td><td>Too few searches</td><td class="num">10 a month</td></tr><tr><td>stovetop gooseneck kettle</td><td>Too few searches</td><td class="num">90 a month</td></tr><tr><td>whole bean vs ground coffee</td><td>Too few searches</td><td class="num">50 a month</td></tr></tbody></table></div>
       </details>
     </section>
 </div>
