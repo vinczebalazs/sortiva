@@ -1,0 +1,111 @@
+{
+  "recordedAt": "2026-10-08T21:01:46.477Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "Egy webáruház egyetlen blogcikkét tervezed meg. Látod a boltot, a témát és a keresést, amelyre a cikknek válaszolnia kell, a bolt termékeit az általunk ellenőrzött tényekkel (F1, F2…), valamint a bolt saját oldalait, amelyekre hivatkozni lehet.\n\nOlyan cikket tervezz, amely valóban megválaszolja a vásárló keresését, ahogyan egy hozzáértő bolti eladó tenné: először legyen hasznos, a termékek ott jelenjenek meg, ahol tényleg segítenek. Döntsd el:\n- title: a cím magyarul, benne a kereséssel vagy annak természetes alakjával;\n- angle: egy mondat arról, mit fog tudni az olvasó a cikk végére;\n- sections: négy-hét szakasz, mindegyiknek címe, tartalma és a tények, amelyekre épít;\n- products: a kártyaként megjelenítendő termékek (egy-négy), hivatkozással;\n- links: a szövegből linkelendő oldalak hivatkozással (termékek P…, oldalak L…).\n\nA cikk egy termékről csak azt mondhatja, amit a tényei mondanak, ezért a termékekről szóló részeket a keresés szempontjából fontos tényekre építsd. A termékeinkről nem szóló általános tanács megengedett. A cikk egészében legalább 6 különböző tényt használj.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Bükki Füvesház\nSells: A bolt szálas gyógyteákat árul, főként egynövényes teákat (kakukkfű, csalánlevél, kamillavirág, borsmentalevél), valamint egy esti teakeveréket és magozott csipkebogyó gyümölcsteát. Kínálatában fekete és zöld tea is szerepel: Assam fekete tea és japán Sencha zöld tea. Teaeszközöket is forgalmaz: öntöttvas és hőálló üveg teáskannát, bögrébe való teaszűrőt és fém teatartó dobozt.\nAudience: Olyan vásárlóknak szól, akik szálas gyógy-, gyümölcs-, fekete és zöld teát főznek otthon. Azoknak is, akiknek a teafőzéshez és -tároláshoz eszközök is kellenek.\nTone: friendly\nNever say: —\n</store>\n\n<topic>\nWorking title: Hogyan készítsd el jól a zöld teát?\nSearch it targets: zöld tea elkészítése\n</topic>\n\n<products>\n  P1: Sencha zöld tea (Zöld tea)\n    F1: A Sencha zöld tea japán sencha Shizuoka prefektúrából.\n    F2: A Sencha zöld tea első tavaszi szüretből származik.\n    F3: A Sencha zöld tea gőzölt, sodort levél.\n    F4: A Sencha zöld teát 70–80 °C-os vízzel kell elkészíteni.\n    F5: A Sencha zöld teát 1–2 percig kell áztatni.\n    F6: A Sencha zöld tea levele háromszor is felönthető.\n    F7: A Sencha zöld tea kiszerelése 80 g.\n    F8: A Sencha zöld tea koffeines.\n    F9: A Sencha zöld tea forgalmazója a Bükki Füvesház.\n  P2: Rozsdamentes teaszűrő bögrébe (Teaszűrő)\n    F10: A teaszűrő rozsdamentes acél hálóból készült.\n    F11: A teaszűrő hálójának lyukbősége 0,3 mm.\n    F12: A teaszűrő két füllel rendelkezik.\n    F13: A teaszűrő 7–9 cm átmérőjű bögrékhez való.\n    F14: A teaszűrőhöz fedő tartozik, amely tálcaként is használható.\n    F15: A teaszűrő mosogatógépben mosható.\n    F16: A teaszűrő bögrébe való.\n</products>\n\n<pages>\n  L1: Gyógyteák (collection)\n  L2: Fekete és zöld teák (collection)\n  L3: Teaeszközök (collection)\n  L4: Rólunk (page)\n  L5: Szállítás és visszaküldés (page)\n</pages>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "angle": {
+              "type": "string"
+            },
+            "sections": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "heading": {
+                    "type": "string"
+                  },
+                  "covers": {
+                    "type": "string"
+                  },
+                  "facts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "heading",
+                  "covers",
+                  "facts"
+                ]
+              }
+            },
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "links": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "angle",
+            "sections",
+            "products",
+            "links"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfqSk3aCidp9mBrYb15SK",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"title\":\"Zöld tea elkészítése: így lesz finom, nem kesernyés a csészédben\",\"angle\":\"Az olvasó a cikk végére tudni fogja, milyen hőfokú vízzel, mennyi ideig és hányszor érdemes a szálas zöld teát felönteni, és milyen eszközzel a legegyszerűbb otthon, bögrében elkészíteni.\",\"sections\":[{\"heading\":\"Miért keseredik meg olyan könnyen a zöld tea?\",\"covers\":\"Általános magyarázat: a zöld tea levele érzékenyebb, mint a feketéé, ezért a forrásban lévő víz és a túl hosszú áztatás kesernyés, fanyar ízt ad. A két legfontosabb tényező a víz hőfoka és az áztatási idő.\",\"facts\":[]},{\"heading\":\"A víz hőfoka: 70–80 °C a kulcs\",\"covers\":\"Hogyan érjük el a megfelelő hőfokot hőmérő nélkül (felforralt víz pár perc hűlése, kevés hideg víz hozzáöntése). A Sencha példáján konkrét hőfok, és miért fontos ez egy gőzölt levelű japán zöld teánál.\",\"facts\":[\"F4\",\"F3\"]},{\"heading\":\"Áztatási idő: rövidebb, mint gondolnád\",\"covers\":\"A zöld tea percekben, nem tíz percekben mérhető; a Sencha 1–2 perc után már kész. Tipp: inkább rövidebben kezdj, és ízlés szerint hosszabbíts. Szó esik arról, hogy koffeintartalma miatt inkább napközbenre való.\",\"facts\":[\"F5\",\"F8\"]},{\"heading\":\"Többszöri felöntés: hozd ki a levélből a legtöbbet\",\"covers\":\"A jó minőségű szálas zöld tea levele újra felönthető, az ízek felöntésről felöntésre változnak. Hogyan érdemes a második-harmadik felöntésnél kicsit melegebb vizet vagy hosszabb időt adni (általános tanács).\",\"facts\":[\"F6\"]},{\"heading\":\"Milyen zöld teával érdemes kezdeni?\",\"covers\":\"A Sencha bemutatása, mint klasszikus japán zöld tea: honnan származik, milyen szüretből, milyen feldolgozással, és mekkora kiszerelésben kapható a boltban.\",\"facts\":[\"F1\",\"F2\",\"F3\",\"F7\",\"F9\"]},{\"heading\":\"Bögrében, egyszerűen: a teaszűrő szerepe\",\"covers\":\"Miért praktikus a bögrébe tehető szűrő a zöld teához: a rövid áztatás után a levél egy mozdulattal kiemelhető, így nem ázik túl, és újra felönthető. A finom háló a gőzölt, apróbb levéldarabokat is visszatartja; a fedő tálcaként szolgál a kiemelt szűrőnek.\",\"facts\":[\"F16\",\"F10\",\"F11\",\"F12\",\"F13\",\"F14\",\"F15\"]}],\"products\":[\"P1\",\"P2\"],\"links\":[\"P1\",\"P2\",\"L2\",\"L3\"]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1982,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1069,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}
