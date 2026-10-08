@@ -53,6 +53,6 @@ it('when the model service is down, Home says so plainly, and the next day puts 
   await p.settle(900_000)
   const articles = await articlesOf(p, storeId)
   const recovered = articles.find((a) => a.topic_id === topics[0]!.id)!
-  expect(recovered.state, JSON.stringify([recovered.gate_report.heldReason, recovered.gate_report.heldProblem])).toBe('ready')
+  expect(recovered.state, JSON.stringify(recovered.gate_report.heldProblem)).toBe('ready')
   expect((await homeState(p.db.pool, storeId)).writeUnavailable).toBe(false)
 }, 900_000)

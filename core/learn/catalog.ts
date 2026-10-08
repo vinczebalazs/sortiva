@@ -46,7 +46,9 @@ export async function markUnseenDeleted(db: DbClient, storeId: number, walkStart
 const EXCERPT_WORDS = 500
 
 export async function replaceStorePages(db: DbClient, storeId: number, pages: ConnectorPage[]): Promise<void> {
-  const started = new Date().toISOString()
+  // The database's clock, like last_seen_at below: the app's clock can run ahead of it and make a page just saved look stale.
+  const { rows } = await db.query<{ started: Date }>('select now() as started')
+  const started = rows[0]!.started
   for (const page of pages) {
     const excerpt = htmlToText(page.excerptHtml).split(/\s+/).slice(0, EXCERPT_WORDS).join(' ')
     await db.query(
