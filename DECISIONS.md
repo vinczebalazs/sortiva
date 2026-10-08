@@ -60,12 +60,49 @@ A Claude Design project (`docs/mvp-ui.md` §1.1) defines the look: colour, type,
 - **Per-store lock.** A Postgres advisory lock held on a dedicated connection for the whole job. A second job for the same store waits up to two minutes, then fails loudly and is retried by the queue, rather than hanging. Taking the same store twice inside one job is refused with an error instead of deadlocking.
 - **Pause reasons.** `store_flags` carries, besides the operator and merchant pause switches §3.9 names, the reasons we pause on our own (daily budget reached on a given day, permissions lost, target blog missing, Search Console disconnected), because each one is a distinct banner in `mvp-ui.md` §5.5.
 
+## 2026-10-08 — Founder: the look comes from the mockup screens
+
+The mockup folder (`~/Desktop/Website UI mockups project`) holds the sixteen mockup screens and, separately, a "Modernist" design-system file that no screen uses. Asked in the build session, the founder said: use what is on the screens; ignore Modernist. The app's colours, type (Poppins for headings, Plus Jakarta Sans for text), radii, shadows and component shapes are taken from the screens' own stylesheet into `app/ui/tokens.css`. The screens' content still follows `mvp-ui.md`; the mockups were drawn for the older product (opportunities, calendar grid, revenue) and none of that is built. Inside Shopify the mockups' left icon rail is not drawn, because Shopify's own sidebar is the navigation.
+
+## 2026-10-08 — Assumed: phase 1 choices that shape the system
+
+- **Embedded sign-in is ours, not the template library's.** The app uses the structure of Shopify's React Router template (routes, Vite, Shopify CLI, `shopify.app.toml`, App Bridge from Shopify's CDN) but not its server library (`@shopify/shopify-app-react-router`). That library keeps its own copy of each store's tokens and renews them on its own, which would compete with the worker renewing the same single-use refresh token, and it cannot be pointed at the fake Shopify. Instead, as `mvp-ui.md` §1.1 describes: the page asks App Bridge for a session token, `/api/session` verifies it (Shopify's five published checks), installs the store on first sight, and returns our own 15-minute token; the screens use only ours. *Risk:* the embedded sign-in is now our code, which is what B1 tried to avoid. It is one small module with tests against the fake, and it is the first thing the founders' install on the dev store proves or disproves. If overruled, only `app/routes/api.session.ts` and `app/shell/shopify.tsx` change.
+- **One model for every call, no refusal fallback.** Claude Opus 5.5 (`claude-opus-5-5`, 4 / 20 USD per million tokens). Anthropic's API offers to re-run a refused request on another model; that would be "degrading to a smaller model" (rule 8), so it is off and a refusal holds the work with a reason. Fact extraction and profile drafting run at effort "medium".
+- **Facts are checked mechanically at the source.** A fact is stored only if its quote appears word for word in the field it names, and every number in the fact appears in that quote. This is stricter than the plan asked and is what lets the writer's claim check (phase 3) lean on facts being exact.
+- **Daily spending caps: 10 USD per store, 60 USD for everyone.** The brief names caps without numbers. Large catalogues may hit the per-store cap on their first day; facts for the rest are extracted the next day.
+- **Catalogue pages of 15 products.** Under Shopify's documented cost rules a page of 50 products with images, collections and metafields costs over 5,000 points against a 1,000-point ceiling. Shopify's demo shop charged far less than the documented rules for similar queries, but its real formula is not published, so queries are sized to the documented rules. Images, collections and metafields per product are capped at 10 each.
+- **Webhook burst threshold: more than 25 product deliveries in one batch become one full catalogue re-read**; batches gather for 5 seconds.
+- **Nightly re-read at 3 a.m. in each store's own timezone.**
+- **The interface speaks English or Hungarian, by the Shopify admin user's language**, not only the articles. `mvp-ui.md` does not say; it cost little now and much later.
+
+## 2026-10-08 — Noted: things found while building phase 1
+
+- **The demo shop is a source of real Shopify answers.** Shopify's documentation explorer serves real data from Shopify's own demo shop. Our exact read queries were run against it and saved in `fakes/fake-shopify/captures/`; a test checks the fake answers each in the same form. These are not recordings from our dev store (no token, no permission limits, no writes), so `recordings/` stays empty as the brief asks.
+- **The demo shop does not throttle**, so the throttled response and the "too expensive" refusal could not be captured; their shapes in the fake come from the error code Shopify's docs name and are unverified until the dev store's contract run.
+- **Whether `read_locales` is needed is unverified.** The store's language is read from `shop.primaryDomain.localization.defaultLocale`; the demo app holds `read_locales`, so we cannot yet tell whether our three permissions are enough. The merchant confirms the language in setup either way.
+- **Shopify's newest version is 2026-10.** The template already uses it; `.env` pins 2026-07, which stays supported until 16 July 2027. A test fails three months before that date.
+- **Throttling.** Shopify reserves a query's requested cost and refunds the difference after answering. The fake does the same, charging one point per object returned in place of Shopify's unpublished formula.
+
+## 2026-10-08 — Checkpoint 1 (built against fixtures; not waited on)
+
+**What was built.** Installing a store (session token → expiring offline token, stored encrypted), reading the catalogue in checkpointed pages, inventorying existing collections, pages and blog posts, distilling each product into a fact sheet, drafting the store profile, keeping products current through webhooks, a nightly re-read and "Sync now", pausing with a named reason on a refused permission or a spent budget, and setup screens 1 and 2 in both languages.
+
+**Scenarios that exist and pass (all against fakes):** install creates the store with encrypted tokens and the shop's language, country and timezone; reinstall reuses the store; a token past expiry is renewed before the first call; a withdrawn permission pauses with the permission named and never disconnects; the 250-product catalogue resumes after a crash at page 3 with no page read twice; a product gone from Shopify is marked deleted; a price change re-reads the product without a model call; a description change re-extracts its facts; the same delivery twice is processed once; a delete webhook is acted on only after re-reading; a forged signature is refused; 500 updates in a minute become one catalogue re-read; "Sync now" is refused while a sync runs; every fact quotes its source verbatim (English and Hungarian rich stores); marketing-only stores come out thin with one usable product; empty stores stop setup and spend nothing; two jobs for one store never overlap; the nightly re-read picks each store in its own night, once; no table has a column for customer or order data. Plus the connector behaviour suite, the fake's own tests, and the query checks against the pinned schema.
+
+**What to look at.** The fact sheets for five products of every fixture store, beside the products: `docs/checkpoints/checkpoint-1-fact-sheets.html` (also published as a private page: https://claude.ai/artifact/LsPqnSMS1Nj8qaMtZKtqKJ). Regenerate with `pnpm seed:preview <fixtures…>` then `npx tsx scripts/checkpoint-1.ts`.
+
+**Agent's reading of it.** The kept facts are faithful: each traces to a quoted span, numbers and units are unchanged, and marketing lines ("Elevate your mornings", "A tökéletes nap tökéletes lezárása") were left out. Some kept facts are trivial (the product's vendor, "is a dripper"); they are true but give a writer little. Whether to tell the extractor to skip such restatements is for the founders.
+
+**Unverified.** Everything that touches a real Shopify: the session-token check and token exchange against a real install, token renewal, the version header, throttling, webhook signatures from Shopify itself, whether three permissions suffice for the store's language. The contract suite (`pnpm test:contract`) proves or disproves these against the dev store.
+
+**Unsure.** (1) Whether "Understanding each product" should block setup for a large catalogue: today the profile waits for every fact sheet. (2) The crash test kills the job by throwing at a checkpoint, not by killing the process; a real process kill is planned with the phase 4 crash tests.
+
 ## Spend
 
 Running total of what this build has spent on the founders' keys.
 
 | Date | Key | What | USD |
 |---|---|---|---|
-| 2026-10-08 | Anthropic | Phase 1 recordings: fact sheets and profile drafts for the ten fixture stores and the 250-product catalogue (62 calls, Claude Opus 5.5) | 0.83 |
+| 2026-10-08 | Anthropic | Phase 1 recordings: fact sheets and profile drafts for the ten fixture stores and the 250-product catalogue (69 calls, Claude Opus 5.5) | 0.92 |
 
-**Total: 0.83 USD** (Anthropic 0.83, DataForSEO 0.00). Figures are computed from the token counts in the committed recordings at 4 / 20 USD per million input / output tokens.
+**Total: 0.92 USD** (Anthropic 0.92, DataForSEO 0.00). Figures are computed from the token counts in the committed recordings at 4 / 20 USD per million input / output tokens.

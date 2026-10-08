@@ -65,11 +65,17 @@ export async function startFakeAnthropic(options: { record?: boolean; apiKey?: s
         error: { type: 'invalid_request_error', message: `fake Anthropic has no recording ${hash}; run the scenario once with RECORD=1 to record it` },
       })
     }
-    const live = await fetch(`${REAL_API}/v1/messages`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-api-key': options.apiKey, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify(request),
-    })
+    let live: Response
+    try {
+      live = await fetch(`${REAL_API}/v1/messages`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-api-key': options.apiKey, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify(request),
+      })
+    } catch (error) {
+      // Passed on as an overload, which the client retries, rather than leaving the request hanging.
+      return send(529, { type: 'error', error: { type: 'overloaded_error', message: `real API unreachable while recording: ${(error as Error).message}` } })
+    }
     const response = await live.json()
     if (live.ok) {
       const record: Recording = { recordedAt: new Date().toISOString(), request, status: live.status, response }

@@ -1,5 +1,5 @@
 import pg from 'pg'
-import { env } from '../config/env.ts'
+import { env, optionalEnv } from '../config/env.ts'
 import { applySchema } from '../db/test-db.ts'
 import { createPool } from '../db/pool.ts'
 import { installShopifyStore } from '../connectors/shopify/install.ts'
@@ -30,7 +30,8 @@ await applySchema(url.toString())
 
 const pool = createPool()
 const shopify = await startFakeShopify({ clientId: 'preview', clientSecret: 'preview' })
-const anthropic = await startFakeAnthropic()
+// RECORD=1 records model answers the fixtures do not have yet, as the scenarios do.
+const anthropic = await startFakeAnthropic({ record: process.env.RECORD === '1', apiKey: optionalEnv('ANTHROPIC_API_KEY') })
 const deps: Deps = {
   pool,
   shopifyApp: { clientId: 'preview', clientSecret: 'preview', apiVersion: PINNED_VERSION, baseUrlFor: shopify.baseUrlFor },

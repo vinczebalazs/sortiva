@@ -1,0 +1,747 @@
+<title>Checkpoint 1 Fact Sheets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one column of stores; each product is a two-sided sheet, source left, facts right. Look: the app's own mockup tokens. */
+:root {
+  --ground: #e8e9f0; --card: #ffffff; --ink: #191b23; --ink2: #454a5c; --mut: #6f7488; --faint: #878da0;
+  --line: #edeef3; --soft: #f5f6fa; --pri: #6470f3; --pri-s: #eeeffe; --grn: #12a150; --grn-s: #e7f7ee; --amb: #9a5d07; --amb-s: #fdf3e4;
+  --sh: 0 1px 2px rgba(21,25,42,.04), 0 8px 24px -6px rgba(21,25,42,.08);
+  --fh: 'Poppins', system-ui, sans-serif; --fb: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --ground: #14151b; --card: #1d1f27; --ink: #ecedf3; --ink2: #c3c6d4; --mut: #9a9fb2; --faint: #7c8196;
+  --line: #2a2d38; --soft: #252833; --pri: #8f97f7; --pri-s: #262a4a; --grn: #4cc983; --grn-s: #18311f; --amb: #f0b45a; --amb-s: #3a2e18;
+  --sh: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -6px rgba(0,0,0,.4); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --ground: #14151b; --card: #1d1f27; --ink: #ecedf3; --ink2: #c3c6d4; --mut: #9a9fb2; --faint: #7c8196;
+  --line: #2a2d38; --soft: #252833; --pri: #8f97f7; --pri-s: #262a4a; --grn: #4cc983; --grn-s: #18311f; --amb: #f0b45a; --amb-s: #3a2e18;
+  --sh: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -6px rgba(0,0,0,.4); color-scheme: dark }
+body { background: var(--ground); color: var(--ink); font: 400 14px/1.6 var(--fb); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 36px 80px; display: flex; flex-direction: column; gap: 28px; }
+h1, h2, h3 { font-family: var(--fh); font-weight: 500; letter-spacing: -.015em; text-wrap: balance; margin: 0; }
+h1 { font-size: 32px; line-height: 1.15; }
+h2 { font-size: 22px; }
+h3 { font-size: 16px; line-height: 1.3; }
+p { margin: 0; }
+a { color: var(--pri); text-decoration: none; }
+.label { font: 600 11px/1 var(--fb); letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+.lede { max-width: 68ch; color: var(--ink2); font-size: 15px; margin-top: 10px; }
+.ask { background: var(--card); border-radius: 18px; box-shadow: var(--sh); padding: 20px 22px; display: grid; gap: 10px; }
+.ask ul { margin: 0; padding-left: 18px; color: var(--ink2); }
+.ask li + li { margin-top: 4px; }
+.index { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.idx { background: var(--card); border-radius: 14px; box-shadow: var(--sh); padding: 12px 14px; display: flex; flex-direction: column; gap: 3px; color: var(--ink); }
+.idx:hover { outline: 1.5px solid var(--pri); }
+.idx-name { font: 500 14px/1.3 var(--fh); }
+.idx-meta { font-size: 12px; color: var(--mut); font-variant-numeric: tabular-nums; }
+.store { display: flex; flex-direction: column; gap: 14px; scroll-margin-top: 16px; }
+.store-head { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; padding-top: 18px; border-top: 1px solid var(--line); }
+.store-head > div { display: grid; gap: 8px; }
+.count { margin-left: auto; font: 600 12px/1 var(--fb); color: var(--ink2); background: var(--card); border-radius: 999px; padding: 8px 12px; box-shadow: var(--sh); font-variant-numeric: tabular-nums; }
+.state { background: var(--amb-s); color: var(--amb); border-radius: 12px; padding: 11px 14px; font-weight: 500; font-size: 13px; }
+.profile { background: var(--card); border-radius: 18px; box-shadow: var(--sh); padding: 18px 20px; display: grid; grid-template-columns: 2fr 1.4fr .6fr; gap: 18px; }
+.profile > div { display: grid; gap: 7px; align-content: start; min-width: 0; }
+.profile p:not(.label) { color: var(--ink2); font-size: 13.5px; }
+.product { background: var(--card); border-radius: 18px; box-shadow: var(--sh); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); overflow: hidden; }
+.side { padding: 20px 22px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.src { background: var(--soft); }
+.kv { display: grid; grid-template-columns: 82px 1fr; gap: 8px; font-size: 12.5px; color: var(--ink2); }
+.kv span { color: var(--faint); }
+.desc { font-size: 13px; line-height: 1.7; color: var(--ink2); border-top: 1px solid var(--line); padding-top: 10px; }
+.out-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pill { margin-left: auto; border-radius: 999px; padding: 5px 11px; font: 600 11.5px/1 var(--fb); }
+.pill.ok { background: var(--grn-s); color: var(--grn); }
+.pill.thin { background: var(--amb-s); color: var(--amb); }
+.facts { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
+.facts li { padding: 9px 0; border-bottom: 1px solid var(--line); display: grid; gap: 4px; }
+.facts li:last-child { border-bottom: 0; }
+.fact { font-size: 13.5px; font-weight: 500; }
+.quote { font-size: 12px; color: var(--mut); }
+.field { display: inline-block; font: 600 10px/1 var(--fb); letter-spacing: .06em; text-transform: uppercase; color: var(--pri); background: var(--pri-s); border-radius: 6px; padding: 3px 6px; margin-right: 7px; vertical-align: 1px; }
+.none { color: var(--mut); font-size: 13px; }
+@media (max-width: 760px) {
+  .product, .profile { grid-template-columns: 1fr; }
+  .count { margin-left: 0; }
+}
+</style>
+<div class="wrap">
+  <header>
+    <p class="label">Sortiva · checkpoint 1 · built against fixture stores, 2026-10-08</p>
+    <h1 style="margin-top:10px">Are these facts true, and are they facts?</h1>
+    <p class="lede">Ten made-up shops, five in English and five in Hungarian, were read the way a real install would read them. Each product's text went through one model call that lists only checkable statements. A statement was kept only if it quotes its source word for word and every number in it appears in that quote. Below, for each shop, five products as the merchant wrote them, beside what we kept. 246 facts in all.</p>
+  </header>
+  <div class="ask">
+    <p class="label">What to look for</p>
+    <ul>
+      <li>A fact that the product text does not support, or that changes a number or a unit.</li>
+      <li>Marketing that slipped through as a fact (“perfect for”, “the best”, how the buyer will feel).</li>
+      <li>A plain, checkable detail in the description that we missed.</li>
+      <li>The Hungarian shops read as natural Hungarian, and their facts stay in Hungarian.</li>
+    </ul>
+    <p class="quote">These are fixture shops, not the dev store: no dev store exists yet. The same page can be produced from the dev store once the app is installed there.</p>
+  </div>
+  <nav class="index"><a class="idx" href="#fernhill-coffee"><span class="idx-name">Fernhill Coffee Supply</span><span class="idx-meta">English · 12 of 12 usable</span></a><a class="idx" href="#bukki-fuveshaz"><span class="idx-name">Bükki Füvesház</span><span class="idx-meta">Hungarian · 12 of 12 usable</span></a><a class="idx" href="#tidewell-candles"><span class="idx-name">Tidewell Candles</span><span class="idx-meta">English · 3 of 3 usable</span></a><a class="idx" href="#mezeskert"><span class="idx-name">Mézeskert Méhészet</span><span class="idx-meta">Hungarian · 3 of 3 usable</span></a><a class="idx" href="#northpaw-dogs"><span class="idx-name">Northpaw Dog Supply</span><span class="idx-meta">English · 6 of 6 usable</span></a><a class="idx" href="#pedalbolt"><span class="idx-name">Pedálbolt</span><span class="idx-meta">Hungarian · 6 of 6 usable</span></a><a class="idx" href="#lumiere-living"><span class="idx-name">Lumière Living</span><span class="idx-meta">English · 1 of 5 usable</span></a><a class="idx" href="#alomvilag"><span class="idx-name">Álomvilág Ajándék</span><span class="idx-meta">Hungarian · 1 of 5 usable</span></a><a class="idx" href="#blank-slate"><span class="idx-name">Blank Slate Goods</span><span class="idx-meta">English · 0 of 0 usable</span></a><a class="idx" href="#ures-polc"><span class="idx-name">Üres Polc</span><span class="idx-meta">Hungarian · 0 of 0 usable</span></a></nav>
+  
+    <section class="store" id="fernhill-coffee">
+      <header class="store-head">
+        <div>
+          <p class="label">English · fernhill-coffee.myshopify.com</p>
+          <h2>Fernhill Coffee Supply</h2>
+        </div>
+        <span class="count">12 of 12 products usable · first 5 shown</span>
+      </header>
+      
+      <div class="profile"><div><p class="label">Drafted profile · what they sell</p><p>Fernhill Coffee Supply sells home coffee brewing equipment and coffee beans. The range covers pour-over gear (ceramic and stainless steel drippers, size 02 paper filters, stovetop and electric gooseneck kettles, and a brew scale with timer), immersion brewers such as a French press and a cold brew jar, and manual and electric burr grinders. It also sells single-origin coffee beans from Fernhill Roastery in 250 g and 1 kg bags, whole bean or ground.</p></div><div><p class="label">Who buys it</p><p>People who brew coffee at home, especially by pour-over or immersion, and who want to grind, weigh and control water temperature themselves. Some products, such as the single-dose flat-burr grinder and the temperature-hold kettle, suit buyers who care about precise brewing.</p></div><div><p class="label">Tone</p><p>expert</p></div></div>
+      
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Ceramic Cone Dripper, size 02</h3>
+          <div class="kv"><span>Type</span>Dripper</div><div class="kv"><span>Vendor</span>Fernhill</div><div class="kv"><span>Options</span>Colour: White, Matte black</div><div class="kv"><span>Tags</span>pour-over, ceramic</div><div class="kv"><span>Metafields</span>material: Porcelain</div>
+          <div class="desc">Elevate your mornings with our most-loved dripper!<br>Made from glazed porcelain fired in Arita, Japan. Fits size 02 cone filters and brews 1 to 4 cups. Single large outlet hole; spiral ribs on the inner wall leave room for air to escape. Weight 380 g. Dishwasher safe.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 12 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">The Ceramic Cone Dripper is size 02.</p><p class="quote"><span class="field">Title</span>“Ceramic Cone Dripper, size 02”</p></li><li><p class="fact">The Ceramic Cone Dripper is a dripper.</p><p class="quote"><span class="field">Product type</span>“Dripper”</p></li><li><p class="fact">The Ceramic Cone Dripper is made by Fernhill.</p><p class="quote"><span class="field">Vendor</span>“Fernhill”</p></li><li><p class="fact">The Ceramic Cone Dripper comes in White and Matte black.</p><p class="quote"><span class="field">Options</span>“Colour: White, Matte black”</p></li><li><p class="fact">The Ceramic Cone Dripper is made of porcelain.</p><p class="quote"><span class="field">Metafields</span>“material: Porcelain”</p></li><li><p class="fact">The Ceramic Cone Dripper is made from glazed porcelain fired in Arita, Japan.</p><p class="quote"><span class="field">Description</span>“Made from glazed porcelain fired in Arita, Japan.”</p></li><li><p class="fact">The Ceramic Cone Dripper fits size 02 cone filters.</p><p class="quote"><span class="field">Description</span>“Fits size 02 cone filters”</p></li><li><p class="fact">The Ceramic Cone Dripper brews 1 to 4 cups.</p><p class="quote"><span class="field">Description</span>“brews 1 to 4 cups”</p></li><li><p class="fact">The Ceramic Cone Dripper has a single large outlet hole.</p><p class="quote"><span class="field">Description</span>“Single large outlet hole”</p></li><li><p class="fact">The Ceramic Cone Dripper has spiral ribs on the inner wall that leave room for air to escape.</p><p class="quote"><span class="field">Description</span>“spiral ribs on the inner wall leave room for air to escape”</p></li><li><p class="fact">The Ceramic Cone Dripper weighs 380 g.</p><p class="quote"><span class="field">Description</span>“Weight 380 g.”</p></li><li><p class="fact">The Ceramic Cone Dripper is dishwasher safe.</p><p class="quote"><span class="field">Description</span>“Dishwasher safe.”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Flat-Bottom Dripper, stainless steel</h3>
+          <div class="kv"><span>Type</span>Dripper</div><div class="kv"><span>Vendor</span>Fernhill</div><div class="kv"><span>Tags</span>pour-over, steel</div>
+          <div class="desc">Brushed 18/8 stainless steel body with three small holes in a flat bed, which slows the drawdown and gives an even extraction. Takes 185-size wave filters. Brews 1 to 2 cups (up to 500 ml). Double wall keeps the slurry warmer than a single-wall dripper. 210 g.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 8 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">The Flat-Bottom Dripper is made of stainless steel.</p><p class="quote"><span class="field">Title</span>“Flat-Bottom Dripper, stainless steel”</p></li><li><p class="fact">The Flat-Bottom Dripper is made by Fernhill.</p><p class="quote"><span class="field">Vendor</span>“Fernhill”</p></li><li><p class="fact">The Flat-Bottom Dripper has a brushed 18/8 stainless steel body.</p><p class="quote"><span class="field">Description</span>“Brushed 18/8 stainless steel body”</p></li><li><p class="fact">The Flat-Bottom Dripper has three small holes in a flat bed.</p><p class="quote"><span class="field">Description</span>“three small holes in a flat bed”</p></li><li><p class="fact">The Flat-Bottom Dripper takes 185-size wave filters.</p><p class="quote"><span class="field">Description</span>“Takes 185-size wave filters.”</p></li><li><p class="fact">The Flat-Bottom Dripper brews 1 to 2 cups (up to 500 ml).</p><p class="quote"><span class="field">Description</span>“Brews 1 to 2 cups (up to 500 ml).”</p></li><li><p class="fact">The Flat-Bottom Dripper has a double wall.</p><p class="quote"><span class="field">Description</span>“Double wall”</p></li><li><p class="fact">The Flat-Bottom Dripper weighs 210 g.</p><p class="quote"><span class="field">Description</span>“210 g.”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Gooseneck Pour-Over Kettle 900 ml</h3>
+          <div class="kv"><span>Type</span>Kettle</div><div class="kv"><span>Vendor</span>Fernhill</div><div class="kv"><span>Tags</span>pour-over, kettle</div>
+          <div class="desc">The kettle baristas reach for.<br>- Capacity 900 ml, recommended fill 600 ml<br>- Spout opening 8 mm for a thin, controllable stream<br>- Built-in thermometer reading 40–100 °C<br>- Stainless steel, works on gas, electric and induction hobs</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 7 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">The Fernhill Gooseneck Pour-Over Kettle has a capacity of 900 ml.</p><p class="quote"><span class="field">Description</span>“Capacity 900 ml”</p></li><li><p class="fact">The Fernhill Gooseneck Pour-Over Kettle has a recommended fill of 600 ml.</p><p class="quote"><span class="field">Description</span>“recommended fill 600 ml”</p></li><li><p class="fact">The Fernhill Gooseneck Pour-Over Kettle has a spout opening of 8 mm.</p><p class="quote"><span class="field">Description</span>“Spout opening 8 mm”</p></li><li><p class="fact">The Fernhill Gooseneck Pour-Over Kettle has a built-in thermometer reading 40–100 °C.</p><p class="quote"><span class="field">Description</span>“Built-in thermometer reading 40–100 °C”</p></li><li><p class="fact">The Fernhill Gooseneck Pour-Over Kettle is made of stainless steel.</p><p class="quote"><span class="field">Description</span>“Stainless steel”</p></li><li><p class="fact">The Fernhill Gooseneck Pour-Over Kettle works on gas, electric and induction hobs.</p><p class="quote"><span class="field">Description</span>“works on gas, electric and induction hobs”</p></li><li><p class="fact">The Gooseneck Pour-Over Kettle is made by Fernhill.</p><p class="quote"><span class="field">Vendor</span>“Fernhill”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Electric Gooseneck Kettle with Temperature Hold</h3>
+          <div class="kv"><span>Type</span>Kettle</div><div class="kv"><span>Vendor</span>Fernhill</div><div class="kv"><span>Tags</span>pour-over, kettle, electric</div>
+          <div class="desc">Set the temperature in 1 °C steps from 60 to 100 °C and the base holds it for 60 minutes. 800 ml capacity. 1200 W heating element. UK plug. Base cable 75 cm.<br>Perfect for coffee lovers who demand the very best.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 8 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">The Electric Gooseneck Kettle with Temperature Hold lets you set the temperature in 1 °C steps from 60 to 100 °C.</p><p class="quote"><span class="field">Description</span>“Set the temperature in 1 °C steps from 60 to 100 °C”</p></li><li><p class="fact">The Electric Gooseneck Kettle with Temperature Hold base holds the set temperature for 60 minutes.</p><p class="quote"><span class="field">Description</span>“the base holds it for 60 minutes”</p></li><li><p class="fact">The Electric Gooseneck Kettle with Temperature Hold has an 800 ml capacity.</p><p class="quote"><span class="field">Description</span>“800 ml capacity.”</p></li><li><p class="fact">The Electric Gooseneck Kettle with Temperature Hold has a 1200 W heating element.</p><p class="quote"><span class="field">Description</span>“1200 W heating element.”</p></li><li><p class="fact">The Electric Gooseneck Kettle with Temperature Hold has a UK plug.</p><p class="quote"><span class="field">Description</span>“UK plug.”</p></li><li><p class="fact">The Electric Gooseneck Kettle with Temperature Hold has a 75 cm base cable.</p><p class="quote"><span class="field">Description</span>“Base cable 75 cm.”</p></li><li><p class="fact">The Electric Gooseneck Kettle with Temperature Hold has a gooseneck spout.</p><p class="quote"><span class="field">Title</span>“Electric Gooseneck Kettle”</p></li><li><p class="fact">The Electric Gooseneck Kettle with Temperature Hold is made by Fernhill.</p><p class="quote"><span class="field">Vendor</span>“Fernhill”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Hand Grinder, conical steel burrs</h3>
+          <div class="kv"><span>Type</span>Grinder</div><div class="kv"><span>Vendor</span>Fernhill</div><div class="kv"><span>Tags</span>grinder, manual</div>
+          <div class="desc">38 mm hardened stainless steel conical burrs. External click adjustment with 30 settings, from espresso to French press. Holds 25 g of beans. Aluminium body, 520 g. Grinds a 15 g dose for pour-over in about 40 seconds.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 9 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">The Fernhill Hand Grinder has conical steel burrs.</p><p class="quote"><span class="field">Title</span>“Hand Grinder, conical steel burrs”</p></li><li><p class="fact">The Fernhill Hand Grinder is a manual grinder.</p><p class="quote"><span class="field">Tags</span>“grinder, manual”</p></li><li><p class="fact">The Fernhill Hand Grinder has 38 mm hardened stainless steel conical burrs.</p><p class="quote"><span class="field">Description</span>“38 mm hardened stainless steel conical burrs.”</p></li><li><p class="fact">The Fernhill Hand Grinder has external click adjustment with 30 settings.</p><p class="quote"><span class="field">Description</span>“External click adjustment with 30 settings”</p></li><li><p class="fact">The Fernhill Hand Grinder's settings range from espresso to French press.</p><p class="quote"><span class="field">Description</span>“from espresso to French press”</p></li><li><p class="fact">The Fernhill Hand Grinder holds 25 g of beans.</p><p class="quote"><span class="field">Description</span>“Holds 25 g of beans.”</p></li><li><p class="fact">The Fernhill Hand Grinder has an aluminium body.</p><p class="quote"><span class="field">Description</span>“Aluminium body”</p></li><li><p class="fact">The Fernhill Hand Grinder weighs 520 g.</p><p class="quote"><span class="field">Description</span>“Aluminium body, 520 g.”</p></li><li><p class="fact">The Fernhill Hand Grinder grinds a 15 g dose for pour-over in about 40 seconds.</p><p class="quote"><span class="field">Description</span>“Grinds a 15 g dose for pour-over in about 40 seconds.”</p></li></ol>
+        </div>
+      </article>
+    </section>
+    <section class="store" id="bukki-fuveshaz">
+      <header class="store-head">
+        <div>
+          <p class="label">Hungarian · bukki-fuveshaz.myshopify.com</p>
+          <h2>Bükki Füvesház</h2>
+        </div>
+        <span class="count">12 of 12 products usable · first 5 shown</span>
+      </header>
+      
+      <div class="profile"><div><p class="label">Drafted profile · what they sell</p><p>A bolt szálas gyógyteákat árul, főként egynövényes teákat (kakukkfű, csalánlevél, kamillavirág, borsmentalevél), valamint egy esti teakeveréket és magozott csipkebogyó gyümölcsteát. Kínálatában fekete és zöld tea is szerepel: Assam fekete tea és japán Sencha zöld tea. Teaeszközöket is forgalmaz: öntöttvas és hőálló üveg teáskannát, bögrébe való teaszűrőt és fém teatartó dobozt.</p></div><div><p class="label">Who buys it</p><p>Olyan vásárlóknak szól, akik szálas gyógy-, gyümölcs-, fekete és zöld teát főznek otthon. Azoknak is, akiknek a teafőzéshez és -tároláshoz eszközök is kellenek.</p></div><div><p class="label">Tone</p><p>friendly</p></div></div>
+      
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Kakukkfű tea, szálas</h3>
+          <div class="kv"><span>Type</span>Gyógytea</div><div class="kv"><span>Vendor</span>Bükki Füvesház</div><div class="kv"><span>Tags</span>gyógytea, egynövényes</div>
+          <div class="desc">Az erdő illata a csészédben!<br>Vadon termő mezei kakukkfű (Thymus serpyllum) virágos hajtása, a Bükk déli lejtőiről, kézzel gyűjtve júniusban. Árnyékban szárítva, vágott formában. Egy csészéhez 1 teáskanál (kb. 1,5 g) elegendő, 95 °C-os vízzel, 8–10 perc áztatással. Kiszerelés: 50 g.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 12 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">A kakukkfű tea szálas kiszerelésű.</p><p class="quote"><span class="field">Title</span>“Kakukkfű tea, szálas”</p></li><li><p class="fact">A kakukkfű tea gyógytea.</p><p class="quote"><span class="field">Product type</span>“Gyógytea”</p></li><li><p class="fact">A kakukkfű tea forgalmazója a Bükki Füvesház.</p><p class="quote"><span class="field">Vendor</span>“Bükki Füvesház”</p></li><li><p class="fact">A kakukkfű tea egynövényes tea.</p><p class="quote"><span class="field">Tags</span>“egynövényes”</p></li><li><p class="fact">A kakukkfű tea vadon termő mezei kakukkfű (Thymus serpyllum) virágos hajtásából készül.</p><p class="quote"><span class="field">Description</span>“Vadon termő mezei kakukkfű (Thymus serpyllum) virágos hajtása”</p></li><li><p class="fact">A kakukkfű tea alapanyaga a Bükk déli lejtőiről származik.</p><p class="quote"><span class="field">Description</span>“a Bükk déli lejtőiről”</p></li><li><p class="fact">A kakukkfű tea alapanyagát kézzel gyűjtik júniusban.</p><p class="quote"><span class="field">Description</span>“kézzel gyűjtve júniusban”</p></li><li><p class="fact">A kakukkfű tea alapanyagát árnyékban szárítják.</p><p class="quote"><span class="field">Description</span>“Árnyékban szárítva”</p></li><li><p class="fact">A kakukkfű tea vágott formában kapható.</p><p class="quote"><span class="field">Description</span>“vágott formában”</p></li><li><p class="fact">A kakukkfű teából egy csészéhez 1 teáskanál (kb. 1,5 g) elegendő.</p><p class="quote"><span class="field">Description</span>“Egy csészéhez 1 teáskanál (kb. 1,5 g) elegendő”</p></li><li><p class="fact">A kakukkfű teát 95 °C-os vízzel, 8–10 perc áztatással kell elkészíteni.</p><p class="quote"><span class="field">Description</span>“95 °C-os vízzel, 8–10 perc áztatással”</p></li><li><p class="fact">A kakukkfű tea kiszerelése 50 g.</p><p class="quote"><span class="field">Description</span>“Kiszerelés: 50 g.”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Csalánlevél tea, szálas</h3>
+          <div class="kv"><span>Type</span>Gyógytea</div><div class="kv"><span>Vendor</span>Bükki Füvesház</div><div class="kv"><span>Tags</span>gyógytea, egynövényes</div>
+          <div class="desc">Nagy csalán (Urtica dioica) levele, virágzás előtt, májusban gyűjtve. Vágott, szálas tea. Adagolás: 2 teáskanál 2,5 dl forrásban lévő vízhez, 10 perc áztatás. Kiszerelés: 70 g, visszazárható papírtasakban.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 11 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">A csalánlevél tea szálas kivitelű.</p><p class="quote"><span class="field">Title</span>“Csalánlevél tea, szálas”</p></li><li><p class="fact">A csalánlevél tea gyógytea.</p><p class="quote"><span class="field">Product type</span>“Gyógytea”</p></li><li><p class="fact">A csalánlevél teát a Bükki Füvesház forgalmazza.</p><p class="quote"><span class="field">Vendor</span>“Bükki Füvesház”</p></li><li><p class="fact">A csalánlevél tea egynövényes tea.</p><p class="quote"><span class="field">Tags</span>“egynövényes”</p></li><li><p class="fact">A csalánlevél tea nagy csalán (Urtica dioica) leveléből készül.</p><p class="quote"><span class="field">Description</span>“Nagy csalán (Urtica dioica) levele”</p></li><li><p class="fact">A csalánlevél tea alapanyagát virágzás előtt, májusban gyűjtik.</p><p class="quote"><span class="field">Description</span>“virágzás előtt, májusban gyűjtve”</p></li><li><p class="fact">A csalánlevél tea vágott, szálas tea.</p><p class="quote"><span class="field">Description</span>“Vágott, szálas tea.”</p></li><li><p class="fact">A csalánlevél tea adagolása 2 teáskanál 2,5 dl forrásban lévő vízhez.</p><p class="quote"><span class="field">Description</span>“Adagolás: 2 teáskanál 2,5 dl forrásban lévő vízhez”</p></li><li><p class="fact">A csalánlevél teát 10 percig kell áztatni.</p><p class="quote"><span class="field">Description</span>“10 perc áztatás”</p></li><li><p class="fact">A csalánlevél tea kiszerelése 70 g.</p><p class="quote"><span class="field">Description</span>“Kiszerelés: 70 g”</p></li><li><p class="fact">A csalánlevél tea visszazárható papírtasakban kapható.</p><p class="quote"><span class="field">Description</span>“visszazárható papírtasakban”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Kamillavirág tea</h3>
+          <div class="kv"><span>Type</span>Gyógytea</div><div class="kv"><span>Vendor</span>Bükki Füvesház</div><div class="kv"><span>Tags</span>gyógytea, egynövényes</div>
+          <div class="desc">Orvosi székfű (Matricaria chamomilla) egész virágzata, a Hortobágy széléről, saját termesztésből. Egész virágfejek, nem tört. 1 evőkanál 2 dl vízhez, 5–7 perc áztatás, fedő alatt. 40 g.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 10 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">A Kamillavirág tea gyógytea.</p><p class="quote"><span class="field">Product type</span>“Gyógytea”</p></li><li><p class="fact">A Kamillavirág tea forgalmazója a Bükki Füvesház.</p><p class="quote"><span class="field">Vendor</span>“Bükki Füvesház”</p></li><li><p class="fact">A Kamillavirág tea egynövényes tea.</p><p class="quote"><span class="field">Tags</span>“egynövényes”</p></li><li><p class="fact">A Kamillavirág tea orvosi székfű (Matricaria chamomilla) egész virágzata.</p><p class="quote"><span class="field">Description</span>“Orvosi székfű (Matricaria chamomilla) egész virágzata”</p></li><li><p class="fact">A Kamillavirág tea a Hortobágy széléről származik.</p><p class="quote"><span class="field">Description</span>“a Hortobágy széléről”</p></li><li><p class="fact">A Kamillavirág tea saját termesztésből származik.</p><p class="quote"><span class="field">Description</span>“saját termesztésből”</p></li><li><p class="fact">A Kamillavirág tea egész virágfejekből áll, nem tört.</p><p class="quote"><span class="field">Description</span>“Egész virágfejek, nem tört.”</p></li><li><p class="fact">A Kamillavirág teából 1 evőkanálnyit kell 2 dl vízhez adni.</p><p class="quote"><span class="field">Description</span>“1 evőkanál 2 dl vízhez”</p></li><li><p class="fact">A Kamillavirág teát 5–7 percig kell áztatni, fedő alatt.</p><p class="quote"><span class="field">Description</span>“5–7 perc áztatás, fedő alatt”</p></li><li><p class="fact">A Kamillavirág tea kiszerelése 40 g.</p><p class="quote"><span class="field">Description</span>“40 g.”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Esti teakeverék</h3>
+          <div class="kv"><span>Type</span>Teakeverék</div><div class="kv"><span>Vendor</span>Bükki Füvesház</div><div class="kv"><span>Tags</span>gyógytea, keverék, koffeinmentes</div>
+          <div class="desc">Összetétel: citromfűlevél 40%, levendulavirág 20%, kamillavirág 25%, komlótoboz 15%. Koffeinmentes. 1 teáskanál 2 dl 90 °C-os vízhez, 7 perc. 60 g.<br>A tökéletes nap tökéletes lezárása.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 10 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">Az Esti teakeverék 40% citromfűlevelet tartalmaz.</p><p class="quote"><span class="field">Description</span>“citromfűlevél 40%”</p></li><li><p class="fact">Az Esti teakeverék 20% levendulavirágot tartalmaz.</p><p class="quote"><span class="field">Description</span>“levendulavirág 20%”</p></li><li><p class="fact">Az Esti teakeverék 25% kamillavirágot tartalmaz.</p><p class="quote"><span class="field">Description</span>“kamillavirág 25%”</p></li><li><p class="fact">Az Esti teakeverék 15% komlótobozt tartalmaz.</p><p class="quote"><span class="field">Description</span>“komlótoboz 15%”</p></li><li><p class="fact">Az Esti teakeverék koffeinmentes.</p><p class="quote"><span class="field">Description</span>“Koffeinmentes.”</p></li><li><p class="fact">Az Esti teakeverékből 1 teáskanalat kell 2 dl 90 °C-os vízhez adni.</p><p class="quote"><span class="field">Description</span>“1 teáskanál 2 dl 90 °C-os vízhez”</p></li><li><p class="fact">Az Esti teakeveréket 7 percig kell áztatni.</p><p class="quote"><span class="field">Description</span>“7 perc”</p></li><li><p class="fact">Az Esti teakeverék tömege 60 g.</p><p class="quote"><span class="field">Description</span>“60 g.”</p></li><li><p class="fact">Az Esti teakeveréket a Bükki Füvesház forgalmazza.</p><p class="quote"><span class="field">Vendor</span>“Bükki Füvesház”</p></li><li><p class="fact">Az Esti teakeverék gyógytea.</p><p class="quote"><span class="field">Tags</span>“gyógytea”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Csipkebogyó tea, magozott</h3>
+          <div class="kv"><span>Type</span>Gyümölcstea</div><div class="kv"><span>Vendor</span>Bükki Füvesház</div><div class="kv"><span>Tags</span>gyümölcstea</div>
+          <div class="desc">Gyepűrózsa (Rosa canina) magozott, szárított termése, októberi gyűjtés. Darabolt. A kiadós ízhez 1 evőkanálnyit 3 dl hideg vízben fel kell forralni, majd 10 percig lassú tűzön főzni. 100 g.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 9 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">A Csipkebogyó tea magozott.</p><p class="quote"><span class="field">Title</span>“Csipkebogyó tea, magozott”</p></li><li><p class="fact">A Csipkebogyó tea gyümölcstea.</p><p class="quote"><span class="field">Product type</span>“Gyümölcstea”</p></li><li><p class="fact">A Csipkebogyó tea gyártója a Bükki Füvesház.</p><p class="quote"><span class="field">Vendor</span>“Bükki Füvesház”</p></li><li><p class="fact">A Csipkebogyó tea a gyepűrózsa (Rosa canina) magozott, szárított terméséből készül.</p><p class="quote"><span class="field">Description</span>“Gyepűrózsa (Rosa canina) magozott, szárított termése”</p></li><li><p class="fact">A Csipkebogyó tea termését októberben gyűjtik.</p><p class="quote"><span class="field">Description</span>“októberi gyűjtés”</p></li><li><p class="fact">A Csipkebogyó tea darabolt.</p><p class="quote"><span class="field">Description</span>“Darabolt.”</p></li><li><p class="fact">A Csipkebogyó teából 1 evőkanálnyit 3 dl hideg vízben kell felforralni.</p><p class="quote"><span class="field">Description</span>“1 evőkanálnyit 3 dl hideg vízben fel kell forralni”</p></li><li><p class="fact">A Csipkebogyó teát forralás után 10 percig lassú tűzön kell főzni.</p><p class="quote"><span class="field">Description</span>“majd 10 percig lassú tűzön főzni”</p></li><li><p class="fact">A Csipkebogyó tea kiszerelése 100 g.</p><p class="quote"><span class="field">Description</span>“100 g.”</p></li></ol>
+        </div>
+      </article>
+    </section>
+    <section class="store" id="tidewell-candles">
+      <header class="store-head">
+        <div>
+          <p class="label">English · tidewell-candles.myshopify.com</p>
+          <h2>Tidewell Candles</h2>
+        </div>
+        <span class="count">3 of 3 products usable</span>
+      </header>
+      <p class="state">Thin store: 3 of 3 products have enough facts (the floor is 5). Home will say “We can write about 3 of your 3 products.”</p>
+      <div class="profile"><div><p class="label">Drafted profile · what they sell</p><p>Tidewell Candles sells candles: scented container candles and unscented taper candles. The range includes an 8 oz sea salt soy candle hand-poured in Portland, Maine, a 12 oz cedar candle in a coconut and soy wax blend with a crackling cherry-wood wick, and a pair of 10-inch pure beeswax tapers made with beeswax from Maine apiaries.</p></div><div><p class="label">Who buys it</p><p>People shopping for home candles who care about the wax and wick, such as soy, coconut-soy or pure beeswax, hand-poured or locally sourced in Maine.</p></div><div><p class="label">Tone</p><p>friendly</p></div></div>
+      
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Sea Salt Soy Candle, 8 oz</h3>
+          <div class="kv"><span>Type</span>Candle</div><div class="kv"><span>Vendor</span>Tidewell</div><div class="kv"><span>Tags</span>soy</div>
+          <div class="desc">100% soy wax, poured by hand in Portland, Maine. Cotton wick, lead-free. Burn time about 45 hours. 8 oz amber glass jar with a tin lid. Scent notes: sea salt, driftwood, sage.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 10 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">The Sea Salt Soy Candle is 8 oz.</p><p class="quote"><span class="field">Title</span>“Sea Salt Soy Candle, 8 oz”</p></li><li><p class="fact">The Sea Salt Soy Candle is made of 100% soy wax.</p><p class="quote"><span class="field">Description</span>“100% soy wax”</p></li><li><p class="fact">The Sea Salt Soy Candle is poured by hand in Portland, Maine.</p><p class="quote"><span class="field">Description</span>“poured by hand in Portland, Maine”</p></li><li><p class="fact">The Sea Salt Soy Candle has a cotton wick.</p><p class="quote"><span class="field">Description</span>“Cotton wick”</p></li><li><p class="fact">The Sea Salt Soy Candle's wick is lead-free.</p><p class="quote"><span class="field">Description</span>“lead-free”</p></li><li><p class="fact">The Sea Salt Soy Candle has a burn time of about 45 hours.</p><p class="quote"><span class="field">Description</span>“Burn time about 45 hours”</p></li><li><p class="fact">The Sea Salt Soy Candle comes in an 8 oz amber glass jar.</p><p class="quote"><span class="field">Description</span>“8 oz amber glass jar”</p></li><li><p class="fact">The Sea Salt Soy Candle's jar has a tin lid.</p><p class="quote"><span class="field">Description</span>“with a tin lid”</p></li><li><p class="fact">The Sea Salt Soy Candle has scent notes of sea salt, driftwood, and sage.</p><p class="quote"><span class="field">Description</span>“Scent notes: sea salt, driftwood, sage.”</p></li><li><p class="fact">The Sea Salt Soy Candle is made by Tidewell.</p><p class="quote"><span class="field">Vendor</span>“Tidewell”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Cedar Wood-Wick Candle, 12 oz</h3>
+          <div class="kv"><span>Type</span>Candle</div><div class="kv"><span>Vendor</span>Tidewell</div><div class="kv"><span>Tags</span>soy, wood wick</div>
+          <div class="desc">Coconut and soy wax blend with a cherry-wood wick that crackles as it burns. Burn time about 60 hours. 12 oz ceramic vessel, reusable. Trim the wick to 3 mm before each burn. Scent notes: cedar, black pepper, vetiver.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 9 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">The Cedar Wood-Wick Candle is 12 oz.</p><p class="quote"><span class="field">Title</span>“Cedar Wood-Wick Candle, 12 oz”</p></li><li><p class="fact">The Cedar Wood-Wick Candle is made by Tidewell.</p><p class="quote"><span class="field">Vendor</span>“Tidewell”</p></li><li><p class="fact">The Cedar Wood-Wick Candle is made with a coconut and soy wax blend.</p><p class="quote"><span class="field">Description</span>“Coconut and soy wax blend”</p></li><li><p class="fact">The Cedar Wood-Wick Candle has a cherry-wood wick that crackles as it burns.</p><p class="quote"><span class="field">Description</span>“a cherry-wood wick that crackles as it burns”</p></li><li><p class="fact">The Cedar Wood-Wick Candle has a burn time of about 60 hours.</p><p class="quote"><span class="field">Description</span>“Burn time about 60 hours.”</p></li><li><p class="fact">The Cedar Wood-Wick Candle comes in a 12 oz ceramic vessel.</p><p class="quote"><span class="field">Description</span>“12 oz ceramic vessel”</p></li><li><p class="fact">The Cedar Wood-Wick Candle's vessel is reusable.</p><p class="quote"><span class="field">Description</span>“12 oz ceramic vessel, reusable”</p></li><li><p class="fact">The Cedar Wood-Wick Candle's wick should be trimmed to 3 mm before each burn.</p><p class="quote"><span class="field">Description</span>“Trim the wick to 3 mm before each burn.”</p></li><li><p class="fact">The Cedar Wood-Wick Candle has scent notes of cedar, black pepper, and vetiver.</p><p class="quote"><span class="field">Description</span>“Scent notes: cedar, black pepper, vetiver.”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Beeswax Taper Candles, pair</h3>
+          <div class="kv"><span>Type</span>Taper</div><div class="kv"><span>Vendor</span>Tidewell</div><div class="kv"><span>Tags</span>beeswax</div>
+          <div class="desc">Two 10-inch tapers of pure beeswax from Maine apiaries, unscented. Standard 7/8-inch base fits most candlesticks. Each burns about 8 hours, dripless when kept away from drafts.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 7 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">The Beeswax Taper Candles come as a pair.</p><p class="quote"><span class="field">Title</span>“Beeswax Taper Candles, pair”</p></li><li><p class="fact">The Beeswax Taper Candles set contains two tapers that are 10 inches long.</p><p class="quote"><span class="field">Description</span>“Two 10-inch tapers”</p></li><li><p class="fact">The Beeswax Taper Candles are made of pure beeswax from Maine apiaries.</p><p class="quote"><span class="field">Description</span>“pure beeswax from Maine apiaries”</p></li><li><p class="fact">The Beeswax Taper Candles are unscented.</p><p class="quote"><span class="field">Description</span>“unscented”</p></li><li><p class="fact">The Beeswax Taper Candles have a standard 7/8-inch base that fits most candlesticks.</p><p class="quote"><span class="field">Description</span>“Standard 7/8-inch base fits most candlesticks”</p></li><li><p class="fact">Each Beeswax Taper Candle burns about 8 hours.</p><p class="quote"><span class="field">Description</span>“Each burns about 8 hours”</p></li><li><p class="fact">The Beeswax Taper Candles are dripless when kept away from drafts.</p><p class="quote"><span class="field">Description</span>“dripless when kept away from drafts”</p></li></ol>
+        </div>
+      </article>
+    </section>
+    <section class="store" id="mezeskert">
+      <header class="store-head">
+        <div>
+          <p class="label">Hungarian · mezeskert.myshopify.com</p>
+          <h2>Mézeskert Méhészet</h2>
+        </div>
+        <span class="count">3 of 3 products usable</span>
+      </header>
+      <p class="state">Thin store: 3 of 3 products have enough facts (the floor is 5). Home will say “We can write about 3 of your 3 products.”</p>
+      <div class="profile"><div><p class="label">Drafted profile · what they sell</p><p>A Mézeskert Méhészet mézeket árul: két fajtamézet, 500 g-os kiszerelésben, a nyírségi májusi pergetésű akácmézet és a júniusban pergetett hársmézet. Emellett van egy 250 g-os krémméz is, amely vegyes virágmézből készül kenhetőre keverve, 2% szárított tihanyi levendulavirággal.</p></div><div><p class="label">Who buys it</p><p>Azoknak szól, akik mézet keresnek: fajtamézet vagy kenhető, ízesített krémmézet.</p></div><div><p class="label">Tone</p><p>friendly</p></div></div>
+      
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Akácméz 500 g</h3>
+          <div class="kv"><span>Type</span>Méz</div><div class="kv"><span>Vendor</span>Mézeskert</div><div class="kv"><span>Tags</span>fajtaméz</div>
+          <div class="desc">Fajtaméz a Nyírségből, 2026. májusi pergetés. Hőkezeletlen, szűrt. Világos, vízszerű szín; magas fruktóztartalma miatt sokáig folyékony marad. 500 g üvegben, fém tetővel.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 9 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">Az Akácméz nettó tömege 500 g.</p><p class="quote"><span class="field">Title</span>“Akácméz 500 g”</p></li><li><p class="fact">Az Akácméz fajtaméz.</p><p class="quote"><span class="field">Description</span>“Fajtaméz a Nyírségből”</p></li><li><p class="fact">Az Akácméz a Nyírségből származik.</p><p class="quote"><span class="field">Description</span>“Fajtaméz a Nyírségből”</p></li><li><p class="fact">Az Akácméz 2026. májusi pergetésű.</p><p class="quote"><span class="field">Description</span>“2026. májusi pergetés”</p></li><li><p class="fact">Az Akácméz hőkezeletlen.</p><p class="quote"><span class="field">Description</span>“Hőkezeletlen”</p></li><li><p class="fact">Az Akácméz szűrt.</p><p class="quote"><span class="field">Description</span>“szűrt”</p></li><li><p class="fact">Az Akácméz színe világos, vízszerű.</p><p class="quote"><span class="field">Description</span>“Világos, vízszerű szín”</p></li><li><p class="fact">Az Akácméz magas fruktóztartalma miatt sokáig folyékony marad.</p><p class="quote"><span class="field">Description</span>“magas fruktóztartalma miatt sokáig folyékony marad”</p></li><li><p class="fact">Az Akácméz 500 g-os üvegben, fém tetővel kapható.</p><p class="quote"><span class="field">Description</span>“500 g üvegben, fém tetővel”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Hársméz 500 g</h3>
+          <div class="kv"><span>Type</span>Méz</div><div class="kv"><span>Vendor</span>Mézeskert</div><div class="kv"><span>Tags</span>fajtaméz</div>
+          <div class="desc">Hársvirágzáskor, júniusban pergetett méz a Bakonyból. Hőkezeletlen. Enyhén mentolos, kesernyés utóíz. Néhány hónap alatt finom szemcsésre kristályosodik; 40 °C alatti vízfürdőben újra folyékony lesz. 500 g.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 9 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">A Hársméz nettó tömege 500 g.</p><p class="quote"><span class="field">Title</span>“Hársméz 500 g”</p></li><li><p class="fact">A Hársméz a Mézeskert terméke.</p><p class="quote"><span class="field">Vendor</span>“Mézeskert”</p></li><li><p class="fact">A Hársméz fajtaméz.</p><p class="quote"><span class="field">Tags</span>“fajtaméz”</p></li><li><p class="fact">A Hársmézet hársvirágzáskor, júniusban pergették.</p><p class="quote"><span class="field">Description</span>“Hársvirágzáskor, júniusban pergetett méz”</p></li><li><p class="fact">A Hársméz a Bakonyból származik.</p><p class="quote"><span class="field">Description</span>“pergetett méz a Bakonyból”</p></li><li><p class="fact">A Hársméz hőkezeletlen.</p><p class="quote"><span class="field">Description</span>“Hőkezeletlen.”</p></li><li><p class="fact">A Hársméz enyhén mentolos, kesernyés utóízű.</p><p class="quote"><span class="field">Description</span>“Enyhén mentolos, kesernyés utóíz.”</p></li><li><p class="fact">A Hársméz néhány hónap alatt finom szemcsésre kristályosodik.</p><p class="quote"><span class="field">Description</span>“Néhány hónap alatt finom szemcsésre kristályosodik”</p></li><li><p class="fact">A kristályosodott Hársméz 40 °C alatti vízfürdőben újra folyékony lesz.</p><p class="quote"><span class="field">Description</span>“40 °C alatti vízfürdőben újra folyékony lesz”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Krémméz levendulával, 250 g</h3>
+          <div class="kv"><span>Type</span>Krémméz</div><div class="kv"><span>Vendor</span>Mézeskert</div><div class="kv"><span>Tags</span>krémméz</div>
+          <div class="desc">Vegyes virágméz, irányított kristályosítással kenhető krémmé keverve, 2% szárított tihanyi levendulavirággal. 250 g. Szobahőmérsékleten tárolandó, napfénytől védve.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 6 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">A Krémméz levendulával kiszerelése 250 g.</p><p class="quote"><span class="field">Title</span>“Krémméz levendulával, 250 g”</p></li><li><p class="fact">A Krémméz levendulával vegyes virágmézből készül.</p><p class="quote"><span class="field">Description</span>“Vegyes virágméz”</p></li><li><p class="fact">A Krémméz levendulával irányított kristályosítással kenhető krémmé keverve készül.</p><p class="quote"><span class="field">Description</span>“irányított kristályosítással kenhető krémmé keverve”</p></li><li><p class="fact">A Krémméz levendulával 2% szárított tihanyi levendulavirágot tartalmaz.</p><p class="quote"><span class="field">Description</span>“2% szárított tihanyi levendulavirággal”</p></li><li><p class="fact">A Krémméz levendulával szobahőmérsékleten, napfénytől védve tárolandó.</p><p class="quote"><span class="field">Description</span>“Szobahőmérsékleten tárolandó, napfénytől védve.”</p></li><li><p class="fact">A Krémméz levendulával a Mézeskert terméke.</p><p class="quote"><span class="field">Vendor</span>“Mézeskert”</p></li></ol>
+        </div>
+      </article>
+    </section>
+    <section class="store" id="northpaw-dogs">
+      <header class="store-head">
+        <div>
+          <p class="label">English · northpaw-dogs.myshopify.com</p>
+          <h2>Northpaw Dog Supply</h2>
+        </div>
+        <span class="count">6 of 6 products usable · first 5 shown</span>
+      </header>
+      
+      <div class="profile"><div><p class="label">Drafted profile · what they sell</p><p>Northpaw Dog Supply sells walking gear for dogs, including a front-clip no-pull harness, a 6 ft biothane leash, a 30 ft training long line and a rechargeable LED collar light. It also sells beds and blankets, namely a memory foam dog bed with a removable cover and a machine-washable fleece dog blanket.</p></div><div><p class="label">Who buys it</p><p>Dog owners who walk and train their dogs, including those dealing with leash pulling or walking in low light, and who want a comfortable bed or blanket for their dog at home.</p></div><div><p class="label">Tone</p><p>friendly</p></div></div>
+      
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Front-Clip No-Pull Harness</h3>
+          <div class="kv"><span>Type</span>Harness</div><div class="kv"><span>Vendor</span>Northpaw</div><div class="kv"><span>Options</span>Size: XS, S, M, L, XL</div><div class="kv"><span>Tags</span>walking</div>
+          <div class="desc">Leash ring on the chest turns the dog sideways when it pulls. Four adjustment points. Padded neoprene chest plate. Reflective stitching. Sizes XS to XL, chest girth 13–42 in.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 8 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">The Front-Clip No-Pull Harness is a harness.</p><p class="quote"><span class="field">Product type</span>“Harness”</p></li><li><p class="fact">The Front-Clip No-Pull Harness is made by Northpaw.</p><p class="quote"><span class="field">Vendor</span>“Northpaw”</p></li><li><p class="fact">The Front-Clip No-Pull Harness is available in sizes XS, S, M, L, and XL.</p><p class="quote"><span class="field">Options</span>“Size: XS, S, M, L, XL”</p></li><li><p class="fact">The Front-Clip No-Pull Harness has a leash ring on the chest that turns the dog sideways when it pulls.</p><p class="quote"><span class="field">Description</span>“Leash ring on the chest turns the dog sideways when it pulls.”</p></li><li><p class="fact">The Front-Clip No-Pull Harness has four adjustment points.</p><p class="quote"><span class="field">Description</span>“Four adjustment points.”</p></li><li><p class="fact">The Front-Clip No-Pull Harness has a padded neoprene chest plate.</p><p class="quote"><span class="field">Description</span>“Padded neoprene chest plate.”</p></li><li><p class="fact">The Front-Clip No-Pull Harness has reflective stitching.</p><p class="quote"><span class="field">Description</span>“Reflective stitching.”</p></li><li><p class="fact">The Front-Clip No-Pull Harness fits a chest girth of 13–42 in across sizes XS to XL.</p><p class="quote"><span class="field">Description</span>“Sizes XS to XL, chest girth 13–42 in.”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Biothane Leash, 6 ft</h3>
+          <div class="kv"><span>Type</span>Leash</div><div class="kv"><span>Vendor</span>Northpaw</div><div class="kv"><span>Tags</span>walking</div>
+          <div class="desc">Coated webbing that does not absorb water or smell. 6 ft long, 5/8 in wide. Brass snap hook. Wipe clean. Breaking strength 600 lb.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 7 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">The Biothane Leash is 6 ft long.</p><p class="quote"><span class="field">Title</span>“Biothane Leash, 6 ft”</p></li><li><p class="fact">The Biothane Leash is made of coated webbing that does not absorb water or smell.</p><p class="quote"><span class="field">Description</span>“Coated webbing that does not absorb water or smell.”</p></li><li><p class="fact">The Biothane Leash is 5/8 in wide.</p><p class="quote"><span class="field">Description</span>“5/8 in wide”</p></li><li><p class="fact">The Biothane Leash has a brass snap hook.</p><p class="quote"><span class="field">Description</span>“Brass snap hook.”</p></li><li><p class="fact">The Biothane Leash can be wiped clean.</p><p class="quote"><span class="field">Description</span>“Wipe clean.”</p></li><li><p class="fact">The Biothane Leash has a breaking strength of 600 lb.</p><p class="quote"><span class="field">Description</span>“Breaking strength 600 lb.”</p></li><li><p class="fact">The Biothane Leash is made by Northpaw.</p><p class="quote"><span class="field">Vendor</span>“Northpaw”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Training Long Line, 30 ft</h3>
+          <div class="kv"><span>Type</span>Leash</div><div class="kv"><span>Vendor</span>Northpaw</div><div class="kv"><span>Tags</span>walking, training</div>
+          <div class="desc">30 ft of lightweight biothane for recall practice. No handle loop, so it does not snag. Floats in water. Stainless steel swivel clip.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 8 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">The Training Long Line is 30 ft long.</p><p class="quote"><span class="field">Title</span>“Training Long Line, 30 ft”</p></li><li><p class="fact">The Training Long Line is a leash.</p><p class="quote"><span class="field">Product type</span>“Leash”</p></li><li><p class="fact">The Training Long Line is made by Northpaw.</p><p class="quote"><span class="field">Vendor</span>“Northpaw”</p></li><li><p class="fact">The Training Long Line is made of lightweight biothane.</p><p class="quote"><span class="field">Description</span>“30 ft of lightweight biothane”</p></li><li><p class="fact">The Training Long Line is intended for recall practice.</p><p class="quote"><span class="field">Description</span>“for recall practice”</p></li><li><p class="fact">The Training Long Line has no handle loop.</p><p class="quote"><span class="field">Description</span>“No handle loop”</p></li><li><p class="fact">The Training Long Line floats in water.</p><p class="quote"><span class="field">Description</span>“Floats in water.”</p></li><li><p class="fact">The Training Long Line has a stainless steel swivel clip.</p><p class="quote"><span class="field">Description</span>“Stainless steel swivel clip.”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Memory Foam Dog Bed</h3>
+          <div class="kv"><span>Type</span>Bed</div><div class="kv"><span>Vendor</span>Northpaw</div><div class="kv"><span>Options</span>Size: M, L</div><div class="kv"><span>Tags</span>sleeping</div>
+          <div class="desc">4 in of memory foam on a 1 in support base. Removable cover, machine washable at 40 °C. Water-resistant liner. Non-slip bottom. Sizes M (30 × 20 in) and L (40 × 28 in).</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 9 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">The Memory Foam Dog Bed is made by Northpaw.</p><p class="quote"><span class="field">Vendor</span>“Northpaw”</p></li><li><p class="fact">The Memory Foam Dog Bed is available in sizes M and L.</p><p class="quote"><span class="field">Options</span>“Size: M, L”</p></li><li><p class="fact">The Memory Foam Dog Bed has 4 in of memory foam on a 1 in support base.</p><p class="quote"><span class="field">Description</span>“4 in of memory foam on a 1 in support base.”</p></li><li><p class="fact">The Memory Foam Dog Bed has a removable cover.</p><p class="quote"><span class="field">Description</span>“Removable cover”</p></li><li><p class="fact">The Memory Foam Dog Bed's cover is machine washable at 40 °C.</p><p class="quote"><span class="field">Description</span>“machine washable at 40 °C”</p></li><li><p class="fact">The Memory Foam Dog Bed has a water-resistant liner.</p><p class="quote"><span class="field">Description</span>“Water-resistant liner.”</p></li><li><p class="fact">The Memory Foam Dog Bed has a non-slip bottom.</p><p class="quote"><span class="field">Description</span>“Non-slip bottom.”</p></li><li><p class="fact">The Memory Foam Dog Bed in size M measures 30 × 20 in.</p><p class="quote"><span class="field">Description</span>“M (30 × 20 in)”</p></li><li><p class="fact">The Memory Foam Dog Bed in size L measures 40 × 28 in.</p><p class="quote"><span class="field">Description</span>“L (40 × 28 in)”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Fleece Dog Blanket</h3>
+          <div class="kv"><span>Type</span>Blanket</div><div class="kv"><span>Vendor</span>Northpaw</div><div class="kv"><span>Tags</span>sleeping</div>
+          <div class="desc">Double-layer polar fleece, 40 × 30 in. Machine washable, tumble dry low. Fits in the car boot or on the sofa.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 6 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">The Fleece Dog Blanket is made of double-layer polar fleece.</p><p class="quote"><span class="field">Description</span>“Double-layer polar fleece”</p></li><li><p class="fact">The Fleece Dog Blanket measures 40 × 30 in.</p><p class="quote"><span class="field">Description</span>“40 × 30 in”</p></li><li><p class="fact">The Fleece Dog Blanket is machine washable.</p><p class="quote"><span class="field">Description</span>“Machine washable”</p></li><li><p class="fact">The Fleece Dog Blanket can be tumble dried on low.</p><p class="quote"><span class="field">Description</span>“tumble dry low”</p></li><li><p class="fact">The Fleece Dog Blanket fits in the car boot or on the sofa.</p><p class="quote"><span class="field">Description</span>“Fits in the car boot or on the sofa.”</p></li><li><p class="fact">The Fleece Dog Blanket is made by Northpaw.</p><p class="quote"><span class="field">Vendor</span>“Northpaw”</p></li></ol>
+        </div>
+      </article>
+    </section>
+    <section class="store" id="pedalbolt">
+      <header class="store-head">
+        <div>
+          <p class="label">Hungarian · pedalbolt.myshopify.com</p>
+          <h2>Pedálbolt</h2>
+        </div>
+        <span class="count">6 of 6 products usable · first 5 shown</span>
+      </header>
+      
+      <div class="profile"><div><p class="label">Drafted profile · what they sell</p><p>A Pedálbolt kerékpáros kiegészítőket árul. A kínálatban első és hátsó kerékpárlámpák, illetve ezekből összeállított lámpaszett szerepel, USB-C-n tölthető kivitelben. Emellett edzett acél U-lakatot és láncos zárat, valamint sárgaréz kerékpárcsengőt is kínál.</p></div><div><p class="label">Who buys it</p><p>Olyan kerékpárosok vásárolnak itt, akik világítást, lakatot vagy csengőt keresnek a kerékpárjukhoz.</p></div><div><p class="label">Tone</p><p>expert</p></div></div>
+      
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Első lámpa, 400 lumen</h3>
+          <div class="kv"><span>Type</span>Lámpa</div><div class="kv"><span>Vendor</span>Pedálbolt</div><div class="kv"><span>Tags</span>lámpa</div>
+          <div class="desc">400 lumen fényerő, 5 üzemmód. USB-C töltés, 1500 mAh akkumulátor: 2,5 óra teljes fényen, 20 óra villogó módban. IPX5 vízállóság. Kormányra szerszám nélkül felszerelhető, 22–32 mm-es csőre.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 9 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">Az első lámpa fényereje 400 lumen.</p><p class="quote"><span class="field">Description</span>“400 lumen fényerő”</p></li><li><p class="fact">Az első lámpa 5 üzemmóddal rendelkezik.</p><p class="quote"><span class="field">Description</span>“5 üzemmód”</p></li><li><p class="fact">Az első lámpa USB-C csatlakozón keresztül tölthető.</p><p class="quote"><span class="field">Description</span>“USB-C töltés”</p></li><li><p class="fact">Az első lámpa 1500 mAh-s akkumulátorral rendelkezik.</p><p class="quote"><span class="field">Description</span>“1500 mAh akkumulátor”</p></li><li><p class="fact">Az első lámpa üzemideje teljes fényen 2,5 óra.</p><p class="quote"><span class="field">Description</span>“2,5 óra teljes fényen”</p></li><li><p class="fact">Az első lámpa üzemideje villogó módban 20 óra.</p><p class="quote"><span class="field">Description</span>“20 óra villogó módban”</p></li><li><p class="fact">Az első lámpa IPX5 vízállóságú.</p><p class="quote"><span class="field">Description</span>“IPX5 vízállóság”</p></li><li><p class="fact">Az első lámpa szerszám nélkül szerelhető fel a kormányra.</p><p class="quote"><span class="field">Description</span>“Kormányra szerszám nélkül felszerelhető”</p></li><li><p class="fact">Az első lámpa 22–32 mm-es csőre szerelhető.</p><p class="quote"><span class="field">Description</span>“22–32 mm-es csőre”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Hátsó lámpa fékfény-érzékelővel</h3>
+          <div class="kv"><span>Type</span>Lámpa</div><div class="kv"><span>Vendor</span>Pedálbolt</div><div class="kv"><span>Tags</span>lámpa</div>
+          <div class="desc">Gyorsulásmérő érzékeli a lassítást, ilyenkor erősebben világít. 60 lumen. USB-C töltés, akár 12 óra üzemidő. Nyeregcsőre és csomagtartóra is rögzíthető.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 6 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">A hátsó lámpa fékfény-érzékelővel rendelkezik.</p><p class="quote"><span class="field">Title</span>“Hátsó lámpa fékfény-érzékelővel”</p></li><li><p class="fact">A hátsó lámpa gyorsulásmérője érzékeli a lassítást, és ilyenkor erősebben világít.</p><p class="quote"><span class="field">Description</span>“Gyorsulásmérő érzékeli a lassítást, ilyenkor erősebben világít.”</p></li><li><p class="fact">A hátsó lámpa fényereje 60 lumen.</p><p class="quote"><span class="field">Description</span>“60 lumen.”</p></li><li><p class="fact">A hátsó lámpa USB-C csatlakozón keresztül tölthető.</p><p class="quote"><span class="field">Description</span>“USB-C töltés”</p></li><li><p class="fact">A hátsó lámpa üzemideje akár 12 óra.</p><p class="quote"><span class="field">Description</span>“akár 12 óra üzemidő”</p></li><li><p class="fact">A hátsó lámpa nyeregcsőre és csomagtartóra is rögzíthető.</p><p class="quote"><span class="field">Description</span>“Nyeregcsőre és csomagtartóra is rögzíthető.”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>U-lakat, 16 mm edzett acél</h3>
+          <div class="kv"><span>Type</span>Zár</div><div class="kv"><span>Vendor</span>Pedálbolt</div><div class="kv"><span>Tags</span>zár</div>
+          <div class="desc">16 mm átmérőjű edzett acél kengyel, kettős zárnyelv. Belső méret 10 × 23 cm. Tömeg 1,2 kg. Két kulccsal és vázra szerelhető tartóval.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 7 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">A U-lakat 16 mm-es edzett acélból készült.</p><p class="quote"><span class="field">Title</span>“U-lakat, 16 mm edzett acél”</p></li><li><p class="fact">A U-lakat kengyele 16 mm átmérőjű edzett acél.</p><p class="quote"><span class="field">Description</span>“16 mm átmérőjű edzett acél kengyel”</p></li><li><p class="fact">A U-lakat kettős zárnyelvvel rendelkezik.</p><p class="quote"><span class="field">Description</span>“kettős zárnyelv”</p></li><li><p class="fact">A U-lakat belső mérete 10 × 23 cm.</p><p class="quote"><span class="field">Description</span>“Belső méret 10 × 23 cm.”</p></li><li><p class="fact">A U-lakat tömege 1,2 kg.</p><p class="quote"><span class="field">Description</span>“Tömeg 1,2 kg.”</p></li><li><p class="fact">A U-lakathoz két kulcs jár.</p><p class="quote"><span class="field">Description</span>“Két kulccsal”</p></li><li><p class="fact">A U-lakathoz vázra szerelhető tartó jár.</p><p class="quote"><span class="field">Description</span>“vázra szerelhető tartóval”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Láncos zár, 110 cm</h3>
+          <div class="kv"><span>Type</span>Zár</div><div class="kv"><span>Vendor</span>Pedálbolt</div><div class="kv"><span>Tags</span>zár</div>
+          <div class="desc">8 mm-es edzett acél láncszemek textilborításban, 110 cm hosszú. Számzáras, 4 jegyű kód. Tömeg 1,6 kg.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 7 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">A láncos zár hossza 110 cm.</p><p class="quote"><span class="field">Title</span>“Láncos zár, 110 cm”</p></li><li><p class="fact">A láncos zár 8 mm-es láncszemekből áll.</p><p class="quote"><span class="field">Description</span>“8 mm-es edzett acél láncszemek”</p></li><li><p class="fact">A láncos zár láncszemei edzett acélból készültek.</p><p class="quote"><span class="field">Description</span>“edzett acél láncszemek”</p></li><li><p class="fact">A láncos zár láncszemei textilborításban vannak.</p><p class="quote"><span class="field">Description</span>“láncszemek textilborításban”</p></li><li><p class="fact">A láncos zár számzáras.</p><p class="quote"><span class="field">Description</span>“Számzáras”</p></li><li><p class="fact">A láncos zár 4 jegyű kóddal nyitható.</p><p class="quote"><span class="field">Description</span>“4 jegyű kód”</p></li><li><p class="fact">A láncos zár tömege 1,6 kg.</p><p class="quote"><span class="field">Description</span>“Tömeg 1,6 kg.”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Sárgaréz csengő</h3>
+          <div class="kv"><span>Type</span>Csengő</div><div class="kv"><span>Vendor</span>Pedálbolt</div><div class="kv"><span>Tags</span>kiegészítő</div>
+          <div class="desc">Tömör sárgaréz harang, 55 mm átmérő, hosszan zengő hang. 22,2 mm-es kormányra, csavarhúzóval szerelhető.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 4 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">A Sárgaréz csengő harangja tömör sárgarézből készült.</p><p class="quote"><span class="field">Description</span>“Tömör sárgaréz harang”</p></li><li><p class="fact">A Sárgaréz csengő harangjának átmérője 55 mm.</p><p class="quote"><span class="field">Description</span>“55 mm átmérő”</p></li><li><p class="fact">A Sárgaréz csengő 22,2 mm-es kormányra szerelhető.</p><p class="quote"><span class="field">Description</span>“22,2 mm-es kormányra”</p></li><li><p class="fact">A Sárgaréz csengő csavarhúzóval szerelhető.</p><p class="quote"><span class="field">Description</span>“csavarhúzóval szerelhető”</p></li></ol>
+        </div>
+      </article>
+    </section>
+    <section class="store" id="lumiere-living">
+      <header class="store-head">
+        <div>
+          <p class="label">English · lumiere-living.myshopify.com</p>
+          <h2>Lumière Living</h2>
+        </div>
+        <span class="count">1 of 5 products usable</span>
+      </header>
+      <p class="state">Thin store: 1 of 5 products have enough facts (the floor is 5). Home will say “We can write about 1 of your 5 products.”</p>
+      <div class="profile"><div><p class="label">Drafted profile · what they sell</p><p>Lumière Living sells home goods under its own Lumière brand. The catalogue includes soft furnishings such as a throw and a cushion, decorative pieces such as a vase and a diffuser, and table linen in the form of linen napkins sold as a set of four in Oat, Sage and Charcoal.</p></div><div><p class="label">Who buys it</p><p>The products suit people furnishing and decorating their homes, including those looking for soft furnishings, decor and table linen.</p></div><div><p class="label">Tone</p><p>friendly</p></div></div>
+      
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Serenity Throw</h3>
+          <div class="kv"><span>Type</span>Throw</div><div class="kv"><span>Vendor</span>Lumière</div><div class="kv"><span>Tags</span>bestseller</div>
+          <div class="desc">Wrap yourself in pure luxury. The Serenity Throw is more than a blanket — it's a feeling. Designed to transform any space into a sanctuary of calm. You deserve this.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill thin">Needs a fuller description · 2 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">The Serenity Throw is a throw.</p><p class="quote"><span class="field">Product type</span>“Throw”</p></li><li><p class="fact">The Serenity Throw is sold by Lumière.</p><p class="quote"><span class="field">Vendor</span>“Lumière”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Glow Diffuser</h3>
+          <div class="kv"><span>Type</span>Diffuser</div><div class="kv"><span>Vendor</span>Lumière</div>
+          <div class="desc">Elevate your everyday. Our iconic Glow Diffuser brings radiance to every room. Loved by thousands. The perfect gift for the people who matter most!</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill thin">Needs a fuller description · 2 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">The Glow Diffuser is a diffuser.</p><p class="quote"><span class="field">Product type</span>“Diffuser”</p></li><li><p class="fact">The Glow Diffuser is sold by Lumière.</p><p class="quote"><span class="field">Vendor</span>“Lumière”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Harmony Vase</h3>
+          <div class="kv"><span>Type</span>Vase</div><div class="kv"><span>Vendor</span>Lumière</div>
+          <div class="desc">Timeless. Effortless. Unforgettable. The Harmony Vase is the finishing touch your home has been waiting for.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill thin">Needs a fuller description · 2 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">The Harmony Vase is a vase.</p><p class="quote"><span class="field">Product type</span>“Vase”</p></li><li><p class="fact">The Harmony Vase is from the vendor Lumière.</p><p class="quote"><span class="field">Vendor</span>“Lumière”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Bliss Cushion</h3>
+          <div class="kv"><span>Type</span>Cushion</div><div class="kv"><span>Vendor</span>Lumière</div>
+          <div class="desc">Sink into bliss. Once you try it, you'll never go back.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill thin">Needs a fuller description · 2 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">The Bliss Cushion is a cushion.</p><p class="quote"><span class="field">Product type</span>“Cushion”</p></li><li><p class="fact">The Bliss Cushion is sold under the Lumière brand.</p><p class="quote"><span class="field">Vendor</span>“Lumière”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Linen Napkins, set of 4</h3>
+          <div class="kv"><span>Type</span>Table linen</div><div class="kv"><span>Vendor</span>Lumière</div><div class="kv"><span>Options</span>Colour: Oat, Sage, Charcoal</div>
+          <div class="desc">Stonewashed 100% European flax linen. Each napkin 45 × 45 cm. Machine wash at 40 °C. Set of four in one colour.<br>Dinner parties, reimagined.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 9 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">The Linen Napkins come as a set of 4.</p><p class="quote"><span class="field">Title</span>“Linen Napkins, set of 4”</p></li><li><p class="fact">The Linen Napkins are table linen.</p><p class="quote"><span class="field">Product type</span>“Table linen”</p></li><li><p class="fact">The Linen Napkins are made by Lumière.</p><p class="quote"><span class="field">Vendor</span>“Lumière”</p></li><li><p class="fact">The Linen Napkins are available in the colours Oat, Sage and Charcoal.</p><p class="quote"><span class="field">Options</span>“Colour: Oat, Sage, Charcoal”</p></li><li><p class="fact">The Linen Napkins are made of 100% European flax linen.</p><p class="quote"><span class="field">Description</span>“100% European flax linen”</p></li><li><p class="fact">The Linen Napkins are stonewashed.</p><p class="quote"><span class="field">Description</span>“Stonewashed”</p></li><li><p class="fact">Each Linen Napkin measures 45 × 45 cm.</p><p class="quote"><span class="field">Description</span>“Each napkin 45 × 45 cm.”</p></li><li><p class="fact">The Linen Napkins can be machine washed at 40 °C.</p><p class="quote"><span class="field">Description</span>“Machine wash at 40 °C.”</p></li><li><p class="fact">The Linen Napkins set contains four napkins in one colour.</p><p class="quote"><span class="field">Description</span>“Set of four in one colour.”</p></li></ol>
+        </div>
+      </article>
+    </section>
+    <section class="store" id="alomvilag">
+      <header class="store-head">
+        <div>
+          <p class="label">Hungarian · alomvilag.myshopify.com</p>
+          <h2>Álomvilág Ajándék</h2>
+        </div>
+        <span class="count">1 of 5 products usable</span>
+      </header>
+      <p class="state">Thin store: 1 of 5 products have enough facts (the floor is 5). Home will say “We can write about 1 of your 5 products.”</p>
+      <div class="profile"><div><p class="label">Drafted profile · what they sell</p><p>Az Álomvilág Ajándék lakásdekorációs és otthoni textiltermékeket árul: gyertyát, párnát, takarót és fényfüzért, többségüket az Álomvilág saját forgalmazásában. Asztalterítéshez is kínál terméket: 4 darabos lenvászon szalvétacsomagot, 100% mosott lenből, 45 × 45 cm-es darabokkal, amelyek 40 °C-on gépben moshatók.</p></div><div><p class="label">Who buys it</p><p>Azoknak szól, akik az otthonukat szeretnék díszíteni vagy kényelmesebbé tenni, illetve ajándékot keresnek ilyen jellegű tárgyakból.</p></div><div><p class="label">Tone</p><p>friendly</p></div></div>
+      
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Harmónia gyertya</h3>
+          <div class="kv"><span>Type</span>Gyertya</div><div class="kv"><span>Vendor</span>Álomvilág</div><div class="kv"><span>Tags</span>sláger</div>
+          <div class="desc">Varázsold otthonodat a nyugalom szigetévé! A Harmónia gyertya több mint egy gyertya: életérzés. Mert megérdemled.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill thin">Needs a fuller description · 1 fact</span>
+          </div>
+          <ol class="facts"><li><p class="fact">A Harmónia gyertyát az Álomvilág forgalmazza.</p><p class="quote"><span class="field">Vendor</span>“Álomvilág”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Csillám párna</h3>
+          <div class="kv"><span>Type</span>Párna</div><div class="kv"><span>Vendor</span>Álomvilág</div>
+          <div class="desc">Egyszerűen imádni fogod! A tökéletes ajándék azoknak, akiket a legjobban szeretsz.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill thin">Needs a fuller description · 1 fact</span>
+          </div>
+          <ol class="facts"><li><p class="fact">A Csillám párna gyártója vagy forgalmazója az Álomvilág.</p><p class="quote"><span class="field">Vendor</span>“Álomvilág”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Álmok takaró</h3>
+          <div class="kv"><span>Type</span>Takaró</div><div class="kv"><span>Vendor</span>Álomvilág</div>
+          <div class="desc">Időtlen elegancia. Felejthetetlen pillanatok. Ezt kerested eddig.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill thin">Needs a fuller description · 2 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">Az Álmok takaró egy takaró.</p><p class="quote"><span class="field">Product type</span>“Takaró”</p></li><li><p class="fact">Az Álmok takaró gyártója vagy forgalmazója az Álomvilág.</p><p class="quote"><span class="field">Vendor</span>“Álomvilág”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Varázs fényfüzér</h3>
+          <div class="kv"><span>Type</span>Dekoráció</div><div class="kv"><span>Vendor</span>Álomvilág</div>
+          <div class="desc">Csillogás minden szobába! Az ünnepek elengedhetetlen kelléke.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill thin">Needs a fuller description · 2 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">A Varázs fényfüzér az Álomvilág terméke.</p><p class="quote"><span class="field">Vendor</span>“Álomvilág”</p></li><li><p class="fact">A Varázs fényfüzér dekoráció.</p><p class="quote"><span class="field">Product type</span>“Dekoráció”</p></li></ol>
+        </div>
+      </article>
+      <article class="product">
+        <div class="side src">
+          <p class="label">What the merchant wrote</p>
+          <h3>Lenvászon szalvéta, 4 db</h3>
+          <div class="kv"><span>Type</span>Asztalterítés</div><div class="kv"><span>Vendor</span>Álomvilág</div>
+          <div class="desc">100% mosott len, darabonként 45 × 45 cm. 40 °C-on gépben mosható. Négy darab egy színben.<br>Az ünnepi asztal koronája.</div>
+        </div>
+        <div class="side out">
+          <div class="out-head">
+            <p class="label">Fact sheet</p>
+            <span class="pill ok">Can write about it · 6 facts</span>
+          </div>
+          <ol class="facts"><li><p class="fact">A Lenvászon szalvéta csomag 4 darabot tartalmaz.</p><p class="quote"><span class="field">Title</span>“Lenvászon szalvéta, 4 db”</p></li><li><p class="fact">A Lenvászon szalvéta anyaga 100% mosott len.</p><p class="quote"><span class="field">Description</span>“100% mosott len”</p></li><li><p class="fact">A Lenvászon szalvéta mérete darabonként 45 × 45 cm.</p><p class="quote"><span class="field">Description</span>“darabonként 45 × 45 cm”</p></li><li><p class="fact">A Lenvászon szalvéta 40 °C-on gépben mosható.</p><p class="quote"><span class="field">Description</span>“40 °C-on gépben mosható”</p></li><li><p class="fact">A Lenvászon szalvéta csomagban a négy darab egy színben van.</p><p class="quote"><span class="field">Description</span>“Négy darab egy színben.”</p></li><li><p class="fact">A Lenvászon szalvéta terméktípusa asztalterítés.</p><p class="quote"><span class="field">Product type</span>“Asztalterítés”</p></li></ol>
+        </div>
+      </article>
+    </section>
+    <section class="store" id="blank-slate">
+      <header class="store-head">
+        <div>
+          <p class="label">English · blank-slate.myshopify.com</p>
+          <h2>Blank Slate Goods</h2>
+        </div>
+        <span class="count">0 of 0 products usable</span>
+      </header>
+      <p class="state">The store has no products. Setup stops at “Add products to your store first” and nothing is spent.</p>
+      
+      
+    </section>
+    <section class="store" id="ures-polc">
+      <header class="store-head">
+        <div>
+          <p class="label">Hungarian · ures-polc.myshopify.com</p>
+          <h2>Üres Polc</h2>
+        </div>
+        <span class="count">0 of 0 products usable</span>
+      </header>
+      <p class="state">The store has no products. Setup stops at “Add products to your store first” and nothing is spent.</p>
+      
+      
+    </section>
+</div>

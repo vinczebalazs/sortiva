@@ -1,4 +1,5 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData, type LoaderFunctionArgs } from 'react-router'
+import { optionalEnv } from '../config/env.ts'
 import tokens from './ui/tokens.css?url'
 
 export const links = () => [
@@ -10,7 +11,7 @@ export const links = () => [
 
 export const loader = ({ request }: LoaderFunctionArgs) => {
   const embedded = new URL(request.url).pathname.startsWith('/app')
-  return { embedded, apiKey: embedded ? (process.env.SHOPIFY_CLIENT_ID ?? '') : '' }
+  return { embedded, apiKey: embedded ? (optionalEnv('SHOPIFY_CLIENT_ID') ?? '') : '' }
 }
 
 export default function Root() {
