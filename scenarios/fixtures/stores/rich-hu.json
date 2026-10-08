@@ -1,0 +1,162 @@
+{
+  "shop": {
+    "name": "Bükki Füvesház",
+    "myshopifyDomain": "bukki-fuveshaz.myshopify.com",
+    "primaryDomainHost": "bukkifuveshaz.hu",
+    "defaultLocale": "hu",
+    "country": "HU",
+    "ianaTimezone": "Europe/Budapest",
+    "currencyCode": "HUF"
+  },
+  "collections": [
+    { "handle": "gyogyteak", "title": "Gyógyteák" },
+    { "handle": "fekete-es-zold-teak", "title": "Fekete és zöld teák" },
+    { "handle": "teaeszkozok", "title": "Teaeszközök" }
+  ],
+  "pages": [
+    { "handle": "rolunk", "title": "Rólunk", "body": "<p>Családi vállalkozás vagyunk Bükkszentkereszten. A gyógynövényeket magunk gyűjtjük és szárítjuk.</p>" },
+    { "handle": "szallitas", "title": "Szállítás és visszaküldés", "body": "<p>A rendeléseket két munkanapon belül feladjuk.</p>" }
+  ],
+  "blogs": [{ "handle": "hirek", "title": "Hírek", "articles": [] }],
+  "products": [
+    {
+      "handle": "kakukkfu-tea",
+      "title": "Kakukkfű tea, szálas",
+      "productType": "Gyógytea",
+      "vendor": "Bükki Füvesház",
+      "tags": ["gyógytea", "egynövényes"],
+      "descriptionHtml": "<p>Az erdő illata a csészédben!</p><p>Vadon termő mezei kakukkfű (Thymus serpyllum) virágos hajtása, a Bükk déli lejtőiről, kézzel gyűjtve júniusban. Árnyékban szárítva, vágott formában. Egy csészéhez 1 teáskanál (kb. 1,5 g) elegendő, 95 °C-os vízzel, 8–10 perc áztatással. Kiszerelés: 50 g.</p>",
+      "price": { "min": "1890.0" },
+      "images": [
+        { "url": "https://cdn.shopify.com/s/files/1/0602/0002/files/kakukkfu.jpg", "width": 1200, "height": 1200, "altText": "Kakukkfű tea" },
+        { "url": "https://cdn.shopify.com/s/files/1/0602/0002/files/kakukkfu-mezo.jpg", "width": 1920, "height": 1080, "altText": null }
+      ],
+      "collections": ["gyogyteak"]
+    },
+    {
+      "handle": "csalan-tea",
+      "title": "Csalánlevél tea, szálas",
+      "productType": "Gyógytea",
+      "vendor": "Bükki Füvesház",
+      "tags": ["gyógytea", "egynövényes"],
+      "descriptionHtml": "<p>Nagy csalán (Urtica dioica) levele, virágzás előtt, májusban gyűjtve. Vágott, szálas tea. Adagolás: 2 teáskanál 2,5 dl forrásban lévő vízhez, 10 perc áztatás. Kiszerelés: 70 g, visszazárható papírtasakban.</p>",
+      "price": { "min": "1690.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0602/0002/files/csalan.jpg", "width": 1200, "height": 1200, "altText": "Csalánlevél tea" }],
+      "collections": ["gyogyteak"]
+    },
+    {
+      "handle": "kamillavirag-tea",
+      "title": "Kamillavirág tea",
+      "productType": "Gyógytea",
+      "vendor": "Bükki Füvesház",
+      "tags": ["gyógytea", "egynövényes"],
+      "descriptionHtml": "<p>Orvosi székfű (Matricaria chamomilla) egész virágzata, a Hortobágy széléről, saját termesztésből. Egész virágfejek, nem tört. 1 evőkanál 2 dl vízhez, 5–7 perc áztatás, fedő alatt. 40 g.</p>",
+      "price": { "min": "1590.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0602/0002/files/kamilla.jpg", "width": 1000, "height": 1250, "altText": "Kamillavirág" }],
+      "collections": ["gyogyteak"]
+    },
+    {
+      "handle": "esti-teakeverek",
+      "title": "Esti teakeverék",
+      "productType": "Teakeverék",
+      "vendor": "Bükki Füvesház",
+      "tags": ["gyógytea", "keverék", "koffeinmentes"],
+      "descriptionHtml": "<p>Összetétel: citromfűlevél 40%, levendulavirág 20%, kamillavirág 25%, komlótoboz 15%. Koffeinmentes. 1 teáskanál 2 dl 90 °C-os vízhez, 7 perc. 60 g.</p><p>A tökéletes nap tökéletes lezárása.</p>",
+      "price": { "min": "2190.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0602/0002/files/esti.jpg", "width": 1200, "height": 900, "altText": "Esti teakeverék" }],
+      "collections": ["gyogyteak"]
+    },
+    {
+      "handle": "csipkebogyo-tea",
+      "title": "Csipkebogyó tea, magozott",
+      "productType": "Gyümölcstea",
+      "vendor": "Bükki Füvesház",
+      "tags": ["gyümölcstea"],
+      "descriptionHtml": "<p>Gyepűrózsa (Rosa canina) magozott, szárított termése, októberi gyűjtés. Darabolt. A kiadós ízhez 1 evőkanálnyit 3 dl hideg vízben fel kell forralni, majd 10 percig lassú tűzön főzni. 100 g.</p>",
+      "price": { "min": "2290.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0602/0002/files/csipkebogyo.jpg", "width": 1200, "height": 1200, "altText": "Csipkebogyó" }],
+      "collections": ["gyogyteak"]
+    },
+    {
+      "handle": "assam-fekete-tea",
+      "title": "Assam fekete tea, TGFOP",
+      "productType": "Fekete tea",
+      "vendor": "Bükki Füvesház",
+      "tags": ["fekete tea", "koffeines"],
+      "descriptionHtml": "<p>Második szüretelésű (second flush) Assam, Indiából, a Halmari ültetvényről. TGFOP minősítés, aranyszínű levélhegyekkel. Malátás, erőteljes íz, tejjel is iható. 1 teáskanál 2,5 dl 95 °C-os vízhez, 3–4 perc. 100 g.</p>",
+      "price": { "min": "3490.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0602/0002/files/assam.jpg", "width": 1500, "height": 1000, "altText": "Assam fekete tea" }],
+      "collections": ["fekete-es-zold-teak"]
+    },
+    {
+      "handle": "sencha-zold-tea",
+      "title": "Sencha zöld tea",
+      "productType": "Zöld tea",
+      "vendor": "Bükki Füvesház",
+      "tags": ["zöld tea", "koffeines"],
+      "descriptionHtml": "<p>Japán sencha Shizuoka prefektúrából, első tavaszi szüret. Gőzölt, sodort levél. 70–80 °C-os vízzel, 1–2 perc áztatással; a levél háromszor is felönthető. 80 g.</p>",
+      "price": { "min": "3990.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0602/0002/files/sencha.jpg", "width": 1200, "height": 1200, "altText": "Sencha" }],
+      "collections": ["fekete-es-zold-teak"]
+    },
+    {
+      "handle": "ontottvas-teaskanna",
+      "title": "Öntöttvas teáskanna 0,8 l",
+      "productType": "Teáskanna",
+      "vendor": "Bükki Füvesház",
+      "tags": ["teaeszköz"],
+      "descriptionHtml": "<p>Belül zománcozott öntöttvas kanna, rozsdamentes acél szűrőbetéttel. Űrtartalom 0,8 liter (kb. 3 csésze). Nem tűzhelyre való: csak forró víz töltésére. Kézzel mosandó, mosogatószer nélkül. Tömeg 1,3 kg.</p>",
+      "options": [{ "name": "Szín", "values": ["Fekete", "Mélyzöld"] }],
+      "price": { "min": "12900.0" },
+      "images": [
+        { "url": "https://cdn.shopify.com/s/files/1/0602/0002/files/ontottvas.jpg", "width": 1600, "height": 1200, "altText": "Öntöttvas teáskanna" },
+        { "url": "https://cdn.shopify.com/s/files/1/0602/0002/files/ontottvas-felul.jpg", "width": 1000, "height": 1000, "altText": "Öntöttvas teáskanna felülről" }
+      ],
+      "collections": ["teaeszkozok"]
+    },
+    {
+      "handle": "uveg-teaskanna",
+      "title": "Hőálló üveg teáskanna 1 l",
+      "productType": "Teáskanna",
+      "vendor": "Bükki Füvesház",
+      "tags": ["teaeszköz"],
+      "descriptionHtml": "<p>Boroszilikát üvegből, kivehető üveg szűrőhengerrel. Űrtartalom 1 liter. Gáz- és elektromos főzőlapon is melegíthető, mikrohullámú sütőbe tehető. Mosogatógépben mosható.</p>",
+      "price": { "min": "7490.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0602/0002/files/uvegkanna.jpg", "width": 1000, "height": 1300, "altText": "Üveg teáskanna" }],
+      "collections": ["teaeszkozok"]
+    },
+    {
+      "handle": "teaszuro-rozsdamentes",
+      "title": "Rozsdamentes teaszűrő bögrébe",
+      "productType": "Teaszűrő",
+      "vendor": "Bükki Füvesház",
+      "tags": ["teaeszköz"],
+      "descriptionHtml": "<p>Finom lyukbőségű (0,3 mm) rozsdamentes acél háló, két füllel, 7–9 cm átmérőjű bögrékhez. Fedővel, amely tálcaként is használható. Mosogatógépben mosható.</p>",
+      "price": { "min": "2490.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0602/0002/files/szuro.jpg", "width": 1200, "height": 800, "altText": "Teaszűrő" }],
+      "collections": ["teaeszkozok"]
+    },
+    {
+      "handle": "borsmenta-tea",
+      "title": "Borsmentalevél tea",
+      "productType": "Gyógytea",
+      "vendor": "Bükki Füvesház",
+      "tags": ["gyógytea", "egynövényes"],
+      "descriptionHtml": "<p>Borsosmenta (Mentha × piperita) levele, saját kertből, júliusi vágás. Hidegen áztatva is jó: 2 teáskanál 5 dl hideg vízben 4 órán át a hűtőben. Forrón: 1 teáskanál 2 dl vízhez, 5 perc. 50 g.</p>",
+      "price": { "min": "1790.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0602/0002/files/borsmenta.jpg", "width": 1200, "height": 1200, "altText": "Borsmenta" }],
+      "collections": ["gyogyteak"]
+    },
+    {
+      "handle": "teagyujto-doboz",
+      "title": "Fém teatartó doboz",
+      "productType": "Tárolás",
+      "vendor": "Bükki Füvesház",
+      "tags": ["teaeszköz", "tárolás"],
+      "descriptionHtml": "<p>Fényzáró ónozott acéldoboz dupla fedővel, amely légmentesen zár. 100 g szálas tea fér bele. Magasság 12 cm, átmérő 8 cm.</p>",
+      "price": { "min": "2990.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0602/0002/files/doboz.jpg", "width": 900, "height": 1200, "altText": "Teatartó doboz" }],
+      "collections": ["teaeszkozok"]
+    }
+  ]
+}

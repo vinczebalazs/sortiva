@@ -1,0 +1,29 @@
+{
+  "shop": { "name": "Pedálbolt", "myshopifyDomain": "pedalbolt.myshopify.com", "primaryDomainHost": "pedalbolt.hu", "defaultLocale": "hu", "country": "HU", "ianaTimezone": "Europe/Budapest", "currencyCode": "HUF" },
+  "collections": [{ "handle": "lampak", "title": "Kerékpárlámpák" }, { "handle": "zarak", "title": "Zárak" }],
+  "pages": [{ "handle": "kresz-kerekpar", "title": "Mi kötelező a kerékpáron?", "body": "<p>Lakott területen kívül és éjszaka első fehér és hátsó piros lámpa kötelező.</p>" }],
+  "blogs": [{ "handle": "tippek", "title": "Tippek", "articles": [
+    { "handle": "hogyan-valassz-kerekparlampat", "title": "Hogyan válassz kerékpárlámpát?", "body": "<p>Városba 200 lumen elég, földútra legalább 800 lumen kell.</p>" },
+    { "handle": "u-lakat-vagy-lancos-zar", "title": "U-lakat vagy láncos zár: melyik a biztonságosabb?", "body": "<p>Az edzett acél U-lakat nehezebben vágható, a lánc rugalmasabban rögzíthető.</p>" }
+  ] }],
+  "products": [
+    { "handle": "elso-lampa-400", "title": "Első lámpa, 400 lumen", "productType": "Lámpa", "vendor": "Pedálbolt", "tags": ["lámpa"],
+      "descriptionHtml": "<p>400 lumen fényerő, 5 üzemmód. USB-C töltés, 1500 mAh akkumulátor: 2,5 óra teljes fényen, 20 óra villogó módban. IPX5 vízállóság. Kormányra szerszám nélkül felszerelhető, 22–32 mm-es csőre.</p>",
+      "price": { "min": "8990.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0606/0006/files/elso.jpg", "width": 1200, "height": 1200, "altText": "Első lámpa" }], "collections": ["lampak"] },
+    { "handle": "hatso-lampa-radar", "title": "Hátsó lámpa fékfény-érzékelővel", "productType": "Lámpa", "vendor": "Pedálbolt", "tags": ["lámpa"],
+      "descriptionHtml": "<p>Gyorsulásmérő érzékeli a lassítást, ilyenkor erősebben világít. 60 lumen. USB-C töltés, akár 12 óra üzemidő. Nyeregcsőre és csomagtartóra is rögzíthető.</p>",
+      "price": { "min": "11990.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0606/0006/files/hatso.jpg", "width": 900, "height": 1200, "altText": "Hátsó lámpa" }], "collections": ["lampak"] },
+    { "handle": "u-lakat-16mm", "title": "U-lakat, 16 mm edzett acél", "productType": "Zár", "vendor": "Pedálbolt", "tags": ["zár"],
+      "descriptionHtml": "<p>16 mm átmérőjű edzett acél kengyel, kettős zárnyelv. Belső méret 10 × 23 cm. Tömeg 1,2 kg. Két kulccsal és vázra szerelhető tartóval.</p>",
+      "price": { "min": "15990.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0606/0006/files/ulakat.jpg", "width": 1200, "height": 1200, "altText": "U-lakat" }], "collections": ["zarak"] },
+    { "handle": "lancos-zar-110", "title": "Láncos zár, 110 cm", "productType": "Zár", "vendor": "Pedálbolt", "tags": ["zár"],
+      "descriptionHtml": "<p>8 mm-es edzett acél láncszemek textilborításban, 110 cm hosszú. Számzáras, 4 jegyű kód. Tömeg 1,6 kg.</p>",
+      "price": { "min": "9990.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0606/0006/files/lanc.jpg", "width": 1600, "height": 900, "altText": "Láncos zár" }], "collections": ["zarak"] },
+    { "handle": "csengo-sargarez", "title": "Sárgaréz csengő", "productType": "Csengő", "vendor": "Pedálbolt", "tags": ["kiegészítő"],
+      "descriptionHtml": "<p>Tömör sárgaréz harang, 55 mm átmérő, hosszan zengő hang. 22,2 mm-es kormányra, csavarhúzóval szerelhető.</p>",
+      "price": { "min": "4490.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0606/0006/files/csengo.jpg", "width": 1000, "height": 1000, "altText": "Csengő" }], "collections": [] },
+    { "handle": "lampa-szett", "title": "Lámpaszett: első 400 + hátsó 60 lumen", "productType": "Lámpa", "vendor": "Pedálbolt", "tags": ["lámpa", "szett"],
+      "descriptionHtml": "<p>Az első 400 lumenes és a hátsó fékfény-érzékelős lámpa együtt, egy USB-C kettős töltőkábellel.</p>",
+      "price": { "min": "18990.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0606/0006/files/szett.jpg", "width": 1500, "height": 1000, "altText": "Lámpaszett" }], "collections": ["lampak"] }
+  ]
+}

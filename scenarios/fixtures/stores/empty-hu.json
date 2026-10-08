@@ -1,0 +1,4 @@
+{
+  "shop": { "name": "Üres Polc", "myshopifyDomain": "ures-polc.myshopify.com", "primaryDomainHost": "ures-polc.myshopify.com", "defaultLocale": "hu", "country": "HU", "ianaTimezone": "Europe/Budapest", "currencyCode": "HUF" },
+  "products": []
+}

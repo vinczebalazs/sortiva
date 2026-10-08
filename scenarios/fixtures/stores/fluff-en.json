@@ -1,0 +1,23 @@
+{
+  "shop": { "name": "Lumière Living", "myshopifyDomain": "lumiere-living.myshopify.com", "primaryDomainHost": "lumiereliving.com", "defaultLocale": "en", "country": "US", "ianaTimezone": "America/Los_Angeles", "currencyCode": "USD" },
+  "collections": [{ "handle": "all", "title": "Everything" }],
+  "blogs": [{ "handle": "news", "title": "News", "articles": [] }],
+  "products": [
+    { "handle": "serenity-throw", "title": "Serenity Throw", "productType": "Throw", "vendor": "Lumière", "tags": ["bestseller"],
+      "descriptionHtml": "<p>Wrap yourself in pure luxury. The Serenity Throw is more than a blanket — it's a feeling. Designed to transform any space into a sanctuary of calm. You deserve this.</p>",
+      "price": { "min": "120.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0607/0007/files/throw.jpg", "width": 1200, "height": 1200, "altText": null }], "collections": ["all"] },
+    { "handle": "glow-diffuser", "title": "Glow Diffuser", "productType": "Diffuser", "vendor": "Lumière", "tags": [],
+      "descriptionHtml": "<p>Elevate your everyday. Our iconic Glow Diffuser brings radiance to every room. Loved by thousands. The perfect gift for the people who matter most!</p>",
+      "price": { "min": "65.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0607/0007/files/diffuser.jpg", "width": 1000, "height": 1000, "altText": null }], "collections": ["all"] },
+    { "handle": "harmony-vase", "title": "Harmony Vase", "productType": "Vase", "vendor": "Lumière", "tags": [],
+      "descriptionHtml": "<p>Timeless. Effortless. Unforgettable. The Harmony Vase is the finishing touch your home has been waiting for.</p>",
+      "price": { "min": "48.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0607/0007/files/vase.jpg", "width": 900, "height": 1350, "altText": null }], "collections": ["all"] },
+    { "handle": "bliss-cushion", "title": "Bliss Cushion", "productType": "Cushion", "vendor": "Lumière", "tags": [],
+      "descriptionHtml": "<p>Sink into bliss. Once you try it, you'll never go back.</p>",
+      "price": { "min": "55.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0607/0007/files/cushion.jpg", "width": 1200, "height": 1200, "altText": null }], "collections": ["all"] },
+    { "handle": "linen-napkins-set", "title": "Linen Napkins, set of 4", "productType": "Table linen", "vendor": "Lumière", "tags": [],
+      "descriptionHtml": "<p>Stonewashed 100% European flax linen. Each napkin 45 × 45 cm. Machine wash at 40 °C. Set of four in one colour.</p><p>Dinner parties, reimagined.</p>",
+      "options": [{ "name": "Colour", "values": ["Oat", "Sage", "Charcoal"] }], "price": { "min": "42.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0607/0007/files/napkins.jpg", "width": 1500, "height": 1000, "altText": "Linen napkins" }], "collections": ["all"] }
+  ]
+}

@@ -1,0 +1,4 @@
+{
+  "shop": { "name": "Blank Slate Goods", "myshopifyDomain": "blank-slate.myshopify.com", "primaryDomainHost": "blank-slate.myshopify.com", "defaultLocale": "en", "country": "US", "ianaTimezone": "America/Denver", "currencyCode": "USD" },
+  "products": []
+}

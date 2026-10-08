@@ -1,0 +1,32 @@
+{
+  "shop": { "name": "Northpaw Dog Supply", "myshopifyDomain": "northpaw-dogs.myshopify.com", "primaryDomainHost": "northpaw.co", "defaultLocale": "en", "country": "US", "ianaTimezone": "America/Chicago", "currencyCode": "USD" },
+  "collections": [{ "handle": "walking", "title": "Walking gear" }, { "handle": "sleeping", "title": "Beds and blankets" }],
+  "pages": [{ "handle": "harness-size-guide", "title": "Harness size guide", "body": "<p>Measure the widest part of your dog's chest, just behind the front legs.</p>" }],
+  "blogs": [{ "handle": "guides", "title": "Guides", "articles": [
+    { "handle": "how-to-choose-a-dog-harness", "title": "How to choose a dog harness", "body": "<p>Front-clip harnesses reduce pulling; back-clip harnesses suit calm walkers. Measure the chest girth before you buy.</p>" },
+    { "handle": "dog-leash-length-guide", "title": "Dog leash length guide: 4 ft, 6 ft or long line?", "body": "<p>A 6 ft leash is the standard for city walking. Long lines are for recall training in open spaces.</p>" },
+    { "handle": "orthopedic-dog-beds-explained", "title": "Orthopedic dog beds explained", "body": "<p>Memory foam supports older dogs' joints. Look for at least 3 inches of foam.</p>" }
+  ] }],
+  "products": [
+    { "handle": "front-clip-harness", "title": "Front-Clip No-Pull Harness", "productType": "Harness", "vendor": "Northpaw", "tags": ["walking"],
+      "descriptionHtml": "<p>Leash ring on the chest turns the dog sideways when it pulls. Four adjustment points. Padded neoprene chest plate. Reflective stitching. Sizes XS to XL, chest girth 13–42 in.</p>",
+      "options": [{ "name": "Size", "values": ["XS", "S", "M", "L", "XL"] }], "price": { "min": "32.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0605/0005/files/harness.jpg", "width": 1200, "height": 1200, "altText": "Harness" }], "collections": ["walking"] },
+    { "handle": "biothane-leash-6ft", "title": "Biothane Leash, 6 ft", "productType": "Leash", "vendor": "Northpaw", "tags": ["walking"],
+      "descriptionHtml": "<p>Coated webbing that does not absorb water or smell. 6 ft long, 5/8 in wide. Brass snap hook. Wipe clean. Breaking strength 600 lb.</p>",
+      "price": { "min": "28.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0605/0005/files/leash.jpg", "width": 1600, "height": 900, "altText": "Leash" }], "collections": ["walking"] },
+    { "handle": "long-line-30ft", "title": "Training Long Line, 30 ft", "productType": "Leash", "vendor": "Northpaw", "tags": ["walking", "training"],
+      "descriptionHtml": "<p>30 ft of lightweight biothane for recall practice. No handle loop, so it does not snag. Floats in water. Stainless steel swivel clip.</p>",
+      "price": { "min": "36.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0605/0005/files/longline.jpg", "width": 1200, "height": 800, "altText": "Long line" }], "collections": ["walking"] },
+    { "handle": "memory-foam-dog-bed", "title": "Memory Foam Dog Bed", "productType": "Bed", "vendor": "Northpaw", "tags": ["sleeping"],
+      "descriptionHtml": "<p>4 in of memory foam on a 1 in support base. Removable cover, machine washable at 40 °C. Water-resistant liner. Non-slip bottom. Sizes M (30 × 20 in) and L (40 × 28 in).</p>",
+      "options": [{ "name": "Size", "values": ["M", "L"] }], "price": { "min": "89.0", "max": "129.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0605/0005/files/bed.jpg", "width": 1500, "height": 1000, "altText": "Dog bed" }], "collections": ["sleeping"] },
+    { "handle": "fleece-dog-blanket", "title": "Fleece Dog Blanket", "productType": "Blanket", "vendor": "Northpaw", "tags": ["sleeping"],
+      "descriptionHtml": "<p>Double-layer polar fleece, 40 × 30 in. Machine washable, tumble dry low. Fits in the car boot or on the sofa.</p>",
+      "price": { "min": "24.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0605/0005/files/blanket.jpg", "width": 1200, "height": 1200, "altText": "Blanket" }], "collections": ["sleeping"] },
+    { "handle": "led-collar-light", "title": "Rechargeable LED Collar Light", "productType": "Light", "vendor": "Northpaw", "tags": ["walking", "night"],
+      "descriptionHtml": "<p>Clips onto any collar or harness. Three modes: steady, slow flash, fast flash. Visible from about 1,000 ft. USB-C charging, 6 hours on steady. Rated IPX7 waterproof.</p>",
+      "price": { "min": "16.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0605/0005/files/light.jpg", "width": 1000, "height": 1000, "altText": "Collar light" }], "collections": ["walking"] }
+  ]
+}

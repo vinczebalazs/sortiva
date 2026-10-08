@@ -1,0 +1,22 @@
+{
+  "shop": { "name": "Álomvilág Ajándék", "myshopifyDomain": "alomvilag.myshopify.com", "primaryDomainHost": "alomvilag.hu", "defaultLocale": "hu", "country": "HU", "ianaTimezone": "Europe/Budapest", "currencyCode": "HUF" },
+  "collections": [{ "handle": "minden", "title": "Minden" }],
+  "blogs": [{ "handle": "hirek", "title": "Hírek", "articles": [] }],
+  "products": [
+    { "handle": "harmonia-gyertya", "title": "Harmónia gyertya", "productType": "Gyertya", "vendor": "Álomvilág", "tags": ["sláger"],
+      "descriptionHtml": "<p>Varázsold otthonodat a nyugalom szigetévé! A Harmónia gyertya több mint egy gyertya: életérzés. Mert megérdemled.</p>",
+      "price": { "min": "6990.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0608/0008/files/gyertya.jpg", "width": 1200, "height": 1200, "altText": null }], "collections": ["minden"] },
+    { "handle": "csillam-parna", "title": "Csillám párna", "productType": "Párna", "vendor": "Álomvilág", "tags": [],
+      "descriptionHtml": "<p>Egyszerűen imádni fogod! A tökéletes ajándék azoknak, akiket a legjobban szeretsz.</p>",
+      "price": { "min": "8990.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0608/0008/files/parna.jpg", "width": 1000, "height": 1000, "altText": null }], "collections": ["minden"] },
+    { "handle": "almok-takaro", "title": "Álmok takaró", "productType": "Takaró", "vendor": "Álomvilág", "tags": [],
+      "descriptionHtml": "<p>Időtlen elegancia. Felejthetetlen pillanatok. Ezt kerested eddig.</p>",
+      "price": { "min": "14990.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0608/0008/files/takaro.jpg", "width": 1200, "height": 900, "altText": null }], "collections": ["minden"] },
+    { "handle": "fenyfuzer", "title": "Varázs fényfüzér", "productType": "Dekoráció", "vendor": "Álomvilág", "tags": [],
+      "descriptionHtml": "<p>Csillogás minden szobába! Az ünnepek elengedhetetlen kelléke.</p>",
+      "price": { "min": "4990.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0608/0008/files/fuzer.jpg", "width": 1600, "height": 900, "altText": null }], "collections": ["minden"] },
+    { "handle": "lenvaszon-szalveta", "title": "Lenvászon szalvéta, 4 db", "productType": "Asztalterítés", "vendor": "Álomvilág", "tags": [],
+      "descriptionHtml": "<p>100% mosott len, darabonként 45 × 45 cm. 40 °C-on gépben mosható. Négy darab egy színben.</p><p>Az ünnepi asztal koronája.</p>",
+      "price": { "min": "9990.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0608/0008/files/szalveta.jpg", "width": 1500, "height": 1000, "altText": "Lenvászon szalvéta" }], "collections": ["minden"] }
+  ]
+}

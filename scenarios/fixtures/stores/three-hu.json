@@ -1,0 +1,16 @@
+{
+  "shop": { "name": "Mézeskert Méhészet", "myshopifyDomain": "mezeskert.myshopify.com", "primaryDomainHost": "mezeskert.hu", "defaultLocale": "hu", "country": "HU", "ianaTimezone": "Europe/Budapest", "currencyCode": "HUF" },
+  "collections": [{ "handle": "mezek", "title": "Mézek" }],
+  "blogs": [{ "handle": "hirek", "title": "Hírek", "articles": [] }],
+  "products": [
+    { "handle": "akacmez-500g", "title": "Akácméz 500 g", "productType": "Méz", "vendor": "Mézeskert", "tags": ["fajtaméz"],
+      "descriptionHtml": "<p>Fajtaméz a Nyírségből, 2026. májusi pergetés. Hőkezeletlen, szűrt. Világos, vízszerű szín; magas fruktóztartalma miatt sokáig folyékony marad. 500 g üvegben, fém tetővel.</p>",
+      "price": { "min": "3200.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0604/0004/files/akac.jpg", "width": 1200, "height": 1200, "altText": "Akácméz" }], "collections": ["mezek"] },
+    { "handle": "hársméz-500g", "title": "Hársméz 500 g", "productType": "Méz", "vendor": "Mézeskert", "tags": ["fajtaméz"],
+      "descriptionHtml": "<p>Hársvirágzáskor, júniusban pergetett méz a Bakonyból. Hőkezeletlen. Enyhén mentolos, kesernyés utóíz. Néhány hónap alatt finom szemcsésre kristályosodik; 40 °C alatti vízfürdőben újra folyékony lesz. 500 g.</p>",
+      "price": { "min": "3400.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0604/0004/files/hars.jpg", "width": 1000, "height": 1300, "altText": "Hársméz" }], "collections": ["mezek"] },
+    { "handle": "krem-mez-levendulas", "title": "Krémméz levendulával, 250 g", "productType": "Krémméz", "vendor": "Mézeskert", "tags": ["krémméz"],
+      "descriptionHtml": "<p>Vegyes virágméz, irányított kristályosítással kenhető krémmé keverve, 2% szárított tihanyi levendulavirággal. 250 g. Szobahőmérsékleten tárolandó, napfénytől védve.</p>",
+      "price": { "min": "2600.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0604/0004/files/kremmez.jpg", "width": 1200, "height": 900, "altText": "Levendulás krémméz" }], "collections": ["mezek"] }
+  ]
+}

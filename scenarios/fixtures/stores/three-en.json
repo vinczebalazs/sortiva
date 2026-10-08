@@ -1,0 +1,16 @@
+{
+  "shop": { "name": "Tidewell Candles", "myshopifyDomain": "tidewell-candles.myshopify.com", "primaryDomainHost": "tidewellcandles.com", "defaultLocale": "en", "country": "US", "ianaTimezone": "America/New_York", "currencyCode": "USD" },
+  "collections": [{ "handle": "candles", "title": "Candles" }],
+  "blogs": [{ "handle": "news", "title": "News", "articles": [] }],
+  "products": [
+    { "handle": "sea-salt-soy-candle", "title": "Sea Salt Soy Candle, 8 oz", "productType": "Candle", "vendor": "Tidewell", "tags": ["soy"],
+      "descriptionHtml": "<p>100% soy wax, poured by hand in Portland, Maine. Cotton wick, lead-free. Burn time about 45 hours. 8 oz amber glass jar with a tin lid. Scent notes: sea salt, driftwood, sage.</p>",
+      "price": { "min": "24.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0603/0003/files/sea-salt.jpg", "width": 1200, "height": 1200, "altText": "Sea Salt candle" }], "collections": ["candles"] },
+    { "handle": "cedar-wood-wick-candle", "title": "Cedar Wood-Wick Candle, 12 oz", "productType": "Candle", "vendor": "Tidewell", "tags": ["soy", "wood wick"],
+      "descriptionHtml": "<p>Coconut and soy wax blend with a cherry-wood wick that crackles as it burns. Burn time about 60 hours. 12 oz ceramic vessel, reusable. Trim the wick to 3 mm before each burn. Scent notes: cedar, black pepper, vetiver.</p>",
+      "price": { "min": "38.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0603/0003/files/cedar.jpg", "width": 1000, "height": 1250, "altText": "Cedar candle" }], "collections": ["candles"] },
+    { "handle": "beeswax-taper-pair", "title": "Beeswax Taper Candles, pair", "productType": "Taper", "vendor": "Tidewell", "tags": ["beeswax"],
+      "descriptionHtml": "<p>Two 10-inch tapers of pure beeswax from Maine apiaries, unscented. Standard 7/8-inch base fits most candlesticks. Each burns about 8 hours, dripless when kept away from drafts.</p>",
+      "price": { "min": "18.0" }, "images": [{ "url": "https://cdn.shopify.com/s/files/1/0603/0003/files/tapers.jpg", "width": 800, "height": 1200, "altText": "Beeswax tapers" }], "collections": ["candles"] }
+  ]
+}

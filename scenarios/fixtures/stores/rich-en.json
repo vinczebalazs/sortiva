@@ -1,0 +1,167 @@
+{
+  "shop": {
+    "name": "Fernhill Coffee Supply",
+    "myshopifyDomain": "fernhill-coffee.myshopify.com",
+    "primaryDomainHost": "fernhillcoffee.co.uk",
+    "defaultLocale": "en",
+    "country": "GB",
+    "ianaTimezone": "Europe/London",
+    "currencyCode": "GBP"
+  },
+  "collections": [
+    { "handle": "pour-over", "title": "Pour-over brewing", "descriptionHtml": "<p>Drippers, filters and kettles for manual brewing.</p>" },
+    { "handle": "grinders", "title": "Grinders" },
+    { "handle": "beans", "title": "Coffee beans" },
+    { "handle": "immersion", "title": "Immersion brewers" }
+  ],
+  "pages": [
+    { "handle": "about", "title": "About Fernhill", "body": "<p>We are a small roastery and brewing-gear shop in Bristol. We roast twice a week.</p>" },
+    { "handle": "shipping", "title": "Shipping and returns", "body": "<p>UK orders ship within two working days.</p>" }
+  ],
+  "blogs": [{ "handle": "journal", "title": "Journal", "articles": [] }],
+  "products": [
+    {
+      "handle": "ceramic-cone-dripper-02",
+      "title": "Ceramic Cone Dripper, size 02",
+      "productType": "Dripper",
+      "vendor": "Fernhill",
+      "tags": ["pour-over", "ceramic"],
+      "descriptionHtml": "<p>Elevate your mornings with our most-loved dripper!</p><p>Made from glazed porcelain fired in Arita, Japan. Fits size 02 cone filters and brews 1 to 4 cups. Single large outlet hole; spiral ribs on the inner wall leave room for air to escape. Weight 380 g. Dishwasher safe.</p>",
+      "options": [{ "name": "Colour", "values": ["White", "Matte black"] }],
+      "price": { "min": "28.0" },
+      "images": [
+        { "url": "https://cdn.shopify.com/s/files/1/0601/0001/files/cone-dripper-white.jpg", "width": 1200, "height": 1200, "altText": "White ceramic cone dripper" },
+        { "url": "https://cdn.shopify.com/s/files/1/0601/0001/files/cone-dripper-lifestyle.jpg", "width": 1600, "height": 900, "altText": null }
+      ],
+      "collections": ["pour-over"],
+      "metafields": [{ "namespace": "custom", "key": "material", "type": "single_line_text_field", "value": "Porcelain" }]
+    },
+    {
+      "handle": "flat-bottom-dripper-steel",
+      "title": "Flat-Bottom Dripper, stainless steel",
+      "productType": "Dripper",
+      "vendor": "Fernhill",
+      "tags": ["pour-over", "steel"],
+      "descriptionHtml": "<p>Brushed 18/8 stainless steel body with three small holes in a flat bed, which slows the drawdown and gives an even extraction. Takes 185-size wave filters. Brews 1 to 2 cups (up to 500 ml). Double wall keeps the slurry warmer than a single-wall dripper. 210 g.</p>",
+      "price": { "min": "34.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0601/0001/files/flat-dripper.jpg", "width": 1000, "height": 1250, "altText": "Steel flat-bottom dripper" }],
+      "collections": ["pour-over"]
+    },
+    {
+      "handle": "gooseneck-kettle-900",
+      "title": "Gooseneck Pour-Over Kettle 900 ml",
+      "productType": "Kettle",
+      "vendor": "Fernhill",
+      "tags": ["pour-over", "kettle"],
+      "descriptionHtml": "<p>The kettle baristas reach for.</p><ul><li>Capacity 900 ml, recommended fill 600 ml</li><li>Spout opening 8 mm for a thin, controllable stream</li><li>Built-in thermometer reading 40–100 °C</li><li>Stainless steel, works on gas, electric and induction hobs</li></ul>",
+      "price": { "min": "45.0" },
+      "images": [
+        { "url": "https://cdn.shopify.com/s/files/1/0601/0001/files/kettle-side.jpg", "width": 1600, "height": 1067, "altText": "Gooseneck kettle, side view" },
+        { "url": "https://cdn.shopify.com/s/files/1/0601/0001/files/kettle-top.jpg", "width": 1080, "height": 1080, "altText": "Gooseneck kettle from above" }
+      ],
+      "collections": ["pour-over"]
+    },
+    {
+      "handle": "electric-gooseneck-kettle",
+      "title": "Electric Gooseneck Kettle with Temperature Hold",
+      "productType": "Kettle",
+      "vendor": "Fernhill",
+      "tags": ["pour-over", "kettle", "electric"],
+      "descriptionHtml": "<p>Set the temperature in 1 °C steps from 60 to 100 °C and the base holds it for 60 minutes. 800 ml capacity. 1200 W heating element. UK plug. Base cable 75 cm.</p><p>Perfect for coffee lovers who demand the very best.</p>",
+      "price": { "min": "89.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0601/0001/files/electric-kettle.jpg", "width": 1500, "height": 1000, "altText": "Electric gooseneck kettle on its base" }],
+      "collections": ["pour-over"]
+    },
+    {
+      "handle": "hand-grinder-conical-burr",
+      "title": "Hand Grinder, conical steel burrs",
+      "productType": "Grinder",
+      "vendor": "Fernhill",
+      "tags": ["grinder", "manual"],
+      "descriptionHtml": "<p>38 mm hardened stainless steel conical burrs. External click adjustment with 30 settings, from espresso to French press. Holds 25 g of beans. Aluminium body, 520 g. Grinds a 15 g dose for pour-over in about 40 seconds.</p>",
+      "price": { "min": "79.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0601/0001/files/hand-grinder.jpg", "width": 900, "height": 1350, "altText": "Hand grinder" }],
+      "collections": ["grinders"]
+    },
+    {
+      "handle": "electric-flat-burr-grinder",
+      "title": "Electric Flat-Burr Grinder",
+      "productType": "Grinder",
+      "vendor": "Fernhill",
+      "tags": ["grinder", "electric"],
+      "descriptionHtml": "<p>64 mm flat steel burrs, stepless adjustment. Single-dose design: retention under 0.1 g. 250 W motor at 1,400 rpm. Bellows on top to puff out remaining grounds. Height 38 cm.</p>",
+      "price": { "min": "349.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0601/0001/files/flat-burr.jpg", "width": 1200, "height": 1500, "altText": "Electric flat burr grinder" }],
+      "collections": ["grinders"]
+    },
+    {
+      "handle": "french-press-1l",
+      "title": "French Press 1 litre",
+      "productType": "Immersion brewer",
+      "vendor": "Fernhill",
+      "tags": ["immersion"],
+      "descriptionHtml": "<p>Borosilicate glass beaker in a stainless steel frame. 1 litre, about 4 mugs. Four-layer mesh filter. All parts come apart for cleaning; the beaker is replaceable.</p>",
+      "price": { "min": "32.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0601/0001/files/french-press.jpg", "width": 1000, "height": 1000, "altText": "French press" }],
+      "collections": ["immersion"]
+    },
+    {
+      "handle": "cold-brew-jar",
+      "title": "Cold Brew Jar 1.5 litre",
+      "productType": "Immersion brewer",
+      "vendor": "Fernhill",
+      "tags": ["immersion", "cold brew"],
+      "descriptionHtml": "<p>Glass jar with a fine stainless steel filter basket that holds up to 150 g of coarse ground coffee. Makes 1.5 litres of concentrate. Airtight lid; fits in a fridge door. Recommended steep 12 to 18 hours in the fridge.</p>",
+      "price": { "min": "29.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0601/0001/files/cold-brew.jpg", "width": 800, "height": 1200, "altText": "Cold brew jar" }],
+      "collections": ["immersion"]
+    },
+    {
+      "handle": "ethiopia-guji-natural",
+      "title": "Ethiopia Guji, natural process",
+      "productType": "Coffee beans",
+      "vendor": "Fernhill Roastery",
+      "tags": ["beans", "light roast", "single origin"],
+      "descriptionHtml": "<p>Grown at 1,900–2,100 m in the Guji zone by smallholders delivering to the Hambela washing station. Heirloom varieties. Natural process, dried on raised beds for 21 days. Light roast. Tasting notes: blueberry, dark chocolate, jasmine.</p>",
+      "options": [{ "name": "Size", "values": ["250 g", "1 kg"] }, { "name": "Grind", "values": ["Whole bean", "Filter", "Espresso"] }],
+      "price": { "min": "12.5", "max": "42.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0601/0001/files/guji-bag.jpg", "width": 1200, "height": 1200, "altText": "Ethiopia Guji bag" }],
+      "collections": ["beans"]
+    },
+    {
+      "handle": "colombia-huila-washed",
+      "title": "Colombia Huila, washed",
+      "productType": "Coffee beans",
+      "vendor": "Fernhill Roastery",
+      "tags": ["beans", "medium roast", "single origin"],
+      "descriptionHtml": "<p>From the Pitalito municipality in Huila, 1,600–1,800 m. Caturra and Castillo varieties. Fully washed, fermented 36 hours. Medium roast, suited to both filter and espresso. Tasting notes: red apple, caramel, milk chocolate.</p>",
+      "options": [{ "name": "Size", "values": ["250 g", "1 kg"] }],
+      "price": { "min": "11.0", "max": "38.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0601/0001/files/huila-bag.jpg", "width": 1200, "height": 1200, "altText": "Colombia Huila bag" }],
+      "collections": ["beans"]
+    },
+    {
+      "handle": "paper-filters-02",
+      "title": "Paper Filters, size 02 (100 pack)",
+      "productType": "Filter",
+      "vendor": "Fernhill",
+      "tags": ["pour-over", "filters"],
+      "descriptionHtml": "<p>100 unbleached cone filters for size 02 drippers. Oxygen-whitened alternative available. Rinse with hot water before brewing to remove paper taste.</p>",
+      "options": [{ "name": "Type", "values": ["Unbleached", "White"] }],
+      "price": { "min": "6.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0601/0001/files/filters-02.jpg", "width": 1200, "height": 800, "altText": "Paper filters" }],
+      "collections": ["pour-over"]
+    },
+    {
+      "handle": "brew-scale-timer",
+      "title": "Brew Scale with Timer",
+      "productType": "Scale",
+      "vendor": "Fernhill",
+      "tags": ["pour-over", "scale"],
+      "descriptionHtml": "<p>Weighs up to 2 kg in 0.1 g steps. Built-in timer starts automatically when the first drops land. USB-C rechargeable battery, about 30 hours per charge. Silicone pad protects against heat. 13 × 13 × 2.5 cm.</p>",
+      "price": { "min": "39.0" },
+      "images": [{ "url": "https://cdn.shopify.com/s/files/1/0601/0001/files/scale.jpg", "width": 1400, "height": 1050, "altText": "Brew scale" }],
+      "collections": ["pour-over"]
+    }
+  ]
+}
