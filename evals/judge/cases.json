@@ -1,0 +1,1857 @@
+[
+  {
+    "id": "en-j01",
+    "language": "en",
+    "note": "A competent French press guide that answers early, cites every product claim exactly and uses only well-established general figures, so it should pass on every dimension.",
+    "expect": "pass",
+    "failOn": null,
+    "store": {
+      "name": "Copperline Coffee",
+      "sells": "coffee beans and home brewing equipment",
+      "audience": "home coffee drinkers",
+      "tone": "plain",
+      "neverSay": ""
+    },
+    "topic": {
+      "workingTitle": "How to make French press coffee",
+      "targetQuery": "how to make french press coffee"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Steel French Press, 1 litre",
+        "productType": "Cafetière"
+      },
+      {
+        "ref": "P2",
+        "title": "Conical Burr Hand Grinder",
+        "productType": "Grinder"
+      },
+      {
+        "ref": "P3",
+        "title": "Brazil Cerrado Medium Roast",
+        "productType": "Coffee beans"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "The Steel French Press holds 1 litre."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "The Steel French Press has a double-walled stainless steel body."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "The Steel French Press uses a four-layer mesh filter."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P1",
+        "text": "The Steel French Press is dishwasher safe once the plunger is taken apart."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P2",
+        "text": "The Conical Burr Hand Grinder has ceramic conical burrs."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P2",
+        "text": "The Conical Burr Hand Grinder has 18 click settings for grind size."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P2",
+        "text": "The Conical Burr Hand Grinder holds 30 g of beans."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P3",
+        "text": "The Brazil Cerrado Medium Roast has tasting notes of milk chocolate and hazelnut."
+      },
+      {
+        "ref": "F9",
+        "productRef": "P3",
+        "text": "The Brazil Cerrado Medium Roast is sold as whole beans."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Cafetières"
+      },
+      {
+        "ref": "L2",
+        "kind": "article",
+        "title": "How to store coffee beans"
+      }
+    ],
+    "draft": {
+      "title": "How to make French press coffee that tastes rich, not muddy",
+      "metaDescription": "How to make French press coffee at home: the grind, the ratio, the timing, and what to do once the plunger is down.",
+      "markdown": "To make French press coffee, stir coarsely ground coffee into water just off the boil, leave it to steep for about 4 minutes, then press the plunger down slowly and pour straight away [G]. The method is forgiving, but three things decide whether the cup tastes rich or muddy: how coarse you grind, how much coffee you use, and what you do once the plunger is down.\n\n## What you need\n\nA French press, fresh beans and a grinder that can go coarse are all it takes. Our [Steel French Press](P1) holds 1 litre [F1]. It has a double-walled stainless steel body [F2] and a four-layer mesh filter [F3]. The mesh matters more than it looks, because the fine silt that slips past a filter is what makes the last mouthful gritty.\n\n{{P1}}\n\n## Grind coarse, and grind just before brewing\n\nGround coffee starts losing its aroma almost at once, so grinding fresh does more for the cup than almost anything else. For a French press you want a coarse, even grind, roughly like sea salt. Too fine and the coffee turns bitter and the plunger fights you on the way down; too coarse and the cup tastes thin and sour.\n\nEvenness matters as much as size, which is why burr grinders are the usual recommendation over blade grinders. The [Conical Burr Hand Grinder](P2) has ceramic conical burrs [F5] and 18 click settings for grind size [F6]. Start near the coarse end of those settings and move one click at a time between brews until the taste is right [F6]. It holds 30 g of beans [F7].\n\n{{P2}}\n\n## Ratio, water and timing\n\nThese are starting points to adjust, not rules:\n\n- A common starting ratio is 60 to 70 g of coffee per litre of water [G].\n- Water a short while off the boil, around 93 to 96°C, is the usual recommendation [G].\n- Steep for about 4 minutes, then stir the crust of grounds on the surface so it sinks [G].\n- Skim off any foam left on top, then fit the lid and press gently.\n\nIf the coffee tastes bitter, grind a little coarser or shorten the steep. If it tastes weak or sour, grind a little finer or add more coffee before you change the time.\n\n## Pour it all out, then clean up\n\nCoffee left sitting on the grounds keeps extracting, even with the plunger down, so pour everything into mugs or a jug as soon as it is pressed. Tip the spent grounds into the compost or the bin rather than the sink, where they build up in the trap. The Steel French Press is dishwasher safe once the plunger is taken apart [F4].\n\n## Choosing beans for the press\n\nA French press leaves the coffee's oils in the cup, which suits beans with chocolate and nut flavours. The [Brazil Cerrado Medium Roast](P3) has tasting notes of milk chocolate and hazelnut [F8]. It is sold as whole beans [F9], so you can grind it fresh for each pot. To keep beans at their best between brews, read our guide on [how to store coffee beans](L2), or browse the rest of our [cafetières](L1).\n\n{{P3}}\n"
+    }
+  },
+  {
+    "id": "en-j02",
+    "language": "en",
+    "note": "A green tea brewing guide that explains why bitterness happens, cites each product fact exactly and uses a widely accepted brewing temperature as general knowledge, so it should pass.",
+    "expect": "pass",
+    "failOn": null,
+    "store": {
+      "name": "Little Leaf Tea Co.",
+      "sells": "loose-leaf tea and teaware",
+      "audience": "tea drinkers moving from tea bags to loose leaf",
+      "tone": "warm",
+      "neverSay": "detox"
+    },
+    "topic": {
+      "workingTitle": "How to brew green tea without bitterness",
+      "targetQuery": "how to brew green tea"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Japanese Sencha",
+        "productType": "Green tea"
+      },
+      {
+        "ref": "P2",
+        "title": "Glass Teapot with Steel Infuser",
+        "productType": "Teapot"
+      },
+      {
+        "ref": "P3",
+        "title": "Variable Temperature Kettle",
+        "productType": "Kettle"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "The Japanese Sencha is a steamed green tea from Shizuoka, Japan."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "The Japanese Sencha has a recommended brewing temperature of 70 to 80°C."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "The Japanese Sencha can be steeped up to three times."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P2",
+        "text": "The Glass Teapot with Steel Infuser holds 600 ml."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P2",
+        "text": "The Glass Teapot with Steel Infuser is made of borosilicate glass."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P2",
+        "text": "The Glass Teapot with Steel Infuser has a removable stainless steel infuser."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P3",
+        "text": "The Variable Temperature Kettle has presets at 70, 80, 90 and 100°C."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P3",
+        "text": "The Variable Temperature Kettle holds 1.7 litres."
+      },
+      {
+        "ref": "F9",
+        "productRef": "P3",
+        "text": "The Variable Temperature Kettle has a keep-warm function that lasts 30 minutes."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Green tea"
+      },
+      {
+        "ref": "L2",
+        "kind": "article",
+        "title": "Loose-leaf tea for beginners"
+      }
+    ],
+    "draft": {
+      "title": "How to brew green tea so it tastes sweet, not bitter",
+      "metaDescription": "How to brew green tea well: the right water temperature, how long to steep, how much leaf to use, and how to get more than one pot from it.",
+      "markdown": "Green tea turns bitter when the water is too hot or the leaves sit in it too long. Brew it with water at around 70 to 80°C rather than boiling, and steep for one to two minutes before pouring every drop off the leaves [G]. Get those two things right and most green teas taste sweet, grassy and smooth.\n\n## Why green tea turns bitter\n\nGreen tea leaves are heated soon after picking to stop them oxidising. That keeps their fresh, vegetal flavour, but it also leaves them rich in catechins, the compounds that taste bitter and drying. Very hot water and long steeping pull those out fast. Cooler water draws out more of the sweet, savoury flavours before the bitterness arrives. This is why green tea brewed like black tea, with boiling water and a long soak, so often disappoints.\n\n## Getting the water temperature right\n\nGuessing the temperature is unreliable. If your kettle has no setting, let it stand with the lid open for a few minutes after boiling, or pour a splash of cold water into the pot before the hot water goes in.\n\nA kettle with presets takes the guesswork away. The [Variable Temperature Kettle](P3) has presets at 70, 80, 90 and 100°C [F7]. It holds 1.7 litres [F8], and its keep-warm function lasts 30 minutes [F9], which is useful when you come back for a second pot.\n\n{{P3}}\n\n## Leaf, pot and steeping time\n\nFor loose leaf, about a teaspoon of leaves per cup is a sensible start; adjust by taste rather than by the clock alone. Give the leaves room to open, because leaves packed into a small ball infuser brew unevenly.\n\nThe [Glass Teapot with Steel Infuser](P2) holds 600 ml [F4]. It is made of borosilicate glass [F5] and has a removable stainless steel infuser [F6]. Lifting the infuser out is the simplest way to stop the steep at the right moment, and you can watch the colour deepen through the glass while you wait.\n\n{{P2}}\n\nOur [Japanese Sencha](P1) is a steamed green tea from Shizuoka, Japan [F1]. Its recommended brewing temperature is 70 to 80°C [F2]. Steamed teas tend to give up their flavour quickly, so taste early rather than late.\n\n{{P1}}\n\n## Second and third infusions\n\nGood loose-leaf green tea is not finished after one pot. The Japanese Sencha can be steeped up to three times [F3]. Later infusions usually want slightly hotter water and a little more time, because the leaves have already opened. Leave the lid off between infusions so the wet leaves do not keep stewing in their own steam.\n\nIf you are moving from tea bags to loose leaf, our [beginner's guide to loose-leaf tea](L2) covers storage and equipment, and you can browse our full [green tea range](L1).\n"
+    }
+  },
+  {
+    "id": "en-j03",
+    "language": "en",
+    "note": "A bike-lights buying guide that separates seeing from being seen, cites every product claim (including numbers in product names) to a fact containing them, and stays on topic, so it should pass.",
+    "expect": "pass",
+    "failOn": null,
+    "store": {
+      "name": "Northbound Cycles",
+      "sells": "commuting and touring bike gear",
+      "audience": "everyday cycle commuters",
+      "tone": "plain",
+      "neverSay": ""
+    },
+    "topic": {
+      "workingTitle": "Choosing bike lights for winter commuting",
+      "targetQuery": "best bike lights for commuting"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Beacon 800 Front Light",
+        "productType": "Bike light"
+      },
+      {
+        "ref": "P2",
+        "title": "Glow 60 Rear Light",
+        "productType": "Bike light"
+      },
+      {
+        "ref": "P3",
+        "title": "Reflective Ankle Bands",
+        "productType": "Reflective wear"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "The Beacon 800 Front Light has a maximum output of 800 lumens."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "The Beacon 800 Front Light runs for 2 hours on its highest setting and 20 hours on its lowest flashing mode."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "The Beacon 800 Front Light charges by USB-C."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P1",
+        "text": "The Beacon 800 Front Light has a cut-off beam that keeps light below the eye line of oncoming traffic."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P1",
+        "text": "The Beacon 800 Front Light is rated IPX6 for water resistance."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P2",
+        "text": "The Glow 60 Rear Light has a maximum output of 60 lumens."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P2",
+        "text": "The Glow 60 Rear Light has a daytime flash mode."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P2",
+        "text": "The Glow 60 Rear Light mounts on seat posts and seat stays with a rubber strap."
+      },
+      {
+        "ref": "F9",
+        "productRef": "P3",
+        "text": "The Reflective Ankle Bands fasten with hook-and-loop."
+      },
+      {
+        "ref": "F10",
+        "productRef": "P3",
+        "text": "The Reflective Ankle Bands are fluorescent yellow."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Bike lights"
+      },
+      {
+        "ref": "L2",
+        "kind": "page",
+        "title": "Winter commuting checklist"
+      }
+    ],
+    "draft": {
+      "title": "Bike lights for commuting: what to look for before winter",
+      "metaDescription": "What to look for in bike lights for commuting: brightness, beam shape, daytime flash, battery life and charging, explained plainly.",
+      "markdown": "For commuting you need two things from your lights: a front light bright enough to show potholes on unlit stretches, and a rear light that drivers notice from a distance, including in daylight. A front light with a shaped beam, a rear light with a daytime flash mode, and enough battery to last several journeys between charges will cover most commutes.\n\n## Seeing and being seen are different jobs\n\nOn lit city streets, the job is to be seen: a steady or pulsing light that makes you obvious to drivers pulling out of junctions. On unlit lanes, canal paths and park routes, the job is to see: a strong, well-shaped beam that shows the surface early enough to react. Many commutes include both, so choose for the darkest part of your route rather than the brightest.\n\n## The front light: brightness and beam shape\n\nLumens tell you how much light a lamp produces, but where that light goes matters just as much. A round beam throws light into the eyes of oncoming cyclists and drivers, while a shaped beam puts it on the road where you need it.\n\nThe [Beacon 800 Front Light](P1) has a maximum output of 800 lumens [F1]. It has a cut-off beam that keeps light below the eye line of oncoming traffic [F4]. The Beacon 800 is rated IPX6 for water resistance [F5].\n\n{{P1}}\n\n## The rear light: visible day and night\n\nDrivers coming up behind you are often looking for cars, not bikes, so a rear light that stands out in daylight as well as at night is worth having. A flashing mode catches the eye better than a steady one in bright conditions.\n\nThe [Glow 60 Rear Light](P2) has a maximum output of 60 lumens [F6] and a daytime flash mode [F7]. It mounts on seat posts and seat stays with a rubber strap [F8]. Once it is fitted, check that a saddle bag, a rack or a mudguard is not hiding it.\n\n{{P2}}\n\n## Battery life and charging\n\nBattery life is quoted per mode, and the brightest mode always runs out first. Work out how long your ride is each way, and choose a mode that will last several journeys, not just one.\n\nThe Beacon 800 runs for 2 hours on its highest setting and 20 hours on its lowest flashing mode [F2]. It charges by USB-C [F3], so it can be topped up at your desk from a standard USB-C cable. Cold weather shortens battery life generally, so a light that lasted all autumn may need charging more often in the depths of winter.\n\n## Small extras that help\n\nMovement catches a driver's eye. Reflective or fluorescent material at your ankles shows the up-and-down motion of pedalling, which is hard to mistake for anything other than a cyclist. The [Reflective Ankle Bands](P3) are fluorescent yellow [F10] and fasten with hook-and-loop [F9].\n\n{{P3}}\n\nFor everything else worth sorting before the dark mornings, see our [winter commuting checklist](L2), or browse all our [bike lights](L1).\n"
+    }
+  },
+  {
+    "id": "en-j04",
+    "language": "en",
+    "note": "A practical harness-fitting guide with a clear opening answer, a checklist and exactly cited product facts, written in the shop voice without experience claims, so it should pass.",
+    "expect": "pass",
+    "failOn": null,
+    "store": {
+      "name": "Muddy Paws Supply",
+      "sells": "dog walking and outdoor gear",
+      "audience": "dog owners",
+      "tone": "friendly",
+      "neverSay": ""
+    },
+    "topic": {
+      "workingTitle": "How to fit a dog harness",
+      "targetQuery": "how to fit a dog harness"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Trailmate Y-Front Harness",
+        "productType": "Dog harness"
+      },
+      {
+        "ref": "P2",
+        "title": "Everyday Padded Lead",
+        "productType": "Dog lead"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "The Trailmate Y-Front Harness has a Y-shaped chest piece that sits clear of the shoulder joints."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "The Trailmate Y-Front Harness has four adjustment points."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "The Trailmate Y-Front Harness comes in sizes XS to XL, chosen by chest girth."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P1",
+        "text": "The Trailmate Y-Front Harness has a front clip on the chest and a back clip between the shoulder blades."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P1",
+        "text": "The Trailmate Y-Front Harness has reflective stitching."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P1",
+        "text": "The Trailmate Y-Front Harness is machine washable at 30°C."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P2",
+        "text": "The Everyday Padded Lead is 1.8 metres long."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P2",
+        "text": "The Everyday Padded Lead has a neoprene-padded handle."
+      },
+      {
+        "ref": "F9",
+        "productRef": "P2",
+        "text": "The Everyday Padded Lead has a traffic handle near the clip."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Dog harnesses"
+      },
+      {
+        "ref": "L2",
+        "kind": "collection",
+        "title": "Dog leads"
+      }
+    ],
+    "draft": {
+      "title": "How to fit a dog harness so it is comfortable and secure",
+      "metaDescription": "How to fit a dog harness: measuring your dog, putting it on calmly, the two-finger check, and choosing between a front and back clip.",
+      "markdown": "A well-fitted dog harness is snug enough that your dog cannot back out of it, but loose enough that you can slide two fingers flat under every strap. The chest piece should rest on the breastbone rather than across the shoulders, and nothing should rub behind the front legs. Measure first, fit it with your dog standing, and check it again after the first few walks.\n\n## Measure before you choose a size\n\nHarness sizes are set by chest girth: the widest part of the ribcage, just behind the front legs. Use a soft tape, keep your dog standing square, and take the measurement snug but not tight. Note the neck measurement too, around the base of the neck where a collar would sit.\n\nThe [Trailmate Y-Front Harness](P1) comes in sizes XS to XL, chosen by chest girth [F3]. If your dog is still growing, measure again every few weeks rather than buying a size up and hoping.\n\n## Putting it on\n\nMost dogs accept a harness more easily when it goes on calmly, with a treat, than when they are chased round the kitchen. With an over-the-head style, hold the neck loop open, let your dog put their head through, then pass the belly strap behind the front legs and clip it. Loosen everything first, then take up the slack one strap at a time.\n\nThe Trailmate Y-Front Harness has four adjustment points [F2]. Work round them in turn rather than pulling a single strap very tight.\n\n## Checking the fit\n\n- Two fingers should slide flat under each strap, and no more.\n- The chest piece should sit centred on the breastbone.\n- There should be a clear gap behind the front legs, so the belly strap does not rub.\n- The shoulders should move freely when your dog walks.\n\nThe Trailmate Y-Front Harness has a Y-shaped chest piece that sits clear of the shoulder joints [F1]. Watch your dog walk and trot after fitting: shortened strides or a twisting gait usually mean something is pressing. Check again after a week, as straps settle and coats change with the seasons.\n\n## Front clip or back clip?\n\nA back clip, between the shoulder blades, suits dogs that already walk well on a loose lead. A front clip on the chest turns a pulling dog gently sideways towards you, which makes pulling less rewarding. The Trailmate Y-Front Harness has a front clip on the chest and a back clip between the shoulder blades [F4], so you can move from one to the other as training goes on. It has reflective stitching [F5] and is machine washable at 30°C [F6].\n\n{{P1}}\n\n## Pairing it with a lead\n\nA lead that is too short pulls the harness up when your dog turns, and one that is too long gives you little control near roads. The [Everyday Padded Lead](P2) is 1.8 metres long [F7] and has a neoprene-padded handle [F8]. It also has a traffic handle near the clip [F9], for keeping your dog close at kerbs and gates. See all our [harnesses](L1) and [leads](L2).\n\n{{P2}}\n"
+    }
+  },
+  {
+    "id": "en-j05",
+    "language": "en",
+    "note": "Fails grounding: the fact says only the lid is dishwasher safe, but the draft cites it to claim the whole casserole, pot and lid, is dishwasher safe; everything else is sound.",
+    "expect": "fail",
+    "failOn": "grounding",
+    "store": {
+      "name": "Hearth & Pan",
+      "sells": "cookware and kitchen tools",
+      "audience": "home cooks",
+      "tone": "plain",
+      "neverSay": ""
+    },
+    "topic": {
+      "workingTitle": "How to clean an enamelled cast iron casserole",
+      "targetQuery": "how to clean enamel cast iron"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Enamelled Cast Iron Casserole, 24 cm",
+        "productType": "Casserole"
+      },
+      {
+        "ref": "P2",
+        "title": "Nylon Pan Scraper",
+        "productType": "Kitchen tool"
+      },
+      {
+        "ref": "P3",
+        "title": "Silicone Pot Grips",
+        "productType": "Kitchen tool"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "The Enamelled Cast Iron Casserole has a 24 cm diameter and holds 4.2 litres."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "The Enamelled Cast Iron Casserole has a sand-coloured enamel interior."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "The Enamelled Cast Iron Casserole works on gas, electric, ceramic and induction hobs."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P1",
+        "text": "The Enamelled Cast Iron Casserole's lid knob is stainless steel and oven safe to 250°C."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P1",
+        "text": "The Enamelled Cast Iron Casserole's lid is dishwasher safe."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P2",
+        "text": "The Nylon Pan Scraper has a corner shaped to fit the curve of a pan."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P2",
+        "text": "The Nylon Pan Scraper is safe to use on enamel and non-stick surfaces."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P3",
+        "text": "The Silicone Pot Grips are heat resistant to 230°C."
+      },
+      {
+        "ref": "F9",
+        "productRef": "P3",
+        "text": "The Silicone Pot Grips are sold as a pair."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Casseroles and Dutch ovens"
+      }
+    ],
+    "draft": {
+      "title": "How to clean enamelled cast iron without damaging it",
+      "metaDescription": "How to clean an enamelled cast iron casserole: everyday washing, lifting burnt-on food, removing stains, and what to avoid.",
+      "markdown": "To clean enamelled cast iron, let the pot cool, soak any stuck-on food in warm soapy water, then lift it off with a soft sponge or a nylon scraper. Avoid metal scourers and abrasive powders, which scratch the glassy enamel, and never plunge a hot pot into cold water. Stubborn stains on a pale interior usually lift with a gentle simmer of water and bicarbonate of soda.\n\n## Everyday cleaning\n\nEnamel is glass fused onto iron, so it does not need seasoning the way bare cast iron does, and ordinary washing-up liquid will not harm it. What it does not like is a sudden change of temperature. Let the pot cool on the hob until you can hold the sides comfortably before adding water.\n\nOur [Enamelled Cast Iron Casserole](P1) has a 24 cm diameter and holds 4.2 litres [F1]. The casserole is dishwasher safe, pot and lid alike [F5], though a quick wash by hand keeps the enamel looking new for longer. Dry it fully before the lid goes back on, so moisture does not sit against the rim.\n\n{{P1}}\n\n## Lifting stuck-on food\n\nBurnt-on sauce is the most common problem, and patience works better than force. Fill the pot with warm water and a drop of washing-up liquid and leave it for half an hour or so. Then work the residue loose with a scraper that will not mark the surface.\n\nThe [Nylon Pan Scraper](P2) has a corner shaped to fit the curve of a pan [F6]. It is safe to use on enamel and non-stick surfaces [F7].\n\n{{P2}}\n\n## Dealing with stains on pale enamel\n\nLight-coloured enamel picks up marks from tomato, turmeric and long braises. These are stains, not damage, and they do not affect cooking. The Enamelled Cast Iron Casserole has a sand-coloured enamel interior [F2], which makes browning easy to judge and stains easy to see. To lift them, add a couple of tablespoons of bicarbonate of soda to a pot of water, bring it to a gentle simmer for a few minutes, then let it cool and wash as usual. Repeat rather than scrub harder.\n\n## What to avoid\n\n- Metal scourers, wire wool and abrasive cream cleaners.\n- Pouring cold water into a hot pot, which can crack or craze the enamel.\n- Heating the pot empty over a high flame.\n- Knocking the rim against the sink, which is where chips usually start.\n\nThe Enamelled Cast Iron Casserole works on gas, electric, ceramic and induction hobs [F3]. On any hob, bring it up to temperature gradually over a medium heat.\n\n## Handling and storing\n\nCast iron holds heat for a long time, and so do its handles. The [Silicone Pot Grips](P3) are heat resistant to 230°C [F8] and are sold as a pair [F9]. The casserole's lid knob is stainless steel and oven safe to 250°C [F4]. Store the pot with the lid slightly ajar, or with a folded cloth between lid and rim, so air can circulate. Browse our [casseroles and Dutch ovens](L1).\n\n{{P3}}\n"
+    }
+  },
+  {
+    "id": "en-j06",
+    "language": "en",
+    "note": "Fails grounding: one sentence invents customer experience (\"walkers who have pitched it through a wet weekend come home dry\") without any trigger phrase like \"customers say\", and cites real facts that do not support it.",
+    "expect": "fail",
+    "failOn": "grounding",
+    "store": {
+      "name": "Fellside Outfitters",
+      "sells": "hiking and camping kit",
+      "audience": "UK hillwalkers and backpackers",
+      "tone": "plain",
+      "neverSay": ""
+    },
+    "topic": {
+      "workingTitle": "Choosing a two-person backpacking tent",
+      "targetQuery": "best 2 person backpacking tent"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Ridgeline 2 Tent",
+        "productType": "Tent"
+      },
+      {
+        "ref": "P2",
+        "title": "Ridgeline Footprint",
+        "productType": "Tent accessory"
+      },
+      {
+        "ref": "P3",
+        "title": "Alloy Peg Set",
+        "productType": "Tent accessory"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "The Ridgeline 2 Tent weighs 1.6 kg packed."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "The Ridgeline 2 Tent has a flysheet with a 3000 mm hydrostatic head."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "The Ridgeline 2 Tent has two doors and two porches."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P1",
+        "text": "The Ridgeline 2 Tent pitches outer first, with the inner attached."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P1",
+        "text": "The Ridgeline 2 Tent's inner is 210 cm long."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P1",
+        "text": "The Ridgeline 2 Tent uses aluminium alloy poles."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P2",
+        "text": "The Ridgeline Footprint is cut to the shape of the Ridgeline 2 Tent's floor."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P3",
+        "text": "The Alloy Peg Set contains 12 Y-section pegs."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Backpacking tents"
+      }
+    ],
+    "draft": {
+      "title": "Choosing a two-person backpacking tent: weight, weather and space",
+      "metaDescription": "How to choose a two-person backpacking tent for UK hills: weight, waterproofing, doors and porches, and pitching in the rain.",
+      "markdown": "A good two-person backpacking tent balances three things: a weight you are happy to carry all day, a flysheet that keeps out sustained wind and rain, and enough room for two people and their kit. For British hills, look for two doors and two porches, a high waterproof rating on the fly, and a design you can pitch quickly in the rain. Decide which of the three you would give up a little of, and the shortlist gets short quickly.\n\n## Weight and pack size\n\nWeight on the scales is only half the story; how you split the load matters too. A tent shared between two packs, one carrying the fly and poles and the other the inner and pegs, feels far lighter on a long day. Check whether a quoted weight is the packed weight, with bags and pegs, or a stripped-down minimum.\n\nThe [Ridgeline 2 Tent](P1) weighs 1.6 kg packed [F1]. It uses aluminium alloy poles [F6].\n\n{{P1}}\n\n## Weather protection\n\nHydrostatic head measures how much water pressure a fabric can take before it leaks; the higher the figure, the more waterproof the fabric. Shape and pitch matter as well, because a taut, well-pegged fly sheds wind and rain far better than a loose one.\n\nThe Ridgeline 2 Tent has a flysheet with a 3000 mm hydrostatic head [F2]. Walkers who have pitched the Ridgeline 2 through a wet weekend in the Lake District come home with a dry inner and dry kit [F2, F4]. Wherever you can, pitch with the narrow end into the wind.\n\n## Space and doors\n\nA two-person tent is snug for two adults, so the layout decides how comfortable it feels. Two doors mean neither of you climbs over the other at night, and two porches give each person somewhere for boots and a wet jacket. Length matters for tall walkers, whose sleeping bags otherwise press against the inner and pick up condensation.\n\nThe Ridgeline 2 Tent has two doors and two porches [F3]. Its inner is 210 cm long [F5].\n\n## Pitching in the rain\n\nIn British weather, the order you pitch in matters. A tent that pitches outer first keeps the inner dry while it goes up, and lets you pack the inner away before the fly comes down. The Ridgeline 2 Tent pitches outer first, with the inner attached [F4]. Practise once in the garden or a park, so you are not reading instructions on a hillside.\n\n## Protecting the floor and pegging out\n\nA footprint under the tent protects the groundsheet from stones and roots and keeps it cleaner. The [Ridgeline Footprint](P2) is cut to the shape of the Ridgeline 2 Tent's floor [F7]. Spare pegs are worth carrying, because stony or boggy pitches bend and swallow them. The [Alloy Peg Set](P3) contains 12 Y-section pegs [F8]. Browse our full range of [backpacking tents](L1).\n\n{{P2}}\n"
+    }
+  },
+  {
+    "id": "en-j07",
+    "language": "en",
+    "note": "Fails information_gain: every product sentence is correctly cited, but the article is vague filler (\"listen to your skin\", \"consistency is key\") that tells a shopper nothing specific about building a routine for sensitive skin.",
+    "expect": "fail",
+    "failOn": "information_gain",
+    "store": {
+      "name": "Clearwater Skincare",
+      "sells": "simple skincare for sensitive skin",
+      "audience": "adults with sensitive skin",
+      "tone": "calm",
+      "neverSay": "miracle"
+    },
+    "topic": {
+      "workingTitle": "A simple skincare routine for sensitive skin",
+      "targetQuery": "skincare routine for sensitive skin"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Gentle Cream Cleanser",
+        "productType": "Cleanser"
+      },
+      {
+        "ref": "P2",
+        "title": "Barrier Moisturiser",
+        "productType": "Moisturiser"
+      },
+      {
+        "ref": "P3",
+        "title": "Mineral Sun Cream SPF 30",
+        "productType": "Sun cream"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "The Gentle Cream Cleanser is fragrance free."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "The Gentle Cream Cleanser has a pH of 5.5."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "The Gentle Cream Cleanser comes in a 150 ml pump bottle."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P2",
+        "text": "The Barrier Moisturiser contains ceramides and niacinamide."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P2",
+        "text": "The Barrier Moisturiser is fragrance free."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P2",
+        "text": "The Barrier Moisturiser comes in a 50 ml tube."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P3",
+        "text": "The Mineral Sun Cream SPF 30 uses zinc oxide as its only UV filter."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P3",
+        "text": "The Mineral Sun Cream SPF 30 is fragrance free."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Sensitive skin"
+      }
+    ],
+    "draft": {
+      "title": "A simple skincare routine for sensitive skin",
+      "metaDescription": "A simple skincare routine for sensitive skin in three easy steps: cleanse, moisturise and protect, with gentle products to help.",
+      "markdown": "A simple skincare routine for sensitive skin comes down to three steps: cleanse, moisturise and protect. Keeping things gentle and simple is the best way to look after skin that reacts easily, and choosing the right products can make all the difference.\n\n## Why a simple routine matters\n\nSensitive skin needs a little extra care. Everyone's skin is different, and what works for one person may not work for another. That is why it is so important to listen to your skin and give it what it needs. A simple routine is easier to stick to, and when it comes to skincare, consistency is key. Less really can be more.\n\n## Step one: cleanse\n\nCleansing is an important part of any routine. It helps to remove the dirt and build-up of the day and leaves your skin feeling fresh. For sensitive skin, a gentle cleanser is a good choice. Our [Gentle Cream Cleanser](P1) is fragrance free [F1]. It has a pH of 5.5 [F2]. It comes in a 150 ml pump bottle [F3]. Cleansing gently and regularly can help your skin look and feel its best.\n\n{{P1}}\n\n## Step two: moisturise\n\nMoisturising is another key step. Skin needs moisture to stay comfortable, and a good moisturiser can help it feel soft and cared for. It is worth choosing something that suits your skin. The [Barrier Moisturiser](P2) contains ceramides and niacinamide [F4]. It is fragrance free [F5]. It comes in a 50 ml tube [F6]. Moisturising every day is a simple habit that can make a real difference over time.\n\n{{P2}}\n\n## Step three: protect\n\nProtecting your skin is just as important as cleansing and moisturising. Sun protection is something everyone should think about, all year round. The [Mineral Sun Cream SPF 30](P3) uses zinc oxide as its only UV filter [F7]. It is fragrance free [F8]. Making protection part of your routine is one of the best things you can do for your skin.\n\n{{P3}}\n\n## Finding what works for you\n\nBuilding a routine takes time, and it is fine to go slowly. Pay attention to how your skin feels and make changes when you need to. Be patient, be gentle and be kind to your skin. With the right care, sensitive skin can feel calm and comfortable, and looking after it can become something you enjoy rather than a chore. Every small step counts. Browse our full [sensitive skin range](L1) to find the products that feel right for you.\n"
+    }
+  },
+  {
+    "id": "en-j08",
+    "language": "en",
+    "note": "Fails structure: it opens with tulip history instead of answering when to plant, its headings do not match what sits under them, and the actual answer (October to November, once the soil is cold) only arrives in the last section.",
+    "expect": "fail",
+    "failOn": "structure",
+    "store": {
+      "name": "Brambleway Garden Shop",
+      "sells": "bulbs, seeds and garden tools",
+      "audience": "home gardeners",
+      "tone": "friendly",
+      "neverSay": ""
+    },
+    "topic": {
+      "workingTitle": "When to plant tulip bulbs",
+      "targetQuery": "when to plant tulip bulbs"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Darwin Hybrid Tulip Mix",
+        "productType": "Bulbs"
+      },
+      {
+        "ref": "P2",
+        "title": "Long-Handled Bulb Planter",
+        "productType": "Garden tool"
+      },
+      {
+        "ref": "P3",
+        "title": "Peat-Free Bulb Compost",
+        "productType": "Compost"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "The Darwin Hybrid Tulip Mix contains 25 bulbs in red, yellow and orange."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "The Darwin Hybrid Tulip Mix bulbs measure 12 to 14 cm around."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "The Darwin Hybrid Tulip Mix flowers in April and May."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P1",
+        "text": "The Darwin Hybrid Tulip Mix grows to about 55 cm tall."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P2",
+        "text": "The Long-Handled Bulb Planter has depth markings on its cutting cylinder."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P2",
+        "text": "The Long-Handled Bulb Planter has a foot plate for pushing it into the soil."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P3",
+        "text": "The Peat-Free Bulb Compost contains added grit for drainage."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P3",
+        "text": "The Peat-Free Bulb Compost comes in a 20 litre bag."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Spring bulbs"
+      }
+    ],
+    "draft": {
+      "title": "When to plant tulip bulbs",
+      "metaDescription": "When to plant tulip bulbs for a good spring display, plus choosing colours, soil, tools and care after flowering.",
+      "markdown": "Few flowers have a story quite like the tulip. Long before they filled garden centres every autumn, tulips were prized in the gardens of the Ottoman Empire, and later set off one of history's most famous bouts of speculation in the Netherlands. Today they are among the most widely planted spring bulbs, and there is a lot to think about before you begin.\n\n## When to plant\n\nChoosing colours is the fun part. Tulips come in almost every shade except a true blue, and mixing early and late varieties stretches the display over several weeks. Our [Darwin Hybrid Tulip Mix](P1) contains 25 bulbs in red, yellow and orange [F1]. It flowers in April and May [F3] and grows to about 55 cm tall [F4], so it suits the middle or back of a border.\n\n{{P1}}\n\n## Planting depth\n\nOnce the flowers fade, snap off the seed heads but leave the leaves to die back on their own for about six weeks, so the bulb can rebuild its energy for next year [G]. Cutting the foliage early or tying it in knots weakens the bulb. Bigger bulbs carry more stored energy and tend to give bigger flowers. The Darwin Hybrid Tulip Mix bulbs measure 12 to 14 cm around [F2].\n\n## Choosing a spot\n\nTulips like sun and hate sitting wet. In heavy clay, bulbs can rot over winter, so it is worth opening up the soil before planting or growing them in pots. The [Peat-Free Bulb Compost](P3) contains added grit for drainage [F7]. It comes in a 20 litre bag [F8].\n\n{{P3}}\n\n## Tools\n\nSquirrels dig up freshly planted bulbs, so cover pots with wire mesh until shoots appear. In borders, firming the soil well after planting leaves less scent for them to follow. Plant bulbs pointed end up, at a depth of about two to three times their own height [G]. The [Long-Handled Bulb Planter](P2) has depth markings on its cutting cylinder [F5] and a foot plate for pushing it into the soil [F6].\n\n{{P2}}\n\n## Other things to know\n\nTulips in pots need watering in dry spells even in winter, as rain often misses containers sheltered by walls. In borders, they can be left in the ground, although many gardeners treat them as annuals and plant fresh bulbs each year for the most reliable display.\n\n## A few final thoughts\n\nSo, when should you plant tulip bulbs? The best time is late autumn, in October or November, once the soil has turned cold [G]. Planting later than daffodils and other spring bulbs reduces the risk of tulip fire, a fungal disease that thrives in warm, damp soil. If you miss that window, bulbs planted into December will usually still flower, just a little later. Browse all our [spring bulbs](L1).\n"
+    }
+  },
+  {
+    "id": "en-j09",
+    "language": "en",
+    "note": "Fails fit: the sharpening advice is correct and cited, but much of the article drifts into the shop's origin story and reads as a hard-sell advert (\"discover the Ashworth difference today\"), which does not suit a plain how-to.",
+    "expect": "fail",
+    "failOn": "fit",
+    "store": {
+      "name": "Ashworth Blades",
+      "sells": "kitchen knives and sharpening tools",
+      "audience": "home cooks",
+      "tone": "plain",
+      "neverSay": ""
+    },
+    "topic": {
+      "workingTitle": "How to sharpen a knife with a whetstone",
+      "targetQuery": "how to sharpen a knife with a whetstone"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Combination Whetstone 1000/6000",
+        "productType": "Whetstone"
+      },
+      {
+        "ref": "P2",
+        "title": "Santoku Knife",
+        "productType": "Kitchen knife"
+      },
+      {
+        "ref": "P3",
+        "title": "Stone Flattening Plate",
+        "productType": "Sharpening accessory"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "The Combination Whetstone has a 1000 grit side and a 6000 grit side."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "The Combination Whetstone is a water stone that is soaked before use."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "The Combination Whetstone comes with a non-slip rubber base."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P1",
+        "text": "The Combination Whetstone measures 18 by 6 cm."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P2",
+        "text": "The Santoku Knife has an 18 cm blade."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P2",
+        "text": "The Santoku Knife is made of VG-10 stainless steel."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P2",
+        "text": "The Santoku Knife has a blade ground to 15 degrees on each side."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P3",
+        "text": "The Stone Flattening Plate has a diamond-coated surface."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Sharpening"
+      }
+    ],
+    "draft": {
+      "title": "How to sharpen a knife with a whetstone",
+      "metaDescription": "How to sharpen a kitchen knife on a whetstone, from soaking the stone to polishing the edge, and why Ashworth Blades is the place to start.",
+      "markdown": "To sharpen a knife on a whetstone, soak the stone, hold the blade at a steady, shallow angle, and draw the edge across the coarse side until you can feel a slight burr along its whole length, then repeat on the fine side to polish it. But before we get to the steps, it is worth knowing why Ashworth Blades has become the name so many home cooks turn to for their knives.\n\n## Where Ashworth Blades began\n\nAshworth Blades started at a kitchen table, with a family who had worked with steel for generations and a simple belief that every home cook deserves a properly sharp knife. What began as a small workshop has grown into the shop you see today, but that belief has never changed. Every knife and stone in our range is chosen with the same care that went into those first pieces. When you shop with Ashworth Blades, you are not just buying a tool; you are joining a family that cares about cooking as much as you do.\n\n## Why choose Ashworth Blades?\n\nThere are plenty of places to buy a knife, but there is only one Ashworth Blades. When you shop with us, you get a range picked by people who care about sharp edges, and the reassurance of a shop that stands behind everything it sells. Don't put up with a dull, squashing knife for another day. Give your kitchen the upgrade it deserves and discover the Ashworth difference today!\n\n## The stone you need\n\nThe [Combination Whetstone](P1) has a 1000 grit side and a 6000 grit side [F1]. It is a water stone that is soaked before use [F2], and it comes with a non-slip rubber base [F3]. It measures 18 by 6 cm [F4]. Add one to your kitchen today!\n\n{{P1}}\n\n## Sharpening, step by step\n\n- Soak the stone until bubbles stop rising.\n- Start on the coarse side, holding the blade at a steady angle.\n- Sweep the edge along the stone from heel to tip with light, even pressure.\n- When you can feel a burr along the whole edge, turn the knife over and repeat.\n- Move to the fine side and repeat with lighter strokes to polish the edge.\n\nThe [Santoku Knife](P2) has a blade ground to 15 degrees on each side [F7], so match that angle as closely as you can. It has an 18 cm blade [F5] and is made of VG-10 stainless steel [F6].\n\n{{P2}}\n\n## Keep your stone flat\n\nStones wear hollow with use, and a dished stone rounds the edge you are trying to sharpen. The [Stone Flattening Plate](P3) has a diamond-coated surface [F8].\n\n## Join the Ashworth family\n\nReady to feel the difference a truly sharp knife makes? Browse our full [sharpening range](L1) now and treat yourself, or someone you love, to a gift they will use every single day. At Ashworth Blades we are proud of every edge we sell, and we cannot wait to welcome you.\n"
+    }
+  },
+  {
+    "id": "en-j10",
+    "language": "en",
+    "note": "Fails general_numbers: one [G] sentence presents a marketing figure (\"around 67% less acidic\") as common knowledge; the other [G] steeping time is well established and everything else is sound, so the judge should reject just that one.",
+    "expect": "fail",
+    "failOn": "general_numbers",
+    "store": {
+      "name": "Harbour Roast",
+      "sells": "coffee beans and brewing kit",
+      "audience": "home coffee drinkers",
+      "tone": "relaxed",
+      "neverSay": ""
+    },
+    "topic": {
+      "workingTitle": "How to make cold brew coffee at home",
+      "targetQuery": "how to make cold brew"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Cold Brew Jug, 1.5 litre",
+        "productType": "Cold brew maker"
+      },
+      {
+        "ref": "P2",
+        "title": "Colombia Huila",
+        "productType": "Coffee beans"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "The Cold Brew Jug holds 1.5 litres."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "The Cold Brew Jug has a removable fine-mesh steel filter."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "The Cold Brew Jug is made of borosilicate glass."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P1",
+        "text": "The Cold Brew Jug has an airtight lid."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P1",
+        "text": "The Cold Brew Jug fits in a standard fridge door."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P2",
+        "text": "The Colombia Huila has tasting notes of caramel, red apple and cocoa."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P2",
+        "text": "The Colombia Huila is a washed coffee."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P2",
+        "text": "The Colombia Huila is roasted for filter brewing."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Cold brew"
+      }
+    ],
+    "draft": {
+      "title": "How to make cold brew coffee at home",
+      "metaDescription": "How to make cold brew coffee at home: the grind, the steeping time, how to strain and dilute it, and how to store it.",
+      "markdown": "To make cold brew, stir coarsely ground coffee into cold water, cover it, leave it in the fridge for 12 to 24 hours, then strain out the grounds [G]. The result is a smooth, rounded concentrate you can dilute with water or milk and keep in the fridge for several days.\n\n## What cold brew is, and why people like it\n\nCold brew is not iced coffee. Iced coffee is brewed hot and then chilled; cold brew never meets hot water at all. Because cold water extracts more slowly and draws out fewer of the harsher compounds, the result tastes softer and sweeter, without the sharp brightness of a hot filter. Cold brew is around 67% less acidic than hot coffee, which is why so many people with sensitive stomachs switch to it [G]. It also keeps well, so one batch can cover several mornings.\n\n## Choosing and grinding the coffee\n\nUse a coarse grind, similar to what you would use for a French press. A fine grind over a long steep turns muddy and bitter, and it clogs filters. Grind just before brewing if you can.\n\nBeans with chocolate, caramel and fruit notes tend to shine as cold brew, while very light, floral coffees can taste flat. The [Colombia Huila](P2) has tasting notes of caramel, red apple and cocoa [F6]. It is a washed coffee [F7], roasted for filter brewing [F8].\n\n{{P2}}\n\n## Brewing it\n\n- Add the ground coffee to the jug or a large jar.\n- Pour over cold, filtered water and stir until all the grounds are wet.\n- Cover and leave in the fridge for 12 to 24 hours [G].\n- Strain, then dilute to taste, starting with roughly equal parts concentrate and water or milk.\n\nUse more coffee than you would for the same amount of hot coffee, since you are making a concentrate. If it tastes thin, add more coffee next time rather than steeping longer.\n\nThe [Cold Brew Jug](P1) holds 1.5 litres [F1]. It has a removable fine-mesh steel filter [F2], so you can lift the grounds out instead of straining through a cloth. It is made of borosilicate glass [F3].\n\n{{P1}}\n\n## Storing and serving\n\nOnce the grounds are out, keep the concentrate covered in the fridge so it does not pick up other smells, and use it within several days for the best flavour. The Cold Brew Jug has an airtight lid [F4] and fits in a standard fridge door [F5]. Serve it over ice, top it with milk, or add a splash of concentrate to hot water when you want a quick warm cup. For more ways to brew, browse our [cold brew equipment](L1).\n"
+    }
+  },
+  {
+    "id": "hu-j01",
+    "language": "hu",
+    "note": "A competent Hungarian moka pot guide that answers in the first paragraph, cites every product claim exactly and stays practical, so it should pass on every dimension.",
+    "expect": "pass",
+    "failOn": null,
+    "store": {
+      "name": "Kávékert Pörkölő",
+      "sells": "pörkölt kávé és otthoni kávéfőző eszközök",
+      "audience": "otthon kávézók",
+      "tone": "közvetlen",
+      "neverSay": ""
+    },
+    "topic": {
+      "workingTitle": "Hogyan főzzünk kávét kotyogóban?",
+      "targetQuery": "kotyogós kávéfőző használata"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Alumínium kotyogós kávéfőző, 3 személyes",
+        "productType": "Kotyogós kávéfőző"
+      },
+      {
+        "ref": "P2",
+        "title": "Kerámia őrlőkéses kézi daráló",
+        "productType": "Kávédaráló"
+      },
+      {
+        "ref": "P3",
+        "title": "Santos Brazil kávébab",
+        "productType": "Szemes kávé"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "Az alumínium kotyogós kávéfőző 3 személyes, egy főzéssel nagyjából 150 ml kávét készít."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "Az alumínium kotyogós kávéfőző gáz- és elektromos főzőlapon használható, indukciós főzőlapon nem."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "Az alumínium kotyogós kávéfőző nyomáscsökkentő szeleppel rendelkezik."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P1",
+        "text": "Az alumínium kotyogós kávéfőző tömítése és szűrőlemeze külön is megvásárolható."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P2",
+        "text": "A kerámia őrlőkéses kézi daráló kúpos kerámia őrlőkésekkel működik."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P2",
+        "text": "A kerámia őrlőkéses kézi daráló őrlési finomsága fokozatmentesen állítható."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P3",
+        "text": "A Santos Brazil kávébab közepes pörkölésű."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P3",
+        "text": "A Santos Brazil kávébab ízjegyei: étcsokoládé és pörkölt mogyoró."
+      },
+      {
+        "ref": "F9",
+        "productRef": "P3",
+        "text": "A Santos Brazil kávébab szemes kiszerelésben kapható."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Kotyogós kávéfőzők"
+      },
+      {
+        "ref": "L2",
+        "kind": "article",
+        "title": "Hogyan tároljuk a kávét?"
+      }
+    ],
+    "draft": {
+      "title": "Kotyogós kávéfőző használata: így lesz finom a kávé",
+      "metaDescription": "Hogyan főzz jó kávét kotyogóban: az őrlés finomsága, a víz, a láng ereje, a főzés lépései és a karbantartás egyszerűen.",
+      "markdown": "Kotyogóban akkor lesz finom a kávé, ha az alsó tartályt forró vízzel töltöd fel a szelep aljáig, a szűrőkosarat lazán, tömörítés nélkül töltöd meg közepesen finom őrleménnyel, és közepes lángon főzöd. Amint a kávé sistergő, buborékos hangot ad, vedd le a tűzről. A kesernyés, égett íz szinte mindig a túl erős lángból vagy a túl hosszú főzésből ered.\n\n## Mire lesz szükséged?\n\nEgy kotyogós kávéfőzőre, frissen őrölt kávéra és vízre. A kínálatunkban szereplő [alumínium kotyogós kávéfőző](P1) 3 személyes, egy főzéssel nagyjából 150 ml kávét készít [F1]. Gáz- és elektromos főzőlapon használható, indukciós főzőlapon nem [F2]. Nyomáscsökkentő szeleppel rendelkezik [F3], ezért a vizet soha ne töltsd a szelep fölé.\n\n{{P1}}\n\n## Milyen finomra őröljük?\n\nA kotyogóhoz az eszpresszónál kicsit durvább, a filteres kávénál finomabb őrlés való, nagyjából olyan, mint az asztali só. Ha túl finom, a víz nehezen jut át rajta, a kávé keserű lesz, és a főző is feleslegesen nagy nyomás alá kerül. Ha túl durva, híg, savanykás kávét kapsz.\n\nA [kerámia őrlőkéses kézi daráló](P2) kúpos kerámia őrlőkésekkel működik [F5]. Őrlési finomsága fokozatmentesen állítható [F6], így apránként közelíthetsz a jó beállításhoz.\n\n{{P2}}\n\n## Lépésről lépésre\n\n- Forralj vizet, és töltsd az alsó tartályba a szelep aljáig. A forró víz lerövidíti a főzést, így a kávé kevésbé fő meg a lapon.\n- Töltsd meg a szűrőkosarat kávéval, simítsd el a tetejét, de ne nyomkodd le.\n- Konyharuhával fogva csavard rá a felső részt, mert az alsó tartály forró.\n- Tedd közepes lángra, a fedelet hagyd nyitva, hogy lásd, mikor indul a kávé.\n- Amikor a kifolyó kávé világosodni kezd és sistereg, vedd le, és a talpát egy pillanatra hűtsd le hideg vizes ruhával.\n\nTöltés előtt keverd át a kávét a felső tartályban, mert az elsőként és az utolsóként kifolyó adag íze eltér.\n\n## Tisztítás és karbantartás\n\nHasználat után elég meleg vízzel kiöblíteni a részeket, mosogatószer nélkül, majd szétszedve hagyni megszáradni. A gumitömítés idővel megkeményedik, és ha a főző a csavarmenetnél szivárog, ideje cserélni. Az alumínium kotyogós kávéfőző tömítése és szűrőlemeze külön is megvásárolható [F4].\n\n## Milyen kávét válassz hozzá?\n\nA kotyogó erős, testes kávét főz, ehhez jól illenek a közepes pörkölésű, csokoládés jegyű kávék. A [Santos Brazil kávébab](P3) közepes pörkölésű [F7], ízjegyei az étcsokoládé és a pörkölt mogyoró [F8]. Szemes kiszerelésben kapható [F9], így mindig frissen őrölheted. A kávé tárolásáról [ebben a cikkünkben](L2) írtunk részletesen, további főzőket pedig a [kotyogós kávéfőzők](L1) között találsz.\n\n{{P3}}\n"
+    }
+  },
+  {
+    "id": "hu-j02",
+    "language": "hu",
+    "note": "A raised-bed filling guide that answers with the layer order up front, uses a list for the layers, cites each product fact exactly and marks one widely given depth as general knowledge, so it should pass.",
+    "expect": "pass",
+    "failOn": null,
+    "store": {
+      "name": "Zöldkert Webshop",
+      "sells": "vetőmagok, ültetőközegek és kerti eszközök",
+      "audience": "hobbikertészek",
+      "tone": "barátságos",
+      "neverSay": ""
+    },
+    "topic": {
+      "workingTitle": "Magaságyás feltöltése rétegesen",
+      "targetQuery": "magaságyás feltöltése"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Vörösfenyő magaságyás",
+        "productType": "Magaságyás"
+      },
+      {
+        "ref": "P2",
+        "title": "Tőzegmentes komposztált virágföld",
+        "productType": "Virágföld"
+      },
+      {
+        "ref": "P3",
+        "title": "Rozsdamentes kézi ültetőlapát",
+        "productType": "Kerti szerszám"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "A vörösfenyő magaságyás belső mérete 120 × 80 cm, magassága 60 cm."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "A vörösfenyő magaságyás kezeletlen szibériai vörösfenyőből készül."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "A vörösfenyő magaságyáshoz belső fóliabélés és rágcsálóháló jár."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P1",
+        "text": "A vörösfenyő magaságyás csavarozás nélkül, csaphornyos illesztéssel szerelhető össze."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P2",
+        "text": "A tőzegmentes komposztált virágföld 50 literes zsákban kapható."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P2",
+        "text": "A tőzegmentes komposztált virágföld komposztált zöldhulladékból és kókuszrostból készül."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P2",
+        "text": "A tőzegmentes komposztált virágföld indító tápanyagot tartalmaz."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P3",
+        "text": "A rozsdamentes kézi ültetőlapát rozsdamentes acélból készült, a nyelén mélységjelölés van."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Kerti szerszámok"
+      },
+      {
+        "ref": "L2",
+        "kind": "article",
+        "title": "Ültetési naptár kezdőknek"
+      }
+    ],
+    "draft": {
+      "title": "Magaságyás feltöltése rétegesen: mi kerüljön alulra és mi felülre?",
+      "metaDescription": "Hogyan töltsd fel a magaságyást rétegesen: mi kerül alulra, mi a tetejére, mennyi föld kell, és mikor ültethetsz bele.",
+      "markdown": "A magaságyást alulról felfelé egyre finomabb anyagokkal töltjük fel: legalulra durva ágak és gallyak, föléjük fű, lomb és kerti zöldhulladék, aztán félérett komposzt, a tetejére pedig jó minőségű ültetőföld kerül. Az alsó rétegek lassan lebomlanak, tápanyagot és némi meleget adnak, a felső réteg pedig laza, tiszta közeget ad a magoknak és a palántáknak.\n\n## Mielőtt elkezded: alj és bélés\n\nA rétegezés előtt érdemes az ágyás alját a rágcsálók ellen, az oldalait pedig a nedvesség ellen védeni. A [vörösfenyő magaságyás](P1) belső mérete 120 × 80 cm, magassága 60 cm [F1]. Kezeletlen szibériai vörösfenyőből készül [F2], és belső fóliabélés meg rágcsálóháló is jár hozzá [F3]. Csavarozás nélkül, csaphornyos illesztéssel szerelhető össze [F4].\n\nA hálót fektesd a talajra, és rögzítsd az oldalakhoz. A fóliát csak az oldalfalakra tedd, az aljára ne, hogy a felesleges víz el tudjon szivárogni.\n\n{{P1}}\n\n## A rétegek alulról felfelé\n\n- **Ágak, gallyak, nyesedék:** a legalsó réteg laza vázat ad, és elvezeti a felesleges vizet.\n- **Fordított gyepkockák:** ha az ágyás helyéről gyepet szedtél fel, fejjel lefelé ide teheted.\n- **Lomb és zöldhulladék:** az őszi falevél, a lenyírt fű és a konyhai zöldségmaradék itt bomlik le.\n- **Félérett komposzt:** átmenet a durva rétegek és a föld között, és már tápanyagot ad a gyökereknek.\n- **Ültetőföld:** a legfelső réteg, ebbe kerülnek a magok és a palánták.\n\nHús-, csont- és főtt ételmaradékot ne tegyél bele, mert odavonzza az állatokat.\n\n## A felső réteg: miből és mennyi?\n\nA felső rétegnek elég vastagnak kell lennie ahhoz, hogy a fiatal gyökerek ne érjenek bele a bomló anyagba. Az általános ajánlás az, hogy ez a réteg legalább 20–30 cm vastag legyen [G]. Ide gyommagmentes, laza földet tegyél.\n\nA [tőzegmentes komposztált virágföld](P2) komposztált zöldhulladékból és kókuszrostból készül [F6], és indító tápanyagot tartalmaz [F7]. 50 literes zsákban kapható [F5], így könnyen kiszámolhatod, hány zsák kell a felső réteghez.\n\n{{P2}}\n\n## Ülepedés és utántöltés\n\nAz első hetekben a rétegek leülepednek, ezért az ágyás teteje néhány centit süllyedhet. Ez a bomlás jele, nem hiba: tavasszal egyszerűen pótold a földet. Később minden évben érdemes egy vékony réteg komposztot vagy friss földet szórni a tetejére.\n\n## Mikor ültethetsz bele?\n\nFrissen feltöltött magaságyásba rögtön ültethetsz, ha a felső réteg elég vastag. Az első évben a bomló rétegek sok tápanyagot adnak, ami a tápanyagigényes zöldségeknek kedvez: a paradicsomnak, a cukkininek és a káposztaféléknek. A következő években jöhetnek a kevésbé igényesek, például a saláta, a hagyma és a fűszernövények.\n\nAz ültetéshez jól jön egy mélységjelölős lapát: a [rozsdamentes kézi ültetőlapát](P3) rozsdamentes acélból készült, a nyelén mélységjelölés van [F8]. További eszközöket a [kerti szerszámok](L1) között, időzítési tippeket pedig az [ültetési naptárunkban](L2) találsz.\n"
+    }
+  },
+  {
+    "id": "hu-j03",
+    "language": "hu",
+    "note": "A daily face sunscreen guide that answers early, explains SPF with well-established figures marked [G], cites each product fact exactly and suits a calm sensitive-skin shop, so it should pass.",
+    "expect": "pass",
+    "failOn": null,
+    "store": {
+      "name": "Tiszta Bőr Manufaktúra",
+      "sells": "egyszerű bőrápolás érzékeny bőrre",
+      "audience": "érzékeny bőrű felnőttek",
+      "tone": "nyugodt",
+      "neverSay": "csodaszer"
+    },
+    "topic": {
+      "workingTitle": "Fényvédő minden napra: hogyan válasszunk?",
+      "targetQuery": "napi fényvédő arcra"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Ásványi arcfényvédő SPF 50",
+        "productType": "Fényvédő"
+      },
+      {
+        "ref": "P2",
+        "title": "Színezett ásványi fényvédő SPF 30",
+        "productType": "Fényvédő"
+      },
+      {
+        "ref": "P3",
+        "title": "Kíméletes lemosóolaj",
+        "productType": "Arctisztító"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "Az Ásványi arcfényvédő SPF 50 UV-szűrője kizárólag cink-oxid."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "Az Ásványi arcfényvédő SPF 50 illatanyagmentes."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "Az Ásványi arcfényvédő SPF 50 UVA- és UVB-védelmet is nyújt."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P1",
+        "text": "Az Ásványi arcfényvédő SPF 50 50 ml-es tubusban kapható."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P2",
+        "text": "A Színezett ásványi fényvédő SPF 30 UV-szűrője cink-oxid és titán-dioxid."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P2",
+        "text": "A Színezett ásványi fényvédő SPF 30 három árnyalatban kapható."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P2",
+        "text": "A Színezett ásványi fényvédő SPF 30 40 percig vízálló."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P3",
+        "text": "A Kíméletes lemosóolaj a fényvédőt és a sminket is oldja."
+      },
+      {
+        "ref": "F9",
+        "productRef": "P3",
+        "text": "A Kíméletes lemosóolaj napraforgó- és jojobaolajat tartalmaz."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Érzékeny bőrre"
+      }
+    ],
+    "draft": {
+      "title": "Napi fényvédő arcra: hogyan válassz, és hogyan használd?",
+      "metaDescription": "Napi fényvédő arcra érzékeny bőrre: mit jelent az SPF, ásványi vagy vegyi szűrő, mennyit és hogyan vigyél fel, és hogyan mosd le.",
+      "markdown": "Arcra mindennap, évszaktól függetlenül érdemes fényvédőt használni, reggel, a bőrápolás utolsó lépéseként. A bőrgyógyászok általában legalább SPF 30-as, UVA- és UVB-szűrős készítményt ajánlanak a mindennapokra [G]. Érzékeny bőrre az ásványi, vagyis cink-oxidos vagy titán-dioxidos szűrők szoktak jobban beválni, mert ritkábban okoznak csípő, égő érzést.\n\n## Mit jelent az SPF szám?\n\nAz SPF azt mutatja meg, mennyire véd a készítmény az UVB-sugárzás ellen, amely a leégésért felel. Az SPF 30 az UVB-sugárzás nagyjából 97%-át, az SPF 50 körülbelül 98%-át szűri ki [G]. A különbség tehát kisebb, mint a számok sugallják: sokkal többet számít, hogy elég mennyiséget vigyél fel, és napközben megújítsd. Az UVA-sugárzás a bőr öregedéséért felel, és az ablaküvegen is átjut, ezért irodában és autóban is számít.\n\n## Ásványi vagy vegyi szűrő?\n\nA vegyi szűrők elnyelik az UV-sugárzást, az ásványi szűrők, a cink-oxid és a titán-dioxid, a bőr felszínén maradnak. Érzékeny, kipirosodásra hajlamos bőrön az ásványi szűrők ritkábban okoznak irritációt, cserébe kissé fehéres nyomot hagyhatnak.\n\nAz [Ásványi arcfényvédő SPF 50](P1) UV-szűrője kizárólag cink-oxid [F1]. Illatanyagmentes [F2], és UVA- és UVB-védelmet is nyújt [F3]. 50 ml-es tubusban kapható [F4].\n\n{{P1}}\n\nHa zavar a fehéres réteg, egy színezett változat segíthet. A [Színezett ásványi fényvédő SPF 30](P2) UV-szűrője cink-oxid és titán-dioxid [F5]. Három árnyalatban kapható [F6], és 40 percig vízálló [F7].\n\n{{P2}}\n\n## Hogyan vidd fel?\n\n- Reggel, a hidratáló után és a smink előtt kerüljön a bőrödre.\n- Légy bőkezű: a csomagoláson feltüntetett védelmet négyzetcentiméterenként 2 mg mennyiséggel mérik [G].\n- Ne felejtsd ki a füledet, a nyakadat és a hajvonaladat.\n- Ha sokat vagy a szabadban, néhány óránként, izzadás vagy úszás után pedig mindig vidd fel újra.\n\n## Esti lemosás\n\nAz ásványi fényvédők gyakran tapadós réteget képeznek, amelyet egy egyszerű arclemosó nem mindig távolít el teljesen, ezért az olajos lemosás jó első lépés. A [Kíméletes lemosóolaj](P3) a fényvédőt és a sminket is oldja [F8], és napraforgó- és jojobaolajat tartalmaz [F9]. Száraz arcra masszírozd be, langyos vízzel emulgeáld, majd öblítsd le. Teljes kínálatunkat az [érzékeny bőrre](L1) válogatott termékek között találod.\n\n{{P3}}\n"
+    }
+  },
+  {
+    "id": "hu-j04",
+    "language": "hu",
+    "note": "A chain cleaning and lubrication how-to that answers at once, gives ordered steps and common mistakes, and cites each product fact exactly, so it should pass.",
+    "expect": "pass",
+    "failOn": null,
+    "store": {
+      "name": "Kerékagy Bringabolt",
+      "sells": "kerékpáros alkatrészek és karbantartó eszközök",
+      "audience": "városi és túrakerékpárosok",
+      "tone": "közvetlen",
+      "neverSay": ""
+    },
+    "topic": {
+      "workingTitle": "Kerékpárlánc tisztítása és kenése otthon",
+      "targetQuery": "kerékpár lánc tisztítása"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Láncmosó készülék",
+        "productType": "Karbantartó eszköz"
+      },
+      {
+        "ref": "P2",
+        "title": "Biológiailag lebomló zsíroldó",
+        "productType": "Tisztítószer"
+      },
+      {
+        "ref": "P3",
+        "title": "Nedves időre való lánckenőolaj",
+        "productType": "Kenőanyag"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "A láncmosó készülékben három forgó kefe tisztítja a láncot."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "A láncmosó készülék tartályába zsíroldót kell tölteni, és a láncra csíptetve, a hajtókart visszafelé tekerve működik."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "A láncmosó készülék szétszedhető és vízzel öblíthető."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P2",
+        "text": "A biológiailag lebomló zsíroldó oldószermentes."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P2",
+        "text": "A biológiailag lebomló zsíroldó 500 ml-es szórófejes flakonban kapható."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P2",
+        "text": "A biológiailag lebomló zsíroldó hígítatlanul és vízzel hígítva is használható."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P3",
+        "text": "A nedves időre való lánckenőolaj esőben és sárban is a láncon marad."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P3",
+        "text": "A nedves időre való lánckenőolaj 100 ml-es csepegtetős flakonban kapható."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Szerviz és karbantartás"
+      },
+      {
+        "ref": "L2",
+        "kind": "article",
+        "title": "Mikor kell láncot cserélni?"
+      }
+    ],
+    "draft": {
+      "title": "Kerékpárlánc tisztítása és kenése otthon, lépésről lépésre",
+      "metaDescription": "Hogyan tisztítsd és kend meg a kerékpárláncot otthon: milyen gyakran, mivel, milyen lépésekben, és mely hibákat kerüld el.",
+      "markdown": "A kerékpárláncot úgy tisztítod meg a legkönnyebben, hogy zsíroldóval átdörzsölöd, vízzel leöblíted, alaposan megszárítod, majd minden görgőre kevés kenőolajat cseppentesz, és a felesleget letörlöd. A tiszta, vékonyan olajozott lánc csendesebb, pontosabban vált, és lassabban kopik, mint a koszos, olajtól csöpögő.\n\n## Milyen gyakran kell tisztítani?\n\nNincs kőbe vésett szabály: a lánc akkor szorul tisztításra, ha fekete és ragacsos, vagy ha csikorog. Esős, sáros út után érdemes minél előbb letisztítani, mert a homok és a víz a csapszegek között csiszolópasztává áll össze. Száraz időben, városi használatnál elég néhány hetente egy alaposabb tisztítás, közben pedig egy-egy áttörlés ronggyal.\n\n## Amire szükséged lesz\n\n- zsíroldó,\n- kefe vagy láncmosó,\n- egy vödör víz és egy szivacs,\n- tiszta, száraz rongy,\n- láncolaj.\n\nA [láncmosó készülékben](P1) három forgó kefe tisztítja a láncot [F1]. Tartályába zsíroldót kell tölteni, és a láncra csíptetve, a hajtókart visszafelé tekerve működik [F2]. Szétszedhető és vízzel öblíthető [F3].\n\n{{P1}}\n\n## Lépésről lépésre\n\n- Kapcsold a láncot a legkisebb hátsó fogaskerékre, hogy laza legyen.\n- Vidd fel a zsíroldót, és hagyd hatni néhány percig.\n- Tekerd visszafelé a hajtókart, miközben kefével vagy láncmosóval átdörzsölöd a láncot.\n- Öblítsd le langyos vízzel, gyenge sugárral, a kerékagyakat és a középcsapágyat kerülve.\n- Töröld szárazra, és hagyd teljesen megszáradni.\n\nA [biológiailag lebomló zsíroldó](P2) oldószermentes [F4]. Hígítatlanul és vízzel hígítva is használható [F6], és 500 ml-es szórófejes flakonban kapható [F5].\n\n{{P2}}\n\n## Kenés: a kevesebb több\n\nA kenőanyagnak a lánc belsejébe, a görgők és a csapszegek közé kell jutnia, nem a lánc külső felére. Cseppents egy-egy cseppet minden görgőre, tekerj néhányat a hajtókarral, várj pár percet, majd ronggyal töröld le a felesleget. A kívül maradt olaj csak megköti a port.\n\nEsős, sáros időre nedves, száraz, poros utakra száraz kenőanyag való. A [nedves időre való lánckenőolaj](P3) esőben és sárban is a láncon marad [F7]. 100 ml-es csepegtetős flakonban kapható [F8].\n\n{{P3}}\n\n## Gyakori hibák\n\n- Nagynyomású mosó: kimossa a zsírt a csapágyakból.\n- Olaj a féktárcsán vagy a fékbetéten: kenéskor mindig tarts rongyot a lánc alá.\n- Kenés tisztítás nélkül: a friss olaj a régi kosszal keveredve csak ront a helyzeten.\n- Túl sok olaj: ragad, és gyűjti a port.\n\nMinden karbantartó eszközt a [szerviz és karbantartás](L1) kategóriában találsz, a lánc kopásáról pedig [ebben a cikkünkben](L2) olvashatsz.\n"
+    }
+  },
+  {
+    "id": "hu-j05",
+    "language": "hu",
+    "note": "Fails grounding: the fact says only that the pan can go in the oven, but the draft cites it to claim it also works under the grill and on the embers of an outdoor fire; everything else is sound.",
+    "expect": "fail",
+    "failOn": "grounding",
+    "store": {
+      "name": "Fakanál Konyhabolt",
+      "sells": "főzőedények és konyhai eszközök",
+      "audience": "otthon főzők",
+      "tone": "közvetlen",
+      "neverSay": ""
+    },
+    "topic": {
+      "workingTitle": "Öntöttvas serpenyő beégetése és ápolása",
+      "targetQuery": "öntöttvas serpenyő beégetése"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Öntöttvas serpenyő, 26 cm",
+        "productType": "Serpenyő"
+      },
+      {
+        "ref": "P2",
+        "title": "Rozsdamentes láncos súroló",
+        "productType": "Tisztítóeszköz"
+      },
+      {
+        "ref": "P3",
+        "title": "Szilikon nyélvédő",
+        "productType": "Konyhai kiegészítő"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "Az öntöttvas serpenyő átmérője 26 cm."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "Az öntöttvas serpenyőt gyárilag növényi olajjal beégették."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "Az öntöttvas serpenyő gáz-, elektromos és indukciós főzőlapon is használható."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P1",
+        "text": "Az öntöttvas serpenyő sütőben is használható."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P1",
+        "text": "Az öntöttvas serpenyőnek két kiöntőcsőre van."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P2",
+        "text": "A rozsdamentes láncos súroló rozsdamentes acélgyűrűkből áll."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P2",
+        "text": "A rozsdamentes láncos súroló mosogatógépben mosható."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P3",
+        "text": "A szilikon nyélvédő 230 °C-ig hőálló."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Öntöttvas edények"
+      }
+    ],
+    "draft": {
+      "title": "Öntöttvas serpenyő beégetése és ápolása",
+      "metaDescription": "Hogyan égesd be az öntöttvas serpenyőt lépésről lépésre, mit süss benne először, és hogyan tisztítsd, hogy ne rozsdásodjon.",
+      "markdown": "Az öntöttvas serpenyőt úgy égeted be, hogy tisztára mosod, teljesen megszárítod, vékonyan bekened magas füstpontú olajjal, a felesleget szinte teljesen letörlöd, majd fejjel lefelé, forró sütőben nagyjából egy órán át hevíted [G]. Ha ezt két-három alkalommal megismétled, tartós, sötét, természetesen tapadásmentes réteg alakul ki.\n\n## Mi az a beégetés, és miért kell?\n\nBeégetéskor a vékony olajréteg a hő hatására polimerizálódik, vagyis kemény, a vashoz tapadó bevonattá alakul. Ez védi a serpenyőt a rozsdától, és minden használattal simábbá válik. Az öntöttvason nincs teflonszerű bevonat, ezt a feladatot ez a réteg látja el.\n\nAz [öntöttvas serpenyőnket](P1) gyárilag növényi olajjal beégették [F2]. Egy-két otthoni beégetés ettől függetlenül tovább erősíti a réteget.\n\n{{P1}}\n\n## Beégetés lépésről lépésre\n\n- Mosd el meleg, mosogatószeres vízzel, és töröld szárazra.\n- Tedd a tűzhelyre néhány percre, hogy az utolsó nedvesség is elpárologjon.\n- Kenj rá vékonyan olajat belül, kívül és a nyélen is.\n- Papírtörlővel töröld le, amennyit csak tudsz, mert a vastag réteg ragacsos marad.\n- Tedd fejjel lefelé a forró sütőbe, alá egy tepsit, és hagyd benne kihűlni.\n\nA beégetéshez jól használható a napraforgó-, a repce- vagy a szőlőmagolaj. Az öntöttvas serpenyő sütőben, grill alatt és akár a kerti tűzrakóhely parazsán is használható [F4].\n\n## Használat a mindennapokban\n\nAz első néhány alkalommal érdemes zsiradékban gazdag ételeket sütni benne: hagymát, szalonnát, sült krumplit. A savas, hosszan főtt ételek, például a paradicsomszósz, a friss réteget még megtámadhatják. Mindig közepes lángon melegítsd elő, mert az öntöttvas lassan, de egyenletesen veszi fel a hőt.\n\nAz öntöttvas serpenyő gáz-, elektromos és indukciós főzőlapon is használható [F3], átmérője 26 cm [F1]. Két kiöntőcsőre van [F5], így jobbra és balra is leöntheted a zsiradékot. A nyél ugyanúgy felforrósodik, mint a serpenyő: a [szilikon nyélvédő](P3) 230 °C-ig hőálló [F8].\n\n## Tisztítás és tárolás\n\nMosogatáshoz meleg víz kell, egy kevés mosogatószer sem árt a beégett rétegnek, áztatni és mosogatógépbe tenni viszont soha ne tedd. A [rozsdamentes láncos súroló](P2) rozsdamentes acélgyűrűkből áll [F6], és mosogatógépben mosható [F7]. Mosás után töröld szárazra, melegítsd át a főzőlapon, és egy csepp olajjal töröld át. Száraz helyen tárold, és ha más edényt teszel bele, tegyél közé papírtörlőt. Ha mégis berozsdásodna, súrold le a rozsdát, és égesd be újra. További darabokat az [öntöttvas edények](L1) között találsz.\n\n{{P2}}\n"
+    }
+  },
+  {
+    "id": "hu-j06",
+    "language": "hu",
+    "note": "Fails grounding: one sentence implies long-term testing (\"even after months of daily use the inside does not stain, and the infuser lets no leaf dust through\") without saying \"we tried it\", and cites facts that only give the material and the infuser.",
+    "expect": "fail",
+    "failOn": "grounding",
+    "store": {
+      "name": "Teaház a Sarkon",
+      "sells": "szálas teák és teáskellékek",
+      "audience": "teakedvelők",
+      "tone": "meleg",
+      "neverSay": ""
+    },
+    "topic": {
+      "workingTitle": "Hogyan főzzünk szálas fekete teát?",
+      "targetQuery": "szálas tea főzése"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Boroszilikát üveg teáskanna",
+        "productType": "Teáskanna"
+      },
+      {
+        "ref": "P2",
+        "title": "Assam fekete tea",
+        "productType": "Fekete tea"
+      },
+      {
+        "ref": "P3",
+        "title": "Rozsdamentes teaszűrő kosár",
+        "productType": "Teaszűrő"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "Az üveg teáskanna 800 ml-es."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "Az üveg teáskanna hőálló boroszilikát üvegből készül."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "Az üveg teáskannához kivehető rozsdamentes acél szűrőbetét tartozik."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P1",
+        "text": "Az üveg teáskanna mosogatógépben mosható."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P2",
+        "text": "Az Assam fekete tea az indiai Asszám államból származik."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P2",
+        "text": "Az Assam fekete tea ajánlott áztatási ideje 3–4 perc 95–100 °C-os vízben."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P2",
+        "text": "Az Assam fekete tea tejjel is fogyasztható."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P3",
+        "text": "A rozsdamentes teaszűrő kosár a legtöbb bögrébe és csészébe beleillik."
+      },
+      {
+        "ref": "F9",
+        "productRef": "P3",
+        "text": "A rozsdamentes teaszűrő kosár finom szövésű rozsdamentes acélhálóból készül."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Fekete teák"
+      },
+      {
+        "ref": "L2",
+        "kind": "article",
+        "title": "Szálas tea kezdőknek"
+      }
+    ],
+    "draft": {
+      "title": "Szálas fekete tea főzése: így lesz testes, de nem kesernyés",
+      "metaDescription": "Hogyan főzz szálas fekete teát: mennyi levél kell, milyen víz, mennyi ideig áztasd, kannában vagy csészében, és hogyan tárold.",
+      "markdown": "Szálas fekete teához forrásban lévő vagy épp csak visszahűlt vizet használj, csészénként egy púpozott teáskanál levelet tegyél bele, 3–5 percig áztasd, majd vedd ki a leveleket a vízből [G]. Ha tovább áztatod, a tea fanyar és kesernyés lesz; ha erősebbet szeretnél, inkább több levelet tegyél bele, és ne az időt nyújtsd.\n\n## Miért más a szálas tea, mint a filteres?\n\nA filteres teák nagy része apróra tört levélből készül, amely gyorsan és erősen ázik ki. A szálas tea egész vagy nagyobb darabokra tört levelekből áll, amelyeknek idő és hely kell ahhoz, hogy kinyíljanak. Ezért a szálas tea íze gazdagabb és rétegzettebb, és jobban a saját ízlésedhez igazíthatod, cserébe egy kicsit több figyelmet kér.\n\n## A víz és az áztatási idő\n\nA fekete teát forró vízzel kell készíteni, mert a langyosabb víz nem oldja ki rendesen az ízanyagokat. A kemény, vízkőben gazdag csapvíz tompítja az ízt, és hártyát hagy a tea tetején, ezért ha teheted, használj szűrt vizet. Az időt mérd, ne becsüld: egy-két perc is lehet a különbség a kellemes és a keserű csésze között.\n\nAz [Assam fekete tea](P2) az indiai Asszám államból származik [F5]. Ajánlott áztatási ideje 3–4 perc 95–100 °C-os vízben [F6]. Tejjel is fogyasztható [F7]. Az erős fekete teák mellé a tej hagyományos társ, főleg reggel.\n\n{{P2}}\n\n## Kannában vagy csészében?\n\nHa többen isztok, vagy egymás után több csészével innál, kannában érdemes főzni. Az [üveg teáskanna](P1) 800 ml-es [F1], hőálló boroszilikát üvegből készül [F2], és kivehető rozsdamentes acél szűrőbetét tartozik hozzá [F3]. Az üveg teáskanna belseje hónapokig tartó napi használat után sem barnul be, és a szűrőbetét a legapróbb levéltörmeléket sem engedi át [F2, F3]. A szűrőbetétet az áztatási idő végén egyszerűen kiemeled, így a tea nem ázik tovább. Mosogatógépben mosható [F4].\n\n{{P1}}\n\nEgyetlen csészéhez elég egy szűrőkosár. A [rozsdamentes teaszűrő kosár](P3) a legtöbb bögrébe és csészébe beleillik [F8], és finom szövésű rozsdamentes acélhálóból készül [F9]. Szoros teatojás helyett érdemes tágas szűrőt választani, mert a leveleknek hely kell a kinyíláshoz.\n\n## Tárolás\n\nA szálas teát fénytől, nedvességtől és erős szagoktól védve, jól záródó dobozban tárold. A fekete tea tovább megőrzi az ízét, mint a zöld, de nyitott zacskóban néhány hónap alatt így is fakóbbá válik. Szálas teáinkat a [fekete teák](L1) között, a kezdő lépéseket pedig a [szálas tea útmutatónkban](L2) találod.\n"
+    }
+  },
+  {
+    "id": "hu-j07",
+    "language": "hu",
+    "note": "Fails information_gain: every product sentence is correctly cited, but the text is empty filler (\"every cat is different\", \"quality always pays off\") that never says how to judge height, stability or material when choosing a scratching post.",
+    "expect": "fail",
+    "failOn": "information_gain",
+    "store": {
+      "name": "Mancs és Bajusz",
+      "sells": "macskafelszerelés",
+      "audience": "macskatartók",
+      "tone": "barátságos",
+      "neverSay": ""
+    },
+    "topic": {
+      "workingTitle": "Hogyan válasszunk kaparófát?",
+      "targetQuery": "kaparófa macskának"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Szizál kaparóoszlop",
+        "productType": "Kaparóoszlop"
+      },
+      {
+        "ref": "P2",
+        "title": "Kétszintes kaparófa barlanggal",
+        "productType": "Kaparófa"
+      },
+      {
+        "ref": "P3",
+        "title": "Szizál pótkötél",
+        "productType": "Kaparófa-kiegészítő"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "A szizál kaparóoszlop 80 cm magas."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "A szizál kaparóoszlop talpa 40 × 40 cm-es."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "A szizál kaparóoszlopot természetes szizálkötél borítja."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P2",
+        "text": "A kétszintes kaparófa barlangja plüssborítású."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P2",
+        "text": "A kétszintes kaparófa 120 cm magas."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P2",
+        "text": "A kétszintes kaparófa a mellékelt pánttal falhoz rögzíthető."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P3",
+        "text": "A szizál pótkötél 10 méter hosszú."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P3",
+        "text": "A szizál pótkötél 8 mm vastag."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Kaparófák"
+      }
+    ],
+    "draft": {
+      "title": "Hogyan válasszunk kaparófát a macskánknak?",
+      "metaDescription": "Hogyan válassz kaparófát a macskádnak: mire figyelj a választásnál, milyen típusok vannak, és hogyan tartsd jó állapotban.",
+      "markdown": "A jó kaparófa olyan, amelyet a macska szívesen használ, és amely megfelel az igényeinek. Mivel minden macska más, a választásnál érdemes több szempontot is figyelembe venni, hogy a cica és a gazdi is elégedett legyen.\n\n## Miért fontos a kaparás?\n\nA kaparás a macskák természetes viselkedésének része. Fontos számukra, és sokat jelent a jólétük szempontjából. Ha a macska nem kap megfelelő lehetőséget a kaparásra, előfordulhat, hogy máshol keres magának helyet. Ezért érdemes időben gondoskodni róla, hogy legyen otthon egy jó kaparófa.\n\n## Mire figyeljünk a választásnál?\n\nA választásnál sok minden számít. Fontos a méret, az anyag és a stabilitás, de az is, hogy a kaparófa illjen a lakásba és a macska személyiségéhez. Érdemes időt szánni a döntésre, és átgondolni, mire van szüksége a cicának. A minőség mindig megtérül.\n\n## Kaparóoszlop\n\nA kaparóoszlop egyszerű és praktikus megoldás. A [szizál kaparóoszlop](P1) 80 cm magas [F1]. A talpa 40 × 40 cm-es [F2]. Természetes szizálkötél borítja [F3]. Egy kaparóoszlop sokféle otthonba jól beilleszthető.\n\n{{P1}}\n\n## Többszintes kaparófa\n\nHa több helyre és változatosságra vágyunk, egy többszintes kaparófa is szóba jöhet. A [kétszintes kaparófa barlanggal](P2) 120 cm magas [F5]. A barlangja plüssborítású [F4]. A mellékelt pánttal falhoz rögzíthető [F6]. A többszintes kaparófák sokféle lehetőséget kínálnak a macskáknak.\n\n{{P2}}\n\n## Karbantartás\n\nMint minden, a kaparófa is használódik idővel. Érdemes figyelni az állapotára, és ha szükséges, gondoskodni róla. A [szizál pótkötél](P3) 10 méter hosszú [F7], és 8 mm vastag [F8]. A rendszeres odafigyelés mindig megéri.\n\n## Összegzés\n\nA megfelelő kaparófa kiválasztása nem nehéz, ha odafigyelünk a macskánk igényeire. Minden cica egyedi, ezért ami az egyiknek beválik, a másiknak nem biztos, hogy tetszeni fog. A lényeg, hogy a macska jól érezze magát, és legyen hol kaparnia. Egy kis odafigyeléssel mindenki megtalálhatja a számára ideális megoldást. Teljes kínálatunkat a [kaparófák](L1) között találod.\n"
+    }
+  },
+  {
+    "id": "hu-j08",
+    "language": "hu",
+    "note": "Fails structure: it opens with a paragraph on the popularity of hiking instead of answering, its headings do not match their sections (socks under \"Méretválasztás\", insoles under \"Betörés\"), and the actual sizing advice only arrives at the end.",
+    "expect": "fail",
+    "failOn": "structure",
+    "store": {
+      "name": "Ösvény Outdoor",
+      "sells": "túrafelszerelés",
+      "audience": "hazai túrázók",
+      "tone": "közvetlen",
+      "neverSay": ""
+    },
+    "topic": {
+      "workingTitle": "Túrabakancs méretválasztás",
+      "targetQuery": "túrabakancs méret"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Bükk GTX túrabakancs",
+        "productType": "Túrabakancs"
+      },
+      {
+        "ref": "P2",
+        "title": "Merinó túrazokni",
+        "productType": "Zokni"
+      },
+      {
+        "ref": "P3",
+        "title": "Formázható talpbetét",
+        "productType": "Talpbetét"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "A Bükk GTX túrabakancs fél számonként kapható."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "A Bükk GTX túrabakancs vízálló membránnal készül."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "A Bükk GTX túrabakancs normál szélességű kaptafára készül."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P1",
+        "text": "A Bükk GTX túrabakancs magas szárú, a bokát takarja."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P1",
+        "text": "A Bükk GTX túrabakancs talpa Vibram gumi."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P2",
+        "text": "A merinó túrazokni 70% merinógyapjúból készül."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P2",
+        "text": "A merinó túrazokni a sarkon és a lábujjaknál vastagított párnázású."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P3",
+        "text": "A formázható talpbetét hő hatására a lábhoz igazítható."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Túrabakancsok"
+      }
+    ],
+    "draft": {
+      "title": "Túrabakancs méretválasztás: mekkorát vegyél?",
+      "metaDescription": "Mekkora túrabakancsot vegyél: a zokni, a bakancs felépítése, a talpbetét és a próba lépései egy helyen, túrázóknak.",
+      "markdown": "A túrázás az elmúlt években sokak kedvenc hétvégi programja lett. A Mátra, a Börzsöny és a Pilis ösvényei hétvégente megtelnek, és egyre többen vágnak neki hosszabb, többnapos utaknak is. Ehhez elengedhetetlen a jó felszerelés, és ennek egyik legfontosabb darabja a bakancs.\n\n## Méretválasztás\n\nA zokni legalább annyit számít, mint maga a bakancs. A pamut magába szívja az izzadságot, és vízhólyagot okoz, a gyapjú és a szintetikus anyagok viszont jobban elvezetik a nedvességet. A [merinó túrazokni](P2) 70% merinógyapjúból készül [F6], és a sarkon meg a lábujjaknál vastagított párnázású [F7].\n\n{{P2}}\n\n## A bakancs felépítése\n\nA magas szárú bakancs köves, egyenetlen terepen tartást ad a bokának, a vízálló membrán pedig a harmatos fűben és a sárban is szárazon tartja a lábat. A [Bükk GTX túrabakancs](P1) magas szárú, a bokát takarja [F4]. Vízálló membránnal készül [F2], a talpa Vibram gumi [F5]. Normál szélességű kaptafára készül [F3].\n\n{{P1}}\n\n## Betörés\n\nA gyári talpbetétek a legtöbb lábnak megfelelnek, de magas vagy lapos lábboltozatnál érdemes egyedire cserélni őket. A [formázható talpbetét](P3) hő hatására a lábhoz igazítható [F8]. Ha betétet cserélsz, a bakancsot már azzal együtt próbáld fel.\n\n## Mire figyelj a boltban?\n\nAz új bakancsot ne egy hosszú túrán avasd fel. Hordd néhányszor itthon és rövid sétákon, hogy a bőr és a talp felvegye a lábad formáját, és időben kiderüljön, ha valahol nyom. Ha egy pont újra meg újra kidörzsölődik, a lazábbra vagy szorosabbra fűzés gyakran segít.\n\n## Gyakori kérdések\n\nSokan kérdezik, hogy a vízálló bakancs nyáron nem túl meleg-e. A membrán valamennyire szellőzik, de forró, száraz időben egy könnyebb, szellős cipő kényelmesebb lehet. Az is gyakori kérdés, hogy kell-e impregnálni: a bőr felsőrészt évente néhányszor érdemes, főleg ősszel.\n\n## Végül: mekkora legyen?\n\nDélután próbálj, amikor a lábad már kissé megdagadt, és abban a zokniban, amelyben túrázni fogsz. Bekötetlen bakancsban told előre a lábad, amíg a lábujjaid hozzá nem érnek az orrához: a sarkad mögött ekkor nagyjából egy ujjnyi helynek kell lennie. Befűzve a sarok ne csússzon fel-le, lejtőn lefelé pedig a lábujjak ne üssenek a bakancs orrába. Ezért a túrabakancs gyakran valamivel nagyobb, mint a hétköznapi cipőd. A Bükk GTX túrabakancs fél számonként kapható [F1], így pontosabban eltalálhatod a méretet. Teljes kínálatunkat a [túrabakancsok](L1) között találod.\n"
+    }
+  },
+  {
+    "id": "hu-j09",
+    "language": "hu",
+    "note": "Fails fit: the matcha facts are cited correctly, but for a calm, expert tea shop the draft reads as a hard-sell advert, with exclamation marks, \"buy it today\" calls and a closing section about why to choose the shop.",
+    "expect": "fail",
+    "failOn": "fit",
+    "store": {
+      "name": "Zöld Levél Teaszalon",
+      "sells": "japán és kínai zöld teák",
+      "audience": "teakedvelők",
+      "tone": "nyugodt, szakszerű",
+      "neverSay": ""
+    },
+    "topic": {
+      "workingTitle": "Hogyan készítsünk matchát?",
+      "targetQuery": "matcha készítése"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Ceremoniális matcha",
+        "productType": "Matcha"
+      },
+      {
+        "ref": "P2",
+        "title": "Bambusz habverő",
+        "productType": "Teáskellék"
+      },
+      {
+        "ref": "P3",
+        "title": "Kerámia matcha tál",
+        "productType": "Teáskellék"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "A ceremoniális matcha a japán Udzsi vidékéről származik."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "A ceremoniális matcha árnyékban nevelt tencha levelekből kőmalomban őrölt por."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "A ceremoniális matcha 30 g-os, zárható fémdobozban kapható."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P2",
+        "text": "A bambusz habverő egyetlen bambuszdarabból készül, 80 ággal."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P2",
+        "text": "A bambusz habverőhöz kerámia formatartó jár."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P3",
+        "text": "A kerámia matcha tál kézzel mázazott."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P3",
+        "text": "A kerámia matcha tál szája széles, belseje lapos aljú."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P3",
+        "text": "A kerámia matcha tál űrtartalma 400 ml."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Matcha"
+      }
+    ],
+    "draft": {
+      "title": "Matcha készítése otthon",
+      "metaDescription": "Hogyan készíts matchát otthon: szitálás, a víz, a habosítás mozdulata, és minden, amire szükséged lesz hozzá.",
+      "markdown": "Matchához szitálj egy-két kis kanálnyi port egy tálba, önts rá kevés, forrásnál jóval hűvösebb vizet, majd bambusz habverővel, gyors, cikcakkos mozdulatokkal verd habosra. És hogy mindez tökéletes legyen, ahhoz csak egy dolog kell: a Zöld Levél Teaszalon páratlan kínálata!\n\n## Fedezd fel a matcha varázsát!\n\nA matcha nem egyszerűen egy ital, hanem életérzés! Egyetlen csésze pillanatok alatt különlegessé teheti a reggeleidet. Nálunk mindent megtalálsz hozzá egy helyen, gondosan válogatva. Ne elégedj meg kevesebbel, hiszen te is megérdemled a legjobbat!\n\n## A tökéletes matcha titka\n\nA [ceremoniális matcha](P1) a japán Udzsi vidékéről származik [F1]. Árnyékban nevelt tencha levelekből kőmalomban őrölt por [F2]. 30 g-os, zárható fémdobozban kapható [F3]. Ne habozz, tedd a kosaradba még ma!\n\n{{P1}}\n\n## Elkészítés\n\n- Szitáld át a port a tálba, így nem lesz csomós.\n- Önts rá kevés, forrásnál jóval hűvösebb vizet.\n- Verd habosra gyors, cikcakkos mozdulatokkal, amíg a tetején apró buborékos hab nem lesz.\n- Ha hosszabb italt szeretnél, töltsd fel vízzel.\n\nA [bambusz habverő](P2) egyetlen bambuszdarabból készül, 80 ággal [F4]. Kerámia formatartó jár hozzá [F5]. Csapj le rá, amíg készleten van!\n\n{{P2}}\n\n## Szépség, ami az asztalodra való\n\nA [kerámia matcha tál](P3) kézzel mázazott [F6]. Szája széles, belseje lapos aljú [F7]. Űrtartalma 400 ml [F8]. Teázz stílusosan, és varázsold el a vendégeidet is!\n\n{{P3}}\n\n## Miért a Zöld Levél Teaszalon?\n\nMert nálunk a tea szenvedély! Kínálatunkat nagy gonddal válogattuk össze, hogy minden vásárlónk megtalálja, amire vágyik. Böngészd végig a [matcha kollekciót](L1) most, és csatlakozz a teakedvelők egyre népesebb közösségéhez! Ne várj tovább: a tökéletes matchaélmény csak egy kattintásra van tőled!\n"
+    }
+  },
+  {
+    "id": "hu-j10",
+    "language": "hu",
+    "note": "Fails general_numbers: a [G] sentence presents a made-up statistic (\"about 80% of houseplants die from overwatering\") as common knowledge; everything else is sound, so the judge should reject that one.",
+    "expect": "fail",
+    "failOn": "general_numbers",
+    "store": {
+      "name": "Öntözőkanna Kertészet",
+      "sells": "szobanövények és növényápolási kellékek",
+      "audience": "szobanövény-tartók",
+      "tone": "barátságos",
+      "neverSay": ""
+    },
+    "topic": {
+      "workingTitle": "Milyen gyakran kell öntözni a szobanövényeket?",
+      "targetQuery": "szobanövény öntözése"
+    },
+    "products": [
+      {
+        "ref": "P1",
+        "title": "Önöntöző virágcserép",
+        "productType": "Virágcserép"
+      },
+      {
+        "ref": "P2",
+        "title": "Talajnedvesség-mérő",
+        "productType": "Mérőeszköz"
+      },
+      {
+        "ref": "P3",
+        "title": "Hosszú csőrű öntözőkanna",
+        "productType": "Öntözőkanna"
+      }
+    ],
+    "facts": [
+      {
+        "ref": "F1",
+        "productRef": "P1",
+        "text": "Az önöntöző virágcserép átmérője 20 cm."
+      },
+      {
+        "ref": "F2",
+        "productRef": "P1",
+        "text": "Az önöntöző virágcserép víztartálya 0,8 literes."
+      },
+      {
+        "ref": "F3",
+        "productRef": "P1",
+        "text": "Az önöntöző virágcserép vízszintjelzővel rendelkezik."
+      },
+      {
+        "ref": "F4",
+        "productRef": "P2",
+        "text": "A talajnedvesség-mérő elem nélkül működik."
+      },
+      {
+        "ref": "F5",
+        "productRef": "P2",
+        "text": "A talajnedvesség-mérő skálája 1-től 10-ig jelzi a talaj nedvességét."
+      },
+      {
+        "ref": "F6",
+        "productRef": "P2",
+        "text": "A talajnedvesség-mérő szondája 20 cm hosszú."
+      },
+      {
+        "ref": "F7",
+        "productRef": "P3",
+        "text": "A hosszú csőrű öntözőkanna 1 literes."
+      },
+      {
+        "ref": "F8",
+        "productRef": "P3",
+        "text": "A hosszú csőrű öntözőkanna csőre 30 cm hosszú."
+      }
+    ],
+    "pages": [
+      {
+        "ref": "L1",
+        "kind": "collection",
+        "title": "Szobanövény-ápolás"
+      }
+    ],
+    "draft": {
+      "title": "Milyen gyakran kell öntözni a szobanövényeket?",
+      "metaDescription": "Milyen gyakran öntözd a szobanövényeket: honnan tudod, hogy szomjas, hogyan öntözz jól, és mit változtass télen és nyáron.",
+      "markdown": "A legtöbb szobanövényt akkor kell öntözni, amikor a földje a felső pár centiméteren kiszáradt, nem pedig naptár szerint. Nyáron ez gyakrabban, télen ritkábban következik be, és a növény fajtája, a cserép mérete és a lakás melege is sokat számít.\n\n## Miért nem működik a fix heti öntözés?\n\nA szobanövények mintegy 80%-a túlöntözés miatt pusztul el, nem kiszáradás miatt [G]. A naptár szerinti öntözés azért kockázatos, mert nem veszi figyelembe, mennyi vizet használt el valójában a növény. A tartósan nedves földben a gyökerek nem kapnak levegőt, és rothadni kezdenek, a növény pedig ilyenkor ugyanúgy lankad, mint szárazságban, ezért sokan még többet öntöznek.\n\n## Honnan tudod, hogy szomjas?\n\n- Dugd az ujjad a földbe: ha az első ujjpercig száraz, öntözhetsz.\n- Emeld meg a cserepet: a kiszáradt föld érezhetően könnyebb.\n- Figyeld a leveleket: ha lankadnak, de a föld száraz, a növény vizet kér.\n\nA [talajnedvesség-mérő](P2) elem nélkül működik [F4]. Skálája 1-től 10-ig jelzi a talaj nedvességét [F5], szondája 20 cm hosszú [F6]. Mélyebb cserépben érdemes a gyökerek magasságában mérni, mert a felszín mindig hamarabb szárad ki.\n\n{{P2}}\n\n## Hogyan öntözz?\n\nÖntözz alaposan, amíg a víz a cserép alján ki nem folyik, aztán a lefolyt vizet öntsd ki az alátétből. Inkább ritkábban és bőven, mint gyakran és keveset. Szobahőmérsékletű, állott vizet használj, mert a hideg csapvíz megviselheti az érzékenyebb fajtákat.\n\nA [hosszú csőrű öntözőkanna](P3) 1 literes [F7], csőre 30 cm hosszú [F8]. A hosszú csőr segít, hogy a víz a levelek helyett egyenesen a földre kerüljön.\n\n{{P3}}\n\n## Ha gyakran utazol: önöntöző cserép\n\nAz önöntöző cserepek alsó tartályából a növény fokozatosan veszi fel a vizet, így ritkábban kell öntözni. Az [önöntöző virágcserép](P1) átmérője 20 cm [F1], víztartálya 0,8 literes [F2]. Vízszintjelzővel rendelkezik [F3], így látod, mikor kell utántölteni.\n\n{{P1}}\n\n## Évszakok szerint\n\nTélen a legtöbb szobanövény lassabban nő és kevesebb vizet párologtat, ezért ritkábban kell öntözni, még fűtött lakásban is. Tavasszal, amikor megjelennek az új hajtások, fokozatosan növeld az öntözést, nyáron pedig a napos ablakban álló növényeket nézd meg gyakrabban. Teljes kínálatunkat a [szobanövény-ápolás](L1) kategóriában találod.\n"
+    }
+  }
+]
