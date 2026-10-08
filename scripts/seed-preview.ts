@@ -13,15 +13,22 @@ import { taskList } from '../jobs/runtime/task.ts'
 import { startWorker } from '../jobs/worker.ts'
 import { fixture } from '../scenarios/fixtures/index.ts'
 import { AnthropicLlm } from '../vendors/anthropic/client.ts'
+import { finishSetup, skipSearchConsole } from '../core/settings.ts'
+import { confirmProfile, setupState } from '../core/setup.ts'
+import { requestDiscovery } from '../jobs/topics.ts'
 import { startFakeDataForSeo } from '../fakes/fake-dataforseo/server.ts'
 import { DataForSeoDemand } from '../vendors/dataforseo/client.ts'
 
 /**
  * Rebuilds the local database and fills it with fixture stores through the real pipeline, with the
  * fake Shopify and the recorded model answers, so `pnpm preview` has something to show.
- * Usage: pnpm seed:preview [fixture ...]   (default: rich-hu rich-en empty-en)
+ * Usage: pnpm seed:preview [fixture[:done] ...]   (default: rich-hu rich-en empty-en)
+ * A fixture written as name:done is also taken through setup (profile confirmed as drafted, Search
+ * Console skipped, export chosen) and its topics found, so Home has a queue to show.
  */
-const names = process.argv.slice(2).length ? process.argv.slice(2) : ['rich-hu', 'rich-en', 'empty-en']
+const args = process.argv.slice(2).length ? process.argv.slice(2) : ['rich-hu', 'rich-en', 'empty-en']
+const names = args.map((a) => a.replace(/:done$/, ''))
+const finish = new Set(args.filter((a) => a.endsWith(':done')).map((a) => a.replace(/:done$/, '')))
 const url = new URL(env('DATABASE_URL'))
 const admin = new pg.Client({ connectionString: Object.assign(new URL(url), { pathname: '/postgres' }).toString() })
 await admin.connect()
@@ -44,17 +51,32 @@ const deps: Deps = {
   hooks: {},
 }
 const worker = await startWorker({ connectionString: url.toString(), taskList: taskList(deps, ALL_JOBS), quiet: true })
+const settle = async () => {
+  for (;;) {
+    const { rows } = await pool.query<{ n: number }>('select count(*)::int as n from graphile_worker.jobs where attempts < max_attempts')
+    if (rows[0]!.n === 0) break
+    await new Promise((r) => setTimeout(r, 200))
+  }
+}
+const ids = new Map<string, number>()
 for (const name of names) {
   const store = fixture(name)
   shopify.addShop(store)
   const id = await installShopifyStore(pool, deps.shopifyApp, store.shop.myshopifyDomain, shopify.mintSessionToken(store.shop.myshopifyDomain))
+  ids.set(name, id)
   await startInitialLearn(pool, id)
 }
-for (;;) {
-  const { rows } = await pool.query<{ n: number }>('select count(*)::int as n from graphile_worker.jobs where attempts < max_attempts')
-  if (rows[0]!.n === 0) break
-  await new Promise((r) => setTimeout(r, 200))
+await settle()
+for (const name of finish) {
+  const id = ids.get(name)!
+  const { profile } = await setupState(pool, id)
+  if (!profile) continue
+  await confirmProfile(pool, id, profile)
+  await skipSearchConsole(pool, id)
+  await finishSetup(pool, id, { mode: 'export', blog: null, publishAs: 'live', publishHour: 9, reviewFirst: false })
+  await requestDiscovery(pool, id, 'setup', new Date().toISOString())
 }
+await settle()
 await worker.stop()
 await shopify.close()
 await anthropic.close()

@@ -149,3 +149,41 @@ export function Choices(props: { name: string; label: string; value: string; onC
     </fieldset>
   )
 }
+
+export function Checkbox(props: { id: string; label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="ui-checkbox" htmlFor={props.id}>
+      <input id={props.id} type="checkbox" checked={props.checked} onChange={(e) => props.onChange(e.target.checked)} />
+      <span>{props.label}</span>
+    </label>
+  )
+}
+
+export function Switch(props: { id: string; label: string; checked: boolean; disabled?: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="ui-switch" htmlFor={props.id}>
+      <input id={props.id} type="checkbox" role="switch" checked={props.checked} disabled={props.disabled} onChange={(e) => props.onChange(e.target.checked)} />
+      <span className="ui-switch-track" aria-hidden="true" />
+      <span>{props.label}</span>
+    </label>
+  )
+}
+
+/** Product images as small squares with names, at most `max`, then "+N". */
+export function Thumbs({ items, max = 4, more }: { items: { id: number; title: string; image: string | null }[]; max?: number; more: (n: number) => string }) {
+  return (
+    <div className="ui-thumbs">
+      {items.slice(0, max).map((p) => (
+        <span key={p.id} className="ui-thumb">
+          {p.image ? <img src={p.image} alt="" loading="lazy" /> : <span className="ui-thumb-blank" />}
+          <span>{p.title}</span>
+        </span>
+      ))}
+      {items.length > max && <span className="ui-tag">{more(items.length - max)}</span>}
+    </div>
+  )
+}
+
+export function Why({ children }: { children: ReactNode }) {
+  return <p className="ui-why">{children}</p>
+}

@@ -1,13 +1,20 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { MESSAGES, uiLanguage, type Messages } from '../i18n/messages.ts'
+import { MESSAGES, uiLanguage, type Messages, type UiLanguage } from '../i18n/messages.ts'
+
+export type Screen = 'home' | 'products' | 'settings'
 
 /** What every screen gets from its host: an API client with our bearer token, and the copy. */
 export type Host = {
   get: <T>(path: string) => Promise<T>
   post: <T>(path: string, body: unknown) => Promise<{ status: number; body: T }>
   t: Messages
-  /** Opens a page of the host platform's admin, for example the product list. */
-  adminLink: (page: 'products') => string
+  language: UiLanguage
+  /** Opens a page of the host platform's admin: the product list, or one product by its platform id. */
+  adminLink: (page: 'products', platformId?: string) => string
+  /** Where one of our screens lives in this host. */
+  href: (screen: Screen) => string
+  /** The host's navigation, shown once setup is done. */
+  Nav: () => ReactNode
 }
 
 const HostContext = createContext<Host | null>(null)
@@ -26,6 +33,8 @@ export function HostProvider(props: {
   signIn: () => Promise<string>
   locale: string | null
   adminLink: Host['adminLink']
+  href: Host['href']
+  Nav: Host['Nav']
   children: ReactNode
 }) {
   const [state, setState] = useState<{ host: Host } | { error: true } | null>(null)
@@ -48,7 +57,10 @@ export function HostProvider(props: {
         return { status: res.status, body: (await res.json()) as never }
       },
       t: MESSAGES[uiLanguage(props.locale)],
+      language: uiLanguage(props.locale),
       adminLink: props.adminLink,
+      href: props.href,
+      Nav: props.Nav,
     }
     props.signIn().then(
       (t) => {

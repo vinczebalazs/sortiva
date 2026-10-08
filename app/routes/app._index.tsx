@@ -1,5 +1,5 @@
-import { Setup } from '../screens/Setup.tsx'
+import { App } from '../screens/App.tsx'
 
 export default function AppHome() {
-  return <Setup />
+  return <App screen="home" />
 }

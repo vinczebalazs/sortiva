@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import type { ProfileErrors, SetupState } from '../../core/setup.ts'
 import { useHost } from '../shell/api.tsx'
-import { Banner, Button, Card, Checklist, Choices, Page, Progress, Select, Stack, Tag, TextField } from '../ui/components.tsx'
+import type { DeliveryErrors, SettingsState } from '../../core/settings.ts'
+import { Banner, Button, Card, Checklist, Page, Progress, Stack, Tag } from '../ui/components.tsx'
+import { DeliveryFields, ProfileFields, deliveryBody, deliveryForm, type DeliveryForm, type ProfileForm } from './forms.tsx'
 
 const STEPS = 4
 const POLL_MS = 2000
@@ -26,6 +28,11 @@ export function Setup({ onDone }: { onDone?: () => void }) {
     }
   }, [])
 
+  const next = (s: SetupState) => {
+    setState(s)
+    if (s.step === 'done') onDone?.()
+  }
+
   if (!state) return null
   switch (state.step) {
     case 'reading':
@@ -34,8 +41,12 @@ export function Setup({ onDone }: { onDone?: () => void }) {
       return <NoProducts />
     case 'profile':
       return <ConfirmProfile state={state} onConfirmed={setState} />
-    default:
-      return <AfterProfile />
+    case 'search_console':
+      return <SearchConsoleStep onDone={setState} />
+    case 'delivery':
+      return <DeliveryStep onDone={next} />
+    case 'done':
+      return null
   }
 }
 
@@ -80,7 +91,7 @@ function NoProducts() {
 function ConfirmProfile({ state, onConfirmed }: { state: SetupState; onConfirmed: (s: SetupState) => void }) {
   const { t, post } = useHost()
   const draft = state.profile
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<ProfileForm>({
     sells: draft?.sells ?? '',
     audience: draft?.audience ?? '',
     language: state.storeLanguageSupported ? (draft?.language ?? 'en') : '',
@@ -90,8 +101,6 @@ function ConfirmProfile({ state, onConfirmed }: { state: SetupState; onConfirmed
   })
   const [errors, setErrors] = useState<ProfileErrors>({})
   const [saving, setSaving] = useState(false)
-  const set = (key: keyof typeof form) => (value: string) => setForm((f) => ({ ...f, [key]: value }))
-  const message = (e?: 'required' | 'unsupported') => (e === 'required' ? t.profile.required : e === 'unsupported' ? t.profile.unsupported : undefined)
 
   const confirm = async () => {
     setSaving(true)
@@ -109,42 +118,67 @@ function ConfirmProfile({ state, onConfirmed }: { state: SetupState; onConfirmed
       actions={<Button primary disabled={saving} onClick={confirm}>{saving ? t.profile.saving : t.profile.confirm}</Button>}
     >
       <Card aside={<Tag tone="primary">{t.profile.draft}</Tag>}>
+        <ProfileFields form={form} onChange={setForm} errors={errors} languageSupported={state.storeLanguageSupported} />
+      </Card>
+    </Page>
+  )
+}
+
+// Connecting is built with the Search Console client; until then only "Skip for now" works.
+function SearchConsoleStep({ onDone }: { onDone: (s: SetupState) => void }) {
+  const { t, post } = useHost()
+  const [busy, setBusy] = useState(false)
+  const skip = async () => {
+    setBusy(true)
+    onDone((await post<SetupState>('/api/setup/search-console', {})).body)
+  }
+  return (
+    <Page label={t.stepOf(3, STEPS)} title={t.searchConsole.title} subtitle={t.searchConsole.subtitle}>
+      <Card>
         <Stack>
-          <TextField id="sells" label={t.profile.sells} value={form.sells} onChange={set('sells')} multiline error={message(errors.sells)} />
-          <TextField id="audience" label={t.profile.audience} value={form.audience} onChange={set('audience')} multiline error={message(errors.audience)} />
-          {!state.storeLanguageSupported && <Banner tone="warning">{t.profile.languageUnsupported}</Banner>}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
-            <Select
-              id="language"
-              label={t.profile.language}
-              value={form.language}
-              onChange={set('language')}
-              error={message(errors.language)}
-              options={[...(form.language ? [] : [{ value: '', label: '—' }]), { value: 'en', label: t.languages.en }, { value: 'hu', label: t.languages.hu }]}
-            />
-            <TextField id="country" label={t.profile.country} hint={t.profile.countryHint} value={form.country} onChange={set('country')} error={message(errors.country)} />
+          <p style={{ margin: 0 }}>{t.searchConsole.body}</p>
+          <Banner>{t.searchConsole.connectSoon}</Banner>
+          <div className="ui-row">
+            <Button primary disabled>{t.searchConsole.connect}</Button>
+            <Button ghost disabled={busy} onClick={skip}>{t.searchConsole.skip}</Button>
           </div>
-          <Choices
-            name="tone"
-            label={t.profile.tone}
-            value={form.tone}
-            onChange={set('tone')}
-            options={(['plain', 'friendly', 'expert'] as const).map((v) => ({ value: v, ...t.profile.tones[v] }))}
-          />
-          <TextField id="never-say" label={t.profile.neverSay} hint={t.profile.neverSayHint} value={form.neverSay} onChange={set('neverSay')} multiline />
         </Stack>
       </Card>
     </Page>
   )
 }
 
-// Steps 3 and 4 (Search Console, delivery) are the next phase's screens.
-function AfterProfile() {
-  const { t } = useHost()
+function DeliveryStep({ onDone }: { onDone: (s: SetupState) => void }) {
+  const { t, get, post } = useHost()
+  const [settings, setSettings] = useState<SettingsState | null>(null)
+  const [form, setForm] = useState<DeliveryForm | null>(null)
+  const [errors, setErrors] = useState<DeliveryErrors>({})
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    get<SettingsState>('/api/settings').then((s) => {
+      setSettings(s)
+      setForm(deliveryForm(s))
+    })
+  }, [])
+  if (!settings || !form) return null
+
+  const finish = async () => {
+    setSaving(true)
+    const res = await post<SetupState | { errors: DeliveryErrors }>('/api/setup/delivery', deliveryBody(form))
+    setSaving(false)
+    if (res.status === 422) setErrors((res.body as { errors: DeliveryErrors }).errors)
+    else onDone(res.body as SetupState)
+  }
+
   return (
-    <Page label={t.stepOf(3, STEPS)} title={t.next.title}>
+    <Page
+      label={t.stepOf(4, STEPS)}
+      title={t.delivery.title}
+      actions={<Button primary disabled={saving} onClick={finish}>{saving ? t.common.saving : t.delivery.finish}</Button>}
+    >
       <Card>
-        <p style={{ margin: 0 }}>{t.next.body}</p>
+        <DeliveryFields form={form} onChange={setForm} settings={settings} errors={errors} />
       </Card>
     </Page>
   )

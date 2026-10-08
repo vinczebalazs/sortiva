@@ -18,7 +18,7 @@ export const catalogSync = defineJob<SyncPayload, Deps>({
 const SYNC_REQUEST_LOCK = 0x53594e43
 const syncJobKey = (storeId: number) => `catalog_sync:${storeId}`
 
-async function syncQueued(db: DbClient, storeId: number): Promise<boolean> {
+export async function syncQueued(db: DbClient, storeId: number): Promise<boolean> {
   const { rowCount } = await db.query('select 1 from graphile_worker.jobs where key = $1', [syncJobKey(storeId)])
   return Boolean(rowCount)
 }

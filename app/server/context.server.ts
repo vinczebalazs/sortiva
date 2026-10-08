@@ -2,12 +2,27 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 import type { ShopifyAppConfig } from '../../connectors/shopify/tokens.ts'
 import { env } from '../../config/env.ts'
 import { createPool, type Db } from '../../db/pool.ts'
+import type { TopicDeps } from '../../core/topics/discover.ts'
+import { AnthropicLlm } from '../../vendors/anthropic/client.ts'
+import { DataForSeoDemand } from '../../vendors/dataforseo/client.ts'
 
 let pool: Db | undefined
 
 export function db(): Db {
   pool ??= createPool()
   return pool
+}
+
+let topicDeps: TopicDeps | undefined
+
+/** "Add a topic" runs while the merchant waits, so the web process holds its own model and demand clients. */
+export function topics(): TopicDeps {
+  topicDeps ??= {
+    db: db(),
+    llm: new AnthropicLlm(db(), { apiKey: env('ANTHROPIC_API_KEY') }),
+    demand: new DataForSeoDemand(db(), { login: env('DATAFORSEO_LOGIN'), password: env('DATAFORSEO_PASSWORD') }),
+  }
+  return topicDeps
 }
 
 export function shopifyApp(): ShopifyAppConfig {

@@ -1,5 +1,6 @@
 import type { Db } from '../db/pool.ts'
 import { confirmProfile, type ProfileErrors, type ProfileInput } from './setup.ts'
+import { pauseReason, type PauseReason } from './status.ts'
 
 export type DeliveryInput = {
   mode: string
@@ -18,6 +19,8 @@ export type SettingsState = {
   blogs: { id: string; title: string }[]
   timezone: string
   pausedByMerchant: boolean
+  /** A pause we put on ourselves, if any, shown under the merchant's switch. */
+  pausedByUs: Exclude<PauseReason, 'paused_by_merchant'> | null
   searchConsole: { connected: boolean; property: string | null; since: string | null }
 }
 
@@ -46,11 +49,13 @@ export async function settingsState(db: Db, storeId: number): Promise<SettingsSt
     [storeId],
   )
   const connected = Boolean(r.connected_at && !r.disconnected_at)
+  const ours = await pauseReason(db, storeId)
   return {
     delivery: { mode: r.delivery_mode, blogId: r.target_blog_id, blogToCreate: r.blog_to_create, publishAs: r.publish_as, publishHour: r.publish_hour, reviewFirst: r.review_first },
     blogs,
     timezone: r.timezone,
     pausedByMerchant: r.paused_by_merchant,
+    pausedByUs: ours === 'paused_by_merchant' ? null : ours,
     searchConsole: { connected, property: connected ? r.property : null, since: connected ? r.connected_at!.toISOString() : null },
   }
 }
