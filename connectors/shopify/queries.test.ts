@@ -1,7 +1,10 @@
 import { NoDeprecatedCustomRule, parse, specifiedRules, validate } from 'graphql'
 import { describe, expect, it } from 'vitest'
 import { pinnedSchema, PINNED_VERSION } from '../../fakes/fake-shopify/schema/pinned.ts'
-import { ALL_DOCUMENTS } from './queries.ts'
+import * as contract from './contract-queries.ts'
+import { ALL_DOCUMENTS as PRODUCT_DOCUMENTS } from './queries.ts'
+
+const ALL_DOCUMENTS = { ...PRODUCT_DOCUMENTS, ...contract }
 import { CONFIG } from '../../core/config.ts'
 import { requestedCost } from '../../fakes/fake-shopify/graphql.ts'
 

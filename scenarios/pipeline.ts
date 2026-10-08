@@ -17,6 +17,7 @@ import { enqueueNightlySync, requestSync, startInitialLearn } from '../jobs/cata
 import type { Deps, Hooks } from '../jobs/deps.ts'
 import { acceptDelivery } from '../jobs/intake.ts'
 import { taskList } from '../jobs/runtime/task.ts'
+import { nightlySweep } from '../jobs/sweepers.ts'
 import { startWorker } from '../jobs/worker.ts'
 import { fixture } from './fixtures/index.ts'
 
@@ -79,7 +80,7 @@ export async function startPipeline(options: { webhookDebounceMs?: number } = {}
     webhookDebounceMs: options.webhookDebounceMs ?? 1_500,
     hooks,
   }
-  const worker = await startWorker({ connectionString: db.url, taskList: taskList(deps, ALL_JOBS), concurrency: 4, quiet: true })
+  const worker = await startWorker({ connectionString: db.url, taskList: { ...taskList(deps, ALL_JOBS), nightly_sweep: nightlySweep(db.pool) }, concurrency: 4, quiet: true })
 
   const storeId = async (domain: string) => {
     const { rows } = await db.pool.query<{ id: number }>('select id from stores where shop_domain = $1', [domain])

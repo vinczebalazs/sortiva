@@ -101,6 +101,22 @@ describe.skipIf(recordings.length === 0)('every response template descends from 
       expect(recordings).toContain(template.recording)
     })
   }
+  for (const file of recordings.filter((f) => f.startsWith('query.'))) {
+    it(`the fake answers ${file.replace('.json', '')} in the same form as the dev store did`, async () => {
+      const recording = JSON.parse(readFileSync(new URL(file, recordingsDir), 'utf8'))
+      const name = recording.request.document as string
+      const document = Object.values(q.ALL_DOCUMENTS).find((d) => new RegExp(`(query|mutation)\\s+${name}\\b`).test(d))!
+      const variables = { ...recording.request.variables }
+      delete variables.after
+      if (typeof variables.id === 'string') {
+        const type = /gid:\/\/shopify\/(\w+)\//.exec(variables.id)?.[1]
+        if (type === 'Product') variables.id = (await gql(q.PRODUCTS_PAGE, { first: 1 })).body.data.products.nodes[0].id
+        if (type === 'Article') variables.id = (await gql(q.ARTICLES_PAGE, { first: 1 })).body.data.articles.nodes[0].id
+      }
+      const ours = await gql(document, variables)
+      expect(shapeDifferences(ours.body, recording.body)).toEqual([])
+    })
+  }
 })
 
 describe('the fake behaves as Shopify documents', () => {
