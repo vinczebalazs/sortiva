@@ -1,0 +1,92 @@
+{
+  "recordedAt": "2026-10-08T15:45:36.105Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "Egy webáruház egyetlen termékét olvasod el, és felsorolod azokat a tényeket, amelyeket a termék önmagáról állít.\n\nTény az a rövid állítás, amelyet a vásárló a terméken vagy a csomagoláson ellenőrizni tud: miből készült, mekkora, mennyi a tömege vagy az űrtartalma, hány darab van egy csomagban, mihez illik vagy mivel használható, hogyan kell használni vagy ápolni, hol vagy hogyan készült, milyen változatai vannak.\n\nNem tény a dicséret, az érzés, az ígéret, a népszerűség, a meg nem nevezett versenytársakhoz mért összehasonlítás, és az, hogy a vásárló mit érdemel vagy mit fog érezni („mindenki imádja”, „a legjobb”, „tökéletes választás”, „varázsold otthonodat…”). Ezeket hagyd ki akkor is, ha egy mondatban állnak egy ténnyel. Árat soha ne írj.\n\nMinden tényhez add meg:\n- fact: egyetlen mondat, amely megnevezi a terméket és egy dolgot állít róla, a termékszöveg nyelvén. Ne tegyél hozzá semmit, amit a forrás nem mond. A számokat és mértékegységeket pontosan úgy írd, ahogy a forrásban állnak; ne váltsd át és ne kerekítsd őket.\n- source_field: a mező, ahonnan származik.\n- quote: a mezőnek az a része, amely alátámasztja a tényt, betűről betűre kimásolva, egyetlen összefüggő darabként. A tényben szereplő minden számnak szerepelnie kell az idézetben.\n\nHa a termék semmi ellenőrizhetőt nem állít, adj vissza üres listát. Egy rövid, igaz lista jobb egy hosszú, felduzzasztottnál.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<title>\nHarmónia gyertya\n</title>\n\n<product_type>\nGyertya\n</product_type>\n\n<vendor>\nÁlomvilág\n</vendor>\n\n<options>\nTitle: Default Title\n</options>\n\n<tags>\nsláger\n</tags>\n\n<metafields>\n\n</metafields>\n\n<description>\nVarázsold otthonodat a nyugalom szigetévé! A Harmónia gyertya több mint egy gyertya: életérzés. Mert megérdemled.\n</description>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "facts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fact": {
+                    "type": "string"
+                  },
+                  "source_field": {
+                    "type": "string",
+                    "description": "{enum: [\"title\",\"product_type\",\"vendor\",\"options\",\"tags\",\"metafields\",\"description\"]}"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "fact",
+                  "source_field",
+                  "quote"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "facts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfq2eaCUvQEDKSQB7nGZu",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQS3gcKEAgSGAI4AUIIdGhpbmtpbmcSDJN0OTcALYJk7OY0IBoM0B+zn9sLVmRK0P57IjBJCaZUSqXWjKvMV9XFEgOhPBF27Ulb2ZTwxamqbCzk3bkZ54Y1xJQ829d+uuexIe4q+wa7YHGfE5zN8hWWZVQDPxnyEFVpbEjCJKZ69YKTKMayG5TNVf6UEsbFdDoefQWHNViYq6Ypou6Ht0jVxob2/G+xROZLk9Vab/vnzv2K6+XAlCkjsaTi5ovpHyx7Zbo5joyJUT8fUU4wQa0ACIfcbj5XhLH3AoyADL2XRzZ2ZuquHz9nwy7bSYPXZZCCxau0L6ZrE91qhMbK7RTKZvgNFSwPEN5QbpAZjUDmPjQ5kCH6z45JVE03815I4VCExINi5kJlD3HB8M68S+erDwBx/VuvkAbyI6SWq13FpQ9ijkqUTQQmT7kk2nZyoDNH/KlBzb2PzxyZOdZQs36q0dn4YEr/kqrpoE0bWbJmCjHLSDicBUhbKU4uOkHuthIjgtp60mgJD0VW4pplLo6WSQIxxIMVjqOvKlfEIw6iI+3JGuGKIHwomlk6cRqvLO7nTHNeQ3VIIBqgXKz5qCjPw+HzB2xqbpB2RiEprLWuje26dnFkqwj+aPFLAFfCkc/OlrbGZpBtr+3OhuCdWxgDVsKuX+gRemO4oUScIUdUtmXtCFjrZEWIRJyj4ZuKGoEw5ui+K2A70ZSOGyx5nqVlusfV+0wJMm29nnX/Tzevy6rvqzpm3bw7wZ8gwMxBkk2uZp8LPTNTIjSYTQdgvls/z8UvhvB4S0mVA7ezGlJlptZD51rOMV85YsqImhvqk+D7iYapjw38QI6fx0cuWtXRpGc/GdaMVHlPjix/AklaaVFqbMtyGvaFY5FkTxp090I9qB+rfriNApxBvHQHh9gK7SHcewSIIuGUsBpmwS6RpBK3M+/mwVDEQhRU9mTDnxOiDYSpZ64nZT195bFKpJtPSYARFUQIKWsB7cAQs/A4psH8nemrW7iLwJnWDJJVEqaLWddIx+FyYdprhXNun1xCxzOmNYs++aOMWvYeo3tOdG1YpLfmx7CEayic95cDdz9+3HzW9m35AVtucAmYJYlsrcx1bsIoCS0t8dtnhBYeFbkRVnaj4KdcJHZ2BjOXgG785wnOxc1frUye6da5XhN4RAO0BLt2y1tlWnxlZqz2J/QW1DRECVA5Rt68U6H0bYHstY7ml+N0JfWGufM57f4mrioYj65Dfd1SWDZt4f20DEzg3xmUZefKzxUnU6zNfrMwMFzeJC4qJuwpWWcVnMFhdHCrjli2fd401tQNzWVshKcYAQ=="
+      },
+      {
+        "type": "text",
+        "text": "{\"facts\":[{\"fact\":\"A Harmónia gyertyát az Álomvilág forgalmazza.\",\"source_field\":\"vendor\",\"quote\":\"Álomvilág\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1241,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 245,
+      "output_tokens_details": {
+        "thinking_tokens": 182
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

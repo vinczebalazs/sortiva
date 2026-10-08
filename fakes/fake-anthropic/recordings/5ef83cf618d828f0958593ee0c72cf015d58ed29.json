@@ -1,0 +1,75 @@
+{
+  "recordedAt": "2026-10-08T15:44:25.395Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You are shown the catalogue of an online shop: its name, country and products, with the checked facts we hold about each product. Draft a short store profile that the shop owner will read and correct.\n\n- sells: two or three plain sentences on what the shop sells, by kind of product, as the catalogue shows it.\n- audience: one or two sentences on who buys it, only as far as the products themselves show. Do not invent ages, incomes or lifestyles.\n- tone: the voice that suits this catalogue for articles: \"plain\", \"friendly\" or \"expert\".\n\nUse only what the catalogue shows. Write in English.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<shop>Northpaw Dog Supply</shop>\n<country>US</country>\n<products>\n- Front-Clip No-Pull Harness (Harness) — Walking gear\n    - The Front-Clip No-Pull Harness is a harness.\n    - The Front-Clip No-Pull Harness is made by Northpaw.\n    - The Front-Clip No-Pull Harness is available in sizes XS, S, M, L, and XL.\n    - The Front-Clip No-Pull Harness has a leash ring on the chest that turns the dog sideways when it pulls.\n- Biothane Leash, 6 ft (Leash) — Walking gear\n    - The Biothane Leash is 6 ft long.\n    - The Biothane Leash is made of coated webbing that does not absorb water or smell.\n    - The Biothane Leash is 5/8 in wide.\n    - The Biothane Leash has a brass snap hook.\n- Training Long Line, 30 ft (Leash) — Walking gear\n    - The Training Long Line is 30 ft long.\n    - The Training Long Line is a leash.\n    - The Training Long Line is made by Northpaw.\n    - The Training Long Line is made of lightweight biothane.\n- Memory Foam Dog Bed (Bed) — Beds and blankets\n    - The Memory Foam Dog Bed is made by Northpaw.\n    - The Memory Foam Dog Bed is available in sizes M and L.\n    - The Memory Foam Dog Bed has 4 in of memory foam on a 1 in support base.\n    - The Memory Foam Dog Bed has a removable cover.\n- Fleece Dog Blanket (Blanket) — Beds and blankets\n    - The Fleece Dog Blanket is made of double-layer polar fleece.\n    - The Fleece Dog Blanket measures 40 × 30 in.\n    - The Fleece Dog Blanket is machine washable.\n    - The Fleece Dog Blanket can be tumble dried on low.\n- Rechargeable LED Collar Light (Light) — Walking gear\n    - The Rechargeable LED Collar Light clips onto any collar or harness.\n    - The Rechargeable LED Collar Light has three modes: steady, slow flash, and fast flash.\n    - The Rechargeable LED Collar Light is visible from about 1,000 ft.\n    - The Rechargeable LED Collar Light charges via USB-C.\n</products>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "sells": {
+              "type": "string"
+            },
+            "audience": {
+              "type": "string"
+            },
+            "tone": {
+              "type": "string",
+              "description": "{enum: [\"plain\",\"friendly\",\"expert\"]}"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "sells",
+            "audience",
+            "tone"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfq2ZQcsdD2tAXp9WYUZC",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"sells\":\"Northpaw Dog Supply sells walking gear for dogs, including a front-clip no-pull harness, a 6 ft biothane leash, a 30 ft training long line and a rechargeable LED collar light. It also sells beds and blankets, namely a memory foam dog bed with a removable cover and a machine-washable fleece dog blanket.\",\"audience\":\"Dog owners who walk and train their dogs, including those dealing with leash pulling or walking in low light, and who want a comfortable bed or blanket for their dog at home.\",\"tone\":\"friendly\"}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1316,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 190,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "recordedAt": "2026-10-08T15:43:27.240Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "You read one product from an online shop and list the facts it states about itself.\n\nA fact is a short statement a customer could check against the product or its packaging: what it is made of, its size, weight, capacity, how many come in a pack, what it fits or works with, how to use or care for it, where or how it was made, which variants exist.\n\nThese are not facts: praise, feelings, promises, popularity, comparisons with unnamed rivals, claims about what the buyer deserves or will feel (\"loved by thousands\", \"the best\", \"perfect for\", \"elevate your mornings\"). Leave them out, even when they share a sentence with a fact. Never state a price.\n\nFor each fact give:\n- fact: one sentence that names the product and says one thing about it, in the language of the product text. Add nothing the source does not say. Keep numbers and units exactly as written; do not convert or round.\n- source_field: the field it came from.\n- quote: the words in that field that support the fact, copied character for character as one continuous piece of the field. Every number in the fact must appear in the quote.\n\nIf the product states nothing checkable, return an empty list. A short true list is better than a long padded one.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<title>\nEthiopia Guji, natural process\n</title>\n\n<product_type>\nCoffee beans\n</product_type>\n\n<vendor>\nFernhill Roastery\n</vendor>\n\n<options>\nSize: 250 g, 1 kg\nGrind: Whole bean, Filter, Espresso\n</options>\n\n<tags>\nbeans, light roast, single origin\n</tags>\n\n<metafields>\n\n</metafields>\n\n<description>\nGrown at 1,900–2,100 m in the Guji zone by smallholders delivering to the Hambela washing station. Heirloom varieties. Natural process, dried on raised beds for 21 days. Light roast. Tasting notes: blueberry, dark chocolate, jasmine.\n</description>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "facts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fact": {
+                    "type": "string"
+                  },
+                  "source_field": {
+                    "type": "string",
+                    "description": "{enum: [\"title\",\"product_type\",\"vendor\",\"options\",\"tags\",\"metafields\",\"description\"]}"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "fact",
+                  "source_field",
+                  "quote"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "facts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfq2UuUprfsbRBJSyLP6W",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"facts\":[{\"fact\":\"Ethiopia Guji, natural process is coffee beans.\",\"source_field\":\"product_type\",\"quote\":\"Coffee beans\"},{\"fact\":\"Ethiopia Guji, natural process is sold by Fernhill Roastery.\",\"source_field\":\"vendor\",\"quote\":\"Fernhill Roastery\"},{\"fact\":\"Ethiopia Guji, natural process is available in 250 g and 1 kg sizes.\",\"source_field\":\"options\",\"quote\":\"Size: 250 g, 1 kg\"},{\"fact\":\"Ethiopia Guji, natural process is available as whole bean, filter grind, or espresso grind.\",\"source_field\":\"options\",\"quote\":\"Grind: Whole bean, Filter, Espresso\"},{\"fact\":\"Ethiopia Guji, natural process is a single origin coffee.\",\"source_field\":\"tags\",\"quote\":\"single origin\"},{\"fact\":\"Ethiopia Guji, natural process is grown at 1,900–2,100 m in the Guji zone.\",\"source_field\":\"description\",\"quote\":\"Grown at 1,900–2,100 m in the Guji zone\"},{\"fact\":\"Ethiopia Guji, natural process is grown by smallholders delivering to the Hambela washing station.\",\"source_field\":\"description\",\"quote\":\"by smallholders delivering to the Hambela washing station\"},{\"fact\":\"Ethiopia Guji, natural process is made from heirloom varieties.\",\"source_field\":\"description\",\"quote\":\"Heirloom varieties.\"},{\"fact\":\"Ethiopia Guji, natural process is natural processed and dried on raised beds for 21 days.\",\"source_field\":\"description\",\"quote\":\"Natural process, dried on raised beds for 21 days.\"},{\"fact\":\"Ethiopia Guji, natural process is a light roast.\",\"source_field\":\"description\",\"quote\":\"Light roast.\"},{\"fact\":\"Ethiopia Guji, natural process has tasting notes of blueberry, dark chocolate and jasmine.\",\"source_field\":\"description\",\"quote\":\"Tasting notes: blueberry, dark chocolate, jasmine.\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1008,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 687,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

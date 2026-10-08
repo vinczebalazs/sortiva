@@ -1,0 +1,87 @@
+{
+  "recordedAt": "2026-10-08T15:44:15.100Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "You read one product from an online shop and list the facts it states about itself.\n\nA fact is a short statement a customer could check against the product or its packaging: what it is made of, its size, weight, capacity, how many come in a pack, what it fits or works with, how to use or care for it, where or how it was made, which variants exist.\n\nThese are not facts: praise, feelings, promises, popularity, comparisons with unnamed rivals, claims about what the buyer deserves or will feel (\"loved by thousands\", \"the best\", \"perfect for\", \"elevate your mornings\"). Leave them out, even when they share a sentence with a fact. Never state a price.\n\nFor each fact give:\n- fact: one sentence that names the product and says one thing about it, in the language of the product text. Add nothing the source does not say. Keep numbers and units exactly as written; do not convert or round.\n- source_field: the field it came from.\n- quote: the words in that field that support the fact, copied character for character as one continuous piece of the field. Every number in the fact must appear in the quote.\n\nIf the product states nothing checkable, return an empty list. A short true list is better than a long padded one.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<title>\nMemory Foam Dog Bed\n</title>\n\n<product_type>\nBed\n</product_type>\n\n<vendor>\nNorthpaw\n</vendor>\n\n<options>\nSize: M, L\n</options>\n\n<tags>\nsleeping\n</tags>\n\n<metafields>\n\n</metafields>\n\n<description>\n4 in of memory foam on a 1 in support base. Removable cover, machine washable at 40 °C. Water-resistant liner. Non-slip bottom. Sizes M (30 × 20 in) and L (40 × 28 in).\n</description>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "facts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fact": {
+                    "type": "string"
+                  },
+                  "source_field": {
+                    "type": "string",
+                    "description": "{enum: [\"title\",\"product_type\",\"vendor\",\"options\",\"tags\",\"metafields\",\"description\"]}"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "fact",
+                  "source_field",
+                  "quote"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "facts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfq2YYVcsngpVFe7PdfX8",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"facts\":[{\"fact\":\"The Memory Foam Dog Bed is made by Northpaw.\",\"source_field\":\"vendor\",\"quote\":\"Northpaw\"},{\"fact\":\"The Memory Foam Dog Bed is available in sizes M and L.\",\"source_field\":\"options\",\"quote\":\"Size: M, L\"},{\"fact\":\"The Memory Foam Dog Bed has 4 in of memory foam on a 1 in support base.\",\"source_field\":\"description\",\"quote\":\"4 in of memory foam on a 1 in support base.\"},{\"fact\":\"The Memory Foam Dog Bed has a removable cover.\",\"source_field\":\"description\",\"quote\":\"Removable cover\"},{\"fact\":\"The Memory Foam Dog Bed's cover is machine washable at 40 °C.\",\"source_field\":\"description\",\"quote\":\"machine washable at 40 °C\"},{\"fact\":\"The Memory Foam Dog Bed has a water-resistant liner.\",\"source_field\":\"description\",\"quote\":\"Water-resistant liner.\"},{\"fact\":\"The Memory Foam Dog Bed has a non-slip bottom.\",\"source_field\":\"description\",\"quote\":\"Non-slip bottom.\"},{\"fact\":\"The Memory Foam Dog Bed in size M measures 30 × 20 in.\",\"source_field\":\"description\",\"quote\":\"M (30 × 20 in)\"},{\"fact\":\"The Memory Foam Dog Bed in size L measures 40 × 28 in.\",\"source_field\":\"description\",\"quote\":\"L (40 × 28 in)\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 950,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 495,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

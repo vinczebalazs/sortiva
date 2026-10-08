@@ -1,0 +1,87 @@
+{
+  "recordedAt": "2026-10-08T15:43:21.515Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "You read one product from an online shop and list the facts it states about itself.\n\nA fact is a short statement a customer could check against the product or its packaging: what it is made of, its size, weight, capacity, how many come in a pack, what it fits or works with, how to use or care for it, where or how it was made, which variants exist.\n\nThese are not facts: praise, feelings, promises, popularity, comparisons with unnamed rivals, claims about what the buyer deserves or will feel (\"loved by thousands\", \"the best\", \"perfect for\", \"elevate your mornings\"). Leave them out, even when they share a sentence with a fact. Never state a price.\n\nFor each fact give:\n- fact: one sentence that names the product and says one thing about it, in the language of the product text. Add nothing the source does not say. Keep numbers and units exactly as written; do not convert or round.\n- source_field: the field it came from.\n- quote: the words in that field that support the fact, copied character for character as one continuous piece of the field. Every number in the fact must appear in the quote.\n\nIf the product states nothing checkable, return an empty list. A short true list is better than a long padded one.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<title>\nCold Brew Jar 1.5 litre\n</title>\n\n<product_type>\nImmersion brewer\n</product_type>\n\n<vendor>\nFernhill\n</vendor>\n\n<options>\nTitle: Default Title\n</options>\n\n<tags>\nimmersion, cold brew\n</tags>\n\n<metafields>\n\n</metafields>\n\n<description>\nGlass jar with a fine stainless steel filter basket that holds up to 150 g of coarse ground coffee. Makes 1.5 litres of concentrate. Airtight lid; fits in a fridge door. Recommended steep 12 to 18 hours in the fridge.\n</description>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "facts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fact": {
+                    "type": "string"
+                  },
+                  "source_field": {
+                    "type": "string",
+                    "description": "{enum: [\"title\",\"product_type\",\"vendor\",\"options\",\"tags\",\"metafields\",\"description\"]}"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "fact",
+                  "source_field",
+                  "quote"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "facts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfq2U9UArpr2PvVR4nBPk",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"facts\":[{\"fact\":\"The Cold Brew Jar has a capacity of 1.5 litre.\",\"source_field\":\"title\",\"quote\":\"Cold Brew Jar 1.5 litre\"},{\"fact\":\"The Cold Brew Jar is an immersion brewer.\",\"source_field\":\"product_type\",\"quote\":\"Immersion brewer\"},{\"fact\":\"The Cold Brew Jar is made by Fernhill.\",\"source_field\":\"vendor\",\"quote\":\"Fernhill\"},{\"fact\":\"The Cold Brew Jar is a glass jar.\",\"source_field\":\"description\",\"quote\":\"Glass jar\"},{\"fact\":\"The Cold Brew Jar has a fine stainless steel filter basket.\",\"source_field\":\"description\",\"quote\":\"a fine stainless steel filter basket\"},{\"fact\":\"The Cold Brew Jar filter basket holds up to 150 g of coarse ground coffee.\",\"source_field\":\"description\",\"quote\":\"holds up to 150 g of coarse ground coffee\"},{\"fact\":\"The Cold Brew Jar makes 1.5 litres of concentrate.\",\"source_field\":\"description\",\"quote\":\"Makes 1.5 litres of concentrate.\"},{\"fact\":\"The Cold Brew Jar has an airtight lid.\",\"source_field\":\"description\",\"quote\":\"Airtight lid\"},{\"fact\":\"The Cold Brew Jar fits in a fridge door.\",\"source_field\":\"description\",\"quote\":\"fits in a fridge door\"},{\"fact\":\"The recommended steep time for the Cold Brew Jar is 12 to 18 hours in the fridge.\",\"source_field\":\"description\",\"quote\":\"Recommended steep 12 to 18 hours in the fridge.\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 976,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 556,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

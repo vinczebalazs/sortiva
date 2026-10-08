@@ -1,20 +1,6 @@
-import { createHash } from 'node:crypto'
+import { canonical, stableHash } from '../../core/hash.ts'
 
-function canonical(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(canonical)
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.keys(value as Record<string, unknown>)
-        .sort()
-        .map((k) => [k, canonical((value as Record<string, unknown>)[k])]),
-    )
-  }
-  return value
-}
-
-export function stableHash(value: unknown): string {
-  return createHash('sha256').update(JSON.stringify(canonical(value))).digest('hex')
-}
+export { stableHash }
 
 /**
  * Derived only from inputs, so a re-run of the same work maps to the same ledger row.

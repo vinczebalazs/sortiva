@@ -22,15 +22,19 @@ export function largeCatalog(count: number, domain = 'large-catalogue.myshopify.
       currencyCode: 'GBP',
     },
     collections: [{ handle: 'screws', title: 'Screws' }],
-    products: Array.from({ length: count }, (_, i) => ({
-      handle: `wood-screw-${i + 1}`,
-      title: `Wood screw ${3 + (i % 4)} × ${20 + i} mm, box of 100`,
-      productType: 'Screw',
-      vendor: 'Large Catalogue',
-      descriptionHtml: `<p>Zinc-plated steel, countersunk head, Pozidriv drive. Length ${20 + i} mm, gauge ${3 + (i % 4)} mm. 100 per box.</p>`,
-      price: { min: `${(4 + i / 100).toFixed(2)}` },
-      images: [{ url: `https://cdn.shopify.com/s/files/1/0609/0009/files/screw-${i + 1}.jpg`, width: 1000, height: 1000 }],
-      collections: ['screws'],
-    })),
+    // Five distinct products repeated: the walk is what is under test, and identical model requests are answered from the call cache.
+    products: Array.from({ length: count }, (_, i) => {
+      const v = i % 5
+      return {
+        handle: `wood-screw-${i + 1}`,
+        title: `Wood screw ${3 + v} × ${30 + v * 10} mm, box of 100`,
+        productType: 'Screw',
+        vendor: 'Large Catalogue',
+        descriptionHtml: `<p>Zinc-plated steel, countersunk head, Pozidriv drive. Length ${30 + v * 10} mm, gauge ${3 + v} mm. 100 per box.</p>`,
+        price: { min: `${(4 + v).toFixed(2)}` },
+        images: [{ url: `https://cdn.shopify.com/s/files/1/0609/0009/files/screw-${v + 1}.jpg`, width: 1000, height: 1000 }],
+        collections: ['screws'],
+      }
+    }),
   }
 }

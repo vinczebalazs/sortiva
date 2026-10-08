@@ -20,11 +20,11 @@ const PRODUCT_FIELDS = /* GraphQL */ `
       minVariantPrice { amount currencyCode }
       maxVariantPrice { amount currencyCode }
     }
-    media(first: 20) {
+    media(first: 10) {
       nodes { ... on MediaImage { image { url width height altText } } }
     }
-    collections(first: 20) { nodes { id handle title } }
-    metafields(first: 30) { nodes { namespace key type value } }
+    collections(first: 10) { nodes { id handle title } }
+    metafields(first: 10) { nodes { namespace key type value } }
   }
 `
 

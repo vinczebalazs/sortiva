@@ -44,11 +44,23 @@ export type FakeShopify = {
     overrides: Record<string, unknown>,
     opts?: { webhookId?: string; secret?: string },
   ) => Promise<{ status: number; webhookId: string }>
-  requests: { path: string; operation?: string; version?: string }[]
+  /** Requests the fake answered, after authentication, validation and the cost check. */
+  requests: { shop: string; path: string; operation?: string; version?: string }[]
+  tokenRequests: { shop: string; grantType: string; status: number }[]
+  /** Requests refused because the shop's cost bucket was too low; not included in `requests`. */
+  throttled: { shop: string; operation?: string }[]
+  /** GraphQL requests refused because the token was missing, wrong or expired. */
+  unauthorized: number
   close: () => Promise<void>
 }
 
 const DEFAULT_SCOPES = ['read_products', 'read_content', 'write_content']
+
+function countObjects(value: unknown): number {
+  if (Array.isArray(value)) return value.reduce((n: number, v) => n + countObjects(v), 0)
+  if (value && typeof value === 'object') return 1 + Object.values(value).reduce((n: number, v) => n + countObjects(v), 0)
+  return 0
+}
 
 function base64url(input: Buffer | string): string {
   return Buffer.from(input).toString('base64url')
@@ -77,6 +89,9 @@ export async function startFakeShopify(options: FakeShopifyOptions): Promise<Fak
   const shops = new Map<string, ShopState>()
   const failures = new Map<string, Failure[]>()
   const requests: FakeShopify['requests'] = []
+  const tokenRequests: FakeShopify['tokenRequests'] = []
+  const throttled: FakeShopify['throttled'] = []
+  let unauthorized = 0
   const schema = pinnedSchema()
   const documents = new Map<string, DocumentNode>()
   const now = () => Date.now()
@@ -86,8 +101,12 @@ export async function startFakeShopify(options: FakeShopifyOptions): Promise<Fak
     const params: Record<string, string> = req.headers['content-type']?.includes('json')
       ? JSON.parse(raw)
       : Object.fromEntries(new URLSearchParams(raw))
+    const reply = (status: number, body: unknown) => {
+      tokenRequests.push({ shop: shop.domain, grantType: params.grant_type ?? '', status })
+      return send(res, status, body)
+    }
     if (params.client_id !== options.clientId || params.client_secret !== options.clientSecret) {
-      return send(res, 400, { error: 'invalid_client' })
+      return reply(400, { error: 'invalid_client' })
     }
     const issue = () => {
       const access = { value: randomToken('shpat_'), expiresAt: now() + ACCESS_TOKEN_SECONDS * 1000 }
@@ -96,7 +115,7 @@ export async function startFakeShopify(options: FakeShopifyOptions): Promise<Fak
       for (const r of shop.refreshTokens) r.retired = true
       shop.refreshTokens.push(refresh)
       shop.installed = true
-      return send(res, 200, {
+      return reply(200, {
         access_token: access.value,
         expires_in: ACCESS_TOKEN_SECONDS,
         refresh_token: refresh.value,
@@ -115,16 +134,16 @@ export async function startFakeShopify(options: FakeShopifyOptions): Promise<Fak
         Number(claims.exp) <= seconds ||
         Number(claims.nbf) > seconds
       ) {
-        return send(res, 400, { error: 'invalid_subject_token' })
+        return reply(400, { error: 'invalid_subject_token' })
       }
       return issue()
     }
     if (params.grant_type === 'refresh_token') {
       const token = shop.refreshTokens.find((t) => t.value === params.refresh_token)
-      if (!token || token.retired || token.expiresAt <= now()) return send(res, 401, { error: 'invalid_request' })
+      if (!token || token.retired || token.expiresAt <= now()) return reply(401, { error: 'invalid_request' })
       return issue()
     }
-    return send(res, 400, { error: 'unsupported_grant_type' })
+    return reply(400, { error: 'unsupported_grant_type' })
   }
 
   const graphqlEndpoint = async (shop: ShopState, version: string, req: IncomingMessage, res: ServerResponse) => {
@@ -135,7 +154,10 @@ export async function startFakeShopify(options: FakeShopifyOptions): Promise<Fak
 
     const token = req.headers['x-shopify-access-token']
     const valid = shop.installed && shop.accessTokens.some((t) => t.value === token && t.expiresAt > now())
-    if (!valid) return send(res, 401, { errors: 'Unauthorized' }, versionHeader)
+    if (!valid) {
+      unauthorized++
+      return send(res, 401, { errors: 'Unauthorized' }, versionHeader)
+    }
 
     const body = JSON.parse(await readBody(req)) as { query: string; variables?: Record<string, unknown> }
     let document = documents.get(body.query)
@@ -150,7 +172,7 @@ export async function startFakeShopify(options: FakeShopifyOptions): Promise<Fak
       documents.set(body.query, document)
     }
     const operation = document.definitions.find((d) => d.kind === 'OperationDefinition')
-    requests.push({ path: req.url ?? '', operation: operation && 'name' in operation ? operation.name?.value : undefined, version })
+    const operationName = operation && 'name' in operation ? operation.name?.value : undefined
 
     const variables = body.variables ?? {}
     const cost = requestedCost(schema, document, variables)
@@ -171,12 +193,14 @@ export async function startFakeShopify(options: FakeShopifyOptions): Promise<Fak
       restoreRate: RESTORE_PER_SECOND,
     })
     if (cost > shop.bucket.available) {
+      throttled.push({ shop: shop.domain, operation: operationName })
       return send(res, 200, {
         errors: [{ message: 'Throttled', extensions: { code: 'THROTTLED' } }],
         extensions: { cost: { requestedQueryCost: cost, actualQueryCost: null, throttleStatus: throttleStatus() } },
       }, versionHeader)
     }
     shop.bucket.available -= cost
+    requests.push({ shop: shop.domain, path: req.url ?? '', operation: operationName, version })
 
     const root = resolvers(shop, { now, listLagMs: options.listLagMs ?? 0 }) as Record<string, (args: never) => unknown>
     const guarded: Record<string, unknown> = {}
@@ -191,10 +215,14 @@ export async function startFakeShopify(options: FakeShopifyOptions): Promise<Fak
       }
     }
     const result = await execute({ schema, document, rootValue: guarded, variableValues: variables })
+    // Shopify charges what the answer actually cost and refunds the rest of the reservation.
+    // How it counts is not published; one point per object returned is the fake's stand-in.
+    const actual = Math.min(cost, countObjects(result.data))
+    shop.bucket.available = Math.min(BUCKET_MAX, shop.bucket.available + (cost - actual))
     send(res, 200, {
       ...(result.errors ? { errors: result.errors.map((e) => e.toJSON()) } : {}),
       data: result.data ?? null,
-      extensions: { cost: { requestedQueryCost: cost, actualQueryCost: cost, throttleStatus: throttleStatus() } },
+      extensions: { cost: { requestedQueryCost: cost, actualQueryCost: actual, throttleStatus: throttleStatus() } },
     }, versionHeader)
   }
 
@@ -277,6 +305,11 @@ export async function startFakeShopify(options: FakeShopifyOptions): Promise<Fak
       return { status: response.status, webhookId }
     },
     requests,
+    tokenRequests,
+    throttled,
+    get unauthorized() {
+      return unauthorized
+    },
     close: () => new Promise<void>((resolve) => server.close(() => resolve())),
   }
 }

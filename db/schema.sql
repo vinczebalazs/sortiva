@@ -5,6 +5,7 @@ create table stores (
   id bigint generated always as identity primary key,
   platform text not null default 'shopify' check (platform in ('shopify')),
   shop_domain text not null unique,
+  name text,
   access_token_enc text,
   access_token_expires_at timestamptz,
   refresh_token_enc text,
@@ -79,8 +80,12 @@ create table webhook_deliveries (
   delivery_id text primary key,
   store_id bigint references stores(id) on delete cascade,
   topic text not null,
-  received_at timestamptz not null default now()
+  -- The platform id the delivery is about; the payload itself is never trusted beyond this.
+  subject text,
+  received_at timestamptz not null default now(),
+  processed_at timestamptz
 );
+create index webhook_deliveries_pending on webhook_deliveries(store_id) where processed_at is null;
 
 create table product_facts (
   id bigint generated always as identity primary key,
@@ -133,7 +138,7 @@ create table topics (
   -- The numbers that justified the topic, each with its source and date; the why line renders from this.
   evidence jsonb not null default '{}',
   rank double precision not null default 0,
-  manual_order integer,
+  manual_position integer,
   state text not null default 'candidate' check (state in ('candidate', 'queued', 'scheduled', 'written', 'delivered', 'held', 'vetoed')),
   held_reason text,
   refresh_of_article_id bigint,

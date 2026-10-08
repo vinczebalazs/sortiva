@@ -1,0 +1,75 @@
+{
+  "recordedAt": "2026-10-08T15:43:49.337Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You are shown the catalogue of an online shop: its name, country and products, with the checked facts we hold about each product. Draft a short store profile that the shop owner will read and correct.\n\n- sells: two or three plain sentences on what the shop sells, by kind of product, as the catalogue shows it.\n- audience: one or two sentences on who buys it, only as far as the products themselves show. Do not invent ages, incomes or lifestyles.\n- tone: the voice that suits this catalogue for articles: \"plain\", \"friendly\" or \"expert\".\n\nUse only what the catalogue shows. Write in English.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<shop>Fernhill Coffee Supply</shop>\n<country>GB</country>\n<products>\n- Ceramic Cone Dripper, size 02 (Dripper) — Pour-over brewing\n    - The Ceramic Cone Dripper is size 02.\n    - The Ceramic Cone Dripper is a dripper.\n    - The Ceramic Cone Dripper is made by Fernhill.\n    - The Ceramic Cone Dripper comes in White and Matte black.\n- Flat-Bottom Dripper, stainless steel (Dripper) — Pour-over brewing\n    - The Flat-Bottom Dripper is made of stainless steel.\n    - The Flat-Bottom Dripper is made by Fernhill.\n    - The Flat-Bottom Dripper has a brushed 18/8 stainless steel body.\n    - The Flat-Bottom Dripper has three small holes in a flat bed.\n- Gooseneck Pour-Over Kettle 900 ml (Kettle) — Pour-over brewing\n    - The Fernhill Gooseneck Pour-Over Kettle has a capacity of 900 ml.\n    - The Fernhill Gooseneck Pour-Over Kettle has a recommended fill of 600 ml.\n    - The Fernhill Gooseneck Pour-Over Kettle has a spout opening of 8 mm.\n    - The Fernhill Gooseneck Pour-Over Kettle has a built-in thermometer reading 40–100 °C.\n- Electric Gooseneck Kettle with Temperature Hold (Kettle) — Pour-over brewing\n    - The Electric Gooseneck Kettle with Temperature Hold lets you set the temperature in 1 °C steps from 60 to 100 °C.\n    - The Electric Gooseneck Kettle with Temperature Hold base holds the set temperature for 60 minutes.\n    - The Electric Gooseneck Kettle with Temperature Hold has an 800 ml capacity.\n    - The Electric Gooseneck Kettle with Temperature Hold has a 1200 W heating element.\n- Hand Grinder, conical steel burrs (Grinder) — Grinders\n    - The Fernhill Hand Grinder has conical steel burrs.\n    - The Fernhill Hand Grinder is a manual grinder.\n    - The Fernhill Hand Grinder has 38 mm hardened stainless steel conical burrs.\n    - The Fernhill Hand Grinder has external click adjustment with 30 settings.\n- Electric Flat-Burr Grinder (Grinder) — Grinders\n    - The Electric Flat-Burr Grinder has 64 mm flat steel burrs.\n    - The Electric Flat-Burr Grinder has stepless adjustment.\n    - The Electric Flat-Burr Grinder has a single-dose design.\n    - The Electric Flat-Burr Grinder has retention under 0.1 g.\n- French Press 1 litre (Immersion brewer) — Immersion brewers\n    - The French Press has a capacity of 1 litre.\n    - The French Press is an immersion brewer.\n    - The French Press is made by Fernhill.\n    - The French Press has a borosilicate glass beaker.\n- Cold Brew Jar 1.5 litre (Immersion brewer) — Immersion brewers\n    - The Cold Brew Jar has a capacity of 1.5 litre.\n    - The Cold Brew Jar is an immersion brewer.\n    - The Cold Brew Jar is made by Fernhill.\n    - The Cold Brew Jar is a glass jar.\n- Ethiopia Guji, natural process (Coffee beans) — Coffee beans\n    - Ethiopia Guji, natural process is coffee beans.\n    - Ethiopia Guji, natural process is sold by Fernhill Roastery.\n    - Ethiopia Guji, natural process is available in 250 g and 1 kg sizes.\n    - Ethiopia Guji, natural process is available as whole bean, filter grind, or espresso grind.\n- Colombia Huila, washed (Coffee beans) — Coffee beans\n    - The Colombia Huila coffee is washed-process.\n    - The Colombia Huila product is coffee beans.\n    - The Colombia Huila coffee is from Fernhill Roastery.\n    - The Colombia Huila coffee comes in 250 g and 1 kg sizes.\n- Paper Filters, size 02 (100 pack) (Filter) — Pour-over brewing\n    - The Fernhill Paper Filters are size 02.\n    - The Fernhill Paper Filters come in a pack of 100.\n    - The Fernhill Paper Filters are available in Unbleached and White types.\n    - The Fernhill Paper Filters are cone filters for size 02 drippers.\n- Brew Scale with Timer (Scale) — Pour-over brewing\n    - The Brew Scale with Timer weighs up to 2 kg.\n    - The Brew Scale with Timer weighs in 0.1 g steps.\n    - The Brew Scale with Timer has a built-in timer that starts automatically when the first drops land.\n    - The Brew Scale with Timer has a USB-C rechargeable battery.\n</products>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "sells": {
+              "type": "string"
+            },
+            "audience": {
+              "type": "string"
+            },
+            "tone": {
+              "type": "string",
+              "description": "{enum: [\"plain\",\"friendly\",\"expert\"]}"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "sells",
+            "audience",
+            "tone"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfq2WW1jvwAXMKF4QqyQ8",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"sells\":\"Fernhill Coffee Supply sells home coffee brewing equipment and coffee beans. The range covers pour-over gear (ceramic and stainless steel drippers, size 02 paper filters, stovetop and electric gooseneck kettles, and a brew scale with timer), immersion brewers such as a French press and a cold brew jar, and manual and electric burr grinders. It also sells single-origin coffee beans from Fernhill Roastery in 250 g and 1 kg bags, whole bean or ground.\",\"audience\":\"People who brew coffee at home, especially by pour-over or immersion, and who want to grind, weigh and control water temperature themselves. Some products, such as the single-dose flat-burr grinder and the temperature-hold kettle, suit buyers who care about precise brewing.\",\"tone\":\"expert\"}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 2269,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 277,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

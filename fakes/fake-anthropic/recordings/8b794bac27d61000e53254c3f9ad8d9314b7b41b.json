@@ -1,0 +1,92 @@
+{
+  "recordedAt": "2026-10-08T15:45:13.826Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "You read one product from an online shop and list the facts it states about itself.\n\nA fact is a short statement a customer could check against the product or its packaging: what it is made of, its size, weight, capacity, how many come in a pack, what it fits or works with, how to use or care for it, where or how it was made, which variants exist.\n\nThese are not facts: praise, feelings, promises, popularity, comparisons with unnamed rivals, claims about what the buyer deserves or will feel (\"loved by thousands\", \"the best\", \"perfect for\", \"elevate your mornings\"). Leave them out, even when they share a sentence with a fact. Never state a price.\n\nFor each fact give:\n- fact: one sentence that names the product and says one thing about it, in the language of the product text. Add nothing the source does not say. Keep numbers and units exactly as written; do not convert or round.\n- source_field: the field it came from.\n- quote: the words in that field that support the fact, copied character for character as one continuous piece of the field. Every number in the fact must appear in the quote.\n\nIf the product states nothing checkable, return an empty list. A short true list is better than a long padded one.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<title>\nSerenity Throw\n</title>\n\n<product_type>\nThrow\n</product_type>\n\n<vendor>\nLumière\n</vendor>\n\n<options>\nTitle: Default Title\n</options>\n\n<tags>\nbestseller\n</tags>\n\n<metafields>\n\n</metafields>\n\n<description>\nWrap yourself in pure luxury. The Serenity Throw is more than a blanket — it's a feeling. Designed to transform any space into a sanctuary of calm. You deserve this.\n</description>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "facts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fact": {
+                    "type": "string"
+                  },
+                  "source_field": {
+                    "type": "string",
+                    "description": "{enum: [\"title\",\"product_type\",\"vendor\",\"options\",\"tags\",\"metafields\",\"description\"]}"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "fact",
+                  "source_field",
+                  "quote"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "facts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfq2cyPCAvQ6P86KFaQxK",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQShQYKEAgSGAI4AUIIdGhpbmtpbmcSDMj0ZFQJVrmYKYPJ5RoMQ7KwWqHYXV9UmMbjIjAyDtkggXdUsYA2UjKrlEGONHc04RCE4Ujm34mOaaxUx+/Uk0u1p8AhLOdt+kWr0bkqogW4N9e43qEUpOFR3npRQhXiiRI+uYI5keySYgtt3zu/r8na6+oFk4KU9rUKql8XS47Tyvhp+19lj+ew2uE2kXB5fKDoyGNhSzdHMUF4rMN8J+q++ifW5f1oFeiY/V7RJe3q2IWd8FLQKCDcbs8hLv0Ma4DjDsz3TrPS5hSMO3qtZPQxSBrlcUEwGD2PzPD+aLa3IgiX08C40wbb3J+Mqpl91knq4142Uq33/vvISEsuvaIDfFXORvfgQD0oE5k1mQ+gaK0sKPw6x1jBZTXq3WC9+BKrkBv46Vvf9XIuUSc8Mgk7DOsMrlUz/k0t/66XEbllaKy8G4cIlJ0n5ifDxkEcns1cWNA8M2OozKFR9ik/LoiTPjXJbFuofbeiZoftgi7DLY+xeFu2pnDvxgflVh0spxJpVIP3DbIu06q2M7jVjPB5d47DmE7cp/kLgQz2l5TXDdCTIWsC5HGE5c6V3UgBhBd5JAI5os1RD7zH7Pmr7ieBhE4uBiw0SsZ26pf4YU6ASB1JJ91HPdW9+ojuo5TEVQbEQAG4CE/Txt0GOGFKZVSo2fTwy1dLjakJU5x7sCJZyuWCgNau7A0kQERyEmYvy8YSr8KTi3et4e1V7Org7BfLV4OziVXyiYvj4JH117NoyslS2JrLAl461UoUK9tq2OyOsaxBXBCrqs55qIjMcT8hULQvzck6eEgfbzDSUuapl+YVhKL8pHLPTdyOlAR7WzFutFg7PrUmVAcWS6ReODhmJjHRViZkUhp3WCTReGenHBAjLyUwVRN6UNWJCpWBwepPkCBxpuQ9Pj4uWbpOsjC8pW5M5eacItyKMs/VcSqwaXwGKiKJd9wukLKoVxCF0r5PNKVHFp5yQVweLiXGRosGbSiTrl5b6xJbQOvS+PapOxgB"
+      },
+      {
+        "type": "text",
+        "text": "{\"facts\":[{\"fact\":\"The Serenity Throw is a throw.\",\"source_field\":\"product_type\",\"quote\":\"Throw\"},{\"fact\":\"The Serenity Throw is sold by Lumière.\",\"source_field\":\"vendor\",\"quote\":\"Lumière\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 930,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 184,
+      "output_tokens_details": {
+        "thinking_tokens": 93
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

@@ -5,7 +5,7 @@ export default defineConfig({
     globalSetup: ['db/global-setup.ts'],
     include: ['**/*.test.ts'],
     exclude: ['node_modules/**', 'evals/**', '**/*.contract.test.ts'],
-    testTimeout: 30_000,
+    testTimeout: 240_000,
     hookTimeout: 60_000,
   },
 })

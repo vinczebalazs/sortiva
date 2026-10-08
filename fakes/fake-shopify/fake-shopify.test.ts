@@ -156,6 +156,7 @@ describe('the fake behaves as Shopify documents', () => {
 
   it('throttles once the bucket is drained, and reports the bucket on every answer', async () => {
     const heavy = '{ products(first: 100) { nodes { collections(first: 3) { nodes { id } } } } }'
+    fake.shop(domain).bucket.available = 300
     const codes: string[] = []
     for (let i = 0; i < 6; i++) {
       const res = await gql(heavy)

@@ -66,6 +66,6 @@ Running total of what this build has spent on the founders' keys.
 
 | Date | Key | What | USD |
 |---|---|---|---|
-| — | — | Nothing spent yet | 0.00 |
+| 2026-10-08 | Anthropic | Phase 1 recordings: fact sheets and profile drafts for the ten fixture stores and the 250-product catalogue (62 calls, Claude Opus 5.5) | 0.83 |
 
-**Total: 0.00 USD**
+**Total: 0.83 USD** (Anthropic 0.83, DataForSEO 0.00). Figures are computed from the token counts in the committed recordings at 4 / 20 USD per million input / output tokens.

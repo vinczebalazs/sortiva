@@ -1,0 +1,87 @@
+{
+  "recordedAt": "2026-10-08T15:44:33.065Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "Egy webáruház egyetlen termékét olvasod el, és felsorolod azokat a tényeket, amelyeket a termék önmagáról állít.\n\nTény az a rövid állítás, amelyet a vásárló a terméken vagy a csomagoláson ellenőrizni tud: miből készült, mekkora, mennyi a tömege vagy az űrtartalma, hány darab van egy csomagban, mihez illik vagy mivel használható, hogyan kell használni vagy ápolni, hol vagy hogyan készült, milyen változatai vannak.\n\nNem tény a dicséret, az érzés, az ígéret, a népszerűség, a meg nem nevezett versenytársakhoz mért összehasonlítás, és az, hogy a vásárló mit érdemel vagy mit fog érezni („mindenki imádja”, „a legjobb”, „tökéletes választás”, „varázsold otthonodat…”). Ezeket hagyd ki akkor is, ha egy mondatban állnak egy ténnyel. Árat soha ne írj.\n\nMinden tényhez add meg:\n- fact: egyetlen mondat, amely megnevezi a terméket és egy dolgot állít róla, a termékszöveg nyelvén. Ne tegyél hozzá semmit, amit a forrás nem mond. A számokat és mértékegységeket pontosan úgy írd, ahogy a forrásban állnak; ne váltsd át és ne kerekítsd őket.\n- source_field: a mező, ahonnan származik.\n- quote: a mezőnek az a része, amely alátámasztja a tényt, betűről betűre kimásolva, egyetlen összefüggő darabként. A tényben szereplő minden számnak szerepelnie kell az idézetben.\n\nHa a termék semmi ellenőrizhetőt nem állít, adj vissza üres listát. Egy rövid, igaz lista jobb egy hosszú, felduzzasztottnál.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<title>\nAssam fekete tea, TGFOP\n</title>\n\n<product_type>\nFekete tea\n</product_type>\n\n<vendor>\nBükki Füvesház\n</vendor>\n\n<options>\nTitle: Default Title\n</options>\n\n<tags>\nfekete tea, koffeines\n</tags>\n\n<metafields>\n\n</metafields>\n\n<description>\nMásodik szüretelésű (second flush) Assam, Indiából, a Halmari ültetvényről. TGFOP minősítés, aranyszínű levélhegyekkel. Malátás, erőteljes íz, tejjel is iható. 1 teáskanál 2,5 dl 95 °C-os vízhez, 3–4 perc. 100 g.\n</description>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "facts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fact": {
+                    "type": "string"
+                  },
+                  "source_field": {
+                    "type": "string",
+                    "description": "{enum: [\"title\",\"product_type\",\"vendor\",\"options\",\"tags\",\"metafields\",\"description\"]}"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "fact",
+                  "source_field",
+                  "quote"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "facts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfq2ZmLKjEmLAGbfrqJr7",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"facts\":[{\"fact\":\"Az Assam fekete tea TGFOP minősítésű.\",\"source_field\":\"title\",\"quote\":\"Assam fekete tea, TGFOP\"},{\"fact\":\"Az Assam fekete tea a Bükki Füvesház terméke.\",\"source_field\":\"vendor\",\"quote\":\"Bükki Füvesház\"},{\"fact\":\"Az Assam fekete tea koffeines.\",\"source_field\":\"tags\",\"quote\":\"koffeines\"},{\"fact\":\"Az Assam fekete tea második szüretelésű (second flush).\",\"source_field\":\"description\",\"quote\":\"Második szüretelésű (second flush) Assam\"},{\"fact\":\"Az Assam fekete tea Indiából, a Halmari ültetvényről származik.\",\"source_field\":\"description\",\"quote\":\"Indiából, a Halmari ültetvényről\"},{\"fact\":\"Az Assam fekete tea aranyszínű levélhegyeket tartalmaz.\",\"source_field\":\"description\",\"quote\":\"aranyszínű levélhegyekkel\"},{\"fact\":\"Az Assam fekete tea íze malátás, erőteljes.\",\"source_field\":\"description\",\"quote\":\"Malátás, erőteljes íz\"},{\"fact\":\"Az Assam fekete tea tejjel is iható.\",\"source_field\":\"description\",\"quote\":\"tejjel is iható\"},{\"fact\":\"Az Assam fekete teából 1 teáskanál kell 2,5 dl 95 °C-os vízhez.\",\"source_field\":\"description\",\"quote\":\"1 teáskanál 2,5 dl 95 °C-os vízhez\"},{\"fact\":\"Az Assam fekete teát 3–4 percig kell áztatni.\",\"source_field\":\"description\",\"quote\":\"3–4 perc\"},{\"fact\":\"Az Assam fekete tea kiszerelése 100 g.\",\"source_field\":\"description\",\"quote\":\"100 g.\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1321,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 624,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

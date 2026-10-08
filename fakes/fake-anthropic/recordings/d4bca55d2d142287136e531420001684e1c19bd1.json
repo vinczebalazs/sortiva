@@ -1,0 +1,87 @@
+{
+  "recordedAt": "2026-10-08T15:44:08.957Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "Egy webáruház egyetlen termékét olvasod el, és felsorolod azokat a tényeket, amelyeket a termék önmagáról állít.\n\nTény az a rövid állítás, amelyet a vásárló a terméken vagy a csomagoláson ellenőrizni tud: miből készült, mekkora, mennyi a tömege vagy az űrtartalma, hány darab van egy csomagban, mihez illik vagy mivel használható, hogyan kell használni vagy ápolni, hol vagy hogyan készült, milyen változatai vannak.\n\nNem tény a dicséret, az érzés, az ígéret, a népszerűség, a meg nem nevezett versenytársakhoz mért összehasonlítás, és az, hogy a vásárló mit érdemel vagy mit fog érezni („mindenki imádja”, „a legjobb”, „tökéletes választás”, „varázsold otthonodat…”). Ezeket hagyd ki akkor is, ha egy mondatban állnak egy ténnyel. Árat soha ne írj.\n\nMinden tényhez add meg:\n- fact: egyetlen mondat, amely megnevezi a terméket és egy dolgot állít róla, a termékszöveg nyelvén. Ne tegyél hozzá semmit, amit a forrás nem mond. A számokat és mértékegységeket pontosan úgy írd, ahogy a forrásban állnak; ne váltsd át és ne kerekítsd őket.\n- source_field: a mező, ahonnan származik.\n- quote: a mezőnek az a része, amely alátámasztja a tényt, betűről betűre kimásolva, egyetlen összefüggő darabként. A tényben szereplő minden számnak szerepelnie kell az idézetben.\n\nHa a termék semmi ellenőrizhetőt nem állít, adj vissza üres listát. Egy rövid, igaz lista jobb egy hosszú, felduzzasztottnál.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<title>\nCsalánlevél tea, szálas\n</title>\n\n<product_type>\nGyógytea\n</product_type>\n\n<vendor>\nBükki Füvesház\n</vendor>\n\n<options>\nTitle: Default Title\n</options>\n\n<tags>\ngyógytea, egynövényes\n</tags>\n\n<metafields>\n\n</metafields>\n\n<description>\nNagy csalán (Urtica dioica) levele, virágzás előtt, májusban gyűjtve. Vágott, szálas tea. Adagolás: 2 teáskanál 2,5 dl forrásban lévő vízhez, 10 perc áztatás. Kiszerelés: 70 g, visszazárható papírtasakban.\n</description>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "facts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fact": {
+                    "type": "string"
+                  },
+                  "source_field": {
+                    "type": "string",
+                    "description": "{enum: [\"title\",\"product_type\",\"vendor\",\"options\",\"tags\",\"metafields\",\"description\"]}"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "fact",
+                  "source_field",
+                  "quote"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "facts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfq2XwTDY2HHi3tdX9yRH",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"facts\":[{\"fact\":\"A csalánlevél tea szálas kivitelű.\",\"source_field\":\"title\",\"quote\":\"Csalánlevél tea, szálas\"},{\"fact\":\"A csalánlevél tea gyógytea.\",\"source_field\":\"product_type\",\"quote\":\"Gyógytea\"},{\"fact\":\"A csalánlevél teát a Bükki Füvesház forgalmazza.\",\"source_field\":\"vendor\",\"quote\":\"Bükki Füvesház\"},{\"fact\":\"A csalánlevél tea egynövényes tea.\",\"source_field\":\"tags\",\"quote\":\"egynövényes\"},{\"fact\":\"A csalánlevél tea nagy csalán (Urtica dioica) leveléből készül.\",\"source_field\":\"description\",\"quote\":\"Nagy csalán (Urtica dioica) levele\"},{\"fact\":\"A csalánlevél tea alapanyagát virágzás előtt, májusban gyűjtik.\",\"source_field\":\"description\",\"quote\":\"virágzás előtt, májusban gyűjtve\"},{\"fact\":\"A csalánlevél tea vágott, szálas tea.\",\"source_field\":\"description\",\"quote\":\"Vágott, szálas tea.\"},{\"fact\":\"A csalánlevél tea adagolása 2 teáskanál 2,5 dl forrásban lévő vízhez.\",\"source_field\":\"description\",\"quote\":\"Adagolás: 2 teáskanál 2,5 dl forrásban lévő vízhez\"},{\"fact\":\"A csalánlevél teát 10 percig kell áztatni.\",\"source_field\":\"description\",\"quote\":\"10 perc áztatás\"},{\"fact\":\"A csalánlevél tea kiszerelése 70 g.\",\"source_field\":\"description\",\"quote\":\"Kiszerelés: 70 g\"},{\"fact\":\"A csalánlevél tea visszazárható papírtasakban kapható.\",\"source_field\":\"description\",\"quote\":\"visszazárható papírtasakban\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1317,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 640,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}
