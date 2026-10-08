@@ -14,6 +14,7 @@ export type CheckId =
   | 'length'
   | 'fact_floor'
   | 'title_and_meta'
+  | 'plain_markdown'
 
 export type Problem = { sentence?: string; detail: string }
 export type CheckResult = { id: CheckId; ok: boolean; problems: Problem[] }
@@ -208,12 +209,16 @@ export function mechanicalChecks(draft: Draft, pack: EvidencePack): MechanicalRe
   if (draft.metaDescription.length < meta.min || draft.metaDescription.length > meta.max) titleMeta.push({ detail: `meta description is ${draft.metaDescription.length} characters; ${meta.min} to ${meta.max} expected` })
   if (/^#\s/m.test(draft.markdown)) titleMeta.push({ detail: 'the body has its own top-level heading; the title is set separately' })
 
+  // The Markdown library passes raw HTML through untouched, so none may come from the writer: no scripts, frames or styling reach the store.
+  const html = [...draft.markdown.matchAll(/<\/?[a-z][^>]*>|<!--/gi)].map((m) => ({ detail: `raw HTML ${m[0].slice(0, 40)}` }))
+
   const check = (id: CheckId, problems: Problem[]): CheckResult => ({ id, ok: problems.length === 0, problems })
   return {
     // In the order a held article names its reason: the most basic and most serious failure first.
     checks: [
       check('language', detected.language === language && detected.share >= 0.75 ? [] : [{ detail: `reads as ${detected.language ?? 'unknown'} (${Math.round(detected.share * 100)}%), the store writes in ${language}` }]),
       check('links_internal', links),
+      check('plain_markdown', html),
       check('no_price', price),
       check('no_experience', experience),
       check('never_say', neverSay),

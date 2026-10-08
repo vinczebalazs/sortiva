@@ -113,8 +113,8 @@ export function checkFact(fact: CheckedFact, product: ProductForFacts): { ok: tr
 
 export type FactsOutcome = { kept: number; dropped: { fact: string; reason: string }[] }
 
-/** Distils one product into a fact sheet and stores it, replacing the old one. */
-export async function extractFacts(db: Db, llm: Llm, storeId: number, language: Language, product: ProductForFacts & { content_hash: string }): Promise<FactsOutcome> {
+/** One model call and the mechanical check; nothing stored. The eval runs exactly this. */
+export async function distil(llm: Llm, storeId: number | null, language: Language, product: ProductForFacts): Promise<{ kept: CheckedFact[]; dropped: FactsOutcome['dropped'] }> {
   const answer = await llm.json({
     storeId,
     prompt: { name: FACTS_PROMPT.name, version: FACTS_PROMPT.version },
@@ -135,6 +135,12 @@ export async function extractFacts(db: Db, llm: Llm, storeId: number, language: 
       kept.push(fact)
     }
   }
+  return { kept, dropped }
+}
+
+/** Distils one product into a fact sheet and stores it, replacing the old one. */
+export async function extractFacts(db: Db, llm: Llm, storeId: number, language: Language, product: ProductForFacts & { content_hash: string }): Promise<FactsOutcome> {
+  const { kept, dropped } = await distil(llm, storeId, language, product)
 
   const client = await db.connect()
   try {

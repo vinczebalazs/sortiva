@@ -115,6 +115,11 @@ describe('mechanical checks', () => {
     expect(failed(draft(GOOD, { metaDescription: 'Pour-over coffee at home, explained plainly, with a dripper from just 28 GBP and a kettle that suits every hob.' }))).toContain('no_price')
   })
 
+  it('raw HTML from the writer is refused', () => {
+    expect(failed(draft(GOOD + '\n<script>alert(1)</script>\n'))).toContain('plain_markdown')
+    expect(failed(draft(GOOD.replace('## What you need', '<h2 style="color:red">What you need</h2>')))).toContain('plain_markdown')
+  })
+
   it("the owner's never-say list is enforced", () => {
     expect(failed(draft(GOOD + '\nYou can get barista-grade results at home.\n'))).toContain('never_say')
   })

@@ -21,7 +21,8 @@
     "build": "react-router build",
     "start": "react-router-serve ./build/server/index.js",
     "preview": "DEV_BYPASS=1 react-router dev",
-    "seed:preview": "tsx scripts/seed-preview.ts"
+    "seed:preview": "tsx scripts/seed-preview.ts",
+    "eval": "tsx evals/run.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.132.1",

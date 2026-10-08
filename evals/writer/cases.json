@@ -1,0 +1,22 @@
+[
+  { "id": "en-w01", "language": "en", "fixture": "rich-en", "topic": 1 },
+  { "id": "en-w02", "language": "en", "fixture": "rich-en", "topic": 2 },
+  { "id": "en-w03", "language": "en", "fixture": "rich-en", "topic": 3 },
+  { "id": "en-w04", "language": "en", "fixture": "rich-en", "topic": 4 },
+  { "id": "en-w05", "language": "en", "fixture": "rich-en", "topic": 5 },
+  { "id": "en-w06", "language": "en", "fixture": "three-en", "topic": 1 },
+  { "id": "en-w07", "language": "en", "fixture": "three-en", "topic": 2 },
+  { "id": "en-w08", "language": "en", "fixture": "blog-en", "topic": 1 },
+  { "id": "en-w09", "language": "en", "fixture": "blog-en", "topic": 2 },
+  { "id": "en-w10", "language": "en", "fixture": "blog-en", "topic": 3 },
+  { "id": "hu-w01", "language": "hu", "fixture": "rich-hu", "topic": 1 },
+  { "id": "hu-w02", "language": "hu", "fixture": "rich-hu", "topic": 2 },
+  { "id": "hu-w03", "language": "hu", "fixture": "rich-hu", "topic": 3 },
+  { "id": "hu-w04", "language": "hu", "fixture": "rich-hu", "topic": 4 },
+  { "id": "hu-w05", "language": "hu", "fixture": "rich-hu", "topic": 5 },
+  { "id": "hu-w06", "language": "hu", "fixture": "three-hu", "topic": 1 },
+  { "id": "hu-w07", "language": "hu", "fixture": "three-hu", "topic": 2 },
+  { "id": "hu-w08", "language": "hu", "fixture": "blog-hu", "topic": 1 },
+  { "id": "hu-w09", "language": "hu", "fixture": "blog-hu", "topic": 2 },
+  { "id": "hu-w10", "language": "hu", "fixture": "blog-hu", "topic": 3 }
+]

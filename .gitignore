@@ -11,3 +11,4 @@ fakes/*/recordings/*.secret.json
 test-results/
 playwright-report/
 scripts/tmp/
+evals/out/
