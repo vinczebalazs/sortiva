@@ -1,0 +1,111 @@
+{
+  "recordedAt": "2026-10-09T13:12:20.710Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You plan one blog article for an online shop. You see the shop, the topic and the search it should answer, the shop's products with the checked facts we hold about each (F1, F2…), and the shop's own pages that may be linked.\n\nPlan an article that genuinely answers the search for a shopper, the way a knowledgeable shop assistant would: useful first, products where they truly help. Decide:\n- title: the headline, in English, containing the search or a natural form of it;\n- angle: one sentence on what the reader will come away knowing;\n- sections: four to seven, each with a heading, what it covers, and the facts it will draw on;\n- products: the products worth showing as a card (one to four), by reference;\n- links: pages worth linking from the text, by reference (products P…, pages L…).\n\nThe article may only say about a product what its facts say, so build the product parts around facts that matter for this search. General advice that is not about our products is allowed. At least 6 different facts should be used across the article.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Fernhill Coffee Supply\nSells: Fernhill Coffee Supply sells home coffee brewing equipment and coffee beans. The range covers pour-over gear (ceramic and stainless steel drippers, size 02 paper filters, stovetop and electric gooseneck kettles, and a brew scale with timer), immersion brewers such as a French press and a cold brew jar, and manual and electric burr grinders. It also sells single-origin coffee beans from Fernhill Roastery in 250 g and 1 kg bags, whole bean or ground.\nAudience: People who brew coffee at home, especially by pour-over or immersion, and who want to grind, weigh and control water temperature themselves. Some products, such as the single-dose flat-burr grinder and the temperature-hold kettle, suit buyers who care about precise brewing.\nTone: expert\nNever say: —\n</store>\n\n<topic>\nWorking title: Gift Ideas for Coffee Lovers Who Brew at Home\nSearch it targets: gifts for coffee lovers\n</topic>\n\n<products>\n  P1: Hand Grinder, conical steel burrs (Grinder)\n    F1: The Fernhill Hand Grinder has conical steel burrs.\n    F2: The Fernhill Hand Grinder is a manual grinder.\n    F3: The Fernhill Hand Grinder has 38 mm hardened stainless steel conical burrs.\n    F4: The Fernhill Hand Grinder has external click adjustment with 30 settings.\n    F5: The Fernhill Hand Grinder's settings range from espresso to French press.\n    F6: The Fernhill Hand Grinder holds 25 g of beans.\n    F7: The Fernhill Hand Grinder has an aluminium body.\n    F8: The Fernhill Hand Grinder weighs 520 g.\n    F9: The Fernhill Hand Grinder grinds a 15 g dose for pour-over in about 40 seconds.\n  P2: Brew Scale with Timer (Scale)\n    F10: The Brew Scale with Timer weighs up to 2 kg.\n    F11: The Brew Scale with Timer weighs in 0.1 g steps.\n    F12: The Brew Scale with Timer has a built-in timer that starts automatically when the first drops land.\n    F13: The Brew Scale with Timer has a USB-C rechargeable battery.\n    F14: The Brew Scale with Timer battery lasts about 30 hours per charge.\n    F15: The Brew Scale with Timer has a silicone pad that protects against heat.\n    F16: The Brew Scale with Timer measures 13 × 13 × 2.5 cm.\n    F17: The Brew Scale with Timer is made by Fernhill.\n  P3: Electric Gooseneck Kettle with Temperature Hold (Kettle)\n    F18: The Electric Gooseneck Kettle with Temperature Hold lets you set the temperature in 1 °C steps from 60 to 100 °C.\n    F19: The Electric Gooseneck Kettle with Temperature Hold base holds the set temperature for 60 minutes.\n    F20: The Electric Gooseneck Kettle with Temperature Hold has an 800 ml capacity.\n    F21: The Electric Gooseneck Kettle with Temperature Hold has a 1200 W heating element.\n    F22: The Electric Gooseneck Kettle with Temperature Hold has a UK plug.\n    F23: The Electric Gooseneck Kettle with Temperature Hold has a 75 cm base cable.\n    F24: The Electric Gooseneck Kettle with Temperature Hold has a gooseneck spout.\n    F25: The Electric Gooseneck Kettle with Temperature Hold is made by Fernhill.\n  P4: Ethiopia Guji, natural process (Coffee beans)\n    F26: Ethiopia Guji, natural process is coffee beans.\n    F27: Ethiopia Guji, natural process is sold by Fernhill Roastery.\n    F28: Ethiopia Guji, natural process is available in 250 g and 1 kg sizes.\n    F29: Ethiopia Guji, natural process is available as whole bean, filter grind, or espresso grind.\n    F30: Ethiopia Guji, natural process is a single origin coffee.\n    F31: Ethiopia Guji, natural process is grown at 1,900–2,100 m in the Guji zone.\n    F32: Ethiopia Guji, natural process is grown by smallholders delivering to the Hambela washing station.\n    F33: Ethiopia Guji, natural process is made from heirloom varieties.\n    F34: Ethiopia Guji, natural process is natural processed and dried on raised beds for 21 days.\n    F35: Ethiopia Guji, natural process is a light roast.\n    F36: Ethiopia Guji, natural process has tasting notes of blueberry, dark chocolate and jasmine.\n  P5: Colombia Huila, washed (Coffee beans) [related]\n    F37: The Colombia Huila coffee is washed-process.\n    F38: The Colombia Huila product is coffee beans.\n    F39: The Colombia Huila coffee is from Fernhill Roastery.\n    F40: The Colombia Huila coffee comes in 250 g and 1 kg sizes.\n    F41: The Colombia Huila coffee is single origin.\n    F42: The Colombia Huila coffee comes from the Pitalito municipality in Huila.\n    F43: The Colombia Huila coffee is grown at 1,600–1,800 m.\n    F44: The Colombia Huila coffee is made from Caturra and Castillo varieties.\n    F45: The Colombia Huila coffee is fully washed and fermented 36 hours.\n    F46: The Colombia Huila coffee is a medium roast.\n    F47: The Colombia Huila coffee is suited to both filter and espresso.\n    F48: The Colombia Huila coffee has tasting notes of red apple, caramel, and milk chocolate.\n  P6: Electric Flat-Burr Grinder (Grinder) [related]\n    F49: The Electric Flat-Burr Grinder has 64 mm flat steel burrs.\n    F50: The Electric Flat-Burr Grinder has stepless adjustment.\n    F51: The Electric Flat-Burr Grinder has a single-dose design.\n    F52: The Electric Flat-Burr Grinder has retention under 0.1 g.\n    F53: The Electric Flat-Burr Grinder has a 250 W motor running at 1,400 rpm.\n    F54: The Electric Flat-Burr Grinder has bellows on top to puff out remaining grounds.\n    F55: The Electric Flat-Burr Grinder has a height of 38 cm.\n    F56: The Electric Flat-Burr Grinder is made by Fernhill.\n    F57: The Electric Flat-Burr Grinder is an electric grinder.\n</products>\n\n<pages>\n  L1: Pour-over brewing (collection)\n  L2: Grinders (collection)\n  L3: Coffee beans (collection)\n  L4: Immersion brewers (collection)\n  L5: About Fernhill (page)\n  L6: Shipping and returns (page)\n</pages>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "angle": {
+              "type": "string"
+            },
+            "sections": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "heading": {
+                    "type": "string"
+                  },
+                  "covers": {
+                    "type": "string"
+                  },
+                  "facts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "heading",
+                  "covers",
+                  "facts"
+                ]
+              }
+            },
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "links": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "angle",
+            "sections",
+            "products",
+            "links"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfrim6jbKwRBtTCENtRfF",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"title\":\"Gifts for Coffee Lovers Who Brew at Home: What Actually Improves Their Cup\",\"angle\":\"The reader will know how to pick a coffee gift that fits the way the recipient already brews, and which grinders, scales, kettles and beans make a real difference at home.\",\"sections\":[{\"heading\":\"Start With How They Brew\",\"covers\":\"General advice on finding out whether the recipient brews pour-over, French press or espresso, what gear they already own, and why a gift that fills a gap beats another mug. Points to the pour-over and immersion collections for browsing.\",\"facts\":[]},{\"heading\":\"A Grinder: The Upgrade Most Home Brewers Feel First\",\"covers\":\"Why fresh grinding with burrs matters for flavour. The hand grinder as a versatile, portable gift covering every brew method, and the electric flat-burr grinder for the precision-minded brewer who weighs single doses.\",\"facts\":[\"F3\",\"F4\",\"F5\",\"F6\",\"F9\",\"F49\",\"F50\",\"F51\",\"F52\",\"F54\"]},{\"heading\":\"A Brew Scale for Repeatable Cups\",\"covers\":\"Why weighing coffee and water beats scoops, and how a scale with an automatic timer makes pour-over recipes repeatable. Practical details that matter for a gift: precision, charging and heat protection.\",\"facts\":[\"F10\",\"F11\",\"F12\",\"F13\",\"F14\",\"F15\"]},{\"heading\":\"A Temperature-Control Kettle for Pour-Over Fans\",\"covers\":\"Why water temperature and a controlled pour matter for pour-over and lighter roasts, and how a gooseneck kettle with temperature hold helps with both. Note the UK plug for buyers gifting abroad.\",\"facts\":[\"F18\",\"F19\",\"F20\",\"F24\",\"F22\"]},{\"heading\":\"Beans: The Gift That Gets Used Right Away\",\"covers\":\"How to choose beans as a gift: match the grind to their gear or choose whole bean if they own a grinder, pick a bag size, and choose between a fruity light roast and a balanced medium roast. Compares the Ethiopia Guji and the Colombia Huila.\",\"facts\":[\"F28\",\"F29\",\"F34\",\"F35\",\"F36\",\"F40\",\"F46\",\"F47\",\"F48\"]},{\"heading\":\"Putting Together a Gift by Budget and Brewer\",\"covers\":\"General guidance on combining items: beans plus a scale as a starter set, a grinder plus whole beans for someone who buys pre-ground, or a kettle for the dedicated pour-over brewer. Mentions checking shipping and returns before ordering a gift.\",\"facts\":[]}],\"products\":[\"P1\",\"P2\",\"P3\",\"P4\"],\"links\":[\"L1\",\"L4\",\"L2\",\"L3\",\"P5\",\"P6\",\"L6\"]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 3251,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 894,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "recordedAt": "2026-10-09T13:16:44.103Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "Egy webáruház egyetlen termékét olvasod el, és felsorolod azokat a tényeket, amelyeket a termék önmagáról állít.\n\nTény az a rövid állítás, amelyet a vásárló a terméken vagy a csomagoláson ellenőrizni tud: miből készült, mekkora, mennyi a tömege vagy az űrtartalma, hány darab van egy csomagban, mihez illik vagy mivel használható, hogyan kell használni vagy ápolni, hol vagy hogyan készült, milyen változatai vannak.\n\nNem tény a dicséret, az érzés, az ígéret, a népszerűség, a meg nem nevezett versenytársakhoz mért összehasonlítás, és az, hogy a vásárló mit érdemel vagy mit fog érezni („mindenki imádja”, „a legjobb”, „tökéletes választás”, „varázsold otthonodat…”). Ezeket hagyd ki akkor is, ha egy mondatban állnak egy ténnyel. Árat soha ne írj.\n\nMinden tényhez add meg:\n- fact: egyetlen mondat, amely megnevezi a terméket és egy dolgot állít róla, a termékszöveg nyelvén. Ne tegyél hozzá semmit, amit a forrás nem mond. A számokat és mértékegységeket pontosan úgy írd, ahogy a forrásban állnak; ne váltsd át és ne kerekítsd őket.\n- source_field: a mező, ahonnan származik.\n- quote: a mezőnek az a része, amely alátámasztja a tényt, betűről betűre kimásolva, egyetlen összefüggő darabként. A tényben szereplő minden számnak szerepelnie kell az idézetben.\n\nHa a termék semmi ellenőrizhetőt nem állít, adj vissza üres listát. Egy rövid, igaz lista jobb egy hosszú, felduzzasztottnál.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<title>\nKerti munkakesztyű\n</title>\n\n<product_type>\nKesztyű\n</product_type>\n\n<vendor>\nZöldkert Magház\n</vendor>\n\n<options>\nMéret: 7 (S), 8 (M), 9 (L), 10 (XL)\n</options>\n\n<tags>\nkert, metszés\n</tags>\n\n<metafields>\nanyag: Kecskebőr tenyérrész, pamut kézhát\nszabvany: EN 388\ngyartasi hely: Pakisztán\n</metafields>\n\n<description>\nKertészkedj kedvedre! Ez a kesztyű lesz a legjobb barátod a kertben, legyen szó ültetésről, gyomlálásról vagy a rózsák metszéséről. Olyan kényelmes, mint egy második bőr, ráadásul stílusos is.\nTavasszal, nyáron és ősszel egyaránt hű társad lesz, hogy a kerti munka végre igazi örömforrás legyen. Ajándéknak is remek választás minden kertbarátnak.\n</description>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "facts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fact": {
+                    "type": "string"
+                  },
+                  "source_field": {
+                    "type": "string",
+                    "description": "{enum: [\"title\",\"product_type\",\"vendor\",\"options\",\"tags\",\"metafields\",\"description\"]}"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "fact",
+                  "source_field",
+                  "quote"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "facts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfrj71FFAfu4JRgWGSzg6",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"facts\":[{\"fact\":\"A kerti munkakesztyű 7 (S), 8 (M), 9 (L) és 10 (XL) méretben kapható.\",\"source_field\":\"options\",\"quote\":\"Méret: 7 (S), 8 (M), 9 (L), 10 (XL)\"},{\"fact\":\"A kerti munkakesztyű tenyérrésze kecskebőrből készült.\",\"source_field\":\"metafields\",\"quote\":\"Kecskebőr tenyérrész\"},{\"fact\":\"A kerti munkakesztyű kézháta pamutból készült.\",\"source_field\":\"metafields\",\"quote\":\"pamut kézhát\"},{\"fact\":\"A kerti munkakesztyű az EN 388 szabványnak felel meg.\",\"source_field\":\"metafields\",\"quote\":\"szabvany: EN 388\"},{\"fact\":\"A kerti munkakesztyű Pakisztánban készült.\",\"source_field\":\"metafields\",\"quote\":\"gyartasi hely: Pakisztán\"},{\"fact\":\"A kerti munkakesztyű ültetéshez, gyomláláshoz és rózsák metszéséhez használható.\",\"source_field\":\"description\",\"quote\":\"legyen szó ültetésről, gyomlálásról vagy a rózsák metszéséről\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1442,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 423,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

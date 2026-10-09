@@ -1,0 +1,87 @@
+{
+  "recordedAt": "2026-10-09T13:12:29.594Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "You read one product from an online shop and list the facts it states about itself.\n\nA fact is a short statement a customer could check against the product or its packaging: what it is made of, its size, weight, capacity, how many come in a pack, what it fits or works with, how to use or care for it, where or how it was made, which variants exist.\n\nThese are not facts: praise, feelings, promises, popularity, comparisons with unnamed rivals, claims about what the buyer deserves or will feel (\"loved by thousands\", \"the best\", \"perfect for\", \"elevate your mornings\"). Leave them out, even when they share a sentence with a fact. Never state a price.\n\nFor each fact give:\n- fact: one sentence that names the product and says one thing about it, in the language of the product text. Add nothing the source does not say. Keep numbers and units exactly as written; do not convert or round.\n- source_field: the field it came from.\n- quote: the words in that field that support the fact, copied character for character as one continuous piece of the field. Every number in the fact must appear in the quote.\n\nIf the product states nothing checkable, return an empty list. A short true list is better than a long padded one.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<title>\nTrailhound No-Pull Harness\n</title>\n\n<product_type>\nDog Harness\n</product_type>\n\n<vendor>\nGood Boy Gear\n</vendor>\n\n<options>\nSize: XS, S, M, L\nColour: Moss, Rust\n</options>\n\n<tags>\ndog, harness, no-pull\n</tags>\n\n<metafields>\n\n</metafields>\n\n<description>\nA padded harness with a front clip that steers pulling dogs sideways instead of letting them lean forward.\nChest girth by size: XS 38–48 cm, S 48–60 cm, M 60–76 cm, L 76–94 cm. The outer shell is 600D recycled polyester with a breathable mesh lining. Two attachment points: an aluminium D-ring on the back and a stainless steel ring on the chest. Reflective piping on both straps. Hand wash in cold water and air dry.\nEvery dog deserves a walk this good.\n</description>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "facts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fact": {
+                    "type": "string"
+                  },
+                  "source_field": {
+                    "type": "string",
+                    "description": "{enum: [\"title\",\"product_type\",\"vendor\",\"options\",\"tags\",\"metafields\",\"description\"]}"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "fact",
+                  "source_field",
+                  "quote"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "facts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrimxbUoCJa7FHYVjrpY",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"facts\":[{\"fact\":\"The Trailhound No-Pull Harness is a dog harness.\",\"source_field\":\"product_type\",\"quote\":\"Dog Harness\"},{\"fact\":\"The Trailhound No-Pull Harness is made by Good Boy Gear.\",\"source_field\":\"vendor\",\"quote\":\"Good Boy Gear\"},{\"fact\":\"The Trailhound No-Pull Harness comes in sizes XS, S, M and L.\",\"source_field\":\"options\",\"quote\":\"Size: XS, S, M, L\"},{\"fact\":\"The Trailhound No-Pull Harness comes in the colours Moss and Rust.\",\"source_field\":\"options\",\"quote\":\"Colour: Moss, Rust\"},{\"fact\":\"The Trailhound No-Pull Harness is padded and has a front clip that steers pulling dogs sideways.\",\"source_field\":\"description\",\"quote\":\"A padded harness with a front clip that steers pulling dogs sideways\"},{\"fact\":\"The Trailhound No-Pull Harness in size XS fits a chest girth of 38–48 cm.\",\"source_field\":\"description\",\"quote\":\"XS 38–48 cm\"},{\"fact\":\"The Trailhound No-Pull Harness in size S fits a chest girth of 48–60 cm.\",\"source_field\":\"description\",\"quote\":\"S 48–60 cm\"},{\"fact\":\"The Trailhound No-Pull Harness in size M fits a chest girth of 60–76 cm.\",\"source_field\":\"description\",\"quote\":\"M 60–76 cm\"},{\"fact\":\"The Trailhound No-Pull Harness in size L fits a chest girth of 76–94 cm.\",\"source_field\":\"description\",\"quote\":\"L 76–94 cm\"},{\"fact\":\"The outer shell of the Trailhound No-Pull Harness is 600D recycled polyester.\",\"source_field\":\"description\",\"quote\":\"The outer shell is 600D recycled polyester\"},{\"fact\":\"The Trailhound No-Pull Harness has a breathable mesh lining.\",\"source_field\":\"description\",\"quote\":\"with a breathable mesh lining\"},{\"fact\":\"The Trailhound No-Pull Harness has two attachment points.\",\"source_field\":\"description\",\"quote\":\"Two attachment points\"},{\"fact\":\"The Trailhound No-Pull Harness has an aluminium D-ring on the back.\",\"source_field\":\"description\",\"quote\":\"an aluminium D-ring on the back\"},{\"fact\":\"The Trailhound No-Pull Harness has a stainless steel ring on the chest.\",\"source_field\":\"description\",\"quote\":\"a stainless steel ring on the chest\"},{\"fact\":\"The Trailhound No-Pull Harness has reflective piping on both straps.\",\"source_field\":\"description\",\"quote\":\"Reflective piping on both straps.\"},{\"fact\":\"The Trailhound No-Pull Harness should be hand washed in cold water and air dried.\",\"source_field\":\"description\",\"quote\":\"Hand wash in cold water and air dry.\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1080,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 963,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

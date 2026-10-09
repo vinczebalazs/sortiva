@@ -1,0 +1,146 @@
+{
+  "recordedAt": "2026-10-09T13:13:33.909Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You review a blog article an online shop is about to publish. You did not write it. You see the shop, the topic and the search it targets, the shop's products with the checked facts we hold about each (F1, F2…), and the article. Sentences about products end with the facts they rest on in brackets; [G] marks a sentence the writer says is general knowledge.\n\nScore each from 1 to 5:\n- grounding: everything said about the shop's products is exactly what the cited facts say, with nothing added, stretched or implied. One product claim the facts do not support caps this at 2. No invented experience (\"we tested\", customer stories), statistics or studies.\n- information_gain: a shopper who searched this would learn something useful and specific, beyond generic filler they could find anywhere. Padding, repetition and vague praise lower it.\n- structure: it answers the search early, its sections follow in a sensible order, headings say what is below them, lists and tables are used where they help.\n- fit: it suits this shop, its audience and tone, stays on the topic, and does not read as an advert.\n5 is excellent, 4 good enough to publish as it is, 3 acceptable with flaws, 2 or 1 not publishable.\n\nList problems: each with the exact sentence quoted and what is wrong, most serious first. Leave the list empty if there are none.\n\nFor each general-knowledge sentence you are given (G1, G2…), answer with its reference and whether every number in it is well established and uncontroversial general knowledge that needs no source (accepted true), or not (false), with a short reason.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Ashworth Blades\nSells: kitchen knives and sharpening tools\nAudience: home cooks\nTone: plain\nNever say: —\n</store>\n\n<topic>\nWorking title: How to sharpen a knife with a whetstone\nSearch it targets: how to sharpen a knife with a whetstone\n</topic>\n\n<products>\n  P1: Combination Whetstone 1000/6000 (Whetstone)\n    F1: The Combination Whetstone has a 1000 grit side and a 6000 grit side.\n    F2: The Combination Whetstone is a water stone that is soaked before use.\n    F3: The Combination Whetstone comes with a non-slip rubber base.\n    F4: The Combination Whetstone measures 18 by 6 cm.\n  P2: Santoku Knife (Kitchen knife)\n    F5: The Santoku Knife has an 18 cm blade.\n    F6: The Santoku Knife is made of VG-10 stainless steel.\n    F7: The Santoku Knife has a blade ground to 15 degrees on each side.\n  P3: Stone Flattening Plate (Sharpening accessory)\n    F8: The Stone Flattening Plate has a diamond-coated surface.\n</products>\n\n<pages>\n  L1: Sharpening (collection)\n</pages>\n\n<article>\nTitle: How to sharpen a knife with a whetstone\n\nTo sharpen a knife on a whetstone, soak the stone, hold the blade at a steady, shallow angle, and draw the edge across the coarse side until you can feel a slight burr along its whole length, then repeat on the fine side to polish it. But before we get to the steps, it is worth knowing why Ashworth Blades has become the name so many home cooks turn to for their knives.\n\n## Where Ashworth Blades began\n\nAshworth Blades started at a kitchen table, with a family who had worked with steel for generations and a simple belief that every home cook deserves a properly sharp knife. What began as a small workshop has grown into the shop you see today, but that belief has never changed. Every knife and stone in our range is chosen with the same care that went into those first pieces. When you shop with Ashworth Blades, you are not just buying a tool; you are joining a family that cares about cooking as much as you do.\n\n## Why choose Ashworth Blades?\n\nThere are plenty of places to buy a knife, but there is only one Ashworth Blades. When you shop with us, you get a range picked by people who care about sharp edges, and the reassurance of a shop that stands behind everything it sells. Don't put up with a dull, squashing knife for another day. Give your kitchen the upgrade it deserves and discover the Ashworth difference today!\n\n## The stone you need\n\nThe [Combination Whetstone](P1) has a 1000 grit side and a 6000 grit side [F1]. It is a water stone that is soaked before use [F2], and it comes with a non-slip rubber base [F3]. It measures 18 by 6 cm [F4]. Add one to your kitchen today!\n\n{{P1}}\n\n## Sharpening, step by step\n\n- Soak the stone until bubbles stop rising.\n- Start on the coarse side, holding the blade at a steady angle.\n- Sweep the edge along the stone from heel to tip with light, even pressure.\n- When you can feel a burr along the whole edge, turn the knife over and repeat.\n- Move to the fine side and repeat with lighter strokes to polish the edge.\n\nThe [Santoku Knife](P2) has a blade ground to 15 degrees on each side [F7], so match that angle as closely as you can. It has an 18 cm blade [F5] and is made of VG-10 stainless steel [F6].\n\n{{P2}}\n\nStones wear hollow with use, and a dished stone rounds the edge you are trying to sharpen. The [Stone Flattening Plate](P3) has a diamond-coated surface [F8].\n\n## Join the Ashworth family\n\nReady to feel the difference a truly sharp knife makes? Browse our full [sharpening range](L1) now and treat yourself, or someone you love, to a gift they will use every single day. At Ashworth Blades we are proud of every edge we sell, and we cannot wait to welcome you.\n\n</article>\n\n<general_knowledge>\n—\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ref",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrirKmK6UMRJHB1y4xvN",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQShwoKEAgSGAI4AUIIdGhpbmtpbmcSDGlp9co0kAdix7qZ0xoMv84WV/dwMtrUdd9+IjDJ6Iqnntyrz6zhNjCwtJOKazRseqbh1l1s9Znu5u/YlwEvmS1jesJNrvZUnvjV5kEqpAmprm5vRW3wYXcXQaN3VTiMYW9O1+PvTcWDbsWuBFJiOZn1fGsIjXctQ0Npl7jvXnuBXaeBhTSJFB8KGs9+yI7QBfWS2okHqhd1vug7i4Yh9lZE9DO4vXhGdX58HBNDltskI+vuSDdtoLETQLBHYbdEaew0lFHjeq46c7/h2xToxnatl7TEKJc0ApvVgo4r5qkBreYFaGN1OKDYemG8+7PUTpCG40OC6+BiDiEi2YMtcBGQIQjjs/oRnL6wYKRBoX9nGub5FULA9uwoWk7J+UtIAdayPpUpxD6gDXXTeUiXQ9pXA+mDngZDxmgyXw13pJXWyQq2G20M6ORzaK9jj0YX0kdlvqxjlNJFhjlDKLGcNUopLeC74PEpSg1xsBHal2O1dc5shckVrUch+nnxKWlDf7UdsZu6ziLs0cBrwUuu5gbbW9CLXkqkJlh8xyf7K7LJlQGaW+tgEjyLhhXAiVdTA9R+Kb6mkPAHqJUqLpNw1RqICcsqZZAd+JvN67MvMg2+lrBobnGUv7G5J4uNzI2se7vQpmICh7ixu3ZehNgtYzXlj1EmLtJTTguSpnsHbPn/hSjjzkP2xr+/GK4oG00qrVozgAGaHwh4RKAZ5MLXpw177n6OcEluZ0hZ2CuuD12TKt2lGwdA3ld61xZ6YWt0jN2bws3jn5W2QyzujKPlDv1CapDERFFOyJkly6g+R1gvDswRPdijLA1SOYx9MIfZm8lfo37R6HuuEUgCMB2dvGtoxVY0NAZ2xYcO02Tu1BtGL+Zsqmk26i+0McrBCQnRUE352/eBoWzMTrhgi+OM+C6j4KyRa3IAAOvTY7msK7oHVj8zTGk0eTusGh/pqASTd+zgCDFAwgtItHnoANoj1otKQVego8gswWSR5hxnQMPKPJMBMBno4WOyFr2YfTKGpVo70IhJMg1xZKv/BINb4yWPl6kPeFkrT04EsoOZ6U4Fh4gW/x3RB3IQIXDGPFBRj41qToYtW+LUWHbtyypY3roFpzpDgzGBQ7rnnaDNVmd7sGNWm47Dne21+5vdbzRtqaWA7FxpxYGjcN74H2UlLd7NVBmPhBmxV2wQA2iiwf9/A2QazTtbawh30tREWxJ/gx+iaVIT9te88YKkHdIJ9XDW6r0KVot71qX7YFQRpZ5hRNIUT9gfnhm/8MEHUqvNLczqq046uwL6uKCoMnNov1WW0SIBNEjJYFv1YGhwAzz0VNv1TOWqMvDyNYXShIlDHtUOBVV8WxP0QCE6Vma/m8h4w5QrCeKqFPtgv79Nu6TCiQkqFCJVi0+ZLIu/Za6Dvd51vlqF9KgtIts1TzETi/rDaU21J1Ox9qRqxzBTrWUd1DaZE3BPgSzq1IQYj8etIn2DP99qvHsEXUZsp/pAE+/UotxzjFzW5UTwnx9tbXim4uExa372BGcvHUJ4jhsIAEC+zqfXRtYvQscJj6TTYf6ijCwv3LP595CJAMqUoLNFCFXSOt8I+PcnLSS6iFV3fxDmxt/40DKVkt7DNEAW/OC67nWblHzL9sCrb4K+PiABpNdDhISLVDk3jheAj7FR18vt03P0/YDVWrscht8I5M73QNgYAQ=="
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":2,\"note\":\"All product sentences match their cited facts exactly. However, the article invents a company history (a kitchen-table start, a family with generations of steelwork). It also implies a guarantee ('stands behind everything it sells') with no fact behind it.\"},\"information_gain\":{\"score\":2,\"note\":\"The opening summary and five-step list are correct but thin. There is no guidance on how long to soak, how to judge or hold the angle, how many strokes to make, how to remove the burr or how to test sharpness. The grits are never explained. The flattening paragraph raises a useful point but never says how to flatten a stone. Much of the length is brand promotion.\"},\"structure\":{\"score\":2,\"note\":\"The answer comes early, but the reader is then sent through two brand sections before reaching the method. The step list is useful but brief. Flattening is tacked on under the steps heading, and the article ends with a sales section rather than a conclusion.\"},\"fit\":{\"score\":1,\"note\":\"It reads largely as an advert. There are brand-story and 'why choose us' sections, repeated calls to buy ('Add one to your kitchen today!', 'discover the Ashworth difference today!') and a closing sales pitch. This clashes with the plain tone and drifts away from the how-to topic.\"},\"problems\":[{\"quote\":\"Ashworth Blades started at a kitchen table, with a family who had worked with steel for generations and a simple belief that every home cook deserves a properly sharp knife.\",\"problem\":\"This is an invented company history with no supporting facts. It is also off-topic for a sharpening guide.\"},{\"quote\":\"When you shop with us, you get a range picked by people who care about sharp edges, and the reassurance of a shop that stands behind everything it sells.\",\"problem\":\"It implies an unsupported guarantee or returns promise. The whole section is advertising rather than content.\"},{\"quote\":\"But before we get to the steps, it is worth knowing why Ashworth Blades has become the name so many home cooks turn to for their knives.\",\"problem\":\"It delays the answer the reader searched for so it can promote the brand. 'So many home cooks turn to' is an unsupported popularity claim.\"},{\"quote\":\"Don't put up with a dull, squashing knife for another day. Give your kitchen the upgrade it deserves and discover the Ashworth difference today!\",\"problem\":\"A hard-sell call to action that does not suit the plain tone.\"},{\"quote\":\"Add one to your kitchen today!\",\"problem\":\"A sales push inserted into the how-to content.\"},{\"quote\":\"Ready to feel the difference a truly sharp knife makes? Browse our full [sharpening range](L1) now and treat yourself, or someone you love, to a gift they will use every single day.\",\"problem\":\"The closing section is pure advertising and gives no summary or practical takeaway.\"},{\"quote\":\"Start on the coarse side, holding the blade at a steady angle.\",\"problem\":\"It gives no practical guidance on finding or holding the angle, which is the hardest part for a beginner.\"},{\"quote\":\"The [Stone Flattening Plate](P3) has a diamond-coated surface [F8].\",\"problem\":\"It raises stone flattening but never explains how or when to flatten the stone, so the point is left incomplete.\"}],\"general_numbers\":[]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 2663,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1324,
+      "output_tokens_details": {
+        "thinking_tokens": 250
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

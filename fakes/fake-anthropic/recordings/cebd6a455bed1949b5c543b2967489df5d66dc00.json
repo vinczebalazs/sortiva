@@ -1,0 +1,87 @@
+{
+  "recordedAt": "2026-10-09T13:12:15.743Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "You read one product from an online shop and list the facts it states about itself.\n\nA fact is a short statement a customer could check against the product or its packaging: what it is made of, its size, weight, capacity, how many come in a pack, what it fits or works with, how to use or care for it, where or how it was made, which variants exist.\n\nThese are not facts: praise, feelings, promises, popularity, comparisons with unnamed rivals, claims about what the buyer deserves or will feel (\"loved by thousands\", \"the best\", \"perfect for\", \"elevate your mornings\"). Leave them out, even when they share a sentence with a fact. Never state a price.\n\nFor each fact give:\n- fact: one sentence that names the product and says one thing about it, in the language of the product text. Add nothing the source does not say. Keep numbers and units exactly as written; do not convert or round.\n- source_field: the field it came from.\n- quote: the words in that field that support the fact, copied character for character as one continuous piece of the field. Every number in the fact must appear in the quote.\n\nIf the product states nothing checkable, return an empty list. A short true list is better than a long padded one.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<title>\nRidgeline 2 Backpacking Tent\n</title>\n\n<product_type>\nTent\n</product_type>\n\n<vendor>\nCairn Outdoor\n</vendor>\n\n<options>\nColour: Olive, Sand\n</options>\n\n<tags>\ncamping, backpacking, 2-person\n</tags>\n\n<metafields>\n\n</metafields>\n\n<description>\nA freestanding two-person tent for multi-day trips.\nSleeps 2 people\nPacked weight 1.85 kg\nFloor area 2.9 m²\nPeak height 105 cm\nFly 20D ripstop nylon, 3,000 mm hydrostatic head\nPoles DAC aluminium\nTwo doors and two vestibules. Seam-taped fly. The inner and fly pitch together as one unit.\nAdventure awaits.\n</description>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "facts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fact": {
+                    "type": "string"
+                  },
+                  "source_field": {
+                    "type": "string",
+                    "description": "{enum: [\"title\",\"product_type\",\"vendor\",\"options\",\"tags\",\"metafields\",\"description\"]}"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "fact",
+                  "source_field",
+                  "quote"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "facts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfrim26nmtzoAiMP2HH9c",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"facts\":[{\"fact\":\"The Ridgeline 2 Backpacking Tent is a freestanding two-person tent.\",\"source_field\":\"description\",\"quote\":\"A freestanding two-person tent for multi-day trips.\"},{\"fact\":\"The Ridgeline 2 Backpacking Tent sleeps 2 people.\",\"source_field\":\"description\",\"quote\":\"Sleeps 2 people\"},{\"fact\":\"The Ridgeline 2 Backpacking Tent has a packed weight of 1.85 kg.\",\"source_field\":\"description\",\"quote\":\"Packed weight 1.85 kg\"},{\"fact\":\"The Ridgeline 2 Backpacking Tent has a floor area of 2.9 m².\",\"source_field\":\"description\",\"quote\":\"Floor area 2.9 m²\"},{\"fact\":\"The Ridgeline 2 Backpacking Tent has a peak height of 105 cm.\",\"source_field\":\"description\",\"quote\":\"Peak height 105 cm\"},{\"fact\":\"The Ridgeline 2 Backpacking Tent fly is made of 20D ripstop nylon.\",\"source_field\":\"description\",\"quote\":\"Fly 20D ripstop nylon\"},{\"fact\":\"The Ridgeline 2 Backpacking Tent fly has a 3,000 mm hydrostatic head.\",\"source_field\":\"description\",\"quote\":\"3,000 mm hydrostatic head\"},{\"fact\":\"The Ridgeline 2 Backpacking Tent has DAC aluminium poles.\",\"source_field\":\"description\",\"quote\":\"Poles DAC aluminium\"},{\"fact\":\"The Ridgeline 2 Backpacking Tent has two doors and two vestibules.\",\"source_field\":\"description\",\"quote\":\"Two doors and two vestibules.\"},{\"fact\":\"The Ridgeline 2 Backpacking Tent has a seam-taped fly.\",\"source_field\":\"description\",\"quote\":\"Seam-taped fly.\"},{\"fact\":\"The Ridgeline 2 Backpacking Tent's inner and fly pitch together as one unit.\",\"source_field\":\"description\",\"quote\":\"The inner and fly pitch together as one unit.\"},{\"fact\":\"The Ridgeline 2 Backpacking Tent is available in Olive and Sand colours.\",\"source_field\":\"options\",\"quote\":\"Colour: Olive, Sand\"},{\"fact\":\"The Ridgeline 2 Backpacking Tent is made by Cairn Outdoor.\",\"source_field\":\"vendor\",\"quote\":\"Cairn Outdoor\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1043,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 821,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

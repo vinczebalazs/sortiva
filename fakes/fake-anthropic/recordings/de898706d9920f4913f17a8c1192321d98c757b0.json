@@ -1,0 +1,146 @@
+{
+  "recordedAt": "2026-10-09T13:14:02.029Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You review a blog article an online shop is about to publish. You did not write it. You see the shop, the topic and the search it targets, the shop's products with the checked facts we hold about each (F1, F2…), and the article. Sentences about products end with the facts they rest on in brackets; [G] marks a sentence the writer says is general knowledge.\n\nScore each from 1 to 5:\n- grounding: everything said about the shop's products is exactly what the cited facts say, with nothing added, stretched or implied. One product claim the facts do not support caps this at 2. No invented experience (\"we tested\", customer stories), statistics or studies.\n- information_gain: a shopper who searched this would learn something useful and specific, beyond generic filler they could find anywhere. Padding, repetition and vague praise lower it.\n- structure: it answers the search early, its sections follow in a sensible order, headings say what is below them, lists and tables are used where they help.\n- fit: it suits this shop, its audience and tone, stays on the topic, and does not read as an advert.\n5 is excellent, 4 good enough to publish as it is, 3 acceptable with flaws, 2 or 1 not publishable.\n\nList problems: each with the exact sentence quoted and what is wrong, most serious first. Leave the list empty if there are none.\n\nFor each general-knowledge sentence you are given (G1, G2…), answer with its reference and whether every number in it is well established and uncontroversial general knowledge that needs no source (accepted true), or not (false), with a short reason.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Fernhill Coffee Supply\nSells: Fernhill Coffee Supply sells home coffee brewing equipment and coffee beans. The range covers pour-over gear (ceramic and stainless steel drippers, size 02 paper filters, stovetop and electric gooseneck kettles, and a brew scale with timer), immersion brewers such as a French press and a cold brew jar, and manual and electric burr grinders. It also sells single-origin coffee beans from Fernhill Roastery in 250 g and 1 kg bags, whole bean or ground.\nAudience: People who brew coffee at home, especially by pour-over or immersion, and who want to grind, weigh and control water temperature themselves. Some products, such as the single-dose flat-burr grinder and the temperature-hold kettle, suit buyers who care about precise brewing.\nTone: expert\nNever say: —\n</store>\n\n<topic>\nWorking title: Gift Ideas for Coffee Lovers Who Brew at Home\nSearch it targets: gifts for coffee lovers\n</topic>\n\n<products>\n  P1: Hand Grinder, conical steel burrs (Grinder)\n    F1: The Fernhill Hand Grinder has conical steel burrs.\n    F2: The Fernhill Hand Grinder is a manual grinder.\n    F3: The Fernhill Hand Grinder has 38 mm hardened stainless steel conical burrs.\n    F4: The Fernhill Hand Grinder has external click adjustment with 30 settings.\n    F5: The Fernhill Hand Grinder's settings range from espresso to French press.\n    F6: The Fernhill Hand Grinder holds 25 g of beans.\n    F7: The Fernhill Hand Grinder has an aluminium body.\n    F8: The Fernhill Hand Grinder weighs 520 g.\n    F9: The Fernhill Hand Grinder grinds a 15 g dose for pour-over in about 40 seconds.\n  P2: Brew Scale with Timer (Scale)\n    F10: The Brew Scale with Timer weighs up to 2 kg.\n    F11: The Brew Scale with Timer weighs in 0.1 g steps.\n    F12: The Brew Scale with Timer has a built-in timer that starts automatically when the first drops land.\n    F13: The Brew Scale with Timer has a USB-C rechargeable battery.\n    F14: The Brew Scale with Timer battery lasts about 30 hours per charge.\n    F15: The Brew Scale with Timer has a silicone pad that protects against heat.\n    F16: The Brew Scale with Timer measures 13 × 13 × 2.5 cm.\n    F17: The Brew Scale with Timer is made by Fernhill.\n  P3: Electric Gooseneck Kettle with Temperature Hold (Kettle)\n    F18: The Electric Gooseneck Kettle with Temperature Hold lets you set the temperature in 1 °C steps from 60 to 100 °C.\n    F19: The Electric Gooseneck Kettle with Temperature Hold base holds the set temperature for 60 minutes.\n    F20: The Electric Gooseneck Kettle with Temperature Hold has an 800 ml capacity.\n    F21: The Electric Gooseneck Kettle with Temperature Hold has a 1200 W heating element.\n    F22: The Electric Gooseneck Kettle with Temperature Hold has a UK plug.\n    F23: The Electric Gooseneck Kettle with Temperature Hold has a 75 cm base cable.\n    F24: The Electric Gooseneck Kettle with Temperature Hold has a gooseneck spout.\n    F25: The Electric Gooseneck Kettle with Temperature Hold is made by Fernhill.\n  P4: Ethiopia Guji, natural process (Coffee beans)\n    F26: Ethiopia Guji, natural process is coffee beans.\n    F27: Ethiopia Guji, natural process is sold by Fernhill Roastery.\n    F28: Ethiopia Guji, natural process is available in 250 g and 1 kg sizes.\n    F29: Ethiopia Guji, natural process is available as whole bean, filter grind, or espresso grind.\n    F30: Ethiopia Guji, natural process is a single origin coffee.\n    F31: Ethiopia Guji, natural process is grown at 1,900–2,100 m in the Guji zone.\n    F32: Ethiopia Guji, natural process is grown by smallholders delivering to the Hambela washing station.\n    F33: Ethiopia Guji, natural process is made from heirloom varieties.\n    F34: Ethiopia Guji, natural process is natural processed and dried on raised beds for 21 days.\n    F35: Ethiopia Guji, natural process is a light roast.\n    F36: Ethiopia Guji, natural process has tasting notes of blueberry, dark chocolate and jasmine.\n  P5: Colombia Huila, washed (Coffee beans) [related]\n    F37: The Colombia Huila coffee is washed-process.\n    F38: The Colombia Huila product is coffee beans.\n    F39: The Colombia Huila coffee is from Fernhill Roastery.\n    F40: The Colombia Huila coffee comes in 250 g and 1 kg sizes.\n    F41: The Colombia Huila coffee is single origin.\n    F42: The Colombia Huila coffee comes from the Pitalito municipality in Huila.\n    F43: The Colombia Huila coffee is grown at 1,600–1,800 m.\n    F44: The Colombia Huila coffee is made from Caturra and Castillo varieties.\n    F45: The Colombia Huila coffee is fully washed and fermented 36 hours.\n    F46: The Colombia Huila coffee is a medium roast.\n    F47: The Colombia Huila coffee is suited to both filter and espresso.\n    F48: The Colombia Huila coffee has tasting notes of red apple, caramel, and milk chocolate.\n  P6: Electric Flat-Burr Grinder (Grinder) [related]\n    F49: The Electric Flat-Burr Grinder has 64 mm flat steel burrs.\n    F50: The Electric Flat-Burr Grinder has stepless adjustment.\n    F51: The Electric Flat-Burr Grinder has a single-dose design.\n    F52: The Electric Flat-Burr Grinder has retention under 0.1 g.\n    F53: The Electric Flat-Burr Grinder has a 250 W motor running at 1,400 rpm.\n    F54: The Electric Flat-Burr Grinder has bellows on top to puff out remaining grounds.\n    F55: The Electric Flat-Burr Grinder has a height of 38 cm.\n    F56: The Electric Flat-Burr Grinder is made by Fernhill.\n    F57: The Electric Flat-Burr Grinder is an electric grinder.\n</products>\n\n<pages>\n  L1: Pour-over brewing (collection)\n  L2: Grinders (collection)\n  L3: Coffee beans (collection)\n  L4: Immersion brewers (collection)\n  L5: About Fernhill (page)\n  L6: Shipping and returns (page)\n</pages>\n\n<article>\nTitle: Gifts for Coffee Lovers Who Brew at Home: What Actually Improves Their Cup\n\nThe best gifts for coffee lovers fill a real gap in how they already brew. For most home brewers that means a burr grinder, a brew scale with a timer, a temperature-control gooseneck kettle, or a bag of freshly roasted single-origin beans. Below we explain how to work out which one your recipient needs and what to look for in each, so the gift ends up on the counter every morning.\n\n## Start With How They Brew\n\nBefore choosing anything, find out how they make coffee now. A pour-over enthusiast, a French press devotee and someone who pulls espresso shots need very different things. A quick look at their kitchen tells you most of what you need to know. Do they own a grinder, or do they buy pre-ground coffee? Do they scoop coffee by eye, or weigh it? Do they pour from an ordinary kettle, or from one with a narrow spout?\n\nThe aim is to find the weak link. Another mug or a novelty gadget rarely changes the cup. A tool that removes a variable they currently guess at almost always does. If they brew by pour-over, browse our [pour-over brewing collection](L1). If they prefer full-bodied coffee from a French press or cold brew jar, our [immersion brewers](L4) are the place to start.\n\nAs a rough guide:\n\n- **They buy pre-ground coffee:** a burr grinder makes the biggest difference.\n- **They grind fresh but measure with a scoop:** a brew scale brings consistency.\n- **They brew pour-over with a standard kettle:** a gooseneck kettle with temperature control gives them control over the pour.\n- **They already own good gear:** beans are the gift that gets used straight away.\n\n## A Grinder: The Upgrade Most Home Brewers Feel First\n\nGround coffee loses its aromatics quickly, so grinding just before brewing is the single most noticeable improvement most home brewers can make. Burr grinders also produce far more even particles than blade grinders, which chop beans unpredictably. Even particles extract at a similar rate, so the cup tastes clearer and less bitter or sour.\n\nOur [Hand Grinder](P1) uses 38 mm hardened stainless steel conical burrs [F3]. Its external click adjustment offers 30 settings that run from espresso to French press, so it covers whatever brew method your recipient uses [F4, F5]. It holds 25 g of beans and grinds a 15 g pour-over dose in about 40 seconds [F6, F9]. As a manual grinder with an aluminium body weighing 520 g, it needs no power socket [F2, F7, F8].\n\n{{P1}}\n\nFor the precision-minded brewer, the [Electric Flat-Burr Grinder](P6) is an electric, single-dose alternative [F51, F57]. It has 64 mm flat steel burrs and stepless adjustment, which lets the user dial in a grind between fixed points [F49, F50]. Its single-dose design and retention under 0.1 g mean the beans that go in are the beans that come out [F51, F52]. Bellows on top puff out any remaining grounds [F54]. Single dosing suits people who switch between several coffees, because no stale grounds from yesterday's bag end up in today's cup. You can compare both options in our [grinders collection](L2).\n\n## A Brew Scale for Repeatable Cups\n\nScoops measure volume, and coffee beans vary in size and density from one origin and roast to the next. Weighing coffee and water is the only reliable way to repeat a cup you liked, or to adjust one you didn't. A common starting point for filter coffee is around 60 g of coffee per litre of water [G]. With a scale, a brewer can follow a recipe exactly and change one variable at a time.\n\nA timer matters just as much for pour-over, because contact time shapes extraction. A scale that tracks weight and time together lets the brewer see both at a glance while pouring.\n\nThe [Brew Scale with Timer](P2) weighs up to 2 kg in 0.1 g steps [F10, F11]. Its built-in timer starts automatically when the first drops land, so the brewer can keep both hands on the kettle and dripper [F12]. It charges by USB-C, and the battery lasts about 30 hours per charge [F13, F14]. A silicone pad protects it against heat [F15].\n\n{{P2}}\n\n## A Temperature-Control Kettle for Pour-Over Fans\n\nPour-over rewards control. Water temperature affects how quickly flavour compounds dissolve, and pour rate affects how evenly water moves through the coffee bed. For filter coffee, water between roughly 90 and 96 °C is the range most brewing guides recommend [G]. Lighter roasts are denser and less soluble, so many brewers use hotter water for them and cooler water for darker roasts.\n\nA standard kettle makes both difficult: it boils and then cools at an unknown rate, and its wide spout pours in gulps. A gooseneck kettle with temperature control solves both problems.\n\nOur [Electric Gooseneck Kettle with Temperature Hold](P3) lets the user set the temperature in 1 °C steps from 60 to 100 °C [F18]. Its base holds the set temperature for 60 minutes, so a second cup or a slow morning does not mean reheating and guessing [F19]. The gooseneck spout allows a slow, steady, targeted pour [F24]. It has an 800 ml capacity [F20].\n\nIf you are gifting to someone outside the UK, note that the kettle has a UK plug [F22].\n\n{{P3}}\n\n## Beans: The Gift That Gets Used Right Away\n\nBeans are the easiest coffee gift to get right, as long as you check three things first.\n\n1. **Grind.** If they own a grinder, choose whole bean, which stays fresh longest. If they don't, choose a grind that matches their brewer.\n2. **Bag size.** A smaller bag lets them try something new. A larger bag suits someone who already drinks a lot of one style.\n3. **Roast and flavour.** Decide between a bright, fruity light roast and a rounder, more balanced medium roast.\n\nTwo single-origin coffees from our range show the contrast well [F30, F41]:\n\n| | Ethiopia Guji, natural process [F30] | Colombia Huila, washed [F37, F41] |\n|---|---|---|\n| Roast | Light [F35] | Medium [F46] |\n| Tasting notes | Blueberry, dark chocolate, jasmine [F36] | Red apple, caramel, milk chocolate [F48] |\n| Processing | Natural, dried on raised beds for 21 days [F34] | Washed [F37] |\n| Bag sizes | 250 g and 1 kg [F28] | 250 g and 1 kg [F40] |\n| Suits | Whole bean, filter grind or espresso grind options [F29] | Both filter and espresso [F47] |\n\nThe [Ethiopia Guji](P4) is the choice for someone who loves expressive, fruit-led coffee: it is a light roast with notes of blueberry, dark chocolate and jasmine [F35, F36]. It comes as whole bean, filter grind or espresso grind, in 250 g and 1 kg bags, so it is easy to match to their setup [F28, F29].\n\n{{P4}}\n\nThe [Colombia Huila](P5) suits someone who prefers a balanced, comforting cup, with a medium roast and notes of red apple, caramel and milk chocolate [F46, F48]. Because it is suited to both filter and espresso, it is a safe pick if you are unsure how they brew [F47]. Browse more single origins in our [coffee beans collection](L3).\n\n## Putting Together a Gift by Brewer\n\nA single item makes a fine present, but pairing two things that work together often makes a better one. Some combinations that make sense:\n\n- **A starter set for a new brewer:** a bag of beans plus a brew scale. They get something to drink straight away and the tool to make it consistently.\n- **For someone who buys pre-ground coffee:** a burr grinder plus a bag of whole beans, so they taste the difference from the first brew.\n- **For the dedicated pour-over brewer:** a temperature-control gooseneck kettle, perhaps with a light roast that rewards careful temperature choice.\n- **For the brewer who already owns everything:** a single-origin coffee they haven't tried, in a smaller bag so they can explore.\n\nIf you want the most dependable choice, beans are hard to beat. For a bigger gift, choose whichever tool removes the biggest guess from their routine, usually the grinder first, then the scale, then the kettle.\n\nFinally, because gifts sometimes miss, read our [returns information](L6) before you order, and learn more about who we are on our [About Fernhill](L5) page.\n</article>\n\n<general_knowledge>\nG1: A common starting point for filter coffee is around 60 g of coffee per litre of water. (numbers: 60)\nG2: For filter coffee, water between roughly 90 and 96 °C is the range most brewing guides recommend. (numbers: 90, 96)\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ref",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfrit8AcT75vS89PgSGS9",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "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"
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":4,\"note\":\"Product claims mostly mirror the cited facts closely. A few sentences stretch them slightly: the grinder 'covers whatever brew method', the gooseneck pour qualities, and 'freshly roasted' beans.\"},\"information_gain\":{\"score\":4,\"note\":\"The diagnostic 'find the weak link' approach, the brewer-to-gift mapping, the bean checklist and the pairings are genuinely useful. Some background (burr vs blade, freshness) is familiar.\"},\"structure\":{\"score\":4,\"note\":\"Answers the search in the first paragraph and follows a logical order with clear headings and a helpful quick-guide list. The comparison table's 'Suits' row mixes grind options with brew suitability.\"},\"fit\":{\"score\":5,\"note\":\"Expert, practical tone suited to home brewers. Stays on gifting, products are presented within advice rather than as an advert, and there is a useful UK plug caveat.\"},\"problems\":[{\"quote\":\"Its external click adjustment offers 30 settings that run from espresso to French press, so it covers whatever brew method your recipient uses [F4, F5].\",\"problem\":\"Overgeneralises F5. The range is espresso to French press, which does not establish that it covers every method (e.g. coarser cold brew).\"},{\"quote\":\"The gooseneck spout allows a slow, steady, targeted pour [F24].\",\"problem\":\"F24 only states the kettle has a gooseneck spout. The pour qualities are added, not in the fact.\"},{\"quote\":\"For most home brewers that means a burr grinder, a brew scale with a timer, a temperature-control gooseneck kettle, or a bag of freshly roasted single-origin beans.\",\"problem\":\"'Freshly roasted' implies a freshness or roast-date claim about the shop's beans that no fact supports.\"},{\"quote\":\"| Suits | Whole bean, filter grind or espresso grind options [F29] | Both filter and espresso [F47] |\",\"problem\":\"The row mixes two different attributes: grind forms for Guji versus brew suitability for Huila. This makes the comparison misleading.\"},{\"quote\":\"Because it is suited to both filter and espresso, it is a safe pick if you are unsure how they brew [F47].\",\"problem\":\"Slight stretch. Suited to filter and espresso does not cover every brew method, and no fact states which grind options this coffee comes in.\"}],\"general_numbers\":[{\"ref\":\"G1\",\"accepted\":true,\"reason\":\"Around 60 g per litre is the widely cited standard starting ratio for filter coffee.\"},{\"ref\":\"G2\",\"accepted\":true,\"reason\":\"About 90–96 °C is the commonly recommended brewing range in mainstream guides.\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 6741,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1608,
+      "output_tokens_details": {
+        "thinking_tokens": 704
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

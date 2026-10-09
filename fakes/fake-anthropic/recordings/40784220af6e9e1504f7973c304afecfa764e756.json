@@ -1,0 +1,87 @@
+{
+  "recordedAt": "2026-10-09T13:12:21.563Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "You read one product from an online shop and list the facts it states about itself.\n\nA fact is a short statement a customer could check against the product or its packaging: what it is made of, its size, weight, capacity, how many come in a pack, what it fits or works with, how to use or care for it, where or how it was made, which variants exist.\n\nThese are not facts: praise, feelings, promises, popularity, comparisons with unnamed rivals, claims about what the buyer deserves or will feel (\"loved by thousands\", \"the best\", \"perfect for\", \"elevate your mornings\"). Leave them out, even when they share a sentence with a fact. Never state a price.\n\nFor each fact give:\n- fact: one sentence that names the product and says one thing about it, in the language of the product text. Add nothing the source does not say. Keep numbers and units exactly as written; do not convert or round.\n- source_field: the field it came from.\n- quote: the words in that field that support the fact, copied character for character as one continuous piece of the field. Every number in the fact must appear in the quote.\n\nIf the product states nothing checkable, return an empty list. A short true list is better than a long padded one.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<title>\nBeacon 800 Front Bike Light\n</title>\n\n<product_type>\nBike Light\n</product_type>\n\n<vendor>\nSpokeline\n</vendor>\n\n<options>\n\n</options>\n\n<tags>\ncycling, lights, usb-c\n</tags>\n\n<metafields>\n\n</metafields>\n\n<description>\nA USB-C rechargeable front light with a cut-off beam that keeps glare out of oncoming traffic.\n- Maximum output: 800 lumens\n- Runtime: 1.5 h on high, 12 h on flash\n- Charging time: 3 h via USB-C\n- IPX6 water resistance\n- Fits round handlebars from 22.2 mm to 35 mm; the included shim covers 31.8 mm bars\n- Weight: 118 g with mount\nRide further, ride safer, ride brighter.\n</description>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "facts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fact": {
+                    "type": "string"
+                  },
+                  "source_field": {
+                    "type": "string",
+                    "description": "{enum: [\"title\",\"product_type\",\"vendor\",\"options\",\"tags\",\"metafields\",\"description\"]}"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "fact",
+                  "source_field",
+                  "quote"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "facts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrimXiGB6gwUo6zPHwWB",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"facts\":[{\"fact\":\"The Beacon 800 Front Bike Light is a front bike light.\",\"source_field\":\"title\",\"quote\":\"Beacon 800 Front Bike Light\"},{\"fact\":\"The Beacon 800 Front Bike Light is made by Spokeline.\",\"source_field\":\"vendor\",\"quote\":\"Spokeline\"},{\"fact\":\"The Beacon 800 Front Bike Light is rechargeable via USB-C.\",\"source_field\":\"description\",\"quote\":\"A USB-C rechargeable front light\"},{\"fact\":\"The Beacon 800 Front Bike Light has a cut-off beam that keeps glare out of oncoming traffic.\",\"source_field\":\"description\",\"quote\":\"with a cut-off beam that keeps glare out of oncoming traffic\"},{\"fact\":\"The Beacon 800 Front Bike Light has a maximum output of 800 lumens.\",\"source_field\":\"description\",\"quote\":\"Maximum output: 800 lumens\"},{\"fact\":\"The Beacon 800 Front Bike Light runs for 1.5 h on high.\",\"source_field\":\"description\",\"quote\":\"Runtime: 1.5 h on high\"},{\"fact\":\"The Beacon 800 Front Bike Light runs for 12 h on flash.\",\"source_field\":\"description\",\"quote\":\"12 h on flash\"},{\"fact\":\"The Beacon 800 Front Bike Light takes 3 h to charge via USB-C.\",\"source_field\":\"description\",\"quote\":\"Charging time: 3 h via USB-C\"},{\"fact\":\"The Beacon 800 Front Bike Light has IPX6 water resistance.\",\"source_field\":\"description\",\"quote\":\"IPX6 water resistance\"},{\"fact\":\"The Beacon 800 Front Bike Light fits round handlebars from 22.2 mm to 35 mm.\",\"source_field\":\"description\",\"quote\":\"Fits round handlebars from 22.2 mm to 35 mm\"},{\"fact\":\"The Beacon 800 Front Bike Light includes a shim that covers 31.8 mm bars.\",\"source_field\":\"description\",\"quote\":\"the included shim covers 31.8 mm bars\"},{\"fact\":\"The Beacon 800 Front Bike Light weighs 118 g with mount.\",\"source_field\":\"description\",\"quote\":\"Weight: 118 g with mount\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1047,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 754,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

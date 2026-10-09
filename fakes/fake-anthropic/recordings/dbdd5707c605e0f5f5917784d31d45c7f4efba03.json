@@ -1,0 +1,87 @@
+{
+  "recordedAt": "2026-10-09T13:15:55.147Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "Egy webáruház egyetlen termékét olvasod el, és felsorolod azokat a tényeket, amelyeket a termék önmagáról állít.\n\nTény az a rövid állítás, amelyet a vásárló a terméken vagy a csomagoláson ellenőrizni tud: miből készült, mekkora, mennyi a tömege vagy az űrtartalma, hány darab van egy csomagban, mihez illik vagy mivel használható, hogyan kell használni vagy ápolni, hol vagy hogyan készült, milyen változatai vannak.\n\nNem tény a dicséret, az érzés, az ígéret, a népszerűség, a meg nem nevezett versenytársakhoz mért összehasonlítás, és az, hogy a vásárló mit érdemel vagy mit fog érezni („mindenki imádja”, „a legjobb”, „tökéletes választás”, „varázsold otthonodat…”). Ezeket hagyd ki akkor is, ha egy mondatban állnak egy ténnyel. Árat soha ne írj.\n\nMinden tényhez add meg:\n- fact: egyetlen mondat, amely megnevezi a terméket és egy dolgot állít róla, a termékszöveg nyelvén. Ne tegyél hozzá semmit, amit a forrás nem mond. A számokat és mértékegységeket pontosan úgy írd, ahogy a forrásban állnak; ne váltsd át és ne kerekítsd őket.\n- source_field: a mező, ahonnan származik.\n- quote: a mezőnek az a része, amely alátámasztja a tényt, betűről betűre kimásolva, egyetlen összefüggő darabként. A tényben szereplő minden számnak szerepelnie kell az idézetben.\n\nHa a termék semmi ellenőrizhetőt nem állít, adj vissza üres listát. Egy rövid, igaz lista jobb egy hosszú, felduzzasztottnál.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<title>\nMerinó túrazokni, 2 pár\n</title>\n\n<product_type>\nZokni\n</product_type>\n\n<vendor>\nGyapjúkuckó\n</vendor>\n\n<options>\nMéret: 35–38, 39–42, 43–46\n</options>\n\n<tags>\nmerinó, túra, zokni\n</tags>\n\n<metafields>\n\n</metafields>\n\n<description>\nKözepes vastagságú túrazokni, teljes talpon párnázott.\nÖsszetétel: 71% merinógyapjú, 26% poliamid, 3% elasztán. A merinószál vastagsága 18,5 mikron. A sarok és az orr megerősített, a szár 14 cm magas. Egy csomagban 2 pár található. 30 °C-on, kifordítva mosható, szárítógépbe ne tedd.\n</description>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "facts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fact": {
+                    "type": "string"
+                  },
+                  "source_field": {
+                    "type": "string",
+                    "description": "{enum: [\"title\",\"product_type\",\"vendor\",\"options\",\"tags\",\"metafields\",\"description\"]}"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "fact",
+                  "source_field",
+                  "quote"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "facts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfrj3J2hNoFW4ax8knSnf",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"facts\":[{\"fact\":\"A Merinó túrazokni csomagja 2 párat tartalmaz.\",\"source_field\":\"title\",\"quote\":\"Merinó túrazokni, 2 pár\"},{\"fact\":\"A Merinó túrazokni 35–38, 39–42 és 43–46 méretben kapható.\",\"source_field\":\"options\",\"quote\":\"Méret: 35–38, 39–42, 43–46\"},{\"fact\":\"A Merinó túrazokni közepes vastagságú.\",\"source_field\":\"description\",\"quote\":\"Közepes vastagságú túrazokni\"},{\"fact\":\"A Merinó túrazokni teljes talpon párnázott.\",\"source_field\":\"description\",\"quote\":\"teljes talpon párnázott\"},{\"fact\":\"A Merinó túrazokni összetétele 71% merinógyapjú, 26% poliamid és 3% elasztán.\",\"source_field\":\"description\",\"quote\":\"Összetétel: 71% merinógyapjú, 26% poliamid, 3% elasztán.\"},{\"fact\":\"A Merinó túrazokniban használt merinószál vastagsága 18,5 mikron.\",\"source_field\":\"description\",\"quote\":\"A merinószál vastagsága 18,5 mikron.\"},{\"fact\":\"A Merinó túrazokni sarka és orra megerősített.\",\"source_field\":\"description\",\"quote\":\"A sarok és az orr megerősített\"},{\"fact\":\"A Merinó túrazokni szára 14 cm magas.\",\"source_field\":\"description\",\"quote\":\"a szár 14 cm magas\"},{\"fact\":\"A Merinó túrazokni 30 °C-on, kifordítva mosható.\",\"source_field\":\"description\",\"quote\":\"30 °C-on, kifordítva mosható\"},{\"fact\":\"A Merinó túrazoknit nem szabad szárítógépbe tenni.\",\"source_field\":\"description\",\"quote\":\"szárítógépbe ne tedd\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1359,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 632,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

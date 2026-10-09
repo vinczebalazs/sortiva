@@ -1,0 +1,87 @@
+{
+  "recordedAt": "2026-10-09T13:12:08.803Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "You read one product from an online shop and list the facts it states about itself.\n\nA fact is a short statement a customer could check against the product or its packaging: what it is made of, its size, weight, capacity, how many come in a pack, what it fits or works with, how to use or care for it, where or how it was made, which variants exist.\n\nThese are not facts: praise, feelings, promises, popularity, comparisons with unnamed rivals, claims about what the buyer deserves or will feel (\"loved by thousands\", \"the best\", \"perfect for\", \"elevate your mornings\"). Leave them out, even when they share a sentence with a fact. Never state a price.\n\nFor each fact give:\n- fact: one sentence that names the product and says one thing about it, in the language of the product text. Add nothing the source does not say. Keep numbers and units exactly as written; do not convert or round.\n- source_field: the field it came from.\n- quote: the words in that field that support the fact, copied character for character as one continuous piece of the field. Every number in the fact must appear in the quote.\n\nIf the product states nothing checkable, return an empty list. A short true list is better than a long padded one.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<title>\nPre-Seasoned Cast Iron Skillet 26 cm\n</title>\n\n<product_type>\nFrying Pan\n</product_type>\n\n<vendor>\nIronbark Cookware\n</vendor>\n\n<options>\n\n</options>\n\n<tags>\ncast iron, skillet, induction\n</tags>\n\n<metafields>\n\n</metafields>\n\n<description>\nPre-seasoned with flaxseed oil and ready to cook on day one.\n- Diameter: 26 cm cooking surface, 30 cm including pour lips\n- Weight: 2.4 kg\n- Depth: 5 cm\n- Safe in the oven up to 260 °C\n- Suitable for induction, gas, ceramic and open fire\nCare: rinse with hot water, dry on the hob, then wipe with a thin layer of oil. Not dishwasher safe. Cast in Poland.\nThe pan that will outlive us all.\n</description>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "facts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fact": {
+                    "type": "string"
+                  },
+                  "source_field": {
+                    "type": "string",
+                    "description": "{enum: [\"title\",\"product_type\",\"vendor\",\"options\",\"tags\",\"metafields\",\"description\"]}"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "fact",
+                  "source_field",
+                  "quote"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "facts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrikXzqwD2fGqdds5W7c",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"facts\":[{\"fact\":\"The Pre-Seasoned Cast Iron Skillet is made of cast iron.\",\"source_field\":\"title\",\"quote\":\"Pre-Seasoned Cast Iron Skillet 26 cm\"},{\"fact\":\"The Pre-Seasoned Cast Iron Skillet is pre-seasoned with flaxseed oil.\",\"source_field\":\"description\",\"quote\":\"Pre-seasoned with flaxseed oil\"},{\"fact\":\"The Pre-Seasoned Cast Iron Skillet has a 26 cm cooking surface diameter.\",\"source_field\":\"description\",\"quote\":\"Diameter: 26 cm cooking surface\"},{\"fact\":\"The Pre-Seasoned Cast Iron Skillet measures 30 cm including pour lips.\",\"source_field\":\"description\",\"quote\":\"30 cm including pour lips\"},{\"fact\":\"The Pre-Seasoned Cast Iron Skillet has pour lips.\",\"source_field\":\"description\",\"quote\":\"including pour lips\"},{\"fact\":\"The Pre-Seasoned Cast Iron Skillet weighs 2.4 kg.\",\"source_field\":\"description\",\"quote\":\"Weight: 2.4 kg\"},{\"fact\":\"The Pre-Seasoned Cast Iron Skillet is 5 cm deep.\",\"source_field\":\"description\",\"quote\":\"Depth: 5 cm\"},{\"fact\":\"The Pre-Seasoned Cast Iron Skillet is oven safe up to 260 °C.\",\"source_field\":\"description\",\"quote\":\"Safe in the oven up to 260 °C\"},{\"fact\":\"The Pre-Seasoned Cast Iron Skillet is suitable for induction, gas, ceramic and open fire.\",\"source_field\":\"description\",\"quote\":\"Suitable for induction, gas, ceramic and open fire\"},{\"fact\":\"The Pre-Seasoned Cast Iron Skillet should be rinsed with hot water, dried on the hob, then wiped with a thin layer of oil.\",\"source_field\":\"description\",\"quote\":\"rinse with hot water, dry on the hob, then wipe with a thin layer of oil\"},{\"fact\":\"The Pre-Seasoned Cast Iron Skillet is not dishwasher safe.\",\"source_field\":\"description\",\"quote\":\"Not dishwasher safe.\"},{\"fact\":\"The Pre-Seasoned Cast Iron Skillet is cast in Poland.\",\"source_field\":\"description\",\"quote\":\"Cast in Poland.\"},{\"fact\":\"The Pre-Seasoned Cast Iron Skillet is made by Ironbark Cookware.\",\"source_field\":\"vendor\",\"quote\":\"Ironbark Cookware\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1070,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 883,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "recordedAt": "2026-10-09T13:16:34.782Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "Egy webáruház egyetlen termékét olvasod el, és felsorolod azokat a tényeket, amelyeket a termék önmagáról állít.\n\nTény az a rövid állítás, amelyet a vásárló a terméken vagy a csomagoláson ellenőrizni tud: miből készült, mekkora, mennyi a tömege vagy az űrtartalma, hány darab van egy csomagban, mihez illik vagy mivel használható, hogyan kell használni vagy ápolni, hol vagy hogyan készült, milyen változatai vannak.\n\nNem tény a dicséret, az érzés, az ígéret, a népszerűség, a meg nem nevezett versenytársakhoz mért összehasonlítás, és az, hogy a vásárló mit érdemel vagy mit fog érezni („mindenki imádja”, „a legjobb”, „tökéletes választás”, „varázsold otthonodat…”). Ezeket hagyd ki akkor is, ha egy mondatban állnak egy ténnyel. Árat soha ne írj.\n\nMinden tényhez add meg:\n- fact: egyetlen mondat, amely megnevezi a terméket és egy dolgot állít róla, a termékszöveg nyelvén. Ne tegyél hozzá semmit, amit a forrás nem mond. A számokat és mértékegységeket pontosan úgy írd, ahogy a forrásban állnak; ne váltsd át és ne kerekítsd őket.\n- source_field: a mező, ahonnan származik.\n- quote: a mezőnek az a része, amely alátámasztja a tényt, betűről betűre kimásolva, egyetlen összefüggő darabként. A tényben szereplő minden számnak szerepelnie kell az idézetben.\n\nHa a termék semmi ellenőrizhetőt nem állít, adj vissza üres listát. Egy rövid, igaz lista jobb egy hosszú, felduzzasztottnál.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<title>\nBársony testápoló\n</title>\n\n<product_type>\nTestápoló\n</product_type>\n\n<vendor>\nZsálya Natúrkozmetikum\n</vendor>\n\n<options>\n\n</options>\n\n<tags>\ntestápolás\n</tags>\n\n<metafields>\n\n</metafields>\n\n<description>\nKényeztesd magad minden nap! A Bársony testápoló olyan, mint egy ölelés a bőrödnek: selymes, puha és ellenállhatatlan. Vásárlóink szerint egyszerűen nem lehet abbahagyni. Engedd, hogy a mindennapi rutinod egy kis luxussá váljon, és élvezd a bőröd hálás ragyogását. Mert megérdemled.\n</description>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "facts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fact": {
+                    "type": "string"
+                  },
+                  "source_field": {
+                    "type": "string",
+                    "description": "{enum: [\"title\",\"product_type\",\"vendor\",\"options\",\"tags\",\"metafields\",\"description\"]}"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "fact",
+                  "source_field",
+                  "quote"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "facts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfrj6Nbcbzd8HXLGeh19o",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQSpwYKEAgSGAI4AUIIdGhpbmtpbmcSDAfGhz9hxT826BSHcxoMIAHLWL0eq/JMNd7qIjDh6ky1k0tbuMNiOmDDmtLBdmPTdUHMwGhX4cb4AIgHazvuV707WdPPjKxGFynWaIIqxAXPfeZM302/NNW0wZwxDFZlkIViNXnV6fJhTfksMJ0f3sCozYUoEXRFY1rmuFDC2Pfdtmpd6E1Nm3/n1/SSY82DyKmd10PjIgMXuZumdBCyMvSjq3KgC9R7nLyiiLKbwCYoDzxS8d3yI11QtLEdcCUramQi4BbjNWM/jVVn+vf/nMfVe9Vk6TRJwPLCkHP4A5VEcVsNoJpKVv8NCYN3k1/nZzL85Tv9Cy7wIC+FPJNfGwghYKRlw8JoapuId7ds4hu1u3B1Ve+R/dEeNoCuJ3FNm3jQofOcLSbtSWAgHWPxsHCvsKXv/UK0vJZHRkhBlS3KpCno8Ad4NVQut6kS0bYMqOCPU8d3HkZ9CeQYFhfjlfOwgeVyeCqmOmEoHyorJpvDueil6tXw6jsZYPOJxeJSU/oYcy85EMDP89tf3x1VNSKE2/31vkJUOElXQws30Oqh2BTjf48eMzMlNlZ0bqJsUclH66sjLnySkCXe1bK+DoL61k47vmAUuVsVdVemYQgDzsz7FUYMWOyjW9NRO/ulKMmtGB1OPJ/ToDa05eJhXS2gyrySkxmtvl1Xq1JPTDTS7GreU52dfOtrWa3/SqSxKPl6nydXgxwJ7t+AvnMll84+kyoaUiSsdyzVwMNh2XLnna9OaaW+zfyYve2aSFhStd8p/4fZP/iMPaWbXkqTwAQuEIQod2T2FOOzAMOMvcccVb6e2CsDl87a78HLGVQVVhvPXL7ypKukYMuopMQEiifMtahqzXJ4weDSVSLe18wcFDm4M3bKJCpDoF8RMdESWJnx+yw5hoaMZoQ28SpsMFaJ6jrhxU9XMqZeJLZGasFcpN/SgiesSC1N+HdaMorKElfJBNCZhEhp3FdoXjTKRLKbVFL9TzaEVv3K0zsXBgxgAB0Jih/pRe8DGvbSAs2w2rqJSU2he2VJPkcUP9ztpajq+F4YAQ=="
+      },
+      {
+        "type": "text",
+        "text": "{\"facts\":[{\"fact\":\"A Bársony testápoló egy testápoló termék.\",\"source_field\":\"product_type\",\"quote\":\"Testápoló\"},{\"fact\":\"A Bársony testápoló gyártója a Zsálya Natúrkozmetikum.\",\"source_field\":\"vendor\",\"quote\":\"Zsálya Natúrkozmetikum\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1332,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 227,
+      "output_tokens_details": {
+        "thinking_tokens": 105
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

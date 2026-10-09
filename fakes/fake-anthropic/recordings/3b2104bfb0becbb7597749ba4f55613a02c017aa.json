@@ -1,0 +1,146 @@
+{
+  "recordedAt": "2026-10-09T13:16:30.656Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "Egy webáruház blogcikkét bírálod, amelyet a bolt hamarosan közzétesz. Nem te írtad. Látod a boltot, a témát és a keresést, amelyre szól, a bolt termékeit az általunk ellenőrzött tényekkel (F1, F2…), és a cikket. A termékekről szóló mondatok végén zárójelben állnak a tények, amelyekre épülnek; a [G] olyan mondatot jelöl, amelyet az író általános tudásnak mond.\n\nPontozd 1-től 5-ig:\n- grounding: minden, amit a cikk a bolt termékeiről mond, pontosan az, amit a hivatkozott tények mondanak, semmi hozzáadás, túlzás vagy sugallat. Egyetlen, a tényekkel alá nem támasztott termékállítás legfeljebb 2 pontot enged. Nincs kitalált tapasztalat („kipróbáltuk”, vásárlói történetek), statisztika vagy kutatás.\n- information_gain: aki ezt kereste, hasznosat és konkrétat tud meg belőle, nem csak bárhol olvasható általánosságokat. A töltelék, az ismétlés és a homályos dicséret rontja.\n- structure: korán válaszol a keresésre, a szakaszok értelmes sorrendben követik egymást, a címek megmondják, mi van alattuk, a listák és táblázatok ott vannak, ahol segítenek.\n- fit: illik ehhez a bolthoz, a közönségéhez és a hangneméhez, a témánál marad, és nem hat reklámnak.\nAz 5 kiváló, a 4 ebben a formában közzétehető, a 3 elfogadható, de hibás, a 2 és az 1 nem közzétehető.\n\nSorold fel a hibákat: mindegyiknél szó szerint idézd a mondatot, és írd le, mi a baj, a legsúlyosabbal kezdve. Ha nincs hiba, hagyd üresen a listát.\n\nMinden megadott általános tudású mondatnál (G1, G2…) add meg a hivatkozását, és mondd meg, hogy minden benne szereplő szám jól megalapozott, vitathatatlan, forrást nem igénylő általános tudás-e (accepted true), vagy nem (false), röviden indokolva.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Öntözőkanna Kertészet\nSells: szobanövények és növényápolási kellékek\nAudience: szobanövény-tartók\nTone: barátságos\nNever say: —\n</store>\n\n<topic>\nWorking title: Milyen gyakran kell öntözni a szobanövényeket?\nSearch it targets: szobanövény öntözése\n</topic>\n\n<products>\n  P1: Önöntöző virágcserép (Virágcserép)\n    F1: Az önöntöző virágcserép átmérője 20 cm.\n    F2: Az önöntöző virágcserép víztartálya 0,8 literes.\n    F3: Az önöntöző virágcserép vízszintjelzővel rendelkezik.\n  P2: Talajnedvesség-mérő (Mérőeszköz)\n    F4: A talajnedvesség-mérő elem nélkül működik.\n    F5: A talajnedvesség-mérő skálája 1-től 10-ig jelzi a talaj nedvességét.\n    F6: A talajnedvesség-mérő szondája 20 cm hosszú.\n  P3: Hosszú csőrű öntözőkanna (Öntözőkanna)\n    F7: A hosszú csőrű öntözőkanna 1 literes.\n    F8: A hosszú csőrű öntözőkanna csőre 30 cm hosszú.\n</products>\n\n<pages>\n  L1: Szobanövény-ápolás (collection)\n</pages>\n\n<article>\nTitle: Milyen gyakran kell öntözni a szobanövényeket?\n\nA legtöbb szobanövényt akkor kell öntözni, amikor a földje a felső pár centiméteren kiszáradt, nem pedig naptár szerint. Nyáron ez gyakrabban, télen ritkábban következik be, és a növény fajtája, a cserép mérete és a lakás melege is sokat számít.\n\n## Miért nem működik a fix heti öntözés?\n\nA szobanövények mintegy 80%-a túlöntözés miatt pusztul el, nem kiszáradás miatt [G]. A naptár szerinti öntözés azért kockázatos, mert nem veszi figyelembe, mennyi vizet használt el valójában a növény. A tartósan nedves földben a gyökerek nem kapnak levegőt, és rothadni kezdenek, a növény pedig ilyenkor ugyanúgy lankad, mint szárazságban, ezért sokan még többet öntöznek.\n\n## Honnan tudod, hogy szomjas?\n\n- Dugd az ujjad a földbe: ha az első ujjpercig száraz, öntözhetsz.\n- Emeld meg a cserepet: a kiszáradt föld érezhetően könnyebb.\n- Figyeld a leveleket: ha lankadnak, de a föld száraz, a növény vizet kér.\n\nA [talajnedvesség-mérő](P2) elem nélkül működik [F4]. Skálája 1-től 10-ig jelzi a talaj nedvességét [F5], szondája 20 cm hosszú [F6]. Mélyebb cserépben érdemes a gyökerek magasságában mérni, mert a felszín mindig hamarabb szárad ki.\n\n{{P2}}\n\n## Hogyan öntözz?\n\nÖntözz alaposan, amíg a víz a cserép alján ki nem folyik, aztán a lefolyt vizet öntsd ki az alátétből. Inkább ritkábban és bőven, mint gyakran és keveset. Szobahőmérsékletű, állott vizet használj, mert a hideg csapvíz megviselheti az érzékenyebb fajtákat.\n\nA [hosszú csőrű öntözőkanna](P3) 1 literes [F7], csőre 30 cm hosszú [F8]. A hosszú csőr segít, hogy a víz a levelek helyett egyenesen a földre kerüljön.\n\n{{P3}}\n\n## Ha gyakran utazol: önöntöző cserép\n\nAz önöntöző cserepek alsó tartályából a növény fokozatosan veszi fel a vizet, így ritkábban kell öntözni. Az [önöntöző virágcserép](P1) átmérője 20 cm [F1], víztartálya 0,8 literes [F2]. Vízszintjelzővel rendelkezik [F3], így látod, mikor kell utántölteni.\n\n{{P1}}\n\n## Évszakok szerint\n\nTélen a legtöbb szobanövény lassabban nő és kevesebb vizet párologtat, ezért ritkábban kell öntözni, még fűtött lakásban is. Tavasszal, amikor megjelennek az új hajtások, fokozatosan növeld az öntözést, nyáron pedig a napos ablakban álló növényeket nézd meg gyakrabban. A pozsgások és a kaktuszok télen szinte teljes pihenőt tartanak, ilyenkor alig kell nekik víz, a páfrányok viszont a fűtési szezonban is az egyenletesen nyirkos földet szeretik. Teljes kínálatunkat a [szobanövény-ápolás](L1) kategóriában találod.\n\n</article>\n\n<general_knowledge>\nG1: A szobanövények mintegy 80%-a túlöntözés miatt pusztul el, nem kiszáradás miatt. (numbers: 80)\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ref",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfrj5RC7McqDzGREpZw6r",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQStwsKEAgSGAI4AUIIdGhpbmtpbmcSDJ5DJqXw1vYYzNSoRxoMc6+X+ubyERGg0C8HIjBZfA6C9AWhV5jzVXyyD5UEPVvY8tc1lqfGVm1X1EhLlLq1s9ervd6G9zOFoEjoS7oq1ArL+3IH/mOxiDHjhowJ0F7PY15L4mUc/HNfJXsOaPH/C4nBw4qWgH6XDEb0efrJKxMeAO9glbdiBjADNhvBmRgg6iu1L9L/iMRPIYZn+W7pIFmUqTv4l/f3xLW6Molg2Ln22nVn1zMAxPQHnFxWYHHamaWFvb4vkAyXf6ZGr8rC4Ce56yAm5BeQ09b7KFgNH/mIZsIHIhzM9kVMqNB6vSipJr9A1/f/51p+NuYZ6gXR+hnYGsAm5QXWLM2NoYm0fKCsEHnkN9eod5NJKMSnE13N9FMsAU94lABcsX8EmYlZggT9BshDi44ZMuks8lX9BPsyoyto5+pUzSnuXDv7mOJN4N6vZWQ70FRd2hZ1XLeKCbh+zwzDbrfTiWJT05tprvpBxd+8jDG9TaIDwfjUwEGetSdTm5ZUxi3LC6l860pAV3h3RxuqVFiDSm2FQosQxmVURGlPqYhyga6SM5oQxUz+ADzoRF6eQ+g+eh5VDMxYcgg7xrRXpTqFX5FWFpfop/sEby2bpJbpGvev+NUv+xVXJ7uENoGYp474LimYVqgxxZqUvjHV+JJVZOAHBjHtZIQOOVaNUIGpn640vY0Ttj9jx6QjCNKKol+VB5YOiJ/B5c7WwR0Qa+qn1aNqgJPgEvWTDtsEZkhhBjf6N9sj+PvIPNf62vazgZrMhbqIu43+GPpHLA9aYmL8/qsSGcxHKNKLOa2erXwDNLKZVzuc6R34xyAomkMJ4dUsL9BCWDGvCqF9D/NNlD3bjN1zYF3BWRQ4f+3Lmn0GPTrk02zZiYP8QJXVxw8jFRVWowodP0DSgsPCRT+Q3WsuBYxkBHfl7BBp12LOby2ihGu8taSvPbl5o2MaelQ2LKpk52+/shKh1Ix33GsfyqqOMFaKfY5Jutnp8jRYX+SaWewW4mWIvIaFkpV/QPN94bvHvpwIDqypVMMA92gvYS7ysQZMPdVp318lQVulYfN1oTVvbn5NdMiM0Xw3jnQDfBKxBCg2AKXxmQn77c/vkX99ELYBsO89jaaBHS44bDDpOEflvFZxmXuUSo2HbFMgThhgKym/E0Gywzy9s72nzx4f+LrIzzzFAa4mfrrHY3JCFVFFDhrt9NMLb6dI4+c7FHY7JXgJb5DZOKwFH63ZH/1w+GwLDiN5cMSG7ce/MnO1jjtgD9JnmIK/skLq5SZnUntSMJeUxgKJ3eyzW+bFGhGrF4ye+9n8/Dd9ksbhzcjW46eB7NMLiKA28rQDwwmrhLFPMzO1Ib6ixfYHRYD9pvtMwt5vZvnExEiE7mieQa2lq4zFSVarUCcTYCbOIYk2qkUOIkBD8kMVeoRxHuwhZSH5DxEHVMI8T9AQVL/krFCToM4rM/Qm5vv8SGI8S2wxLK643bLVb1Xi6RFHKr1HJC41EywkPqL4MOUMcZET6l+k0xmWk5GI9oEURLjEzUX9UT53oHKt90MgOWyu8cEmalcLYurtSIKOgwLXXUM6Y59lP1UXoJQEp3ovRwR1K8nL0YcZ9+jO94PQT4u5eM/OruQ8FmMJpCINb9XcmfpYSIrDB2iAyTVQq5HlGAnPlk0MEGcfe2IQGtctRGGyNav3CBSMIOPuU6oJc9Nx+AhKPZrbcsGNB9CWjkGMZY0aFcBOFr/+rQfHbPufgqekRl81/3PSNkhowIt9oYM9SGqB2IrJrVfzj4QxczCR/NbUuDtBNf2JPzedESv1tWoWxZSMP5zYSIWZu/cV6rwngsdiv9AXE7l5IOSNXRdhehpciBXiUYb1aXCjJk65xcOP9mEztst+UeY2xkwlWu20pnW869iIpHyAwqNH1Vec7tygGhgB"
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":2,\"note\":\"A termékállítások pontosan követik az F1–F8 tényeket. A cikk azonban egy forrás nélküli statisztikát is tartalmaz (80% túlöntözés miatt pusztul el), és ezt általános tudásként tünteti fel. Ilyen kitalált vagy alátámasztatlan statisztika nem lehet a cikkben.\"},\"information_gain\":{\"score\":4,\"note\":\"Konkrét, gyakorlatias tanácsokat ad: ujjpróba, a cserép megemelése, alapos átöntözés és a lefolyt víz kiöntése, évszakos és fajtánkénti különbségek. A túlöntözés tünetének leírása, vagyis hogy a növény ugyanúgy lankad, mint szárazságban, kifejezetten hasznos.\"},\"structure\":{\"score\":5,\"note\":\"Az első bekezdés azonnal válaszol a kérdésre. A szakaszok logikus sorrendben követik egymást: miért, hogyan ismerd fel, hogyan öntözz, utazás, évszakok. A címek beszédesek, a lista jól használható.\"},\"fit\":{\"score\":4,\"note\":\"Barátságos, tegező hangnem, ami illik a szobanövény-tartókhoz. A termékek természetesen illeszkednek a tanácsokhoz, nem hatnak tolakodó reklámnak.\"},\"problems\":[{\"quote\":\"A szobanövények mintegy 80%-a túlöntözés miatt pusztul el, nem kiszáradás miatt [G].\",\"problem\":\"Forrás nélküli, gyakran ismételgetett, de nem igazolt statisztika. Nem vitathatatlan általános tudás. Érdemes számszerűsítés nélkül átírni, például: „A szobanövények gyakrabban pusztulnak el túlöntözés, mint kiszáradás miatt.”\"}],\"general_numbers\":[{\"ref\":\"G1\",\"accepted\":false,\"reason\":\"A 80%-os arány nem megalapozott, mérhető adat, hanem forrás nélkül terjedő becslés. Nem tekinthető vitathatatlan általános tudásnak.\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 3401,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1118,
+      "output_tokens_details": {
+        "thinking_tokens": 364
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

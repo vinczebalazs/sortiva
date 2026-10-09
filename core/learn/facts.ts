@@ -106,7 +106,9 @@ export function checkFact(fact: CheckedFact, product: ProductForFacts): { ok: tr
     return { ok: false, reason: `quote not found in ${fact.source_field}` }
   }
   const quoteNumbers = new Set(quote.match(/\d+/g) ?? [])
-  const missing = (fact.fact.match(/\d+/g) ?? []).filter((n) => !quoteNumbers.has(n))
+  // A fact names its product, and a number in the name ("Ridgeline 2") is not a claim the quote must carry.
+  const claim = normaliseForMatch(fact.fact).split(normaliseForMatch(product.title)).join(' ')
+  const missing = (claim.match(/\d+/g) ?? []).filter((n) => !quoteNumbers.has(n))
   if (missing.length) return { ok: false, reason: `numbers not in the quote: ${missing.join(', ')}` }
   return { ok: true }
 }

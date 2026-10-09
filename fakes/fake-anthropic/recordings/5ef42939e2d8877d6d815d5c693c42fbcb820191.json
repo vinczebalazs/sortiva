@@ -1,0 +1,87 @@
+{
+  "recordedAt": "2026-10-09T13:13:29.959Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "You read one product from an online shop and list the facts it states about itself.\n\nA fact is a short statement a customer could check against the product or its packaging: what it is made of, its size, weight, capacity, how many come in a pack, what it fits or works with, how to use or care for it, where or how it was made, which variants exist.\n\nThese are not facts: praise, feelings, promises, popularity, comparisons with unnamed rivals, claims about what the buyer deserves or will feel (\"loved by thousands\", \"the best\", \"perfect for\", \"elevate your mornings\"). Leave them out, even when they share a sentence with a fact. Never state a price.\n\nFor each fact give:\n- fact: one sentence that names the product and says one thing about it, in the language of the product text. Add nothing the source does not say. Keep numbers and units exactly as written; do not convert or round.\n- source_field: the field it came from.\n- quote: the words in that field that support the fact, copied character for character as one continuous piece of the field. Every number in the fact must appear in the quote.\n\nIf the product states nothing checkable, return an empty list. A short true list is better than a long padded one.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<title>\nSummit Insulated Bottle 750 ml\n</title>\n\n<product_type>\nWater Bottle\n</product_type>\n\n<vendor>\nCairn Outdoor\n</vendor>\n\n<options>\nColour: Pine, Slate, Sunset\n</options>\n\n<tags>\nbottle, insulated\n</tags>\n\n<metafields>\n\n</metafields>\n\n<description>\nOur best-selling 750 ml bottle, loved by hikers and commuters alike, keeps drinks cold for 24 hours and hot for 12 hours thanks to double-wall vacuum insulation. The stunning powder-coated body is made from 18/8 stainless steel. The leakproof lid is ready for every adventure and is dishwasher safe, but the body should be washed by hand.\n</description>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "facts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fact": {
+                    "type": "string"
+                  },
+                  "source_field": {
+                    "type": "string",
+                    "description": "{enum: [\"title\",\"product_type\",\"vendor\",\"options\",\"tags\",\"metafields\",\"description\"]}"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "fact",
+                  "source_field",
+                  "quote"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "facts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrirbdJBHM8dh5AtmGMk",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"facts\":[{\"fact\":\"The Summit Insulated Bottle has a capacity of 750 ml.\",\"source_field\":\"title\",\"quote\":\"Summit Insulated Bottle 750 ml\"},{\"fact\":\"The Summit Insulated Bottle is a water bottle.\",\"source_field\":\"product_type\",\"quote\":\"Water Bottle\"},{\"fact\":\"The Summit Insulated Bottle is made by Cairn Outdoor.\",\"source_field\":\"vendor\",\"quote\":\"Cairn Outdoor\"},{\"fact\":\"The Summit Insulated Bottle comes in the colours Pine, Slate and Sunset.\",\"source_field\":\"options\",\"quote\":\"Colour: Pine, Slate, Sunset\"},{\"fact\":\"The Summit Insulated Bottle keeps drinks cold for 24 hours.\",\"source_field\":\"description\",\"quote\":\"keeps drinks cold for 24 hours\"},{\"fact\":\"The Summit Insulated Bottle keeps drinks hot for 12 hours.\",\"source_field\":\"description\",\"quote\":\"hot for 12 hours\"},{\"fact\":\"The Summit Insulated Bottle has double-wall vacuum insulation.\",\"source_field\":\"description\",\"quote\":\"double-wall vacuum insulation\"},{\"fact\":\"The Summit Insulated Bottle has a powder-coated body.\",\"source_field\":\"description\",\"quote\":\"powder-coated body\"},{\"fact\":\"The body of the Summit Insulated Bottle is made from 18/8 stainless steel.\",\"source_field\":\"description\",\"quote\":\"body is made from 18/8 stainless steel\"},{\"fact\":\"The Summit Insulated Bottle has a leakproof lid.\",\"source_field\":\"description\",\"quote\":\"The leakproof lid\"},{\"fact\":\"The lid of the Summit Insulated Bottle is dishwasher safe.\",\"source_field\":\"description\",\"quote\":\"is dishwasher safe\"},{\"fact\":\"The body of the Summit Insulated Bottle should be washed by hand.\",\"source_field\":\"description\",\"quote\":\"the body should be washed by hand\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1024,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 675,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

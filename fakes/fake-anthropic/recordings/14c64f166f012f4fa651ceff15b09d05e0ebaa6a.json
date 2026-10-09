@@ -1,0 +1,146 @@
+{
+  "recordedAt": "2026-10-09T13:13:10.373Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You review a blog article an online shop is about to publish. You did not write it. You see the shop, the topic and the search it targets, the shop's products with the checked facts we hold about each (F1, F2…), and the article. Sentences about products end with the facts they rest on in brackets; [G] marks a sentence the writer says is general knowledge.\n\nScore each from 1 to 5:\n- grounding: everything said about the shop's products is exactly what the cited facts say, with nothing added, stretched or implied. One product claim the facts do not support caps this at 2. No invented experience (\"we tested\", customer stories), statistics or studies.\n- information_gain: a shopper who searched this would learn something useful and specific, beyond generic filler they could find anywhere. Padding, repetition and vague praise lower it.\n- structure: it answers the search early, its sections follow in a sensible order, headings say what is below them, lists and tables are used where they help.\n- fit: it suits this shop, its audience and tone, stays on the topic, and does not read as an advert.\n5 is excellent, 4 good enough to publish as it is, 3 acceptable with flaws, 2 or 1 not publishable.\n\nList problems: each with the exact sentence quoted and what is wrong, most serious first. Leave the list empty if there are none.\n\nFor each general-knowledge sentence you are given (G1, G2…), answer with its reference and whether every number in it is well established and uncontroversial general knowledge that needs no source (accepted true), or not (false), with a short reason.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Clearwater Skincare\nSells: simple skincare for sensitive skin\nAudience: adults with sensitive skin\nTone: calm\nNever say: miracle\n</store>\n\n<topic>\nWorking title: A simple skincare routine for sensitive skin\nSearch it targets: skincare routine for sensitive skin\n</topic>\n\n<products>\n  P1: Gentle Cream Cleanser (Cleanser)\n    F1: The Gentle Cream Cleanser is fragrance free.\n    F2: The Gentle Cream Cleanser has a pH of 5.5.\n    F3: The Gentle Cream Cleanser comes in a 150 ml pump bottle.\n  P2: Barrier Moisturiser (Moisturiser)\n    F4: The Barrier Moisturiser contains ceramides and niacinamide.\n    F5: The Barrier Moisturiser is fragrance free.\n    F6: The Barrier Moisturiser comes in a 50 ml tube.\n  P3: Mineral Sun Cream SPF 30 (Sun cream)\n    F7: The Mineral Sun Cream SPF 30 uses zinc oxide as its only UV filter.\n    F8: The Mineral Sun Cream SPF 30 is fragrance free.\n</products>\n\n<pages>\n  L1: Sensitive skin (collection)\n</pages>\n\n<article>\nTitle: A simple skincare routine for sensitive skin\n\nA simple skincare routine for sensitive skin comes down to three steps: cleanse, moisturise and protect. Keeping things gentle and simple is the best way to look after skin that reacts easily, and choosing the right products can make all the difference.\n\n## Why a simple routine matters\n\nSensitive skin needs a little extra care. Everyone's skin is different, and what works for one person may not work for another. That is why it is so important to listen to your skin and give it what it needs. A simple routine is easier to stick to, and when it comes to skincare, consistency is key. Less really can be more.\n\n## Step one: cleanse\n\nCleansing is an important part of any routine. It helps to remove the dirt and build-up of the day and leaves your skin feeling fresh. For sensitive skin, a gentle cleanser is a good choice. Our [Gentle Cream Cleanser](P1) is fragrance free [F1]. It has a pH of 5.5 [F2]. It comes in a 150 ml pump bottle [F3]. Cleansing gently and regularly can help your skin look and feel its best.\n\n{{P1}}\n\n## Step two: moisturise\n\nMoisturising is another key step. Skin needs moisture to stay comfortable, and a good moisturiser can help it feel soft and cared for. It is worth choosing something that suits your skin. The [Barrier Moisturiser](P2) contains ceramides and niacinamide [F4]. It is fragrance free [F5]. It comes in a 50 ml tube [F6]. Moisturising every day is a simple habit that can make a real difference over time.\n\n{{P2}}\n\n## Step three: protect\n\nProtecting your skin is just as important as cleansing and moisturising. Sun protection is something everyone should think about, all year round. The [Mineral Sun Cream SPF 30](P3) uses zinc oxide as its only UV filter [F7]. It is fragrance free [F8]. Making protection part of your routine is one of the best things you can do for your skin.\n\n{{P3}}\n\n## Finding what works for you\n\nBuilding a routine takes time, and it is fine to go slowly. Pay attention to how your skin feels and make changes when you need to. Be patient, be gentle and be kind to your skin. With the right care, sensitive skin can feel calm and comfortable, and looking after it can become something you enjoy rather than a chore. Every small step counts. Browse our full [sensitive skin range](L1) to find the products that feel right for you.\n\n</article>\n\n<general_knowledge>\n—\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ref",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfripn5YF8HzKAS89sMmU",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQS7ggKEAgSGAI4AUIIdGhpbmtpbmcSDH+1V1mDmiympniH6RoMMH9aoH3Tg+OaR/u1IjBcB61kBmVAau5ciDZ8n6O3ktVu0zt3/WvipKqhqS/U131yVpXJMOrVMeNLXODQ0DsqiwgstDD/OL51hMVl0Y2MOyHZ0jYAn5e9regNgGZ/JVQxswAJxcpdzvoXhtjdw4R64nnPdEUL2RCbr6/aybZc+MoGZlm7d+r4lctyyGnjyCAIQCYMhZLIcHBV4vulZy1W+WYDvAWS5ay6vUY5z3bwyGsoCVarwhJX0RiVRJcgOwpy2F6/DibfEAc5RaxbD/T8P3T9RfV+3m2M+WlPQO5t+f/wjzR/40RrAPFRl/JMBrF0kEe7NTP8XrCSqhnr1Yahy09AeLZo/K2ftgZqliO2l9d8eJ+beTuwquC7Tb7FO0BEFrjT5Z5Rpw9eMX0gRrT7Sq1swF5T3PrPD0uJbqyQJVXp3d3nZF55gx0eNxlfO9zrTtDvoTS2+p8Fx9pTlhvKRclpaiyVcV8nTtRCluaDe26h0Rrz757AScUrkOwrbDeWSQ2EX3hdgpKEqvAto2Jx2nHHNCXYLTGFG3NjxFKgBJzs+q0tsZX/I6XJGDJbo4fzg8Ae6qnpbUJz/uTbOk2F1AwWuEXmf7Uw+lxMfKs+o3J2uucppn8aowFTERIMQ09H8oMtF4gSuUNkGJY55v6Ydf5dQ7HwCqe/s0BwlmKbmyBtPOAmjCZqLdhIw+PSrn3a5eU8zB2m2z59Gonlxt7niQW8OPoT3W7Ya7GGTYhJ5Zh9XE0MsSYEBwa4KKKlw31X7+6/pzR//j1OyKYzzJX9GndJIoyeTJGd6h7wziU/ZYaR+jhiV+WrphkkhAN7t/SFSgee9kI3o2vk8YUuzzVBZxZclxNZLf07DPDnyprqRzCasC2d6dg9dGVYF67Ml6GHy8nkw84V0MDm6qGK16YZyn6YplYApFG8GUgpJFjv28dT2/WkXOd6tG9LAhVsj1Zz9U3UnJH+ngFxLgCvg5+1MF8+tS+ot01ixOd5xq4Aap1BiCgHKVETWWe9lPZ5hIjGkPeELKbg/UwFdCJlgFbfAr7Sp8haY5jjC45KBxNCBisE/GEG/wevHFKHKH0ybibxoPi5cQMVoDqsahkGRmhYw32kJpsIpZL9VMoqR8yKOP4543cY0XaUK+P9cz7NN4P4/KcLWLm27tvFHUdMLLrBenSJW7MNCi0qdPhD6BgNET7ZIvxoR1hJqUiHztAGNNCSPz/goHk8KhucqkasSi5MjBEJ76xGR/2TWj25MnwQ69dfMDFdleRWDf1UPEdXAuO2Bv9xiiT7Sc8M+9OEB+RsQAuzBGGVrwuNFBI3U0a5xI8L+mIWlBqGWtf2Jud2EnmtStimmB3tlaWnewm5roETsl+CsMKYceg+7n8NXe9oRuSkSmzNLOEIJzqgt9eWZZlevs4XG7cxf8qoQzjgj1+7ScZwxic2nbbKwpzP58JaMpS9rx++j+np+cUjd20YAQ=="
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":5,\"note\":\"Every product sentence restates its cited fact word for word, with nothing stretched. There are no invented tests, stories or statistics.\"},\"information_gain\":{\"score\":2,\"note\":\"Mostly generic filler. Product facts are listed but never explained: why fragrance free, a pH of 5.5, ceramides, niacinamide or zinc oxide matter for sensitive skin. Basic practical guidance is missing, such as patch testing, morning versus evening use, how much sun cream to apply, or introducing one product at a time.\"},\"structure\":{\"score\":4,\"note\":\"It answers the search in the first sentence and the steps follow a logical order under clear headings. The opening and closing sections are padding, and the product facts read as choppy one-line spec lists.\"},\"fit\":{\"score\":4,\"note\":\"Calm tone suits the audience, it stays on topic and avoids the banned word. Each step leans toward a product mention rather than advice, but it does not read as a hard sell.\"},\"problems\":[{\"quote\":\"Our [Gentle Cream Cleanser](P1) is fragrance free [F1]. It has a pH of 5.5 [F2]. It comes in a 150 ml pump bottle [F3].\",\"problem\":\"Facts are listed without explaining why they matter for sensitive skin, for example why fragrance free helps or why a pH of 5.5 is relevant. The same pattern repeats for P2 and P3.\"},{\"quote\":\"Everyone's skin is different, and what works for one person may not work for another. That is why it is so important to listen to your skin and give it what it needs.\",\"problem\":\"Generic filler that gives the reader nothing actionable.\"},{\"quote\":\"Less really can be more.\",\"problem\":\"Empty cliché and padding.\"},{\"quote\":\"Cleansing gently and regularly can help your skin look and feel its best.\",\"problem\":\"Vague filler. It does not say how often to cleanse or how to do it gently.\"},{\"quote\":\"Sun protection is something everyone should think about, all year round.\",\"problem\":\"Gives no practical guidance on application amount, reapplication or the order of steps in the routine.\"},{\"quote\":\"Be patient, be gentle and be kind to your skin.\",\"problem\":\"Repetitive padding in the closing section. Practical advice such as patch testing new products is missing.\"}],\"general_numbers\":[]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 2555,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 997,
+      "output_tokens_details": {
+        "thinking_tokens": 229
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

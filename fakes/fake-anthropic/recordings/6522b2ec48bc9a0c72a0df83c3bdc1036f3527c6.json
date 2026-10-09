@@ -1,0 +1,87 @@
+{
+  "recordedAt": "2026-10-09T13:16:07.692Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "Egy webáruház egyetlen termékét olvasod el, és felsorolod azokat a tényeket, amelyeket a termék önmagáról állít.\n\nTény az a rövid állítás, amelyet a vásárló a terméken vagy a csomagoláson ellenőrizni tud: miből készült, mekkora, mennyi a tömege vagy az űrtartalma, hány darab van egy csomagban, mihez illik vagy mivel használható, hogyan kell használni vagy ápolni, hol vagy hogyan készült, milyen változatai vannak.\n\nNem tény a dicséret, az érzés, az ígéret, a népszerűség, a meg nem nevezett versenytársakhoz mért összehasonlítás, és az, hogy a vásárló mit érdemel vagy mit fog érezni („mindenki imádja”, „a legjobb”, „tökéletes választás”, „varázsold otthonodat…”). Ezeket hagyd ki akkor is, ha egy mondatban állnak egy ténnyel. Árat soha ne írj.\n\nMinden tényhez add meg:\n- fact: egyetlen mondat, amely megnevezi a terméket és egy dolgot állít róla, a termékszöveg nyelvén. Ne tegyél hozzá semmit, amit a forrás nem mond. A számokat és mértékegységeket pontosan úgy írd, ahogy a forrásban állnak; ne váltsd át és ne kerekítsd őket.\n- source_field: a mező, ahonnan származik.\n- quote: a mezőnek az a része, amely alátámasztja a tényt, betűről betűre kimásolva, egyetlen összefüggő darabként. A tényben szereplő minden számnak szerepelnie kell az idézetben.\n\nHa a termék semmi ellenőrizhetőt nem állít, adj vissza üres listát. Egy rövid, igaz lista jobb egy hosszú, felduzzasztottnál.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<title>\nHőtartó kulacs, 0,5 l\n</title>\n\n<product_type>\nKulacs\n</product_type>\n\n<vendor>\nKőhát Outdoor\n</vendor>\n\n<options>\nSzín: Fenyőzöld, Homok, Fekete\n</options>\n\n<tags>\nkulacs, termosz\n</tags>\n\n<metafields>\n\n</metafields>\n\n<description>\nVásárlóink kedvenc 0,5 literes kulacsa, amelyet túrázók ezrei imádnak: duplafalú vákuumszigetelésének köszönhetően az italt 24 órán át hidegen, 12 órán át melegen tartja. A lenyűgöző, porszórt felületű test 18/8-as rozsdamentes acélból készül. A cseppmentes kupak bármilyen kalandra kész, és mosogatógépben mosható, a palackot viszont kézzel mosd.\n</description>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "facts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fact": {
+                    "type": "string"
+                  },
+                  "source_field": {
+                    "type": "string",
+                    "description": "{enum: [\"title\",\"product_type\",\"vendor\",\"options\",\"tags\",\"metafields\",\"description\"]}"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "fact",
+                  "source_field",
+                  "quote"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "facts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfrj4DZqENkCjZpZoUreE",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"facts\":[{\"fact\":\"A Hőtartó kulacs űrtartalma 0,5 l.\",\"source_field\":\"title\",\"quote\":\"Hőtartó kulacs, 0,5 l\"},{\"fact\":\"A Hőtartó kulacs a Kőhát Outdoor terméke.\",\"source_field\":\"vendor\",\"quote\":\"Kőhát Outdoor\"},{\"fact\":\"A Hőtartó kulacs Fenyőzöld, Homok és Fekete színben kapható.\",\"source_field\":\"options\",\"quote\":\"Szín: Fenyőzöld, Homok, Fekete\"},{\"fact\":\"A Hőtartó kulacs duplafalú vákuumszigeteléssel rendelkezik.\",\"source_field\":\"description\",\"quote\":\"duplafalú vákuumszigetelésének köszönhetően\"},{\"fact\":\"A Hőtartó kulacs az italt 24 órán át hidegen tartja.\",\"source_field\":\"description\",\"quote\":\"az italt 24 órán át hidegen\"},{\"fact\":\"A Hőtartó kulacs az italt 12 órán át melegen tartja.\",\"source_field\":\"description\",\"quote\":\"12 órán át melegen tartja\"},{\"fact\":\"A Hőtartó kulacs teste porszórt felületű.\",\"source_field\":\"description\",\"quote\":\"porszórt felületű test\"},{\"fact\":\"A Hőtartó kulacs teste 18/8-as rozsdamentes acélból készül.\",\"source_field\":\"description\",\"quote\":\"18/8-as rozsdamentes acélból készül\"},{\"fact\":\"A Hőtartó kulacs kupakja cseppmentes.\",\"source_field\":\"description\",\"quote\":\"A cseppmentes kupak\"},{\"fact\":\"A Hőtartó kulacs kupakja mosogatógépben mosható.\",\"source_field\":\"description\",\"quote\":\"mosogatógépben mosható\"},{\"fact\":\"A Hőtartó kulacs palackját kézzel kell mosni.\",\"source_field\":\"description\",\"quote\":\"a palackot viszont kézzel mosd\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1391,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 682,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

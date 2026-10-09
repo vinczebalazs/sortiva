@@ -1,0 +1,146 @@
+{
+  "recordedAt": "2026-10-09T13:14:02.746Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "Egy webáruház blogcikkét bírálod, amelyet a bolt hamarosan közzétesz. Nem te írtad. Látod a boltot, a témát és a keresést, amelyre szól, a bolt termékeit az általunk ellenőrzött tényekkel (F1, F2…), és a cikket. A termékekről szóló mondatok végén zárójelben állnak a tények, amelyekre épülnek; a [G] olyan mondatot jelöl, amelyet az író általános tudásnak mond.\n\nPontozd 1-től 5-ig:\n- grounding: minden, amit a cikk a bolt termékeiről mond, pontosan az, amit a hivatkozott tények mondanak, semmi hozzáadás, túlzás vagy sugallat. Egyetlen, a tényekkel alá nem támasztott termékállítás legfeljebb 2 pontot enged. Nincs kitalált tapasztalat („kipróbáltuk”, vásárlói történetek), statisztika vagy kutatás.\n- information_gain: aki ezt kereste, hasznosat és konkrétat tud meg belőle, nem csak bárhol olvasható általánosságokat. A töltelék, az ismétlés és a homályos dicséret rontja.\n- structure: korán válaszol a keresésre, a szakaszok értelmes sorrendben követik egymást, a címek megmondják, mi van alattuk, a listák és táblázatok ott vannak, ahol segítenek.\n- fit: illik ehhez a bolthoz, a közönségéhez és a hangneméhez, a témánál marad, és nem hat reklámnak.\nAz 5 kiváló, a 4 ebben a formában közzétehető, a 3 elfogadható, de hibás, a 2 és az 1 nem közzétehető.\n\nSorold fel a hibákat: mindegyiknél szó szerint idézd a mondatot, és írd le, mi a baj, a legsúlyosabbal kezdve. Ha nincs hiba, hagyd üresen a listát.\n\nMinden megadott általános tudású mondatnál (G1, G2…) add meg a hivatkozását, és mondd meg, hogy minden benne szereplő szám jól megalapozott, vitathatatlan, forrást nem igénylő általános tudás-e (accepted true), vagy nem (false), röviden indokolva.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Kávékert Pörkölő\nSells: pörkölt kávé és otthoni kávéfőző eszközök\nAudience: otthon kávézók\nTone: közvetlen\nNever say: —\n</store>\n\n<topic>\nWorking title: Hogyan főzzünk kávét kotyogóban?\nSearch it targets: kotyogós kávéfőző használata\n</topic>\n\n<products>\n  P1: Alumínium kotyogós kávéfőző, 3 személyes (Kotyogós kávéfőző)\n    F1: Az alumínium kotyogós kávéfőző 3 személyes, egy főzéssel nagyjából 150 ml kávét készít.\n    F2: Az alumínium kotyogós kávéfőző gáz- és elektromos főzőlapon használható, indukciós főzőlapon nem.\n    F3: Az alumínium kotyogós kávéfőző nyomáscsökkentő szeleppel rendelkezik.\n    F4: Az alumínium kotyogós kávéfőző tömítése és szűrőlemeze külön is megvásárolható.\n  P2: Kerámia őrlőkéses kézi daráló (Kávédaráló)\n    F5: A kerámia őrlőkéses kézi daráló kúpos kerámia őrlőkésekkel működik.\n    F6: A kerámia őrlőkéses kézi daráló őrlési finomsága fokozatmentesen állítható.\n  P3: Santos Brazil kávébab (Szemes kávé)\n    F7: A Santos Brazil kávébab közepes pörkölésű.\n    F8: A Santos Brazil kávébab ízjegyei: étcsokoládé és pörkölt mogyoró.\n    F9: A Santos Brazil kávébab szemes kiszerelésben kapható.\n</products>\n\n<pages>\n  L1: Kotyogós kávéfőzők (collection)\n  L2: Hogyan tároljuk a kávét? (article)\n</pages>\n\n<article>\nTitle: Kotyogós kávéfőző használata: így lesz finom a kávé\n\nKotyogóban akkor lesz finom a kávé, ha az alsó tartályt forró vízzel töltöd fel a szelep aljáig, a szűrőkosarat lazán, tömörítés nélkül töltöd meg közepesen finom őrleménnyel, és közepes lángon főzöd. Amint a kávé sistergő, buborékos hangot ad, vedd le a tűzről. A kesernyés, égett íz szinte mindig a túl erős lángból vagy a túl hosszú főzésből ered.\n\n## Mire lesz szükséged?\n\nEgy kotyogós kávéfőzőre, frissen őrölt kávéra és vízre. A kínálatunkban szereplő [alumínium kotyogós kávéfőző](P1) 3 személyes, egy főzéssel nagyjából 150 ml kávét készít [F1]. Gáz- és elektromos főzőlapon használható, indukciós főzőlapon nem [F2]. Nyomáscsökkentő szeleppel rendelkezik [F3], ezért a vizet soha ne töltsd a szelep fölé.\n\n{{P1}}\n\n## Milyen finomra őröljük?\n\nA kotyogóhoz az eszpresszónál kicsit durvább, a filteres kávénál finomabb őrlés való, nagyjából olyan, mint az asztali só. Ha túl finom, a víz nehezen jut át rajta, a kávé keserű lesz, és a főző is feleslegesen nagy nyomás alá kerül. Ha túl durva, híg, savanykás kávét kapsz.\n\nA [kerámia őrlőkéses kézi daráló](P2) kúpos kerámia őrlőkésekkel működik [F5]. Őrlési finomsága fokozatmentesen állítható [F6], így apránként közelíthetsz a jó beállításhoz.\n\n{{P2}}\n\n## Lépésről lépésre\n\n- Forralj vizet, és töltsd az alsó tartályba a szelep aljáig. A forró víz lerövidíti a főzést, így a kávé kevésbé fő meg a lapon.\n- Töltsd meg a szűrőkosarat kávéval, simítsd el a tetejét, de ne nyomkodd le.\n- Konyharuhával fogva csavard rá a felső részt, mert az alsó tartály forró.\n- Tedd közepes lángra, a fedelet hagyd nyitva, hogy lásd, mikor indul a kávé.\n- Amikor a kifolyó kávé világosodni kezd és sistereg, vedd le, és a talpát egy pillanatra hűtsd le hideg vizes ruhával.\n\nTöltés előtt keverd át a kávét a felső tartályban, mert az elsőként és az utolsóként kifolyó adag íze eltér.\n\n## Tisztítás és karbantartás\n\nHasználat után elég meleg vízzel kiöblíteni a részeket, mosogatószer nélkül, majd szétszedve hagyni megszáradni. A gumitömítés idővel megkeményedik, és ha a főző a csavarmenetnél szivárog, ideje cserélni. Az alumínium kotyogós kávéfőző tömítése és szűrőlemeze külön is megvásárolható [F4].\n\n## Milyen kávét válassz hozzá?\n\nA kotyogó erős, testes kávét főz, ehhez jól illenek a közepes pörkölésű, csokoládés jegyű kávék. A [Santos Brazil kávébab](P3) közepes pörkölésű [F7], ízjegyei az étcsokoládé és a pörkölt mogyoró [F8]. Szemes kiszerelésben kapható [F9], így mindig frissen őrölheted. A kávé tárolásáról [ebben a cikkünkben](L2) írtunk részletesen, további főzőket pedig a [kotyogós kávéfőzők](L1) között találsz.\n\n{{P3}}\n\n</article>\n\n<general_knowledge>\n—\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ref",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfritQbpa1PdNf1BEngSA",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "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"
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":5,\"note\":\"Minden termékállítás pontosan a hivatkozott tényeket adja vissza (F1–F9), nincs hozzáadott tulajdonság vagy túlzás. A szelepre épülő tanács általános használati útmutatás, nem újabb termékállítás. Kitalált tapasztalat vagy statisztika nincs a cikkben.\"},\"information_gain\":{\"score\":4,\"note\":\"Konkrét és gyakorlatias: forró víz a szelep aljáig, tömörítés nélküli töltés, sóhoz hasonló őrlés, a levétel jele, a talp hűtése, átkeverés, tömítéscsere. Megmagyarázza a túl finom és a túl durva őrlés következményét is. Néhány pont mégis szokványos tanács.\"},\"structure\":{\"score\":4,\"note\":\"Az első bekezdés azonnal válaszol a keresésre. A szakaszok logikus sorrendben követik egymást (eszközök, őrlés, lépések, tisztítás, kávéválasztás), a címek beszédesek, a lépéseket lista tagolja. Az átkeverésről szóló tanács a listán kívül, kissé lógva áll, és a megfogalmazása félreérthető.\"},\"fit\":{\"score\":5,\"note\":\"Közvetlen, tegeződő hangnem, amely illik az otthon kávézókhoz. A cikk a témánál marad, a termékeket a tanácsokhoz kötve, tényszerűen említi, ezért nem hat reklámnak. A belső hivatkozások természetesen illeszkednek a szövegbe.\"},\"problems\":[{\"quote\":\"Töltés előtt keverd át a kávét a felső tartályban, mert az elsőként és az utolsóként kifolyó adag íze eltér.\",\"problem\":\"A „töltés előtt” félreérthető: a szűrőkosár megtöltésére is vonatkozhat, holott a csészébe töltésről van szó. Ráadásul a lépéslista után, külön mondatként áll, pedig a sorrend szerint a lista végére, utolsó lépésként tartozna.\"}],\"general_numbers\":[]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 3643,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1165,
+      "output_tokens_details": {
+        "thinking_tokens": 423
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

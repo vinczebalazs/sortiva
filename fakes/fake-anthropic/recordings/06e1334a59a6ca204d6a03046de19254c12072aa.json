@@ -1,0 +1,146 @@
+{
+  "recordedAt": "2026-10-09T13:12:59.792Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You review a blog article an online shop is about to publish. You did not write it. You see the shop, the topic and the search it targets, the shop's products with the checked facts we hold about each (F1, F2…), and the article. Sentences about products end with the facts they rest on in brackets; [G] marks a sentence the writer says is general knowledge.\n\nScore each from 1 to 5:\n- grounding: everything said about the shop's products is exactly what the cited facts say, with nothing added, stretched or implied. One product claim the facts do not support caps this at 2. No invented experience (\"we tested\", customer stories), statistics or studies.\n- information_gain: a shopper who searched this would learn something useful and specific, beyond generic filler they could find anywhere. Padding, repetition and vague praise lower it.\n- structure: it answers the search early, its sections follow in a sensible order, headings say what is below them, lists and tables are used where they help.\n- fit: it suits this shop, its audience and tone, stays on the topic, and does not read as an advert.\n5 is excellent, 4 good enough to publish as it is, 3 acceptable with flaws, 2 or 1 not publishable.\n\nList problems: each with the exact sentence quoted and what is wrong, most serious first. Leave the list empty if there are none.\n\nFor each general-knowledge sentence you are given (G1, G2…), answer with its reference and whether every number in it is well established and uncontroversial general knowledge that needs no source (accepted true), or not (false), with a short reason.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Fellside Outfitters\nSells: hiking and camping kit\nAudience: UK hillwalkers and backpackers\nTone: plain\nNever say: —\n</store>\n\n<topic>\nWorking title: Choosing a two-person backpacking tent\nSearch it targets: best 2 person backpacking tent\n</topic>\n\n<products>\n  P1: Ridgeline 2 Tent (Tent)\n    F1: The Ridgeline 2 Tent weighs 1.6 kg packed.\n    F2: The Ridgeline 2 Tent has a flysheet with a 3000 mm hydrostatic head.\n    F3: The Ridgeline 2 Tent has two doors and two porches.\n    F4: The Ridgeline 2 Tent pitches outer first, with the inner attached.\n    F5: The Ridgeline 2 Tent's inner is 210 cm long.\n    F6: The Ridgeline 2 Tent uses aluminium alloy poles.\n  P2: Ridgeline Footprint (Tent accessory)\n    F7: The Ridgeline Footprint is cut to the shape of the Ridgeline 2 Tent's floor.\n  P3: Alloy Peg Set (Tent accessory)\n    F8: The Alloy Peg Set contains 12 Y-section pegs.\n</products>\n\n<pages>\n  L1: Backpacking tents (collection)\n</pages>\n\n<article>\nTitle: Choosing a two-person backpacking tent: weight, weather and space\n\nA good two-person backpacking tent balances three things: a weight you are happy to carry all day, a flysheet that keeps out sustained wind and rain, and enough room for two people and their kit. For British hills, look for two doors and two porches, a high waterproof rating on the fly, and a design you can pitch quickly in the rain. Decide which of the three you would give up a little of, and the shortlist gets short quickly.\n\n## Weight and pack size\n\nWeight on the scales is only half the story; how you split the load matters too. A tent shared between two packs, one carrying the fly and poles and the other the inner and pegs, feels far lighter on a long day. Check whether a quoted weight is the packed weight, with bags and pegs, or a stripped-down minimum.\n\nThe [Ridgeline 2 Tent](P1) weighs 1.6 kg packed [F1]. It uses aluminium alloy poles [F6].\n\n{{P1}}\n\n## Weather protection\n\nHydrostatic head measures how much water pressure a fabric can take before it leaks; the higher the figure, the more waterproof the fabric. Shape and pitch matter as well, because a taut, well-pegged fly sheds wind and rain far better than a loose one.\n\nThe Ridgeline 2 Tent has a flysheet with a 3000 mm hydrostatic head [F2]. Walkers who have pitched the Ridgeline 2 through a wet weekend in the Lake District come home with a dry inner and dry kit [F2, F4]. Wherever you can, pitch with the narrow end into the wind.\n\n## Space and doors\n\nA two-person tent is snug for two adults, so the layout decides how comfortable it feels. Two doors mean neither of you climbs over the other at night, and two porches give each person somewhere for boots and a wet jacket. Length matters for tall walkers, whose sleeping bags otherwise press against the inner and pick up condensation.\n\nThe Ridgeline 2 Tent has two doors and two porches [F3]. Its inner is 210 cm long [F5].\n\n## Pitching in the rain\n\nIn British weather, the order you pitch in matters. A tent that pitches outer first keeps the inner dry while it goes up, and lets you pack the inner away before the fly comes down. The Ridgeline 2 Tent pitches outer first, with the inner attached [F4]. Practise once in the garden or a park, so you are not reading instructions on a hillside.\n\n## Protecting the floor and pegging out\n\nA footprint under the tent protects the groundsheet from stones and roots and keeps it cleaner. The [Ridgeline Footprint](P2) is cut to the shape of the Ridgeline 2 Tent's floor [F7]. Spare pegs are worth carrying, because stony or boggy pitches bend and swallow them. The [Alloy Peg Set](P3) contains 12 Y-section pegs [F8]. Browse our full range of [backpacking tents](L1).\n\n{{P2}}\n\n</article>\n\n<general_knowledge>\n—\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ref",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfripAmGYi4zVAff5Ejue",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQS+gkKEAgSGAI4AUIIdGhpbmtpbmcSDB7VrHgOvLf1ahLUthoMEPqMmWZRqbhdm4gcIjDH3YNIpghgOVhTAaqnfso4lviDLvzQVfqCa1ToXISYvdMAplIAyaxe85ifbx1JyIAqlwkdiooepIQviHimTQH0P4bWpQ/LedlsETMY7WiEfiD8gTvzLVcAt+QxldVCMt4GCZWNExSydZcAqDLwsNtoSyUD2iEG3EwXP0/UtbyfzJx577Ym6t85WAumz94W8p3re5m4hVwmu5vY0Ek5zmDX4MMvc8JkFq5UHWai4Ip0+dY/dhNwKrFnMURrlQAriDieUnwVKn9wCqIKEUwQ0CYJztLOw+ZA6TlnQOV1PUIoEVzaSCJOJq7/fAk+jnh7k47ZM47oNOAQrKDu7XBPz1sB99O6tN4qxj+ALBFhFBzDcL9jJHEM0X/Jijy0nrSwaqS2/X9ycHrRho3Rgjowv3mV/yZQEtH7CPwCL2iMTmXiFe/i38/ToTKcNNr4u+DJFat9IT6XhMh9bRSjsHoHLaSSRrlsOfKV77WutDie8OcGt+M5JszaVR0zZpHJAA0ok+0p+r32Qw2LxLvvF8Jys996uEIjaYVIJBwmfhPeGwyqW+xX/Y2L22aEUZvt4zL2erOT4p4ebKQwOugL4rvfOWzefqg/R+0cv8R+086BVQNJlEa2P7v640Fwd4xingSw5Bu51ZtlXI8x/hSVKC0YvQwS4cps4zWlTvVY5g7lYk7Fl7bLLVE/0ebmQGd5RMsKB+kR+m305qLI1/spuk4w3O8OCuSgsFmK0z+j+QaFNDhgVXm4UgCDoU45hQCZd0zRQHOsawR7MEgNnCOVnj/tLIKVOo9LI1IdEKph+QKO9jQI2Q1fzE65cuLLfXD5PRyv5cT5yqCyMyG93GfT1gImu3BC3nH4lYrAAhtFHIlKOpxez8vaUR1L8CVYOucJ0wva4m0WNUiyvAu7wt4/0vCGXWu6hVsV90Fb9DD7OlnZpTNyYoaZGTubLEG2kwV0L+LNQMwP7N3mf5Knfc3n2oVE24IOVJeBaZSwZaSQnCxfQO2jGx3GKG7DN+xy//vdvZJUAq2EDRBnjb2E8EX5pOCyGhU7jpxrguYVs3pSs3X8bNVnn647WqXB3f7idVWxzFzHsVLRJG79vovPwXyU3hTdQUd+cH5pgNZKQF1u+RHw0Tu+ohfDcEpczY7mhfLvgD/5/w4da+odF23qIVLJfKFgMw58739Gf2nN3E3x9OcD/ADnUyFlCNhC1y7eMmE4mIibHsUJKckG3r1Ji9dLHj7fvUm+TG+b6V8KEVVkjf95NGau6jmyZTL3xQqwARMYlMoz/wE6wVoclq+ZHVEsFbE3GJeW49DPeTLmivw5t/3TYNqAXJQSXBbQX7RX/UFI81oVYCNpu9dZxiZQcikZvyxYxmiBTxj4fKYGff71NIMLiderSax+Z1VYaoZfLJWWYvruA5328vn/N9lPtjqacxeoALmUwGcDzsMg2uWKdDc2l18ggtP8MyP1mNR5ZkcjH+iSyYIqv7JRYQ4kv/2rcIrMQ3tCQ1SXsG0km6vJ6dnfS1hq93LtZQ/qxNt8EVS4Too63KgiGD7iF6x9vQideg5f3Rj9VjYqyepyinvcskXmUv4SLgH1rNMNhXvtm5nzyb4FDEzj3B5ezOE0v/HOFWv/n75lmWkOuwq9IHwKsxgB"
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":2,\"note\":\"Most product sentences match their facts exactly, but one sentence invents a customer story about walkers in the Lake District that F2 and F4 do not support. That caps grounding at 2.\"},\"information_gain\":{\"score\":4,\"note\":\"Useful, specific guidance: splitting the load between two packs, packed versus minimum weight, what hydrostatic head means, outer-first pitching, length for tall walkers and spare pegs for stony or boggy ground. Little padding.\"},\"structure\":{\"score\":4,\"note\":\"The intro answers the search straight away. Sections follow a sensible order and headings describe their content. A short comparison list or table of what to look for could help, but it is not essential.\"},\"fit\":{\"score\":4,\"note\":\"Plain tone, aimed at UK hillwalkers, stays on topic. Product mentions are proportionate and the piece does not read as an advert, apart from the invented testimonial.\"},\"problems\":[{\"quote\":\"Walkers who have pitched the Ridgeline 2 through a wet weekend in the Lake District come home with a dry inner and dry kit [F2, F4].\",\"problem\":\"This is an invented customer experience. F2 and F4 only give the hydrostatic head and the pitching method, and they say nothing about real-world use or results. Remove the sentence.\"},{\"quote\":\"A tent shared between two packs, one carrying the fly and poles and the other the inner and pegs, feels far lighter on a long day.\",\"problem\":\"\\\"Far lighter\\\" overstates it, since the total weight is unchanged. Say the load is split rather than that it feels far lighter.\"}],\"general_numbers\":[]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 2746,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 825,
+      "output_tokens_details": {
+        "thinking_tokens": 283
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

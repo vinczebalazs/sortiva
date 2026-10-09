@@ -1,0 +1,87 @@
+{
+  "recordedAt": "2026-10-09T13:16:18.725Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "Egy webáruház egyetlen termékét olvasod el, és felsorolod azokat a tényeket, amelyeket a termék önmagáról állít.\n\nTény az a rövid állítás, amelyet a vásárló a terméken vagy a csomagoláson ellenőrizni tud: miből készült, mekkora, mennyi a tömege vagy az űrtartalma, hány darab van egy csomagban, mihez illik vagy mivel használható, hogyan kell használni vagy ápolni, hol vagy hogyan készült, milyen változatai vannak.\n\nNem tény a dicséret, az érzés, az ígéret, a népszerűség, a meg nem nevezett versenytársakhoz mért összehasonlítás, és az, hogy a vásárló mit érdemel vagy mit fog érezni („mindenki imádja”, „a legjobb”, „tökéletes választás”, „varázsold otthonodat…”). Ezeket hagyd ki akkor is, ha egy mondatban állnak egy ténnyel. Árat soha ne írj.\n\nMinden tényhez add meg:\n- fact: egyetlen mondat, amely megnevezi a terméket és egy dolgot állít róla, a termékszöveg nyelvén. Ne tegyél hozzá semmit, amit a forrás nem mond. A számokat és mértékegységeket pontosan úgy írd, ahogy a forrásban állnak; ne váltsd át és ne kerekítsd őket.\n- source_field: a mező, ahonnan származik.\n- quote: a mezőnek az a része, amely alátámasztja a tényt, betűről betűre kimásolva, egyetlen összefüggő darabként. A tényben szereplő minden számnak szerepelnie kell az idézetben.\n\nHa a termék semmi ellenőrizhetőt nem állít, adj vissza üres listát. Egy rövid, igaz lista jobb egy hosszú, felduzzasztottnál.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<title>\nÁrnyéktűrő fűmagkeverék, 1 kg\n</title>\n\n<product_type>\nFűmag\n</product_type>\n\n<vendor>\nZöldkert Magház\n</vendor>\n\n<options>\n\n</options>\n\n<tags>\nkert, gyep, árnyék\n</tags>\n\n<metafields>\n\n</metafields>\n\n<description>\nA kertészek kedvenc keveréke, amellyel garantáltan irigylésre méltó, smaragdzöld gyep lesz a fák alatt is. Összetétele: 40% vörös csenkesz, 30% réti perje, 20% erdei perje, 10% angolperje. 1 kg mag 30–40 m² bevetéséhez elegendő. Vetés ideje: március–május vagy augusztus vége–október, legalább 10 °C-os talajhőmérséklet mellett. A csírázás 10–21 napot vesz igénybe, addig tartsd a talajt folyamatosan nedvesen.\n</description>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "facts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fact": {
+                    "type": "string"
+                  },
+                  "source_field": {
+                    "type": "string",
+                    "description": "{enum: [\"title\",\"product_type\",\"vendor\",\"options\",\"tags\",\"metafields\",\"description\"]}"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "fact",
+                  "source_field",
+                  "quote"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "facts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfrj4yqN1ffG2KqXnVPFV",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"facts\":[{\"fact\":\"Az árnyéktűrő fűmagkeverék kiszerelése 1 kg.\",\"source_field\":\"title\",\"quote\":\"Árnyéktűrő fűmagkeverék, 1 kg\"},{\"fact\":\"Az árnyéktűrő fűmagkeverék gyártója a Zöldkert Magház.\",\"source_field\":\"vendor\",\"quote\":\"Zöldkert Magház\"},{\"fact\":\"Az árnyéktűrő fűmagkeverék 40% vörös csenkeszt tartalmaz.\",\"source_field\":\"description\",\"quote\":\"40% vörös csenkesz\"},{\"fact\":\"Az árnyéktűrő fűmagkeverék 30% réti perjét tartalmaz.\",\"source_field\":\"description\",\"quote\":\"30% réti perje\"},{\"fact\":\"Az árnyéktűrő fűmagkeverék 20% erdei perjét tartalmaz.\",\"source_field\":\"description\",\"quote\":\"20% erdei perje\"},{\"fact\":\"Az árnyéktűrő fűmagkeverék 10% angolperjét tartalmaz.\",\"source_field\":\"description\",\"quote\":\"10% angolperje\"},{\"fact\":\"Az árnyéktűrő fűmagkeverékből 1 kg mag 30–40 m² bevetéséhez elegendő.\",\"source_field\":\"description\",\"quote\":\"1 kg mag 30–40 m² bevetéséhez elegendő\"},{\"fact\":\"Az árnyéktűrő fűmagkeverék vetési ideje március–május vagy augusztus vége–október.\",\"source_field\":\"description\",\"quote\":\"Vetés ideje: március–május vagy augusztus vége–október\"},{\"fact\":\"Az árnyéktűrő fűmagkeveréket legalább 10 °C-os talajhőmérséklet mellett kell vetni.\",\"source_field\":\"description\",\"quote\":\"legalább 10 °C-os talajhőmérséklet mellett\"},{\"fact\":\"Az árnyéktűrő fűmagkeverék csírázása 10–21 napot vesz igénybe.\",\"source_field\":\"description\",\"quote\":\"A csírázás 10–21 napot vesz igénybe\"},{\"fact\":\"Az árnyéktűrő fűmagkeverék csírázásáig a talajt folyamatosan nedvesen kell tartani.\",\"source_field\":\"description\",\"quote\":\"addig tartsd a talajt folyamatosan nedvesen\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1413,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 814,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

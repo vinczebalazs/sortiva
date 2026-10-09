@@ -1,0 +1,87 @@
+{
+  "recordedAt": "2026-10-09T13:14:56.296Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "Egy webáruház egyetlen termékét olvasod el, és felsorolod azokat a tényeket, amelyeket a termék önmagáról állít.\n\nTény az a rövid állítás, amelyet a vásárló a terméken vagy a csomagoláson ellenőrizni tud: miből készült, mekkora, mennyi a tömege vagy az űrtartalma, hány darab van egy csomagban, mihez illik vagy mivel használható, hogyan kell használni vagy ápolni, hol vagy hogyan készült, milyen változatai vannak.\n\nNem tény a dicséret, az érzés, az ígéret, a népszerűség, a meg nem nevezett versenytársakhoz mért összehasonlítás, és az, hogy a vásárló mit érdemel vagy mit fog érezni („mindenki imádja”, „a legjobb”, „tökéletes választás”, „varázsold otthonodat…”). Ezeket hagyd ki akkor is, ha egy mondatban állnak egy ténnyel. Árat soha ne írj.\n\nMinden tényhez add meg:\n- fact: egyetlen mondat, amely megnevezi a terméket és egy dolgot állít róla, a termékszöveg nyelvén. Ne tegyél hozzá semmit, amit a forrás nem mond. A számokat és mértékegységeket pontosan úgy írd, ahogy a forrásban állnak; ne váltsd át és ne kerekítsd őket.\n- source_field: a mező, ahonnan származik.\n- quote: a mezőnek az a része, amely alátámasztja a tényt, betűről betűre kimásolva, egyetlen összefüggő darabként. A tényben szereplő minden számnak szerepelnie kell az idézetben.\n\nHa a termék semmi ellenőrizhetőt nem állít, adj vissza üres listát. Egy rövid, igaz lista jobb egy hosszú, felduzzasztottnál.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<title>\nOrtopéd kutyafekhely levehető huzattal\n</title>\n\n<product_type>\nKutyafekhely\n</product_type>\n\n<vendor>\nMancsház\n</vendor>\n\n<options>\nMéret: M – 80 × 60 cm, L – 100 × 75 cm\nSzín: Grafit, Bézs\n</options>\n\n<tags>\nkutya, fekhely, ortopéd\n</tags>\n\n<metafields>\n\n</metafields>\n\n<description>\nIdősebb és ízületi problémákkal küzdő kutyáknak készült fekhely 8 cm vastag memóriahab betéttel.\n- Huzat: 100% poliészter velúr, cipzárral levehető\n- Alja: csúszásgátló, vízlepergető anyag\n- A huzat 40 °C-on gépben mosható, a habot ne mosd\nAz M méret 25 kg-ig, az L méret 45 kg-ig ajánlott. Magyarországon, Szegeden varrjuk.\nMert a kedvenced a legjobbat érdemli.\n</description>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "facts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fact": {
+                    "type": "string"
+                  },
+                  "source_field": {
+                    "type": "string",
+                    "description": "{enum: [\"title\",\"product_type\",\"vendor\",\"options\",\"tags\",\"metafields\",\"description\"]}"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "fact",
+                  "source_field",
+                  "quote"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "facts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrixqW93hUvYbgNvajHc",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"facts\":[{\"fact\":\"Az ortopéd kutyafekhely huzata levehető.\",\"source_field\":\"title\",\"quote\":\"Ortopéd kutyafekhely levehető huzattal\"},{\"fact\":\"Az ortopéd kutyafekhely M méretben 80 × 60 cm.\",\"source_field\":\"options\",\"quote\":\"M – 80 × 60 cm\"},{\"fact\":\"Az ortopéd kutyafekhely L méretben 100 × 75 cm.\",\"source_field\":\"options\",\"quote\":\"L – 100 × 75 cm\"},{\"fact\":\"Az ortopéd kutyafekhely Grafit és Bézs színben kapható.\",\"source_field\":\"options\",\"quote\":\"Szín: Grafit, Bézs\"},{\"fact\":\"Az ortopéd kutyafekhely idősebb és ízületi problémákkal küzdő kutyáknak készült.\",\"source_field\":\"description\",\"quote\":\"Idősebb és ízületi problémákkal küzdő kutyáknak készült fekhely\"},{\"fact\":\"Az ortopéd kutyafekhely 8 cm vastag memóriahab betéttel rendelkezik.\",\"source_field\":\"description\",\"quote\":\"8 cm vastag memóriahab betéttel\"},{\"fact\":\"Az ortopéd kutyafekhely huzata 100% poliészter velúr.\",\"source_field\":\"description\",\"quote\":\"Huzat: 100% poliészter velúr\"},{\"fact\":\"Az ortopéd kutyafekhely huzata cipzárral levehető.\",\"source_field\":\"description\",\"quote\":\"cipzárral levehető\"},{\"fact\":\"Az ortopéd kutyafekhely alja csúszásgátló, vízlepergető anyagból készült.\",\"source_field\":\"description\",\"quote\":\"Alja: csúszásgátló, vízlepergető anyag\"},{\"fact\":\"Az ortopéd kutyafekhely huzata 40 °C-on gépben mosható.\",\"source_field\":\"description\",\"quote\":\"A huzat 40 °C-on gépben mosható\"},{\"fact\":\"Az ortopéd kutyafekhely habbetétjét nem szabad mosni.\",\"source_field\":\"description\",\"quote\":\"a habot ne mosd\"},{\"fact\":\"Az ortopéd kutyafekhely M mérete 25 kg-ig ajánlott.\",\"source_field\":\"description\",\"quote\":\"Az M méret 25 kg-ig\"},{\"fact\":\"Az ortopéd kutyafekhely L mérete 45 kg-ig ajánlott.\",\"source_field\":\"description\",\"quote\":\"az L méret 45 kg-ig ajánlott\"},{\"fact\":\"Az ortopéd kutyafekhelyet Magyarországon, Szegeden varrják.\",\"source_field\":\"description\",\"quote\":\"Magyarországon, Szegeden varrjuk.\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1441,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 940,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

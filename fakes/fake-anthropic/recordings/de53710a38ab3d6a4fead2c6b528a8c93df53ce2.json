@@ -1,0 +1,111 @@
+{
+  "recordedAt": "2026-10-09T13:14:11.535Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You plan one blog article for an online shop. You see the shop, the topic and the search it should answer, the shop's products with the checked facts we hold about each (F1, F2…), and the shop's own pages that may be linked.\n\nPlan an article that genuinely answers the search for a shopper, the way a knowledgeable shop assistant would: useful first, products where they truly help. Decide:\n- title: the headline, in English, containing the search or a natural form of it;\n- angle: one sentence on what the reader will come away knowing;\n- sections: four to seven, each with a heading, what it covers, and the facts it will draw on;\n- products: the products worth showing as a card (one to four), by reference;\n- links: pages worth linking from the text, by reference (products P…, pages L…).\n\nThe article may only say about a product what its facts say, so build the product parts around facts that matter for this search. General advice that is not about our products is allowed. At least 6 different facts should be used across the article.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Fernhill Coffee Supply\nSells: Fernhill Coffee Supply sells home coffee brewing equipment and coffee beans. The range covers pour-over gear (ceramic and stainless steel drippers, size 02 paper filters, stovetop and electric gooseneck kettles, and a brew scale with timer), immersion brewers such as a French press and a cold brew jar, and manual and electric burr grinders. It also sells single-origin coffee beans from Fernhill Roastery in 250 g and 1 kg bags, whole bean or ground.\nAudience: People who brew coffee at home, especially by pour-over or immersion, and who want to grind, weigh and control water temperature themselves. Some products, such as the single-dose flat-burr grinder and the temperature-hold kettle, suit buyers who care about precise brewing.\nTone: expert\nNever say: —\n</store>\n\n<topic>\nWorking title: Coffee Grind Size Chart for Pour-Over, French Press and Cold Brew\nSearch it targets: coffee grind size chart\n</topic>\n\n<products>\n  P1: Hand Grinder, conical steel burrs (Grinder)\n    F1: The Fernhill Hand Grinder has conical steel burrs.\n    F2: The Fernhill Hand Grinder is a manual grinder.\n    F3: The Fernhill Hand Grinder has 38 mm hardened stainless steel conical burrs.\n    F4: The Fernhill Hand Grinder has external click adjustment with 30 settings.\n    F5: The Fernhill Hand Grinder's settings range from espresso to French press.\n    F6: The Fernhill Hand Grinder holds 25 g of beans.\n    F7: The Fernhill Hand Grinder has an aluminium body.\n    F8: The Fernhill Hand Grinder weighs 520 g.\n    F9: The Fernhill Hand Grinder grinds a 15 g dose for pour-over in about 40 seconds.\n  P2: Ceramic Cone Dripper, size 02 (Dripper)\n    F10: The Ceramic Cone Dripper is size 02.\n    F11: The Ceramic Cone Dripper is a dripper.\n    F12: The Ceramic Cone Dripper is made by Fernhill.\n    F13: The Ceramic Cone Dripper comes in White and Matte black.\n    F14: The Ceramic Cone Dripper is made of porcelain.\n    F15: The Ceramic Cone Dripper is made from glazed porcelain fired in Arita, Japan.\n    F16: The Ceramic Cone Dripper fits size 02 cone filters.\n    F17: The Ceramic Cone Dripper brews 1 to 4 cups.\n    F18: The Ceramic Cone Dripper has a single large outlet hole.\n    F19: The Ceramic Cone Dripper has spiral ribs on the inner wall that leave room for air to escape.\n    F20: The Ceramic Cone Dripper weighs 380 g.\n    F21: The Ceramic Cone Dripper is dishwasher safe.\n  P3: French Press 1 litre (Immersion brewer)\n    F22: The French Press has a capacity of 1 litre.\n    F23: The French Press is an immersion brewer.\n    F24: The French Press is made by Fernhill.\n    F25: The French Press has a borosilicate glass beaker.\n    F26: The French Press beaker sits in a stainless steel frame.\n    F27: The French Press makes about 4 mugs.\n    F28: The French Press has a four-layer mesh filter.\n    F29: All parts of the French Press come apart for cleaning.\n    F30: The French Press beaker is replaceable.\n  P4: Cold Brew Jar 1.5 litre (Immersion brewer)\n    F31: The Cold Brew Jar has a capacity of 1.5 litre.\n    F32: The Cold Brew Jar is an immersion brewer.\n    F33: The Cold Brew Jar is made by Fernhill.\n    F34: The Cold Brew Jar is a glass jar.\n    F35: The Cold Brew Jar has a fine stainless steel filter basket.\n    F36: The Cold Brew Jar filter basket holds up to 150 g of coarse ground coffee.\n    F37: The Cold Brew Jar makes 1.5 litres of concentrate.\n    F38: The Cold Brew Jar has an airtight lid.\n    F39: The Cold Brew Jar fits in a fridge door.\n    F40: The recommended steep time for the Cold Brew Jar is 12 to 18 hours in the fridge.\n  P5: Electric Flat-Burr Grinder (Grinder) [related]\n    F41: The Electric Flat-Burr Grinder has 64 mm flat steel burrs.\n    F42: The Electric Flat-Burr Grinder has stepless adjustment.\n    F43: The Electric Flat-Burr Grinder has a single-dose design.\n    F44: The Electric Flat-Burr Grinder has retention under 0.1 g.\n    F45: The Electric Flat-Burr Grinder has a 250 W motor running at 1,400 rpm.\n    F46: The Electric Flat-Burr Grinder has bellows on top to puff out remaining grounds.\n    F47: The Electric Flat-Burr Grinder has a height of 38 cm.\n    F48: The Electric Flat-Burr Grinder is made by Fernhill.\n    F49: The Electric Flat-Burr Grinder is an electric grinder.\n  P6: Flat-Bottom Dripper, stainless steel (Dripper) [related]\n    F50: The Flat-Bottom Dripper is made of stainless steel.\n    F51: The Flat-Bottom Dripper is made by Fernhill.\n    F52: The Flat-Bottom Dripper has a brushed 18/8 stainless steel body.\n    F53: The Flat-Bottom Dripper has three small holes in a flat bed.\n    F54: The Flat-Bottom Dripper takes 185-size wave filters.\n    F55: The Flat-Bottom Dripper brews 1 to 2 cups (up to 500 ml).\n    F56: The Flat-Bottom Dripper has a double wall.\n    F57: The Flat-Bottom Dripper weighs 210 g.\n</products>\n\n<pages>\n  L1: Pour-over brewing (collection)\n  L2: Grinders (collection)\n  L3: Coffee beans (collection)\n  L4: Immersion brewers (collection)\n  L5: About Fernhill (page)\n  L6: Shipping and returns (page)\n</pages>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "angle": {
+              "type": "string"
+            },
+            "sections": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "heading": {
+                    "type": "string"
+                  },
+                  "covers": {
+                    "type": "string"
+                  },
+                  "facts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "heading",
+                  "covers",
+                  "facts"
+                ]
+              }
+            },
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "links": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "angle",
+            "sections",
+            "products",
+            "links"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfriuPWd5S9suwNwsx4AB",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"title\":\"Coffee Grind Size Chart: The Right Grind for Pour-Over, French Press and Cold Brew\",\"angle\":\"The reader will know which grind size suits each home brewing method, how to recognise it by eye and taste, and how to dial it in on a burr grinder.\",\"sections\":[{\"heading\":\"The coffee grind size chart at a glance\",\"covers\":\"A chart from extra fine (Turkish) through fine (espresso), medium-fine (cone pour-over), medium (flat-bottom drippers), coarse (French press) to extra coarse (cold brew), with texture comparisons like flour, table salt, sea salt and cracked pepper, and why contact time drives the choice.\",\"facts\":[]},{\"heading\":\"Why a burr grinder makes the chart work\",\"covers\":\"Uniform particles versus blade grinders, why consistency matters more than any single setting, and how click and stepless adjustment let you repeat and fine-tune a grind.\",\"facts\":[\"F1\",\"F3\",\"F4\",\"F5\",\"F41\",\"F42\",\"F44\"]},{\"heading\":\"Pour-over: medium-fine for cones, medium for flat beds\",\"covers\":\"Cone drippers with one large outlet rely on grind to control flow, so go medium-fine. Flat-bottom drippers with small holes run slower and suit a slightly coarser medium grind. Includes a starting dose and a drawdown time to aim for.\",\"facts\":[\"F18\",\"F19\",\"F16\",\"F53\",\"F54\",\"F55\",\"F9\"]},{\"heading\":\"French press: coarse and even\",\"covers\":\"Why a coarse, even grind suits a four-minute immersion, how fines cause sludge and bitterness, and how the mesh filter handles a coarse grind.\",\"facts\":[\"F23\",\"F28\",\"F22\",\"F27\"]},{\"heading\":\"Cold brew: extra coarse for a long steep\",\"covers\":\"Why a 12 to 18 hour cold steep needs the coarsest setting, typical coffee-to-water ratios for concentrate, and how to dilute it.\",\"facts\":[\"F36\",\"F37\",\"F40\",\"F35\"]},{\"heading\":\"Dialling in: reading your cup\",\"covers\":\"How to adjust from the chart: sour and thin means grind finer, bitter and harsh means grind coarser. Change one setting at a time, and grind fresh for each brew.\",\"facts\":[\"F6\",\"F43\",\"F46\"]}],\"products\":[\"P1\",\"P2\",\"P3\",\"P4\"],\"links\":[\"P1\",\"P5\",\"P2\",\"P6\",\"P3\",\"P4\",\"L1\",\"L2\",\"L3\",\"L4\"]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 3041,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 820,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

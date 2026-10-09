@@ -1,0 +1,146 @@
+{
+  "recordedAt": "2026-10-09T13:12:09.546Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You review a blog article an online shop is about to publish. You did not write it. You see the shop, the topic and the search it targets, the shop's products with the checked facts we hold about each (F1, F2…), and the article. Sentences about products end with the facts they rest on in brackets; [G] marks a sentence the writer says is general knowledge.\n\nScore each from 1 to 5:\n- grounding: everything said about the shop's products is exactly what the cited facts say, with nothing added, stretched or implied. One product claim the facts do not support caps this at 2. No invented experience (\"we tested\", customer stories), statistics or studies.\n- information_gain: a shopper who searched this would learn something useful and specific, beyond generic filler they could find anywhere. Padding, repetition and vague praise lower it.\n- structure: it answers the search early, its sections follow in a sensible order, headings say what is below them, lists and tables are used where they help.\n- fit: it suits this shop, its audience and tone, stays on the topic, and does not read as an advert.\n5 is excellent, 4 good enough to publish as it is, 3 acceptable with flaws, 2 or 1 not publishable.\n\nList problems: each with the exact sentence quoted and what is wrong, most serious first. Leave the list empty if there are none.\n\nFor each general-knowledge sentence you are given (G1, G2…), answer with its reference and whether every number in it is well established and uncontroversial general knowledge that needs no source (accepted true), or not (false), with a short reason.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Copperline Coffee\nSells: coffee beans and home brewing equipment\nAudience: home coffee drinkers\nTone: plain\nNever say: —\n</store>\n\n<topic>\nWorking title: How to make French press coffee\nSearch it targets: how to make french press coffee\n</topic>\n\n<products>\n  P1: Steel French Press, 1 litre (Cafetière)\n    F1: The Steel French Press holds 1 litre.\n    F2: The Steel French Press has a double-walled stainless steel body.\n    F3: The Steel French Press uses a four-layer mesh filter.\n    F4: The Steel French Press is dishwasher safe once the plunger is taken apart.\n  P2: Conical Burr Hand Grinder (Grinder)\n    F5: The Conical Burr Hand Grinder has ceramic conical burrs.\n    F6: The Conical Burr Hand Grinder has 18 click settings for grind size.\n    F7: The Conical Burr Hand Grinder holds 30 g of beans.\n  P3: Brazil Cerrado Medium Roast (Coffee beans)\n    F8: The Brazil Cerrado Medium Roast has tasting notes of milk chocolate and hazelnut.\n    F9: The Brazil Cerrado Medium Roast is sold as whole beans.\n</products>\n\n<pages>\n  L1: Cafetières (collection)\n  L2: How to store coffee beans (article)\n</pages>\n\n<article>\nTitle: How to make French press coffee that tastes rich, not muddy\n\nTo make French press coffee, stir coarsely ground coffee into water just off the boil, leave it to steep for about 4 minutes, then press the plunger down slowly and pour straight away [G]. The method is forgiving, but three things decide whether the cup tastes rich or muddy: how coarse you grind, how much coffee you use, and what you do once the plunger is down.\n\n## What you need\n\nA French press, fresh beans and a grinder that can go coarse are all it takes. Our [Steel French Press](P1) holds 1 litre [F1]. It has a double-walled stainless steel body [F2] and a four-layer mesh filter [F3]. The mesh matters more than it looks, because the fine silt that slips past a filter is what makes the last mouthful gritty.\n\n{{P1}}\n\n## Grind coarse, and grind just before brewing\n\nGround coffee starts losing its aroma almost at once, so grinding fresh does more for the cup than almost anything else. For a French press you want a coarse, even grind, roughly like sea salt. Too fine and the coffee turns bitter and the plunger fights you on the way down; too coarse and the cup tastes thin and sour.\n\nEvenness matters as much as size, which is why burr grinders are the usual recommendation over blade grinders. The [Conical Burr Hand Grinder](P2) has ceramic conical burrs [F5] and 18 click settings for grind size [F6]. Start near the coarse end of those settings and move one click at a time between brews until the taste is right [F6]. It holds 30 g of beans [F7].\n\n{{P2}}\n\n## Ratio, water and timing\n\nThese are starting points to adjust, not rules:\n\n- A common starting ratio is 60 to 70 g of coffee per litre of water [G].\n- Water a short while off the boil, around 93 to 96°C, is the usual recommendation [G].\n- Steep for about 4 minutes, then stir the crust of grounds on the surface so it sinks [G].\n- Skim off any foam left on top, then fit the lid and press gently.\n\nIf the coffee tastes bitter, grind a little coarser or shorten the steep. If it tastes weak or sour, grind a little finer or add more coffee before you change the time.\n\n## Pour it all out, then clean up\n\nCoffee left sitting on the grounds keeps extracting, even with the plunger down, so pour everything into mugs or a jug as soon as it is pressed. Tip the spent grounds into the compost or the bin rather than the sink, where they build up in the trap. The Steel French Press is dishwasher safe once the plunger is taken apart [F4].\n\n## Choosing beans for the press\n\nA French press leaves the coffee's oils in the cup, which suits beans with chocolate and nut flavours. The [Brazil Cerrado Medium Roast](P3) has tasting notes of milk chocolate and hazelnut [F8]. It is sold as whole beans [F9], so you can grind it fresh for each pot. To keep beans at their best between brews, read our guide on [how to store coffee beans](L2), or browse the rest of our [cafetières](L1).\n\n{{P3}}\n\n</article>\n\n<general_knowledge>\nG1: To make French press coffee, stir coarsely ground coffee into water just off the boil, leave it to steep for about 4 minutes, then press the plunger down slowly and pour straight away. (numbers: 4)\nG2: A common starting ratio is 60 to 70 g of coffee per litre of water. (numbers: 60, 70)\nG3: Water a short while off the boil, around 93 to 96°C, is the usual recommendation. (numbers: 93, 96)\nG4: Steep for about 4 minutes, then stir the crust of grounds on the surface so it sinks. (numbers: 4)\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ref",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfrik4RAHwiR1FD9PYTwE",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "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"
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":4,\"note\":\"Product claims match F1–F9. The mesh-silt sentence comes close to implying a filtering benefit the facts don't state, but it never makes that claim outright.\"},\"information_gain\":{\"score\":4,\"note\":\"Gives a concrete ratio, temperature, grind description, troubleshooting by taste, and advice on pouring and disposing of grounds. It misses that the 30 g grinder needs two loads for a full litre.\"},\"structure\":{\"score\":5,\"note\":\"Answers the search in the first sentence, then follows a logical order (gear, grind, ratio and steps, finish, beans) with clear headings and a useful list.\"},\"fit\":{\"score\":5,\"note\":\"Plain tone suits home brewers. Products are woven in naturally without reading as an advert.\"},\"problems\":[{\"quote\":\"The mesh matters more than it looks, because the fine silt that slips past a filter is what makes the last mouthful gritty.\",\"problem\":\"Placed right after the product's four-layer mesh, it implies the Steel French Press lets less silt through. No fact supports that performance claim.\"},{\"quote\":\"It holds 30 g of beans [F7].\",\"problem\":\"The article doesn't point out that the recommended 60–70 g for the 1 litre press means grinding two or more loads. Shoppers would find that useful and might be surprised by it.\"}],\"general_numbers\":[{\"ref\":\"G1\",\"accepted\":true,\"reason\":\"A steep of about 4 minutes is the standard, widely cited French press time.\"},{\"ref\":\"G2\",\"accepted\":true,\"reason\":\"60–70 g per litre (roughly 1:15–1:16) is a common, uncontroversial starting ratio.\"},{\"ref\":\"G3\",\"accepted\":true,\"reason\":\"93–96°C is the widely recommended brewing temperature range.\"},{\"ref\":\"G4\",\"accepted\":true,\"reason\":\"A 4-minute steep before breaking the crust is standard guidance.\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 3010,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1221,
+      "output_tokens_details": {
+        "thinking_tokens": 576
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

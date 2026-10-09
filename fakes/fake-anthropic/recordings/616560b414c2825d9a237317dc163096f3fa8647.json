@@ -1,0 +1,146 @@
+{
+  "recordedAt": "2026-10-09T13:15:36.151Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You review a blog article an online shop is about to publish. You did not write it. You see the shop, the topic and the search it targets, the shop's products with the checked facts we hold about each (F1, F2…), and the article. Sentences about products end with the facts they rest on in brackets; [G] marks a sentence the writer says is general knowledge.\n\nScore each from 1 to 5:\n- grounding: everything said about the shop's products is exactly what the cited facts say, with nothing added, stretched or implied. One product claim the facts do not support caps this at 2. No invented experience (\"we tested\", customer stories), statistics or studies.\n- information_gain: a shopper who searched this would learn something useful and specific, beyond generic filler they could find anywhere. Padding, repetition and vague praise lower it.\n- structure: it answers the search early, its sections follow in a sensible order, headings say what is below them, lists and tables are used where they help.\n- fit: it suits this shop, its audience and tone, stays on the topic, and does not read as an advert.\n5 is excellent, 4 good enough to publish as it is, 3 acceptable with flaws, 2 or 1 not publishable.\n\nList problems: each with the exact sentence quoted and what is wrong, most serious first. Leave the list empty if there are none.\n\nFor each general-knowledge sentence you are given (G1, G2…), answer with its reference and whether every number in it is well established and uncontroversial general knowledge that needs no source (accepted true), or not (false), with a short reason.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Fernhill Coffee Supply\nSells: Fernhill Coffee Supply sells home coffee brewing equipment and coffee beans. The range covers pour-over gear (ceramic and stainless steel drippers, size 02 paper filters, stovetop and electric gooseneck kettles, and a brew scale with timer), immersion brewers such as a French press and a cold brew jar, and manual and electric burr grinders. It also sells single-origin coffee beans from Fernhill Roastery in 250 g and 1 kg bags, whole bean or ground.\nAudience: People who brew coffee at home, especially by pour-over or immersion, and who want to grind, weigh and control water temperature themselves. Some products, such as the single-dose flat-burr grinder and the temperature-hold kettle, suit buyers who care about precise brewing.\nTone: expert\nNever say: —\n</store>\n\n<topic>\nWorking title: Coffee Grind Size Chart for Pour-Over, French Press and Cold Brew\nSearch it targets: coffee grind size chart\n</topic>\n\n<products>\n  P1: Hand Grinder, conical steel burrs (Grinder)\n    F1: The Fernhill Hand Grinder has conical steel burrs.\n    F2: The Fernhill Hand Grinder is a manual grinder.\n    F3: The Fernhill Hand Grinder has 38 mm hardened stainless steel conical burrs.\n    F4: The Fernhill Hand Grinder has external click adjustment with 30 settings.\n    F5: The Fernhill Hand Grinder's settings range from espresso to French press.\n    F6: The Fernhill Hand Grinder holds 25 g of beans.\n    F7: The Fernhill Hand Grinder has an aluminium body.\n    F8: The Fernhill Hand Grinder weighs 520 g.\n    F9: The Fernhill Hand Grinder grinds a 15 g dose for pour-over in about 40 seconds.\n  P2: Ceramic Cone Dripper, size 02 (Dripper)\n    F10: The Ceramic Cone Dripper is size 02.\n    F11: The Ceramic Cone Dripper is a dripper.\n    F12: The Ceramic Cone Dripper is made by Fernhill.\n    F13: The Ceramic Cone Dripper comes in White and Matte black.\n    F14: The Ceramic Cone Dripper is made of porcelain.\n    F15: The Ceramic Cone Dripper is made from glazed porcelain fired in Arita, Japan.\n    F16: The Ceramic Cone Dripper fits size 02 cone filters.\n    F17: The Ceramic Cone Dripper brews 1 to 4 cups.\n    F18: The Ceramic Cone Dripper has a single large outlet hole.\n    F19: The Ceramic Cone Dripper has spiral ribs on the inner wall that leave room for air to escape.\n    F20: The Ceramic Cone Dripper weighs 380 g.\n    F21: The Ceramic Cone Dripper is dishwasher safe.\n  P3: French Press 1 litre (Immersion brewer)\n    F22: The French Press has a capacity of 1 litre.\n    F23: The French Press is an immersion brewer.\n    F24: The French Press is made by Fernhill.\n    F25: The French Press has a borosilicate glass beaker.\n    F26: The French Press beaker sits in a stainless steel frame.\n    F27: The French Press makes about 4 mugs.\n    F28: The French Press has a four-layer mesh filter.\n    F29: All parts of the French Press come apart for cleaning.\n    F30: The French Press beaker is replaceable.\n  P4: Cold Brew Jar 1.5 litre (Immersion brewer)\n    F31: The Cold Brew Jar has a capacity of 1.5 litre.\n    F32: The Cold Brew Jar is an immersion brewer.\n    F33: The Cold Brew Jar is made by Fernhill.\n    F34: The Cold Brew Jar is a glass jar.\n    F35: The Cold Brew Jar has a fine stainless steel filter basket.\n    F36: The Cold Brew Jar filter basket holds up to 150 g of coarse ground coffee.\n    F37: The Cold Brew Jar makes 1.5 litres of concentrate.\n    F38: The Cold Brew Jar has an airtight lid.\n    F39: The Cold Brew Jar fits in a fridge door.\n    F40: The recommended steep time for the Cold Brew Jar is 12 to 18 hours in the fridge.\n  P5: Electric Flat-Burr Grinder (Grinder) [related]\n    F41: The Electric Flat-Burr Grinder has 64 mm flat steel burrs.\n    F42: The Electric Flat-Burr Grinder has stepless adjustment.\n    F43: The Electric Flat-Burr Grinder has a single-dose design.\n    F44: The Electric Flat-Burr Grinder has retention under 0.1 g.\n    F45: The Electric Flat-Burr Grinder has a 250 W motor running at 1,400 rpm.\n    F46: The Electric Flat-Burr Grinder has bellows on top to puff out remaining grounds.\n    F47: The Electric Flat-Burr Grinder has a height of 38 cm.\n    F48: The Electric Flat-Burr Grinder is made by Fernhill.\n    F49: The Electric Flat-Burr Grinder is an electric grinder.\n  P6: Flat-Bottom Dripper, stainless steel (Dripper) [related]\n    F50: The Flat-Bottom Dripper is made of stainless steel.\n    F51: The Flat-Bottom Dripper is made by Fernhill.\n    F52: The Flat-Bottom Dripper has a brushed 18/8 stainless steel body.\n    F53: The Flat-Bottom Dripper has three small holes in a flat bed.\n    F54: The Flat-Bottom Dripper takes 185-size wave filters.\n    F55: The Flat-Bottom Dripper brews 1 to 2 cups (up to 500 ml).\n    F56: The Flat-Bottom Dripper has a double wall.\n    F57: The Flat-Bottom Dripper weighs 210 g.\n</products>\n\n<pages>\n  L1: Pour-over brewing (collection)\n  L2: Grinders (collection)\n  L3: Coffee beans (collection)\n  L4: Immersion brewers (collection)\n  L5: About Fernhill (page)\n  L6: Shipping and returns (page)\n</pages>\n\n<article>\nTitle: Coffee Grind Size Chart: The Right Grind for Pour-Over, French Press and Cold Brew\n\nThe right grind size depends on contact time: the longer coffee and water stay together, the coarser the grind should be. Turkish coffee needs a powder as fine as flour. Espresso is fine. Cone pour-over sits at medium-fine, like table salt, and flat-bottom drippers at medium. French press wants coarse grounds, like sea salt, and cold brew wants extra coarse grounds, like cracked pepper. Below you will find the full chart, how to recognise each grind by eye and by taste, and how to dial it in on a burr grinder.\n\n## The coffee grind size chart at a glance\n\n| Grind size | Looks and feels like | Brew method | Contact time |\n|---|---|---|---|\n| Extra fine | Flour or powdered sugar | Turkish coffee | Brief boil, grounds stay in the cup |\n| Fine | Fine sand, just finer than table salt | Espresso | Seconds, under pressure |\n| Medium-fine | Table salt | Cone pour-over | A few minutes, water flowing through |\n| Medium | Coarse sand | Flat-bottom drippers | A few minutes, slower flow |\n| Coarse | Sea salt flakes | French press | Several minutes, full immersion |\n| Extra coarse | Cracked black pepper | Cold brew | Overnight or longer, cold immersion |\n\nContact time drives everything in this chart. Grinding finer exposes more surface area, so water pulls flavour out faster. A brew that lasts only seconds, like espresso, needs that speed. A brew that lasts many hours, like cold brew, needs the opposite, or it will over-extract into bitterness and fill the filter with silt.\n\nGrind size also controls flow. In a dripper, finer grounds pack more tightly and slow the water down, which lengthens the brew. So one adjustment changes two things at once: how fast each particle extracts and how long the water stays in contact with the bed. Treat the chart as a starting point. Your beans, roast level and grinder will move the ideal setting a little either way.\n\n## Why a burr grinder makes the chart work\n\nA grind size chart only helps if your grinder produces particles that are mostly the same size. Blade grinders chop beans at random, leaving a mix of powder and large chunks. The powder over-extracts and turns bitter while the chunks under-extract and taste sour, so the cup is muddled whatever you aim for.\n\nBurr grinders crush beans between two cutting surfaces set at a fixed gap, which gives a far more even particle size. Consistency matters more than any single number on the dial. A uniform medium-fine grind will brew a balanced cup that you can then nudge finer or coarser. An uneven grind gives you nothing reliable to adjust.\n\nOur [Hand Grinder](P1) uses 38 mm hardened stainless steel conical burrs [F1, F3]. It has external click adjustment with 30 settings, ranging from espresso to French press [F4, F5]. Clicks make a grind repeatable: once you find the setting that works for a coffee, you can note the number and return to it exactly.\n\nThe [Electric Flat-Burr Grinder](P5) has 64 mm flat steel burrs and stepless adjustment [F41, F42]. Stepless adjustment lets you stop anywhere between two points rather than jumping a whole click, which is useful when you are fine-tuning a pour-over by small margins. It also has retention under 0.1 g [F44]. Low retention matters because stale grounds left inside a grinder end up mixed into the next dose.\n\nYou can compare both styles in our [grinders collection](L2).\n\n{{P1}}\n\n## Pour-over: medium-fine for cones, medium for flat beds\n\nPour-over is where grind size has the most visible effect, because the grind directly sets how fast water drains through the bed.\n\n### Cone drippers\n\nOur [Ceramic Cone Dripper](P2) has a single large outlet hole [F18]. Spiral ribs on its inner wall leave room for air to escape [F19]. With a wide outlet, the dripper itself does little to hold water back, so the grind and your pouring do the work of controlling flow. That is why cones suit a medium-fine grind, about the texture of table salt. It fits size 02 cone filters [F16].\n\n### Flat-bottom drippers\n\nThe [Flat-Bottom Dripper](P6) has three small holes in a flat bed [F53]. It takes 185-size wave filters and brews 1 to 2 cups, up to 500 ml [F54, F55]. Small outlets restrict flow, and a flat bed spreads the coffee in an even layer, so water naturally stays in contact longer. A slightly coarser medium grind, like coarse sand, balances that slower drainage and keeps the brew from dragging on.\n\n### A starting recipe\n\nA reliable starting point is 15 g of coffee to 250 g of water, a ratio of about 1:16 [G]. Use water just off the boil, around 92 to 96 °C [G]. For a single cup through a cone, aim for a total brew time of roughly two and a half to three and a half minutes [G]. Flat-bottom brewers usually finish a little later, at around three to four minutes [G].\n\nIf the water drains well before your target, grind finer; if it stalls well past it, grind coarser. On the Hand Grinder, a 15 g pour-over dose takes about 40 seconds to grind [F9]. Browse drippers, filters and kettles in our [pour-over brewing collection](L1).\n\n{{P2}}\n\n## French press: coarse and even\n\nOur [French Press](P3) is an immersion brewer [F23]. In immersion brewing, all of the coffee sits in all of the water for the whole brew, typically about four minutes [G]. Because contact is long and constant, the grind must be coarse, around the size of sea salt flakes, so extraction stays balanced.\n\nEvenness matters as much as coarseness here. Fines, the dust-like particles any grinder produces, extract very quickly in a long steep and push the cup towards bitterness. They are also small enough to slip past a metal filter and settle as sludge at the bottom of your mug. A good burr grinder keeps fines to a minimum.\n\nThe French Press has a four-layer mesh filter [F28]. Coarse, even grounds stay behind that mesh when you plunge, which is what keeps the cup clean. With a capacity of 1 litre, it makes about 4 mugs [F22, F27].\n\nA common starting ratio for French press is around 60 g of coffee per litre of water [G]. After the steep, break the crust, skim off the foam and plunge slowly and gently. Pressing hard churns up fines and drives them through the filter. More immersion options are in our [immersion brewers collection](L4).\n\n{{P3}}\n\n## Cold brew: extra coarse for a long steep\n\nThe recommended steep time for our [Cold Brew Jar](P4) is 12 to 18 hours in the fridge [F40]. Over a steep that long, even cold water extracts a great deal, so the grind needs to be extra coarse, like cracked black pepper. Finer grounds turn the concentrate muddy and bitter and clog the filter.\n\nUse the coarsest setting on your grinder that still gives an even result. If your grinder tops out at a French press grind, that will work, though you may want to shorten the steep slightly.\n\nThe Cold Brew Jar has a fine stainless steel filter basket that holds up to 150 g of coarse ground coffee [F35, F36]. The jar makes 1.5 litres of concentrate [F37].\n\nConcentrate recipes typically range from about 1:5 to 1:8 coffee to water by weight [G]. Stronger concentrate is usually diluted with an equal amount of water or milk, or up to twice as much, before serving [G]. Taste first, then adjust the dilution rather than the grind if the flavour is right but the strength is not.\n\n{{P4}}\n\n## Dialling in: reading your cup\n\nThe chart gets you close. Your cup tells you the rest.\n\n| What you taste | What it usually means | What to do |\n|---|---|---|\n| Sour, sharp, thin, hollow | Under-extracted | Grind finer |\n| Bitter, harsh, dry, astringent | Over-extracted | Grind coarser |\n| Sweet, balanced, lingering | In the zone | Note the setting |\n\nA few habits make dialling in faster:\n\n- **Change one thing at a time.** Keep the dose, ratio, water temperature and pouring pattern the same, and move only the grind setting.\n- **Move in small steps.** One click or a small turn on a stepless dial is often enough to shift a pour-over noticeably.\n- **Check the brew time too.** In pour-over, a fast drawdown backs up a sour taste, and a slow one backs up bitterness.\n- **Write it down.** Record the setting for each coffee and method so you can return to it.\n\nGrind fresh for every brew. Ground coffee loses its aromatics quickly, so grinding only what you need keeps each cup consistent. The Hand Grinder holds 25 g of beans [F6]. The Electric Flat-Burr Grinder has a single-dose design, with bellows on top to puff out remaining grounds [F43, F46].\n\nStart with whole beans from our [coffee beans collection](L3), set your grinder from the chart above, brew, taste and adjust. After a couple of brews with a new coffee, you will have a setting you can repeat every morning.\n</article>\n\n<general_knowledge>\nG1: A reliable starting point is 15 g of coffee to 250 g of water, a ratio of about 1:16. (numbers: 15, 250, 1, 16)\nG2: Use water just off the boil, around 92 to 96 °C. (numbers: 92, 96)\nG3: A common starting ratio for French press is around 60 g of coffee per litre of water. (numbers: 60)\nG4: Concentrate recipes typically range from about 1:5 to 1:8 coffee to water by weight. (numbers: 1, 5, 8)\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ref",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrizzN1KUSRphZUP1brY",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "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"
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":4,\"note\":\"Product claims track the cited facts closely. A few explanatory sentences draw performance conclusions from the facts, such as the mesh holding back grounds and the outlet design controlling flow, but they stay within reasonable general reasoning.\"},\"information_gain\":{\"score\":5,\"note\":\"Specific, practical content: a full chart with texture comparisons, the contact-time and flow logic, starting recipes, a taste-diagnosis table and dial-in habits.\"},\"structure\":{\"score\":5,\"note\":\"The intro answers the search immediately and the chart comes first. Sections then follow a sensible order of grinder, methods and dialling in, with clear headings and tables where they help.\"},\"fit\":{\"score\":4,\"note\":\"Expert tone suits the audience and stays on topic. Product mentions are frequent but tied to grind advice. The cold brew ratio advice clashes with the shop's own jar figures.\"},\"problems\":[{\"quote\":\"Concentrate recipes typically range from about 1:5 to 1:8 coffee to water by weight [G].\",\"problem\":\"Conflicts with the jar facts quoted just above. A 150 g basket making 1.5 litres of concentrate is about 1:10, outside the stated range. Readers using the shop's own jar get a ratio the article does not recommend.\"},{\"quote\":\"Coarse, even grounds stay behind that mesh when you plunge, which is what keeps the cup clean.\",\"problem\":\"Implies a filtration performance for the French Press that F28 does not state; F28 only says it has a four-layer mesh filter.\"},{\"quote\":\"With a wide outlet, the dripper itself does little to hold water back, so the grind and your pouring do the work of controlling flow.\",\"problem\":\"Adds a flow-behaviour characterisation of the Ceramic Cone Dripper that goes beyond F18. It is reasonable inference but not a stated fact.\"}],\"general_numbers\":[{\"ref\":\"G1\",\"accepted\":true,\"reason\":\"15 g to 250 g (about 1:16) is a widely used, standard pour-over starting ratio.\"},{\"ref\":\"G2\",\"accepted\":true,\"reason\":\"92–96 °C is the commonly cited brewing temperature range just off the boil.\"},{\"ref\":\"G3\",\"accepted\":true,\"reason\":\"About 60 g per litre is a standard, widely cited French press ratio.\"},{\"ref\":\"G4\",\"accepted\":true,\"reason\":\"1:5 to 1:8 is a commonly cited cold brew concentrate range, though practice varies.\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 6854,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1643,
+      "output_tokens_details": {
+        "thinking_tokens": 804
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

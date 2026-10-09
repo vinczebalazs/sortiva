@@ -1,0 +1,146 @@
+{
+  "recordedAt": "2026-10-09T13:12:51.507Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You review a blog article an online shop is about to publish. You did not write it. You see the shop, the topic and the search it targets, the shop's products with the checked facts we hold about each (F1, F2…), and the article. Sentences about products end with the facts they rest on in brackets; [G] marks a sentence the writer says is general knowledge.\n\nScore each from 1 to 5:\n- grounding: everything said about the shop's products is exactly what the cited facts say, with nothing added, stretched or implied. One product claim the facts do not support caps this at 2. No invented experience (\"we tested\", customer stories), statistics or studies.\n- information_gain: a shopper who searched this would learn something useful and specific, beyond generic filler they could find anywhere. Padding, repetition and vague praise lower it.\n- structure: it answers the search early, its sections follow in a sensible order, headings say what is below them, lists and tables are used where they help.\n- fit: it suits this shop, its audience and tone, stays on the topic, and does not read as an advert.\n5 is excellent, 4 good enough to publish as it is, 3 acceptable with flaws, 2 or 1 not publishable.\n\nList problems: each with the exact sentence quoted and what is wrong, most serious first. Leave the list empty if there are none.\n\nFor each general-knowledge sentence you are given (G1, G2…), answer with its reference and whether every number in it is well established and uncontroversial general knowledge that needs no source (accepted true), or not (false), with a short reason.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Hearth & Pan\nSells: cookware and kitchen tools\nAudience: home cooks\nTone: plain\nNever say: —\n</store>\n\n<topic>\nWorking title: How to clean an enamelled cast iron casserole\nSearch it targets: how to clean enamel cast iron\n</topic>\n\n<products>\n  P1: Enamelled Cast Iron Casserole, 24 cm (Casserole)\n    F1: The Enamelled Cast Iron Casserole has a 24 cm diameter and holds 4.2 litres.\n    F2: The Enamelled Cast Iron Casserole has a sand-coloured enamel interior.\n    F3: The Enamelled Cast Iron Casserole works on gas, electric, ceramic and induction hobs.\n    F4: The Enamelled Cast Iron Casserole's lid knob is stainless steel and oven safe to 250°C.\n    F5: The Enamelled Cast Iron Casserole's lid is dishwasher safe.\n  P2: Nylon Pan Scraper (Kitchen tool)\n    F6: The Nylon Pan Scraper has a corner shaped to fit the curve of a pan.\n    F7: The Nylon Pan Scraper is safe to use on enamel and non-stick surfaces.\n  P3: Silicone Pot Grips (Kitchen tool)\n    F8: The Silicone Pot Grips are heat resistant to 230°C.\n    F9: The Silicone Pot Grips are sold as a pair.\n</products>\n\n<pages>\n  L1: Casseroles and Dutch ovens (collection)\n</pages>\n\n<article>\nTitle: How to clean enamelled cast iron without damaging it\n\nTo clean enamelled cast iron, let the pot cool, soak any stuck-on food in warm soapy water, then lift it off with a soft sponge or a nylon scraper. Avoid metal scourers and abrasive powders, which scratch the glassy enamel, and never plunge a hot pot into cold water. Stubborn stains on a pale interior usually lift with a gentle simmer of water and bicarbonate of soda.\n\n## Everyday cleaning\n\nEnamel is glass fused onto iron, so it does not need seasoning the way bare cast iron does, and ordinary washing-up liquid will not harm it. What it does not like is a sudden change of temperature. Let the pot cool on the hob until you can hold the sides comfortably before adding water.\n\nOur [Enamelled Cast Iron Casserole](P1) has a 24 cm diameter and holds 4.2 litres [F1]. The casserole is dishwasher safe, pot and lid alike [F5], though a quick wash by hand keeps the enamel looking new for longer. Dry it fully before the lid goes back on, so moisture does not sit against the rim.\n\n{{P1}}\n\n## Lifting stuck-on food\n\nBurnt-on sauce is the most common problem, and patience works better than force. Fill the pot with warm water and a drop of washing-up liquid and leave it for half an hour or so. Then work the residue loose with a scraper that will not mark the surface.\n\nThe [Nylon Pan Scraper](P2) has a corner shaped to fit the curve of a pan [F6]. It is safe to use on enamel and non-stick surfaces [F7].\n\n{{P2}}\n\n## Dealing with stains on pale enamel\n\nLight-coloured enamel picks up marks from tomato, turmeric and long braises. These are stains, not damage, and they do not affect cooking. The Enamelled Cast Iron Casserole has a sand-coloured enamel interior [F2], which makes browning easy to judge and stains easy to see. To lift them, add a couple of tablespoons of bicarbonate of soda to a pot of water, bring it to a gentle simmer for a few minutes, then let it cool and wash as usual. Repeat rather than scrub harder.\n\n## What to avoid\n\n- Metal scourers, wire wool and abrasive cream cleaners.\n- Pouring cold water into a hot pot, which can crack or craze the enamel.\n- Heating the pot empty over a high flame.\n- Knocking the rim against the sink, which is where chips usually start.\n\nThe Enamelled Cast Iron Casserole works on gas, electric, ceramic and induction hobs [F3]. On any hob, bring it up to temperature gradually over a medium heat.\n\n## Handling and storing\n\nCast iron holds heat for a long time, and so do its handles. The [Silicone Pot Grips](P3) are heat resistant to 230°C [F8] and are sold as a pair [F9]. The casserole's lid knob is stainless steel and oven safe to 250°C [F4]. Store the pot with the lid slightly ajar, or with a folded cloth between lid and rim, so air can circulate. Browse our [casseroles and Dutch ovens](L1).\n\n{{P3}}\n\n</article>\n\n<general_knowledge>\n—\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ref",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrioGx4xT6hhz4QWSvu6",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQSjAoKEAgSGAI4AUIIdGhpbmtpbmcSDDscQa9Xf0D6Ha2q4BoM8roB1qBpJFXIPbWfIjBNmx8UG17MDSkyGMEaXx4pEaW3hEY+yZcQGpQKBDwm6m0jODQ+dE+3FAGIeBbmbXwqqQl2AoUq5Rmee7Q73kOvRes6XoKGjVCYf7AXrtExL5Atap1sRqj6qaQs27FDWHuC6u+x+zn4X1PXvDqUuzn1Iuh+e+mEGs0xG14qXVbcCRlK2b8MUHQMfm1yKmnNOaUG6S/rpl1OaREOl8EhP0j7K+HlZqrMHZedxfI6OEvacb9QI2gRQTuuCCatU9nPIVNM3tQXOvXSGytSuqZBPBe4XZEiY6WLWlcEpP3m3S/ahL4JEqFDZmV2G2AovV2bmpJG/Y26u4btCvp/z3HddMINqqX89GJIlq8bvdG+fb/aJttUpVLqizlXSkBXw4pkNsdlME7NnoxIINWl2pNVvQ41bB6Jwzml3XzTm4F4HzFUxOwXXL+0IHuGK69XKwcgV9mjoemUzAlu2KrbxIwZKzEstHizixgV6KuTx5z7/c2WuNiqO2PB9QdrK5pDEip3Cv+nONvge7JK1sfKfZ6WPDwzfWKcnxTzjPfjS6LtKwlWRoX52AETwK1QDA3R71UJCJED5jKuIKEb/JV5UC83CKNVbcslS6g3D1Y4evyQO6ceQ1PXEWb/WlDBSR1zQiqJz1Ak/7FPpXrYvbKO6jp5qHHjmoOk3L4pUvQ3Tl6lvTJqpQQsSC7lQkXhNET07pYi5r7ZD/4PmTUDkh2zi7j1t9evkyYBB/M1a7DG5kuPqlYth+R5cQvf84UBF8jXFvg/1DTXhLAoZZDgd2f65R8KosgUO3c1itKs+k70xMJNQKHavrXUs6+zVED7MacuJVLxNfOBgWyGrx5PAD6Mkd/gdiwIQ8IPD3CxZiEJrrzWd3g9qULt/g1536KGnElQuYoptxOB/IKZsdjgeNt2Ld0ddrXxKaZUp8ogvIcxL3eNQXPxoejPO0k4LQZbx061pQyLgmHmtVCAVF3M1Gx/lISotG3jeETPajCapSDKxCUS2bhRaQFcDyUV05Y5FQoDuRliUf+0KhP5PBTSTyZPrje6cEjdbJwcUbfxNUHG59ZyPsAAMkKXPqZvhuSOsdILTxHT51QRG5rCRVstv2Hqp6rEXORTdYrpyLIrMr0ibcLR7S1srTxlmsWOUwNxK3ACxOS66YD3xyrs+MZn1dTeHO2/awfhOTElIENrL8O9nRECvpGEvBoezSMQ8BsocliNiJ5nKi9pi/vPHFj93PF6qjJ07nMIcmdq+UmLXeOngxumm2Bz+I9VbOW1Jpmnxc+iFingSF75FMqHUn9XXLUO3GqfR8CKzSUJM8345HWNz1BK5+ILo4S6dHQvx6jupii4SJlOcJtR8W0uL2fXAlJev69C+CfqHfAsszqWTGDxL+MTKrt1jghidUX2rNuG0e+klWwAuLnX5qWbc0bQ1syeCfX23hx3U6Ww54QGd8y9AFJeDlxS3OHZ2FXDCP1JawjZSLPu8pmssvlhVxjKdhshjR5SjWnuRwjOMn5B0VwVZldsLrgtRk01ZaampZxg0XZzNALjuoQsbF+rTrw+wQLai3tqTPGaE/+v01K0uW66LKrpFkWCJ73QDJjUdHFWiateVuxYva4ka9J/RhB+z7lraZ2wZe/dt35THwdJk+yPjuWfLrO0ctKCGahxP7xeD2Gk0xgB"
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":2,\"note\":\"The fact covers only the lid as dishwasher safe, but the article extends this to the pot itself. Another sentence adds a benefit about browning that its cited fact does not state.\"},\"information_gain\":{\"score\":4,\"note\":\"Practical, specific advice: soak first, use the bicarbonate simmer for stains, avoid thermal shock and know where chips start. A few product spec sentences are padding.\"},\"structure\":{\"score\":4,\"note\":\"Answers the search in the opening paragraph. Sections follow a logical order with clear headings, and the avoid list suits a list format.\"},\"fit\":{\"score\":3,\"note\":\"Plain tone suits home cooks. Several product spec insertions (capacity, hob compatibility, knob oven temperature) are off-topic for cleaning and read as advert filler.\"},\"problems\":[{\"quote\":\"The casserole is dishwasher safe, pot and lid alike [F5], though a quick wash by hand keeps the enamel looking new for longer.\",\"problem\":\"F5 says only the lid is dishwasher safe. Claiming the pot is too is unsupported and could lead customers to damage it.\"},{\"quote\":\"The Enamelled Cast Iron Casserole has a sand-coloured enamel interior [F2], which makes browning easy to judge and stains easy to see.\",\"problem\":\"F2 states only the interior colour. The benefit about judging browning is an added product claim not in the facts.\"},{\"quote\":\"Our [Enamelled Cast Iron Casserole](P1) has a 24 cm diameter and holds 4.2 litres [F1].\",\"problem\":\"The size and capacity are irrelevant to cleaning, so this is product promotion padding.\"},{\"quote\":\"The casserole's lid knob is stainless steel and oven safe to 250°C [F4].\",\"problem\":\"Off-topic for a cleaning or storing section. It is inserted spec rather than useful advice.\"},{\"quote\":\"The Enamelled Cast Iron Casserole works on gas, electric, ceramic and induction hobs [F3].\",\"problem\":\"Hob compatibility is unrelated to cleaning, which makes this read like an advert.\"}],\"general_numbers\":[]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 2901,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1036,
+      "output_tokens_details": {
+        "thinking_tokens": 313
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

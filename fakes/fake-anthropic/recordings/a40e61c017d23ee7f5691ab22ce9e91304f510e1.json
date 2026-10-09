@@ -1,0 +1,111 @@
+{
+  "recordedAt": "2026-10-09T13:15:49.257Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You plan one blog article for an online shop. You see the shop, the topic and the search it should answer, the shop's products with the checked facts we hold about each (F1, F2…), and the shop's own pages that may be linked.\n\nPlan an article that genuinely answers the search for a shopper, the way a knowledgeable shop assistant would: useful first, products where they truly help. Decide:\n- title: the headline, in English, containing the search or a natural form of it;\n- angle: one sentence on what the reader will come away knowing;\n- sections: four to seven, each with a heading, what it covers, and the facts it will draw on;\n- products: the products worth showing as a card (one to four), by reference;\n- links: pages worth linking from the text, by reference (products P…, pages L…).\n\nThe article may only say about a product what its facts say, so build the product parts around facts that matter for this search. General advice that is not about our products is allowed. At least 6 different facts should be used across the article.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Fernhill Coffee Supply\nSells: Fernhill Coffee Supply sells home coffee brewing equipment and coffee beans. The range covers pour-over gear (ceramic and stainless steel drippers, size 02 paper filters, stovetop and electric gooseneck kettles, and a brew scale with timer), immersion brewers such as a French press and a cold brew jar, and manual and electric burr grinders. It also sells single-origin coffee beans from Fernhill Roastery in 250 g and 1 kg bags, whole bean or ground.\nAudience: People who brew coffee at home, especially by pour-over or immersion, and who want to grind, weigh and control water temperature themselves. Some products, such as the single-dose flat-burr grinder and the temperature-hold kettle, suit buyers who care about precise brewing.\nTone: expert\nNever say: —\n</store>\n\n<topic>\nWorking title: The Best Water Temperature for Pour-Over Coffee\nSearch it targets: coffee water temperature\n</topic>\n\n<products>\n  P1: Gooseneck Pour-Over Kettle 900 ml (Kettle)\n    F1: The Fernhill Gooseneck Pour-Over Kettle has a capacity of 900 ml.\n    F2: The Fernhill Gooseneck Pour-Over Kettle has a recommended fill of 600 ml.\n    F3: The Fernhill Gooseneck Pour-Over Kettle has a spout opening of 8 mm.\n    F4: The Fernhill Gooseneck Pour-Over Kettle has a built-in thermometer reading 40–100 °C.\n    F5: The Fernhill Gooseneck Pour-Over Kettle is made of stainless steel.\n    F6: The Fernhill Gooseneck Pour-Over Kettle works on gas, electric and induction hobs.\n    F7: The Gooseneck Pour-Over Kettle is made by Fernhill.\n  P2: Electric Gooseneck Kettle with Temperature Hold (Kettle)\n    F8: The Electric Gooseneck Kettle with Temperature Hold lets you set the temperature in 1 °C steps from 60 to 100 °C.\n    F9: The Electric Gooseneck Kettle with Temperature Hold base holds the set temperature for 60 minutes.\n    F10: The Electric Gooseneck Kettle with Temperature Hold has an 800 ml capacity.\n    F11: The Electric Gooseneck Kettle with Temperature Hold has a 1200 W heating element.\n    F12: The Electric Gooseneck Kettle with Temperature Hold has a UK plug.\n    F13: The Electric Gooseneck Kettle with Temperature Hold has a 75 cm base cable.\n    F14: The Electric Gooseneck Kettle with Temperature Hold has a gooseneck spout.\n    F15: The Electric Gooseneck Kettle with Temperature Hold is made by Fernhill.\n  P3: Ethiopia Guji, natural process (Coffee beans)\n    F16: Ethiopia Guji, natural process is coffee beans.\n    F17: Ethiopia Guji, natural process is sold by Fernhill Roastery.\n    F18: Ethiopia Guji, natural process is available in 250 g and 1 kg sizes.\n    F19: Ethiopia Guji, natural process is available as whole bean, filter grind, or espresso grind.\n    F20: Ethiopia Guji, natural process is a single origin coffee.\n    F21: Ethiopia Guji, natural process is grown at 1,900–2,100 m in the Guji zone.\n    F22: Ethiopia Guji, natural process is grown by smallholders delivering to the Hambela washing station.\n    F23: Ethiopia Guji, natural process is made from heirloom varieties.\n    F24: Ethiopia Guji, natural process is natural processed and dried on raised beds for 21 days.\n    F25: Ethiopia Guji, natural process is a light roast.\n    F26: Ethiopia Guji, natural process has tasting notes of blueberry, dark chocolate and jasmine.\n  P4: Colombia Huila, washed (Coffee beans)\n    F27: The Colombia Huila coffee is washed-process.\n    F28: The Colombia Huila product is coffee beans.\n    F29: The Colombia Huila coffee is from Fernhill Roastery.\n    F30: The Colombia Huila coffee comes in 250 g and 1 kg sizes.\n    F31: The Colombia Huila coffee is single origin.\n    F32: The Colombia Huila coffee comes from the Pitalito municipality in Huila.\n    F33: The Colombia Huila coffee is grown at 1,600–1,800 m.\n    F34: The Colombia Huila coffee is made from Caturra and Castillo varieties.\n    F35: The Colombia Huila coffee is fully washed and fermented 36 hours.\n    F36: The Colombia Huila coffee is a medium roast.\n    F37: The Colombia Huila coffee is suited to both filter and espresso.\n    F38: The Colombia Huila coffee has tasting notes of red apple, caramel, and milk chocolate.\n</products>\n\n<pages>\n  L1: Pour-over brewing (collection)\n  L2: Grinders (collection)\n  L3: Coffee beans (collection)\n  L4: Immersion brewers (collection)\n  L5: About Fernhill (page)\n  L6: Shipping and returns (page)\n</pages>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "angle": {
+              "type": "string"
+            },
+            "sections": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "heading": {
+                    "type": "string"
+                  },
+                  "covers": {
+                    "type": "string"
+                  },
+                  "facts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "heading",
+                  "covers",
+                  "facts"
+                ]
+              }
+            },
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "links": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "angle",
+            "sections",
+            "products",
+            "links"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011Cfrj2JiqGuWACmPqipzyG",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"title\":\"Coffee Water Temperature: The Best Range for Pour-Over and How to Hit It\",\"angle\":\"The reader will learn the ideal water temperature range for pour-over (roughly 90–96 °C), why temperature changes extraction, how to adjust it for light versus medium roasts, and practical ways to measure and hold it at home.\",\"sections\":[{\"heading\":\"The short answer: what temperature should coffee water be?\",\"covers\":\"The widely recommended 90–96 °C window for filter coffee, why boiling water is not automatically wrong but often too aggressive for some coffees, and why water well below 90 °C tends to taste sour and thin. General brewing advice, no product claims.\",\"facts\":[]},{\"heading\":\"Why temperature matters: extraction in plain terms\",\"covers\":\"How hotter water dissolves flavour compounds faster, how temperature interacts with grind size and contact time, and how to recognise under- and over-extraction in the cup. Notes that temperature is one lever alongside grind and ratio, with a link to grinders.\",\"facts\":[]},{\"heading\":\"Matching temperature to roast level\",\"covers\":\"Lighter, denser roasts generally benefit from hotter water (93–96 °C) to extract fully; medium roasts often taste sweeter and rounder a few degrees lower (around 90–93 °C). Uses the two Fernhill single origins as worked examples.\",\"facts\":[\"F25\",\"F26\",\"F24\",\"F21\",\"F36\",\"F38\",\"F35\",\"F37\"]},{\"heading\":\"Measuring temperature with a stovetop gooseneck\",\"covers\":\"Using a stovetop kettle with a built-in thermometer: heat, watch the dial, pour once it drops into range. Covers capacity versus recommended fill for a pour-over session, the narrow spout for controlled pouring, and hob compatibility.\",\"facts\":[\"F4\",\"F1\",\"F2\",\"F3\",\"F5\",\"F6\"]},{\"heading\":\"Setting and holding an exact temperature with an electric kettle\",\"covers\":\"Why dialling a precise number helps when dialling in a coffee or testing a degree or two either side; the hold function for multiple brews or slow mornings; practical specs like capacity, power and spout.\",\"facts\":[\"F8\",\"F9\",\"F10\",\"F11\",\"F14\",\"F12\"]},{\"heading\":\"A simple temperature routine to try this week\",\"covers\":\"Step-by-step: brew the same coffee at 92 °C and 96 °C, keep grind and ratio constant, taste side by side, then adjust. Tips such as pre-heating the dripper and cup, and accounting for heat loss during long pours. Links to pour-over gear and coffee beans.\",\"facts\":[\"F19\",\"F18\"]}],\"products\":[\"P2\",\"P1\",\"P3\",\"P4\"],\"links\":[\"P1\",\"P2\",\"P3\",\"P4\",\"L1\",\"L2\",\"L3\"]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 2671,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 918,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

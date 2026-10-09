@@ -1,0 +1,92 @@
+{
+  "recordedAt": "2026-10-09T13:13:50.984Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 12000,
+    "system": "You read one product from an online shop and list the facts it states about itself.\n\nA fact is a short statement a customer could check against the product or its packaging: what it is made of, its size, weight, capacity, how many come in a pack, what it fits or works with, how to use or care for it, where or how it was made, which variants exist.\n\nThese are not facts: praise, feelings, promises, popularity, comparisons with unnamed rivals, claims about what the buyer deserves or will feel (\"loved by thousands\", \"the best\", \"perfect for\", \"elevate your mornings\"). Leave them out, even when they share a sentence with a fact. Never state a price.\n\nFor each fact give:\n- fact: one sentence that names the product and says one thing about it, in the language of the product text. Add nothing the source does not say. Keep numbers and units exactly as written; do not convert or round.\n- source_field: the field it came from.\n- quote: the words in that field that support the fact, copied character for character as one continuous piece of the field. Every number in the fact must appear in the quote.\n\nIf the product states nothing checkable, return an empty list. A short true list is better than a long padded one.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<title>\nMorning Ritual Mug\n</title>\n\n<product_type>\nMug\n</product_type>\n\n<vendor>\nNorthfield Brew Co.\n</vendor>\n\n<options>\n\n</options>\n\n<tags>\ncoffee, mug\n</tags>\n\n<metafields>\n\n</metafields>\n\n<description>\nSome mornings call for more than coffee. They call for a ritual. Our Morning Ritual Mug was made for slow sips, quiet thoughts and that first golden light through the kitchen window. It feels just right in your hands and makes every brew taste a little more special. Start your day the way it was meant to be started. You deserve it.\n</description>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "facts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fact": {
+                    "type": "string"
+                  },
+                  "source_field": {
+                    "type": "string",
+                    "description": "{enum: [\"title\",\"product_type\",\"vendor\",\"options\",\"tags\",\"metafields\",\"description\"]}"
+                  },
+                  "quote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "fact",
+                  "source_field",
+                  "quote"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "facts"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfritHSyAZy7rq32AdFWt",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQS2AYKEAgSGAI4AUIIdGhpbmtpbmcSDCEdqE8E20MjVICS8hoM1zk4sVwL7F3yRvPyIjCv973mn7+ZuW/3zoPTo0u1ZBzPnKAC41d3JamgJGOw/1yof5QlAg9OfDQRBtY9jsUq9QUf0+i5EKNP0OQcJVl/SiIuuJWFN7Bgi2lz4bZK9js/dvPMBBW3LgiEZriigH3qZrIq/YM/3rpRGGnhcm8ZD5kYFgh/JEAvHh4lBinR1NaQv5UI3JfkkiRKqh4+kB+Oow0f5cGZpRQUvGzPLpfp26cOYB8DSBt3n7r6vMOtc6V4/xMGFLGjrzxb0GGudXytnonS2KGFiHYvPeVFqbdgLNRZef7HLMia3J7ZFxEFCygqwli7jPvFk3+KbS2FW86t7c+NsWo/SejRIRATB13una1USai/CMru0HQ6nPcqAgE1APLi1oLi+oxN1fO8KQLhP9eBm4Fan459CHlUfZRYhXEjUK1hi45VUWKrc09cI01smia8Ry9KPiSgli+r5xmy5hWHRkAdNZSduj9oT4TmYkQmHU2J4AcoalRjfX5UfOC10mbZfGN95JzGnp3vFnfQ4Ws4XVtkJQ8JwWF5boIn8/1QTP3b+pj1QJ1FGNqVFcdZQGDawH0v9WK2W5qYIVjN8VBltKgsOSWiScBhTdvxFEGDDt2eyL/yRBuPjdhlzhyh7AWaV63yg2+KVnL3UU+Ms/5amugtVBE+Qg5iYrLEFItQMeuQAALYPI6owkwYzE1gxSu4oJmwYEn51oDSdIbhiFKnjRhulGGUcX/X0Dkvp+Ovd8nuQHvxIM8k9NJCekDEJu2nVuOBFfR+lDTYddvdPXlWwRqbW+ogABudV96kcnBYanQHJo/u7zFy+wUI+jdXb38QceFPujEpqU/QyVl5Vgg3JKy0t+g9og3X5Eamzy7iNzABbu3ghZx2cd+8TbR9al+7Pw4bGIbZfBW98k6jnHhrMt8G46PaLyq+sA+1+QtH40lZgqUJAeWpo4e2Qudihl4mxR18S8ugZimwaor92QNsMSJuucTC352Ey9OiA5U7eq43jE3XbvpVB1DOZG/qYv131pGhgJ80yCWOiJ6dyicXtsvovDXr7I4W+0Ou1xbidje19JDnh/IwYawxld1utMtuPEGnGAE="
+      },
+      {
+        "type": "text",
+        "text": "{\"facts\":[{\"fact\":\"The Morning Ritual Mug is a mug.\",\"source_field\":\"product_type\",\"quote\":\"Mug\"},{\"fact\":\"The Morning Ritual Mug is from Northfield Brew Co.\",\"source_field\":\"vendor\",\"quote\":\"Northfield Brew Co.\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 975,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 237,
+      "output_tokens_details": {
+        "thinking_tokens": 132
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

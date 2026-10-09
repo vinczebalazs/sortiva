@@ -1,0 +1,146 @@
+{
+  "recordedAt": "2026-10-09T13:13:49.005Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You review a blog article an online shop is about to publish. You did not write it. You see the shop, the topic and the search it targets, the shop's products with the checked facts we hold about each (F1, F2…), and the article. Sentences about products end with the facts they rest on in brackets; [G] marks a sentence the writer says is general knowledge.\n\nScore each from 1 to 5:\n- grounding: everything said about the shop's products is exactly what the cited facts say, with nothing added, stretched or implied. One product claim the facts do not support caps this at 2. No invented experience (\"we tested\", customer stories), statistics or studies.\n- information_gain: a shopper who searched this would learn something useful and specific, beyond generic filler they could find anywhere. Padding, repetition and vague praise lower it.\n- structure: it answers the search early, its sections follow in a sensible order, headings say what is below them, lists and tables are used where they help.\n- fit: it suits this shop, its audience and tone, stays on the topic, and does not read as an advert.\n5 is excellent, 4 good enough to publish as it is, 3 acceptable with flaws, 2 or 1 not publishable.\n\nList problems: each with the exact sentence quoted and what is wrong, most serious first. Leave the list empty if there are none.\n\nFor each general-knowledge sentence you are given (G1, G2…), answer with its reference and whether every number in it is well established and uncontroversial general knowledge that needs no source (accepted true), or not (false), with a short reason.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Harbour Roast\nSells: coffee beans and brewing kit\nAudience: home coffee drinkers\nTone: relaxed\nNever say: —\n</store>\n\n<topic>\nWorking title: How to make cold brew coffee at home\nSearch it targets: how to make cold brew\n</topic>\n\n<products>\n  P1: Cold Brew Jug, 1.5 litre (Cold brew maker)\n    F1: The Cold Brew Jug holds 1.5 litres.\n    F2: The Cold Brew Jug has a removable fine-mesh steel filter.\n    F3: The Cold Brew Jug is made of borosilicate glass.\n    F4: The Cold Brew Jug has an airtight lid.\n    F5: The Cold Brew Jug fits in a standard fridge door.\n  P2: Colombia Huila (Coffee beans)\n    F6: The Colombia Huila has tasting notes of caramel, red apple and cocoa.\n    F7: The Colombia Huila is a washed coffee.\n    F8: The Colombia Huila is roasted for filter brewing.\n</products>\n\n<pages>\n  L1: Cold brew (collection)\n</pages>\n\n<article>\nTitle: How to make cold brew coffee at home\n\nTo make cold brew, stir coarsely ground coffee into cold water, cover it, leave it in the fridge for 12 to 24 hours, then strain out the grounds [G]. The result is a smooth, rounded concentrate you can dilute with water or milk and keep in the fridge for several days.\n\n## What cold brew is, and why people like it\n\nCold brew is not iced coffee. Iced coffee is brewed hot and then chilled; cold brew never meets hot water at all. Because cold water extracts more slowly and draws out fewer of the harsher compounds, the result tastes softer and sweeter, without the sharp brightness of a hot filter. Cold brew is around 67% less acidic than hot coffee, which is why so many people with sensitive stomachs switch to it [G]. It also keeps well, so one batch can cover several mornings.\n\n## Choosing and grinding the coffee\n\nUse a coarse grind, similar to what you would use for a French press. A fine grind over a long steep turns muddy and bitter, and it clogs filters. Grind just before brewing if you can.\n\nBeans with chocolate, caramel and fruit notes tend to shine as cold brew, while very light, floral coffees can taste flat. The [Colombia Huila](P2) has tasting notes of caramel, red apple and cocoa [F6]. It is a washed coffee [F7], roasted for filter brewing [F8].\n\n{{P2}}\n\n## Brewing it\n\n- Add the ground coffee to the jug or a large jar.\n- Pour over cold, filtered water and stir until all the grounds are wet.\n- Cover and leave in the fridge for 12 to 24 hours [G].\n- Strain, then dilute to taste, starting with roughly equal parts concentrate and water or milk.\n\nUse more coffee than you would for the same amount of hot coffee, since you are making a concentrate. If it tastes thin, add more coffee next time rather than steeping longer.\n\nThe [Cold Brew Jug](P1) holds 1.5 litres [F1]. It has a removable fine-mesh steel filter [F2], so you can lift the grounds out instead of straining through a cloth. It is made of borosilicate glass [F3].\n\n{{P1}}\n\n## Storing and serving\n\nOnce the grounds are out, keep the concentrate covered in the fridge so it does not pick up other smells, and use it within several days for the best flavour. The Cold Brew Jug has an airtight lid [F4] and fits in a standard fridge door [F5]. Serve it over ice, top it with milk, or add a splash of concentrate to hot water when you want a quick warm cup. For more ways to brew, browse our [cold brew equipment](L1).\n\n</article>\n\n<general_knowledge>\nG1: To make cold brew, stir coarsely ground coffee into cold water, cover it, leave it in the fridge for 12 to 24 hours, then strain out the grounds. (numbers: 12, 24)\nG2: Cold brew is around 67% less acidic than hot coffee, which is why so many people with sensitive stomachs switch to it. (numbers: 67)\nG3: Cover and leave in the fridge for 12 to 24 hours. (numbers: 12, 24)\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ref",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrisJ2QfjxsdzAEwbMHy",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQSgQsKEAgSGAI4AUIIdGhpbmtpbmcSDNYLJgcTZWzN+i6t6RoMFrgP1v72dbk3EqzyIjDDQSSlZhbFpheD8NkjoPJV+zcmMOW03UCJV4A/kpeF42H89CAu/itGAkRP7qiUtN0qngqk/e/hHGPZJgG94OGqjtD0XzUOyOwPdOSRwjnHzUSiKOdjHt+AXb5Ad/CBHm89BeKtLAG6/KocmV8+vv4j/0SzhOywQQQct6sv41Z/CM0Ilfm+I1RDctMaCnMCAiftz89HTeg836lP3cHlw4XVTuRnTfYRA5yNjml+GLWD0U3tQL2IWQchjtgl41DeocODB5hEbYUauPoG2tSNbV7e1qs+6DWektkSJ022I3PW9KG94Y0WxvdddyXAzcBV52EBzRv8b20IQaQAvehOZdf6On2qpFryAFjzH3G3jvfsjA4pHqSQSeUY+n2mirc8FMbNzO1lSViTnwd3iqPL9EI3AtVqUL49RgwYnPMLAWWlI13HTbqn5CR1srkg6cNJYlkzJap4CHqqrfY93IiAerjT9sBhNFTooWhjmPTSLjvEbfzc/yHHRwXyBHUEfoXk5I4QGkh2Y7UR7vSeA9CUgWw61p9X/9GTy/w6gQLiBTtopWX61CuD5rDWMCoNoSg1+aQj1AR18v2WDo5ZmiRslOYVe/yuQUrafayUIdW154bYt+19gbw9E044uufdAARvS1OaxBQR+njve8lL5XfmXmhKqWTfN5BX4ARc5zo4vmXARIaUvhB/Bvv+S14TO+DBgqAsXRwxO61bt5HWIEpQFuz+MLUduFiksqkdQJWbtm+8ZEdShH0wwfMlFgnq0UYA2DEKk4VBrHVDdLKoK1GFDwQN7+p2Bu71Ob/4XjqOr4liA3lgIij78jH8GLMcddC4LiY0vn5LcwfN7dnwesKxBOU3xw+ZZRnvSO2DhHFBjjdi9/doeFOeT2MEdy3vMOlOZBAqsEs+Yo5R/UIEg/pS60X+RrvSnRCjlRKsRHBqe1bjk54+ZdkGvcIIAMnFkHCFB8ULWe2Uuu+3cgkWGh1wmNz7QfHYaqhHrSDGa0WreKVPR2uI+NPMY74E85ZuG36RntiZA/SCF0EIJIdzdCgFMaGAZBgwFG00qK/ekhS5hOODb9Jcbndk7GfX5u15VsgvigAV0F95tqOcMwS3r+i/POqDCLOfUmNUO4ewpeO/eq42c2JZMRYy0KRY0nasxcpRqn/8zmcz77fdgY0z5ytAHqOMKb4t6HpQPNFwuuudf7C9CGCpSNyhdgaLS/YfuAhsWJ9koYvOWEAsExWxwJm4EESBi2LtQjil2DWMh3wLzeNLcyPs/UxrT9mWFEisdwqW9MB5bxxrK3PhUMqTPMbtY6XmbAVr4/sFlK75PCTySz6phwxado0ve6m8KlJ96zwwHj0oUVNbTZPS0WNbay+qjih+pca4OPj+PXL/EBBKCHlCaGCZkyE01L3iKDG6QCxIQnGOwogxBv0GTgNqWm+bGGb+76vrDXXfaL71xHwLFS6JUt1Ss3tPAnj/OeJOl1bJQMxmsnsPeWZFYRQJ2fkJVU560MFncn/rLwMgEtHc3tehab9Qi9B/q2eWMTB1C7ZDyIXVtZtwWH/NcDdZbJZJ1K7eODvM/3Ro9WsoVdS4dGh4olgaeRuU9FeV/CVlvJDC/bOeJ9aoYK/uJMsQDUOC6sf8oWceAk7v99qxKepYpS/bU/fPxjW2zt3UYOayE+/858Egfxgv2s7XESY2TZzGIHLgI4TXufakzdQUW74QR2V+LS2HmO7AuWUNzRmv4SlbJltEV3LhxsupdHgC4GcbDeDn0l6NHBAuJLM/3gmheZxr+XQsX0mZ6XwHVk76C6ETkcGDEuUBulkXZ04nMXHhaYOLLhgB"
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":3,\"note\":\"Every product sentence matches its cited facts exactly. The article does carry one unsourced statistic, the 67% acidity figure, and the claim built on it about sensitive stomachs.\"},\"information_gain\":{\"score\":4,\"note\":\"There are useful practical tips: use a coarse grind, add more coffee rather than steeping longer, and start diluting at roughly 1:1. The article never gives a coffee-to-water ratio for brewing, which is the detail a shopper most needs.\"},\"structure\":{\"score\":5,\"note\":\"It answers the search in the first sentence. Sections run in a logical order from what cold brew is, to choosing coffee, brewing and storing, and the steps are a clear list.\"},\"fit\":{\"score\":4,\"note\":\"The tone is relaxed and helpful and the products are worked in naturally. The closing link text 'For more ways to brew' doesn't quite match a cold brew collection page.\"},\"problems\":[{\"quote\":\"Cold brew is around 67% less acidic than hot coffee, which is why so many people with sensitive stomachs switch to it [G].\",\"problem\":\"The 67% figure comes from manufacturer marketing and is disputed, since studies show similar or mixed acidity. It is presented as general knowledge without a source, and the health implication is unsupported.\"},{\"quote\":\"Use more coffee than you would for the same amount of hot coffee, since you are making a concentrate.\",\"problem\":\"It gives no actual coffee-to-water ratio, leaving the core how-to question only half answered.\"},{\"quote\":\"For more ways to brew, browse our [cold brew equipment](L1).\",\"problem\":\"The link text promises other brewing methods, but it points to the cold brew collection.\"}],\"general_numbers\":[{\"ref\":\"G1\",\"accepted\":true,\"reason\":\"A 12–24 hour steep is the widely cited, standard range for cold brew.\"},{\"ref\":\"G2\",\"accepted\":false,\"reason\":\"The 67% acidity figure is a marketing claim, contested by research, and needs a source.\"},{\"ref\":\"G3\",\"accepted\":true,\"reason\":\"The same standard 12–24 hour steeping range as G1.\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 2726,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1035,
+      "output_tokens_details": {
+        "thinking_tokens": 322
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

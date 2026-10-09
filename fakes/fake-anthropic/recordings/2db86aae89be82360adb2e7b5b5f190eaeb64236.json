@@ -1,0 +1,146 @@
+{
+  "recordedAt": "2026-10-09T13:13:20.730Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You review a blog article an online shop is about to publish. You did not write it. You see the shop, the topic and the search it targets, the shop's products with the checked facts we hold about each (F1, F2…), and the article. Sentences about products end with the facts they rest on in brackets; [G] marks a sentence the writer says is general knowledge.\n\nScore each from 1 to 5:\n- grounding: everything said about the shop's products is exactly what the cited facts say, with nothing added, stretched or implied. One product claim the facts do not support caps this at 2. No invented experience (\"we tested\", customer stories), statistics or studies.\n- information_gain: a shopper who searched this would learn something useful and specific, beyond generic filler they could find anywhere. Padding, repetition and vague praise lower it.\n- structure: it answers the search early, its sections follow in a sensible order, headings say what is below them, lists and tables are used where they help.\n- fit: it suits this shop, its audience and tone, stays on the topic, and does not read as an advert.\n5 is excellent, 4 good enough to publish as it is, 3 acceptable with flaws, 2 or 1 not publishable.\n\nList problems: each with the exact sentence quoted and what is wrong, most serious first. Leave the list empty if there are none.\n\nFor each general-knowledge sentence you are given (G1, G2…), answer with its reference and whether every number in it is well established and uncontroversial general knowledge that needs no source (accepted true), or not (false), with a short reason.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Brambleway Garden Shop\nSells: bulbs, seeds and garden tools\nAudience: home gardeners\nTone: friendly\nNever say: —\n</store>\n\n<topic>\nWorking title: When to plant tulip bulbs\nSearch it targets: when to plant tulip bulbs\n</topic>\n\n<products>\n  P1: Darwin Hybrid Tulip Mix (Bulbs)\n    F1: The Darwin Hybrid Tulip Mix contains 25 bulbs in red, yellow and orange.\n    F2: The Darwin Hybrid Tulip Mix bulbs measure 12 to 14 cm around.\n    F3: The Darwin Hybrid Tulip Mix flowers in April and May.\n    F4: The Darwin Hybrid Tulip Mix grows to about 55 cm tall.\n  P2: Long-Handled Bulb Planter (Garden tool)\n    F5: The Long-Handled Bulb Planter has depth markings on its cutting cylinder.\n    F6: The Long-Handled Bulb Planter has a foot plate for pushing it into the soil.\n  P3: Peat-Free Bulb Compost (Compost)\n    F7: The Peat-Free Bulb Compost contains added grit for drainage.\n    F8: The Peat-Free Bulb Compost comes in a 20 litre bag.\n</products>\n\n<pages>\n  L1: Spring bulbs (collection)\n</pages>\n\n<article>\nTitle: When to plant tulip bulbs\n\nFew flowers have a story quite like the tulip. Long before they filled garden centres every autumn, tulips were prized in the gardens of the Ottoman Empire, and later set off one of history's most famous bouts of speculation in the Netherlands. Today they are among the most widely planted spring bulbs, and there is a lot to think about before you begin.\n\n## When to plant\n\nChoosing colours is the fun part. Tulips come in almost every shade except a true blue, and mixing early and late varieties stretches the display over several weeks. Our [Darwin Hybrid Tulip Mix](P1) contains 25 bulbs in red, yellow and orange [F1]. It flowers in April and May [F3] and grows to about 55 cm tall [F4], so it suits the middle or back of a border.\n\n{{P1}}\n\n## Planting depth\n\nOnce the flowers fade, snap off the seed heads but leave the leaves to die back on their own for about six weeks, so the bulb can rebuild its energy for next year [G]. Cutting the foliage early or tying it in knots weakens the bulb. Bigger bulbs carry more stored energy and tend to give bigger flowers. The Darwin Hybrid Tulip Mix bulbs measure 12 to 14 cm around [F2].\n\n## Choosing a spot\n\nTulips like sun and hate sitting wet. In heavy clay, bulbs can rot over winter, so it is worth opening up the soil before planting or growing them in pots. The [Peat-Free Bulb Compost](P3) contains added grit for drainage [F7]. It comes in a 20 litre bag [F8].\n\n{{P3}}\n\n## Tools\n\nSquirrels dig up freshly planted bulbs, so cover pots with wire mesh until shoots appear. In borders, firming the soil well after planting leaves less scent for them to follow. Plant bulbs pointed end up, at a depth of about two to three times their own height [G]. The [Long-Handled Bulb Planter](P2) has depth markings on its cutting cylinder [F5] and a foot plate for pushing it into the soil [F6].\n\n{{P2}}\n\nTulips in pots need watering in dry spells even in winter, as rain often misses containers sheltered by walls. In borders, they can be left in the ground, although many gardeners treat them as annuals and plant fresh bulbs each year for the most reliable display.\n\n## A few final thoughts\n\nSo, when should you plant tulip bulbs? The best time is late autumn, in October or November, once the soil has turned cold [G]. Planting later than daffodils and other spring bulbs reduces the risk of tulip fire, a fungal disease that thrives in warm, damp soil. If you miss that window, bulbs planted into December will usually still flower, just a little later. Browse all our [spring bulbs](L1).\n\n</article>\n\n<general_knowledge>\n—\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ref",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfriqaPMdt9zDiYUWtSXq",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQSxggKEAgSGAI4AUIIdGhpbmtpbmcSDPHUBGOF28C2H0xadBoMBzEcAGmto/znX4kaIjCACYinF529zLFa1X0JfUpzFRW5VyYt0iPcM2FNjqXmWuSxl95Jj2tcVd4L5C1eJ7Eq4wcLlo9pM4WDRS6RWFglLoK3LmLoRuvi0UzQe8OslQ93u0u/KHRGidpNlEXyeQKsJTeH9pc6Q7Zv+Ey1tJlC+Rvvw2ZPJjk0mrqc7L75beiWrdBiomr1KwIRCV/3BSi36kf5b7Vx/qi23RxAG/E17CcRWc1pB0C5e8JA9byyi1OB/nXtqVc/RyAId8znAdDi7+tONmeTpdeC4CL49HyLDiY+qjOgnRxLFmr9NV/iTBA04d5JEZgl5YYmvyvYzSRRGYBgFnzcjqYqt3qpshLSS4p4uRbGTpxHVz7a6bL31Ze7sgNa23VrTuIr1nKjTk++jDIP+1vZzDWwHPNSNNTOPKNdVuGd38UOlPBTtuJRdegNFn8lZT+GE43hrZlf/aj2O6I5N8WEeo13v5cxkqr4Z+bAFxngbbEsxFhJntVqmD04cHsFNNuxrIyDyxGfFGHAxugcqrw2hHbdliuKJhf+BqxQ+8iYGtOPPCkWugVFWy/lMSAZcNKOG0ORstuwiH0+pcnccFXo7LY4kx+YAdquGDDvmGiULIEKZvxcZ9/6Ddr84gf+CtP+aatLjljHLliY9VMPiOawOC68rBNfEJM1dtZhBoZS/dGao96xWf3Bd0k4kexwTPowz33aebwrbXhOwH1sesz9sRe500IYdO9z3aETaz7J9N6rxhOG0Gyd5LmMTPr99q1HyP8uieF1sjBqTnQPTDZzSAD7ApIOp3yoxpwHag/PaL6Jw99b2QLDobq9jFd8gR0Y5Asd9dwD9OKYDi3vFuc2ac+OhEltxNTv8lMmYYTYJ9zJxUEqm4tkxus0bf4emLxb4047uXbkl3dB28HS3/3nWJPxgclIC5NUMq7tTMwRNTeKd1sGtDXRpIpIKBRgf444/aS4OWOPzqmjj8lcjYg69aZrcrZC/31hHJ2PoFl/kl7R3/WlJ+6yphWaSKvC6940553//qLRCwu48aST5XCtDZMHTrFpWmeEG2n4QgpOoj57lCYQGlUm5SetUt5AABlbPPRO9lSzaFzGnPmOmBeXRH4cajXKWuvuyj2xWGz6evb7O8NbkDgc/l/vgP4WHw3d0yWAb6fdXdo0DLUvVu2kkBfc69D1eIkHBt2gM1/PRCb2MPHB07zuvfeeUnHCFXvcx2Nvklx6xR2JA4PyiPZC5y6fKziU733yZLsunUG2t21y6mVYbsRLhey6Kcao5+IGqURJGYQzk0j9/Opcr60e8jX8SqF8SiB6q0OvntVANKVYY1SDLKLlsb58LPnK1MHxycuV8vGp3st+komnTEey8Rl1sDfZOYyypKCh+P6khRd7jg3YoIMa5Jg9wop0ixgB"
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":4,\"note\":\"Every product sentence matches its cited facts. The only addition is a mild inference that a 55 cm plant suits the middle or back of a border.\"},\"information_gain\":{\"score\":3,\"note\":\"There is useful specific advice: plant in October–November in cold soil, plant late to avoid tulip fire, plant at two to three times bulb height, leave foliage to die back, deal with squirrels and water pots. It is diluted by a history intro and some off-topic material.\"},\"structure\":{\"score\":1,\"note\":\"The search question is only answered in the final section. Headings do not match their content: 'When to plant' covers colours, 'Planting depth' covers aftercare and 'Tools' covers squirrels. The section order is jumbled.\"},\"fit\":{\"score\":3,\"note\":\"The tone is friendly and suits home gardeners, and the product mentions are mostly relevant. The history intro and the drift into aftercare pull the piece away from the timing question.\"},\"problems\":[{\"quote\":\"So, when should you plant tulip bulbs? The best time is late autumn, in October or November, once the soil has turned cold [G].\",\"problem\":\"The direct answer to the search is buried in the last section instead of appearing near the top.\"},{\"quote\":\"## When to plant\",\"problem\":\"The heading promises timing, but the section is about choosing colours and the Darwin mix. It says nothing about when to plant.\"},{\"quote\":\"## Planting depth\",\"problem\":\"The heading promises depth, but the section covers aftercare: deadheading and letting the foliage die back. Depth advice actually sits under 'Tools'.\"},{\"quote\":\"## Tools\",\"problem\":\"The section opens with squirrel protection and ends with watering pots and leaving bulbs in borders. The heading does not describe what is below it.\"},{\"quote\":\"Few flowers have a story quite like the tulip. Long before they filled garden centres every autumn, tulips were prized in the gardens of the Ottoman Empire, and later set off one of history's most famous bouts of speculation in the Netherlands.\",\"problem\":\"The history intro is filler that delays the answer the searcher wants.\"},{\"quote\":\"It flowers in April and May [F3] and grows to about 55 cm tall [F4], so it suits the middle or back of a border.\",\"problem\":\"The border-position advice is an inference the facts do not state. It is minor.\"}],\"general_numbers\":[]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 2709,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 992,
+      "output_tokens_details": {
+        "thinking_tokens": 211
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

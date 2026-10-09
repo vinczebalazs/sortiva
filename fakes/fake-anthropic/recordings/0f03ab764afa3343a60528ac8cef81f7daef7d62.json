@@ -1,0 +1,146 @@
+{
+  "recordedAt": "2026-10-09T13:15:21.742Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "Egy webáruház blogcikkét bírálod, amelyet a bolt hamarosan közzétesz. Nem te írtad. Látod a boltot, a témát és a keresést, amelyre szól, a bolt termékeit az általunk ellenőrzött tényekkel (F1, F2…), és a cikket. A termékekről szóló mondatok végén zárójelben állnak a tények, amelyekre épülnek; a [G] olyan mondatot jelöl, amelyet az író általános tudásnak mond.\n\nPontozd 1-től 5-ig:\n- grounding: minden, amit a cikk a bolt termékeiről mond, pontosan az, amit a hivatkozott tények mondanak, semmi hozzáadás, túlzás vagy sugallat. Egyetlen, a tényekkel alá nem támasztott termékállítás legfeljebb 2 pontot enged. Nincs kitalált tapasztalat („kipróbáltuk”, vásárlói történetek), statisztika vagy kutatás.\n- information_gain: aki ezt kereste, hasznosat és konkrétat tud meg belőle, nem csak bárhol olvasható általánosságokat. A töltelék, az ismétlés és a homályos dicséret rontja.\n- structure: korán válaszol a keresésre, a szakaszok értelmes sorrendben követik egymást, a címek megmondják, mi van alattuk, a listák és táblázatok ott vannak, ahol segítenek.\n- fit: illik ehhez a bolthoz, a közönségéhez és a hangneméhez, a témánál marad, és nem hat reklámnak.\nAz 5 kiváló, a 4 ebben a formában közzétehető, a 3 elfogadható, de hibás, a 2 és az 1 nem közzétehető.\n\nSorold fel a hibákat: mindegyiknél szó szerint idézd a mondatot, és írd le, mi a baj, a legsúlyosabbal kezdve. Ha nincs hiba, hagyd üresen a listát.\n\nMinden megadott általános tudású mondatnál (G1, G2…) add meg a hivatkozását, és mondd meg, hogy minden benne szereplő szám jól megalapozott, vitathatatlan, forrást nem igénylő általános tudás-e (accepted true), vagy nem (false), röviden indokolva.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Teaház a Sarkon\nSells: szálas teák és teáskellékek\nAudience: teakedvelők\nTone: meleg\nNever say: —\n</store>\n\n<topic>\nWorking title: Hogyan főzzünk szálas fekete teát?\nSearch it targets: szálas tea főzése\n</topic>\n\n<products>\n  P1: Boroszilikát üveg teáskanna (Teáskanna)\n    F1: Az üveg teáskanna 800 ml-es.\n    F2: Az üveg teáskanna hőálló boroszilikát üvegből készül.\n    F3: Az üveg teáskannához kivehető rozsdamentes acél szűrőbetét tartozik.\n    F4: Az üveg teáskanna mosogatógépben mosható.\n  P2: Assam fekete tea (Fekete tea)\n    F5: Az Assam fekete tea az indiai Asszám államból származik.\n    F6: Az Assam fekete tea ajánlott áztatási ideje 3–4 perc 95–100 °C-os vízben.\n    F7: Az Assam fekete tea tejjel is fogyasztható.\n  P3: Rozsdamentes teaszűrő kosár (Teaszűrő)\n    F8: A rozsdamentes teaszűrő kosár a legtöbb bögrébe és csészébe beleillik.\n    F9: A rozsdamentes teaszűrő kosár finom szövésű rozsdamentes acélhálóból készül.\n</products>\n\n<pages>\n  L1: Fekete teák (collection)\n  L2: Szálas tea kezdőknek (article)\n</pages>\n\n<article>\nTitle: Szálas fekete tea főzése: így lesz testes, de nem kesernyés\n\nSzálas fekete teához forrásban lévő vagy épp csak visszahűlt vizet használj, csészénként egy púpozott teáskanál levelet tegyél bele, 3–5 percig áztasd, majd vedd ki a leveleket a vízből [G]. Ha tovább áztatod, a tea fanyar és kesernyés lesz; ha erősebbet szeretnél, inkább több levelet tegyél bele, és ne az időt nyújtsd.\n\n## Miért más a szálas tea, mint a filteres?\n\nA filteres teák nagy része apróra tört levélből készül, amely gyorsan és erősen ázik ki. A szálas tea egész vagy nagyobb darabokra tört levelekből áll, amelyeknek idő és hely kell ahhoz, hogy kinyíljanak. Ezért a szálas tea íze gazdagabb és rétegzettebb, és jobban a saját ízlésedhez igazíthatod, cserébe egy kicsit több figyelmet kér.\n\n## A víz és az áztatási idő\n\nA fekete teát forró vízzel kell készíteni, mert a langyosabb víz nem oldja ki rendesen az ízanyagokat. A kemény, vízkőben gazdag csapvíz tompítja az ízt, és hártyát hagy a tea tetején, ezért ha teheted, használj szűrt vizet. Az időt mérd, ne becsüld: egy-két perc is lehet a különbség a kellemes és a keserű csésze között.\n\nAz [Assam fekete tea](P2) az indiai Asszám államból származik [F5]. Ajánlott áztatási ideje 3–4 perc 95–100 °C-os vízben [F6]. Tejjel is fogyasztható [F7]. Az erős fekete teák mellé a tej hagyományos társ, főleg reggel.\n\n{{P2}}\n\n## Kannában vagy csészében?\n\nHa többen isztok, vagy egymás után több csészével innál, kannában érdemes főzni. Az [üveg teáskanna](P1) 800 ml-es [F1], hőálló boroszilikát üvegből készül [F2], és kivehető rozsdamentes acél szűrőbetét tartozik hozzá [F3]. Az üveg teáskanna belseje hónapokig tartó napi használat után sem barnul be, és a szűrőbetét a legapróbb levéltörmeléket sem engedi át [F2, F3]. A szűrőbetétet az áztatási idő végén egyszerűen kiemeled, így a tea nem ázik tovább. Mosogatógépben mosható [F4].\n\n{{P1}}\n\nEgyetlen csészéhez elég egy szűrőkosár. A [rozsdamentes teaszűrő kosár](P3) a legtöbb bögrébe és csészébe beleillik [F8], és finom szövésű rozsdamentes acélhálóból készül [F9]. Szoros teatojás helyett érdemes tágas szűrőt választani, mert a leveleknek hely kell a kinyíláshoz.\n\n## Tárolás\n\nA szálas teát fénytől, nedvességtől és erős szagoktól védve, jól záródó dobozban tárold. A fekete tea tovább megőrzi az ízét, mint a zöld, de nyitott zacskóban néhány hónap alatt így is fakóbbá válik. Szálas teáinkat a [fekete teák](L1) között, a kezdő lépéseket pedig a [szálas tea útmutatónkban](L2) találod.\n\n</article>\n\n<general_knowledge>\nG1: Szálas fekete teához forrásban lévő vagy épp csak visszahűlt vizet használj, csészénként egy púpozott teáskanál levelet tegyél bele, 3–5 percig áztasd, majd vedd ki a leveleket a vízből. (numbers: 3, 5)\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ref",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrizC2CbL2CMEgxpZBrN",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQSkQgKEAgSGAI4AUIIdGhpbmtpbmcSDIS8pvFWesl87+fUoRoMxfVhZhoMtnziLGW8IjAOhjYVO3uCr5l+tS52m/jvNYyNHlwFL4XNAEIQmI46OsAIb2h11lr1t0bZgGZRWH0qrgdrrkr5Baf5u29Ej5IPtiq5Lxrk5P7aSHvv8XCMdRPiViMYT3eboTG+JXnlIVGlVpi+b4yLUUX1ydxM5QonXpMctprAXztU6Kk/xJvKoijsh1hl1sGXVfZkPwhQUPTBMlZBMk1GsqnSU1IGUGHqXPcg39L9+S45tZ7p7iK6GhU+tmOiG4174ckfKWh+6SO8dWD/N8eKIFTpr9MbOO2BGv4WLtMJqzb1O4tYbDZEiuT0VYQQNOpdh0sj+D15yytdqSwQ17cSjYqi+3q8WTmD7rKGs8QCv8Ydxudf2vkRVFpE3/YGE5ShMjoWykaS0gkW/N7KS+b/pzGk2E5JP3Th63V7bmNQN2XqbOj0+iROOalWX5C3y5N47aSQryc2t+e6egWbMqwm/4q7cCADJegPgP8o6pjSiV48ACCO0pemIAXbye+GfJME5N0I1P2lXoxoKiIy+nWAgMHfgV69QCFK9kHQ90+tahZ6sf0cMgR4s0YBNmgrzCoBHEij/NENvzRoXu5DF9qOyTaPZNU7qn1gnQF8hqHRDmUjMNcu8k3Mx9fUafkQrLRxXQ3zN37rnjhyn3rMQ0ENBYMnI5olfQAN9BNtowV8vMyuHIhjYqPeC2eYBx8LYyg+ueVxB1SeynVMtrRlgbcjREUlHAFev2yp5ETeqX99+t7JXdJWlqUyCCXtTGMjVI04zJYMZnOKqW8Vnwa8qvcNhd7+K0fqTVaCqvCly+bZ1IrysLA9nWRAGBj7v8VgHwjPAIMY+0ZGqaYqevlTarjNnPRiGBu3iN4azeBB2Cvte39/W0HQRTubVKF4CDq+STGtGAGzuFu+/jpl7MKPQB35qiICJJQ9FgkCBTspBVr0ThEozTBoTadnjgZWYqenaDGte4+SUSeJhE2mlCf3Eu8TEh0s+VxNf7p/8y85Rn1cc+F2aWoaJqd3xvasfPibATDDIdA0vc2Gfq2l79bd3nNGZ2PxfEI5xXiqZa4nsno9Lo47taeaTZFS3l0sL5E5xuFL6wEsx+D16hB2Tv1S3B6zm6Mc+vIhkc1yvAi8BU40YPMpyZYqv/aJ8M9zw9Uj4p4BrEtc2KqoD4TJzZCsXjToKK7Don9aDBpAqku1OFncZ/7dXRFPhTwxkRpACwRuURNlZj4a5cSZmp0/5gYoTr2UyUpu/o1K0nIsIFdUAq4ya7hyvEi5XaT6vzIWKhbbvk8v81gGp8o5dFiUs2dCevw+AAhGkOUhKa448oa4kvcB3fCUAvYGKfbpNVUYAQ=="
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":2,\"note\":\"Szinte minden termékállítás pontos, de az üveg teáskannáról szóló egyik mondat két, a tényekkel alá nem támasztott állítást tartalmaz: hogy nem barnul be, és hogy a szűrő mindent visszatart. Ezek az F2 és F3 hivatkozással vannak megjelölve, de egyik tény sem mondja őket.\"},\"information_gain\":{\"score\":4,\"note\":\"Konkrét gyakorlati tanácsokat ad: az arányt, az időt, hogy több levéllel erősítsünk, ne hosszabb áztatással, a vízkeménységet, a tágas szűrőt és a tárolást. Az Assamról szóló bekezdés kissé száraz felsorolás.\"},\"structure\":{\"score\":5,\"note\":\"Az első bekezdés azonnal válaszol a keresésre. A szakaszok logikus sorrendben jönnek: különbség, víz és idő, eszközök, tárolás. A címek beszédesek.\"},\"fit\":{\"score\":4,\"note\":\"Meleg, tegező hangnem, illik egy teázóhoz, és a témánál marad. A termékbemutatók kicsit katalógusszerűek, de nem tolakodóak.\"},\"problems\":[{\"quote\":\"Az üveg teáskanna belseje hónapokig tartó napi használat után sem barnul be, és a szűrőbetét a legapróbb levéltörmeléket sem engedi át [F2, F3].\",\"problem\":\"Kitalált, tartós használatra vonatkozó tapasztalat és túlzó szűrési ígéret. Az F2 csak az anyagot, az F3 csak a kivehető acél szűrőbetét meglétét mondja ki.\"},{\"quote\":\"Az [Assam fekete tea](P2) az indiai Asszám államból származik [F5]. Ajánlott áztatási ideje 3–4 perc 95–100 °C-os vízben [F6]. Tejjel is fogyasztható [F7].\",\"problem\":\"Szaggatott, adatlapszerű felsorolás, amely kilóg a meleg hangnemből. Ráadásul nem köti össze a 3–4 perces ajánlást a korábban említett 3–5 perccel.\"}],\"general_numbers\":[{\"ref\":\"G1\",\"accepted\":true,\"reason\":\"A fekete tea 3–5 perces áztatási ideje széles körben elfogadott, általános ajánlás.\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 3492,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1058,
+      "output_tokens_details": {
+        "thinking_tokens": 213
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}
