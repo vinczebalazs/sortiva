@@ -1,0 +1,146 @@
+{
+  "recordedAt": "2026-10-09T14:20:43.773Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You review a blog article an online shop is about to publish. You did not write it. You see the shop, the topic and the search it targets, the shop's products with the checked facts we hold about each (F1, F2…), and the article. Sentences about products end with the facts they rest on in brackets; [G] marks a sentence the writer says is general knowledge.\n\nScore each from 1 to 5:\n- grounding: everything said about the shop's products is exactly what the cited facts say, with nothing added, stretched or implied. One product claim the facts do not support caps this at 2. No invented experience (\"we tested\", customer stories), statistics or studies.\n- information_gain: a shopper who searched this would learn something useful and specific, beyond generic filler they could find anywhere. Padding, repetition and vague praise lower it.\n- structure: it answers the search early, its sections follow in a sensible order, headings say what is below them, lists and tables are used where they help.\n- fit: it suits this shop, its audience and tone, stays on the topic, and does not read as an advert.\n5 is excellent, 4 good enough to publish as it is, 3 acceptable with flaws, 2 or 1 not publishable.\n\nList problems: each with the exact sentence quoted and what is wrong, most serious first. Leave the list empty if there are none.\n\nFor each general-knowledge sentence you are given (G1, G2…), answer with its reference and whether every number in it is well established and uncontroversial general knowledge that needs no source (accepted true), or not (false), with a short reason.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Northpaw Dog Supply\nSells: Northpaw Dog Supply sells walking gear for dogs, including a front-clip no-pull harness, a 6 ft biothane leash, a 30 ft training long line and a rechargeable LED collar light. It also sells beds and blankets, namely a memory foam dog bed with a removable cover and a machine-washable fleece dog blanket.\nAudience: Dog owners who walk and train their dogs, including those dealing with leash pulling or walking in low light, and who want a comfortable bed or blanket for their dog at home.\nTone: friendly\nNever say: —\n</store>\n\n<topic>\nWorking title: Walking Your Dog at Night: Safety Tips for Dark Evenings\nSearch it targets: how to make dog visible at night\n</topic>\n\n<products>\n  P1: Rechargeable LED Collar Light (Light)\n    F1: The Rechargeable LED Collar Light clips onto any collar or harness.\n    F2: The Rechargeable LED Collar Light has three modes: steady, slow flash, and fast flash.\n    F3: The Rechargeable LED Collar Light is visible from about 1,000 ft.\n    F4: The Rechargeable LED Collar Light charges via USB-C.\n    F5: The Rechargeable LED Collar Light runs for 6 hours on steady mode.\n    F6: The Rechargeable LED Collar Light is rated IPX7 waterproof.\n    F7: The Rechargeable LED Collar Light is made by Northpaw.\n    F8: The Rechargeable LED Collar Light is rechargeable.\n  P2: Front-Clip No-Pull Harness (Harness)\n    F9: The Front-Clip No-Pull Harness is a harness.\n    F10: The Front-Clip No-Pull Harness is made by Northpaw.\n    F11: The Front-Clip No-Pull Harness is available in sizes XS, S, M, L, and XL.\n    F12: The Front-Clip No-Pull Harness has a leash ring on the chest that turns the dog sideways when it pulls.\n    F13: The Front-Clip No-Pull Harness has four adjustment points.\n    F14: The Front-Clip No-Pull Harness has a padded neoprene chest plate.\n    F15: The Front-Clip No-Pull Harness has reflective stitching.\n    F16: The Front-Clip No-Pull Harness fits a chest girth of 13–42 in across sizes XS to XL.\n</products>\n\n<pages>\n  L1: Walking gear (collection)\n  L2: Beds and blankets (collection)\n  L3: How to choose a dog harness (article)\n  L4: Dog leash length guide: 4 ft, 6 ft or long line? (article)\n  L5: Orthopedic dog beds explained (article)\n  L6: Harness size guide (page)\n</pages>\n\n<article>\nTitle: How to Make Your Dog Visible at Night: Safety Tips for Dark Evening Walks\n\nThe best way to make your dog visible at night is to layer up. Put an active light on their collar or harness so they glow from every angle. Add reflective gear that bounces headlights back to drivers. Keep your dog close and under control on a short leash, and make sure you are easy to spot too. Here's how to put that kit together so your dark evening walks feel calm and safe.\n\n## Why dogs disappear in the dark\n\nDogs are surprisingly hard to see once the sun goes down. Many have dark or brindled coats that blend into tarmac, hedges and shadows. They are also low to the ground, below the line where drivers, cyclists and runners naturally look. Car headlights are aimed at the road ahead, so a dog at the edge of a lane or crossing a driveway is often only noticed at the last moment.\n\nIt helps to understand the two ways of being seen:\n\n- **Being lit (active light):** a light source on your dog that shines on its own. It can be seen whether or not anyone is pointing a light at it, and from any direction.\n- **Being reflective (passive):** materials that only shine when light hits them, such as headlights or a torch beam. They work well on roads, but on a dark path with no light around they don't help much.\n\nThe safest setup uses both. A light makes your dog visible all the time, and reflective gear gives an extra boost when a car or bike comes along.\n\n## Light them up: using a clip-on LED light\n\nAn active light is the single most effective step you can take, because it doesn't depend on anyone else's light source. It also helps *you* keep track of your dog when they wander a little ahead or sniff around in the dark.\n\nOur [Rechargeable LED Collar Light](P1) clips onto any collar or harness [F1]. It can be seen from a long way off [F3].\n\n{{P1}}\n\n### Where to attach it\n\nAs a general rule, attach a light where it sits high and isn't hidden by fur or a jacket. The top of the collar or the back of a harness tends to be visible from the sides and from above. If your dog has a long, fluffy coat, check that the light isn't buried after a good shake.\n\n### Steady or flashing?\n\nThe collar light has three modes: steady, slow flash and fast flash [F2]. As general guidance, a steady light can make it easier to follow your dog's movements on a quiet path or in a park. A flashing light tends to stand out more against streetlights, shop windows and traffic, so many owners switch to a flashing mode near roads.\n\n### Battery, charging and wet weather\n\nA light is only useful if it's actually on, so it's worth thinking about power before you leave the house. The collar light is rechargeable and charges via USB-C [F8, F4]. It runs for 6 hours on steady mode [F5]. It is also rated IPX7 waterproof [F6]. Charging any rechargeable light at the same time each day is an easy habit that keeps it ready for the evening walk.\n\n## Add reflective gear for headlight visibility\n\nReflective materials work by bouncing light straight back towards its source. When a car's headlights hit a reflective strip, the driver sees a bright flash right where your dog is. That makes reflective gear a great backup layer: if a light runs out or gets knocked off, you still have something working for you near traffic.\n\nOur [Front-Clip No-Pull Harness](P2) is a harness with reflective stitching [F9, F15]. Reflective details on a harness, collar or leash add up, so it's worth looking for them across all of your dog's walking kit. You can browse everything in our [walking gear collection](L1).\n\nKeep in mind that reflective gear is passive. On an unlit footpath with no traffic, it won't do much on its own, which is why pairing it with a light is the way to go.\n\n## Keep control when visibility is low\n\nBeing seen is only half the job. At night, a dog that suddenly lunges at a fox, a cat or another dog can end up in the road before a driver has time to react. Good control matters even more when everyone's view is limited.\n\n### How a front-clip harness helps\n\nThe Front-Clip No-Pull Harness has a leash ring on the chest that turns the dog sideways when it pulls [F12]. It also has a padded neoprene chest plate [F14]. If you're weighing up different styles, our guide on [how to choose a dog harness](L3) walks through the options.\n\n{{P2}}\n\n### Get the fit right\n\nA harness that slips or twists won't give you the control you need, so take a few minutes to get the fit right. The Front-Clip No-Pull Harness has four adjustment points [F13]. It comes in sizes XS, S, M, L and XL, fitting a chest girth of 13–42 in across the range [F11, F16]. Measure your dog's chest at the widest point and check our [harness size guide](L6) before choosing a size.\n\nAs a general check, you should be able to slide a couple of fingers under the straps, and the harness shouldn't rub behind the front legs or slide around when your dog moves.\n\n### Stick to a standard-length leash near roads\n\nLong lines are brilliant for recall training in open fields, but they're not a good fit for dark streets. A long trailing line is hard to see, easy to trip over and gives your dog room to reach the road before you can react. Near traffic, a standard-length leash keeps your dog close enough to guide. Our [dog leash length guide](L4) explains when each length makes sense.\n\n## Make yourself visible too\n\nYour dog is attached to you, so if drivers can see you, they're more likely to notice your dog as well. A few simple habits make a big difference:\n\n- **Carry a headlamp or torch.** It lights up the ground ahead, helps you spot hazards (and anything your dog shouldn't eat), and makes you visible to others.\n- **Wear bright or reflective clothing.** A reflective vest, armband or jacket with reflective panels helps drivers pick you out in their headlights.\n- **Walk facing traffic where there's no pavement.** You'll see oncoming cars sooner and can step in with your dog on the side away from the road.\n- **Choose well-lit routes when you can.** Streetlit roads and busy paths are easier for everyone than dark country lanes.\n\n## A quick night-walk checklist\n\nBefore you head out on a dark evening, run through this quick list:\n\n1. **Charge the light.** The collar light charges via USB-C, so plug it in during the day [F4].\n2. **Clip it on.** The collar light clips onto your dog's collar or harness, so attach it and switch it on before you leave [F1].\n3. **Check the harness and reflective gear.** Make sure the harness fits snugly and its reflective stitching isn't covered by a coat or jacket [F15].\n4. **Use a short leash.** Save the long line for daytime training in open spaces.\n5. **Choose a well-lit route.** Stick to lit streets and familiar paths where you can.\n6. **Carry a torch and wear something bright.** Make sure drivers can see you as clearly as your dog.\n\nWith a light, a bit of reflective gear and a well-fitted harness, dark evenings don't have to cut your walks short. Set up the kit once, make charging part of your routine, and you and your dog can enjoy those winter strolls with a lot more confidence.\n</article>\n\n<general_knowledge>\n—\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ref",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfroyXcDxt6rawASskTni",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQS/AwKEAgSGAI4AUIIdGhpbmtpbmcSDCo1bZNkLclGlgh9YhoMlDxptNQnV4BTNBk/IjAR2FsVlmRDMqBwr5pQYXGgpbcduEASvCvIcJFdsUCYXrTpIQ/SjmRS4Igp3BzlLHUqmQxzqKuoXmB4avd01JvN/se/sFOi4NHYG0qwAiJIZzlTe2O8reMp3qCUAIRPa1bMSLTcmfk0yq8OlIng1nFOWG/YV7uGXjpR65jUf1E6VeV0VUvHechYqlHPwQPEHNyr04GS0zcVf2xoRXr9rfhuKVzhZeKJiNnhSjwFKD4gwK1vb3Z13XQM9b7cFxJ422fTGxQdJi1KI9rMqzZzZ8HOKBnvSXAfX1u7IRV4MJQmDIyOyZLFntRfb3luHt8++qZUDcsq0Q4KAliCy2Une00IExbfU9KdeQkgSG8UtmK386ls6fx4c50VEALek8hha8iLnc5/ydvVDsfWX0/plasZZSxdkIfoLy9dk0La/bd+9Z2IV1dyw6hDz3Nj5a55NklgJj3OB6smJPvJg5ZV9f/5yyGiyaFtTGXoUQtSZqDI2qQRRUjrzDq01VWif1RrNCs9pN/a60001hZMmDhj/t8jMES2eNxys/dAfQGswdrjkPXhEU8kqrWs0Pn6L4iGZ9FA/xYos/6NuUHvKjm02AEVfEEJKJnnVVLTJiIt3zoW3tNuvfiq//8wzA396uokLPLQ7oJ2lU6h4iOqBCsXFERNrEx/IppTSmwSf0CfdXlAqVz/xCQpYk8QiUTkMCSgsR6OZraL6SFoLABMn0lTnjmkYYGP2Z5G1ojW1Vzm6w6QsWWUYJpW/NmC8DIjRL2FtldC149UASNA56vBacDSMibzR/t7wwT+WxsPjsltIUg8M3tV9lLNRBM/R4XRAwaztUEn0wnWVok1lQdEVo7ppMYLz+5j8mrqxM84wLrVCAjnSZE13PUeX3Y/2YK8UgUusHeakmTBj3CyElcsjalULTTDA90U/y1E82EIPmJKD7mb5rvjrts+xOSDWPl/M6++Eub0OERw5XHxteJSs+ZPZCuzh9rAZ5GtyzP+eT31CQRAZO5JQI0+KEoXsOCs7kl/ruQXnu4mqMSsem/doYH9Pw/jRsO1pg3ByctcD/F9CwggfQ7EomuxjxFF13lCaCnMuTYaKKnpL31Ely0tve+ybP+U2dyeL7LHt2qRklBtPUZo1pJ7jpVq/5GXcuPMP1bOPLf5QBdBV0Ou4fDcfNNjsGIskr0xSXTSGFcYBt0lppat8iS38TkHzFbmUz4pvn4whRXa8FE3xS0gx5Zcqz5GunrLhxbE1UxERQJgj7jPMvCMT7ufcCw2O9EUa/sxr7AtlFgs3ST65jhLmamtMX0dUNY0nXTd+JFTi1qlhJVO+p6DYKwCsg8LMe8oz//nXRi1q5JY+j2Rk9oKE+dIwe6nhp0Aiwn2pulwRL0hlWt3iMi0R0mNOoaAyP+zPGMW74m6ZaWFaK36wQgrdzYV5vnkfaJdAv1hN0wio/g16DEgjM8iDr/ILGFpwEEpyN5ARuDFf09rcYbHWWqpRAIqX8P8z/zzyQjLzAyzRwhCVU87Mz1VU+NEsKAkw8yDsCgdSgrmrUZyt0iZ2rvaMY/21KzNoqb8SNa6bHUM1qhgEkmhoAu1pLZeVsHGL7VfRaogV3oWqasnHy72pP3kywIIjxQjp1RYhPYZfAXeOXnTl4OeyM/gt0/vZSnYs/oLsazHUO+a//3Fd/ytgvvphtGbBuR8O+qO1jPEJmUr0EbQzRjJKKsIAdSmISgv+ttfGXrhD22UnBMBpKgVVcnXpV0fqOSSF82/cNXrshkK5Te+Yi6Y/39QNzLpJlFnpOh/7gjiyvTxUmVaz7YdtVlDMkHYTV51QMrP6aq8a+jSD7W7vN12J9TsFvy+5Y/V9R7LP2sb8IfLowAfCnJsKZhdfItxIZAtA6Qa+3digYm60jiApxnrPSU6uIM3kGykXpHzkRggBuvvgMIGUleS9mZlJ6aTt+ckZwzHq3V5jZS+cu1rkt4CSZvi0rBTkpEGwRF2LHYTFJcL8NQrTc9+gUvAMJfKIw/lSgesA1iBLuRN6ZNxPVzP2ZlonThNSrZ6QCbEdkwHVgWDFjUtjpX7e1HffgVf1bA6ul/QxxP5nmbX77OrzuQCweyAaQ3G2ZEZl/bT6g61z/eYdcjdUWTU+rpqaQ4kal7IejQWulto+02JW/nDGDIaGAE="
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":5,\"note\":\"Every product sentence matches its cited facts. Some sentences say less than the facts allow, for example 'a long way off' instead of about 1,000 ft. The general advice is not tied to the products, and the article invents no tests, statistics or customer stories.\"},\"information_gain\":{\"score\":4,\"note\":\"It gives useful, specific guidance: active versus passive visibility, where to attach the light, steady versus flashing modes, long lines near roads, walking facing traffic, and a checklist. There is some repetition of the 'reflective is passive' point.\"},\"structure\":{\"score\":5,\"note\":\"The answer comes in the first paragraph. Sections run in a logical order (why, light, reflective, control, yourself, checklist), headings are clear, and lists are used well.\"},\"fit\":{\"score\":4,\"note\":\"The tone is friendly and the article stays on topic for a walking-gear shop. Products are woven in naturally, though the harness fit section drifts slightly from night visibility.\"},\"problems\":[{\"quote\":\"Put an active light on their collar or harness so they glow from every angle.\",\"problem\":\"This overstates what a single clip-on light does. The dog's body or coat can block it from some directions, and the article itself later warns the light can be buried in fur.\"},{\"quote\":\"It can be seen from a long way off [F3].\",\"problem\":\"It is vague when the fact gives a concrete figure (about 1,000 ft) that would be more useful to the shopper.\"},{\"quote\":\"Keep in mind that reflective gear is passive. On an unlit footpath with no traffic, it won't do much on its own, which is why pairing it with a light is the way to go.\",\"problem\":\"This repeats the point already made in the 'two ways of being seen' section, which is mild padding.\"}],\"general_numbers\":[]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 4612,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1006,
+      "output_tokens_details": {
+        "thinking_tokens": 418
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

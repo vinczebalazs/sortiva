@@ -1,0 +1,146 @@
+{
+  "recordedAt": "2026-10-09T14:18:02.972Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You review a blog article an online shop is about to publish. You did not write it. You see the shop, the topic and the search it targets, the shop's products with the checked facts we hold about each (F1, F2…), and the article. Sentences about products end with the facts they rest on in brackets; [G] marks a sentence the writer says is general knowledge.\n\nScore each from 1 to 5:\n- grounding: everything said about the shop's products is exactly what the cited facts say, with nothing added, stretched or implied. One product claim the facts do not support caps this at 2. No invented experience (\"we tested\", customer stories), statistics or studies.\n- information_gain: a shopper who searched this would learn something useful and specific, beyond generic filler they could find anywhere. Padding, repetition and vague praise lower it.\n- structure: it answers the search early, its sections follow in a sensible order, headings say what is below them, lists and tables are used where they help.\n- fit: it suits this shop, its audience and tone, stays on the topic, and does not read as an advert.\n5 is excellent, 4 good enough to publish as it is, 3 acceptable with flaws, 2 or 1 not publishable.\n\nList problems: each with the exact sentence quoted and what is wrong, most serious first. Leave the list empty if there are none.\n\nFor each general-knowledge sentence you are given (G1, G2…), answer with its reference and whether every number in it is well established and uncontroversial general knowledge that needs no source (accepted true), or not (false), with a short reason.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Northpaw Dog Supply\nSells: Northpaw Dog Supply sells walking gear for dogs, including a front-clip no-pull harness, a 6 ft biothane leash, a 30 ft training long line and a rechargeable LED collar light. It also sells beds and blankets, namely a memory foam dog bed with a removable cover and a machine-washable fleece dog blanket.\nAudience: Dog owners who walk and train their dogs, including those dealing with leash pulling or walking in low light, and who want a comfortable bed or blanket for their dog at home.\nTone: friendly\nNever say: —\n</store>\n\n<topic>\nWorking title: How to Use a Long Line for Recall Training\nSearch it targets: long leash for recall\n</topic>\n\n<products>\n  P1: Training Long Line, 30 ft (Leash)\n    F1: The Training Long Line is 30 ft long.\n    F2: The Training Long Line is a leash.\n    F3: The Training Long Line is made by Northpaw.\n    F4: The Training Long Line is made of lightweight biothane.\n    F5: The Training Long Line is intended for recall practice.\n    F6: The Training Long Line has no handle loop.\n    F7: The Training Long Line floats in water.\n    F8: The Training Long Line has a stainless steel swivel clip.\n  P2: Front-Clip No-Pull Harness (Harness)\n    F9: The Front-Clip No-Pull Harness is a harness.\n    F10: The Front-Clip No-Pull Harness is made by Northpaw.\n    F11: The Front-Clip No-Pull Harness is available in sizes XS, S, M, L, and XL.\n    F12: The Front-Clip No-Pull Harness has a leash ring on the chest that turns the dog sideways when it pulls.\n    F13: The Front-Clip No-Pull Harness has four adjustment points.\n    F14: The Front-Clip No-Pull Harness has a padded neoprene chest plate.\n    F15: The Front-Clip No-Pull Harness has reflective stitching.\n    F16: The Front-Clip No-Pull Harness fits a chest girth of 13–42 in across sizes XS to XL.\n  P3: Biothane Leash, 6 ft (Leash) [related]\n    F17: The Biothane Leash is 6 ft long.\n    F18: The Biothane Leash is made of coated webbing that does not absorb water or smell.\n    F19: The Biothane Leash is 5/8 in wide.\n    F20: The Biothane Leash has a brass snap hook.\n    F21: The Biothane Leash can be wiped clean.\n    F22: The Biothane Leash has a breaking strength of 600 lb.\n    F23: The Biothane Leash is made by Northpaw.\n</products>\n\n<pages>\n  L1: Walking gear (collection)\n  L2: Beds and blankets (collection)\n  L3: How to choose a dog harness (article)\n  L4: Dog leash length guide: 4 ft, 6 ft or long line? (article)\n  L5: Orthopedic dog beds explained (article)\n  L6: Harness size guide (page)\n</pages>\n\n<article>\nTitle: Long Leash for Recall: How to Use a Long Line to Train a Reliable Come\n\nThe best way to use a long leash for recall is as a safety net, not a tow rope. Clip it to a well-fitted harness and let your dog explore at a distance. Call once in a happy voice, then reward generously every time they come back. With a long line attached, a missed recall never turns into a runaway, so your dog keeps practising getting it right. Below, we cover what to look for in a long line, how to attach it, a simple drill plan and how to handle the line safely.\n\n## Why a long leash makes recall training safer\n\nThere's a big gap between a regular leash walk and true off-leash freedom. On a short leash, your dog never gets far enough away to really practise coming back. Off leash, one exciting squirrel can undo weeks of work, and every time your dog ignores a cue and gets away with it, that habit gets a little stronger.\n\nA long line bridges that gap. Your dog gets room to sniff, wander and make choices at a distance, just like they would off leash. You can still step on or gather the line to stop a run-off, and you can gently guide them back if they don't respond. That way, the come cue keeps meaning one thing: coming back to you is always worth it.\n\nThat's the job our [Training Long Line](P1) is made for [F5]. It's a 30 feet long leash made by Northpaw and intended for recall practice [F1, F2, F3, F5].\n\n{{P1}}\n\n## What to look for in a long line for recall\n\nNot every long leash is a good recall tool. Here's what matters most:\n\n- **Length:** You want enough room to practise real distance, but not so much line that it becomes a tangled mess you can't manage.\n- **Weight:** A heavy line drags on your dog and tires your arms. Lighter is easier for both of you.\n- **Material:** Long lines spend a lot of time on grass, mud and wet ground. A material that wipes clean and doesn't get waterlogged stays pleasant to handle.\n- **Clip:** The clip is your connection to your dog, so it needs to be secure and sturdy. A swivel helps reduce twisting as your dog moves around.\n\nHere's how our Training Long Line measures up on these points [F1, F4, F6, F7, F8]:\n\n| Feature | Detail |\n|---|---|\n| Length | 30 feet [F1] |\n| Material | Lightweight biothane [F4] |\n| In water | Floats [F7] |\n| Clip | Stainless steel swivel clip [F8] |\n| Handle | No handle loop [F6] |\n\nThe missing handle loop is worth knowing about before you choose a line [F6]. Some owners like a loop to grip, while others prefer a plain line that has nothing to catch on roots or branches as it drags. Think about how you like to hold a line before you decide.\n\n## Attach it to a harness, not a collar\n\nIf your dog bolts and hits the end of a long line at speed, a collar puts all of that force on the neck. A well-fitted harness spreads the load across the chest and shoulders, which makes it the safer attachment point for long-line work.\n\nFit is everything. A good harness shouldn't rub behind the front legs, shouldn't slide around when your dog moves, and should let you slip a couple of fingers under the straps without being loose. Measure your dog's chest girth rather than guessing, and recheck the fit as your dog grows or changes shape.\n\nOur [Front-Clip No-Pull Harness](P2) comes in sizes XS, S, M, L and XL, fitting a chest girth of 13–42 in across the range [F11, F16]. It has four adjustment points and a padded neoprene chest plate [F13, F14]. For everyday walks, it also has a leash ring on the chest that turns the dog sideways when it pulls [F12].\n\nNot sure which style suits your dog? Our guide on [how to choose a dog harness](L3) walks through the options, and the [harness size guide](L6) helps you measure and pick the right size.\n\n{{P2}}\n\n## Step-by-step recall drills on a long line\n\nRecall is built in small, easy wins. Keep sessions short and fun, and move to the next step only when your dog is nailing the current one.\n\n### Step one: start close in a quiet space\n\nPick a calm spot with few distractions, like your garden or an empty field. Keep most of the line gathered up so your dog is only a short distance away. Let them wander and sniff, then call your cue once in a bright, happy voice.\n\n### Step two: reward like you mean it\n\nWhen your dog reaches you, throw a party. Use their favourite treats, a game of tug or lots of praise. Gently take hold of the harness for a second before releasing them to go play again, so coming back doesn't always mean the fun is over.\n\n### Step three: let out more line\n\nOnce your dog is coming back reliably at short range, gradually let out more line and call from further away. Over time, you can work up toward the full 30 feet of the Training Long Line [F1]. If your dog doesn't respond, avoid repeating the cue over and over. Instead, make an encouraging sound, move away from them, or gently guide them in with the line, then reward when they arrive.\n\n### Step four: add mild distractions\n\nWhen distance is going well, add small challenges: a toy lying on the grass, a person walking past at a distance, or a new location. Make each step only slightly harder than the last. If your dog struggles, go back a step and build up again.\n\n### Tips that make recall stick\n\n- **Never call your dog to something unpleasant.** If you need to clip on a leash to leave the park, give a bath or trim nails, go and get your dog instead of calling.\n- **Call once.** Repeating the cue teaches your dog that the first call is optional.\n- **End on a success.** Finish each session with an easy recall your dog gets right, so you both walk away feeling good.\n- **Keep it varied.** Mix up rewards and locations so recall stays exciting.\n\n## Handling the line safely\n\nA long line is a great tool, but it needs a little care to use safely:\n\n- **Keep slack off the ground near your feet.** Loops of line around your ankles are easy to trip over.\n- **Never wrap the line around your hands or fingers.** If your dog takes off, a wrapped line can tighten fast and cause injury.\n- **Consider gloves.** They protect your hands if the line slides through them.\n- **Let the line drag only in open, safe areas.** A trailing line can snag, and it's harder to grab in long grass or brush.\n- **Watch for tangles.** Keep an eye on the line around your dog's legs, trees, posts and other dogs, and stop to untangle before it tightens.\n\nOur Training Long Line is made of lightweight biothane and floats in water [F4, F7]. If you train near ponds or streams, it's worth knowing how your line behaves in water before your dog decides to go for a swim. Also remember that the Training Long Line has no handle loop [F6]. Hold the line itself in a relaxed grip, with any extra length gathered loosely in your other hand.\n\n## From long line back to everyday leash\n\nSo when can you start relying less on the long line? Look for consistency. Your dog should come back quickly the first time you call, at full line length, in different places and with real distractions around. When that's happening most of the time, you can try letting the line drag in a safe, open area so you can still grab it if needed. Stay patient, though. Reliable recall often takes many months of practice, and going back to the long line in new or exciting places is completely normal.\n\nEven with a great recall, a standard leash still belongs in your walking kit. Streets, busy paths and places where dogs must be leashed call for something shorter and easier to manage up close.\n\nOur [Biothane Leash](P3) is 6 feet long and made of coated webbing that does not absorb water or smell [F17, F18]. It can be wiped clean and has a breaking strength of 600 lb [F21, F22].\n\n{{P3}}\n\nWondering which length suits which situation? Our [dog leash length guide](L4) compares shorter leashes with long lines. You can also browse all our [walking gear](L1) to put together a kit for both recall training and everyday walks.\n\nWith a long line, a comfy harness and plenty of happy practice, you're giving your dog the best chance at a recall you can truly count on. Happy training!\n</article>\n\n<general_knowledge>\n—\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ref",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfromWVvBJiJP51FDvxxg",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "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"
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":3,\"note\":\"Most product sentences match their facts closely. The harness section implies the harness has a second attachment point for long-line work, which the facts do not say. The closing calls the harness \\\"comfy\\\", which goes slightly beyond the facts.\"},\"information_gain\":{\"score\":4,\"note\":\"Practical drill progression, handling safety and criteria for choosing a line are genuinely useful. Some repetition of the no-handle-loop and floating facts adds padding.\"},\"structure\":{\"score\":5,\"note\":\"Answers the search in the opening paragraph. Logical order from why, to gear, to attachment, drills, safety and weaning off. Clear headings and a helpful table.\"},\"fit\":{\"score\":4,\"note\":\"Friendly tone suited to dog owners training recall. Product mentions are mostly relevant, though the 6 ft leash section drifts slightly toward promotion.\"}, \"problems\":[{\"quote\":\"For everyday walks, it also has a leash ring on the chest that turns the dog sideways when it pulls [F12].\",\"problem\":\"\\\"Also\\\" and \\\"for everyday walks\\\" imply the harness has another ring suited to long-line work. The facts only mention a chest ring. Front-clip attachment for a long line, which can twist the dog at the end of the line, is never addressed.\"},{\"quote\":\"With a long line, a comfy harness and plenty of happy practice, you're giving your dog the best chance at a recall you can truly count on.\",\"problem\":\"\\\"Comfy\\\" is unsupported praise of the shop's harness. The facts only state a padded neoprene chest plate.\"},{\"quote\":\"Here's how our Training Long Line measures up on these points [F1, F4, F6, F7, F8]:\",\"problem\":\"It follows criteria that include \\\"wipes clean and doesn't get waterlogged\\\", implying the line meets them. The facts only say it is biothane and floats.\"},{\"quote\":\"Also remember that the Training Long Line has no handle loop [F6].\",\"problem\":\"This is the third time the missing handle loop is stated, which is repetitive padding.\"}],\"general_numbers\":[]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 5032,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1320,
+      "output_tokens_details": {
+        "thinking_tokens": 629
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

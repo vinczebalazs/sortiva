@@ -1,0 +1,146 @@
+{
+  "recordedAt": "2026-10-09T14:14:46.691Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You review a blog article an online shop is about to publish. You did not write it. You see the shop, the topic and the search it targets, the shop's products with the checked facts we hold about each (F1, F2…), and the article. Sentences about products end with the facts they rest on in brackets; [G] marks a sentence the writer says is general knowledge.\n\nScore each from 1 to 5:\n- grounding: everything said about the shop's products is exactly what the cited facts say, with nothing added, stretched or implied. One product claim the facts do not support caps this at 2. No invented experience (\"we tested\", customer stories), statistics or studies.\n- information_gain: a shopper who searched this would learn something useful and specific, beyond generic filler they could find anywhere. Padding, repetition and vague praise lower it.\n- structure: it answers the search early, its sections follow in a sensible order, headings say what is below them, lists and tables are used where they help.\n- fit: it suits this shop, its audience and tone, stays on the topic, and does not read as an advert.\n5 is excellent, 4 good enough to publish as it is, 3 acceptable with flaws, 2 or 1 not publishable.\n\nList problems: each with the exact sentence quoted and what is wrong, most serious first. Leave the list empty if there are none.\n\nFor each general-knowledge sentence you are given (G1, G2…), answer with its reference and whether every number in it is well established and uncontroversial general knowledge that needs no source (accepted true), or not (false), with a short reason.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Tidewell Candles\nSells: Tidewell Candles sells candles: scented container candles and unscented taper candles. The range includes an 8 oz sea salt soy candle hand-poured in Portland, Maine, a 12 oz cedar candle in a coconut and soy wax blend with a crackling cherry-wood wick, and a pair of 10-inch pure beeswax tapers made with beeswax from Maine apiaries.\nAudience: People shopping for home candles who care about the wax and wick, such as soy, coconut-soy or pure beeswax, hand-poured or locally sourced in Maine.\nTone: friendly\nNever say: —\n</store>\n\n<topic>\nWorking title: Soy vs Coconut-Soy vs Beeswax: Which Candle Wax Is Right for You?\nSearch it targets: soy vs beeswax candles\n</topic>\n\n<products>\n  P1: Sea Salt Soy Candle, 8 oz (Candle)\n    F1: The Sea Salt Soy Candle is 8 oz.\n    F2: The Sea Salt Soy Candle is made of 100% soy wax.\n    F3: The Sea Salt Soy Candle is poured by hand in Portland, Maine.\n    F4: The Sea Salt Soy Candle has a cotton wick.\n    F5: The Sea Salt Soy Candle's wick is lead-free.\n    F6: The Sea Salt Soy Candle has a burn time of about 45 hours.\n    F7: The Sea Salt Soy Candle comes in an 8 oz amber glass jar.\n    F8: The Sea Salt Soy Candle's jar has a tin lid.\n    F9: The Sea Salt Soy Candle has scent notes of sea salt, driftwood, and sage.\n    F10: The Sea Salt Soy Candle is made by Tidewell.\n  P2: Cedar Wood-Wick Candle, 12 oz (Candle)\n    F11: The Cedar Wood-Wick Candle is 12 oz.\n    F12: The Cedar Wood-Wick Candle is made by Tidewell.\n    F13: The Cedar Wood-Wick Candle is made with a coconut and soy wax blend.\n    F14: The Cedar Wood-Wick Candle has a cherry-wood wick that crackles as it burns.\n    F15: The Cedar Wood-Wick Candle has a burn time of about 60 hours.\n    F16: The Cedar Wood-Wick Candle comes in a 12 oz ceramic vessel.\n    F17: The Cedar Wood-Wick Candle's vessel is reusable.\n    F18: The Cedar Wood-Wick Candle's wick should be trimmed to 3 mm before each burn.\n    F19: The Cedar Wood-Wick Candle has scent notes of cedar, black pepper, and vetiver.\n  P3: Beeswax Taper Candles, pair (Taper)\n    F20: The Beeswax Taper Candles come as a pair.\n    F21: The Beeswax Taper Candles set contains two tapers that are 10 inches long.\n    F22: The Beeswax Taper Candles are made of pure beeswax from Maine apiaries.\n    F23: The Beeswax Taper Candles are unscented.\n    F24: The Beeswax Taper Candles have a standard 7/8-inch base that fits most candlesticks.\n    F25: Each Beeswax Taper Candle burns about 8 hours.\n    F26: The Beeswax Taper Candles are dripless when kept away from drafts.\n</products>\n\n<pages>\n  L1: Candles (collection)\n</pages>\n\n<article>\nTitle: Soy vs Beeswax Candles (Plus Coconut-Soy): Which Candle Wax Is Right for You?\n\nChoosing between soy and beeswax candles mostly comes down to how you like to use candles. Soy is a plant-based wax that works well in scented jar candles. Coconut-soy blends are a variation on soy and are also popular in containers. Pure beeswax is a natural wax that shines as an unscented taper on the dinner table. In short, if you want fragrance filling the room, reach for soy or coconut-soy. If you want a simple, scent-free glow at the table, beeswax is your friend. Here's how the three compare.\n\n## Soy vs beeswax at a glance\n\nAll three waxes make lovely candles, but they tend to show up in different formats and suit different moments. Here's a quick side-by-side of the three types in our range:\n\n| Wax | Typical format | Scent | In our range |\n|---|---|---|---|\n| Soy | Container and jar candles | Usually scented | [Sea Salt Soy Candle](P1), 100% soy wax [F2] |\n| Coconut-soy | Container candles | Usually scented | [Cedar Wood-Wick Candle](P2), coconut and soy wax blend [F13] |\n| Beeswax | Tapers and pillars | Often left unscented | [Beeswax Taper Candles](P3), pure beeswax from Maine apiaries [F22] |\n\nSo the real question isn't which wax is best, but what you want from your candle. Is it scent, a cozy atmosphere, or a classic candle for the table? Let's look at each one.\n\n## Soy candles: an easygoing choice for scented jars\n\nSoy wax is made from soybeans, and it's one of the most popular waxes for container candles. It's a fairly soft wax, which is why it's usually poured into a jar or tin rather than shaped into a freestanding candle. That soft, creamy texture holds fragrance nicely, so soy is a go-to for people who want a scented candle on the coffee table or bedside.\n\nOur [Sea Salt Soy Candle](P1) is made of 100% soy wax and poured by hand in Portland, Maine [F2, F3]. It has a cotton wick that is lead-free [F4, F5]. Its scent notes are sea salt, driftwood and sage [F9]. The candle comes in an 8 oz amber glass jar with a tin lid [F7, F8]. You can expect a burn time of about 45 hours [F6].\n\n{{P1}}\n\nIf you love the idea of a breezy, coastal scent in a straightforward jar, soy is an easy place to start.\n\n## Coconut-soy blends: soy with a twist\n\nCoconut-soy is a blend of coconut wax and soy wax. Candle makers blend waxes to adjust things like texture and how the candle burns, and coconut-soy has become a well-loved alternative to straight soy for container candles. Like soy, it's usually poured into a vessel and scented.\n\nOur [Cedar Wood-Wick Candle](P2) is made with a coconut and soy wax blend [F13]. Its wick is cherry wood, and it crackles as it burns [F14]. The scent notes are cedar, black pepper and vetiver [F19]. It comes in a 12 oz ceramic vessel, and that vessel is reusable [F16, F17]. The burn time is about 60 hours [F15].\n\n{{P2}}\n\nThe gentle crackle of a wood wick can make a cool evening at home feel extra cozy.\n\n## Beeswax candles: natural, unscented and made for the table\n\nBeeswax is produced by honeybees. It's a firm wax that holds its shape well, which is why it's a classic choice for tapers and pillars rather than soft jar candles. Beeswax candles are often chosen without added fragrance, so they won't compete with the smell of food on the dinner table. A pair of tapers in candlesticks is also one of the simplest ways to make an ordinary meal feel like an occasion.\n\nOur [Beeswax Taper Candles](P3) are made of pure beeswax from Maine apiaries [F22]. They are unscented [F23]. The set is a pair of tapers, each 10 inches long [F20, F21]. They have a standard 7/8-inch base that fits most candlesticks [F24]. Each taper burns about 8 hours [F25]. They are dripless when kept away from drafts [F26].\n\n{{P3}}\n\nIf your candles mostly come out for dinners, holidays or slow weekend breakfasts, beeswax tapers are a natural fit.\n\n## Burn time and care tips for each wax\n\nWhatever wax you choose, a little care helps your candle burn cleanly and evenly. A few general habits go a long way:\n\n- **Keep candles out of drafts.** Open windows, fans and air vents make flames flicker, which can cause uneven burning and dripping.\n- **Trim the wick before lighting.** A neatly trimmed wick gives a steadier, calmer flame.\n- **Let container candles melt evenly.** On the first burn, letting the melted wax reach the edges of the jar helps avoid tunnelling down the middle.\n- **Never leave a burning candle unattended,** and keep it away from anything flammable, pets and children.\n\nSome of our candles also have their own specific care notes. For the [Cedar Wood-Wick Candle](P2), trim the cherry-wood wick to 3 mm before each burn [F14, F18]. Keep the [Beeswax Taper Candles](P3) away from drafts so they stay dripless [F26].\n\nHere's how the stated burn times compare:\n\n| Candle | Wax | Burn time |\n|---|---|---|\n| Sea Salt Soy Candle, 8 oz [F1] | Soy [F2] | About 45 hours [F6] |\n| Cedar Wood-Wick Candle, 12 oz [F11] | Coconut-soy [F13] | About 60 hours [F15] |\n| Beeswax Taper Candles, pair [F20] | Beeswax [F22] | About 8 hours per taper [F25] |\n\nKeep in mind that tapers and jar candles are used differently. A jar candle tends to be lit again and again over weeks, while tapers are often lit for a single dinner or evening.\n\n## So which wax should you choose?\n\nThere's no wrong answer here, just the one that matches how you like to enjoy candles at home. Here's a simple guide:\n\n- **Choose soy** if you want a classic scented jar candle. The [Sea Salt Soy Candle](P1) has scent notes of sea salt, driftwood and sage [F9].\n- **Choose coconut-soy with a wood wick** if you want a crackling, cozy atmosphere. The [Cedar Wood-Wick Candle](P2) has a cherry-wood wick that crackles as it burns [F14]. It has a burn time of about 60 hours [F15].\n- **Choose beeswax tapers** if you want an unscented glow on the dinner table. The [Beeswax Taper Candles](P3) are unscented and have a standard 7/8-inch base that fits most candlesticks [F23, F24].\n\nCan't decide? Plenty of homes have room for more than one: a scented jar in the living room and a pair of tapers ready for dinner. Take a look at our full [Candles collection](L1) to find the wax, wick and scent that feel right for you.\n</article>\n\n<general_knowledge>\n—\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ref",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfroWzB93dWo6J1GJS1CA",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "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"
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":5,\"note\":\"Every product sentence matches its cited facts exactly, with nothing added or stretched. The general wax statements are not about the products, and there is no invented experience or statistics.\"},\"information_gain\":{\"score\":3,\"note\":\"The format and scent framing is useful, and the note on taper versus jar burn time helps. But the actual wax comparison is thin: it leaves out common differences such as hardness and burn speed, beeswax's faint honey aroma and price. Product sections are fact lists, and the closing guide repeats facts already given.\"},\"structure\":{\"score\":4,\"note\":\"The intro answers the search early, the order is logical and the tables help. The 'for each wax' care heading promises per-wax tips but mostly gives general habits.\"},\"fit\":{\"score\":4,\"note\":\"Friendly, on topic and suited to wax-conscious shoppers. The product spec paragraphs and repeated product mentions push it slightly toward catalogue copy.\"},\"problems\":[{\"quote\":\"Our [Sea Salt Soy Candle](P1) is made of 100% soy wax and poured by hand in Portland, Maine [F2, F3]. It has a cotton wick that is lead-free [F4, F5]. Its scent notes are sea salt, driftwood and sage [F9]. The candle comes in an 8 oz amber glass jar with a tin lid [F7, F8]. You can expect a burn time of about 45 hours [F6].\",\"problem\":\"This reads as a spec sheet of choppy one-fact sentences, and the P2 and P3 paragraphs are the same. It does little to show how each product illustrates the wax differences.\"},{\"quote\":\"Choose coconut-soy with a wood wick if you want a crackling, cozy atmosphere. The [Cedar Wood-Wick Candle](P2) has a cherry-wood wick that crackles as it burns [F14]. It has a burn time of about 60 hours [F15].\",\"problem\":\"The final guide repeats product facts already stated twice, which is padding rather than new guidance.\"},{\"quote\":\"Beeswax is produced by honeybees. It's a firm wax that holds its shape well, which is why it's a classic choice for tapers and pillars rather than soft jar candles.\",\"problem\":\"The soy vs beeswax comparison stays shallow. It misses widely known, useful differences such as burn rate, natural honey scent and cost, which searchers for this query typically want.\"},{\"quote\":\"## Burn time and care tips for each wax\",\"problem\":\"The heading promises tips for each wax, but most of the tips below are generic candle habits rather than wax-specific advice.\"}],\"general_numbers\":[]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 4932,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1274,
+      "output_tokens_details": {
+        "thinking_tokens": 401
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

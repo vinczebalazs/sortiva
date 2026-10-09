@@ -213,6 +213,10 @@ After the founders topped up Anthropic, every eval ran (6.99 USD).
 
 **Agent's reading.** The checks and the reviewer work as intended: what they hold, they hold for a stated reason a person can verify. What keeps the count down is that the writer, especially in Hungarian, adds small inferences beyond its facts ("the strainer's ears rest on the mug's rim" when the fact says only that it has two ears; a 60 g blend "fits" a box rated for 100 g). Two changes are for the founders to choose between or combine: (1) tell the writer plainly not to add any benefit, cause or comparison a fact does not state, in both languages, and give the Hungarian prompt an example; (2) relax the reviewer so a reasonable everyday inference is not a grounding failure. The first keeps rule 2 strict and is the agent's recommendation. Separately, the reviewer refused roast-specific brewing temperatures as common knowledge; whether that is too strict is a founder call on the 8 October rule.
 
+## 2026-10-09 — Founder: tighten the writer, not the reviewer
+
+Given the choice after checkpoint 3, Balázs chose to tell the writer never to add a benefit, cause, consequence or comparison a fact does not state (draft and repair prompts version 2, with examples in both languages; "Markdown only" added at the same time), rather than relax the reviewer. Re-measured: checkpoint 3 went from 6 to **8 of 10** articles passing the gate (all five English, three of five Hungarian); the writer eval stayed at 12 of 20, but holds for unsupported claims fell from six to three, and the new holds are mostly for filler: one-fact sentences in a row, repetition, product mentions off the topic. The version 2 articles are not graded yet. The common-knowledge question (roast-specific brewing temperatures) was not answered; the reviewer stays as it is. The writing scenarios now start from a fixed clean draft taken from a recording, so they no longer change when the prompt does.
+
 ## Spend
 
 Running total of what this build has spent on the founders' keys.
@@ -228,5 +232,6 @@ Running total of what this build has spent on the founders' keys.
 | 2026-10-08 | DataForSEO | Checkpoint 2 with version 3: monthly searches for the two rich shops, their top ten | 0.19 |
 | 2026-10-09 | Anthropic | Phase 3 recordings: articles planned, drafted, repaired and reviewed for the rich shops, and the seeded-flaw scenarios (51 calls), until the credit ran out | 4.49 |
 | 2026-10-09 | Anthropic | Evals after the top-up: 50 distillation cases, 20 judge cases, 18 writer articles (139 calls) | 6.99 |
+| 2026-10-09 | Anthropic | Writer version 2: writing scenarios re-recorded and the 20 writer-eval articles rewritten | 5.33 |
 
-**Total: 14.71 USD** (Anthropic 14.14, DataForSEO 0.57). DataForSEO balance after the top-up: 50.26 USD. Anthropic figures are computed from the token counts in the committed recordings at 4 / 20 USD per million input / output tokens; DataForSEO figures from the account balance before and after.
+**Total: 20.04 USD** (Anthropic 19.47, DataForSEO 0.57). DataForSEO balance after the top-up: 50.26 USD. Anthropic figures are computed from the token counts in the committed recordings at 4 / 20 USD per million input / output tokens; DataForSEO figures from the account balance before and after.
