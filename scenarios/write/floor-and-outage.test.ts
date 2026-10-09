@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, expect, it } from 'vitest'
 import { homeState } from '../../core/screens.ts'
 import { startPipeline, type Pipeline } from '../pipeline.ts'
-import { articlesOf } from './seed.ts'
+import { articlesOf, cleanDraft, seedDraft } from './seed.ts'
 
 let p: Pipeline
 beforeAll(async () => {
@@ -47,6 +47,8 @@ it('when the model service is down, Home says so plainly, and the next day puts 
   expect(topics).toHaveLength(1)
 
   p.anthropic.outage(false)
+  const { rows: scheduled } = await p.db.pool.query(`select target_query from topics where id = $1`, [topics[0]!.id])
+  seedDraft(p, 'hu', scheduled[0].target_query, cleanDraft('rich-hu-zold-tea'))
   const tomorrow = new Date(`${today}T12:00:00Z`)
   tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
   await p.writeToday(storeId, tomorrow.toISOString().slice(0, 10))

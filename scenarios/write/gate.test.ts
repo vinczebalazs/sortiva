@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { loadPack } from '../../core/write/pack.ts'
 import { startPipeline, type Pipeline } from '../pipeline.ts'
-import { answerOf, articlesOf, isDraftFor, isJudgeFor, isRepairFor, recordedDraftIn, resetDay, seedDraft, withText } from './seed.ts'
+import { answerOf, articlesOf, cleanDraft, isDraftFor, isJudgeFor, isRepairFor, recordedDraftIn, resetDay, seedDraft, withText } from './seed.ts'
 
 let p: Pipeline
 let storeId: number
@@ -45,7 +45,7 @@ describe('the gate holds a draft whose flaw survives the one repair, and says wh
   ]
   for (const [name, mutate, reason] of cases) {
     it(`${name} is held with reason ${reason}, and the day tries one more topic`, async () => {
-      seedDraft(p, 'en', first.query, mutate)
+      seedDraft(p, 'en', first.query, cleanDraft('rich-en-french-press'), mutate)
       const articles = await writeToday()
       const held = articles.find((a) => a.topic_id === first.id)!
       expect(held.state).toBe('held')
@@ -78,20 +78,26 @@ describe('the gate holds a draft whose flaw survives the one repair, and says wh
   it('the judge failing twice holds the article with the second set of notes', async () => {
     const failing = (note: string) => (rec: Parameters<typeof withText>[0]) => {
       const answer = answerOf(rec) as Record<string, { score: number; note: string }>
-      return withText(rec, JSON.stringify({ ...answer, information_gain: { score: 2, note }, problems: [{ quote: 'whole article', problem: note }], general_numbers: [] }))
+      return withText(rec, JSON.stringify({ ...answer, information_gain: { score: 2, note }, problems: [{ quote: 'whole article', problem: note }], general_numbers: Array.from({ length: 20 }, (_, i) => ({ ref: `G${i + 1}`, accepted: true, reason: 'common guidance' })) }))
     }
     p.anthropic.override(isJudgeFor('en', first.query), failing('first notes: too generic'))
     p.anthropic.override(isJudgeFor('en', first.query), failing('second notes: still too generic'))
+    // The repair must differ from the draft, or the second review is answered from the first one's cache.
+    const clean = cleanDraft('rich-en-french-press')
+    p.anthropic.override(isDraftFor('en', first.query), (rec) => withText(rec, JSON.stringify(clean)))
+    p.anthropic.override(isRepairFor('en', first.query), (rec) => withText(rec, JSON.stringify({ ...clean, markdown: `${clean.markdown}\n\nEnjoy the next cup.` })))
     const articles = await writeToday()
     const held = articles.find((a) => a.topic_id === first.id)!
-    expect(held).toMatchObject({ state: 'held', held_reason: 'judge' })
+    expect(held, JSON.stringify(held.gate_report.heldProblem)).toMatchObject({ state: 'held', held_reason: 'judge' })
     expect(held.gate_report.heldProblem!.detail).toBe('second notes: still too generic')
   }, 900_000)
 })
 
 describe('one repair for any failure, and at most two tries a day', () => {
   it('a draft failing a mechanical check gets one repair, and the repaired draft can pass', async () => {
-    seedDraft(p, 'en', first.query, addToFirstParagraph('Most people get it right after 7 attempts.'), { repairToo: false })
+    // The repair is the clean draft, so the scenario proves the second attempt is gated afresh and can pass.
+    p.anthropic.override(isDraftFor('en', first.query), (rec) => withText(rec, JSON.stringify({ ...cleanDraft('rich-en-french-press'), markdown: addToFirstParagraph('Most people get it right after 7 attempts.')(String(cleanDraft('rich-en-french-press').markdown)) })))
+    p.anthropic.override(isRepairFor('en', first.query), (rec) => withText(rec, JSON.stringify(cleanDraft('rich-en-french-press'))))
     const articles = await writeToday()
     const article = articles.find((a) => a.topic_id === first.id)!
     expect(article.gate_report.attempts).toHaveLength(2)
@@ -100,8 +106,8 @@ describe('one repair for any failure, and at most two tries a day', () => {
   }, 900_000)
 
   it('when the second topic of the day is held too, the day ends there', async () => {
-    seedDraft(p, 'en', first.query, addToFirstParagraph('A good setup costs less than £40 in total.'))
-    seedDraft(p, 'en', second.query, addToFirstParagraph('A good setup costs less than £40 in total.'))
+    seedDraft(p, 'en', first.query, cleanDraft('rich-en-french-press'), addToFirstParagraph('A good setup costs less than £40 in total.'))
+    seedDraft(p, 'en', second.query, cleanDraft('rich-en-french-press'), addToFirstParagraph('A good setup costs less than £40 in total.'))
     const articles = await writeToday()
     expect(articles.map((a) => [a.topic_id, a.state])).toEqual([
       [first.id, 'held'],

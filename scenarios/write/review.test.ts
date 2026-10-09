@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { approveArticle, articleDetail, articlesState, discardArticle, exportBundle, setPublishedUrl } from '../../core/articles.ts'
 import { homeState } from '../../core/screens.ts'
 import { startPipeline, type Pipeline } from '../pipeline.ts'
-import { articlesOf, resetDay } from './seed.ts'
+import { articlesOf, cleanDraft, resetDay, seedDraft } from './seed.ts'
 
 let p: Pipeline
 let storeId: number
@@ -21,8 +21,14 @@ beforeAll(async () => {
 }, 600_000)
 afterAll(() => p?.stop())
 
+// The article is the clean recorded draft, so these scenarios are about review and export, not about how the writer did today.
 async function writeOne() {
   await resetDay(p, storeId)
+  const { rows } = await p.db.pool.query<{ target_query: string }>(
+    `select target_query from topics where store_id = $1 and state = 'queued' order by manual_position asc nulls last, rank desc, id limit 1`,
+    [storeId],
+  )
+  seedDraft(p, 'hu', rows[0]!.target_query, cleanDraft('rich-hu-zold-tea'))
   await p.writeToday(storeId)
   await p.settle(900_000)
   const [article] = await articlesOf(p, storeId)

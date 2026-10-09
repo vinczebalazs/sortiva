@@ -32,16 +32,21 @@ export const isRepairFor = (language: Language, query: string) => (r: Request) =
 export const isJudgeFor = (language: Language, query: string) => (r: Request) => r.system === JUDGE_PROMPT.system[language] && userText(r).includes(query)
 
 /**
- * The writer's real draft for a topic, altered by `mutate`, served for the draft call and, unless told
+ * A recorded writer answer that passed every free check and the reviewer (see `_source` in each file).
+ * Seeding from it keeps a scenario about one flaw independent of how today's prompt happens to write.
+ */
+export function cleanDraft(name: 'rich-en-french-press' | 'rich-hu-zold-tea'): Record<string, unknown> {
+  const { _source, ...answer } = JSON.parse(readFileSync(new URL(`./drafts/${name}.json`, import.meta.url), 'utf8'))
+  return answer
+}
+
+/**
+ * A clean draft for the topic, altered by `mutate`, served for the draft call and, unless told
  * otherwise, again for the one repair, so the flaw survives both and the article must be held.
  */
-export function seedDraft(p: Pipeline, language: Language, query: string, mutate: (markdown: string) => string, opts: { repairToo?: boolean } = {}): void {
-  let seeded: Record<string, unknown> | null = null
-  p.anthropic.override(isDraftFor(language, query), (recorded) => {
-    const answer = answerOf(recorded)
-    seeded = { ...answer, markdown: mutate(String(answer.markdown)) }
-    return withText(recorded, JSON.stringify(seeded))
-  })
+export function seedDraft(p: Pipeline, language: Language, query: string, base: Record<string, unknown>, mutate: (markdown: string) => string = (md) => md, opts: { repairToo?: boolean } = {}): void {
+  const seeded = { ...base, markdown: mutate(String(base.markdown)) }
+  p.anthropic.override(isDraftFor(language, query), (recorded) => withText(recorded, JSON.stringify(seeded)))
   if (opts.repairToo !== false) {
     p.anthropic.override(isRepairFor(language, query), (recorded) => withText(recorded, JSON.stringify(seeded)))
   }
