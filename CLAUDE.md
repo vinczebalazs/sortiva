@@ -40,3 +40,9 @@ docs/        the brief, DECISIONS.md
 - No fake response is written from memory. Every fake response descends from a recording or from the vendor's published schema (`docs/mvp-plan.md` §6.6).
 - Comments say what the code cannot: intent, a constraint from outside the file, a tradeoff. No narration.
 - Commit messages say what changed, in words. Commit when a scenario goes green, not before.
+
+## Working with the founders
+
+How the agent works with whichever founder directs the build (plain language, surface decisions, don't build what wasn't asked for, questions lead with provenance) is in `docs/working-agreement.md`, imported here:
+
+@docs/working-agreement.md

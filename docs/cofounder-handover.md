@@ -15,7 +15,7 @@ The code is written by an AI agent (Claude Code), working in this folder. A foun
 Two sets of instructions shape how the agent behaves:
 
 - **`CLAUDE.md` in the folder**: the project's eight rules and working rules. It travels with the code.
-- **Balázs's personal instructions** (`~/.claude/CLAUDE.md` on his laptop): plain language, say whether something exists or is only proposed, ask before deciding anything that shapes the system, don't build what wasn't asked for, every question starts with where it comes from. These live on his machine only. **Ask Balázs for a copy and put it in your own `~/.claude/CLAUDE.md`**, or the agent will work differently for you.
+- **`docs/working-agreement.md`**: how the agent works with whichever founder directs it: plain language, say whether something exists or is only proposed, ask before deciding anything that shapes the system, don't build what wasn't asked for, every question starts with where it comes from. `CLAUDE.md` imports it, so the agent loads it automatically. "I" in it means you.
 
 A session starts with: *"Read CLAUDE.md, then docs/handoff.md, and continue."* `docs/handoff.md` is the agent's own technical handover between sessions; it is kept current at the end of each phase.
 
@@ -56,7 +56,7 @@ The published pages are private to Balázs's account until he shares them with y
 
 In order; each one unlocks the next. "Tell the agent" means starting a session and saying it in plain words.
 
-1. **Get set up** (half a day, once). Get the code and the `.env` file from Balázs, and his personal agent instructions; run the setup below until every test passes.
+1. **Get set up** (half a day, once). Get the code and the `.env` file from Balázs; run the setup below until every test passes.
 2. **Grade checkpoint 3** (1 hour). Read the ten articles and mark each "would publish" or not, with a sentence why; have a Hungarian reader do the Hungarian five. Tell the agent your grades. Below seven of ten, it changes the writer's instructions and re-measures; repeat until seven or more.
 3. **Answer the open decisions** (15 minutes): trivial facts, common-knowledge figures (below).
 4. **Prove the app on real Shopify** (1–2 hours). Create two Shopify development stores, one sacrificial and one clean, with a few real products each, one Hungarian and one English. Install the app on the sacrificial one, run the contract tests (`docs/for-the-founders.md`, steps 2 and 3). Tell the agent what happened; it fixes whatever real Shopify does differently from its stand-in.
