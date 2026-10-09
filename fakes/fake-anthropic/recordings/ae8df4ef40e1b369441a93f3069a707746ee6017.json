@@ -1,0 +1,146 @@
+{
+  "recordedAt": "2026-10-09T13:24:04.352Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You review a blog article an online shop is about to publish. You did not write it. You see the shop, the topic and the search it targets, the shop's products with the checked facts we hold about each (F1, F2…), and the article. Sentences about products end with the facts they rest on in brackets; [G] marks a sentence the writer says is general knowledge.\n\nScore each from 1 to 5:\n- grounding: everything said about the shop's products is exactly what the cited facts say, with nothing added, stretched or implied. One product claim the facts do not support caps this at 2. No invented experience (\"we tested\", customer stories), statistics or studies.\n- information_gain: a shopper who searched this would learn something useful and specific, beyond generic filler they could find anywhere. Padding, repetition and vague praise lower it.\n- structure: it answers the search early, its sections follow in a sensible order, headings say what is below them, lists and tables are used where they help.\n- fit: it suits this shop, its audience and tone, stays on the topic, and does not read as an advert.\n5 is excellent, 4 good enough to publish as it is, 3 acceptable with flaws, 2 or 1 not publishable.\n\nList problems: each with the exact sentence quoted and what is wrong, most serious first. Leave the list empty if there are none.\n\nFor each general-knowledge sentence you are given (G1, G2…), answer with its reference and whether every number in it is well established and uncontroversial general knowledge that needs no source (accepted true), or not (false), with a short reason.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Tidewell Candles\nSells: Tidewell Candles sells candles: scented container candles and unscented taper candles. The range includes an 8 oz sea salt soy candle hand-poured in Portland, Maine, a 12 oz cedar candle in a coconut and soy wax blend with a crackling cherry-wood wick, and a pair of 10-inch pure beeswax tapers made with beeswax from Maine apiaries.\nAudience: People shopping for home candles who care about the wax and wick, such as soy, coconut-soy or pure beeswax, hand-poured or locally sourced in Maine.\nTone: friendly\nNever say: —\n</store>\n\n<topic>\nWorking title: How to Reuse a Candle Jar Once the Candle Is Done\nSearch it targets: how to reuse candle jars\n</topic>\n\n<products>\n  P1: Sea Salt Soy Candle, 8 oz (Candle)\n    F1: The Sea Salt Soy Candle is 8 oz.\n    F2: The Sea Salt Soy Candle is made of 100% soy wax.\n    F3: The Sea Salt Soy Candle is poured by hand in Portland, Maine.\n    F4: The Sea Salt Soy Candle has a cotton wick.\n    F5: The Sea Salt Soy Candle's wick is lead-free.\n    F6: The Sea Salt Soy Candle has a burn time of about 45 hours.\n    F7: The Sea Salt Soy Candle comes in an 8 oz amber glass jar.\n    F8: The Sea Salt Soy Candle's jar has a tin lid.\n    F9: The Sea Salt Soy Candle has scent notes of sea salt, driftwood, and sage.\n    F10: The Sea Salt Soy Candle is made by Tidewell.\n  P2: Cedar Wood-Wick Candle, 12 oz (Candle)\n    F11: The Cedar Wood-Wick Candle is 12 oz.\n    F12: The Cedar Wood-Wick Candle is made by Tidewell.\n    F13: The Cedar Wood-Wick Candle is made with a coconut and soy wax blend.\n    F14: The Cedar Wood-Wick Candle has a cherry-wood wick that crackles as it burns.\n    F15: The Cedar Wood-Wick Candle has a burn time of about 60 hours.\n    F16: The Cedar Wood-Wick Candle comes in a 12 oz ceramic vessel.\n    F17: The Cedar Wood-Wick Candle's vessel is reusable.\n    F18: The Cedar Wood-Wick Candle's wick should be trimmed to 3 mm before each burn.\n    F19: The Cedar Wood-Wick Candle has scent notes of cedar, black pepper, and vetiver.\n</products>\n\n<pages>\n  L1: Candles (collection)\n</pages>\n\n<article>\nTitle: How to Reuse Candle Jars: Cleaning Tips and Second-Life Ideas\n\nTo reuse a candle jar, stop burning while a thin layer of wax is still in the bottom and let the jar cool completely. Then get the leftover wax out by freezing it or melting it with hot water, scrape off the wick tab, and wash the jar in warm soapy water. Peel off the label and your jar is ready to become a planter, a pen cup, a spice jar or even a brand-new candle. Here's how to do each step without cracking the glass or making a mess.\n\n## When a Candle Is Really Done\n\nA candle is finished a little before the wax runs out. Most candle makers suggest stopping a burn when about half an inch of wax is left in the bottom [G]. That last layer protects the base of the container from the flame.\n\nIf you keep burning right down to the bottom, the flame and the hot wick tab can sit almost directly on the base of the jar. That can overheat the container, scorch the surface underneath, and in the worst case crack the glass. So when you see the wax getting shallow, blow it out and call it a day.\n\nBefore you start any cleanup, let the jar cool all the way down. Warm glass or ceramic plus cold water or a cold freezer is a recipe for cracks. Give it a few hours on the counter, or leave it overnight to be safe.\n\n## Getting the Leftover Wax Out\n\nThere are three easy ways to get that last bit of wax out. Pick the one that suits your jar and how patient you're feeling.\n\n### The freezer method\n\nPop the cooled jar into the freezer for a few hours or overnight. Wax shrinks as it gets cold, so it pulls away from the sides of the container. Run a butter knife around the edge and the wax will often come out in one satisfying disc. If it's stubborn, tap the jar gently upside down over a towel.\n\nThis method suits jars with straight sides or a wide opening. A narrow neck can trap the wax disc inside.\n\n### The hot-water method\n\nSet the jar in the sink and fill it with hot water from the kettle, leaving a little space at the top. The heat melts the wax, which floats up to the surface. Let the water cool completely, and the wax will harden into a layer you can lift right off.\n\nOne caution: never pour very hot water into a jar that has just come out of the freezer. Sudden temperature changes are what crack glass, so let the jar sit at room temperature first.\n\n### Warming and pouring off\n\nYou can also stand the jar in a saucepan of gently simmering water, like a mini double boiler. Once the wax has melted, carefully pour it into an old tin or a container lined with paper, then wipe the inside of the jar with a paper towel while it's still warm. Don't pour melted wax down the sink, as it hardens in the pipes.\n\n### Don't worry about a little film\n\nWhichever method you use, a thin waxy film may stay on the sides of the jar after the bulk of the wax is out. That's normal, and the washing step below will take care of most of it. If a stubborn patch remains, a short soak in warm soapy water before scrubbing usually helps.\n\n### Removing the wick tab\n\nAt the bottom of most container candles is a small metal disc that holds the wick in place. Once the wax is out, slide a butter knife or a spoon under the tab and pop it up. If it's glued down, a little hot water around it will usually soften the adhesive enough to lift it.\n\n## Cleaning and Removing Labels\n\nWith the wax gone, it's time to make the jar look new again.\n\n- **Wash it well.** Use warm water, dish soap and a soft sponge to clear off any waxy film and soot. A bottle brush helps with corners and narrow openings.\n- **Peel the label.** Soak the jar in warm soapy water for a while and most paper labels will slide off.\n- **Tackle sticky residue.** Rub a little cooking oil onto any leftover glue, let it sit, then wipe it away. A paste of baking soda and oil works well as a gentle scrub for stubborn spots.\n- **Dry thoroughly.** Let the jar air-dry completely, inside and out, before you fill it, especially if you plan to store dry goods like tea or spices.\n\n### Glass versus ceramic\n\nGlass is easy to clean, but it can scratch, so skip metal scouring pads and stick to soft sponges and baking soda. Hold glass up to the light once it's dry to check for any cloudy film you missed.\n\nCeramic needs a slightly different touch. Glazed surfaces wipe clean easily, but an unglazed base or rim can soak up oil and soapy water, so go easy on the oil method around those areas and give the vessel extra drying time. Avoid abrasive scrubbers on glazes and any printed or painted finishes, since they can dull the surface.\n\n## Ideas for Your Empty Jar\n\nOnce your jar is clean and dry, the fun part begins. Here are some popular second lives for an empty candle container:\n\n- **Bathroom storage:** cotton swabs, cotton pads, hair ties or bath salts.\n- **Desk organizer:** a pen and pencil cup, or a home for paper clips and sticky notes.\n- **Makeup brush holder:** wide, heavy jars keep brushes upright and tidy.\n- **Small planter:** succulents and cacti suit jars without drainage holes. Add a layer of pebbles at the bottom so roots don't sit in water, and water sparingly.\n- **Pantry jar:** loose-leaf tea, spices, coffee beans or small snacks, ideally in a jar with a lid.\n- **Mini vase:** a few garden stems, dried flowers or a single bloom on a bedside table.\n- **A brand-new candle:** buy candle wax and a pre-tabbed wick, stick the wick to the bottom, melt the wax in a double boiler and pour. It's a lovely weekend project.\n\n## What Our Candle Containers Can Become\n\nIf you have one of our candles on the go, here's a look at the container it comes in and where it might fit in the list above.\n\n{{P1}}\n\nThe [Sea Salt Soy Candle](P1) comes in an 8 oz amber glass jar [F1, F7]. Its jar has a tin lid [F8]. A lidded jar is one of the handiest things to have around the house, because it keeps contents covered and dust-free. Think loose tea, bath salts, cotton pads or a stash of hair ties.\n\n{{P2}}\n\nThe [Cedar Wood-Wick Candle](P2) comes in a 12 oz ceramic vessel [F11, F16]. That vessel is reusable [F17]. A ceramic container can make a handsome planter for a small succulent, a desk cup for pens and scissors, or a holder for makeup brushes. Just follow the ceramic cleaning tips above and give it plenty of time to dry.\n\n## Burning Habits That Leave a Cleaner Jar\n\nThe way you burn a candle affects how easy the jar is to clean later. A few simple habits go a long way.\n\n- **Let the first burn melt the whole surface.** Giving the wax time to melt across to the edges helps stop it tunnelling down the middle, which leaves less wax clinging to the sides at the end.\n- **Keep the wick trimmed.** A tidy wick gives a calmer flame and less soot on the inside of the container.\n- **Keep it out of drafts.** A flickering flame tends to smoke, and that smoke ends up as dark marks on the jar.\n- **Stop before the bottom.** As covered above, leave a thin layer of wax so the base of the container stays protected.\n\nIf you're burning our [Cedar Wood-Wick Candle](P2), trim its cherry-wood wick to 3 mm before each burn [F14, F18].\n\nBurn with care, stop while there's still a thin layer of wax left, and you'll end up with a clean, useful jar to enjoy for years. Ready for your next one? Browse our full range of [candles](L1).\n</article>\n\n<general_knowledge>\n—\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ref",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrjeuapXRDcVGivnnMah",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "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"
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":5,\"note\":\"Every product claim matches its cited facts: the jar size and material, the tin lid, the reusable ceramic vessel and the 3 mm cherry-wood wick trim. There is no invented testing, statistics or customer stories.\"},\"information_gain\":{\"score\":4,\"note\":\"Concrete, practical cleaning methods with useful cautions about thermal shock, narrow necks and unglazed ceramic, plus specific reuse ideas. Some reuse ideas are fairly generic.\"},\"structure\":{\"score\":4,\"note\":\"The answer comes up front and the cleaning steps are well ordered. However, the 'Burning Habits' section comes after the product section, at the very end, which feels out of order. The wax section also says it has three methods but then holds extra subsections.\"},\"fit\":{\"score\":5,\"note\":\"Friendly tone, on topic, and the product mentions tie in naturally to reuse without reading as an advert.\"},\"problems\":[{\"quote\":\"There are three easy ways to get that last bit of wax out. Pick the one that suits your jar and how patient you're feeling.\",\"problem\":\"The section announces three methods but goes on to hold five subsections. 'Don't worry about a little film' and 'Removing the wick tab' are not wax-removal methods, so the heading structure is slightly muddled.\"},{\"quote\":\"The way you burn a candle affects how easy the jar is to clean later. A few simple habits go a long way.\",\"problem\":\"This prevention advice sits after the reuse ideas and product section. It would sit more logically near the 'When a Candle Is Really Done' section.\"}],\"general_numbers\":[]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 4859,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1058,
+      "output_tokens_details": {
+        "thinking_tokens": 520
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

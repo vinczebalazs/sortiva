@@ -1,0 +1,111 @@
+{
+  "recordedAt": "2026-10-09T13:26:04.896Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You plan one blog article for an online shop. You see the shop, the topic and the search it should answer, the shop's products with the checked facts we hold about each (F1, F2…), and the shop's own pages that may be linked.\n\nPlan an article that genuinely answers the search for a shopper, the way a knowledgeable shop assistant would: useful first, products where they truly help. Decide:\n- title: the headline, in English, containing the search or a natural form of it;\n- angle: one sentence on what the reader will come away knowing;\n- sections: four to seven, each with a heading, what it covers, and the facts it will draw on;\n- products: the products worth showing as a card (one to four), by reference;\n- links: pages worth linking from the text, by reference (products P…, pages L…).\n\nThe article may only say about a product what its facts say, so build the product parts around facts that matter for this search. General advice that is not about our products is allowed. At least 6 different facts should be used across the article.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Northpaw Dog Supply\nSells: Northpaw Dog Supply sells walking gear for dogs, including a front-clip no-pull harness, a 6 ft biothane leash, a 30 ft training long line and a rechargeable LED collar light. It also sells beds and blankets, namely a memory foam dog bed with a removable cover and a machine-washable fleece dog blanket.\nAudience: Dog owners who walk and train their dogs, including those dealing with leash pulling or walking in low light, and who want a comfortable bed or blanket for their dog at home.\nTone: friendly\nNever say: —\n</store>\n\n<topic>\nWorking title: Dog Walking Essentials for Beginners: What Gear You Actually Need\nSearch it targets: dog walking essentials\n</topic>\n\n<products>\n  P1: Front-Clip No-Pull Harness (Harness)\n    F1: The Front-Clip No-Pull Harness is a harness.\n    F2: The Front-Clip No-Pull Harness is made by Northpaw.\n    F3: The Front-Clip No-Pull Harness is available in sizes XS, S, M, L, and XL.\n    F4: The Front-Clip No-Pull Harness has a leash ring on the chest that turns the dog sideways when it pulls.\n    F5: The Front-Clip No-Pull Harness has four adjustment points.\n    F6: The Front-Clip No-Pull Harness has a padded neoprene chest plate.\n    F7: The Front-Clip No-Pull Harness has reflective stitching.\n    F8: The Front-Clip No-Pull Harness fits a chest girth of 13–42 in across sizes XS to XL.\n  P2: Biothane Leash, 6 ft (Leash)\n    F9: The Biothane Leash is 6 ft long.\n    F10: The Biothane Leash is made of coated webbing that does not absorb water or smell.\n    F11: The Biothane Leash is 5/8 in wide.\n    F12: The Biothane Leash has a brass snap hook.\n    F13: The Biothane Leash can be wiped clean.\n    F14: The Biothane Leash has a breaking strength of 600 lb.\n    F15: The Biothane Leash is made by Northpaw.\n  P3: Rechargeable LED Collar Light (Light)\n    F16: The Rechargeable LED Collar Light clips onto any collar or harness.\n    F17: The Rechargeable LED Collar Light has three modes: steady, slow flash, and fast flash.\n    F18: The Rechargeable LED Collar Light is visible from about 1,000 ft.\n    F19: The Rechargeable LED Collar Light charges via USB-C.\n    F20: The Rechargeable LED Collar Light runs for 6 hours on steady mode.\n    F21: The Rechargeable LED Collar Light is rated IPX7 waterproof.\n    F22: The Rechargeable LED Collar Light is made by Northpaw.\n    F23: The Rechargeable LED Collar Light is rechargeable.\n  P4: Training Long Line, 30 ft (Leash) [related]\n    F24: The Training Long Line is 30 ft long.\n    F25: The Training Long Line is a leash.\n    F26: The Training Long Line is made by Northpaw.\n    F27: The Training Long Line is made of lightweight biothane.\n    F28: The Training Long Line is intended for recall practice.\n    F29: The Training Long Line has no handle loop.\n    F30: The Training Long Line floats in water.\n    F31: The Training Long Line has a stainless steel swivel clip.\n</products>\n\n<pages>\n  L1: Walking gear (collection)\n  L2: Beds and blankets (collection)\n  L3: How to choose a dog harness (article)\n  L4: Dog leash length guide: 4 ft, 6 ft or long line? (article)\n  L5: Orthopedic dog beds explained (article)\n  L6: Harness size guide (page)\n</pages>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "angle": {
+              "type": "string"
+            },
+            "sections": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "heading": {
+                    "type": "string"
+                  },
+                  "covers": {
+                    "type": "string"
+                  },
+                  "facts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "heading",
+                  "covers",
+                  "facts"
+                ]
+              }
+            },
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "links": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "angle",
+            "sections",
+            "products",
+            "links"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrjosBxkYUErSfE1Byha",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"title\":\"Dog Walking Essentials: The Gear You Actually Need (and What You Can Skip)\",\"angle\":\"Readers will know the handful of items every dog walk needs (a well-fitted harness, a reliable everyday leash, visibility for low light, and poop bags and water), plus when a long training line is worth adding.\",\"sections\":[{\"heading\":\"The Short List: What Every Dog Walk Really Needs\",\"covers\":\"A quick overview of the core essentials: something to attach to (collar or harness), a dependable leash, ID tags, poop bags, water on longer outings, and a light when walking in low light. It also explains why beginners don't need a pile of gadgets.\",\"facts\":[]},{\"heading\":\"Harness First: Why a Front-Clip Design Helps With Pulling\",\"covers\":\"Why many owners prefer a harness over clipping to the collar, how a chest leash ring discourages pulling, and why a comfortable, adjustable fit matters. It links to the harness guide and the size guide.\",\"facts\":[\"F4\",\"F5\",\"F6\",\"F3\",\"F8\"]},{\"heading\":\"Picking an Everyday Leash: Length, Material and Strength\",\"covers\":\"Why a 6 ft leash is a sensible all-round length for daily walks. It covers why material matters in rain and mud, and what hardware and strength to look for. It links to the leash length guide.\",\"facts\":[\"F9\",\"F10\",\"F13\",\"F12\",\"F14\",\"F11\"]},{\"heading\":\"Be Seen: Visibility for Early Mornings and Evenings\",\"covers\":\"Advice on walking safely in low light. It covers reflective details on gear and adding a clip-on light, how flash modes help drivers notice you, and why a waterproof, rechargeable light is practical.\",\"facts\":[\"F7\",\"F16\",\"F17\",\"F18\",\"F21\",\"F19\",\"F20\"]},{\"heading\":\"Optional Upgrade: A Long Line for Recall Training\",\"covers\":\"When a long line makes sense, such as practicing recall in open spaces while keeping control. It also gives handling tips, since this kind of line has no handle loop, and notes that it's useful around water.\",\"facts\":[\"F24\",\"F28\",\"F27\",\"F29\",\"F30\",\"F31\"]},{\"heading\":\"After the Walk: Easy Clean-Up and a Cozy Rest\",\"covers\":\"General tips for wiping down gear and checking fit and hardware regularly, then letting your dog rest. It gives a light pointer to the beds and blankets collection.\",\"facts\":[\"F13\"]}],\"products\":[\"P1\",\"P2\",\"P3\",\"P4\"],\"links\":[\"L3\",\"L6\",\"L4\",\"L1\",\"L2\"]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 2139,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 844,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

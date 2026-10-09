@@ -1,0 +1,111 @@
+{
+  "recordedAt": "2026-10-09T13:36:14.078Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "Egy webáruház egyetlen blogcikkét tervezed meg. Látod a boltot, a témát és a keresést, amelyre a cikknek válaszolnia kell, a bolt termékeit az általunk ellenőrzött tényekkel (F1, F2…), valamint a bolt saját oldalait, amelyekre hivatkozni lehet.\n\nOlyan cikket tervezz, amely valóban megválaszolja a vásárló keresését, ahogyan egy hozzáértő bolti eladó tenné: először legyen hasznos, a termékek ott jelenjenek meg, ahol tényleg segítenek. Döntsd el:\n- title: a cím magyarul, benne a kereséssel vagy annak természetes alakjával;\n- angle: egy mondat arról, mit fog tudni az olvasó a cikk végére;\n- sections: négy-hét szakasz, mindegyiknek címe, tartalma és a tények, amelyekre épít;\n- products: a kártyaként megjelenítendő termékek (egy-négy), hivatkozással;\n- links: a szövegből linkelendő oldalak hivatkozással (termékek P…, oldalak L…).\n\nA cikk egy termékről csak azt mondhatja, amit a tényei mondanak, ezért a termékekről szóló részeket a keresés szempontjából fontos tényekre építsd. A termékeinkről nem szóló általános tanács megengedett. A cikk egészében legalább 6 különböző tényt használj.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Bükki Füvesház\nSells: A bolt szálas gyógyteákat árul, főként egynövényes teákat (kakukkfű, csalánlevél, kamillavirág, borsmentalevél), valamint egy esti teakeveréket és magozott csipkebogyó gyümölcsteát. Kínálatában fekete és zöld tea is szerepel: Assam fekete tea és japán Sencha zöld tea. Teaeszközöket is forgalmaz: öntöttvas és hőálló üveg teáskannát, bögrébe való teaszűrőt és fém teatartó dobozt.\nAudience: Olyan vásárlóknak szól, akik szálas gyógy-, gyümölcs-, fekete és zöld teát főznek otthon. Azoknak is, akiknek a teafőzéshez és -tároláshoz eszközök is kellenek.\nTone: friendly\nNever say: —\n</store>\n\n<topic>\nWorking title: Kakukkfű tea elkészítése és áztatási ideje\nSearch it targets: kakukkfű tea készítése\n</topic>\n\n<products>\n  P1: Kakukkfű tea, szálas (Gyógytea)\n    F1: A kakukkfű tea szálas kiszerelésű.\n    F2: A kakukkfű tea gyógytea.\n    F3: A kakukkfű tea forgalmazója a Bükki Füvesház.\n    F4: A kakukkfű tea egynövényes tea.\n    F5: A kakukkfű tea vadon termő mezei kakukkfű (Thymus serpyllum) virágos hajtásából készül.\n    F6: A kakukkfű tea alapanyaga a Bükk déli lejtőiről származik.\n    F7: A kakukkfű tea alapanyagát kézzel gyűjtik júniusban.\n    F8: A kakukkfű tea alapanyagát árnyékban szárítják.\n    F9: A kakukkfű tea vágott formában kapható.\n    F10: A kakukkfű teából egy csészéhez 1 teáskanál (kb. 1,5 g) elegendő.\n    F11: A kakukkfű teát 95 °C-os vízzel, 8–10 perc áztatással kell elkészíteni.\n    F12: A kakukkfű tea kiszerelése 50 g.\n  P2: Rozsdamentes teaszűrő bögrébe (Teaszűrő)\n    F13: A teaszűrő rozsdamentes acél hálóból készült.\n    F14: A teaszűrő hálójának lyukbősége 0,3 mm.\n    F15: A teaszűrő két füllel rendelkezik.\n    F16: A teaszűrő 7–9 cm átmérőjű bögrékhez való.\n    F17: A teaszűrőhöz fedő tartozik, amely tálcaként is használható.\n    F18: A teaszűrő mosogatógépben mosható.\n    F19: A teaszűrő bögrébe való.\n  P3: Csalánlevél tea, szálas (Gyógytea) [related]\n    F20: A csalánlevél tea szálas kivitelű.\n    F21: A csalánlevél tea gyógytea.\n    F22: A csalánlevél teát a Bükki Füvesház forgalmazza.\n    F23: A csalánlevél tea egynövényes tea.\n    F24: A csalánlevél tea nagy csalán (Urtica dioica) leveléből készül.\n    F25: A csalánlevél tea alapanyagát virágzás előtt, májusban gyűjtik.\n    F26: A csalánlevél tea vágott, szálas tea.\n    F27: A csalánlevél tea adagolása 2 teáskanál 2,5 dl forrásban lévő vízhez.\n    F28: A csalánlevél teát 10 percig kell áztatni.\n    F29: A csalánlevél tea kiszerelése 70 g.\n    F30: A csalánlevél tea visszazárható papírtasakban kapható.\n  P4: Kamillavirág tea (Gyógytea) [related]\n    F31: A Kamillavirág tea gyógytea.\n    F32: A Kamillavirág tea forgalmazója a Bükki Füvesház.\n    F33: A Kamillavirág tea egynövényes tea.\n    F34: A Kamillavirág tea orvosi székfű (Matricaria chamomilla) egész virágzata.\n    F35: A Kamillavirág tea a Hortobágy széléről származik.\n    F36: A Kamillavirág tea saját termesztésből származik.\n    F37: A Kamillavirág tea egész virágfejekből áll, nem tört.\n    F38: A Kamillavirág teából 1 evőkanálnyit kell 2 dl vízhez adni.\n    F39: A Kamillavirág teát 5–7 percig kell áztatni, fedő alatt.\n    F40: A Kamillavirág tea kiszerelése 40 g.\n  P5: Borsmentalevél tea (Gyógytea) [related]\n    F41: A Borsmentalevél tea borsosmenta (Mentha × piperita) leveléből készül.\n    F42: A Borsmentalevél tea saját kertből származik.\n    F43: A Borsmentalevél tea júliusi vágásból készül.\n    F44: A Borsmentalevél tea hidegen áztatva 2 teáskanál 5 dl hideg vízben 4 órán át a hűtőben készíthető.\n    F45: A Borsmentalevél tea forrón 1 teáskanál 2 dl vízhez, 5 percig áztatva készíthető.\n    F46: A Borsmentalevél tea kiszerelése 50 g.\n    F47: A Borsmentalevél tea gyógytea.\n    F48: A Borsmentalevél tea egynövényes tea.\n    F49: A Borsmentalevél tea forgalmazója a Bükki Füvesház.\n</products>\n\n<pages>\n  L1: Gyógyteák (collection)\n  L2: Fekete és zöld teák (collection)\n  L3: Teaeszközök (collection)\n  L4: Rólunk (page)\n  L5: Szállítás és visszaküldés (page)\n</pages>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "angle": {
+              "type": "string"
+            },
+            "sections": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "heading": {
+                    "type": "string"
+                  },
+                  "covers": {
+                    "type": "string"
+                  },
+                  "facts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "heading",
+                  "covers",
+                  "facts"
+                ]
+              }
+            },
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "links": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "angle",
+            "sections",
+            "products",
+            "links"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrkajtRW2yoG5hbMZq6e",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"title\":\"Kakukkfű tea készítése: adagolás, vízhőmérséklet és áztatási idő\",\"angle\":\"Az olvasó a cikk végére tudni fogja, mennyi szálas kakukkfüvet tegyen egy csészébe, milyen hőfokú vízzel és meddig áztassa, és mivel szűrje le a legegyszerűbben.\",\"sections\":[{\"heading\":\"Mi kerül a csészébe? Ismerd meg a kakukkfüvet\",\"covers\":\"Röviden arról, milyen növényből és hogyan készül a szálas kakukkfű tea, mert az alapanyag minősége meghatározza az ízt.\",\"facts\":[\"F5\",\"F6\",\"F7\",\"F8\",\"F4\"]},{\"heading\":\"Az adagolás: mennyi kell egy csészéhez?\",\"covers\":\"Pontos adag egy csészéhez, és hogy a vágott, szálas forma miatt teáskanállal könnyű kimérni. Általános tipp: nagyobb kannához arányosan többet tegyünk.\",\"facts\":[\"F10\",\"F9\",\"F1\"]},{\"heading\":\"Vízhőmérséklet és áztatási idő lépésről lépésre\",\"covers\":\"A 95 °C-os víz és a 8–10 perces áztatás lépésenként: forralás, rövid hűlés, felöntés, lefedés (általános tanács, hogy a gőzzel ne szálljon el az illat), majd szűrés.\",\"facts\":[\"F11\",\"F10\"]},{\"heading\":\"Leszűrés egyszerűen: teaszűrő a bögrébe\",\"covers\":\"Miért praktikus a bögrébe tehető, finom hálós szűrő a vágott szálas teához, és hogyan használható a fedője lefedésre, majd tálcaként.\",\"facts\":[\"F19\",\"F13\",\"F14\",\"F16\",\"F17\",\"F18\"]},{\"heading\":\"Ha többféle gyógyteát is főznél: eltérő áztatási idők\",\"covers\":\"Összevetés más egynövényes teákkal, hogy látszódjon: nem minden gyógytea ugyanúgy készül.\",\"facts\":[\"F27\",\"F28\",\"F38\",\"F39\",\"F45\"]},{\"heading\":\"Tárolás és kiszerelés\",\"covers\":\"Mennyi csészére elég egy csomag, és általános tanács a tároláshoz: száraz, fénytől védett, jól záródó helyen tartsuk.\",\"facts\":[\"F12\",\"F10\"]}],\"products\":[\"P1\",\"P2\",\"P3\",\"P4\"],\"links\":[\"P1\",\"P2\",\"P3\",\"P4\",\"P5\",\"L1\",\"L3\"]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 3128,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 867,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

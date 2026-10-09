@@ -1,0 +1,111 @@
+{
+  "recordedAt": "2026-10-09T13:27:45.219Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You plan one blog article for an online shop. You see the shop, the topic and the search it should answer, the shop's products with the checked facts we hold about each (F1, F2…), and the shop's own pages that may be linked.\n\nPlan an article that genuinely answers the search for a shopper, the way a knowledgeable shop assistant would: useful first, products where they truly help. Decide:\n- title: the headline, in English, containing the search or a natural form of it;\n- angle: one sentence on what the reader will come away knowing;\n- sections: four to seven, each with a heading, what it covers, and the facts it will draw on;\n- products: the products worth showing as a card (one to four), by reference;\n- links: pages worth linking from the text, by reference (products P…, pages L…).\n\nThe article may only say about a product what its facts say, so build the product parts around facts that matter for this search. General advice that is not about our products is allowed. At least 6 different facts should be used across the article.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Northpaw Dog Supply\nSells: Northpaw Dog Supply sells walking gear for dogs, including a front-clip no-pull harness, a 6 ft biothane leash, a 30 ft training long line and a rechargeable LED collar light. It also sells beds and blankets, namely a memory foam dog bed with a removable cover and a machine-washable fleece dog blanket.\nAudience: Dog owners who walk and train their dogs, including those dealing with leash pulling or walking in low light, and who want a comfortable bed or blanket for their dog at home.\nTone: friendly\nNever say: —\n</store>\n\n<topic>\nWorking title: Walking Your Dog at Night: Safety Tips for Dark Evenings\nSearch it targets: how to make dog visible at night\n</topic>\n\n<products>\n  P1: Rechargeable LED Collar Light (Light)\n    F1: The Rechargeable LED Collar Light clips onto any collar or harness.\n    F2: The Rechargeable LED Collar Light has three modes: steady, slow flash, and fast flash.\n    F3: The Rechargeable LED Collar Light is visible from about 1,000 ft.\n    F4: The Rechargeable LED Collar Light charges via USB-C.\n    F5: The Rechargeable LED Collar Light runs for 6 hours on steady mode.\n    F6: The Rechargeable LED Collar Light is rated IPX7 waterproof.\n    F7: The Rechargeable LED Collar Light is made by Northpaw.\n    F8: The Rechargeable LED Collar Light is rechargeable.\n  P2: Front-Clip No-Pull Harness (Harness)\n    F9: The Front-Clip No-Pull Harness is a harness.\n    F10: The Front-Clip No-Pull Harness is made by Northpaw.\n    F11: The Front-Clip No-Pull Harness is available in sizes XS, S, M, L, and XL.\n    F12: The Front-Clip No-Pull Harness has a leash ring on the chest that turns the dog sideways when it pulls.\n    F13: The Front-Clip No-Pull Harness has four adjustment points.\n    F14: The Front-Clip No-Pull Harness has a padded neoprene chest plate.\n    F15: The Front-Clip No-Pull Harness has reflective stitching.\n    F16: The Front-Clip No-Pull Harness fits a chest girth of 13–42 in across sizes XS to XL.\n</products>\n\n<pages>\n  L1: Walking gear (collection)\n  L2: Beds and blankets (collection)\n  L3: How to choose a dog harness (article)\n  L4: Dog leash length guide: 4 ft, 6 ft or long line? (article)\n  L5: Orthopedic dog beds explained (article)\n  L6: Harness size guide (page)\n</pages>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "angle": {
+              "type": "string"
+            },
+            "sections": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "heading": {
+                    "type": "string"
+                  },
+                  "covers": {
+                    "type": "string"
+                  },
+                  "facts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "heading",
+                  "covers",
+                  "facts"
+                ]
+              }
+            },
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "links": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "angle",
+            "sections",
+            "products",
+            "links"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrjvhhQEktcLPi2xwVg1",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"title\":\"How to Make Your Dog Visible at Night: Safety Tips for Dark Evening Walks\",\"angle\":\"The reader will know why dogs are hard to see after dark, how lights and reflective gear work together, and how to set up a simple, reliable night-walk kit for their dog and themselves.\",\"sections\":[{\"heading\":\"Why dogs disappear in the dark\",\"covers\":\"General explanation: dark coats, low height, and drivers' headlights mean dogs are often seen late; the difference between being lit (active light) and being reflective (passive, only works when light hits it).\",\"facts\":[]},{\"heading\":\"Light them up: using a clip-on LED light\",\"covers\":\"Why an active light is the most effective step, where to attach it, choosing steady vs flashing modes for different situations, and practical points like battery life, charging and wet weather.\",\"facts\":[\"F1\",\"F2\",\"F3\",\"F4\",\"F5\",\"F6\",\"F8\"]},{\"heading\":\"Add reflective gear for headlight visibility\",\"covers\":\"How reflective materials bounce car headlights back to drivers. Covers using reflective harnesses and collars as a backup layer to a light, with the harness's reflective stitching as an example.\",\"facts\":[\"F15\",\"F9\"]},{\"heading\":\"Keep control when visibility is low\",\"covers\":\"Why a dog that lunges or pulls is a bigger risk near roads at night, how a front-clip harness helps, and getting a good fit so it stays put. Also covers sticking to a standard-length leash rather than a long line near traffic.\",\"facts\":[\"F12\",\"F13\",\"F14\",\"F11\",\"F16\"]},{\"heading\":\"Make yourself visible too\",\"covers\":\"General advice: a headlamp or torch, bright or reflective clothing for the owner, and walking facing traffic where there is no pavement.\",\"facts\":[]},{\"heading\":\"A quick night-walk checklist\",\"covers\":\"A recap list: charge the light, clip it on, check the harness fit and reflective gear, use a short leash, choose well-lit routes, and carry a torch.\",\"facts\":[\"F4\",\"F1\",\"F15\"]}],\"products\":[\"P1\",\"P2\"],\"links\":[\"P1\",\"P2\",\"L1\",\"L3\",\"L4\",\"L6\"]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1762,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 708,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

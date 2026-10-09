@@ -1,0 +1,146 @@
+{
+  "recordedAt": "2026-10-09T13:20:15.800Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You review a blog article an online shop is about to publish. You did not write it. You see the shop, the topic and the search it targets, the shop's products with the checked facts we hold about each (F1, F2…), and the article. Sentences about products end with the facts they rest on in brackets; [G] marks a sentence the writer says is general knowledge.\n\nScore each from 1 to 5:\n- grounding: everything said about the shop's products is exactly what the cited facts say, with nothing added, stretched or implied. One product claim the facts do not support caps this at 2. No invented experience (\"we tested\", customer stories), statistics or studies.\n- information_gain: a shopper who searched this would learn something useful and specific, beyond generic filler they could find anywhere. Padding, repetition and vague praise lower it.\n- structure: it answers the search early, its sections follow in a sensible order, headings say what is below them, lists and tables are used where they help.\n- fit: it suits this shop, its audience and tone, stays on the topic, and does not read as an advert.\n5 is excellent, 4 good enough to publish as it is, 3 acceptable with flaws, 2 or 1 not publishable.\n\nList problems: each with the exact sentence quoted and what is wrong, most serious first. Leave the list empty if there are none.\n\nFor each general-knowledge sentence you are given (G1, G2…), answer with its reference and whether every number in it is well established and uncontroversial general knowledge that needs no source (accepted true), or not (false), with a short reason.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Fernhill Coffee Supply\nSells: Fernhill Coffee Supply sells home coffee brewing equipment and coffee beans. The range covers pour-over gear (ceramic and stainless steel drippers, size 02 paper filters, stovetop and electric gooseneck kettles, and a brew scale with timer), immersion brewers such as a French press and a cold brew jar, and manual and electric burr grinders. It also sells single-origin coffee beans from Fernhill Roastery in 250 g and 1 kg bags, whole bean or ground.\nAudience: People who brew coffee at home, especially by pour-over or immersion, and who want to grind, weigh and control water temperature themselves. Some products, such as the single-dose flat-burr grinder and the temperature-hold kettle, suit buyers who care about precise brewing.\nTone: expert\nNever say: —\n</store>\n\n<topic>\nWorking title: The Best Water Temperature for Pour-Over Coffee\nSearch it targets: coffee water temperature\n</topic>\n\n<products>\n  P1: Gooseneck Pour-Over Kettle 900 ml (Kettle)\n    F1: The Fernhill Gooseneck Pour-Over Kettle has a capacity of 900 ml.\n    F2: The Fernhill Gooseneck Pour-Over Kettle has a recommended fill of 600 ml.\n    F3: The Fernhill Gooseneck Pour-Over Kettle has a spout opening of 8 mm.\n    F4: The Fernhill Gooseneck Pour-Over Kettle has a built-in thermometer reading 40–100 °C.\n    F5: The Fernhill Gooseneck Pour-Over Kettle is made of stainless steel.\n    F6: The Fernhill Gooseneck Pour-Over Kettle works on gas, electric and induction hobs.\n    F7: The Gooseneck Pour-Over Kettle is made by Fernhill.\n  P2: Electric Gooseneck Kettle with Temperature Hold (Kettle)\n    F8: The Electric Gooseneck Kettle with Temperature Hold lets you set the temperature in 1 °C steps from 60 to 100 °C.\n    F9: The Electric Gooseneck Kettle with Temperature Hold base holds the set temperature for 60 minutes.\n    F10: The Electric Gooseneck Kettle with Temperature Hold has an 800 ml capacity.\n    F11: The Electric Gooseneck Kettle with Temperature Hold has a 1200 W heating element.\n    F12: The Electric Gooseneck Kettle with Temperature Hold has a UK plug.\n    F13: The Electric Gooseneck Kettle with Temperature Hold has a 75 cm base cable.\n    F14: The Electric Gooseneck Kettle with Temperature Hold has a gooseneck spout.\n    F15: The Electric Gooseneck Kettle with Temperature Hold is made by Fernhill.\n  P3: Ethiopia Guji, natural process (Coffee beans)\n    F16: Ethiopia Guji, natural process is coffee beans.\n    F17: Ethiopia Guji, natural process is sold by Fernhill Roastery.\n    F18: Ethiopia Guji, natural process is available in 250 g and 1 kg sizes.\n    F19: Ethiopia Guji, natural process is available as whole bean, filter grind, or espresso grind.\n    F20: Ethiopia Guji, natural process is a single origin coffee.\n    F21: Ethiopia Guji, natural process is grown at 1,900–2,100 m in the Guji zone.\n    F22: Ethiopia Guji, natural process is grown by smallholders delivering to the Hambela washing station.\n    F23: Ethiopia Guji, natural process is made from heirloom varieties.\n    F24: Ethiopia Guji, natural process is natural processed and dried on raised beds for 21 days.\n    F25: Ethiopia Guji, natural process is a light roast.\n    F26: Ethiopia Guji, natural process has tasting notes of blueberry, dark chocolate and jasmine.\n  P4: Colombia Huila, washed (Coffee beans)\n    F27: The Colombia Huila coffee is washed-process.\n    F28: The Colombia Huila product is coffee beans.\n    F29: The Colombia Huila coffee is from Fernhill Roastery.\n    F30: The Colombia Huila coffee comes in 250 g and 1 kg sizes.\n    F31: The Colombia Huila coffee is single origin.\n    F32: The Colombia Huila coffee comes from the Pitalito municipality in Huila.\n    F33: The Colombia Huila coffee is grown at 1,600–1,800 m.\n    F34: The Colombia Huila coffee is made from Caturra and Castillo varieties.\n    F35: The Colombia Huila coffee is fully washed and fermented 36 hours.\n    F36: The Colombia Huila coffee is a medium roast.\n    F37: The Colombia Huila coffee is suited to both filter and espresso.\n    F38: The Colombia Huila coffee has tasting notes of red apple, caramel, and milk chocolate.\n</products>\n\n<pages>\n  L1: Pour-over brewing (collection)\n  L2: Grinders (collection)\n  L3: Coffee beans (collection)\n  L4: Immersion brewers (collection)\n  L5: About Fernhill (page)\n  L6: Shipping and returns (page)\n</pages>\n\n<article>\nTitle: Coffee Water Temperature: The Best Range for Pour-Over and How to Hit It\n\nFor pour-over coffee, aim for water between roughly 90 and 96 °C [G]. Light roasts usually want the top of that window. Medium roasts often taste sweeter a few degrees lower. Below that range, cups tend to turn sour and thin. Above it, some coffees turn harsh. This guide explains why temperature matters, how to match it to the coffee you are brewing, and how to measure and hold it reliably at home.\n\n## The short answer: what temperature should coffee water be?\n\nThe range most often recommended for filter coffee is about 90–96 °C [G]. Water in that band is hot enough to dissolve sweetness and body as well as acidity, without pulling out the harshest compounds too quickly.\n\nWater straight off the boil is not automatically wrong. It loses heat on its way from the spout to the coffee bed, and a dense, light-roasted coffee can handle it well. The problem is that boiling water leaves no margin. With a fine grind or a long brew, it can push some coffees into bitterness and a drying finish.\n\nAt the other end, water well below 90 °C slows extraction noticeably [G]. The result is typically a cup that tastes sour, thin and hollow, with a short finish, even when the beans themselves are excellent.\n\n## Why temperature matters: extraction in plain terms\n\nBrewing coffee is a controlled dissolving process. Water pulls soluble compounds out of the ground coffee. Hotter water dissolves them faster and more completely.\n\nThe order in which flavours arrive matters too:\n\n- **Acids come first.** They dissolve readily, even at lower temperatures.\n- **Sugars and heavier compounds follow.** These give sweetness, body and length.\n- **Bitter, astringent compounds come last.** They build up when extraction runs too far.\n\nTemperature never acts alone. It works together with **grind size** and **contact time**. A finer grind exposes more surface area, and a longer brew gives the water more time to work. Hotter water speeds up both effects. So if you raise the temperature, you may need to grind slightly coarser to land in the same place. If you lower it, a slightly finer grind can compensate.\n\nThe cup tells you where you have landed:\n\n| What you taste | Likely cause | First thing to try |\n|---|---|---|\n| Sour, sharp, salty, thin, short finish | Under-extraction | Hotter water or a finer grind |\n| Bitter, harsh, dry or chalky aftertaste | Over-extraction | Cooler water or a coarser grind |\n| Sweet, balanced, lingering finish | In the right zone | Leave it alone |\n\nTemperature is one lever alongside grind and brew ratio, and the most consistent results come from controlling all three. A good burr grinder makes that much easier. Browse [our grinders](L2) if your grind is the weak link.\n\n## Matching temperature to roast level\n\nRoast level is the best single guide to where to start within the window.\n\n**Light roasts** are denser and less soluble, because they spend less time in the roaster. They generally need hotter water, around 93–96 °C, to extract fully and avoid tasting grassy or sour [G].\n\n**Medium roasts** are more developed and dissolve more easily. They often taste sweeter and rounder a few degrees lower, around 90–93 °C, where extra heat would otherwise start to emphasise roast bitterness [G].\n\n### Worked example: a light, natural-process coffee\n\nOur [Ethiopia Guji, natural process](P3) is a light roast with tasting notes of blueberry, dark chocolate and jasmine [F25, F26]. It is grown at 1,900–2,100 m in the Guji zone [F21]. It is natural processed and dried on raised beds for 21 days [F24]. Because it is a light roast, start it at the hotter end of the window and treat sourness as your signal to go hotter still [F25]. In general, delicate floral notes reward full extraction, while too cool a brew tends to leave fruit-forward coffees tasting tart rather than sweet.\n\n{{P3}}\n\n### Worked example: a medium, washed coffee\n\nOur [Colombia Huila, washed](P4) is a medium roast with tasting notes of red apple, caramel and milk chocolate [F36, F38]. It is fully washed and fermented 36 hours [F35]. It is suited to both filter and espresso [F37]. As a medium roast, it is a good candidate to start a few degrees lower and nudge upwards only if the cup tastes flat [F36]. Caramel and milk-chocolate sweetness generally shows best when a brew stops short of the bitter end of extraction.\n\n{{P4}}\n\n## Measuring temperature with a stovetop gooseneck\n\nYou do not need electronics to brew within range. You need a way to see the temperature and a spout that lets you pour with control.\n\nOur [Gooseneck Pour-Over Kettle](P1) has a built-in thermometer reading 40–100 °C, so you can watch the water come off the boil and pour once the reading falls into your target range [F4]. The routine is simple:\n\n1. Heat the water on the hob until it is at or close to boiling.\n2. Take the kettle off the heat and use some of the water to rinse your filter and pre-heat the dripper and cup.\n3. Watch the thermometer as the temperature drops.\n4. Start pouring as soon as it reaches your target, and check the thermometer again between pours.\n\nThe kettle has a capacity of 900 ml and a recommended fill of 600 ml [F1, F2]. Its spout opening is 8 mm [F3]. In general, a gooseneck spout lets you pour a slow, steady stream and direct it over the coffee bed, which keeps agitation even and avoids flooding the dripper.\n\nThe kettle is made of stainless steel and works on gas, electric and induction hobs [F5, F6].\n\n{{P1}}\n\n## Setting and holding an exact temperature with an electric kettle\n\nA thermometer tells you where the water is. A temperature-controlled kettle lets you decide where it will be. That difference matters most when you are dialling in a new coffee. Changing one variable at a time, and by a known amount, is the fastest way to understand what a coffee wants.\n\nOur [Electric Gooseneck Kettle with Temperature Hold](P2) lets you set the temperature in 1 °C steps from 60 to 100 °C [F8]. That makes it straightforward to test a degree or two either side of your starting point and taste the difference, rather than estimating from a falling reading [F8].\n\nThe base holds the set temperature for 60 minutes, so the water stays at your chosen setting between brews within that time [F9].\n\nOn the practical side, it has an 800 ml capacity, a 1200 W heating element and a gooseneck spout [F10, F11, F14]. It comes with a UK plug [F12].\n\n{{P2}}\n\n## A simple temperature routine to try this week\n\nThe best way to learn what temperature does is to taste it directly. This side-by-side test takes two brews and changes only one thing.\n\n1. **Pick one coffee.** A light roast shows temperature differences especially clearly. Ethiopia Guji is available as whole bean, filter grind or espresso grind, so choose whole bean if you grind at home or filter grind if you do not [F19]. It comes in 250 g and 1 kg sizes [F18].\n2. **Fix everything else.** Use the same dose, ratio, grind setting, filter and pour pattern for both brews. A ratio of 1:16, such as 15 g of coffee to 240 g of water, is a common starting point for pour-over [G].\n3. **Pre-heat.** Rinse the paper filter with hot water and warm the dripper and cup. A cold ceramic dripper can pull several degrees out of your brew water in the first pour.\n4. **Brew cooler first.** Brew the first cup at 92 °C [G].\n5. **Brew hotter second.** Brew the second cup at 96 °C [G].\n6. **Taste side by side as they cool.** Flavour differences often become clearer as the cups approach drinking temperature. Note which is sweeter, which is sourer and which has the longer finish.\n7. **Adjust.** If both cups taste sour, go hotter or grind finer. If the hotter cup tastes harsh, settle in between or grind a touch coarser.\n\nA few tips keep the test honest:\n\n- **Account for heat loss during long pours.** Water in a stovetop kettle keeps cooling between pours, so check the thermometer before each pour and return the kettle to the heat briefly if it has drifted too low.\n- **Pour steadily.** A slow, even stream from a gooseneck spout loses heat more predictably than splashy, irregular pours.\n- **Change one thing at a time.** If you alter temperature and grind together, you will not know which change made the difference.\n\nYou will find drippers, filters, kettles and scales in [our pour-over brewing collection](L1). If you want a few coffees to compare, browse [our coffee beans](L3).\n\nOnce you have tasted the same coffee at two temperatures, the 90–96 °C window stops being a rule and becomes a tool [G]. Start hot for light roasts, a little cooler for medium roasts, and let the cup tell you which way to move.\n</article>\n\n<general_knowledge>\nG1: For pour-over coffee, aim for water between roughly 90 and 96 °C. (numbers: 90, 96)\nG2: The range most often recommended for filter coffee is about 90–96 °C. (numbers: 90, 96)\nG3: At the other end, water well below 90 °C slows extraction noticeably. (numbers: 90)\nG4: They generally need hotter water, around 93–96 °C, to extract fully and avoid tasting grassy or sour. (numbers: 93, 96)\nG5: They often taste sweeter and rounder a few degrees lower, around 90–93 °C, where extra heat would otherwise start to emphasise roast bitterness. (numbers: 90, 93)\nG6: A ratio of 1:16, such as 15 g of coffee to 240 g of water, is a common starting point for pour-over. (numbers: 1, 16, 15, 240)\nG7: **Brew cooler first.** Brew the first cup at 92 °C. (numbers: 92)\nG8: **Brew hotter second.** Brew the second cup at 96 °C. (numbers: 96)\nG9: Once you have tasted the same coffee at two temperatures, the 90–96 °C window stops being a rule and becomes a tool. (numbers: 90, 96)\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ref",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrjMbX9zX4QWKjyXbt8w",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "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"
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":4,\"note\":\"Product claims match their cited facts. The brewing advice attached to products (start P3 hotter, P4 lower) is a reasonable inference from roast level. Two unsupported general claims sit outside the product text.\"},\"information_gain\":{\"score\":4,\"note\":\"Useful and specific: an extraction-order explanation, a taste-diagnosis table, roast-based starting ranges and a concrete side-by-side test. Some product spec lists add little for the searcher.\"},\"structure\":{\"score\":5,\"note\":\"Answers the query in the first paragraph and again under a short-answer heading. The sections then move logically from why, to roast, to measuring, to holding, to practice. The table and numbered steps are well used.\"},\"fit\":{\"score\":4,\"note\":\"Expert tone suits the audience and the article stays on topic. The two kettle sections lean toward catalogue copy, with spec runs (plug, wattage, capacity) that do not serve the temperature topic.\"}, \"problems\":[{\"quote\":\"They generally need hotter water, around 93–96 °C, to extract fully and avoid tasting grassy or sour [G].\",\"problem\":\"The roast-specific sub-range is common guidance but varies between sources. Presented as general knowledge, it is not an established fact.\"},{\"quote\":\"They often taste sweeter and rounder a few degrees lower, around 90–93 °C, where extra heat would otherwise start to emphasise roast bitterness [G].\",\"problem\":\"Same issue: this medium-roast sub-range is a convention, not settled general knowledge.\"},{\"quote\":\"A slow, even stream from a gooseneck spout loses heat more predictably than splashy, irregular pours.\",\"problem\":\"An unsupported technical claim stated as fact, with no basis given.\"},{\"quote\":\"On the practical side, it has an 800 ml capacity, a 1200 W heating element and a gooseneck spout [F10, F11, F14]. It comes with a UK plug [F12].\",\"problem\":\"Spec padding unrelated to water temperature, which makes the section read like product copy.\"}],\"general_numbers\":[{\"ref\":\"G1\",\"accepted\":true,\"reason\":\"90–96 °C matches the widely cited SCA brewing range.\"},{\"ref\":\"G2\",\"accepted\":true,\"reason\":\"The same standard, widely recommended range.\"},{\"ref\":\"G3\",\"accepted\":true,\"reason\":\"The lower bound of the standard range; slower extraction in cooler water is well established.\"},{\"ref\":\"G4\",\"accepted\":false,\"reason\":\"Roast-specific temperature sub-ranges differ between sources and are not settled.\"},{\"ref\":\"G5\",\"accepted\":false,\"reason\":\"The medium-roast sub-range is a convention that varies by source.\"},{\"ref\":\"G6\",\"accepted\":true,\"reason\":\"1:16 is a common pour-over starting ratio, and 15 g to 240 g is arithmetically correct.\"},{\"ref\":\"G7\",\"accepted\":true,\"reason\":\"An instruction choosing a test value inside the standard range, not a factual claim.\"},{\"ref\":\"G8\",\"accepted\":true,\"reason\":\"A test value at the top of the standard range.\"},{\"ref\":\"G9\",\"accepted\":true,\"reason\":\"Restates the standard 90–96 °C range.\"}]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 6631,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1841,
+      "output_tokens_details": {
+        "thinking_tokens": 768
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

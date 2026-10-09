@@ -1,0 +1,111 @@
+{
+  "recordedAt": "2026-10-09T13:34:27.726Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "Egy webáruház egyetlen blogcikkét tervezed meg. Látod a boltot, a témát és a keresést, amelyre a cikknek válaszolnia kell, a bolt termékeit az általunk ellenőrzött tényekkel (F1, F2…), valamint a bolt saját oldalait, amelyekre hivatkozni lehet.\n\nOlyan cikket tervezz, amely valóban megválaszolja a vásárló keresését, ahogyan egy hozzáértő bolti eladó tenné: először legyen hasznos, a termékek ott jelenjenek meg, ahol tényleg segítenek. Döntsd el:\n- title: a cím magyarul, benne a kereséssel vagy annak természetes alakjával;\n- angle: egy mondat arról, mit fog tudni az olvasó a cikk végére;\n- sections: négy-hét szakasz, mindegyiknek címe, tartalma és a tények, amelyekre épít;\n- products: a kártyaként megjelenítendő termékek (egy-négy), hivatkozással;\n- links: a szövegből linkelendő oldalak hivatkozással (termékek P…, oldalak L…).\n\nA cikk egy termékről csak azt mondhatja, amit a tényei mondanak, ezért a termékekről szóló részeket a keresés szempontjából fontos tényekre építsd. A termékeinkről nem szóló általános tanács megengedett. A cikk egészében legalább 6 különböző tényt használj.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Bükki Füvesház\nSells: A bolt szálas gyógyteákat árul, főként egynövényes teákat (kakukkfű, csalánlevél, kamillavirág, borsmentalevél), valamint egy esti teakeveréket és magozott csipkebogyó gyümölcsteát. Kínálatában fekete és zöld tea is szerepel: Assam fekete tea és japán Sencha zöld tea. Teaeszközöket is forgalmaz: öntöttvas és hőálló üveg teáskannát, bögrébe való teaszűrőt és fém teatartó dobozt.\nAudience: Olyan vásárlóknak szól, akik szálas gyógy-, gyümölcs-, fekete és zöld teát főznek otthon. Azoknak is, akiknek a teafőzéshez és -tároláshoz eszközök is kellenek.\nTone: friendly\nNever say: —\n</store>\n\n<topic>\nWorking title: Ajándékötletek teakedvelőknek\nSearch it targets: tea ajándék\n</topic>\n\n<products>\n  P1: Öntöttvas teáskanna 0,8 l (Teáskanna)\n    F1: Az öntöttvas teáskanna űrtartalma 0,8 l.\n    F2: Az öntöttvas teáskanna fekete és mélyzöld színben kapható.\n    F3: Az öntöttvas teáskanna belül zománcozott.\n    F4: Az öntöttvas teáskanna rozsdamentes acél szűrőbetéttel rendelkezik.\n    F5: Az öntöttvas teáskanna űrtartalma 0,8 liter, ami kb. 3 csésze.\n    F6: Az öntöttvas teáskanna nem tűzhelyre való, csak forró víz töltésére használható.\n    F7: Az öntöttvas teáskanna kézzel mosandó, mosogatószer nélkül.\n    F8: Az öntöttvas teáskanna tömege 1,3 kg.\n  P2: Fém teatartó doboz (Tárolás)\n    F9: A Fém teatartó doboz ónozott acélból készült.\n    F10: A Fém teatartó doboz fényzáró.\n    F11: A Fém teatartó doboz dupla fedővel rendelkezik.\n    F12: A Fém teatartó doboz légmentesen zár.\n    F13: A Fém teatartó dobozba 100 g szálas tea fér bele.\n    F14: A Fém teatartó doboz magassága 12 cm.\n    F15: A Fém teatartó doboz átmérője 8 cm.\n  P3: Esti teakeverék (Teakeverék)\n    F16: Az Esti teakeverék 40% citromfűlevelet tartalmaz.\n    F17: Az Esti teakeverék 20% levendulavirágot tartalmaz.\n    F18: Az Esti teakeverék 25% kamillavirágot tartalmaz.\n    F19: Az Esti teakeverék 15% komlótobozt tartalmaz.\n    F20: Az Esti teakeverék koffeinmentes.\n    F21: Az Esti teakeverékből 1 teáskanalat kell 2 dl 90 °C-os vízhez adni.\n    F22: Az Esti teakeveréket 7 percig kell áztatni.\n    F23: Az Esti teakeverék tömege 60 g.\n    F24: Az Esti teakeveréket a Bükki Füvesház forgalmazza.\n    F25: Az Esti teakeverék gyógytea.\n  P4: Sencha zöld tea (Zöld tea)\n    F26: A Sencha zöld tea japán sencha Shizuoka prefektúrából.\n    F27: A Sencha zöld tea első tavaszi szüretből származik.\n    F28: A Sencha zöld tea gőzölt, sodort levél.\n    F29: A Sencha zöld teát 70–80 °C-os vízzel kell elkészíteni.\n    F30: A Sencha zöld teát 1–2 percig kell áztatni.\n    F31: A Sencha zöld tea levele háromszor is felönthető.\n    F32: A Sencha zöld tea kiszerelése 80 g.\n    F33: A Sencha zöld tea koffeines.\n    F34: A Sencha zöld tea forgalmazója a Bükki Füvesház.\n  P5: Hőálló üveg teáskanna 1 l (Teáskanna) [related]\n    F35: A teáskanna hőálló üvegből készült.\n    F36: A teáskanna űrtartalma 1 liter.\n    F37: A teáskanna boroszilikát üvegből készült.\n    F38: A teáskanna kivehető üveg szűrőhengerrel rendelkezik.\n    F39: A teáskanna gázfőzőlapon melegíthető.\n    F40: A teáskanna elektromos főzőlapon melegíthető.\n    F41: A teáskanna mikrohullámú sütőbe tehető.\n    F42: A teáskanna mosogatógépben mosható.\n</products>\n\n<pages>\n  L1: Gyógyteák (collection)\n  L2: Fekete és zöld teák (collection)\n  L3: Teaeszközök (collection)\n  L4: Rólunk (page)\n  L5: Szállítás és visszaküldés (page)\n</pages>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "angle": {
+              "type": "string"
+            },
+            "sections": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "heading": {
+                    "type": "string"
+                  },
+                  "covers": {
+                    "type": "string"
+                  },
+                  "facts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "heading",
+                  "covers",
+                  "facts"
+                ]
+              }
+            },
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "links": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "angle",
+            "sections",
+            "products",
+            "links"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrkSkg53mnUfgudx4Uiw",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"title\":\"Tea ajándék: ötletek teakedvelőknek az esti gyógyteától az öntöttvas kannáig\",\"angle\":\"Az olvasó a cikk végére tudni fogja, hogyan válasszon tea ajándékot az ünnepelt teázási szokásai alapján, és mely teák és teaeszközök adnak jó, akár csomagba is összeállítható ajándékot.\",\"sections\":[{\"heading\":\"Hogyan válasszunk tea ajándékot?\",\"covers\":\"Általános tanács: érdemes figyelni, mit iszik szívesen az ünnepelt (gyógytea, zöld tea, fekete tea), mikor teázik (este vagy napközben), van-e már kannája, tárolója. Egy tea és egy hozzá illő eszköz együtt személyes ajándékcsomagot ad.\",\"facts\":[]},{\"heading\":\"Annak, aki este lazítana: Esti teakeverék\",\"covers\":\"Koffeinmentes gyógyteakeverék esti teázáshoz; összetétel, elkészítés és kiszerelés, ami jól mutat ajándékként.\",\"facts\":[\"F16\",\"F17\",\"F18\",\"F19\",\"F20\",\"F21\",\"F22\",\"F23\"]},{\"heading\":\"A zöldtea-rajongónak: japán Sencha\",\"covers\":\"Shizuokai, első tavaszi szüretből származó, gőzölt, sodort levelű sencha; elkészítési tippek, hogy az ajándékozott jól tudja főzni, és hogy többször felönthető.\",\"facts\":[\"F26\",\"F27\",\"F28\",\"F29\",\"F30\",\"F31\",\"F32\",\"F33\"]},{\"heading\":\"Tartós ajándék: öntöttvas teáskanna\",\"covers\":\"Elegáns, belül zománcozott öntöttvas kanna szűrőbetéttel, két színben; mekkora, és mire figyeljen a megajándékozott (nem tűzhelyre való, kézzel mosandó).\",\"facts\":[\"F2\",\"F3\",\"F4\",\"F5\",\"F6\",\"F7\"]},{\"heading\":\"Ha praktikusabb kanna kell: hőálló üveg teáskanna\",\"covers\":\"Alternatíva annak, aki látni szeretné a tea színét, és kényelmes, mosogatógépbe tehető kannát keres, amely főzőlapon is melegíthető.\",\"facts\":[\"F36\",\"F37\",\"F38\",\"F39\",\"F40\",\"F42\"]},{\"heading\":\"A tökéletes kiegészítő: fém teatartó doboz\",\"covers\":\"Szálas tea tárolására szolgáló légmentes, fényzáró doboz, ami a teaajándék mellé is jól illik; mennyi tea fér bele.\",\"facts\":[\"F10\",\"F11\",\"F12\",\"F13\"]},{\"heading\":\"Állíts össze saját ajándékcsomagot\",\"covers\":\"Ötletpárosítások: esti teakeverék + tartódoboz, sencha + üvegkanna, öntöttvas kanna + kedvenc tea. További választék a gyógyteák, fekete és zöld teák és teaeszközök között; szállítási tudnivalók az időben érkező ajándékhoz.\",\"facts\":[\"F13\",\"F20\",\"F38\"]}],\"products\":[\"P3\",\"P4\",\"P1\",\"P2\"],\"links\":[\"P3\",\"P4\",\"P1\",\"P5\",\"P2\",\"L1\",\"L2\",\"L3\",\"L5\"]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 2837,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1120,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

@@ -6,5 +6,37 @@
   "hu-w01": {
     "publishable": true,
     "note": "Agent's grade, to be checked by a native Hungarian reader. Answers the search in the first paragraph, natural Hungarian, practical tips for cooling water without a thermometer. Product claims match their facts. Over-links the Sencha product page (six links to the same page) and the summary repeats the body; both are prompt-level fixes for the founders' review."
+  },
+  "en-w01": {
+    "publishable": true,
+    "note": "Agent's grade. Answers the search in its first sentence, explains why the method tastes as it does, gives doses for four batch sizes, and states only what the press's facts say. About 1,470 words."
+  },
+  "en-w03": {
+    "publishable": true,
+    "note": "Agent's grade. A gift guide built on a real question (what is the weak link in how they brew?), with each product described strictly from its facts. Reads like a knowledgeable shop assistant, not an advert."
+  },
+  "en-w04": {
+    "publishable": true,
+    "note": "Agent's grade. A clear grind chart as a table, then why burr grinders matter, then the two grinders from their facts. General guidance is uncited but carries no numbers; acceptable under the rules."
+  },
+  "en-w05": {
+    "publishable": false,
+    "note": "Held, so it cannot go out. The reviewer refused roast-specific temperature ranges (93–96 °C for light roasts) as not settled general knowledge. Debatable: a coffee professional would call this common guidance. A question of how strict the reviewer should be on common-knowledge numbers."
+  },
+  "hu-w02": {
+    "publishable": true,
+    "note": "Agent's grade, to be checked by a native Hungarian reader. Short (about 600 words) and practical: why rosehip must be boiled, why pitted fruit matters, step by step. Links the product page six times, as the green-tea article does."
+  },
+  "hu-w03": {
+    "publishable": false,
+    "note": "Held. The reviewer caught a cause the facts do not state (a tablespoon because the flowers are whole) and general claims without the general-knowledge mark. A correct hold under the rules, though mild."
+  },
+  "hu-w04": {
+    "publishable": false,
+    "note": "Held. Claimed a 60 g blend fits a box rated for 100 g of tea, and added judgements (\"takes little shelf space\") that no fact gives. A correct hold."
+  },
+  "hu-w05": {
+    "publishable": false,
+    "note": "Held. Added benefits to the tea strainer that its facts do not state (fine pieces stay in; the ears rest on the rim). A correct hold under the rules; the Hungarian writer infers benefits more often than the English one."
   }
 }

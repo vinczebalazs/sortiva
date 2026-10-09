@@ -1,0 +1,111 @@
+{
+  "recordedAt": "2026-10-09T13:22:10.820Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You plan one blog article for an online shop. You see the shop, the topic and the search it should answer, the shop's products with the checked facts we hold about each (F1, F2…), and the shop's own pages that may be linked.\n\nPlan an article that genuinely answers the search for a shopper, the way a knowledgeable shop assistant would: useful first, products where they truly help. Decide:\n- title: the headline, in English, containing the search or a natural form of it;\n- angle: one sentence on what the reader will come away knowing;\n- sections: four to seven, each with a heading, what it covers, and the facts it will draw on;\n- products: the products worth showing as a card (one to four), by reference;\n- links: pages worth linking from the text, by reference (products P…, pages L…).\n\nThe article may only say about a product what its facts say, so build the product parts around facts that matter for this search. General advice that is not about our products is allowed. At least 6 different facts should be used across the article.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Tidewell Candles\nSells: Tidewell Candles sells candles: scented container candles and unscented taper candles. The range includes an 8 oz sea salt soy candle hand-poured in Portland, Maine, a 12 oz cedar candle in a coconut and soy wax blend with a crackling cherry-wood wick, and a pair of 10-inch pure beeswax tapers made with beeswax from Maine apiaries.\nAudience: People shopping for home candles who care about the wax and wick, such as soy, coconut-soy or pure beeswax, hand-poured or locally sourced in Maine.\nTone: friendly\nNever say: —\n</store>\n\n<topic>\nWorking title: How to Reuse a Candle Jar Once the Candle Is Done\nSearch it targets: how to reuse candle jars\n</topic>\n\n<products>\n  P1: Sea Salt Soy Candle, 8 oz (Candle)\n    F1: The Sea Salt Soy Candle is 8 oz.\n    F2: The Sea Salt Soy Candle is made of 100% soy wax.\n    F3: The Sea Salt Soy Candle is poured by hand in Portland, Maine.\n    F4: The Sea Salt Soy Candle has a cotton wick.\n    F5: The Sea Salt Soy Candle's wick is lead-free.\n    F6: The Sea Salt Soy Candle has a burn time of about 45 hours.\n    F7: The Sea Salt Soy Candle comes in an 8 oz amber glass jar.\n    F8: The Sea Salt Soy Candle's jar has a tin lid.\n    F9: The Sea Salt Soy Candle has scent notes of sea salt, driftwood, and sage.\n    F10: The Sea Salt Soy Candle is made by Tidewell.\n  P2: Cedar Wood-Wick Candle, 12 oz (Candle)\n    F11: The Cedar Wood-Wick Candle is 12 oz.\n    F12: The Cedar Wood-Wick Candle is made by Tidewell.\n    F13: The Cedar Wood-Wick Candle is made with a coconut and soy wax blend.\n    F14: The Cedar Wood-Wick Candle has a cherry-wood wick that crackles as it burns.\n    F15: The Cedar Wood-Wick Candle has a burn time of about 60 hours.\n    F16: The Cedar Wood-Wick Candle comes in a 12 oz ceramic vessel.\n    F17: The Cedar Wood-Wick Candle's vessel is reusable.\n    F18: The Cedar Wood-Wick Candle's wick should be trimmed to 3 mm before each burn.\n    F19: The Cedar Wood-Wick Candle has scent notes of cedar, black pepper, and vetiver.\n</products>\n\n<pages>\n  L1: Candles (collection)\n</pages>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "angle": {
+              "type": "string"
+            },
+            "sections": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "heading": {
+                    "type": "string"
+                  },
+                  "covers": {
+                    "type": "string"
+                  },
+                  "facts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "heading",
+                  "covers",
+                  "facts"
+                ]
+              }
+            },
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "links": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "angle",
+            "sections",
+            "products",
+            "links"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrjWbVgGgN5jQRdS1yxL",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"title\":\"How to Reuse Candle Jars: Cleaning Tips and Second-Life Ideas\",\"angle\":\"Readers will learn how to safely get leftover wax out of a finished candle jar, clean it properly, and turn it into something useful, plus which Tidewell vessels make especially good keepers.\",\"sections\":[{\"heading\":\"When a Candle Is Really Done\",\"covers\":\"General advice on stopping a burn when about half an inch of wax remains, why burning to the bottom can overheat the container, and letting the jar cool fully before working on it.\",\"facts\":[]},{\"heading\":\"Getting the Leftover Wax Out\",\"covers\":\"General methods: freezing the jar so the wax pops out, the hot-water method, and gently warming then pouring off wax. How soy and coconut-soy waxes tend to release more easily and wash up with warm soapy water. Removing the wick tab.\",\"facts\":[\"F2\",\"F13\"]},{\"heading\":\"Cleaning and Removing Labels\",\"covers\":\"Washing with warm soapy water, removing sticker residue with oil or baking soda paste, drying thoroughly, and tips for glass versus ceramic surfaces.\",\"facts\":[]},{\"heading\":\"Ideas for Your Empty Jar\",\"covers\":\"Reuse ideas: bathroom storage for cotton swabs, a pen or makeup brush holder, a small planter for succulents, a pantry jar for spices or tea, a vase for small stems, or refilling with new wax for a homemade candle.\",\"facts\":[]},{\"heading\":\"Tidewell Jars Worth Keeping\",\"covers\":\"Why the Sea Salt Soy Candle's amber glass jar with tin lid makes a handy lidded storage jar, and why the Cedar Wood-Wick Candle's ceramic vessel is designed to be reused, e.g. as a planter or desk cup.\",\"facts\":[\"F7\",\"F8\",\"F1\",\"F16\",\"F17\",\"F11\"]},{\"heading\":\"Enjoying the Candle Before the Jar\",\"covers\":\"Brief notes on getting a full burn before reuse: burn times, trimming the wood wick to 3 mm each time, and the cotton lead-free wick and scents of each candle.\",\"facts\":[\"F6\",\"F15\",\"F18\",\"F14\",\"F4\",\"F5\",\"F9\",\"F19\",\"F3\"]}],\"products\":[\"P1\",\"P2\"],\"links\":[\"P1\",\"P2\",\"L1\"]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1774,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 782,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

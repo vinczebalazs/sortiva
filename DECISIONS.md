@@ -201,6 +201,18 @@ Taken by the agent overnight while the founders were offline; each can be overru
 
 **Unverified.** Downloads from inside the Shopify admin frame; every reviewing-model floor until the founders grade the articles; Hungarian quality until a Hungarian reader grades it.
 
+## 2026-10-09 — Checkpoint 3 complete; evals run
+
+After the founders topped up Anthropic, every eval ran (6.99 USD).
+
+- **Judge: 20 of 20.** The reviewer passed every draft written to pass, and failed every flawed one on exactly the intended score: stretched product claims, filler, a buried answer, an advert's tone, a made-up statistic marked as common knowledge.
+- **Distillation: 50 of 50**, after a fix the eval found: facts naming a product with a number in its name ("Ridgeline 2") were refused because the name's number was missing from the quote. Fixed in the fact check; no fixture shop was affected.
+- **Writer: 12 of 20 passed the gate**: English 8 of 10, Hungarian 4 of 10. Holds: six on the reviewer's grounding score or filler, one for a general-knowledge range the reviewer refused, one Hungarian article too short (525 words). Nineteen of twenty first drafts needed the repair.
+
+**Checkpoint 3: 6 of the 10 articles passed the gate, and the agent would publish all 6**: four English (French press, cold brew, gifts for coffee lovers, grind-size chart), two Hungarian (green tea, rosehip tea). That is below the build plan's bar of seven of ten. The founders' grades decide; the agent's are on the page, labelled.
+
+**Agent's reading.** The checks and the reviewer work as intended: what they hold, they hold for a stated reason a person can verify. What keeps the count down is that the writer, especially in Hungarian, adds small inferences beyond its facts ("the strainer's ears rest on the mug's rim" when the fact says only that it has two ears; a 60 g blend "fits" a box rated for 100 g). Two changes are for the founders to choose between or combine: (1) tell the writer plainly not to add any benefit, cause or comparison a fact does not state, in both languages, and give the Hungarian prompt an example; (2) relax the reviewer so a reasonable everyday inference is not a grounding failure. The first keeps rule 2 strict and is the agent's recommendation. Separately, the reviewer refused roast-specific brewing temperatures as common knowledge; whether that is too strict is a founder call on the 8 October rule.
+
 ## Spend
 
 Running total of what this build has spent on the founders' keys.
@@ -215,5 +227,6 @@ Running total of what this build has spent on the founders' keys.
 | 2026-10-08 | Anthropic | Topic prompt version 3 (wide menu of article kinds) across all scenarios (14 calls) | 0.58 |
 | 2026-10-08 | DataForSEO | Checkpoint 2 with version 3: monthly searches for the two rich shops, their top ten | 0.19 |
 | 2026-10-09 | Anthropic | Phase 3 recordings: articles planned, drafted, repaired and reviewed for the rich shops, and the seeded-flaw scenarios (51 calls), until the credit ran out | 4.49 |
+| 2026-10-09 | Anthropic | Evals after the top-up: 50 distillation cases, 20 judge cases, 18 writer articles (139 calls) | 6.99 |
 
-**Total: 7.72 USD** (Anthropic 7.15, DataForSEO 0.57). The Anthropic account is out of credit as of 2026-10-09. DataForSEO balance left: 0.26 USD. Anthropic figures are computed from the token counts in the committed recordings at 4 / 20 USD per million input / output tokens; DataForSEO figures from the account balance before and after.
+**Total: 14.71 USD** (Anthropic 14.14, DataForSEO 0.57). DataForSEO balance after the top-up: 50.26 USD. Anthropic figures are computed from the token counts in the committed recordings at 4 / 20 USD per million input / output tokens; DataForSEO figures from the account balance before and after.

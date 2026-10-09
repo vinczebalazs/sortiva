@@ -1,0 +1,116 @@
+{
+  "recordedAt": "2026-10-09T13:24:21.382Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "You plan one blog article for an online shop. You see the shop, the topic and the search it should answer, the shop's products with the checked facts we hold about each (F1, F2…), and the shop's own pages that may be linked.\n\nPlan an article that genuinely answers the search for a shopper, the way a knowledgeable shop assistant would: useful first, products where they truly help. Decide:\n- title: the headline, in English, containing the search or a natural form of it;\n- angle: one sentence on what the reader will come away knowing;\n- sections: four to seven, each with a heading, what it covers, and the facts it will draw on;\n- products: the products worth showing as a card (one to four), by reference;\n- links: pages worth linking from the text, by reference (products P…, pages L…).\n\nThe article may only say about a product what its facts say, so build the product parts around facts that matter for this search. General advice that is not about our products is allowed. At least 6 different facts should be used across the article.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Northpaw Dog Supply\nSells: Northpaw Dog Supply sells walking gear for dogs, including a front-clip no-pull harness, a 6 ft biothane leash, a 30 ft training long line and a rechargeable LED collar light. It also sells beds and blankets, namely a memory foam dog bed with a removable cover and a machine-washable fleece dog blanket.\nAudience: Dog owners who walk and train their dogs, including those dealing with leash pulling or walking in low light, and who want a comfortable bed or blanket for their dog at home.\nTone: friendly\nNever say: —\n</store>\n\n<topic>\nWorking title: How to Use a Long Line for Recall Training\nSearch it targets: long leash for recall\n</topic>\n\n<products>\n  P1: Training Long Line, 30 ft (Leash)\n    F1: The Training Long Line is 30 ft long.\n    F2: The Training Long Line is a leash.\n    F3: The Training Long Line is made by Northpaw.\n    F4: The Training Long Line is made of lightweight biothane.\n    F5: The Training Long Line is intended for recall practice.\n    F6: The Training Long Line has no handle loop.\n    F7: The Training Long Line floats in water.\n    F8: The Training Long Line has a stainless steel swivel clip.\n  P2: Front-Clip No-Pull Harness (Harness)\n    F9: The Front-Clip No-Pull Harness is a harness.\n    F10: The Front-Clip No-Pull Harness is made by Northpaw.\n    F11: The Front-Clip No-Pull Harness is available in sizes XS, S, M, L, and XL.\n    F12: The Front-Clip No-Pull Harness has a leash ring on the chest that turns the dog sideways when it pulls.\n    F13: The Front-Clip No-Pull Harness has four adjustment points.\n    F14: The Front-Clip No-Pull Harness has a padded neoprene chest plate.\n    F15: The Front-Clip No-Pull Harness has reflective stitching.\n    F16: The Front-Clip No-Pull Harness fits a chest girth of 13–42 in across sizes XS to XL.\n  P3: Biothane Leash, 6 ft (Leash) [related]\n    F17: The Biothane Leash is 6 ft long.\n    F18: The Biothane Leash is made of coated webbing that does not absorb water or smell.\n    F19: The Biothane Leash is 5/8 in wide.\n    F20: The Biothane Leash has a brass snap hook.\n    F21: The Biothane Leash can be wiped clean.\n    F22: The Biothane Leash has a breaking strength of 600 lb.\n    F23: The Biothane Leash is made by Northpaw.\n</products>\n\n<pages>\n  L1: Walking gear (collection)\n  L2: Beds and blankets (collection)\n  L3: How to choose a dog harness (article)\n  L4: Dog leash length guide: 4 ft, 6 ft or long line? (article)\n  L5: Orthopedic dog beds explained (article)\n  L6: Harness size guide (page)\n</pages>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "angle": {
+              "type": "string"
+            },
+            "sections": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "heading": {
+                    "type": "string"
+                  },
+                  "covers": {
+                    "type": "string"
+                  },
+                  "facts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "heading",
+                  "covers",
+                  "facts"
+                ]
+              }
+            },
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "links": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "angle",
+            "sections",
+            "products",
+            "links"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrjfnzycMeumjdfsL2RG",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "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"
+      },
+      {
+        "type": "text",
+        "text": "{\"title\":\"Long Leash for Recall: How to Use a Long Line to Train a Reliable Come\",\"angle\":\"Readers will learn why a long leash is the safest bridge to off-leash recall, what to look for in a long line and harness, and a simple step-by-step plan for practicing recall without losing control.\",\"sections\":[{\"heading\":\"Why a long leash makes recall training safer\",\"covers\":\"Explains the gap between leash walks and off-leash freedom: a long line lets the dog roam and make choices at a distance while the owner can still stop a run-off and reinforce the come cue. Introduces the Training Long Line as a tool built for exactly this job.\",\"facts\":[\"F1\",\"F2\",\"F5\",\"F3\"]},{\"heading\":\"What to look for in a long line for recall\",\"covers\":\"General advice on length (enough room to practice distance without becoming unmanageable), weight, material that stays clean and doesn't get waterlogged, and a secure clip. Walks through how the 30 ft Training Long Line fits these points, including that it has no handle loop, which owners should know before choosing it.\",\"facts\":[\"F1\",\"F4\",\"F7\",\"F8\",\"F6\"]},{\"heading\":\"Attach it to a harness, not a collar\",\"covers\":\"General safety advice: a dog hitting the end of a long line at speed can jolt the neck, so a well-fitted harness is the better attachment point for long-line work. Covers getting a good fit and how the Front-Clip No-Pull Harness adjusts across a wide range of sizes, with a nod to its chest ring for everyday walks with pullers. Links to the harness guide and size guide.\",\"facts\":[\"F9\",\"F11\",\"F13\",\"F14\",\"F16\",\"F12\"]},{\"heading\":\"Step-by-step recall drills on a long line\",\"covers\":\"Practical training plan: start in a quiet space with the line short, call once in a happy voice, reward generously, gradually let out more line and add distance, then add mild distractions. Includes tips such as never calling the dog to something unpleasant and ending sessions on a success.\",\"facts\":[\"F1\",\"F5\"]},{\"heading\":\"Handling the line safely\",\"covers\":\"General handling advice: keep slack off the ground near your feet, never wrap the line around hands or fingers, consider gloves, let the line drag only in open, safe areas, and watch for tangles around legs, trees and other dogs. Notes that the lightweight line floats, which helps around ponds and streams.\",\"facts\":[\"F4\",\"F7\",\"F6\"]},{\"heading\":\"From long line back to everyday leash\",\"covers\":\"How to judge when recall is reliable enough to reduce reliance on the long line, and why a standard leash still belongs in the walking kit for streets and busy paths. Introduces the 6 ft Biothane Leash as an easy-care partner to the long line, and links to the leash length guide.\",\"facts\":[\"F17\",\"F18\",\"F21\",\"F22\"]}],\"products\":[\"P1\",\"P2\",\"P3\"],\"links\":[\"P1\",\"P2\",\"P3\",\"L4\",\"L3\",\"L6\",\"L1\"]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1859,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1398,
+      "output_tokens_details": {
+        "thinking_tokens": 429
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

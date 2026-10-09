@@ -1,0 +1,111 @@
+{
+  "recordedAt": "2026-10-09T13:40:21.890Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "Egy webáruház egyetlen blogcikkét tervezed meg. Látod a boltot, a témát és a keresést, amelyre a cikknek válaszolnia kell, a bolt termékeit az általunk ellenőrzött tényekkel (F1, F2…), valamint a bolt saját oldalait, amelyekre hivatkozni lehet.\n\nOlyan cikket tervezz, amely valóban megválaszolja a vásárló keresését, ahogyan egy hozzáértő bolti eladó tenné: először legyen hasznos, a termékek ott jelenjenek meg, ahol tényleg segítenek. Döntsd el:\n- title: a cím magyarul, benne a kereséssel vagy annak természetes alakjával;\n- angle: egy mondat arról, mit fog tudni az olvasó a cikk végére;\n- sections: négy-hét szakasz, mindegyiknek címe, tartalma és a tények, amelyekre épít;\n- products: a kártyaként megjelenítendő termékek (egy-négy), hivatkozással;\n- links: a szövegből linkelendő oldalak hivatkozással (termékek P…, oldalak L…).\n\nA cikk egy termékről csak azt mondhatja, amit a tényei mondanak, ezért a termékekről szóló részeket a keresés szempontjából fontos tényekre építsd. A termékeinkről nem szóló általános tanács megengedett. A cikk egészében legalább 6 különböző tényt használj.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Mézeskert Méhészet\nSells: A Mézeskert Méhészet mézeket árul: két fajtamézet, 500 g-os kiszerelésben, a nyírségi májusi pergetésű akácmézet és a júniusban pergetett hársmézet. Emellett van egy 250 g-os krémméz is, amely vegyes virágmézből készül kenhetőre keverve, 2% szárított tihanyi levendulavirággal.\nAudience: Azoknak szól, akik mézet keresnek: fajtamézet vagy kenhető, ízesített krémmézet.\nTone: friendly\nNever say: —\n</store>\n\n<topic>\nWorking title: Akácméz vagy hársméz: miben különböznek?\nSearch it targets: akácméz vagy hársméz\n</topic>\n\n<products>\n  P1: Akácméz 500 g (Méz)\n    F1: Az Akácméz nettó tömege 500 g.\n    F2: Az Akácméz fajtaméz.\n    F3: Az Akácméz a Nyírségből származik.\n    F4: Az Akácméz 2026. májusi pergetésű.\n    F5: Az Akácméz hőkezeletlen.\n    F6: Az Akácméz szűrt.\n    F7: Az Akácméz színe világos, vízszerű.\n    F8: Az Akácméz magas fruktóztartalma miatt sokáig folyékony marad.\n    F9: Az Akácméz 500 g-os üvegben, fém tetővel kapható.\n  P2: Hársméz 500 g (Méz)\n    F10: A Hársméz nettó tömege 500 g.\n    F11: A Hársméz a Mézeskert terméke.\n    F12: A Hársméz fajtaméz.\n    F13: A Hársmézet hársvirágzáskor, júniusban pergették.\n    F14: A Hársméz a Bakonyból származik.\n    F15: A Hársméz hőkezeletlen.\n    F16: A Hársméz enyhén mentolos, kesernyés utóízű.\n    F17: A Hársméz néhány hónap alatt finom szemcsésre kristályosodik.\n    F18: A kristályosodott Hársméz 40 °C alatti vízfürdőben újra folyékony lesz.\n</products>\n\n<pages>\n  L1: Mézek (collection)\n</pages>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "angle": {
+              "type": "string"
+            },
+            "sections": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "heading": {
+                    "type": "string"
+                  },
+                  "covers": {
+                    "type": "string"
+                  },
+                  "facts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "heading",
+                  "covers",
+                  "facts"
+                ]
+              }
+            },
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "links": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "angle",
+            "sections",
+            "products",
+            "links"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrktqcDeaDtqnz36GzMf",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"title\":\"Akácméz vagy hársméz? Így különböznek, és így válassz közöttük\",\"angle\":\"Az olvasó a cikk végére tudni fogja, miben tér el az akácméz és a hársméz ízben, színben, eredetben és kristályosodásban, és melyik illik jobban az ő szokásaihoz.\",\"sections\":[{\"heading\":\"Röviden: a két fajtaméz egy mondatban\",\"covers\":\"Gyors válasz a keresésre: az akácméz világos, szelíd és sokáig folyékony marad, a hársméz karakteresebb, mentolos-kesernyés utóízű, és idővel finom szemcsésre kristályosodik. Mindkettő fajtaméz, 500 g-os kiszerelésben.\",\"facts\":[\"F2\",\"F12\",\"F7\",\"F16\",\"F8\",\"F17\",\"F1\",\"F10\"]},{\"heading\":\"Honnan jönnek és mikor pergették őket?\",\"covers\":\"Az eredet és a pergetés ideje: az akácméz a Nyírségből, májusi pergetésből, a hársméz a Bakonyból, júniusban, hársvirágzáskor pergetve. Általános magyarázat arról, miért ad más ízt a különböző virágzás.\",\"facts\":[\"F3\",\"F4\",\"F14\",\"F13\"]},{\"heading\":\"Íz és szín: szelíd vagy karakteres?\",\"covers\":\"Az akácméz világos, vízszerű színe és a hársméz enyhén mentolos, kesernyés utóíze. Általános tanács: aki édesítőként, semleges ízzel használná a mézet (tea, joghurt, gyerekeknek), annak az akác, aki önálló ízt keres, annak a hárs lehet a jó választás.\",\"facts\":[\"F7\",\"F16\"]},{\"heading\":\"Kristályosodás: miért marad folyékony az egyik, és miért nem a másik?\",\"covers\":\"Az akácméz magas fruktóztartalma miatt sokáig folyékony marad, a hársméz néhány hónap alatt finom szemcsésre kristályosodik. Megnyugtatás: a kristályosodás természetes folyamat, nem a minőségromlás jele, és a hársméz 40 °C alatti vízfürdőben újra folyékonnyá tehető.\",\"facts\":[\"F8\",\"F17\",\"F18\"]},{\"heading\":\"Feldolgozás és kiszerelés\",\"covers\":\"Mindkét méz hőkezeletlen, az akácméz szűrt is. Az akácméz 500 g-os üvegben, fém tetővel kapható. Általános tárolási tipp: száraz, hűvös helyen, jól lezárva tartsuk a mézet.\",\"facts\":[\"F5\",\"F15\",\"F6\",\"F9\"]},{\"heading\":\"Melyiket válaszd?\",\"covers\":\"Összefoglaló döntési segítség: akác, ha szelíd ízt és tartósan folyékony mézet szeretnél; hárs, ha karakteres, mentolos utóízt keresel, és nem zavar a kristályosodás. Ha bizonytalan vagy, érdemes mindkettőt kipróbálni, a teljes kínálat a Mézek oldalon látható.\",\"facts\":[\"F8\",\"F16\",\"F17\"]}],\"products\":[\"P1\",\"P2\"],\"links\":[\"P1\",\"P2\",\"L1\"]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 1808,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1116,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

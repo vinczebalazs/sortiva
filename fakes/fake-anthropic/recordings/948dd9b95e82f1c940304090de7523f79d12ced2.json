@@ -1,0 +1,146 @@
+{
+  "recordedAt": "2026-10-09T13:36:02.813Z",
+  "request": {
+    "model": "claude-opus-5-5",
+    "max_tokens": 8000,
+    "system": "Egy webáruház blogcikkét bírálod, amelyet a bolt hamarosan közzétesz. Nem te írtad. Látod a boltot, a témát és a keresést, amelyre szól, a bolt termékeit az általunk ellenőrzött tényekkel (F1, F2…), és a cikket. A termékekről szóló mondatok végén zárójelben állnak a tények, amelyekre épülnek; a [G] olyan mondatot jelöl, amelyet az író általános tudásnak mond.\n\nPontozd 1-től 5-ig:\n- grounding: minden, amit a cikk a bolt termékeiről mond, pontosan az, amit a hivatkozott tények mondanak, semmi hozzáadás, túlzás vagy sugallat. Egyetlen, a tényekkel alá nem támasztott termékállítás legfeljebb 2 pontot enged. Nincs kitalált tapasztalat („kipróbáltuk”, vásárlói történetek), statisztika vagy kutatás.\n- information_gain: aki ezt kereste, hasznosat és konkrétat tud meg belőle, nem csak bárhol olvasható általánosságokat. A töltelék, az ismétlés és a homályos dicséret rontja.\n- structure: korán válaszol a keresésre, a szakaszok értelmes sorrendben követik egymást, a címek megmondják, mi van alattuk, a listák és táblázatok ott vannak, ahol segítenek.\n- fit: illik ehhez a bolthoz, a közönségéhez és a hangneméhez, a témánál marad, és nem hat reklámnak.\nAz 5 kiváló, a 4 ebben a formában közzétehető, a 3 elfogadható, de hibás, a 2 és az 1 nem közzétehető.\n\nSorold fel a hibákat: mindegyiknél szó szerint idézd a mondatot, és írd le, mi a baj, a legsúlyosabbal kezdve. Ha nincs hiba, hagyd üresen a listát.\n\nMinden megadott általános tudású mondatnál (G1, G2…) add meg a hivatkozását, és mondd meg, hogy minden benne szereplő szám jól megalapozott, vitathatatlan, forrást nem igénylő általános tudás-e (accepted true), vagy nem (false), röviden indokolva.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "<store>\nName: Bükki Füvesház\nSells: A bolt szálas gyógyteákat árul, főként egynövényes teákat (kakukkfű, csalánlevél, kamillavirág, borsmentalevél), valamint egy esti teakeveréket és magozott csipkebogyó gyümölcsteát. Kínálatában fekete és zöld tea is szerepel: Assam fekete tea és japán Sencha zöld tea. Teaeszközöket is forgalmaz: öntöttvas és hőálló üveg teáskannát, bögrébe való teaszűrőt és fém teatartó dobozt.\nAudience: Olyan vásárlóknak szól, akik szálas gyógy-, gyümölcs-, fekete és zöld teát főznek otthon. Azoknak is, akiknek a teafőzéshez és -tároláshoz eszközök is kellenek.\nTone: friendly\nNever say: —\n</store>\n\n<topic>\nWorking title: Ajándékötletek teakedvelőknek\nSearch it targets: tea ajándék\n</topic>\n\n<products>\n  P1: Öntöttvas teáskanna 0,8 l (Teáskanna)\n    F1: Az öntöttvas teáskanna űrtartalma 0,8 l.\n    F2: Az öntöttvas teáskanna fekete és mélyzöld színben kapható.\n    F3: Az öntöttvas teáskanna belül zománcozott.\n    F4: Az öntöttvas teáskanna rozsdamentes acél szűrőbetéttel rendelkezik.\n    F5: Az öntöttvas teáskanna űrtartalma 0,8 liter, ami kb. 3 csésze.\n    F6: Az öntöttvas teáskanna nem tűzhelyre való, csak forró víz töltésére használható.\n    F7: Az öntöttvas teáskanna kézzel mosandó, mosogatószer nélkül.\n    F8: Az öntöttvas teáskanna tömege 1,3 kg.\n  P2: Fém teatartó doboz (Tárolás)\n    F9: A Fém teatartó doboz ónozott acélból készült.\n    F10: A Fém teatartó doboz fényzáró.\n    F11: A Fém teatartó doboz dupla fedővel rendelkezik.\n    F12: A Fém teatartó doboz légmentesen zár.\n    F13: A Fém teatartó dobozba 100 g szálas tea fér bele.\n    F14: A Fém teatartó doboz magassága 12 cm.\n    F15: A Fém teatartó doboz átmérője 8 cm.\n  P3: Esti teakeverék (Teakeverék)\n    F16: Az Esti teakeverék 40% citromfűlevelet tartalmaz.\n    F17: Az Esti teakeverék 20% levendulavirágot tartalmaz.\n    F18: Az Esti teakeverék 25% kamillavirágot tartalmaz.\n    F19: Az Esti teakeverék 15% komlótobozt tartalmaz.\n    F20: Az Esti teakeverék koffeinmentes.\n    F21: Az Esti teakeverékből 1 teáskanalat kell 2 dl 90 °C-os vízhez adni.\n    F22: Az Esti teakeveréket 7 percig kell áztatni.\n    F23: Az Esti teakeverék tömege 60 g.\n    F24: Az Esti teakeveréket a Bükki Füvesház forgalmazza.\n    F25: Az Esti teakeverék gyógytea.\n  P4: Sencha zöld tea (Zöld tea)\n    F26: A Sencha zöld tea japán sencha Shizuoka prefektúrából.\n    F27: A Sencha zöld tea első tavaszi szüretből származik.\n    F28: A Sencha zöld tea gőzölt, sodort levél.\n    F29: A Sencha zöld teát 70–80 °C-os vízzel kell elkészíteni.\n    F30: A Sencha zöld teát 1–2 percig kell áztatni.\n    F31: A Sencha zöld tea levele háromszor is felönthető.\n    F32: A Sencha zöld tea kiszerelése 80 g.\n    F33: A Sencha zöld tea koffeines.\n    F34: A Sencha zöld tea forgalmazója a Bükki Füvesház.\n  P5: Hőálló üveg teáskanna 1 l (Teáskanna) [related]\n    F35: A teáskanna hőálló üvegből készült.\n    F36: A teáskanna űrtartalma 1 liter.\n    F37: A teáskanna boroszilikát üvegből készült.\n    F38: A teáskanna kivehető üveg szűrőhengerrel rendelkezik.\n    F39: A teáskanna gázfőzőlapon melegíthető.\n    F40: A teáskanna elektromos főzőlapon melegíthető.\n    F41: A teáskanna mikrohullámú sütőbe tehető.\n    F42: A teáskanna mosogatógépben mosható.\n</products>\n\n<pages>\n  L1: Gyógyteák (collection)\n  L2: Fekete és zöld teák (collection)\n  L3: Teaeszközök (collection)\n  L4: Rólunk (page)\n  L5: Szállítás és visszaküldés (page)\n</pages>\n\n<article>\nTitle: Tea ajándék: ötletek teakedvelőknek az esti gyógyteától az öntöttvas kannáig\n\nAkkor lesz jó a tea ajándék, ha az ünnepelt saját teázási szokásaihoz igazodik. Mit iszik szívesen? Mikor teázik? Milyen eszköz hiányzik még a konyhájából? Egy jól eltalált tea és egy hozzá illő kanna vagy tartódoboz együtt személyes és praktikus ajándékcsomagot ad. Alább összegyűjtöttük, mit érdemes választani a különböző teakedvelőknek, és hogyan párosíthatod a teákat és az eszközöket.\n\n## Hogyan válasszunk tea ajándékot?\n\nMielőtt bármit a kosárba tennél, gondold végig néhány egyszerű kérdést az ünnepeltről:\n\n- **Milyen teát szeret?** Gyógyteát, zöld teát vagy inkább fekete teát iszik?\n- **Mikor teázik?** Esti, lazító teázáshoz más illik, mint egy napközbeni, frissítő csészéhez.\n- **Van már kannája?** Ha még nincs, egy szép teáskanna sokáig vele maradó ajándék lehet.\n- **Hol tárolja a teáit?** A szálas teának jól záró, fénytől védett hely kell, így egy tartódoboz is hasznos meglepetés.\n\nHa ezekre megvan a válasz, már csak a párosítás van hátra. Egy tea és egy hozzá illő eszköz együtt sokkal személyesebb, mint bármelyik külön.\n\n## Annak, aki este lazítana: Esti teakeverék\n\nHa az ünnepelt szereti egy csésze teával zárni a napot, [Esti teakeverékünk](P3) koffeinmentes gyógytea, így esti teázáshoz is jó választás [F20, F25]. A keverék négy növényből áll [F16, F17, F18, F19]:\n\n- 40% citromfűlevél [F16]\n- 25% kamillavirág [F18]\n- 20% levendulavirág [F17]\n- 15% komlótoboz [F19]\n\nAz elkészítése egyszerű, ezt érdemes egy kis kártyán az ajándék mellé írni. Az [Esti teakeverékből](P3) 1 teáskanalat kell 2 dl 90 °C-os vízhez adni [F21]. Ezután 7 percig kell áztatni [F22]. A kiszerelés 60 g, ami kedves, kézbe illő ajándékmennyiség [F23].\n\n{{P3}}\n\n## A zöldtea-rajongónak: japán Sencha\n\nA zöld teát kedvelőknek [Sencha zöld teánk](P4) japán sencha Shizuoka prefektúrából [F26]. Első tavaszi szüretből származik [F27]. A levele gőzölt és sodort [F28].\n\nHogy a megajándékozott a lehető legjobban tudja elkészíteni, ezeket érdemes neki elárulni:\n\n- A [Senchát](P4) 70–80 °C-os vízzel kell elkészíteni [F29].\n- Az áztatási idő 1–2 perc [F30].\n- A levele háromszor is felönthető, így egy adag több körön át kitart egy hosszabb teázás alatt [F31].\n\nA [Sencha zöld tea](P4) koffeines, ezért inkább napközbeni teázáshoz illik [F33]. Kiszerelése 80 g [F32].\n\n{{P4}}\n\n## Tartós ajándék: öntöttvas teáskanna\n\nAki valami maradandót adna, annak egy elegáns kanna remek választás. [Öntöttvas teáskannánk](P1) belül zománcozott [F3]. Rozsdamentes acél szűrőbetéttel rendelkezik, így a szálas tea közvetlenül benne főzhető [F4]. Fekete és mélyzöld színben kapható, vagyis az ünnepelt ízléséhez is igazíthatod [F2].\n\nAz [öntöttvas kanna](P1) űrtartalma 0,8 liter, ami körülbelül 3 csésze [F5]. Ez kényelmes méret egy kettesben töltött teázáshoz.\n\nNéhány tudnivaló, amit érdemes a megajándékozottnak is továbbadni:\n\n- Az [öntöttvas teáskanna](P1) nem tűzhelyre való, csak forró víz töltésére használható [F6].\n- Kézzel mosandó, mosogatószer nélkül [F7].\n\n{{P1}}\n\n## Ha praktikusabb kanna kell: hőálló üveg teáskanna\n\nHa az ünnepelt szereti látni, ahogy a tea színe kibontakozik, [hőálló üveg teáskannánk](P5) jó alternatíva, hiszen boroszilikát üvegből készült [F37]. Űrtartalma 1 liter, így nagyobb társaságnak is jut belőle [F36]. Kivehető üveg szűrőhengerrel rendelkezik, így a levelek könnyen eltávolíthatók, ha elérted a kívánt áztatási időt [F38].\n\nA hétköznapokban is kényelmes: az [üveg teáskanna](P5) gázfőzőlapon és elektromos főzőlapon is melegíthető [F39, F40]. A mosogatással sincs gond, mert mosogatógépben mosható [F42].\n\n{{P5}}\n\n## A tökéletes kiegészítő: fém teatartó doboz\n\nA szálas tea akkor marad sokáig élvezetes, ha jól záró, fénytől védett helyen tárolják. [Fém teatartó dobozunk](P2) fényzáró, és légmentesen zár [F10, F12]. Dupla fedővel rendelkezik [F11]. Ónozott acélból készült [F9].\n\nA [teatartó dobozba](P2) 100 g szálas tea fér bele [F13]. Magassága 12 cm, átmérője 8 cm, így a polcon sem foglal sok helyet [F14, F15]. Önmagában is figyelmes ajándék, de egy teacsomag mellé téve lesz igazán kerek.\n\n{{P2}}\n\n## Állíts össze saját ajándékcsomagot\n\nA legszemélyesebb tea ajándék gyakran egy saját kezűleg összeválogatott csomag. Íme néhány párosítási ötlet:\n\n### Esti teakeverék + fém teatartó doboz\n\nA 60 g-os [Esti teakeverék](P3) elfér a 100 g befogadására alkalmas [teatartó dobozban](P2) [F23, F13]. Mivel a keverék koffeinmentes, ez a páros annak szól, aki esténként szeret teázni [F20].\n\n### Sencha + hőálló üveg teáskanna\n\nA [Sencha zöld teához](P4) jól illik a [hőálló üveg teáskanna](P5), mert a kivehető szűrőhenger segít, hogy a rövid áztatási idő után könnyen kiemelhesd a leveleket [F30, F38]. A sencha levele háromszor is felönthető, így ugyanazzal a szűrőhengerrel több kör is főzhető [F31, F38].\n\n### Öntöttvas teáskanna + kedvenc tea\n\nAz [öntöttvas teáskannához](P1) válassz egy teát, amelyet az ünnepelt biztosan szeret [F4]. Böngészd végig [gyógyteáinkat](L1), vagy nézz szét a [fekete és zöld teák](L2) között, ha klasszikusabb ízeket keresel.\n\nHa még több eszközzel egészítenéd ki a csomagot, a [teaeszközök](L3) között találsz további ötleteket. Bármelyik párosítás mellett döntesz, egy pár soros kézzel írt üzenet és egy rövid elkészítési útmutató még személyesebbé teszi az ajándékot. Jó válogatást és sok kellemes teázást kívánunk!\n</article>\n\n<general_knowledge>\n—\n</general_knowledge>"
+      }
+    ],
+    "output_config": {
+      "effort": "medium",
+      "format": {
+        "type": "json_schema",
+        "schema": {
+          "$defs": {
+            "__schema0": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "integer",
+                  "description": "{minimum: 1, maximum: 5}"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "score",
+                "note"
+              ]
+            }
+          },
+          "type": "object",
+          "properties": {
+            "grounding": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "information_gain": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "structure": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "fit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "problems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "problem": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "quote",
+                  "problem"
+                ]
+              }
+            },
+            "general_numbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ref",
+                  "accepted",
+                  "reason"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "grounding",
+            "information_gain",
+            "structure",
+            "fit",
+            "problems",
+            "general_numbers"
+          ],
+          "description": "{$schema: \"https://json-schema.org/draft/2020-12/schema\"}"
+        }
+      }
+    }
+  },
+  "status": 200,
+  "response": {
+    "model": "claude-opus-5-5",
+    "id": "msg_011CfrkZZZYGC7aGqFWuNn8G",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "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"
+      },
+      {
+        "type": "text",
+        "text": "{\"grounding\":{\"score\":3,\"note\":\"A termékállítások többsége pontosan követi a tényeket. Van azonban néhány nem alátámasztott következtetés. A legsúlyosabb, hogy a cikk szerint a 60 g Esti keverék elfér a dobozban. Ezen kívül a cikk minősít is („kettesben töltött teázáshoz”, „nem foglal sok helyet”), és rossz hivatkozás is akad.\"},\"information_gain\":{\"score\":4,\"note\":\"Konkrét adatokat ad: összetételt, elkészítési paramétereket, használati korlátokat és párosítási ötleteket. Az ajándékozó és a megajándékozott is hasznosíthatja. A bevezető kérdéslista kissé általános.\"},\"structure\":{\"score\":4,\"note\":\"Korán rátér a választási szempontokra. A szakaszok címei világosak, a lista és a párosítási rész logikus. A termékszakaszok hossza és sorrendje rendben van.\"},\"fit\":{\"score\":4,\"note\":\"Barátságos hangnem, a bolt kínálatához illik és a témánál marad. Helyenként kissé reklámízű („remek választás”, „kézbe illő ajándékmennyiség”).\"},\"problems\":[{\"quote\":\"A 60 g-os [Esti teakeverék](P3) elfér a 100 g befogadására alkalmas [teatartó dobozban](P2) [F23, F13].\",\"problem\":\"Az F13 szerint 100 g szálas tea fér a dobozba, de a teák térfogata eltér. A virágos, könnyű gyógyteakeverékből kevesebb tömeg is több helyet foglalhat. Az, hogy a 60 g keverék belefér, nincs alátámasztva.\"},{\"quote\":\"Ez kényelmes méret egy kettesben töltött teázáshoz.\",\"problem\":\"Hivatkozás nélküli értékelő állítás a termékről. A tények csak a 0,8 l-t és a kb. 3 csészét adják meg.\"},{\"quote\":\"Magassága 12 cm, átmérője 8 cm, így a polcon sem foglal sok helyet [F14, F15].\",\"problem\":\"A „nem foglal sok helyet” a tényekből le nem vezetett minősítés.\"},{\"quote\":\"Az [öntöttvas teáskannához](P1) válassz egy teát, amelyet az ünnepelt biztosan szeret [F4].\",\"problem\":\"Az F4 (szűrőbetét) nem támasztja alá a mondatot, a hivatkozás félrevezető.\"},{\"quote\":\"A kiszerelés 60 g, ami kedves, kézbe illő ajándékmennyiség [F23].\",\"problem\":\"Homályos, reklámízű minősítés, amely nem következik a tényből.\"}],\"general_numbers\":[]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 6216,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 1524,
+      "output_tokens_details": {
+        "thinking_tokens": 557
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}
