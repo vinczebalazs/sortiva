@@ -1,6 +1,6 @@
 # Handoff — start of phase 4
 
-Written 2026-10-08 at the end of the first build session, updated at the end of phase 2, and again on 2026-10-09 at the end of phase 3. Read `CLAUDE.md`, then the documents the kick-off names (`docs/mvp-plan.md`, `docs/mvp-ui.md`, `docs/mvp-build-plan.md`, `DECISIONS.md`), then this file, then `docs/first-real-store.md` (what is left before the pilot). Phase 3 is built but **its real-model runs are blocked on Anthropic credit**; finish those first when the founders have topped up, then phase 4.
+Written 2026-10-08 at the end of the first build session, updated at the end of phase 2, and again on 2026-10-09 at the end of phase 3. Read `CLAUDE.md` (it imports `docs/working-agreement.md`, how to work with the founders), then the documents the kick-off names (`docs/mvp-plan.md`, `docs/mvp-ui.md`, `docs/mvp-build-plan.md`, `DECISIONS.md`), then this file, then `docs/first-real-store.md` (what is left before the pilot). From 2026-10-09 the build may be directed by the co-founder rather than Balázs; `docs/cofounder-handover.md` is what he was given. Phase 3 is done and measured; **phase 4 waits on the founders grading checkpoint 3** (the build plan's gate) and on real Shopify dev stores.
 
 ## Where things stand
 
@@ -36,7 +36,7 @@ Checkpoint 2 is in `DECISIONS.md`; its page is `docs/checkpoints/checkpoint-2-qu
 
 Open with the founders: the DataForSEO top-up (0.26 USD left; the other six fixture shops still use placeholder numbers), and the trivial-facts question from checkpoint 1.
 
-## Phase 3 — built (2026-10-09, third session); real runs blocked on credit
+## Phase 3 — done (2026-10-09, third session)
 
 Checkpoint 3 is in `DECISIONS.md`; its page is `docs/checkpoints/checkpoint-3-articles.html` (2 of 10 articles). Where it lives:
 
@@ -47,7 +47,7 @@ Checkpoint 3 is in `DECISIONS.md`; its page is `docs/checkpoints/checkpoint-3-ar
 - `evals/` — `pnpm eval distillation|judge|writer [--record] [--only=id]`; cases in `evals/*/cases*.json`, the agent's grades in `evals/writer/grades.json`, output in `evals/out/` (ignored by git). `scripts/checkpoint-3.ts` builds the checkpoint page from the writer cases of the two rich shops.
 - `pnpm seed:preview rich-hu:written` seeds a written article for the screens.
 
-**First thing to do once the founders have topped up Anthropic:** `npx tsx scripts/checkpoint-3.ts --record`, then `pnpm eval writer --record`, `pnpm eval distillation --record`, `pnpm eval judge --record`; grade the new articles in `evals/writer/grades.json`; rebuild and republish the checkpoint page; update the Spend table. Then add "Write Markdown only, no HTML" to the writer's RULES in `core/write/prompts.ts` (bump the draft and repair versions) and re-record the write scenarios with `RECORD=1`.
+**State at the end of the session.** All evals ran: judge 20 of 20, distillation 50 of 50, writer 12 of 20. Checkpoint 3 has 8 of 10 articles passing the gate under the writer's version 2 instructions (founder decision: the writer adds nothing to a fact; "Markdown only"), **ungraded**; `evals/writer/grades.json` is empty on purpose. Remaining holds are mostly filler (one-fact sentences in a row, repetition, off-topic product mentions): the next writer-prompt change, once the founders have graded. Open founder questions: trivial facts (checkpoint 1), and whether the reviewer should accept roast-specific brewing temperatures as common knowledge. The seeded-flaw scenarios start from fixed clean drafts in `scenarios/write/drafts/` (recorded answers that passed everything), so prompt changes do not break them; only the scenarios that write for real need `RECORD=1` after a prompt change. Re-running checkpoint 3 or the writer eval after a prompt change: `pnpm eval writer --record` then `npx tsx scripts/checkpoint-3.ts`.
 
 ## Phase 4 — what to build
 
@@ -55,7 +55,7 @@ Checkpoint 3 is in `DECISIONS.md`; its page is `docs/checkpoints/checkpoint-3-ar
 
 ## Things the next session must know
 
-- **Anthropic credit ran out on 2026-10-09.** Any request without a recording fails with "credit balance is too low". Do not change a prompt, a pack or anything that shapes a model request until credit is back: every recording is keyed on the exact request, so a change orphans the recordings and the scenarios fail. When a scenario says "no recording", find which part of the request changed (dump the request from the fake and diff it against the nearest recording, as done for the page-clock bug) before re-recording.
+- **Recordings are keyed on the exact model request.** Changing a prompt, a pack or anything that shapes a request orphans the recordings, and replay then fails with "no recording"; re-record with `RECORD=1` (costs a few dollars; spend is approved up to 20 USD a run). If "no recording" appears without a deliberate change, find which part of the request changed (dump the request from the fake and diff it against the nearest recording, as done for the page-clock bug) before re-recording. Anthropic credit ran out once (2026-10-08); then every live call fails with "credit balance is too low".
 - **The phase 2 Hungarian overlap failure is very likely explained**: a phase 1 bug dropped a store page at random after a catalogue read (fixed 2026-10-09; see DECISIONS). If it recurs, capture the error.
 
 - **PostHog for failures is promised but not built.** The founders will connect PostHog to learn about vendor failures and low DataForSEO credit (DECISIONS, "how failures surface"). Keep every vendor failure recorded where it can be sent on later (today: `store_flags.topics_failure`, the job's last error, `vendor_calls` rows with status failed). PostHog observes; it never decides anything.
